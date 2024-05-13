@@ -1,45 +1,246 @@
-// Base styles for the tabs container
-.tabs {
-    display: flex;
-    flex-direction: column;
-    border: 1px solid #ccc;
-    background-color: #f9f9f9;
-}
+$tab-x-padding: 0.5rem;
+$tab-y-padding: 0.75rem;
 
-// Styles for individual tabs (not the content, just the tab titles)
-.tab {
-    padding: 10px;
-    border-bottom: 1px solid #ccc;
-    cursor: pointer;
-    background-color: #e2e2e2;
+$tab-border-radius: 0.5rem;
+$tab-border-color: #ddd;
+$tab-border-color-active: #ccc;
 
-    &:hover {
-        background-color: #d1d1d1;
-    }
+$tab-bg: #eee;
+$tab-bg-hover: #fff;
+$tab-bg-active: #fff;
 
-    &.active {
-        background-color: white;
-        border-bottom: 1px solid white;
-        font-weight: bold;
-    }
-}
+.tabs-plugin {
+    background-color: #c1f6f6;
 
-// Content area for a tab
-.tab-content {
-    padding: 20px;
-    border-top: none;
-}
+    .tab-list {
+        align-items: flex-end;
+        display: flex;
+        flex-wrap: wrap;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        position: relative;
+        z-index: 1;
 
-// General styling adjustments when the editor is in read-only mode
-.ck-read-only {
-    .tabs {
-        .tab {
-            cursor: default;
-            background-color: #f0f0f0;
+        .tab-list-item {
+            flex: 1 1 0;
+            white-space: nowrap;
+
+            &:first-child {
+                .tab-edit-bar {
+                    justify-content: flex-end;
+                }
+                .move-left-button {
+                    display: none;
+                }
+            }
+            &:last-child {
+                .tab-edit-bar {
+                    .move-right-button {
+                        display: none;
+                    }
+                }
+            }
+        }
+
+        .tab-list-item,
+        .add-tab-list-item {
+            align-items: center;
+            background-color: $tab-bg;
+            border-radius: $tab-border-radius $tab-border-radius 0 0;
+            border: 2px solid $tab-border-color;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 0;
+            margin-bottom: -2px;
+            padding: $tab-x-padding $tab-y-padding;
+            // position: relative;
 
             &:hover {
-                background-color: #f0f0f0;
+                background-color: $tab-bg-hover;
+            }
+
+            &.active,
+            &.active:hover {
+                background-color: $tab-bg-active;
+                border-color: $tab-border-color;
+                border-style: solid;
+                border-width: 2px;
+                border-bottom: 2px solid transparent;
+                // position: relative;
+                // z-index: 1;
+            }
+
+            .tab-edit-bar,
+            .title-edit-bar {
+                align-items: center;
+                display: flex;
+                justify-content: space-between;
+                width: 100%;
+            }
+
+            .tab-edit-bar {
+                border-bottom: 1px dotted $tab-border-color-active;
+                margin-bottom: 0.5rem;
+            }
+        }
+
+        .add-tab-list-item {
+            // background-color: orange;
+            padding: 0;
+        }
+    }
+
+    .tab-content {
+        background-color: $tab-bg-active;
+        border: 2px solid $tab-border-color-active;
+        min-height: 6rem;
+
+        .tab-nested-content {
+            display: none;
+            height: 100%;
+            width: 100%;
+
+            &.active {
+                background-color: $tab-bg-active;
+                // border: 2px solid $tab-border-color-active;
+                display: block;
+                padding: 1rem;
             }
         }
     }
 }
+
+.add-tab-button,
+.remove-tab-button,
+.move-left-button,
+.move-right-button {
+    background-color: transparent;
+    border: 0;
+    cursor: pointer;
+
+    &::before,
+    &:hover::before {
+        background-repeat: no-repeat;
+        background-size: cover;
+        content: '';
+        display: block;
+        height: 1rem;
+        width: 1rem;
+    }
+}
+
+.add-tab-button {
+    padding: $tab-x-padding $tab-y-padding;
+}
+
+.move-left-button::before {
+    background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='%23333'/%3E%3C/svg%3E");
+}
+
+.move-right-button::before {
+    background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='%23333'/%3E%3C/svg%3E");
+}
+
+.remove-tab-button::before {
+    background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='%23333'/%3E%3C/svg%3E");
+    margin-left: 1rem;
+}
+
+.remove-tab-button:hover::before {
+    background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='%23ff0000'/%3E%3C/svg%3E");
+}
+
+.add-tab-button::before {
+    background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='%23333'/%3E%3C/svg%3E");
+}
+
+.add-tab-button:hover::before {
+    background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#066500'/%3E%3C/svg%3E");
+}
+
+// hide outline on elements
+.tab-list,
+.tab-list-item,
+.tab-edit-bar,
+.move-left-button,
+.move-right-button,
+.remove-tab-button,
+.add-tab-button,
+.tab-content,
+.tab-nested-content {
+    &.ck-widget.ck-widget_selected {
+        outline: none !important;
+    }
+
+    .ck.ck-reset_all.ck-widget__type-around {
+        display: none !important;
+    }
+}
+
+.tab-list,
+.tab-list-item,
+.tab-edit-bar,
+.tab-title,
+.move-left-button,
+.move-right-button,
+.remove-tab-button,
+.add-tab-button,
+.tab-content,
+.tab-nested-content {
+    .ck .ck-widget,
+    .ck .ck-widget:hover {
+        transition: none;
+    }
+
+    .ck-widget:hover,
+    &.ck-widget.ck-widget_selected {
+        outline: none;
+    }
+
+    .ck {
+        .ck-widget {
+            &.ck-widget_selected {
+                > .ck-widget__type-around > .ck-widget__type-around__button {
+                    &:before,
+                    &:after {
+                        display: none;
+                    }
+                }
+            }
+            > .ck-widget__type-around > .ck-widget__type-around__button {
+                &:hover:before,
+                &:hover:after {
+                    display: none;
+                }
+            }
+
+            &.ck-widget_selected,
+            &.ck-widget_selected:hover {
+                outline: none;
+            }
+        }
+    }
+}
+
+.ck.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected,
+.ck.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover {
+    .tab-list,
+    .tab-list-item,
+    .tab-edit-bar,
+    .tab-title,
+    .move-left-button,
+    .move-right-button,
+    .remove-tab-button,
+    .add-tab-button,
+    .tab-content,
+    .tab-nested-content {
+        outline: none;
+    }
+}
+
+// remove the before/after arrows to insert plugin
+// .ck-widget__type-around {
+//   display: none;
+// }
