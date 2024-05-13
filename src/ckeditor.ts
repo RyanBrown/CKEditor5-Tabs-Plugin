@@ -71,6 +71,9 @@ import { Undo } from '@ckeditor/ckeditor5-undo';
 import { EditorWatchdog } from '@ckeditor/ckeditor5-watchdog';
 import { WordCount } from '@ckeditor/ckeditor5-word-count';
 
+// Custom Plugins
+import TabsPlugin from './plugins/Tabs_Plugin/tabs-plugin';
+
 // You can read more about extending the build with additional plugins in the "Installing plugins" guide.
 // See https://ckeditor.com/docs/ckeditor5/latest/installation/plugins/installing-plugins.html for details.
 
@@ -152,6 +155,8 @@ class Editor extends ClassicEditor {
         Underline,
         Undo,
         WordCount,
+        // Custom Plugins
+        TabsPlugin,
     ];
 
     public static override defaultConfig: EditorConfig = {
@@ -215,6 +220,7 @@ class Editor extends ClassicEditor {
                 '|',
                 'removeFormat',
                 '|',
+                'tabsPlugin',
             ],
             shouldNotGroupWhenFull: true,
         },

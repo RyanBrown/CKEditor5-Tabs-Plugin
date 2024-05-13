@@ -1,3 +1,34 @@
-.tabs-plugin {
-  background-color: #fd9;
+.tabs {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+}
+
+.tab {
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+  cursor: pointer;
+  background-color: #e2e2e2;
+}
+.tab:hover {
+  background-color: #d1d1d1;
+}
+.tab.active {
+  background-color: white;
+  border-bottom: 1px solid white;
+  font-weight: bold;
+}
+
+.tab-content {
+  padding: 20px;
+  border-top: none;
+}
+
+.ck-read-only .tabs .tab {
+  cursor: default;
+  background-color: #f0f0f0;
+}
+.ck-read-only .tabs .tab:hover {
+  background-color: #f0f0f0;
 }

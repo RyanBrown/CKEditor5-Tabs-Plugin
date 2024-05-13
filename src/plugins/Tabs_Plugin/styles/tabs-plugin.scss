@@ -1,3 +1,45 @@
-.tabs-plugin {
-    background-color: #fd9;
+// Base styles for the tabs container
+.tabs {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+}
+
+// Styles for individual tabs (not the content, just the tab titles)
+.tab {
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+    cursor: pointer;
+    background-color: #e2e2e2;
+
+    &:hover {
+        background-color: #d1d1d1;
+    }
+
+    &.active {
+        background-color: white;
+        border-bottom: 1px solid white;
+        font-weight: bold;
+    }
+}
+
+// Content area for a tab
+.tab-content {
+    padding: 20px;
+    border-top: none;
+}
+
+// General styling adjustments when the editor is in read-only mode
+.ck-read-only {
+    .tabs {
+        .tab {
+            cursor: default;
+            background-color: #f0f0f0;
+
+            &:hover {
+                background-color: #f0f0f0;
+            }
+        }
+    }
 }
