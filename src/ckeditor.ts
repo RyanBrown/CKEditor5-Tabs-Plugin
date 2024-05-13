@@ -5,6 +5,7 @@
 
 import { ClassicEditor } from '@ckeditor/ckeditor5-editor-classic';
 
+import { CKFinderUploadAdapter } from '@ckeditor/ckeditor5-adapter-ckfinder';
 import { Alignment } from '@ckeditor/ckeditor5-alignment';
 import { Autoformat } from '@ckeditor/ckeditor5-autoformat';
 import { Autosave } from '@ckeditor/ckeditor5-autosave';
@@ -20,7 +21,7 @@ import { Heading, Title } from '@ckeditor/ckeditor5-heading';
 import { Highlight } from '@ckeditor/ckeditor5-highlight';
 import { HorizontalLine } from '@ckeditor/ckeditor5-horizontal-line';
 import { HtmlEmbed } from '@ckeditor/ckeditor5-html-embed';
-import { DataFilter, DataSchema, FullPage, GeneralHtmlSupport, HtmlComment } from '@ckeditor/ckeditor5-html-support';
+import { DataFilter, DataSchema, GeneralHtmlSupport, HtmlComment } from '@ckeditor/ckeditor5-html-support';
 import {
     AutoImage,
     Image,
@@ -67,7 +68,6 @@ import {
 import { TextTransformation } from '@ckeditor/ckeditor5-typing';
 import { AccessibilityHelp } from '@ckeditor/ckeditor5-ui';
 import { Undo } from '@ckeditor/ckeditor5-undo';
-import { SimpleUploadAdapter } from '@ckeditor/ckeditor5-upload';
 import { EditorWatchdog } from '@ckeditor/ckeditor5-watchdog';
 import { WordCount } from '@ckeditor/ckeditor5-word-count';
 
@@ -84,6 +84,7 @@ class Editor extends ClassicEditor {
         Autosave,
         BlockQuote,
         Bold,
+        CKFinderUploadAdapter,
         CloudServices,
         Code,
         CodeBlock,
@@ -95,7 +96,6 @@ class Editor extends ClassicEditor {
         FontColor,
         FontFamily,
         FontSize,
-        FullPage,
         GeneralHtmlSupport,
         Heading,
         Highlight,
@@ -126,7 +126,6 @@ class Editor extends ClassicEditor {
         RemoveFormat,
         SelectAll,
         ShowBlocks,
-        SimpleUploadAdapter,
         SourceEditing,
         SpecialCharacters,
         SpecialCharactersArrows,
@@ -162,13 +161,12 @@ class Editor extends ClassicEditor {
                 'italic',
                 'underline',
                 'strikethrough',
-                'superscript',
-                'subscript',
                 'blockQuote',
+                'subscript',
+                'superscript',
                 '|',
-                'textPartLanguage',
-                'style',
-                'specialCharacters',
+                'horizontalLine',
+                'link',
                 '|',
                 'bulletedList',
                 'numberedList',
@@ -178,38 +176,47 @@ class Editor extends ClassicEditor {
                 'indent',
                 'alignment',
                 '|',
-                'link',
-                'imageInsert',
                 'imageUpload',
+                'imageInsert',
                 'mediaEmbed',
+                '|',
                 'insertTable',
+                '|',
                 '-',
                 'heading',
                 '|',
+                'style',
+                '|',
+                'textPartLanguage',
+                '|',
+                'pageBreak',
+                'showBlocks',
+                'specialCharacters',
+                '|',
+                'restrictedEditingException',
+                // 'sourceEditing',
+                'code',
+                // 'codeBlock',
+                'htmlEmbed',
+                '|',
+                '-',
                 'fontColor',
+                'fontBackgroundColor',
                 'fontFamily',
                 'fontSize',
-                'fontBackgroundColor',
                 'highlight',
-                '|',
-                'horizontalLine',
-                'pageBreak',
-                'restrictedEditingException',
-                'selectAll',
-                'showBlocks',
-                '|',
-                'code',
-                'htmlEmbed',
-                'codeBlock',
-                'sourceEditing',
-                'accessibilityHelp',
                 '|',
                 'undo',
                 'redo',
                 '|',
+                'accessibilityHelp',
+                'selectAll',
                 'findAndReplace',
+                '|',
                 'removeFormat',
+                '|',
             ],
+            shouldNotGroupWhenFull: true,
         },
         language: 'en',
         image: {
