@@ -1,5 +1,5 @@
 import { Command } from '@ckeditor/ckeditor5-core';
-import { createTabElement, findAllDescendants } from './tabs-pluign-utils';
+import { createTabElement, findAllDescendants } from './tabs-plugin-utils';
 
 export class TabsPluginCommand extends Command {
     execute() {

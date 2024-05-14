@@ -1,6 +1,6 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { ButtonView } from '@ckeditor/ckeditor5-ui';
-import { createTabsPluginElement, createTabElement, findAllDescendants } from './tabs-pluign-utils';
+import { createTabsPluginElement, createTabElement, findAllDescendants } from './tabs-plugin-utils';
 import { TabsPluginCommand, RemoveTabCommand } from './tabs-plugin-command';
 import './styles/tabs-plugin.css';
 
