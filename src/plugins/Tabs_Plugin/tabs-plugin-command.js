@@ -57,50 +57,41 @@ export class MoveTabCommand extends Command {
     }
 }
 
-// Adjusting the RemoveTabCommand to check node types and adding console logs
 export class RemoveTabCommand extends Command {
     execute(tabId) {
         // console.log(`Executing RemoveTabCommand for tabId: ${tabId}`);
         const model = this.editor.model;
         model.change((writer) => {
             const tabsRoot = model.document.getRoot();
-            // console.log("Tabs Root: ", tabsRoot); // Log to check state
-            console.log(`Tab removed - ${tabId}`);
             if (!tabsRoot) {
                 console.error('Tabs root not found.');
                 return;
             }
-            const tabListItems = findAllDescendants(
-                tabsRoot,
-                (node) => node.is('element', 'tabListItem') && node.getAttribute('data-target') === `#${tabId}`
-            );
-            const tabContents = findAllDescendants(
+
+            // Finding all tab list items
+            const tabListItems = findAllDescendants(tabsRoot, (node) => node.is('element', 'tabListItem'));
+
+            // Check if there are more than one tab, ensuring at least one tab remains
+            if (tabListItems.length <= 1) {
+                console.log('Cannot remove the last tab.');
+                return; // Exit if only one tab left
+            }
+
+            // Find the specific tab list item and content to remove
+            const itemToRemove = tabListItems.find((item) => item.getAttribute('data-target') === `#${tabId}`);
+            const contentToRemove = findAllDescendants(
                 tabsRoot,
                 (node) => node.is('element', 'tabNestedContent') && node.getAttribute('id') === tabId
-            );
+            )[0];
 
-            // console.log("Tab List Items to Remove: ", tabListItems);
-            // console.log("Tab Contents to Remove: ", tabContents);
-
-            tabListItems.forEach((item) => writer.remove(item));
-            tabContents.forEach((content) => writer.remove(content));
+            // Remove the found tab list item and content
+            if (itemToRemove && contentToRemove) {
+                writer.remove(itemToRemove);
+                writer.remove(contentToRemove);
+                console.log(`Tab removed - ${tabId}`);
+            } else {
+                console.error(`Tab or content not found for ID: ${tabId}`);
+            }
         });
     }
-}
-
-// Helper function to get the index of a tab list item by its tabId
-function getTabIndex(tabList, tabId) {
-    return Array.from(tabList.getChildren()).findIndex((tab) => tab.getAttribute('data-target') === `#${tabId}`);
-}
-
-// Helper function to find a tab list item by its tabId
-function getTabListItem(root, tabId) {
-    return root.getDescendant(
-        (node) => node.is('element', 'tabListItem') && node.getAttribute('data-target') === `#${tabId}`
-    );
-}
-
-// Helper function to find a tab content by its tabId
-function getTabContent(root, tabId) {
-    return root.getDescendant((node) => node.is('element', 'tabNestedContent') && node.getAttribute('id') === tabId);
 }
