@@ -72,10 +72,10 @@ export default class TabsPluginEditing extends Plugin {
 
         // Define schema for 'tabTitle' element
         schema.register('tabTitle', {
-            allowWhere: '$text',
-            isInline: true,
-            allowContentOf: '$block',
-            allowAttributes: ['class'],
+            allowWhere: '$text', // Allows the element to be where text can be
+            isInline: true, // It's an inline element
+            allowContentOf: '$block', // Allows block content, you might adjust this depending on needs
+            allowAttributes: ['class', 'id'], // Optional: Allow additional attributes if needed
         });
 
         // Define schema for 'removeTabButton' element
@@ -336,30 +336,31 @@ export default class TabsPluginEditing extends Plugin {
             },
         });
 
-        // Converters for 'tabTitle' element (HTML to Model)
+        // Converters for 'tabTitle' element (making it editable)
         conversion.for('upcast').elementToElement({
             model: 'tabTitle',
             view: {
-                name: 'div',
+                name: 'span',
                 classes: 'tab-title',
             },
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabTitle',
-            view: (modelElement, { writer: viewWriter }) => {
-                const div = viewWriter.createEditableElement('div', {
-                    class: 'tab-title',
-                });
-                return div;
+            view: (modelElement, { writer }) => {
+                const span = writer.createEditableElement('span', { class: 'tab-title' });
+                // Ensure text content is inserted properly
+                return span;
             },
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabTitle',
-            view: (modelElement, { writer: viewWriter }) => {
-                const div = viewWriter.createEditableElement('div', {
+            view: (modelElement, { writer }) => {
+                const span = writer.createEditableElement('span', {
                     class: 'tab-title',
+                    contenteditable: 'true', // Explicitly making it editable
                 });
-                return div;
+                // This must be handled carefully; perhaps you should only set up the container here
+                return span;
             },
         });
 
