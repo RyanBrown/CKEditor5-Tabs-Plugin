@@ -86,12 +86,13 @@ export function createTabListItem(writer, tabId) {
 
 // Helper function to create a tab-list-item edit bar with move left/right controls
 export function createTabEditBar(writer, tabId) {
-    // console.log(`utils.js - createTabEditBar called for #${tabId}`);
+    console.log(`utils.js - createTabEditBar called for #${tabId}`);
     const tabEditBar = writer.createElement('tabEditBar', {
         class: 'tab-edit-bar',
     });
-    appendControlElement(writer, tabEditBar, 'moveLeftButton', 'move tab-list-item left', tabId);
-    appendControlElement(writer, tabEditBar, 'moveRightButton', 'move tab-list-item right', tabId);
+    // Adding titles to the buttons
+    appendControlElement(writer, tabEditBar, 'moveLeftButton', 'Move tab left', 'Move left', tabId);
+    appendControlElement(writer, tabEditBar, 'moveRightButton', 'Move tab right', 'Move right', tabId);
     return tabEditBar;
 }
 
@@ -120,9 +121,12 @@ export function createTabContent(writer, tabId) {
 }
 
 // Utility function to append control elements like move left, move right, and remove
-export function appendControlElement(writer, parent, type, title, tabId) {
-    // console.log(`utils.js - appendControlElement called for #${tabId} - ${type}`);
-    const element = writer.createElement(type, { class: type, title: title });
+export function appendControlElement(writer, parent, type, title, buttonTitle, tabId) {
+    console.log(`utils.js - appendControlElement called for #${tabId} - ${type}`);
+    const element = writer.createElement(type, {
+        class: type,
+        title: buttonTitle, // Added title attribute for tooltips
+    });
     writer.append(element, parent);
 }
 
