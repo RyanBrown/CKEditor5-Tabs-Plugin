@@ -102,7 +102,10 @@ export function createAddTabButton(writer, tabId) {
     const addTabListItem = writer.createElement('addTabListItem', {
         class: 'add-tab-list-item',
     });
-    const addTabButton = writer.createElement('addTabButton');
+    // Adding a title attribute to the addTabButton
+    const addTabButton = writer.createElement('addTabButton', {
+        title: 'Add a new tab', // Title attribute for tooltip
+    });
     writer.append(addTabButton, addTabListItem);
     return addTabListItem;
 }
