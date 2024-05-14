@@ -1,5 +1,5 @@
-$tab-x-padding: 0.5rem;
-$tab-y-padding: 0.75rem;
+$tab-x-padding: 1.5rem;
+$tab-y-padding: 1.75rem;
 
 $tab-border-radius: 0.5rem;
 $tab-border-color: #ddd;
@@ -75,6 +75,7 @@ $tab-bg-active: #fff;
             .tab-edit-bar,
             .title-edit-bar {
                 align-items: center;
+                background-color: #c1f6f6;
                 display: flex;
                 justify-content: space-between;
                 width: 100%;

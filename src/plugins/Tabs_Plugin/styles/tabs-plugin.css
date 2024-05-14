@@ -35,7 +35,7 @@
   flex-direction: column;
   flex-grow: 0;
   margin-bottom: -2px;
-  padding: 0.5rem 0.75rem;
+  padding: 1.5rem 1.75rem;
 }
 .tabs-plugin .tab-list .tab-list-item:hover,
 .tabs-plugin .tab-list .add-tab-list-item:hover {
@@ -55,6 +55,7 @@
 .tabs-plugin .tab-list .add-tab-list-item .tab-edit-bar,
 .tabs-plugin .tab-list .add-tab-list-item .title-edit-bar {
   align-items: center;
+  background-color: #c1f6f6;
   display: flex;
   justify-content: space-between;
   width: 100%;
@@ -107,7 +108,7 @@
 }
 
 .add-tab-button {
-  padding: 0.5rem 0.75rem;
+  padding: 1.5rem 1.75rem;
 }
 
 .move-left-button::before {
