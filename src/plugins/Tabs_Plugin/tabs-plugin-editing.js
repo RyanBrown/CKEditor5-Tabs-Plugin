@@ -488,23 +488,30 @@ export default class TabsPluginEditing extends Plugin {
                 classes: 'tab-nested-content',
             },
         });
-        conversion.for('downcast').elementToElement({
+        conversion.for('dataDowncast').elementToElement({
             model: 'tabNestedContent',
-            view: (modelElement, { writer: viewWriter }) => {
-                return viewWriter.createEditableElement('div', {
-                    class: modelElement.getAttribute('class'),
+            view: (modelElement, { writer }) => {
+                // Create a div that can contain various types of content
+                const div = writer.createContainerElement('div', {
+                    class: 'tab-nested-content',
                     id: modelElement.getAttribute('id'),
+                    contenteditable: 'true', // Ensure it's editable
                 });
+                return div;
             },
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabNestedContent',
-            view: (modelElement, { writer: viewWriter }) => {
-                const div = viewWriter.createEditableElement('div', {
+            view: (modelElement, { writer }) => {
+                // Create a div that is editable and can be treated as a widget for dragging and other interactions
+                const div = writer.createEditableElement('div', {
                     class: modelElement.getAttribute('class'),
                     id: modelElement.getAttribute('id'),
                 });
-                return toWidgetEditable(div, viewWriter);
+                // Make this div a widget, which enables it to be a part of the editor's UI framework
+                return toWidgetEditable(div, writer, {
+                    label: 'Nested content area',
+                });
             },
         });
 
