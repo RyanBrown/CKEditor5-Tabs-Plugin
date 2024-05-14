@@ -1,25 +1,25 @@
 // Function to create a new tabs plugin element with an initial tab
 export function createTabsPluginElement(writer) {
-    // Create the main tabsPlugin container
     const tabsPlugin = writer.createElement('tabsPlugin');
-    // Create the tabList container
     const tabList = writer.createElement('tabList', { class: 'tab-list' });
-    // Create the tabContent container
-    const tabContent = writer.createElement('tabContent', {
-        class: 'tab-content',
-    });
+    const tabContent = writer.createElement('tabContent', { class: 'tab-content' });
 
-    // Generate a unique tabId for the initial tab
-    const initialTabId = `tab_${Date.now()}`;
-
-    // Add an initial tab
-    const { tabListItem, tabNestedContent } = createTabElement(writer, initialTabId);
+    // Create two initial tabs
+    let initialTabId = `tab_${Date.now()}`;
+    let { tabListItem, tabNestedContent } = createTabElement(writer, initialTabId);
     writer.append(tabListItem, tabList);
     writer.append(tabNestedContent, tabContent);
+
+    // Create a second tab
+    let secondTabId = `tab_${Date.now() + 1}`; // Ensure unique ID
+    let secondTab = createTabElement(writer, secondTabId);
+    writer.append(secondTab.tabListItem, tabList);
+    writer.append(secondTab.tabNestedContent, tabContent);
 
     // Add the 'Add Tab' button to the tabList as the last item
     const addTabButton = createAddTabButton(writer, initialTabId);
     writer.append(addTabButton, tabList);
+
     writer.append(tabList, tabsPlugin);
     writer.append(tabContent, tabsPlugin);
 
