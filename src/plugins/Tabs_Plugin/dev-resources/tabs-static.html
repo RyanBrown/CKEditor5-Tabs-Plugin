@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Tabs Plugin POC</title>
+        <link rel="stylesheet" type="text/css" href="./tabs-static.css" />
+    </head>
+
+    <body>
+        <div class="tabs-plugin">
+            <ul class="tab-list">
+                <li class="tab-list-item active" data-target="#tab1">
+                    <div class="tab-edit-bar">
+                        <button class="move-left" title="move tab left"></button>
+                        <button class="move-right" title="move tab right"></button>
+                    </div>
+                    <div class="title-edit-bar">
+                        <div class="tab-title">Tab Name 1</div>
+                        <button class="remove-tab-button" title="remove tab"></button>
+                    </div>
+                </li>
+                <!-- <li class="add-tab-list-item"></li> -->
+                <li class="add-tab-list-item"></li>
+            </ul>
+            <div class="tab-content">
+                <div id="tab1" class="tab-nested-content active">Content 1</div>
+            </div>
+        </div>
+    </body>
+
+    <script src="./tabs-static.js"></script>
+</html>
