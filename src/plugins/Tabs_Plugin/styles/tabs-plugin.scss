@@ -7,11 +7,12 @@ $tab-border-color-active: #ccc;
 
 $tab-bg: #eee;
 $tab-bg-hover: #fff;
-// $tab-bg-active: #fff;
-$tab-bg-active: #c4ecf4;
+$tab-bg-active: #fff;
+// $tab-bg-active: #c4ecf4;
 
 .tabs-plugin {
-    background-color: #3448c5;
+    // background-color: #3448c5;
+    background-color: #fff;
 
     .tab-list {
         align-items: flex-end;
@@ -20,8 +21,6 @@ $tab-bg-active: #c4ecf4;
         list-style: none;
         margin: 0;
         padding: 0;
-        position: relative;
-        z-index: 1;
 
         .tab-list-item {
             flex: 1 1 0;
@@ -45,8 +44,7 @@ $tab-bg-active: #c4ecf4;
             }
         }
 
-        .tab-list-item,
-        .add-tab-list-item {
+        .tab-list-item {
             align-items: center;
             background-color: $tab-bg;
             border-radius: $tab-border-radius $tab-border-radius 0 0;
@@ -55,7 +53,7 @@ $tab-bg-active: #c4ecf4;
             display: flex;
             flex-direction: column;
             flex-grow: 0;
-            margin-bottom: -2px;
+            margin-bottom: -3px;
             // min-width: 6rem;
             // max-width: 12rem;
             padding: $tab-x-padding $tab-y-padding;
@@ -67,30 +65,26 @@ $tab-bg-active: #c4ecf4;
             &.active,
             &.active:hover {
                 background-color: $tab-bg-active;
-                border-color: $tab-border-color;
+                border-color: $tab-border-color-active;
                 border-style: solid;
                 border-width: 2px;
-                border-bottom: 2px solid transparent;
-                // position: relative;
-                // z-index: 1;
+                border-bottom-color: transparent;
+                position: relative;
+                z-index: 101;
             }
 
             .tab-title {
                 word-wrap: break-word;
             }
 
-            .tab-edit-bar,
-            .title-edit-bar {
+            .tab-edit-bar {
                 align-items: center;
                 background-color: #ccffcc;
                 display: flex;
                 justify-content: space-between;
                 width: 100%;
-            }
-
-            .tab-edit-bar {
-                border-bottom: 1px dotted $tab-border-color-active;
-                margin-bottom: 0.5rem;
+                // border-bottom: 1px dotted $tab-border-color-active;
+                // margin-bottom: 0.5rem;
             }
         }
 
@@ -103,7 +97,9 @@ $tab-bg-active: #c4ecf4;
     .tab-content {
         background-color: $tab-bg-active;
         border: 2px solid $tab-border-color-active;
-        min-height: 6rem;
+        // min-height: 6rem;
+        position: relative;
+        z-index: 100;
 
         .tab-nested-content {
             display: none;
@@ -136,6 +132,10 @@ $tab-bg-active: #c4ecf4;
         display: block;
         height: 1rem;
         width: 1rem;
+    }
+
+    span {
+        display: none;
     }
 }
 
@@ -197,8 +197,8 @@ $tab-bg-active: #c4ecf4;
 .add-tab-button,
 .tab-content,
 .tab-nested-content {
-    .ck .ck-widget,
-    .ck .ck-widget:hover {
+    .ck-widget,
+    .ck-widget:hover {
         transition: none;
     }
 
@@ -207,33 +207,31 @@ $tab-bg-active: #c4ecf4;
         outline: none;
     }
 
-    .ck {
-        .ck-widget {
-            &.ck-widget_selected {
-                > .ck-widget__type-around > .ck-widget__type-around__button {
-                    &:before,
-                    &:after {
-                        display: none;
-                    }
-                }
-            }
+    .ck-widget {
+        &.ck-widget_selected {
             > .ck-widget__type-around > .ck-widget__type-around__button {
-                &:hover:before,
-                &:hover:after {
+                &:before,
+                &:after {
                     display: none;
                 }
             }
-
-            &.ck-widget_selected,
-            &.ck-widget_selected:hover {
-                outline: none;
+        }
+        > .ck-widget__type-around > .ck-widget__type-around__button {
+            &:hover:before,
+            &:hover:after {
+                display: none;
             }
+        }
+
+        &.ck-widget_selected,
+        &.ck-widget_selected:hover {
+            outline: none;
         }
     }
 }
 
-.ck.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected,
-.ck.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover {
+.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected,
+.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover {
     .tab-list,
     .tab-list-item,
     .tab-edit-bar,
@@ -246,6 +244,10 @@ $tab-bg-active: #c4ecf4;
     .tab-nested-content {
         outline: none;
     }
+}
+
+.tab-content.ck-widget:hover {
+    outline: none !important;
 }
 
 // remove the before/after arrows to insert plugin
