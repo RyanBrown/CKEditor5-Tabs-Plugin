@@ -227,21 +227,30 @@ export default class TabsPluginEditing extends Plugin {
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'moveLeftButton',
-            view: (modelElement, { writer: viewWriter }) => {
-                return viewWriter.createContainerElement('button', {
+            view: (modelElement, { writer }) => {
+                const button = writer.createContainerElement('button', {
                     class: 'move-left-button',
                     title: modelElement.getAttribute('title') || 'Move Tab Left',
                 });
+                // Create and insert the span with text
+                const textSpan = writer.createContainerElement('span');
+                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Move Tab Left'));
+                writer.insert(writer.createPositionAt(button, 0), textSpan);
+                return button;
             },
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'moveLeftButton',
-            view: (modelElement, { writer: viewWriter }) => {
-                const button = viewWriter.createContainerElement('button', {
+            view: (modelElement, { writer }) => {
+                const button = writer.createContainerElement('button', {
                     class: 'move-left-button',
                     title: modelElement.getAttribute('title') || 'Move Tab Left',
-                    isContentEditable: false,
+                    isContentEditable: false, // Buttons shouldn't be editable
                 });
+                // Create and insert the span with text
+                const textSpan = writer.createContainerElement('span');
+                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Move Tab Left'));
+                writer.insert(writer.createPositionAt(button, 0), textSpan);
                 return button;
             },
         });
@@ -254,21 +263,30 @@ export default class TabsPluginEditing extends Plugin {
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'moveRightButton',
-            view: (modelElement, { writer: viewWriter }) => {
-                return viewWriter.createContainerElement('button', {
+            view: (modelElement, { writer }) => {
+                const button = writer.createContainerElement('button', {
                     class: 'move-right-button',
-                    title: modelElement.getAttribute('title') || 'Move Tab Right', // Set a fallback title if not present
+                    title: modelElement.getAttribute('title') || 'Move Tab Right',
                 });
+                // Create and insert the span with text
+                const textSpan = writer.createContainerElement('span');
+                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Move Tab Right'));
+                writer.insert(writer.createPositionAt(button, 0), textSpan);
+                return button;
             },
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'moveRightButton',
-            view: (modelElement, { writer: viewWriter }) => {
-                const button = viewWriter.createContainerElement('button', {
+            view: (modelElement, { writer }) => {
+                const button = writer.createContainerElement('button', {
                     class: 'move-right-button',
-                    title: modelElement.getAttribute('title') || 'Move Tab Right', // Ensure title is set correctly
-                    isContentEditable: false,
+                    title: modelElement.getAttribute('title') || 'Move Tab Right',
+                    isContentEditable: false, // Buttons shouldn't be editable
                 });
+                // Create and insert the span with text
+                const textSpan = writer.createContainerElement('span');
+                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Move Tab Right'));
+                writer.insert(writer.createPositionAt(button, 0), textSpan);
                 return button;
             },
         });
@@ -306,23 +324,31 @@ export default class TabsPluginEditing extends Plugin {
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'removeTabButton',
-            view: (modelElement, { writer: viewWriter }) => {
-                // Return nothing for data downcast
-                return viewWriter.createContainerElement('button');
+            view: (modelElement, { writer }) => {
+                const button = writer.createContainerElement('button', {
+                    class: 'remove-tab-button',
+                    title: modelElement.getAttribute('title') || 'Delete Tab',
+                });
+                // Create and insert the span with text
+                const textSpan = writer.createContainerElement('span');
+                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Delete Tab'));
+                writer.insert(writer.createPositionAt(button, 0), textSpan);
+                return button;
             },
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'removeTabButton',
-            view: (modelElement, { writer: viewWriter }) => {
-                const button = viewWriter.createContainerElement('button', {
+            view: (modelElement, { writer }) => {
+                const button = writer.createContainerElement('button', {
                     class: 'remove-tab-button',
                     title: modelElement.getAttribute('title') || 'Delete Tab',
+                    isContentEditable: false, // Buttons shouldn't be editable
                 });
-                return toWidget(button, viewWriter, {
-                    label: 'delete tab-list-item button',
-                    draggable: false,
-                    isContentEditable: false,
-                });
+                // Create and insert the span with text
+                const textSpan = writer.createContainerElement('span');
+                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Delete Tab'));
+                writer.insert(writer.createPositionAt(button, 0), textSpan);
+                return button;
             },
         });
 
@@ -358,21 +384,30 @@ export default class TabsPluginEditing extends Plugin {
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'addTabButton',
-            view: (modelElement, { writer }) =>
-                writer.createEmptyElement('button', {
+            view: (modelElement, { writer }) => {
+                const button = writer.createContainerElement('button', {
                     class: 'add-tab-button',
                     title: modelElement.getAttribute('title') || 'Add Tab',
-                }),
+                });
+                // Create and insert the span with text
+                const textSpan = writer.createContainerElement('span');
+                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Add Tab'));
+                writer.insert(writer.createPositionAt(button, 0), textSpan);
+                return button;
+            },
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'addTabButton',
-            view: (modelElement, { writer: viewWriter }) => {
-                const title = modelElement.getAttribute('title') || 'Add Tab';
-                const button = viewWriter.createContainerElement('button', {
+            view: (modelElement, { writer }) => {
+                const button = writer.createContainerElement('button', {
                     class: 'add-tab-button',
-                    title: title,
-                    isContentEditable: false, // Ensure it's not editable
+                    title: modelElement.getAttribute('title') || 'Add Tab',
+                    isContentEditable: false, // Buttons shouldn't be editable
                 });
+                // Create and insert the span with text
+                const textSpan = writer.createContainerElement('span');
+                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Add Tab'));
+                writer.insert(writer.createPositionAt(button, 0), textSpan);
                 return button;
             },
         });
