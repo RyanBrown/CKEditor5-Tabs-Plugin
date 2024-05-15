@@ -1,7 +1,7 @@
 import { Command } from '@ckeditor/ckeditor5-core';
 import { createTabElement, findAllDescendants } from './tabs-plugin-utils';
 
-function generateTabId() {
+export function generateTabId() {
     return `tabs-plugin-command_tabId_${Date.now()}`;
 }
 

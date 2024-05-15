@@ -1,7 +1,7 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { ButtonView } from '@ckeditor/ckeditor5-ui';
 import { createTabsPluginElement, createTabElement, findAllDescendants } from './tabs-plugin-utils';
-import { TabsPluginCommand, RemoveTabCommand } from './tabs-plugin-command';
+import { TabsPluginCommand, RemoveTabCommand, generateTabId } from './tabs-plugin-command';
 import './styles/tabs-plugin.css';
 
 export default class TabsPluginUI extends Plugin {
@@ -176,8 +176,8 @@ export default class TabsPluginUI extends Plugin {
                 writer.append(tabContent, tabsPlugin);
             }
 
-            // Generate a unique tabId for the new tab
-            const newTabId = `tabs-plugin-ui_newTabId_${Date.now()}`;
+            // Generate a unique tabId for the new tab using centralized method
+            const newTabId = generateTabId();
 
             // Use the utility function to create a new tab list item and content
             const { tabListItem, tabNestedContent } = createTabElement(writer, newTabId, false);

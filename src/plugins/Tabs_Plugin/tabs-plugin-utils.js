@@ -1,11 +1,13 @@
-// Function to create a new tabs plugin element with two initial tabs
+import { generateTabId } from './tabs-plugin-command';
+
+// Function to create a new tabs plugin element with two initial tabs using centralized tabId
 export function createTabsPluginElement(writer) {
     const tabsPlugin = writer.createElement('tabsPlugin');
     const tabList = writer.createElement('tabList', { class: 'tab-list' });
     const tabContent = writer.createElement('tabContent', { class: 'tab-content' });
 
-    // Create the first tab
-    let firstTabId = `tabs-plugin-initialTabId_${Date.now()}`;
+    // Create the first tab using centralized tabId generation
+    let firstTabId = generateTabId();
     let { tabListItem: firstTabListItem, tabNestedContent: firstTabNestedContent } = createTabElement(
         writer,
         firstTabId
@@ -13,8 +15,8 @@ export function createTabsPluginElement(writer) {
     writer.append(firstTabListItem, tabList);
     writer.append(firstTabNestedContent, tabContent);
 
-    // Create the second tab
-    let secondTabId = `tabs-plugin-initialTabId_${Date.now() + 1}`; // Ensure unique ID
+    // Create the second tab using centralized tabId generation
+    let secondTabId = generateTabId();
     let { tabListItem: secondTabListItem, tabNestedContent: secondTabNestedContent } = createTabElement(
         writer,
         secondTabId
