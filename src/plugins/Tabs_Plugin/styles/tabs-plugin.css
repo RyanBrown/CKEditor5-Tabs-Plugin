@@ -45,7 +45,7 @@
 .tabs-plugin .tab-list .tab-list-item.active, .tabs-plugin .tab-list .tab-list-item.active:hover,
 .tabs-plugin .tab-list .add-tab-list-item.active,
 .tabs-plugin .tab-list .add-tab-list-item.active:hover {
-  background-color: #fff;
+  background-color: #c4ecf4;
   border-color: #ddd;
   border-style: solid;
   border-width: 2px;
@@ -70,7 +70,7 @@
   padding: 0;
 }
 .tabs-plugin .tab-content {
-  background-color: #fff;
+  background-color: #c4ecf4;
   border: 2px solid #ccc;
   min-height: 6rem;
 }
@@ -80,7 +80,7 @@
   width: 100%;
 }
 .tabs-plugin .tab-content .tab-nested-content.active {
-  background-color: #fff;
+  background-color: #c4ecf4;
   display: block;
   padding: 1rem;
 }

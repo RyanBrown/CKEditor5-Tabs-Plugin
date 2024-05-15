@@ -1,7 +1,7 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { ButtonView } from '@ckeditor/ckeditor5-ui';
 import { createTabsPluginElement, createTabElement, findAllDescendants } from './tabs-plugin-utils';
-import { TabsPluginCommand, RemoveTabCommand, generateTabId } from './tabs-plugin-command';
+import { generateTabId } from './tabs-plugin-command';
 import './styles/tabs-plugin.css';
 
 export default class TabsPluginUI extends Plugin {
@@ -49,88 +49,103 @@ export default class TabsPluginUI extends Plugin {
     _registerEventHandlers(editor) {
         editor.editing.view.document.on('click', (evt, data) => {
             const target = data.target; // The element that was clicked.
-            // console.log(
-            // "Event triggered on element:",
-            // target.getCustomProperty("type") || target.name
-            // );
-
-            // Handle activation of tabs
+            // Delegating the click events to specific handlers based on the class of the clicked element
             if (target.hasClass('tab-list-item')) {
-                const tabId = target.getAttribute('data-target').slice(1); // Get tab ID from data-target attribute
-                console.log(`Tab clicked with ID: ${tabId}`);
-                editor.model.change((writer) => {
-                    const tabsRoot = editor.model.document.getRoot();
-                    console.log('Processing model change for tab activation');
-
-                    const tabListItem = this.findTabListItem(tabsRoot, tabId)[0];
-                    const tabNestedContent = this.findTabNestedContent(tabsRoot, tabId)[0];
-
-                    // Clear active class from all tab list items and tab nested contents
-                    console.log("Removing 'active' class from all tabs and contents");
-                    const allTabListItems = findAllDescendants(tabsRoot, (node) => node.is('element', 'tabListItem'));
-                    const allTabNestedContents = findAllDescendants(tabsRoot, (node) =>
-                        node.is('element', 'tabNestedContent')
-                    );
-
-                    allTabListItems.concat(allTabNestedContents).forEach((node) => {
-                        const currentClasses = node.getAttribute('class') || '';
-                        const updatedClasses = currentClasses
-                            .split(' ')
-                            .filter((cls) => cls !== 'active')
-                            .join(' ');
-                        writer.setAttribute('class', updatedClasses, node);
-                    });
-
-                    // Add 'active' class to the clicked tab list item and corresponding tab nested content
-                    if (tabListItem) {
-                        writer.setAttribute(
-                            'class',
-                            (tabListItem.getAttribute('class') || '') + ' active',
-                            tabListItem
-                        );
-                    }
-                    if (tabNestedContent) {
-                        writer.setAttribute(
-                            'class',
-                            (tabNestedContent.getAttribute('class') || '') + ' active',
-                            tabNestedContent
-                        );
-                    }
-                    console.log('Active classes updated for selected tab and content.');
-                });
-                evt.stop();
-                console.log('Event propagation stopped after tab list item click');
+                this._handleTabActivation(editor, target, evt);
             } else if (target.hasClass('tab-title')) {
-                console.log('Tab title clicked, setting focus.');
-                editor.editing.view.focus(target);
-                evt.stop();
-                console.log('Event propagation stopped after tab title click');
+                this._handleTabTitleClick(editor, target, evt);
             } else if (target.hasClass('remove-tab-button')) {
-                const tabListItem = target.findAncestor('li');
-                if (tabListItem) {
-                    const tabId = tabListItem.getAttribute('data-target').slice(1).replace('#', '');
-                    console.log(`Remove tab button clicked for tab ID: ${tabId}`);
-                    editor.execute('removeTab', tabId);
-                    evt.stop();
-                    console.log('Event propagation stopped after remove tab button click');
-                }
+                this._handleRemoveTab(editor, target, evt);
             } else if (target.hasClass('move-left-button') || target.hasClass('move-right-button')) {
-                const tabListItem = target.findAncestor('tabListItem');
-                if (tabListItem) {
-                    const tabId = tabListItem.getAttribute('data-target').slice(1);
-                    const direction = target.hasClass('move-left-button') ? -1 : 1;
-                    console.log(`Move button clicked for tab ID: ${tabId}, direction: ${direction}`);
-                    editor.execute('moveTab', { tabId: tabId, direction: direction });
-                    evt.stop();
-                    console.log('Event propagation stopped after move tab button click');
-                }
+                this._handleMoveTab(editor, target, evt);
             } else if (target.hasClass('add-tab-button')) {
-                console.log('Add tab button clicked.');
-                this._addNewTab(editor);
-                evt.stop();
-                console.log('Event propagation stopped after add tab button click');
+                this._handleAddTab(editor, evt);
             }
         });
+    }
+
+    _handleTabActivation(editor, target, evt) {
+        const tabId = target.getAttribute('data-target').slice(1); // Extract tabId from the data-target attribute.
+        editor.model.change((writer) => {
+            const tabsRoot = editor.model.document.getRoot();
+
+            // Find the tabListItem and tabNestedContent associated with the clicked tab.
+            const tabListItem = this.findTabListItem(tabsRoot, tabId)[0];
+            const tabNestedContent = this.findTabNestedContent(tabsRoot, tabId)[0];
+
+            // Clear existing active classes before setting new ones.
+            this._clearActiveClasses(writer, tabsRoot);
+
+            // Set active class on the clicked tab and its content.
+            if (tabListItem) {
+                const existingClass = tabListItem.getAttribute('class') || '';
+                writer.setAttribute('class', `${existingClass} active`.trim(), tabListItem);
+            }
+            if (tabNestedContent) {
+                const existingClass = tabNestedContent.getAttribute('class') || '';
+                writer.setAttribute('class', `${existingClass} active`.trim(), tabNestedContent);
+            }
+        });
+        evt.stop(); // Prevent further propagation of the click event.
+    }
+
+    _handleTabTitleClick(editor, target, evt) {
+        editor.editing.view.focus(target);
+        evt.stop();
+    }
+
+    _handleRemoveTab(editor, target, evt) {
+        const tabListItem = target.findAncestor('li');
+        const tabId = tabListItem.getAttribute('data-target').slice(1).replace('#', '');
+        editor.execute('removeTab', tabId);
+        evt.stop();
+    }
+
+    _handleMoveTab(editor, target, evt) {
+        const tabListItem = target.findAncestor('tabListItem');
+        if (!tabListItem) {
+            console.error('Failed to find the tab list item ancestor.');
+            evt.stop();
+            return; // Stop the function if no tab list item is found
+        }
+
+        const tabId = tabListItem.getAttribute('data-target').slice(1);
+        if (!tabId) {
+            console.error('No tab ID found on the tab list item.');
+            evt.stop();
+            return; // Stop the function if no tab ID is found
+        }
+
+        const direction = target.hasClass('move-left-button') ? -1 : 1;
+        editor.execute('moveTab', { tabId: tabId, direction: direction });
+        evt.stop();
+    }
+
+    _handleAddTab(editor, evt) {
+        this._addNewTab(editor);
+        evt.stop();
+    }
+
+    _clearActiveClasses(writer, tabsRoot) {
+        const allTabListItems = findAllDescendants(tabsRoot, (node) => node.is('element', 'tabListItem'));
+        const allTabNestedContents = findAllDescendants(tabsRoot, (node) => node.is('element', 'tabNestedContent'));
+        allTabListItems.concat(allTabNestedContents).forEach((node) => {
+            const currentClasses = node.getAttribute('class') || '';
+            const updatedClasses = currentClasses
+                .split(' ')
+                .filter((cls) => cls !== 'active')
+                .join(' ');
+            writer.setAttribute('class', updatedClasses, node);
+        });
+    }
+
+    _setActiveClass(writer, tabListItem, tabNestedContent) {
+        if (tabListItem) {
+            writer.setAttribute('class', (tabListItem.getAttribute('class') || '') + ' active', tabListItem);
+        }
+        if (tabNestedContent) {
+            writer.setAttribute('class', (tabNestedContent.getAttribute('class') || '') + ' active', tabNestedContent);
+        }
     }
 
     _addNewTab(editor) {
@@ -190,58 +205,6 @@ export default class TabsPluginUI extends Plugin {
 
             // Append the new tab content to the tabContent
             writer.append(tabNestedContent, tabContent);
-
-            // // Remove active class from all tab list items and tab nested contents
-            // const allTabListItems = Array.from(tabList.getChildren()).slice(0, -1); // Exclude the "Add Tab" button
-            // const allTabNestedContents = Array.from(tabContent.getChildren());
-
-            // allTabListItems.forEach((item) => {
-            //   const currentClasses = item.getAttribute('class') || '';
-            //   const updatedClasses = currentClasses.split(' ').filter(cls => cls !== 'active').join(' ');
-            //   writer.setAttribute('class', updatedClasses, item);
-
-            //   // Add event listener to remove active class when clicked
-            //   this.listenTo(item, 'click', () => {
-            //     editor.model.change((writer) => {
-            //       const clickedTabId = item.getAttribute('data-target').slice(1);
-            //       const clickedTabListItem = this.findTabListItem(tabsPlugin, clickedTabId)[0];
-            //       const clickedTabNestedContent = this.findTabNestedContent(tabsPlugin, clickedTabId)[0];
-
-            //       // Remove active class from all tab list items and tab nested contents
-            //       allTabListItems.forEach((item) => {
-            //         const currentClasses = item.getAttribute('class') || '';
-            //         const updatedClasses = currentClasses.split(' ').filter(cls => cls !== 'active').join(' ');
-            //         writer.setAttribute('class', updatedClasses, item);
-            //       });
-
-            //       allTabNestedContents.forEach((content) => {
-            //         const currentClasses = content.getAttribute('class') || '';
-            //         const updatedClasses = currentClasses.split(' ').filter(cls => cls !== 'active').join(' ');
-            //         writer.setAttribute('class', updatedClasses, content);
-            //       });
-
-            //       // Set active class on the clicked tab list item and tab nested content
-            //       const clickedTabListItemClasses = (clickedTabListItem.getAttribute('class') || '') + ' active';
-            //       writer.setAttribute('class', clickedTabListItemClasses.trim(), clickedTabListItem);
-
-            //       const clickedTabNestedContentClasses = (clickedTabNestedContent.getAttribute('class') || '') + ' active';
-            //       writer.setAttribute('class', clickedTabNestedContentClasses.trim(), clickedTabNestedContent);
-            //     });
-            //   });
-            // });
-
-            // allTabNestedContents.forEach((content) => {
-            //   const currentClasses = content.getAttribute('class') || '';
-            //   const updatedClasses = currentClasses.split(' ').filter(cls => cls !== 'active').join(' ');
-            //   writer.setAttribute('class', updatedClasses, content);
-            // });
-
-            // // Set active class on the newly inserted tab list item and tab nested content
-            // const newTabListItemClasses = (tabListItem.getAttribute('class') || '') + ' active';
-            // writer.setAttribute('class', newTabListItemClasses.trim(), tabListItem);
-
-            // const newTabNestedContentClasses = (tabNestedContent.getAttribute('class') || '') + ' active';
-            // writer.setAttribute('class', newTabNestedContentClasses.trim(), tabNestedContent);
         });
     }
 }

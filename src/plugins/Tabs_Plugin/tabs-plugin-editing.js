@@ -37,8 +37,8 @@ export default class TabsPluginEditing extends Plugin {
 
         // Define schema for 'tabListItem' element
         schema.register('tabListItem', {
-            isObject: true,
             allowIn: 'tabList',
+            allowContentOf: '$text', // Allows text directly inside the element
             allowAttributes: ['class', 'data-target'],
         });
 
@@ -201,11 +201,11 @@ export default class TabsPluginEditing extends Plugin {
         conversion.for('editingDowncast').elementToElement({
             model: 'tabListItem',
             view: (modelElement, { writer: viewWriter }) => {
-                const li = viewWriter.createContainerElement('li', {
+                const li = viewWriter.createEditableElement('li', {
                     class: modelElement.getAttribute('class'),
                     'data-target': modelElement.getAttribute('data-target'),
                 });
-                return toWidget(li, viewWriter, {
+                return toWidgetEditable(li, viewWriter, {
                     label: 'tab list item',
                     draggable: false,
                 });
@@ -440,6 +440,7 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer: viewWriter }) => {
                 const button = viewWriter.createContainerElement('button', {
                     class: 'add-tab-button',
+                    title: modelElement.getAttribute('title'),
                 });
                 return toWidget(button, viewWriter, {
                     label: 'Add Tab',
