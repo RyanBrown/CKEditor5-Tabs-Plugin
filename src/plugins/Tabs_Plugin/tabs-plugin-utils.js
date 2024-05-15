@@ -117,17 +117,24 @@ export function createAddTabButton(writer) {
     return addTabListItem;
 }
 
-// Function to create a new tab content element
+// Function to create a new tab content element using a given tabId
 export function createTabContent(writer, tabId) {
-    console.log(`utils.js - createTabContent called for #${tabId}`);
+    console.log(`utils.js - createTabContent called for #${tabId}`); // Log the usage of tabId for debugging
+
+    // Create the main container for the tab's content
     const tabNestedContent = writer.createElement('tabNestedContent', {
-        id: tabId,
+        id: tabId, // Use the provided tabId to set the ID of the content container
         class: 'tab-nested-content',
     });
+
+    // Create a title element for the nested content
     const tabNestedContentTitle = writer.createElement('tabNestedContentTitle');
-    writer.insertText(`Tab Content ${Date.now()}`, tabNestedContentTitle);
+    writer.insertText(`Tab Content ${Date.now()}`, tabNestedContentTitle); // Insert dynamic content, possibly enhance this part
+
+    // Append the title element to the content container
     writer.append(tabNestedContentTitle, tabNestedContent);
-    return tabNestedContent;
+
+    return tabNestedContent; // Return the complete tab content element
 }
 
 // Utility function to append control elements like move left, move right, and remove
