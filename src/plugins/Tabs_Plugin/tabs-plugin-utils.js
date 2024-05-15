@@ -4,20 +4,8 @@ export function createTabsPluginElement(writer) {
     const tabList = writer.createElement('tabList', { class: 'tab-list' });
     const tabContent = writer.createElement('tabContent', { class: 'tab-content' });
 
-    // Create two initial tabs
-    let initialTabId = `tabs-plugin-utils_initialTabId_${Date.now()}`;
-    let { tabListItem, tabNestedContent } = createTabElement(writer, initialTabId);
-    writer.append(tabListItem, tabList);
-    writer.append(tabNestedContent, tabContent);
-
-    // Create a second tab
-    let secondTabId = `tabs-plugin-utils_secondTabId_${Date.now() + 1}`; // Ensure unique ID
-    let secondTab = createTabElement(writer, secondTabId);
-    writer.append(secondTab.tabListItem, tabList);
-    writer.append(secondTab.tabNestedContent, tabContent);
-
     // Add the 'Add Tab' button to the tabList as the last item
-    const addTabButton = createAddTabButton(writer, initialTabId);
+    const addTabButton = createAddTabButton(writer);
     writer.append(addTabButton, tabList);
 
     writer.append(tabList, tabsPlugin);
@@ -96,7 +84,7 @@ export function createTabEditBar(writer, tabId) {
 }
 
 // Function to create an 'Add Tab' button element
-export function createAddTabButton(writer, tabId) {
+export function createAddTabButton(writer) {
     console.log('utils.js - createAddTabButton called');
     const addTabListItem = writer.createElement('addTabListItem', {
         class: 'add-tab-list-item',
