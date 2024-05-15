@@ -64,7 +64,6 @@ export function createTabListItem(writer, tabId) {
         class: 'title-edit-bar',
     });
     const tabTitle = writer.createElement('tabTitle', { class: 'tab-title' });
-    // writer.insertText(`Tab Name ${Date.now()}`, tabTitle);
     // Insert placeholder text or actual data
     writer.insertText(`Tab Name ${tabId}`, tabTitle);
 
