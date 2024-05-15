@@ -12,6 +12,9 @@ export function createTabsPluginElement(writer) {
         writer,
         firstTabId
     );
+    // Add active class to the first tab and content
+    writer.setAttribute('class', 'tab-list-item active', firstTabListItem);
+    writer.setAttribute('class', 'tab-nested-content active', firstTabNestedContent);
     writer.append(firstTabListItem, tabList);
     writer.append(firstTabNestedContent, tabContent);
 
@@ -77,7 +80,7 @@ export function createTabListItem(writer, tabId) {
 
     const removeTabButton = writer.createElement('removeTabButton', {
         class: 'remove-tab-button',
-        title: 'remove tab',
+        title: 'Delete Tab',
     });
 
     // Append tabTitle to tabListItem or its container
@@ -98,8 +101,8 @@ export function createTabEditBar(writer, tabId) {
         class: 'tab-edit-bar',
     });
     // Adding titles to the buttons
-    appendControlElement(writer, tabEditBar, 'moveLeftButton', 'Move tab left', 'Move left', tabId);
-    appendControlElement(writer, tabEditBar, 'moveRightButton', 'Move tab right', 'Move right', tabId);
+    appendControlElement(writer, tabEditBar, 'moveLeftButton', 'Move tab left', 'Move Tab Left', tabId);
+    appendControlElement(writer, tabEditBar, 'moveRightButton', 'Move tab right', 'Move Tab Right', tabId);
     return tabEditBar;
 }
 
@@ -111,23 +114,30 @@ export function createAddTabButton(writer) {
     });
     // Adding a title attribute to the addTabButton
     const addTabButton = writer.createElement('addTabButton', {
-        title: 'Add a new tab', // Title attribute for tooltip
+        title: 'Add Tab', // Title attribute for tooltip
     });
     writer.append(addTabButton, addTabListItem);
     return addTabListItem;
 }
 
-// Function to create a new tab content element
+// Function to create a new tab content element using a given tabId
 export function createTabContent(writer, tabId) {
-    console.log(`utils.js - createTabContent called for #${tabId}`);
+    console.log(`utils.js - createTabContent called for #${tabId}`); // Log the usage of tabId for debugging
+
+    // Create the main container for the tab's content
     const tabNestedContent = writer.createElement('tabNestedContent', {
-        id: tabId,
+        id: tabId, // Use the provided tabId to set the ID of the content container
         class: 'tab-nested-content',
     });
+
+    // Create a title element for the nested content
     const tabNestedContentTitle = writer.createElement('tabNestedContentTitle');
-    writer.insertText(`Tab Content ${Date.now()}`, tabNestedContentTitle);
+    writer.insertText(`Tab Content ${Date.now()}`, tabNestedContentTitle); // Insert dynamic content, possibly enhance this part
+
+    // Append the title element to the content container
     writer.append(tabNestedContentTitle, tabNestedContent);
-    return tabNestedContent;
+
+    return tabNestedContent; // Return the complete tab content element
 }
 
 // Utility function to append control elements like move left, move right, and remove
