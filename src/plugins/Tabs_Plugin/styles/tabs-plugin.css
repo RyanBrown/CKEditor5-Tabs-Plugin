@@ -14,7 +14,6 @@
 .tabs-plugin .tab-list .tab-list-item {
   flex: 1 1 0;
   font-weight: 700;
-  white-space: nowrap;
 }
 .tabs-plugin .tab-list .tab-list-item:first-child .tab-edit-bar {
   justify-content: flex-end;
@@ -50,6 +49,10 @@
   border-style: solid;
   border-width: 2px;
   border-bottom: 2px solid transparent;
+}
+.tabs-plugin .tab-list .tab-list-item .tab-title,
+.tabs-plugin .tab-list .add-tab-list-item .tab-title {
+  word-wrap: break-word;
 }
 .tabs-plugin .tab-list .tab-list-item .tab-edit-bar,
 .tabs-plugin .tab-list .tab-list-item .title-edit-bar,
