@@ -70,26 +70,20 @@ export function createTabListItem(writer, tabId) {
         'data-target': `#${tabId}`,
         class: 'tab-list-item',
     });
-    const tabEditBar = createTabEditBar(writer, tabId);
-    const tabTitleEditBar = writer.createElement('tabTitleEditBar', {
-        class: 'title-edit-bar',
-    });
+
+    // Create and append the tabEditBar with the moving and remove buttons
+    const tabEditBar = writer.createElement('tabEditBar', { class: 'tab-edit-bar' });
+    appendControlElement(writer, tabEditBar, 'moveLeftButton', 'move tab left', 'Move Tab Left', tabId);
+    appendControlElement(writer, tabEditBar, 'moveRightButton', 'move tab right', 'Move Tab Right', tabId);
+    appendControlElement(writer, tabEditBar, 'removeTabButton', 'remove tab', 'Remove Tab', tabId);
+
+    // Create and append the tab title
     const tabTitle = writer.createElement('tabTitle', { class: 'tab-title' });
     // Insert placeholder text or actual data
     writer.insertText(`Tab Name ${tabId}`, tabTitle);
 
-    const removeTabButton = writer.createElement('removeTabButton', {
-        class: 'remove-tab-button',
-        title: 'Delete Tab',
-    });
-
-    // Append tabTitle to tabListItem or its container
-    writer.append(tabTitle, tabListItem);
-
-    writer.append(tabTitle, tabTitleEditBar);
-    writer.append(removeTabButton, tabTitleEditBar);
     writer.append(tabEditBar, tabListItem);
-    writer.append(tabTitleEditBar, tabListItem);
+    writer.append(tabTitle, tabListItem);
 
     return tabListItem;
 }

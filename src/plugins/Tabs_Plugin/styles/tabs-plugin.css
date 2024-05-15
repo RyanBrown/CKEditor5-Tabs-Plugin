@@ -1,5 +1,5 @@
 .tabs-plugin {
-  background-color: #3448c5;
+  background-color: #fff;
 }
 .tabs-plugin .tab-list {
   align-items: flex-end;
@@ -24,8 +24,7 @@
 .tabs-plugin .tab-list .tab-list-item:last-child .tab-edit-bar .move-right-button {
   display: none;
 }
-.tabs-plugin .tab-list .tab-list-item,
-.tabs-plugin .tab-list .add-tab-list-item {
+.tabs-plugin .tab-list .tab-list-item {
   align-items: center;
   background-color: #eee;
   border-radius: 0.5rem 0.5rem 0 0;
@@ -37,35 +36,27 @@
   margin-bottom: -2px;
   padding: 1.5rem 1.75rem;
 }
-.tabs-plugin .tab-list .tab-list-item:hover,
-.tabs-plugin .tab-list .add-tab-list-item:hover {
+.tabs-plugin .tab-list .tab-list-item:hover {
   background-color: #fff;
 }
-.tabs-plugin .tab-list .tab-list-item.active, .tabs-plugin .tab-list .tab-list-item.active:hover,
-.tabs-plugin .tab-list .add-tab-list-item.active,
-.tabs-plugin .tab-list .add-tab-list-item.active:hover {
+.tabs-plugin .tab-list .tab-list-item.active, .tabs-plugin .tab-list .tab-list-item.active:hover {
   background-color: #c4ecf4;
   border-color: #ddd;
   border-style: solid;
   border-width: 2px;
   border-bottom: 2px solid transparent;
 }
-.tabs-plugin .tab-list .tab-list-item .tab-title,
-.tabs-plugin .tab-list .add-tab-list-item .tab-title {
+.tabs-plugin .tab-list .tab-list-item .tab-title {
   word-wrap: break-word;
 }
-.tabs-plugin .tab-list .tab-list-item .tab-edit-bar,
-.tabs-plugin .tab-list .tab-list-item .title-edit-bar,
-.tabs-plugin .tab-list .add-tab-list-item .tab-edit-bar,
-.tabs-plugin .tab-list .add-tab-list-item .title-edit-bar {
+.tabs-plugin .tab-list .tab-list-item .tab-edit-bar {
   align-items: center;
   background-color: #ccffcc;
   display: flex;
   justify-content: space-between;
   width: 100%;
 }
-.tabs-plugin .tab-list .tab-list-item .tab-edit-bar,
-.tabs-plugin .tab-list .add-tab-list-item .tab-edit-bar {
+.tabs-plugin .tab-list .tab-list-item .tab-edit-bar {
   border-bottom: 1px dotted #ccc;
   margin-bottom: 0.5rem;
 }
@@ -75,7 +66,6 @@
 .tabs-plugin .tab-content {
   background-color: #c4ecf4;
   border: 2px solid #ccc;
-  min-height: 6rem;
 }
 .tabs-plugin .tab-content .tab-nested-content {
   display: none;
@@ -163,26 +153,26 @@
   display: none !important;
 }
 
-.tab-list .ck .ck-widget,
-.tab-list .ck .ck-widget:hover,
-.tab-list-item .ck .ck-widget,
-.tab-list-item .ck .ck-widget:hover,
-.tab-edit-bar .ck .ck-widget,
-.tab-edit-bar .ck .ck-widget:hover,
-.tab-title .ck .ck-widget,
-.tab-title .ck .ck-widget:hover,
-.move-left-button .ck .ck-widget,
-.move-left-button .ck .ck-widget:hover,
-.move-right-button .ck .ck-widget,
-.move-right-button .ck .ck-widget:hover,
-.remove-tab-button .ck .ck-widget,
-.remove-tab-button .ck .ck-widget:hover,
-.add-tab-button .ck .ck-widget,
-.add-tab-button .ck .ck-widget:hover,
-.tab-content .ck .ck-widget,
-.tab-content .ck .ck-widget:hover,
-.tab-nested-content .ck .ck-widget,
-.tab-nested-content .ck .ck-widget:hover {
+.tab-list .ck-widget,
+.tab-list .ck-widget:hover,
+.tab-list-item .ck-widget,
+.tab-list-item .ck-widget:hover,
+.tab-edit-bar .ck-widget,
+.tab-edit-bar .ck-widget:hover,
+.tab-title .ck-widget,
+.tab-title .ck-widget:hover,
+.move-left-button .ck-widget,
+.move-left-button .ck-widget:hover,
+.move-right-button .ck-widget,
+.move-right-button .ck-widget:hover,
+.remove-tab-button .ck-widget,
+.remove-tab-button .ck-widget:hover,
+.add-tab-button .ck-widget,
+.add-tab-button .ck-widget:hover,
+.tab-content .ck-widget,
+.tab-content .ck-widget:hover,
+.tab-nested-content .ck-widget,
+.tab-nested-content .ck-widget:hover {
   transition: none;
 }
 .tab-list .ck-widget:hover, .tab-list.ck-widget.ck-widget_selected,
@@ -206,89 +196,93 @@
 .tab-nested-content.ck-widget.ck-widget_selected {
   outline: none;
 }
-.tab-list .ck .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:before, .tab-list .ck .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after,
-.tab-list-item .ck .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:before,
-.tab-list-item .ck .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after,
-.tab-edit-bar .ck .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:before,
-.tab-edit-bar .ck .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after,
-.tab-title .ck .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:before,
-.tab-title .ck .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after,
-.move-left-button .ck .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:before,
-.move-left-button .ck .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after,
-.move-right-button .ck .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:before,
-.move-right-button .ck .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after,
-.remove-tab-button .ck .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:before,
-.remove-tab-button .ck .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after,
-.add-tab-button .ck .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:before,
-.add-tab-button .ck .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after,
-.tab-content .ck .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:before,
-.tab-content .ck .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after,
-.tab-nested-content .ck .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:before,
-.tab-nested-content .ck .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after {
+.tab-list .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:before, .tab-list .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after,
+.tab-list-item .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:before,
+.tab-list-item .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after,
+.tab-edit-bar .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:before,
+.tab-edit-bar .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after,
+.tab-title .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:before,
+.tab-title .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after,
+.move-left-button .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:before,
+.move-left-button .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after,
+.move-right-button .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:before,
+.move-right-button .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after,
+.remove-tab-button .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:before,
+.remove-tab-button .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after,
+.add-tab-button .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:before,
+.add-tab-button .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after,
+.tab-content .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:before,
+.tab-content .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after,
+.tab-nested-content .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:before,
+.tab-nested-content .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after {
   display: none;
 }
-.tab-list .ck .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before, .tab-list .ck .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after,
-.tab-list-item .ck .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before,
-.tab-list-item .ck .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after,
-.tab-edit-bar .ck .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before,
-.tab-edit-bar .ck .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after,
-.tab-title .ck .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before,
-.tab-title .ck .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after,
-.move-left-button .ck .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before,
-.move-left-button .ck .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after,
-.move-right-button .ck .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before,
-.move-right-button .ck .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after,
-.remove-tab-button .ck .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before,
-.remove-tab-button .ck .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after,
-.add-tab-button .ck .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before,
-.add-tab-button .ck .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after,
-.tab-content .ck .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before,
-.tab-content .ck .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after,
-.tab-nested-content .ck .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before,
-.tab-nested-content .ck .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after {
+.tab-list .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before, .tab-list .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after,
+.tab-list-item .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before,
+.tab-list-item .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after,
+.tab-edit-bar .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before,
+.tab-edit-bar .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after,
+.tab-title .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before,
+.tab-title .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after,
+.move-left-button .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before,
+.move-left-button .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after,
+.move-right-button .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before,
+.move-right-button .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after,
+.remove-tab-button .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before,
+.remove-tab-button .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after,
+.add-tab-button .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before,
+.add-tab-button .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after,
+.tab-content .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before,
+.tab-content .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after,
+.tab-nested-content .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before,
+.tab-nested-content .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after {
   display: none;
 }
-.tab-list .ck .ck-widget.ck-widget_selected, .tab-list .ck .ck-widget.ck-widget_selected:hover,
-.tab-list-item .ck .ck-widget.ck-widget_selected,
-.tab-list-item .ck .ck-widget.ck-widget_selected:hover,
-.tab-edit-bar .ck .ck-widget.ck-widget_selected,
-.tab-edit-bar .ck .ck-widget.ck-widget_selected:hover,
-.tab-title .ck .ck-widget.ck-widget_selected,
-.tab-title .ck .ck-widget.ck-widget_selected:hover,
-.move-left-button .ck .ck-widget.ck-widget_selected,
-.move-left-button .ck .ck-widget.ck-widget_selected:hover,
-.move-right-button .ck .ck-widget.ck-widget_selected,
-.move-right-button .ck .ck-widget.ck-widget_selected:hover,
-.remove-tab-button .ck .ck-widget.ck-widget_selected,
-.remove-tab-button .ck .ck-widget.ck-widget_selected:hover,
-.add-tab-button .ck .ck-widget.ck-widget_selected,
-.add-tab-button .ck .ck-widget.ck-widget_selected:hover,
-.tab-content .ck .ck-widget.ck-widget_selected,
-.tab-content .ck .ck-widget.ck-widget_selected:hover,
-.tab-nested-content .ck .ck-widget.ck-widget_selected,
-.tab-nested-content .ck .ck-widget.ck-widget_selected:hover {
+.tab-list .ck-widget.ck-widget_selected, .tab-list .ck-widget.ck-widget_selected:hover,
+.tab-list-item .ck-widget.ck-widget_selected,
+.tab-list-item .ck-widget.ck-widget_selected:hover,
+.tab-edit-bar .ck-widget.ck-widget_selected,
+.tab-edit-bar .ck-widget.ck-widget_selected:hover,
+.tab-title .ck-widget.ck-widget_selected,
+.tab-title .ck-widget.ck-widget_selected:hover,
+.move-left-button .ck-widget.ck-widget_selected,
+.move-left-button .ck-widget.ck-widget_selected:hover,
+.move-right-button .ck-widget.ck-widget_selected,
+.move-right-button .ck-widget.ck-widget_selected:hover,
+.remove-tab-button .ck-widget.ck-widget_selected,
+.remove-tab-button .ck-widget.ck-widget_selected:hover,
+.add-tab-button .ck-widget.ck-widget_selected,
+.add-tab-button .ck-widget.ck-widget_selected:hover,
+.tab-content .ck-widget.ck-widget_selected,
+.tab-content .ck-widget.ck-widget_selected:hover,
+.tab-nested-content .ck-widget.ck-widget_selected,
+.tab-nested-content .ck-widget.ck-widget_selected:hover {
   outline: none;
 }
 
-.ck.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .tab-list,
-.ck.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .tab-list-item,
-.ck.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .tab-edit-bar,
-.ck.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .tab-title,
-.ck.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .move-left-button,
-.ck.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .move-right-button,
-.ck.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .remove-tab-button,
-.ck.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .add-tab-button,
-.ck.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .tab-content,
-.ck.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .tab-nested-content,
-.ck.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .tab-list,
-.ck.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .tab-list-item,
-.ck.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .tab-edit-bar,
-.ck.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .tab-title,
-.ck.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .move-left-button,
-.ck.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .move-right-button,
-.ck.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .remove-tab-button,
-.ck.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .add-tab-button,
-.ck.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .tab-content,
-.ck.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .tab-nested-content {
+.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .tab-list,
+.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .tab-list-item,
+.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .tab-edit-bar,
+.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .tab-title,
+.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .move-left-button,
+.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .move-right-button,
+.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .remove-tab-button,
+.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .add-tab-button,
+.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .tab-content,
+.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .tab-nested-content,
+.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .tab-list,
+.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .tab-list-item,
+.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .tab-edit-bar,
+.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .tab-title,
+.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .move-left-button,
+.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .move-right-button,
+.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .remove-tab-button,
+.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .add-tab-button,
+.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .tab-content,
+.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .tab-nested-content {
   outline: none;
+}
+
+.tab-content.ck-widget:hover {
+  outline: none !important;
 }

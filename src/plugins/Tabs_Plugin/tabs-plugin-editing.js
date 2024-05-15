@@ -63,13 +63,6 @@ export default class TabsPluginEditing extends Plugin {
             allowAttributes: ['class', 'title'],
         });
 
-        // Define schema for 'tabTitleEditBar' element
-        schema.register('tabTitleEditBar', {
-            isObject: true,
-            allowIn: 'tabListItem',
-            allowAttributes: ['class'],
-        });
-
         // Define schema for 'tabTitle' element
         schema.register('tabTitle', {
             allowWhere: '$text', // Allows the element to be where text can be
@@ -299,37 +292,6 @@ export default class TabsPluginEditing extends Plugin {
                 // Convert the button to a widget
                 return toWidget(button, viewWriter, {
                     label: 'Move Tab Right',
-                    draggable: false,
-                    isContentEditable: false,
-                });
-            },
-        });
-
-        // Conversion for 'tabTitleEditBar' element (HTML to Model)
-        conversion.for('upcast').elementToElement({
-            model: 'tabTitleEditBar',
-            view: {
-                name: 'div',
-                classes: 'title-edit-bar',
-            },
-        });
-        conversion.for('dataDowncast').elementToElement({
-            model: 'tabTitleEditBar',
-            view: (modelElement, { writer: viewWriter }) => {
-                return viewWriter.createContainerElement('div', {
-                    class: 'title-edit-bar',
-                    isContentEditable: false,
-                });
-            },
-        });
-        conversion.for('editingDowncast').elementToElement({
-            model: 'tabTitleEditBar',
-            view: (modelElement, { writer: viewWriter }) => {
-                const div = viewWriter.createContainerElement('div', {
-                    class: 'title-edit-bar',
-                });
-                return toWidget(div, viewWriter, {
-                    label: 'tab title edit bar',
                     draggable: false,
                     isContentEditable: false,
                 });
