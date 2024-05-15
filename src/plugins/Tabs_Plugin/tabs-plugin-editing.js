@@ -316,7 +316,7 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer: viewWriter }) => {
                 const button = viewWriter.createContainerElement('button', {
                     class: 'remove-tab-button',
-                    title: modelElement.getAttribute('title'),
+                    title: modelElement.getAttribute('title') || 'Delete Tab',
                 });
                 return toWidget(button, viewWriter, {
                     label: 'delete tab-list-item button',
@@ -403,27 +403,22 @@ export default class TabsPluginEditing extends Plugin {
         conversion.for('dataDowncast').elementToElement({
             model: 'tabNestedContent',
             view: (modelElement, { writer }) => {
-                // Create a div that can contain various types of content
-                const div = writer.createContainerElement('div', {
+                return writer.createContainerElement('div', {
                     class: 'tab-nested-content',
                     id: modelElement.getAttribute('id'),
-                    contenteditable: 'true', // Ensure it's editable
+                    contenteditable: 'true',
                 });
-                return div;
             },
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabNestedContent',
             view: (modelElement, { writer }) => {
-                // Create a div that is editable and can be treated as a widget for dragging and other interactions
                 const div = writer.createEditableElement('div', {
                     class: modelElement.getAttribute('class'),
                     id: modelElement.getAttribute('id'),
+                    isContentEditable: true,
                 });
-                // Make this div a widget, which enables it to be a part of the editor's UI framework
-                return toWidgetEditable(div, writer, {
-                    label: 'Nested content area',
-                });
+                return div;
             },
         });
 

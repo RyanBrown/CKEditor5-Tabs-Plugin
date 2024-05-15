@@ -7,8 +7,8 @@ $tab-border-color-active: #ccc;
 
 $tab-bg: #eee;
 $tab-bg-hover: #fff;
-// $tab-bg-active: #fff;
-$tab-bg-active: #c4ecf4;
+$tab-bg-active: #fff;
+// $tab-bg-active: #c4ecf4;
 
 .tabs-plugin {
     // background-color: #3448c5;
@@ -21,8 +21,6 @@ $tab-bg-active: #c4ecf4;
         list-style: none;
         margin: 0;
         padding: 0;
-        position: relative;
-        z-index: 1;
 
         .tab-list-item {
             flex: 1 1 0;
@@ -55,7 +53,7 @@ $tab-bg-active: #c4ecf4;
             display: flex;
             flex-direction: column;
             flex-grow: 0;
-            margin-bottom: -2px;
+            margin-bottom: -3px;
             // min-width: 6rem;
             // max-width: 12rem;
             padding: $tab-x-padding $tab-y-padding;
@@ -67,12 +65,12 @@ $tab-bg-active: #c4ecf4;
             &.active,
             &.active:hover {
                 background-color: $tab-bg-active;
-                border-color: $tab-border-color;
+                border-color: $tab-border-color-active;
                 border-style: solid;
                 border-width: 2px;
-                border-bottom: 2px solid transparent;
-                // position: relative;
-                // z-index: 1;
+                border-bottom-color: transparent;
+                position: relative;
+                z-index: 101;
             }
 
             .tab-title {
@@ -85,11 +83,8 @@ $tab-bg-active: #c4ecf4;
                 display: flex;
                 justify-content: space-between;
                 width: 100%;
-            }
-
-            .tab-edit-bar {
-                border-bottom: 1px dotted $tab-border-color-active;
-                margin-bottom: 0.5rem;
+                // border-bottom: 1px dotted $tab-border-color-active;
+                // margin-bottom: 0.5rem;
             }
         }
 
@@ -103,6 +98,8 @@ $tab-bg-active: #c4ecf4;
         background-color: $tab-bg-active;
         border: 2px solid $tab-border-color-active;
         // min-height: 6rem;
+        position: relative;
+        z-index: 100;
 
         .tab-nested-content {
             display: none;
