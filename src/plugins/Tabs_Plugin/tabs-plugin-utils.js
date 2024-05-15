@@ -12,6 +12,9 @@ export function createTabsPluginElement(writer) {
         writer,
         firstTabId
     );
+    // Add active class to the first tab and content
+    writer.setAttribute('class', 'tab-list-item active', firstTabListItem);
+    writer.setAttribute('class', 'tab-nested-content active', firstTabNestedContent);
     writer.append(firstTabListItem, tabList);
     writer.append(firstTabNestedContent, tabContent);
 
