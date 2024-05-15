@@ -10,7 +10,7 @@ $tab-bg-hover: #fff;
 $tab-bg-active: #fff;
 
 .tabs-plugin {
-    background-color: #c1f6f6;
+    background-color: #3448c5;
 
     .tab-list {
         align-items: flex-end;
@@ -24,6 +24,7 @@ $tab-bg-active: #fff;
 
         .tab-list-item {
             flex: 1 1 0;
+            font-weight: 700;
             white-space: nowrap;
 
             &:first-child {
@@ -75,7 +76,7 @@ $tab-bg-active: #fff;
             .tab-edit-bar,
             .title-edit-bar {
                 align-items: center;
-                background-color: #c1f6f6;
+                background-color: #ccffcc;
                 display: flex;
                 justify-content: space-between;
                 width: 100%;

@@ -5,13 +5,13 @@ export function createTabsPluginElement(writer) {
     const tabContent = writer.createElement('tabContent', { class: 'tab-content' });
 
     // Create two initial tabs
-    let initialTabId = `tab_${Date.now()}`;
+    let initialTabId = `tabs-plugin-utils_initialTabId_${Date.now()}`;
     let { tabListItem, tabNestedContent } = createTabElement(writer, initialTabId);
     writer.append(tabListItem, tabList);
     writer.append(tabNestedContent, tabContent);
 
     // Create a second tab
-    let secondTabId = `tab_${Date.now() + 1}`; // Ensure unique ID
+    let secondTabId = `tabs-plugin-utils_secondTabId_${Date.now() + 1}`; // Ensure unique ID
     let secondTab = createTabElement(writer, secondTabId);
     writer.append(secondTab.tabListItem, tabList);
     writer.append(secondTab.tabNestedContent, tabContent);
@@ -66,7 +66,7 @@ export function createTabListItem(writer, tabId) {
     const tabTitle = writer.createElement('tabTitle', { class: 'tab-title' });
     // writer.insertText(`Tab Name ${Date.now()}`, tabTitle);
     // Insert placeholder text or actual data
-    writer.insertText(`Editable ${tabId}`, tabTitle);
+    writer.insertText(`Tab Name ${tabId}`, tabTitle);
 
     const removeTabButton = writer.createElement('removeTabButton', {
         class: 'remove-tab-button',

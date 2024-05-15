@@ -7,7 +7,7 @@ export class TabsPluginCommand extends Command {
         const model = editor.model;
 
         model.change((writer) => {
-            const tabId = `tab_${Date.now()}`;
+            const tabId = `tabs-plugin-command_tabId_${Date.now()}`;
             const { tabListItem, tabNestedContent } = createTabElement(writer, tabId, false);
             const tabsRoot = model.document.getRoot();
 
