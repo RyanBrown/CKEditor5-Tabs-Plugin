@@ -298,7 +298,7 @@ export default class TabsPluginEditing extends Plugin {
                 });
                 // Convert the button to a widget
                 return toWidget(button, viewWriter, {
-                    label: 'move right',
+                    label: 'Move Tab Right',
                     draggable: false,
                     isContentEditable: false,
                 });
@@ -387,7 +387,7 @@ export default class TabsPluginEditing extends Plugin {
                     title: modelElement.getAttribute('title'),
                 });
                 return toWidget(button, viewWriter, {
-                    label: 'remove tab-list-item button',
+                    label: 'delete tab-list-item button',
                     draggable: false,
                     isContentEditable: false,
                 });
@@ -438,9 +438,11 @@ export default class TabsPluginEditing extends Plugin {
         conversion.for('editingDowncast').elementToElement({
             model: 'addTabButton',
             view: (modelElement, { writer: viewWriter }) => {
+                // Ensure the title attribute is correctly fetched and set
+                const title = modelElement.getAttribute('title') || 'Add Tab'; // Fallback title
                 const button = viewWriter.createContainerElement('button', {
                     class: 'add-tab-button',
-                    title: modelElement.getAttribute('title'),
+                    title: title, // Setting title attribute from model to view
                 });
                 return toWidget(button, viewWriter, {
                     label: 'Add Tab',

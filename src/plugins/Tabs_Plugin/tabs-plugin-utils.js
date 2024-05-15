@@ -80,7 +80,7 @@ export function createTabListItem(writer, tabId) {
 
     const removeTabButton = writer.createElement('removeTabButton', {
         class: 'remove-tab-button',
-        title: 'remove tab',
+        title: 'Delete Tab',
     });
 
     // Append tabTitle to tabListItem or its container
@@ -101,8 +101,8 @@ export function createTabEditBar(writer, tabId) {
         class: 'tab-edit-bar',
     });
     // Adding titles to the buttons
-    appendControlElement(writer, tabEditBar, 'moveLeftButton', 'Move tab left', 'Move left', tabId);
-    appendControlElement(writer, tabEditBar, 'moveRightButton', 'Move tab right', 'Move right', tabId);
+    appendControlElement(writer, tabEditBar, 'moveLeftButton', 'Move tab left', 'Move Tab Left', tabId);
+    appendControlElement(writer, tabEditBar, 'moveRightButton', 'Move tab right', 'Move Tab Right', tabId);
     return tabEditBar;
 }
 
@@ -114,7 +114,7 @@ export function createAddTabButton(writer) {
     });
     // Adding a title attribute to the addTabButton
     const addTabButton = writer.createElement('addTabButton', {
-        title: 'Add a new tab', // Title attribute for tooltip
+        title: 'Add Tab', // Title attribute for tooltip
     });
     writer.append(addTabButton, addTabListItem);
     return addTabListItem;
