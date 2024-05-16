@@ -309,3 +309,10 @@
 .ck.ck-widget__type-around__button.ck-widget__type-around__button_after {
   z-index: 100;
 }
+
+.ck-content .tab-nested-content.ck-placeholder::before {
+  content: attr(data-placeholder);
+  color: #999;
+  font-style: italic;
+  pointer-events: none;
+}

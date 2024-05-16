@@ -440,7 +440,7 @@ export default class TabsPluginEditing extends Plugin {
             model: 'tabNestedContent',
             view: (modelElement, { writer }) => {
                 const div = writer.createEditableElement('div', {
-                    class: modelElement.getAttribute('class'),
+                    class: `${modelElement.getAttribute('class')} ck-placeholder`,
                     id: modelElement.getAttribute('id'),
                     'data-placeholder': modelElement.getAttribute('placeholder'),
                 });

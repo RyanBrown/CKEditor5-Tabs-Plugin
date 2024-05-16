@@ -278,3 +278,10 @@ $tab-bg-active: #fff;
 // .ck-widget__type-around {
 //   display: none;
 // }
+
+.ck-content .tab-nested-content.ck-placeholder::before {
+    content: attr(data-placeholder);
+    color: #999;
+    font-style: italic;
+    pointer-events: none;
+}
