@@ -75,6 +75,8 @@ export default class TabsPluginEditing extends Plugin {
         // Define schema for 'tabTitle' element
         schema.register('tabTitle', {
             allowIn: 'tabListItem',
+            allowContentOf: '$text',
+            isLimit: true,
             allowAttributes: ['class'],
         });
 
@@ -305,14 +307,12 @@ export default class TabsPluginEditing extends Plugin {
         // Converters for 'tabTitle' element (making it editable)
         conversion.for('upcast').elementToElement({
             model: 'tabTitle',
-            view: { name: 'span', classes: 'tab-title' },
+            view: { name: 'div', classes: 'tab-title' },
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabTitle',
             view: (modelElement, { writer }) => {
-                return writer.createContainerElement('div', {
-                    class: 'tab-title',
-                });
+                return writer.createEditableElement('div', { class: 'tab-title' });
             },
         });
         conversion.for('editingDowncast').elementToElement({
@@ -320,7 +320,6 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const div = writer.createEditableElement('div', {
                     class: 'tab-title',
-                    contenteditable: 'true', // Explicitly making it editable
                 });
                 return toWidgetEditable(div, writer);
             },

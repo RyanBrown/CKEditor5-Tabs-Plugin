@@ -84,7 +84,11 @@ $tab-bg-active: #fff;
             }
 
             .tab-title {
+                background: aliceblue;
+                display: block;
+                position: relative;
                 text-align: center;
+                width: 100%;
                 word-wrap: break-word;
             }
         }

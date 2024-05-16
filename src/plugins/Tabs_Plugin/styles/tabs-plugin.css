@@ -56,7 +56,11 @@
   width: 100%;
 }
 .tabs-plugin .tab-list .tab-list-item .tab-title {
+  background: aliceblue;
+  display: block;
+  position: relative;
   text-align: center;
+  width: 100%;
   word-wrap: break-word;
 }
 .tabs-plugin .tab-list .add-tab-list-item {
