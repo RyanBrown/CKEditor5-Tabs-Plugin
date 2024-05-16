@@ -12,7 +12,7 @@ $tab-bg-active: #fff;
 
 .tabs-plugin {
     background-color: #fff;
-    margin-bottom: 4px;
+    margin-bottom: calc($tab-border-width * 2);
 
     .tab-list {
         align-items: flex-end;
@@ -110,8 +110,6 @@ $tab-bg-active: #fff;
             width: 100%;
 
             &.active {
-                background-color: $tab-bg-active;
-                // border: $tab-border-width solid $tab-border-color-active;
                 display: block;
                 padding: 1rem;
             }
@@ -154,7 +152,7 @@ $tab-bg-active: #fff;
     &:focus,
     &:active {
         background-color: orange;
-        border-radius: 0.5rem;
+        border-radius: $tab-border-radius;
     }
 
     span {

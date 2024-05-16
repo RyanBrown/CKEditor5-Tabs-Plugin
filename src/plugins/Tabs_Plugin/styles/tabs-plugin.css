@@ -83,7 +83,6 @@
   width: 100%;
 }
 .tabs-plugin .tab-content .tab-nested-content.active {
-  background-color: #fff;
   display: block;
   padding: 1rem;
 }
