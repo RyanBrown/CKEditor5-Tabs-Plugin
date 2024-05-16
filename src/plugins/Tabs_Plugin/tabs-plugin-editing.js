@@ -444,7 +444,7 @@ export default class TabsPluginEditing extends Plugin {
                     id: modelElement.getAttribute('id'),
                     'data-placeholder': modelElement.getAttribute('placeholder'),
                 });
-                return div;
+                return toWidgetEditable(div, writer);
             },
         });
     }
