@@ -1,5 +1,6 @@
 .tabs-plugin {
   background-color: #fff;
+  margin-bottom: 4px;
 }
 .tabs-plugin .tab-list {
   align-items: flex-end;
@@ -10,19 +11,6 @@
   padding: 0;
 }
 .tabs-plugin .tab-list .tab-list-item {
-  flex: 1 1 0;
-  font-weight: 700;
-}
-.tabs-plugin .tab-list .tab-list-item:first-child .tab-edit-bar {
-  justify-content: flex-end;
-}
-.tabs-plugin .tab-list .tab-list-item:first-child .move-left-button {
-  display: none;
-}
-.tabs-plugin .tab-list .tab-list-item:last-child .tab-edit-bar .move-right-button {
-  display: none;
-}
-.tabs-plugin .tab-list .tab-list-item {
   align-items: center;
   background-color: #eee;
   border-radius: 0.5rem 0.5rem 0 0;
@@ -31,30 +19,54 @@
   display: flex;
   flex-direction: column;
   flex-grow: 0;
-  margin-bottom: -3px;
+  margin-bottom: -2px;
+  margin-top: 2px;
+  max-width: 20rem;
+  min-width: 10rem;
   padding: 1.5rem 1.75rem;
+  position: relative;
 }
 .tabs-plugin .tab-list .tab-list-item:hover {
   background-color: #fff;
 }
 .tabs-plugin .tab-list .tab-list-item.active, .tabs-plugin .tab-list .tab-list-item.active:hover {
   background-color: #fff;
-  border-color: #ccc;
-  border-style: solid;
-  border-width: 2px;
-  border-bottom-color: transparent;
+  border: 2px solid #ccc;
   position: relative;
-  z-index: 101;
+  z-index: 3;
+}
+.tabs-plugin .tab-list .tab-list-item.active::after, .tabs-plugin .tab-list .tab-list-item.active:hover::after {
+  background-color: #fff;
+  bottom: -2px;
+  content: "";
+  display: block;
+  height: 2px;
+  left: 0;
+  position: absolute;
+  width: 100%;
 }
 .tabs-plugin .tab-list .tab-list-item .tab-title {
+  display: block;
+  font-weight: 700;
+  position: relative;
+  text-align: center;
+  width: 100%;
   word-wrap: break-word;
 }
-.tabs-plugin .tab-list .tab-list-item .tab-edit-bar {
-  align-items: center;
-  background-color: #ccffcc;
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
+.tabs-plugin .tab-list .tab-list-item:first-child .tab-edit-bar > .move-buttons-wrapper {
+  justify-content: flex-end;
+}
+.tabs-plugin .tab-list .tab-list-item:first-child .tab-edit-bar > .move-buttons-wrapper .move-left-button {
+  display: none;
+}
+.tabs-plugin .tab-list .tab-list-item:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper {
+  justify-content: flex-start;
+}
+.tabs-plugin .tab-list .tab-list-item:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper .move-right-button {
+  display: none;
+}
+.tabs-plugin .tab-list .tab-list-item:nth-last-child(2):first-child .tab-edit-bar > .delete-tab-button {
+  display: none;
 }
 .tabs-plugin .tab-list .add-tab-list-item {
   padding: 0;
@@ -63,7 +75,7 @@
   background-color: #fff;
   border: 2px solid #ccc;
   position: relative;
-  z-index: 100;
+  z-index: 2;
 }
 .tabs-plugin .tab-content .tab-nested-content {
   display: none;
@@ -71,22 +83,33 @@
   width: 100%;
 }
 .tabs-plugin .tab-content .tab-nested-content.active {
-  background-color: #fff;
   display: block;
   padding: 1rem;
 }
 
+.tab-edit-bar {
+  align-items: center;
+  display: flex;
+  width: 100%;
+}
+.tab-edit-bar .move-buttons-wrapper {
+  display: flex;
+  flex: 1 1 0;
+  justify-content: space-between;
+}
+
 .add-tab-button,
-.remove-tab-button,
+.delete-tab-button,
 .move-left-button,
 .move-right-button {
   background-color: transparent;
   border: 0;
   cursor: pointer;
+  padding: 0.5rem;
 }
 .add-tab-button::before, .add-tab-button:hover::before,
-.remove-tab-button::before,
-.remove-tab-button:hover::before,
+.delete-tab-button::before,
+.delete-tab-button:hover::before,
 .move-left-button::before,
 .move-left-button:hover::before,
 .move-right-button::before,
@@ -98,10 +121,21 @@
   height: 1rem;
   width: 1rem;
 }
+.add-tab-button:focus, .add-tab-button:active,
+.delete-tab-button:focus,
+.delete-tab-button:active,
+.move-left-button:focus,
+.move-left-button:active,
+.move-right-button:focus,
+.move-right-button:active {
+  background-color: orange;
+  border-radius: 0.5rem;
+}
 .add-tab-button span,
-.remove-tab-button span,
+.delete-tab-button span,
 .move-left-button span,
 .move-right-button span {
+  align-items: center;
   display: none;
 }
 
@@ -110,28 +144,31 @@
 }
 
 .move-left-button::before {
-  background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='%23333'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='#333333'/%3E%3C/svg%3E");
+}
+.move-left-button:hover::before {
+  background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='#266de2'/%3E%3C/svg%3E");
 }
 
 .move-right-button::before {
-  background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='%23333'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='#333333'/%3E%3C/svg%3E");
+}
+.move-right-button:hover::before {
+  background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='#266de2'/%3E%3C/svg%3E");
 }
 
-.remove-tab-button::before {
-  background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='%23333'/%3E%3C/svg%3E");
-  margin-left: 1rem;
+.delete-tab-button::before {
+  background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='#333333'/%3E%3C/svg%3E");
 }
-
-.remove-tab-button:hover::before {
-  background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='%23ff0000'/%3E%3C/svg%3E");
+.delete-tab-button:hover::before {
+  background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='#ff0000'/%3E%3C/svg%3E");
 }
 
 .add-tab-button::before {
-  background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='%23333'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#333333'/%3E%3C/svg%3E");
 }
-
 .add-tab-button:hover::before {
-  background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#066500'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#266de2'/%3E%3C/svg%3E");
 }
 
 .tab-list.ck-widget.ck-widget_selected,
@@ -139,7 +176,7 @@
 .tab-edit-bar.ck-widget.ck-widget_selected,
 .move-left-button.ck-widget.ck-widget_selected,
 .move-right-button.ck-widget.ck-widget_selected,
-.remove-tab-button.ck-widget.ck-widget_selected,
+.delete-tab-button.ck-widget.ck-widget_selected,
 .add-tab-button.ck-widget.ck-widget_selected,
 .tab-content.ck-widget.ck-widget_selected,
 .tab-nested-content.ck-widget.ck-widget_selected {
@@ -150,7 +187,7 @@
 .tab-edit-bar .ck.ck-reset_all.ck-widget__type-around,
 .move-left-button .ck.ck-reset_all.ck-widget__type-around,
 .move-right-button .ck.ck-reset_all.ck-widget__type-around,
-.remove-tab-button .ck.ck-reset_all.ck-widget__type-around,
+.delete-tab-button .ck.ck-reset_all.ck-widget__type-around,
 .add-tab-button .ck.ck-reset_all.ck-widget__type-around,
 .tab-content .ck.ck-reset_all.ck-widget__type-around,
 .tab-nested-content .ck.ck-reset_all.ck-widget__type-around {
@@ -169,8 +206,8 @@
 .move-left-button .ck-widget:hover,
 .move-right-button .ck-widget,
 .move-right-button .ck-widget:hover,
-.remove-tab-button .ck-widget,
-.remove-tab-button .ck-widget:hover,
+.delete-tab-button .ck-widget,
+.delete-tab-button .ck-widget:hover,
 .add-tab-button .ck-widget,
 .add-tab-button .ck-widget:hover,
 .tab-content .ck-widget,
@@ -190,8 +227,8 @@
 .move-left-button.ck-widget.ck-widget_selected,
 .move-right-button .ck-widget:hover,
 .move-right-button.ck-widget.ck-widget_selected,
-.remove-tab-button .ck-widget:hover,
-.remove-tab-button.ck-widget.ck-widget_selected,
+.delete-tab-button .ck-widget:hover,
+.delete-tab-button.ck-widget.ck-widget_selected,
 .add-tab-button .ck-widget:hover,
 .add-tab-button.ck-widget.ck-widget_selected,
 .tab-content .ck-widget:hover,
@@ -211,8 +248,8 @@
 .move-left-button .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after,
 .move-right-button .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:before,
 .move-right-button .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after,
-.remove-tab-button .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:before,
-.remove-tab-button .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after,
+.delete-tab-button .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:before,
+.delete-tab-button .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after,
 .add-tab-button .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:before,
 .add-tab-button .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after,
 .tab-content .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:before,
@@ -220,6 +257,7 @@
 .tab-nested-content .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:before,
 .tab-nested-content .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after {
   display: none;
+  z-index: 100;
 }
 .tab-list .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before, .tab-list .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after,
 .tab-list-item .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before,
@@ -232,8 +270,8 @@
 .move-left-button .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after,
 .move-right-button .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before,
 .move-right-button .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after,
-.remove-tab-button .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before,
-.remove-tab-button .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after,
+.delete-tab-button .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before,
+.delete-tab-button .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after,
 .add-tab-button .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before,
 .add-tab-button .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after,
 .tab-content .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before,
@@ -253,8 +291,8 @@
 .move-left-button .ck-widget.ck-widget_selected:hover,
 .move-right-button .ck-widget.ck-widget_selected,
 .move-right-button .ck-widget.ck-widget_selected:hover,
-.remove-tab-button .ck-widget.ck-widget_selected,
-.remove-tab-button .ck-widget.ck-widget_selected:hover,
+.delete-tab-button .ck-widget.ck-widget_selected,
+.delete-tab-button .ck-widget.ck-widget_selected:hover,
 .add-tab-button .ck-widget.ck-widget_selected,
 .add-tab-button .ck-widget.ck-widget_selected:hover,
 .tab-content .ck-widget.ck-widget_selected,
@@ -270,7 +308,7 @@
 .ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .tab-title,
 .ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .move-left-button,
 .ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .move-right-button,
-.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .remove-tab-button,
+.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .delete-tab-button,
 .ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .add-tab-button,
 .ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .tab-content,
 .ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .tab-nested-content,
@@ -280,7 +318,7 @@
 .ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .tab-title,
 .ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .move-left-button,
 .ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .move-right-button,
-.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .remove-tab-button,
+.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .delete-tab-button,
 .ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .add-tab-button,
 .ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .tab-content,
 .ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .tab-nested-content {
@@ -289,4 +327,16 @@
 
 .tab-content.ck-widget:hover {
   outline: none !important;
+}
+
+.ck.ck-widget__type-around__button.ck-widget__type-around__button_before,
+.ck.ck-widget__type-around__button.ck-widget__type-around__button_after {
+  z-index: 100;
+}
+
+.ck-content .tab-nested-content.ck-placeholder::before {
+  content: attr(data-placeholder);
+  color: #999;
+  font-style: italic;
+  pointer-events: none;
 }

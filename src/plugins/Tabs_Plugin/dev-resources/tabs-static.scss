@@ -1,7 +1,9 @@
-$tab-x-padding: 0.5rem;
-$tab-y-padding: 0.75rem;
+$tab-x-padding: 1.5rem;
+$tab-y-padding: 1.75rem;
 
 $tab-border-radius: 0.5rem;
+$tab-border-color: #ddd;
+$tab-border-color-active: #ccc;
 
 $tab-bg: #eee;
 $tab-bg-hover: #fff;
@@ -12,6 +14,8 @@ body {
 }
 
 .tabs-plugin {
+    background-color: #fff;
+
     .tab-list {
         align-items: flex-end;
         display: flex;
@@ -20,29 +24,40 @@ body {
         margin: 0;
         padding: 0;
 
-        .tab-list-item:first-child {
-            .tab-edit-bar {
-                justify-content: flex-end;
+        .tab-list-item {
+            // flex: 1 1 0;
+            font-weight: 700;
+
+            &:first-child {
+                .tab-edit-bar {
+                    justify-content: flex-end;
+                }
+                .move-left-button {
+                    display: none;
+                }
+            }
+            &:last-child {
+                .tab-edit-bar {
+                    .move-right-button {
+                        display: none;
+                    }
+                }
             }
         }
 
         .tab-list-item {
-            flex: 1 1 0;
-            white-space: nowrap;
-        }
-
-        .tab-list-item,
-        .add-tab-list-item {
             align-items: center;
             background-color: $tab-bg;
             border-radius: $tab-border-radius $tab-border-radius 0 0;
-            border: 2px solid #ddd;
+            border: 2px solid $tab-border-color;
             cursor: pointer;
             display: flex;
-            margin-bottom: -2px;
+            flex-direction: column;
+            flex-grow: 0;
+            margin-bottom: -3px;
             // min-width: 6rem;
+            // max-width: 12rem;
             padding: $tab-x-padding $tab-y-padding;
-            position: relative;
 
             &:hover {
                 background-color: $tab-bg-hover;
@@ -51,28 +66,32 @@ body {
             &.active,
             &.active:hover {
                 background-color: $tab-bg-active;
-                border-color: #ddd;
+                border-color: $tab-border-color-active;
                 border-style: solid;
                 border-width: 2px;
-                border-bottom: 2px solid transparent;
+                border-bottom-color: transparent;
+                position: relative;
+                z-index: 3;
             }
 
-            .tab-edit-bar,
-            .title-edit-bar {
-                display: flex;
-                justify-content: space-between;
-                width: 100%;
+            .tab-title {
+                word-wrap: break-word;
             }
 
             .tab-edit-bar {
-                border-bottom: 1px dotted #ccc;
-                margin-bottom: 0.5rem;
+                align-items: center;
+                background-color: #ccffcc;
+                display: flex;
+                justify-content: space-between;
+                width: 100%;
+                // border-bottom: 1px dotted $tab-border-color-active;
+                // margin-bottom: 0.5rem;
             }
         }
 
-        .tab-list-item {
-            flex-direction: column;
-            flex-grow: 0;
+        .add-tab-list-item {
+            // background-color: orange;
+            padding: 0;
         }
     }
 
@@ -89,39 +108,43 @@ body {
     }
 }
 
-.add-tab-list-item::before,
-.remove-tab-button::before,
-.move-left::before,
-.move-right::before,
-.add-tab-list-item:hover::before,
-.remove-tab-button:hover::before,
-.move-left:hover::before,
-.move-right:hover::before {
-    background-repeat: no-repeat;
-    background-size: cover;
-    content: '';
-    display: block;
-    height: 1rem;
-    width: 1rem;
+.add-tab-button,
+.delete-tab-button,
+.move-left-button,
+.move-right-button {
+    background-color: transparent;
+    border: 0;
+    cursor: pointer;
+    padding: 0.5rem;
+
+    &::before,
+    &:hover::before {
+        background-repeat: no-repeat;
+        background-size: cover;
+        content: '';
+        display: block;
+        height: 1rem;
+        width: 1rem;
+    }
+
+    span {
+        align-items: center;
+        display: none;
+    }
 }
 
-.move-left::before {
+.move-left-button::before {
     background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='%23333'/%3E%3C/svg%3E");
 }
 
-.move-right::before {
+.move-right-button::before {
     background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='%23333'/%3E%3C/svg%3E");
 }
 
-.remove-tab-button::before {
+.delete-tab-button::before {
     background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='%23333'/%3E%3C/svg%3E");
-    margin-left: 1rem;
 }
 
-.remove-tab-button:hover::before {
-    background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='%23ff0000'/%3E%3C/svg%3E");
-}
-
-.add-tab-list-item::before {
+.add-tab-button::before {
     background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='%23333'/%3E%3C/svg%3E");
 }

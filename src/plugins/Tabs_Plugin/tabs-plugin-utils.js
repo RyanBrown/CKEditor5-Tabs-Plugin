@@ -65,22 +65,25 @@ export function createTabElement(writer, tabId) {
 
 // Function to create a new tab list item element
 export function createTabListItem(writer, tabId) {
-    console.log(`utils.js - createTabListItem called for #${tabId}`);
     const tabListItem = writer.createElement('tabListItem', {
         'data-target': `#${tabId}`,
         class: 'tab-list-item',
     });
 
-    // Create and append the tabEditBar with the moving and remove buttons
     const tabEditBar = writer.createElement('tabEditBar', { class: 'tab-edit-bar' });
-    appendControlElement(writer, tabEditBar, 'moveLeftButton', tabId);
-    appendControlElement(writer, tabEditBar, 'moveRightButton', tabId);
-    appendControlElement(writer, tabEditBar, 'removeTabButton', tabId);
+    const moveButtonsWrapper = writer.createElement('moveButtonsWrapper', { class: 'move-buttons-wrapper' });
 
-    // Create and append the tab title
+    appendControlElement(writer, moveButtonsWrapper, 'moveLeftButton', 'Move Left', tabId);
+    appendControlElement(writer, moveButtonsWrapper, 'moveRightButton', 'Move Right', tabId);
+
+    writer.append(moveButtonsWrapper, tabEditBar);
+    appendControlElement(writer, tabEditBar, 'deleteTabButton', 'Delete', tabId);
+
     const tabTitle = writer.createElement('tabTitle', { class: 'tab-title' });
-    // Insert placeholder text or actual data
-    writer.insertText(`Tab Name ${tabId}`, tabTitle);
+
+    // Add placeholder text or actual data
+    // writer.insertText(`Tab Name ${tabId}`, tabTitle);
+    writer.insertText(`Tab Name`, tabTitle);
 
     writer.append(tabEditBar, tabListItem);
     writer.append(tabTitle, tabListItem);
@@ -121,17 +124,13 @@ export function createTabContent(writer, tabId) {
         class: 'tab-nested-content',
     });
 
-    // Create a title element for the nested content
-    const tabNestedContentTitle = writer.createElement('tabNestedContentTitle');
-    writer.insertText(`Tab Content ${Date.now()}`, tabNestedContentTitle); // Insert dynamic content, possibly enhance this part
-
-    // Append the title element to the content container
-    writer.append(tabNestedContentTitle, tabNestedContent);
+    // Set the placeholder attribute
+    writer.setAttribute('placeholder', `Tab Content ${tabId}`, tabNestedContent);
 
     return tabNestedContent; // Return the complete tab content element
 }
 
-// Utility function to append control elements like move left, move right, and remove
+// Utility function to append control elements like move left, move right, and delete
 export function appendControlElement(writer, parent, type, title, buttonTitle, tabId) {
     console.log(`utils.js - appendControlElement called for #${tabId} - ${type}`);
     const element = writer.createElement(type, {
@@ -139,21 +138,4 @@ export function appendControlElement(writer, parent, type, title, buttonTitle, t
         title: buttonTitle, // Added title attribute for tooltips
     });
     writer.append(element, parent);
-}
-
-// Helper function to create a list item view element
-export function createListItemView(modelElement, writer) {
-    const li = writer.createContainerElement('li', {
-        class: modelElement.getAttribute('class'),
-        'data-target': modelElement.getAttribute('data-target'),
-    });
-    return li;
-}
-
-// Helper function to create a content div view element
-export function createContentView(modelElement, writer) {
-    return writer.createContainerElement('div', {
-        class: 'tab-content',
-        isContentEditable: false, // Default, can be overridden if needed
-    });
 }

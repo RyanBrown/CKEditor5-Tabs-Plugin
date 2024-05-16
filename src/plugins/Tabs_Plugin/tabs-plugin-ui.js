@@ -50,74 +50,22 @@ export default class TabsPluginUI extends Plugin {
         editor.editing.view.document.on('click', (evt, data) => {
             const target = data.target; // The element that was clicked.
             // Delegating the click events to specific handlers based on the class of the clicked element
-            if (target.hasClass('tab-list-item')) {
-                this._handleTabActivation(editor, target, evt);
-            } else if (target.hasClass('tab-title')) {
-                this._handleTabTitleClick(editor, target, evt);
-            } else if (target.hasClass('remove-tab-button')) {
-                this._handleRemoveTab(editor, target, evt);
-            } else if (target.hasClass('move-left-button') || target.hasClass('move-right-button')) {
-                this._handleMoveTab(editor, target, evt);
+            if (target.hasClass('delete-tab-button')) {
+                this._handleDeleteTab(editor, target, evt);
             } else if (target.hasClass('add-tab-button')) {
                 this._handleAddTab(editor, evt);
+            } else if (target.hasClass('move-left-button')) {
+                this._handleMoveTab(editor, target, evt, 'left');
+            } else if (target.hasClass('move-right-button')) {
+                this._handleMoveTab(editor, target, evt, 'right');
             }
         });
     }
 
-    _handleTabActivation(editor, target, evt) {
-        const tabId = target.getAttribute('data-target').slice(1); // Extract tabId from the data-target attribute.
-        editor.model.change((writer) => {
-            const tabsRoot = editor.model.document.getRoot();
-
-            // Find the tabListItem and tabNestedContent associated with the clicked tab.
-            const tabListItem = this.findTabListItem(tabsRoot, tabId)[0];
-            const tabNestedContent = this.findTabNestedContent(tabsRoot, tabId)[0];
-
-            // Clear existing active classes before setting new ones.
-            this._clearActiveClasses(writer, tabsRoot);
-
-            // Set active class on the clicked tab and its content.
-            if (tabListItem) {
-                const existingClass = tabListItem.getAttribute('class') || '';
-                writer.setAttribute('class', `${existingClass} active`.trim(), tabListItem);
-            }
-            if (tabNestedContent) {
-                const existingClass = tabNestedContent.getAttribute('class') || '';
-                writer.setAttribute('class', `${existingClass} active`.trim(), tabNestedContent);
-            }
-        });
-        evt.stop(); // Prevent further propagation of the click event.
-    }
-
-    _handleTabTitleClick(editor, target, evt) {
-        editor.editing.view.focus(target);
-        evt.stop();
-    }
-
-    _handleRemoveTab(editor, target, evt) {
+    _handleDeleteTab(editor, target, evt) {
         const tabListItem = target.findAncestor('li');
         const tabId = tabListItem.getAttribute('data-target').slice(1).replace('#', '');
-        editor.execute('removeTab', tabId);
-        evt.stop();
-    }
-
-    _handleMoveTab(editor, target, evt) {
-        const tabListItem = target.findAncestor('tabListItem');
-        if (!tabListItem) {
-            console.error('Failed to find the tab list item ancestor.');
-            evt.stop();
-            return; // Stop the function if no tab list item is found
-        }
-
-        const tabId = tabListItem.getAttribute('data-target').slice(1);
-        if (!tabId) {
-            console.error('No tab ID found on the tab list item.');
-            evt.stop();
-            return; // Stop the function if no tab ID is found
-        }
-
-        const direction = target.hasClass('move-left-button') ? -1 : 1;
-        editor.execute('moveTab', { tabId: tabId, direction: direction });
+        editor.execute('deleteTab', tabId);
         evt.stop();
     }
 
@@ -126,26 +74,18 @@ export default class TabsPluginUI extends Plugin {
         evt.stop();
     }
 
-    _clearActiveClasses(writer, tabsRoot) {
-        const allTabListItems = findAllDescendants(tabsRoot, (node) => node.is('element', 'tabListItem'));
-        const allTabNestedContents = findAllDescendants(tabsRoot, (node) => node.is('element', 'tabNestedContent'));
-        allTabListItems.concat(allTabNestedContents).forEach((node) => {
-            const currentClasses = node.getAttribute('class') || '';
-            const updatedClasses = currentClasses
-                .split(' ')
-                .filter((cls) => cls !== 'active')
-                .join(' ');
-            writer.setAttribute('class', updatedClasses, node);
-        });
-    }
+    _handleMoveTab(editor, target, evt, direction) {
+        const tabListItem = target.findAncestor('li');
+        const tabId = tabListItem.getAttribute('data-target').slice(1);
 
-    _setActiveClass(writer, tabListItem, tabNestedContent) {
-        if (tabListItem) {
-            writer.setAttribute('class', (tabListItem.getAttribute('class') || '') + ' active', tabListItem);
+        if (direction === -1) {
+            console.log(`Move Left button clicked for tab with ID: ${tabId}`);
+        } else {
+            console.log(`Move Right button clicked for tab with ID: ${tabId}`);
         }
-        if (tabNestedContent) {
-            writer.setAttribute('class', (tabNestedContent.getAttribute('class') || '') + ' active', tabNestedContent);
-        }
+
+        editor.execute('moveTab', { tabId, direction });
+        evt.stop();
     }
 
     _addNewTab(editor) {

@@ -3,20 +3,19 @@ document.addEventListener('DOMContentLoaded', function () {
     const addTabButton = document.querySelector('.add-tab-list-item');
 
     // Function to add a new tab
+    // Function to add a new tab
     function addTab() {
         const newIndex = tabsContainer.querySelectorAll('.tab-list-item').length + 1;
         const newTab = document.createElement('li');
         newTab.className = 'tab-list-item';
         newTab.dataset.target = `#tab${newIndex}`;
         newTab.innerHTML = `
-        <div class="tab-edit-bar">
-          <button class="move-left" title="move tab left"></button>
-          <button class="move-right" title="move tab right"></button>
-        </div>
-        <div class="title-edit-bar">
-          <div class="tab-title">Tab Name ${newIndex}</div>
-          <div class="remove-tab-button" title="remove tab"></div>
-        </div>`;
+    <div class="tab-edit-bar">
+      <button class="move-left-button" title="Move Tab Left"><span>Move Tab Left</span></button>
+      <button class="move-right-button" title="Move Tab Right"><span>Move Tab Right</span></button>
+      <div class="delete-tab-button" title="Delete Tab"><span>Delete Tab</span></div>
+    </div>
+    <div class="tab-title">Tab Name ${newIndex}</div>`;
         const newContent = document.createElement('div');
         newContent.id = `tab${newIndex}`;
         newContent.className = 'tab-nested-content';
@@ -30,10 +29,12 @@ document.addEventListener('DOMContentLoaded', function () {
     function updateTabVisibility() {
         const tabs = tabsContainer.querySelectorAll('.tab-list-item');
         tabs.forEach((tab, index) => {
-            let [moveLeft, moveRight, removeTab] = tab.querySelectorAll('.move-left, .move-right, .remove-tab-button');
+            let [moveLeft, moveRight, deleteTab] = tab.querySelectorAll(
+                '.move-left-button, .move-right-button, .delete-tab-button'
+            );
             moveLeft.style.display = index === 0 ? 'none' : '';
             moveRight.style.display = index === tabs.length - 1 ? 'none' : '';
-            removeTab.style.display = tabs.length > 1 ? '' : 'none';
+            deleteTab.style.display = tabs.length > 1 ? '' : 'none';
         });
     }
 
@@ -49,22 +50,31 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Remove a tab and its content
-    function removeTab(tab) {
-        const targetContent = document.querySelector(tab.dataset.target);
-        tab.remove();
-        targetContent.remove();
-        updateTabVisibility();
+    function deleteTab(tab) {
+        const tabs = tabsContainer.querySelectorAll('.tab-list-item');
+        if (tabs.length > 1) {
+            const targetContent = document.querySelector(tab.dataset.target);
+            tab.remove();
+            targetContent.remove();
+            if (!tabsContainer.querySelector('.tab-list-item.active')) {
+                tabsContainer.querySelector('.tab-list-item').classList.add('active');
+                document
+                    .querySelector(tabsContainer.querySelector('.tab-list-item').dataset.target)
+                    .classList.add('active');
+            }
+            updateTabVisibility();
+        }
     }
 
     // Event delegation for handling all tab interactions
     tabsContainer.addEventListener('click', function (e) {
         const tab = e.target.closest('.tab-list-item');
-        if (e.target.matches('.move-left')) {
+        if (e.target.matches('.move-left-button')) {
             moveTab(tab, -1);
-        } else if (e.target.matches('.move-right')) {
+        } else if (e.target.matches('.move-right-button')) {
             moveTab(tab, 1);
-        } else if (e.target.matches('.remove-tab-button')) {
-            removeTab(tab);
+        } else if (e.target.matches('.delete-tab-button')) {
+            deleteTab(tab);
         } else if (tab) {
             setActiveTab(tab);
         }

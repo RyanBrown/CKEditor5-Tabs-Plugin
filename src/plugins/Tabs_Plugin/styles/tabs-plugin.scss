@@ -4,15 +4,15 @@ $tab-y-padding: 1.75rem;
 $tab-border-radius: 0.5rem;
 $tab-border-color: #ddd;
 $tab-border-color-active: #ccc;
+$tab-border-width: 2px;
 
 $tab-bg: #eee;
 $tab-bg-hover: #fff;
 $tab-bg-active: #fff;
-// $tab-bg-active: #c4ecf4;
 
 .tabs-plugin {
-    // background-color: #3448c5;
     background-color: #fff;
+    margin-bottom: calc($tab-border-width * 2);
 
     .tab-list {
         align-items: flex-end;
@@ -23,40 +23,20 @@ $tab-bg-active: #fff;
         padding: 0;
 
         .tab-list-item {
-            flex: 1 1 0;
-            font-weight: 700;
-            // white-space: nowrap;
-
-            &:first-child {
-                .tab-edit-bar {
-                    justify-content: flex-end;
-                }
-                .move-left-button {
-                    display: none;
-                }
-            }
-            &:last-child {
-                .tab-edit-bar {
-                    .move-right-button {
-                        display: none;
-                    }
-                }
-            }
-        }
-
-        .tab-list-item {
             align-items: center;
             background-color: $tab-bg;
             border-radius: $tab-border-radius $tab-border-radius 0 0;
-            border: 2px solid $tab-border-color;
+            border: $tab-border-width solid $tab-border-color;
             cursor: pointer;
             display: flex;
             flex-direction: column;
             flex-grow: 0;
-            margin-bottom: -3px;
-            // min-width: 6rem;
-            // max-width: 12rem;
+            margin-bottom: -$tab-border-width;
+            margin-top: $tab-border-width;
+            max-width: 20rem;
+            min-width: 10rem;
             padding: $tab-x-padding $tab-y-padding;
+            position: relative;
 
             &:hover {
                 background-color: $tab-bg-hover;
@@ -65,41 +45,64 @@ $tab-bg-active: #fff;
             &.active,
             &.active:hover {
                 background-color: $tab-bg-active;
-                border-color: $tab-border-color-active;
-                border-style: solid;
-                border-width: 2px;
-                border-bottom-color: transparent;
+                border: $tab-border-width solid $tab-border-color-active;
                 position: relative;
-                z-index: 101;
+                z-index: 3;
+
+                &::after {
+                    background-color: $tab-bg-active;
+                    bottom: -$tab-border-width;
+                    content: '';
+                    display: block;
+                    height: $tab-border-width;
+                    left: 0;
+                    position: absolute;
+                    width: 100%;
+                }
             }
 
             .tab-title {
+                display: block;
+                font-weight: 700;
+                position: relative;
+                text-align: center;
+                width: 100%;
                 word-wrap: break-word;
             }
+            // Align the 'move-right-button' right and hide the 'move-left-button'
+            &:first-child .tab-edit-bar > .move-buttons-wrapper {
+                justify-content: flex-end;
 
-            .tab-edit-bar {
-                align-items: center;
-                background-color: #ccffcc;
-                display: flex;
-                justify-content: space-between;
-                width: 100%;
-                // border-bottom: 1px dotted $tab-border-color-active;
-                // margin-bottom: 0.5rem;
+                .move-left-button {
+                    display: none;
+                }
+            }
+            // Align the 'move-left-button' left and hide the 'move-right-button'
+            &:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper {
+                justify-content: flex-start;
+
+                .move-right-button {
+                    display: none;
+                }
+            }
+            // Hide the 'delete-tab-button' if only one tab is visible
+            &:nth-last-child(2):first-child {
+                .tab-edit-bar > .delete-tab-button {
+                    display: none;
+                }
             }
         }
 
         .add-tab-list-item {
-            // background-color: orange;
             padding: 0;
         }
     }
 
     .tab-content {
         background-color: $tab-bg-active;
-        border: 2px solid $tab-border-color-active;
-        // min-height: 6rem;
+        border: $tab-border-width solid $tab-border-color-active;
         position: relative;
-        z-index: 100;
+        z-index: 2;
 
         .tab-nested-content {
             display: none;
@@ -107,8 +110,6 @@ $tab-bg-active: #fff;
             width: 100%;
 
             &.active {
-                background-color: $tab-bg-active;
-                // border: 2px solid $tab-border-color-active;
                 display: block;
                 padding: 1rem;
             }
@@ -116,13 +117,27 @@ $tab-bg-active: #fff;
     }
 }
 
+// Editing Buttons
+.tab-edit-bar {
+    align-items: center;
+    display: flex;
+    width: 100%;
+
+    .move-buttons-wrapper {
+        display: flex;
+        flex: 1 1 0;
+        justify-content: space-between;
+    }
+}
+
 .add-tab-button,
-.remove-tab-button,
+.delete-tab-button,
 .move-left-button,
 .move-right-button {
     background-color: transparent;
     border: 0;
     cursor: pointer;
+    padding: 0.5rem;
 
     &::before,
     &:hover::before {
@@ -134,7 +149,14 @@ $tab-bg-active: #fff;
         width: 1rem;
     }
 
+    &:focus,
+    &:active {
+        background-color: orange;
+        border-radius: $tab-border-radius;
+    }
+
     span {
+        align-items: center;
         display: none;
     }
 }
@@ -143,29 +165,40 @@ $tab-bg-active: #fff;
     padding: $tab-x-padding $tab-y-padding;
 }
 
-.move-left-button::before {
-    background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='%23333'/%3E%3C/svg%3E");
+.move-left-button {
+    &::before {
+        background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='#333333'/%3E%3C/svg%3E");
+    }
+    &:hover::before {
+        background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='#266de2'/%3E%3C/svg%3E");
+    }
 }
 
-.move-right-button::before {
-    background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='%23333'/%3E%3C/svg%3E");
+.move-right-button {
+    &::before {
+        background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='#333333'/%3E%3C/svg%3E");
+    }
+    &:hover::before {
+        background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='#266de2'/%3E%3C/svg%3E");
+    }
 }
 
-.remove-tab-button::before {
-    background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='%23333'/%3E%3C/svg%3E");
-    margin-left: 1rem;
+.delete-tab-button {
+    &::before {
+        background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='#333333'/%3E%3C/svg%3E");
+    }
+    &:hover::before {
+        background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='#ff0000'/%3E%3C/svg%3E");
+    }
 }
 
-.remove-tab-button:hover::before {
-    background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='%23ff0000'/%3E%3C/svg%3E");
-}
-
-.add-tab-button::before {
-    background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='%23333'/%3E%3C/svg%3E");
-}
-
-.add-tab-button:hover::before {
-    background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#066500'/%3E%3C/svg%3E");
+.add-tab-button {
+    &::before {
+        background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#333333'/%3E%3C/svg%3E");
+    }
+    &:hover::before {
+        background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#266de2'/%3E%3C/svg%3E");
+    }
 }
 
 // hide outline on elements
@@ -174,7 +207,7 @@ $tab-bg-active: #fff;
 .tab-edit-bar,
 .move-left-button,
 .move-right-button,
-.remove-tab-button,
+.delete-tab-button,
 .add-tab-button,
 .tab-content,
 .tab-nested-content {
@@ -193,7 +226,7 @@ $tab-bg-active: #fff;
 .tab-title,
 .move-left-button,
 .move-right-button,
-.remove-tab-button,
+.delete-tab-button,
 .add-tab-button,
 .tab-content,
 .tab-nested-content {
@@ -213,6 +246,7 @@ $tab-bg-active: #fff;
                 &:before,
                 &:after {
                     display: none;
+                    z-index: 100;
                 }
             }
         }
@@ -238,7 +272,7 @@ $tab-bg-active: #fff;
     .tab-title,
     .move-left-button,
     .move-right-button,
-    .remove-tab-button,
+    .delete-tab-button,
     .add-tab-button,
     .tab-content,
     .tab-nested-content {
@@ -250,7 +284,20 @@ $tab-bg-active: #fff;
     outline: none !important;
 }
 
+// Set the z-index higher than the tabs
+.ck.ck-widget__type-around__button.ck-widget__type-around__button_before,
+.ck.ck-widget__type-around__button.ck-widget__type-around__button_after {
+    z-index: 100;
+}
+
 // remove the before/after arrows to insert plugin
 // .ck-widget__type-around {
 //   display: none;
 // }
+
+.ck-content .tab-nested-content.ck-placeholder::before {
+    content: attr(data-placeholder);
+    color: #999;
+    font-style: italic;
+    pointer-events: none;
+}
