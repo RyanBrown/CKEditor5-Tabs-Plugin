@@ -10,13 +10,11 @@ document.addEventListener('DOMContentLoaded', function () {
         newTab.dataset.target = `#tab${newIndex}`;
         newTab.innerHTML = `
         <div class="tab-edit-bar">
-          <button class="move-left" title="Move Tab Left"></button>
-          <button class="move-right" title="Move Tab Right"></button>
+          <button class="move-left-button" title="Move Tab Left"><span>Move Tab Left</span></button>
+          <button class="move-right-button" title="Move Tab Right"><span>Move Tab Right</span></button>
+          <div class="delete-tab-button" title="Delete Tab"><span>Delete Tab</span></div>
         </div>
-        <div class="title-edit-bar">
-          <div class="tab-title">Tab Name ${newIndex}</div>
-          <div class="delete-tab-button" title="Delete Tab"></div>
-        </div>`;
+        <div class="tab-title">Tab Name ${newIndex}</div>`;
         const newContent = document.createElement('div');
         newContent.id = `tab${newIndex}`;
         newContent.className = 'tab-nested-content';
@@ -30,7 +28,9 @@ document.addEventListener('DOMContentLoaded', function () {
     function updateTabVisibility() {
         const tabs = tabsContainer.querySelectorAll('.tab-list-item');
         tabs.forEach((tab, index) => {
-            let [moveLeft, moveRight, deleteTab] = tab.querySelectorAll('.move-left, .move-right, .delete-tab-button');
+            let [moveLeft, moveRight, deleteTab] = tab.querySelectorAll(
+                '.move-left-button, .move-right-button, .delete-tab-button'
+            );
             moveLeft.style.display = index === 0 ? 'none' : '';
             moveRight.style.display = index === tabs.length - 1 ? 'none' : '';
             deleteTab.style.display = tabs.length > 1 ? '' : 'none';
@@ -59,9 +59,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // Event delegation for handling all tab interactions
     tabsContainer.addEventListener('click', function (e) {
         const tab = e.target.closest('.tab-list-item');
-        if (e.target.matches('.move-left')) {
+        if (e.target.matches('.move-left-button')) {
             moveTab(tab, -1);
-        } else if (e.target.matches('.move-right')) {
+        } else if (e.target.matches('.move-right-button')) {
             moveTab(tab, 1);
         } else if (e.target.matches('.delete-tab-button')) {
             deleteTab(tab);

@@ -91,12 +91,12 @@ body {
 
 .add-tab-list-item::before,
 .delete-tab-button::before,
-.move-left::before,
-.move-right::before,
+.move-left-button::before,
+.move-right-button::before,
 .add-tab-list-item:hover::before,
 .delete-tab-button:hover::before,
-.move-left:hover::before,
-.move-right:hover::before {
+.move-left-button:hover::before,
+.move-right-button:hover::before {
     background-repeat: no-repeat;
     background-size: cover;
     content: '';
@@ -105,11 +105,11 @@ body {
     width: 1rem;
 }
 
-.move-left::before {
+.move-left-button::before {
     background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='%23333'/%3E%3C/svg%3E");
 }
 
-.move-right::before {
+.move-right-button::before {
     background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='%23333'/%3E%3C/svg%3E");
 }
 
