@@ -1,7 +1,9 @@
-$tab-x-padding: 0.5rem;
-$tab-y-padding: 0.75rem;
+$tab-x-padding: 1.5rem;
+$tab-y-padding: 1.75rem;
 
 $tab-border-radius: 0.5rem;
+$tab-border-color: #ddd;
+$tab-border-color-active: #ccc;
 
 $tab-bg: #eee;
 $tab-bg-hover: #fff;
@@ -12,6 +14,8 @@ body {
 }
 
 .tabs-plugin {
+    background-color: #fff;
+
     .tab-list {
         align-items: flex-end;
         display: flex;
@@ -20,29 +24,40 @@ body {
         margin: 0;
         padding: 0;
 
-        .tab-list-item:first-child {
-            .tab-edit-bar {
-                justify-content: flex-end;
+        .tab-list-item {
+            // flex: 1 1 0;
+            font-weight: 700;
+
+            &:first-child {
+                .tab-edit-bar {
+                    justify-content: flex-end;
+                }
+                .move-left-button {
+                    display: none;
+                }
+            }
+            &:last-child {
+                .tab-edit-bar {
+                    .move-right-button {
+                        display: none;
+                    }
+                }
             }
         }
 
         .tab-list-item {
-            flex: 1 1 0;
-            white-space: nowrap;
-        }
-
-        .tab-list-item,
-        .add-tab-list-item {
             align-items: center;
             background-color: $tab-bg;
             border-radius: $tab-border-radius $tab-border-radius 0 0;
-            border: 2px solid #ddd;
+            border: 2px solid $tab-border-color;
             cursor: pointer;
             display: flex;
-            margin-bottom: -2px;
+            flex-direction: column;
+            flex-grow: 0;
+            margin-bottom: -3px;
             // min-width: 6rem;
+            // max-width: 12rem;
             padding: $tab-x-padding $tab-y-padding;
-            position: relative;
 
             &:hover {
                 background-color: $tab-bg-hover;
@@ -51,10 +66,16 @@ body {
             &.active,
             &.active:hover {
                 background-color: $tab-bg-active;
-                border-color: #ddd;
+                border-color: $tab-border-color-active;
                 border-style: solid;
                 border-width: 2px;
-                border-bottom: 2px solid transparent;
+                border-bottom-color: transparent;
+                position: relative;
+                z-index: 3;
+            }
+
+            .tab-title {
+                word-wrap: break-word;
             }
 
             .tab-edit-bar {
@@ -63,12 +84,14 @@ body {
                 display: flex;
                 justify-content: space-between;
                 width: 100%;
+                // border-bottom: 1px dotted $tab-border-color-active;
+                // margin-bottom: 0.5rem;
             }
         }
 
-        .tab-list-item {
-            flex-direction: column;
-            flex-grow: 0;
+        .add-tab-list-item {
+            // background-color: orange;
+            padding: 0;
         }
     }
 
