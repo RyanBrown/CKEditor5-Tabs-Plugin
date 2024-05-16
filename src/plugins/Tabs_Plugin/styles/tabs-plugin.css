@@ -9,17 +9,16 @@
   margin: 0;
   padding: 0;
 }
-.tabs-plugin .tab-list .tab-list-item {
-  flex: 1 1 0;
-  font-weight: 700;
-}
-.tabs-plugin .tab-list .tab-list-item:first-child .tab-edit-bar {
+.tabs-plugin .tab-list .tab-list-item:first-child .tab-edit-bar > .move-buttons-wrapper {
   justify-content: flex-end;
 }
-.tabs-plugin .tab-list .tab-list-item:first-child .move-left-button {
+.tabs-plugin .tab-list .tab-list-item:first-child .tab-edit-bar > .move-buttons-wrapper .move-left-button {
   display: none;
 }
-.tabs-plugin .tab-list .tab-list-item:last-child .tab-edit-bar .move-right-button {
+.tabs-plugin .tab-list .tab-list-item:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper {
+  justify-content: flex-start;
+}
+.tabs-plugin .tab-list .tab-list-item:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper .move-right-button {
   display: none;
 }
 .tabs-plugin .tab-list .tab-list-item {
@@ -33,6 +32,8 @@
   flex-grow: 0;
   margin-bottom: -2px;
   margin-top: 2px;
+  max-width: 20rem;
+  min-width: 10rem;
   padding: 1.5rem 1.75rem;
   position: relative;
 }
@@ -58,6 +59,7 @@
 .tabs-plugin .tab-list .tab-list-item .tab-title {
   background: aliceblue;
   display: block;
+  font-weight: 700;
   position: relative;
   text-align: center;
   width: 100%;

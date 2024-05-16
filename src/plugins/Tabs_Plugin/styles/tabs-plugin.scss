@@ -23,23 +23,17 @@ $tab-bg-active: #fff;
         padding: 0;
 
         .tab-list-item {
-            flex: 1 1 0;
-            font-weight: 700;
-            // white-space: nowrap;
-
-            &:first-child {
-                .tab-edit-bar {
-                    justify-content: flex-end;
-                }
+            &:first-child .tab-edit-bar > .move-buttons-wrapper {
+                justify-content: flex-end;
                 .move-left-button {
                     display: none;
                 }
             }
-            &:last-child {
-                .tab-edit-bar {
-                    .move-right-button {
-                        display: none;
-                    }
+            &:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper {
+                justify-content: flex-start;
+
+                .move-right-button {
+                    display: none;
                 }
             }
         }
@@ -55,8 +49,8 @@ $tab-bg-active: #fff;
             flex-grow: 0;
             margin-bottom: -2px;
             margin-top: 2px;
-            // min-width: 6rem;
-            // max-width: 12rem;
+            max-width: 20rem;
+            min-width: 10rem;
             padding: $tab-x-padding $tab-y-padding;
             position: relative;
 
@@ -86,6 +80,7 @@ $tab-bg-active: #fff;
             .tab-title {
                 background: aliceblue;
                 display: block;
+                font-weight: 700;
                 position: relative;
                 text-align: center;
                 width: 100%;

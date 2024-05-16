@@ -80,7 +80,10 @@ export function createTabListItem(writer, tabId) {
     appendControlElement(writer, tabEditBar, 'deleteTabButton', 'Delete', tabId);
 
     const tabTitle = writer.createElement('tabTitle', { class: 'tab-title' });
+
+    // Add placeholder text or actual data
     // writer.insertText(`Tab Name ${tabId}`, tabTitle);
+    writer.insertText(`Tab Name`, tabTitle);
 
     writer.append(tabEditBar, tabListItem);
     writer.append(tabTitle, tabListItem);
