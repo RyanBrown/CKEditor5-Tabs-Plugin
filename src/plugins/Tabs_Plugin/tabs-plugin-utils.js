@@ -121,12 +121,8 @@ export function createTabContent(writer, tabId) {
         class: 'tab-nested-content',
     });
 
-    // Create a title element for the nested content
-    const tabNestedContentTitle = writer.createElement('tabNestedContentTitle');
-    writer.insertText(`Tab Content ${Date.now()}`, tabNestedContentTitle); // Insert dynamic content, possibly enhance this part
-
-    // Append the title element to the content container
-    writer.append(tabNestedContentTitle, tabNestedContent);
+    // Set the placeholder attribute
+    writer.setAttribute('placeholder', `Tab Content ${tabId}`, tabNestedContent);
 
     return tabNestedContent; // Return the complete tab content element
 }

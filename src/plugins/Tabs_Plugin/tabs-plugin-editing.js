@@ -76,7 +76,7 @@ export default class TabsPluginEditing extends Plugin {
         // Define schema for 'deleteTabButton' element
         schema.register('deleteTabButton', {
             isObject: true,
-            allowIn: 'tabTitleEditBar',
+            allowIn: 'tabEditBar',
             isBlock: true,
             allowAttributes: ['class', 'title'],
         });
@@ -106,15 +106,9 @@ export default class TabsPluginEditing extends Plugin {
         // Define schema for 'tabNestedContent' element
         schema.register('tabNestedContent', {
             allowIn: 'tabContent',
-            allowAttributes: ['id', 'class'],
+            allowAttributes: ['id', 'class', 'placeholder'],
             isObject: true,
             allowContentOf: '$block',
-            isLimit: true,
-        });
-
-        // Define schema for 'tabNestedContentTitle' element
-        schema.register('tabNestedContentTitle', {
-            allowIn: 'tabNestedContent',
             isLimit: true,
         });
     }
@@ -185,12 +179,11 @@ export default class TabsPluginEditing extends Plugin {
         conversion.for('editingDowncast').elementToElement({
             model: 'tabListItem',
             view: (modelElement, { writer: viewWriter }) => {
-                const li = viewWriter.createEditableElement('li', {
+                const li = viewWriter.createContainerElement('li', {
                     class: modelElement.getAttribute('class'),
                     'data-target': modelElement.getAttribute('data-target'),
-                    isContentEditable: true, // Making the element editable directly
                 });
-                return li;
+                return toWidget(li, viewWriter, { label: 'Tab List Item' });
             },
         });
 
@@ -439,7 +432,7 @@ export default class TabsPluginEditing extends Plugin {
                 return writer.createContainerElement('div', {
                     class: 'tab-nested-content',
                     id: modelElement.getAttribute('id'),
-                    contenteditable: 'true',
+                    'data-placeholder': modelElement.getAttribute('placeholder'),
                 });
             },
         });
@@ -449,31 +442,9 @@ export default class TabsPluginEditing extends Plugin {
                 const div = writer.createEditableElement('div', {
                     class: modelElement.getAttribute('class'),
                     id: modelElement.getAttribute('id'),
-                    isContentEditable: true,
+                    'data-placeholder': modelElement.getAttribute('placeholder'),
                 });
                 return div;
-            },
-        });
-
-        // Converters for 'tabNestedContentTitle' element
-        conversion.for('upcast').elementToElement({
-            model: 'tabNestedContentTitle',
-            view: { name: 'div', classes: 'tab-nested-content-title' },
-        });
-        conversion.for('dataDowncast').elementToElement({
-            model: 'tabNestedContentTitle',
-            view: (modelElement, { writer: viewWriter }) => {
-                return viewWriter.createEditableElement('div', {
-                    class: 'tab-nested-content-title',
-                });
-            },
-        });
-        conversion.for('editingDowncast').elementToElement({
-            model: 'tabNestedContentTitle',
-            view: (modelElement, { writer: viewWriter }) => {
-                return viewWriter.createEditableElement('div', {
-                    class: 'tab-nested-content-title',
-                });
             },
         });
     }

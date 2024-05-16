@@ -79,7 +79,7 @@ $tab-bg-active: #fff;
 
             .tab-edit-bar {
                 align-items: center;
-                background-color: #ccffcc;
+                // background-color: #ccffcc;
                 display: flex;
                 justify-content: space-between;
                 width: 100%;
@@ -89,7 +89,6 @@ $tab-bg-active: #fff;
         }
 
         .add-tab-list-item {
-            // background-color: orange;
             padding: 0;
         }
     }
@@ -133,6 +132,11 @@ $tab-bg-active: #fff;
         display: block;
         height: 1rem;
         width: 1rem;
+    }
+
+    &:focus,
+    &:active {
+        background-color: orange;
     }
 
     span {

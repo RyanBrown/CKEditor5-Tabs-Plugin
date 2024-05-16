@@ -51,7 +51,6 @@
 }
 .tabs-plugin .tab-list .tab-list-item .tab-edit-bar {
   align-items: center;
-  background-color: #ccffcc;
   display: flex;
   justify-content: space-between;
   width: 100%;
@@ -98,6 +97,15 @@
   display: block;
   height: 1rem;
   width: 1rem;
+}
+.add-tab-button:focus, .add-tab-button:active,
+.delete-tab-button:focus,
+.delete-tab-button:active,
+.move-left-button:focus,
+.move-left-button:active,
+.move-right-button:focus,
+.move-right-button:active {
+  background-color: orange;
 }
 .add-tab-button span,
 .delete-tab-button span,

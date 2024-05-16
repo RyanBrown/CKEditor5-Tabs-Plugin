@@ -2,7 +2,7 @@ import { Command } from '@ckeditor/ckeditor5-core';
 import { createTabElement, findAllDescendants } from './tabs-plugin-utils';
 
 export function generateTabId() {
-    return `tabs-plugin-command_tabId_${Date.now()}`;
+    return `id_${Date.now()}`;
 }
 
 export class TabsPluginCommand extends Command {
@@ -40,14 +40,16 @@ export class MoveTabCommand extends Command {
 
         model.change((writer) => {
             const tabsRoot = model.document.getRoot();
-            const tabList = tabsRoot.getChild(0);
-            const tabs = Array.from(tabList.getChildren());
-            const currentTabIndex = tabs.findIndex((tab) => tab.getAttribute('data-target') === `#${tabId}`);
+            const tabListItems = findAllDescendants(tabsRoot, (node) => node.is('element', 'tabListItem'));
 
+            const currentTabIndex = tabListItems.findIndex((item) => item.getAttribute('data-target') === `#${tabId}`);
             const targetIndex = currentTabIndex + direction;
-            if (targetIndex >= 0 && targetIndex < tabs.length) {
-                const position = writer.createPositionAt(tabList, targetIndex);
-                writer.move(writer.createRangeOn(tabs[currentTabIndex]), position);
+
+            if (targetIndex >= 0 && targetIndex < tabListItems.length - 1) {
+                writer.move(
+                    writer.createRangeOn(tabListItems[currentTabIndex]),
+                    writer.createPositionAt(tabListItems[targetIndex], direction === 1 ? 'after' : 'before')
+                );
             }
         });
     }
