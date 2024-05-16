@@ -49,10 +49,17 @@ export default class TabsPluginEditing extends Plugin {
             allowAttributes: ['class'],
         });
 
+        // Define schema for 'moveButtonsWrapper' element
+        schema.register('moveButtonsWrapper', {
+            isObject: true,
+            allowIn: 'tabEditBar',
+            allowAttributes: ['class'],
+        });
+
         // Define schema for 'moveLeftButton' element
         schema.register('moveLeftButton', {
             isObject: true,
-            allowIn: 'tabEditBar',
+            allowIn: 'moveButtonsWrapper',
             allowAttributes: ['class', 'title'],
             allowContentOf: [], // Disallow all content within the button
         });
@@ -60,24 +67,21 @@ export default class TabsPluginEditing extends Plugin {
         // Define schema for 'moveRightButton' element
         schema.register('moveRightButton', {
             isObject: true,
-            allowIn: 'tabEditBar',
+            allowIn: 'moveButtonsWrapper',
             allowAttributes: ['class', 'title'],
             allowContentOf: [], // Disallow all content within the button
         });
 
         // Define schema for 'tabTitle' element
         schema.register('tabTitle', {
-            allowWhere: '$text', // Allows the element to be where text can be
-            isInline: true, // It's an inline element
-            allowContentOf: '$block', // Allows block content, you might adjust this depending on needs
-            allowAttributes: ['class', 'id'], // Optional: Allow additional attributes if needed
+            allowIn: 'tabListItem',
+            allowAttributes: ['class'],
         });
 
         // Define schema for 'deleteTabButton' element
         schema.register('deleteTabButton', {
             isObject: true,
             allowIn: 'tabEditBar',
-            isBlock: true,
             allowAttributes: ['class', 'title'],
         });
 
@@ -91,9 +95,8 @@ export default class TabsPluginEditing extends Plugin {
         // Define schema for 'addTabListItem' element
         schema.register('addTabButton', {
             isObject: true,
-            allowIn: 'tabList',
+            allowIn: 'addTabListItem',
             allowAttributes: ['class', 'title'],
-            allowContentOf: [], // Disallow all content within the button
         });
 
         // Define schema for 'tabContent' element
@@ -206,17 +209,35 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer: viewWriter }) => {
                 const div = viewWriter.createContainerElement('div', {
                     class: 'tab-edit-bar',
-                    isContentEditable: false,
                 });
                 return div;
             },
         });
 
+        // Convert 'moveButtonsWrapper' element
+        conversion.for('upcast').elementToElement({
+            model: 'moveButtonsWrapper',
+            view: { name: 'div', classes: 'move-buttons-wrapper' },
+        });
+        conversion.for('dataDowncast').elementToElement({
+            model: 'moveButtonsWrapper',
+            view: (modelElement, { writer }) =>
+                writer.createContainerElement('div', {
+                    class: 'move-buttons-wrapper',
+                }),
+        });
+        conversion.for('editingDowncast').elementToElement({
+            model: 'moveButtonsWrapper',
+            view: (modelElement, { writer }) =>
+                writer.createContainerElement('div', {
+                    class: 'move-buttons-wrapper',
+                }),
+        });
+
         // Converters for 'moveLeftButton' element (HTML to Model)
-        // Optionally disable or remove this if you don't want 'moveLeftButton' to be created from HTML content
         conversion.for('upcast').elementToElement({
             model: 'moveLeftButton',
-            view: (viewElement) => !viewElement,
+            view: { name: 'button', classes: 'move-left-button' },
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'moveLeftButton',
@@ -238,7 +259,6 @@ export default class TabsPluginEditing extends Plugin {
                 const button = writer.createContainerElement('button', {
                     class: 'move-left-button',
                     title: modelElement.getAttribute('title') || 'Move Tab Left',
-                    isContentEditable: false, // Buttons shouldn't be editable
                 });
                 // Create and insert the span with text
                 const textSpan = writer.createContainerElement('span');
@@ -249,10 +269,9 @@ export default class TabsPluginEditing extends Plugin {
         });
 
         // Converters for 'moveRightButton' element
-        // Optionally disable or remove this if you don't want 'moveRightButton' to be created from HTML content
         conversion.for('upcast').elementToElement({
             model: 'moveRightButton',
-            view: (viewElement) => !viewElement,
+            view: { name: 'button', classes: 'move-right-button' },
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'moveRightButton',
@@ -274,7 +293,6 @@ export default class TabsPluginEditing extends Plugin {
                 const button = writer.createContainerElement('button', {
                     class: 'move-right-button',
                     title: modelElement.getAttribute('title') || 'Move Tab Right',
-                    isContentEditable: false, // Buttons shouldn't be editable
                 });
                 // Create and insert the span with text
                 const textSpan = writer.createContainerElement('span');
@@ -292,18 +310,19 @@ export default class TabsPluginEditing extends Plugin {
         conversion.for('dataDowncast').elementToElement({
             model: 'tabTitle',
             view: (modelElement, { writer }) => {
-                return writer.createEditableElement('span', { class: 'tab-title' });
+                return writer.createContainerElement('div', {
+                    class: 'tab-title',
+                });
             },
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabTitle',
             view: (modelElement, { writer }) => {
-                const span = writer.createEditableElement('span', {
+                const div = writer.createEditableElement('div', {
                     class: 'tab-title',
                     contenteditable: 'true', // Explicitly making it editable
                 });
-                // This ensures the editor knows to engage with this element
-                return span;
+                return toWidgetEditable(div, writer);
             },
         });
 

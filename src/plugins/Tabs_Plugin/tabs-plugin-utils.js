@@ -65,21 +65,21 @@ export function createTabElement(writer, tabId) {
 
 // Function to create a new tab list item element
 export function createTabListItem(writer, tabId) {
-    console.log(`utils.js - createTabListItem called for #${tabId}`);
     const tabListItem = writer.createElement('tabListItem', {
         'data-target': `#${tabId}`,
         class: 'tab-list-item',
     });
 
-    // Create and append the tabEditBar with the moving and delete buttons
     const tabEditBar = writer.createElement('tabEditBar', { class: 'tab-edit-bar' });
-    appendControlElement(writer, tabEditBar, 'moveLeftButton', tabId);
-    appendControlElement(writer, tabEditBar, 'moveRightButton', tabId);
-    appendControlElement(writer, tabEditBar, 'deleteTabButton', tabId);
+    const moveButtonsWrapper = writer.createElement('moveButtonsWrapper', { class: 'move-buttons-wrapper' });
 
-    // Create and append the tab title
+    appendControlElement(writer, moveButtonsWrapper, 'moveLeftButton', 'Move Left', tabId);
+    appendControlElement(writer, moveButtonsWrapper, 'moveRightButton', 'Move Right', tabId);
+
+    writer.append(moveButtonsWrapper, tabEditBar);
+    appendControlElement(writer, tabEditBar, 'deleteTabButton', 'Delete', tabId);
+
     const tabTitle = writer.createElement('tabTitle', { class: 'tab-title' });
-    // Insert placeholder text or actual data
     writer.insertText(`Tab Name ${tabId}`, tabTitle);
 
     writer.append(tabEditBar, tabListItem);
