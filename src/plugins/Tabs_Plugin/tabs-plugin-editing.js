@@ -299,9 +299,7 @@ export default class TabsPluginEditing extends Plugin {
         conversion.for('dataDowncast').elementToElement({
             model: 'tabTitle',
             view: (modelElement, { writer }) => {
-                const span = writer.createEditableElement('span', { class: 'tab-title' });
-                // Ensure text content is inserted properly
-                return span;
+                return writer.createEditableElement('span', { class: 'tab-title' });
             },
         });
         conversion.for('editingDowncast').elementToElement({
@@ -311,7 +309,7 @@ export default class TabsPluginEditing extends Plugin {
                     class: 'tab-title',
                     contenteditable: 'true', // Explicitly making it editable
                 });
-                // This must be handled carefully; perhaps you should only set up the container here
+                // This ensures the editor knows to engage with this element
                 return span;
             },
         });
