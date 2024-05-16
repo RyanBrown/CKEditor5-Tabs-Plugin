@@ -140,20 +140,3 @@ export function appendControlElement(writer, parent, type, title, buttonTitle, t
     });
     writer.append(element, parent);
 }
-
-// Helper function to create a list item view element
-export function createListItemView(modelElement, writer) {
-    const li = writer.createContainerElement('li', {
-        class: modelElement.getAttribute('class'),
-        'data-target': modelElement.getAttribute('data-target'),
-    });
-    return li;
-}
-
-// Helper function to create a content div view element
-export function createContentView(modelElement, writer) {
-    return writer.createContainerElement('div', {
-        class: 'tab-content',
-        isContentEditable: false, // Default, can be overridden if needed
-    });
-}
