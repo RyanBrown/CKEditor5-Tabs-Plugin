@@ -6,7 +6,7 @@ export default class TabsPluginUI extends Plugin {
     _registerEventHandlers(editor: any): void;
     _handleTabActivation(editor: any, target: any, evt: any): void;
     _handleTabTitleClick(editor: any, target: any, evt: any): void;
-    _handleRemoveTab(editor: any, target: any, evt: any): void;
+    _handleDeleteTab(editor: any, target: any, evt: any): void;
     _handleMoveTab(editor: any, target: any, evt: any): void;
     _handleAddTab(editor: any, evt: any): void;
     _clearActiveClasses(writer: any, tabsRoot: any): void;

@@ -117,7 +117,7 @@ $tab-bg-active: #fff;
 }
 
 .add-tab-button,
-.remove-tab-button,
+.delete-tab-button,
 .move-left-button,
 .move-right-button {
     background-color: transparent;
@@ -163,7 +163,7 @@ $tab-bg-active: #fff;
     }
 }
 
-.remove-tab-button {
+.delete-tab-button {
     &::before {
         background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='#333333'/%3E%3C/svg%3E");
     }
@@ -187,7 +187,7 @@ $tab-bg-active: #fff;
 .tab-edit-bar,
 .move-left-button,
 .move-right-button,
-.remove-tab-button,
+.delete-tab-button,
 .add-tab-button,
 .tab-content,
 .tab-nested-content {
@@ -206,7 +206,7 @@ $tab-bg-active: #fff;
 .tab-title,
 .move-left-button,
 .move-right-button,
-.remove-tab-button,
+.delete-tab-button,
 .add-tab-button,
 .tab-content,
 .tab-nested-content {
@@ -252,7 +252,7 @@ $tab-bg-active: #fff;
     .tab-title,
     .move-left-button,
     .move-right-button,
-    .remove-tab-button,
+    .delete-tab-button,
     .add-tab-button,
     .tab-content,
     .tab-nested-content {

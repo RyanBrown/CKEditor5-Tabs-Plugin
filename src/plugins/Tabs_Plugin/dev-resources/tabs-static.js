@@ -10,12 +10,12 @@ document.addEventListener('DOMContentLoaded', function () {
         newTab.dataset.target = `#tab${newIndex}`;
         newTab.innerHTML = `
         <div class="tab-edit-bar">
-          <button class="move-left" title="move tab left"></button>
-          <button class="move-right" title="move tab right"></button>
+          <button class="move-left" title="Move Tab Left"></button>
+          <button class="move-right" title="Move Tab Right"></button>
         </div>
         <div class="title-edit-bar">
           <div class="tab-title">Tab Name ${newIndex}</div>
-          <div class="remove-tab-button" title="remove tab"></div>
+          <div class="delete-tab-button" title="Delete Tab"></div>
         </div>`;
         const newContent = document.createElement('div');
         newContent.id = `tab${newIndex}`;
@@ -30,10 +30,10 @@ document.addEventListener('DOMContentLoaded', function () {
     function updateTabVisibility() {
         const tabs = tabsContainer.querySelectorAll('.tab-list-item');
         tabs.forEach((tab, index) => {
-            let [moveLeft, moveRight, removeTab] = tab.querySelectorAll('.move-left, .move-right, .remove-tab-button');
+            let [moveLeft, moveRight, deleteTab] = tab.querySelectorAll('.move-left, .move-right, .delete-tab-button');
             moveLeft.style.display = index === 0 ? 'none' : '';
             moveRight.style.display = index === tabs.length - 1 ? 'none' : '';
-            removeTab.style.display = tabs.length > 1 ? '' : 'none';
+            deleteTab.style.display = tabs.length > 1 ? '' : 'none';
         });
     }
 
@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Remove a tab and its content
-    function removeTab(tab) {
+    function deleteTab(tab) {
         const targetContent = document.querySelector(tab.dataset.target);
         tab.remove();
         targetContent.remove();
@@ -63,8 +63,8 @@ document.addEventListener('DOMContentLoaded', function () {
             moveTab(tab, -1);
         } else if (e.target.matches('.move-right')) {
             moveTab(tab, 1);
-        } else if (e.target.matches('.remove-tab-button')) {
-            removeTab(tab);
+        } else if (e.target.matches('.delete-tab-button')) {
+            deleteTab(tab);
         } else if (tab) {
             setActiveTab(tab);
         }

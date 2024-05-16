@@ -71,11 +71,11 @@ export function createTabListItem(writer, tabId) {
         class: 'tab-list-item',
     });
 
-    // Create and append the tabEditBar with the moving and remove buttons
+    // Create and append the tabEditBar with the moving and delete buttons
     const tabEditBar = writer.createElement('tabEditBar', { class: 'tab-edit-bar' });
     appendControlElement(writer, tabEditBar, 'moveLeftButton', tabId);
     appendControlElement(writer, tabEditBar, 'moveRightButton', tabId);
-    appendControlElement(writer, tabEditBar, 'removeTabButton', tabId);
+    appendControlElement(writer, tabEditBar, 'deleteTabButton', tabId);
 
     // Create and append the tab title
     const tabTitle = writer.createElement('tabTitle', { class: 'tab-title' });
@@ -131,7 +131,7 @@ export function createTabContent(writer, tabId) {
     return tabNestedContent; // Return the complete tab content element
 }
 
-// Utility function to append control elements like move left, move right, and remove
+// Utility function to append control elements like move left, move right, and delete
 export function appendControlElement(writer, parent, type, title, buttonTitle, tabId) {
     console.log(`utils.js - appendControlElement called for #${tabId} - ${type}`);
     const element = writer.createElement(type, {

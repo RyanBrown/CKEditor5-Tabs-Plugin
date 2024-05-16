@@ -53,7 +53,7 @@ export class MoveTabCommand extends Command {
     }
 }
 
-export class RemoveTabCommand extends Command {
+export class DeleteTabCommand extends Command {
     execute(tabId) {
         const model = this.editor.model;
         model.change((writer) => {
@@ -61,19 +61,19 @@ export class RemoveTabCommand extends Command {
             const tabListItems = findAllDescendants(tabsRoot, (node) => node.is('element', 'tabListItem'));
 
             if (tabListItems.length <= 1) {
-                console.log('Cannot remove the last tab.');
+                console.log('Cannot delete the last tab.');
                 return;
             }
 
-            const itemToRemove = tabListItems.find((item) => item.getAttribute('data-target') === `#${tabId}`);
-            const contentToRemove = findAllDescendants(
+            const itemToDelete = tabListItems.find((item) => item.getAttribute('data-target') === `#${tabId}`);
+            const contentToDelete = findAllDescendants(
                 tabsRoot,
                 (node) => node.is('element', 'tabNestedContent') && node.getAttribute('id') === tabId
             )[0];
 
-            if (itemToRemove && contentToRemove) {
-                writer.remove(itemToRemove);
-                writer.remove(contentToRemove);
+            if (itemToDelete && contentToDelete) {
+                writer.remove(itemToDelete);
+                writer.remove(contentToDelete);
             } else {
                 console.error(`Tab or content not found for ID: ${tabId}`);
             }

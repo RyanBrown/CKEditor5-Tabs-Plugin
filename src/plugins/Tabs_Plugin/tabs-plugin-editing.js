@@ -1,7 +1,7 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { toWidget, toWidgetEditable } from '@ckeditor/ckeditor5-widget';
 import { Widget } from '@ckeditor/ckeditor5-widget';
-import { TabsPluginCommand, RemoveTabCommand, MoveTabCommand } from './tabs-plugin-command';
+import { TabsPluginCommand, DeleteTabCommand, MoveTabCommand } from './tabs-plugin-command';
 
 export default class TabsPluginEditing extends Plugin {
     static get requires() {
@@ -11,7 +11,7 @@ export default class TabsPluginEditing extends Plugin {
     init() {
         const editor = this.editor;
         editor.commands.add('insertTab', new TabsPluginCommand(editor));
-        editor.commands.add('removeTab', new RemoveTabCommand(editor));
+        editor.commands.add('deleteTab', new DeleteTabCommand(editor));
         editor.commands.add('moveTab', new MoveTabCommand(editor));
 
         this._defineSchema();
@@ -73,8 +73,8 @@ export default class TabsPluginEditing extends Plugin {
             allowAttributes: ['class', 'id'], // Optional: Allow additional attributes if needed
         });
 
-        // Define schema for 'removeTabButton' element
-        schema.register('removeTabButton', {
+        // Define schema for 'deleteTabButton' element
+        schema.register('deleteTabButton', {
             isObject: true,
             allowIn: 'tabTitleEditBar',
             isBlock: true,
@@ -316,17 +316,17 @@ export default class TabsPluginEditing extends Plugin {
             },
         });
 
-        // Converters for 'removeTabButton' element
-        // Optionally disable or adjust this if you don't want 'removeTabButton' to be created from HTML content
+        // Converters for 'deleteTabButton' element
+        // Optionally disable or adjust this if you don't want 'deleteTabButton' to be created from HTML content
         conversion.for('upcast').elementToElement({
-            model: 'removeTabButton',
+            model: 'deleteTabButton',
             view: (viewElement) => !viewElement,
         });
         conversion.for('dataDowncast').elementToElement({
-            model: 'removeTabButton',
+            model: 'deleteTabButton',
             view: (modelElement, { writer }) => {
                 const button = writer.createContainerElement('button', {
-                    class: 'remove-tab-button',
+                    class: 'delete-tab-button',
                     title: modelElement.getAttribute('title') || 'Delete Tab',
                 });
                 // Create and insert the span with text
@@ -337,10 +337,10 @@ export default class TabsPluginEditing extends Plugin {
             },
         });
         conversion.for('editingDowncast').elementToElement({
-            model: 'removeTabButton',
+            model: 'deleteTabButton',
             view: (modelElement, { writer }) => {
                 const button = writer.createContainerElement('button', {
-                    class: 'remove-tab-button',
+                    class: 'delete-tab-button',
                     title: modelElement.getAttribute('title') || 'Delete Tab',
                     isContentEditable: false, // Buttons shouldn't be editable
                 });

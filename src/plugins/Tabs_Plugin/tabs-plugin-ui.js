@@ -54,8 +54,8 @@ export default class TabsPluginUI extends Plugin {
                 this._handleTabActivation(editor, target, evt);
             } else if (target.hasClass('tab-title')) {
                 this._handleTabTitleClick(editor, target, evt);
-            } else if (target.hasClass('remove-tab-button')) {
-                this._handleRemoveTab(editor, target, evt);
+            } else if (target.hasClass('delete-tab-button')) {
+                this._handleDeleteTab(editor, target, evt);
             } else if (target.hasClass('move-left-button') || target.hasClass('move-right-button')) {
                 this._handleMoveTab(editor, target, evt);
             } else if (target.hasClass('add-tab-button')) {
@@ -94,10 +94,10 @@ export default class TabsPluginUI extends Plugin {
         evt.stop();
     }
 
-    _handleRemoveTab(editor, target, evt) {
+    _handleDeleteTab(editor, target, evt) {
         const tabListItem = target.findAncestor('li');
         const tabId = tabListItem.getAttribute('data-target').slice(1).replace('#', '');
-        editor.execute('removeTab', tabId);
+        editor.execute('deleteTab', tabId);
         evt.stop();
     }
 
