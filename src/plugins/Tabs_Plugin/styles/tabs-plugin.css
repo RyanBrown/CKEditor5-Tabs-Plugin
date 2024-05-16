@@ -1,5 +1,6 @@
 .tabs-plugin {
   background-color: #fff;
+  margin-bottom: 4px;
 }
 .tabs-plugin .tab-list {
   align-items: flex-end;
@@ -8,18 +9,6 @@
   list-style: none;
   margin: 0;
   padding: 0;
-}
-.tabs-plugin .tab-list .tab-list-item:first-child .tab-edit-bar > .move-buttons-wrapper {
-  justify-content: flex-end;
-}
-.tabs-plugin .tab-list .tab-list-item:first-child .tab-edit-bar > .move-buttons-wrapper .move-left-button {
-  display: none;
-}
-.tabs-plugin .tab-list .tab-list-item:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper {
-  justify-content: flex-start;
-}
-.tabs-plugin .tab-list .tab-list-item:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper .move-right-button {
-  display: none;
 }
 .tabs-plugin .tab-list .tab-list-item {
   align-items: center;
@@ -57,13 +46,27 @@
   width: 100%;
 }
 .tabs-plugin .tab-list .tab-list-item .tab-title {
-  background: aliceblue;
   display: block;
   font-weight: 700;
   position: relative;
   text-align: center;
   width: 100%;
   word-wrap: break-word;
+}
+.tabs-plugin .tab-list .tab-list-item:first-child .tab-edit-bar > .move-buttons-wrapper {
+  justify-content: flex-end;
+}
+.tabs-plugin .tab-list .tab-list-item:first-child .tab-edit-bar > .move-buttons-wrapper .move-left-button {
+  display: none;
+}
+.tabs-plugin .tab-list .tab-list-item:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper {
+  justify-content: flex-start;
+}
+.tabs-plugin .tab-list .tab-list-item:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper .move-right-button {
+  display: none;
+}
+.tabs-plugin .tab-list .tab-list-item:nth-last-child(2):first-child .tab-edit-bar > .delete-tab-button {
+  display: none;
 }
 .tabs-plugin .tab-list .add-tab-list-item {
   padding: 0;

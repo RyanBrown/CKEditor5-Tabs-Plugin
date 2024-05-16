@@ -4,15 +4,15 @@ $tab-y-padding: 1.75rem;
 $tab-border-radius: 0.5rem;
 $tab-border-color: #ddd;
 $tab-border-color-active: #ccc;
+$tab-border-width: 2px;
 
 $tab-bg: #eee;
 $tab-bg-hover: #fff;
 $tab-bg-active: #fff;
-// $tab-bg-active: #c4ecf4;
 
 .tabs-plugin {
-    // background-color: #3448c5;
     background-color: #fff;
+    margin-bottom: 4px;
 
     .tab-list {
         align-items: flex-end;
@@ -23,32 +23,16 @@ $tab-bg-active: #fff;
         padding: 0;
 
         .tab-list-item {
-            &:first-child .tab-edit-bar > .move-buttons-wrapper {
-                justify-content: flex-end;
-                .move-left-button {
-                    display: none;
-                }
-            }
-            &:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper {
-                justify-content: flex-start;
-
-                .move-right-button {
-                    display: none;
-                }
-            }
-        }
-
-        .tab-list-item {
             align-items: center;
             background-color: $tab-bg;
             border-radius: $tab-border-radius $tab-border-radius 0 0;
-            border: 2px solid $tab-border-color;
+            border: $tab-border-width solid $tab-border-color;
             cursor: pointer;
             display: flex;
             flex-direction: column;
             flex-grow: 0;
-            margin-bottom: -2px;
-            margin-top: 2px;
+            margin-bottom: -$tab-border-width;
+            margin-top: $tab-border-width;
             max-width: 20rem;
             min-width: 10rem;
             padding: $tab-x-padding $tab-y-padding;
@@ -61,16 +45,16 @@ $tab-bg-active: #fff;
             &.active,
             &.active:hover {
                 background-color: $tab-bg-active;
-                border: 2px solid $tab-border-color-active;
+                border: $tab-border-width solid $tab-border-color-active;
                 position: relative;
                 z-index: 3;
 
                 &::after {
                     background-color: $tab-bg-active;
-                    bottom: -2px;
+                    bottom: -$tab-border-width;
                     content: '';
                     display: block;
-                    height: 2px;
+                    height: $tab-border-width;
                     left: 0;
                     position: absolute;
                     width: 100%;
@@ -78,13 +62,34 @@ $tab-bg-active: #fff;
             }
 
             .tab-title {
-                background: aliceblue;
                 display: block;
                 font-weight: 700;
                 position: relative;
                 text-align: center;
                 width: 100%;
                 word-wrap: break-word;
+            }
+            // Align the 'move-right-button' right and hide the 'move-left-button'
+            &:first-child .tab-edit-bar > .move-buttons-wrapper {
+                justify-content: flex-end;
+
+                .move-left-button {
+                    display: none;
+                }
+            }
+            // Align the 'move-left-button' left and hide the 'move-right-button'
+            &:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper {
+                justify-content: flex-start;
+
+                .move-right-button {
+                    display: none;
+                }
+            }
+            // Hide the 'delete-tab-button' if only one tab is visible
+            &:nth-last-child(2):first-child {
+                .tab-edit-bar > .delete-tab-button {
+                    display: none;
+                }
             }
         }
 
@@ -95,8 +100,7 @@ $tab-bg-active: #fff;
 
     .tab-content {
         background-color: $tab-bg-active;
-        border: 2px solid $tab-border-color-active;
-        // min-height: 6rem;
+        border: $tab-border-width solid $tab-border-color-active;
         position: relative;
         z-index: 2;
 
@@ -107,7 +111,7 @@ $tab-bg-active: #fff;
 
             &.active {
                 background-color: $tab-bg-active;
-                // border: 2px solid $tab-border-color-active;
+                // border: $tab-border-width solid $tab-border-color-active;
                 display: block;
                 padding: 1rem;
             }
