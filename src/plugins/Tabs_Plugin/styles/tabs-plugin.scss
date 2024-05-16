@@ -70,7 +70,7 @@ $tab-bg-active: #fff;
                 border-width: 2px;
                 border-bottom-color: transparent;
                 position: relative;
-                z-index: 101;
+                z-index: 3;
             }
 
             .tab-title {
@@ -99,7 +99,7 @@ $tab-bg-active: #fff;
         border: 2px solid $tab-border-color-active;
         // min-height: 6rem;
         position: relative;
-        z-index: 100;
+        z-index: 2;
 
         .tab-nested-content {
             display: none;
@@ -126,15 +126,17 @@ $tab-bg-active: #fff;
 
     &::before,
     &:hover::before {
+        align-items: center;
         background-repeat: no-repeat;
         background-size: cover;
         content: '';
-        display: block;
+        display: inline-flex;
         height: 1rem;
         width: 1rem;
     }
 
     span {
+        align-items: center;
         display: none;
     }
 }
@@ -213,6 +215,7 @@ $tab-bg-active: #fff;
                 &:before,
                 &:after {
                     display: none;
+                    z-index: 100;
                 }
             }
         }
@@ -248,6 +251,12 @@ $tab-bg-active: #fff;
 
 .tab-content.ck-widget:hover {
     outline: none !important;
+}
+
+// Set the z-index higher than the tabs
+.ck.ck-widget__type-around__button.ck-widget__type-around__button_before,
+.ck.ck-widget__type-around__button.ck-widget__type-around__button_after {
+    z-index: 100;
 }
 
 // remove the before/after arrows to insert plugin
