@@ -45,7 +45,7 @@ export class MoveTabCommand extends Command {
             const currentTabIndex = tabListItems.findIndex((item) => item.getAttribute('data-target') === `#${tabId}`);
             const targetIndex = currentTabIndex + direction;
 
-            if (targetIndex >= 0 && targetIndex < tabListItems.length - 1) {
+            if (targetIndex >= 0 && targetIndex < tabListItems.length) {
                 writer.move(
                     writer.createRangeOn(tabListItems[currentTabIndex]),
                     writer.createPositionAt(tabListItems[targetIndex], direction === 1 ? 'after' : 'before')

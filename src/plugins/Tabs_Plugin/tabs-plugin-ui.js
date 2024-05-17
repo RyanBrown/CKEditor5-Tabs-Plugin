@@ -55,14 +55,14 @@ export default class TabsPluginUI extends Plugin {
             } else if (target.hasClass('add-tab-button')) {
                 this._handleAddTab(editor, evt);
             } else if (target.hasClass('move-left-button')) {
-                this._handleMoveTab(editor, target, evt, 'left');
+                this._handleMoveTab(editor, target, evt, -1);
             } else if (target.hasClass('move-right-button')) {
-                this._handleMoveTab(editor, target, evt, 'right');
+                this._handleMoveTab(editor, target, evt, 1);
             }
         });
 
         editor.editing.view.document.on(
-            'blur',
+            'focusout',
             (evt, data) => {
                 const target = data.target; // The element that lost focus.
                 if (target.hasClass('tab-title')) {
@@ -89,18 +89,11 @@ export default class TabsPluginUI extends Plugin {
         const tabListItem = target.findAncestor('li');
         const tabId = tabListItem.getAttribute('data-target').slice(1);
 
-        if (direction === -1) {
-            console.log(`Move Left button clicked for tab with ID: ${tabId}`);
-        } else {
-            console.log(`Move Right button clicked for tab with ID: ${tabId}`);
-        }
-
         editor.execute('moveTab', { tabId, direction });
         evt.stop();
     }
 
     _handleTabTitleBlur(editor, target, evt) {
-        // Map the view element to the corresponding model element.
         const modelElement = editor.editing.mapper.toModelElement(target);
 
         editor.model.change((writer) => {

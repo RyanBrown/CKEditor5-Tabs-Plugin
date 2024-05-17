@@ -38,11 +38,32 @@ export default class TabsPluginEditing extends Plugin {
         // Define schema for 'tabListItem' element
         schema.register('tabListItem', {
             allowIn: 'tabList',
-            allowContentOf: '$text', // Allows text directly inside the element
+            allowContentOf: '$block',
             allowAttributes: ['class', 'data-target'],
         });
 
-        // Define schema for 'tabEditBar' element
+        // Define schema for 'tabTitle' element
+        schema.register('tabTitle', {
+            allowIn: 'tabListItem',
+            allowContentOf: '$block',
+            allowAttributes: ['class'],
+        });
+
+        // Define schema for 'tabContent' element
+        schema.register('tabContent', {
+            isObject: true,
+            allowIn: 'tabsPlugin',
+            allowAttributes: ['class'],
+        });
+
+        // Define schema for 'tabNestedContent' element
+        schema.register('tabNestedContent', {
+            allowIn: 'tabContent',
+            allowAttributes: ['id', 'class', 'placeholder'],
+            isObject: true,
+            allowContentOf: '$block',
+        });
+
         schema.register('tabEditBar', {
             isObject: true,
             allowIn: 'tabListItem',
@@ -69,15 +90,7 @@ export default class TabsPluginEditing extends Plugin {
             isObject: true,
             allowIn: 'moveButtonsWrapper',
             allowAttributes: ['class', 'title'],
-            allowContentOf: [], // Disallow all content within the button
-        });
-
-        // Define schema for 'tabTitle' element
-        schema.register('tabTitle', {
-            allowIn: 'tabListItem',
-            allowContentOf: '$block',
-            allowAttributes: ['class'],
-            isLimit: true,
+            allowContentOf: [],
         });
 
         // Define schema for 'deleteTabButton' element
@@ -94,27 +107,11 @@ export default class TabsPluginEditing extends Plugin {
             allowAttributes: ['class'],
         });
 
-        // Define schema for 'addTabListItem' element
+        // Define schema for 'addTabButton' element
         schema.register('addTabButton', {
             isObject: true,
             allowIn: 'addTabListItem',
             allowAttributes: ['class', 'title'],
-        });
-
-        // Define schema for 'tabContent' element
-        schema.register('tabContent', {
-            isObject: true,
-            allowIn: 'tabsPlugin',
-            allowAttributes: ['class'],
-        });
-
-        // Define schema for 'tabNestedContent' element
-        schema.register('tabNestedContent', {
-            allowIn: 'tabContent',
-            allowAttributes: ['id', 'class', 'placeholder'],
-            isObject: true,
-            allowContentOf: '$block',
-            isLimit: true,
         });
     }
 
@@ -129,42 +126,33 @@ export default class TabsPluginEditing extends Plugin {
         conversion.for('dataDowncast').elementToElement({
             model: 'tabsPlugin',
             view: (modelElement, { writer: viewWriter }) => {
-                return viewWriter.createContainerElement('div', {
-                    class: 'tabs-plugin',
-                    isContentEditable: false,
-                });
+                return viewWriter.createContainerElement('div', { class: 'tabs-plugin' });
             },
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabsPlugin',
             view: (modelElement, { writer: viewWriter }) => {
-                const div = viewWriter.createContainerElement('div', {
-                    class: 'tabs-plugin',
-                });
-                return toWidget(div, viewWriter, {
-                    label: 'tabs container',
-                    draggable: false,
-                    isContentEditable: false,
-                });
+                const div = viewWriter.createContainerElement('div', { class: 'tabs-plugin' });
+                return toWidget(div, viewWriter, { label: 'tabs plugin' });
             },
         });
 
-        // Helper function to create a 'ul' view element for 'tabList'
-        function createTabListViewElement(writer) {
-            return writer.createContainerElement('ul', { class: 'tab-list', isContentEditable: false });
-        }
-        // Converters for 'tabList' element
         conversion.for('upcast').elementToElement({
             model: 'tabList',
             view: { name: 'ul', classes: 'tab-list' },
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabList',
-            view: (modelElement, { writer }) => createTabListViewElement(writer),
+            view: (modelElement, { writer: viewWriter }) => {
+                return viewWriter.createContainerElement('ul', { class: 'tab-list' });
+            },
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabList',
-            view: (modelElement, { writer }) => createTabListViewElement(writer),
+            view: (modelElement, { writer: viewWriter }) => {
+                const ul = viewWriter.createContainerElement('ul', { class: 'tab-list' });
+                return toWidget(ul, viewWriter, { label: 'tab list' });
+            },
         });
 
         // Conversion for 'tabListItem'
@@ -174,9 +162,9 @@ export default class TabsPluginEditing extends Plugin {
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabListItem',
-            view: (modelElement, { writer }) => {
-                return writer.createContainerElement('li', {
-                    class: modelElement.getAttribute('class'),
+            view: (modelElement, { writer: viewWriter }) => {
+                return viewWriter.createContainerElement('li', {
+                    class: 'tab-list-item',
                     'data-target': modelElement.getAttribute('data-target'),
                 });
             },
@@ -185,15 +173,14 @@ export default class TabsPluginEditing extends Plugin {
             model: 'tabListItem',
             view: (modelElement, { writer: viewWriter }) => {
                 const li = viewWriter.createContainerElement('li', {
-                    class: modelElement.getAttribute('class'),
+                    class: 'tab-list-item',
                     'data-target': modelElement.getAttribute('data-target'),
                 });
-                return toWidget(li, viewWriter, { label: 'Tab List Item' });
+                return toWidget(li, viewWriter, { label: 'tab list item' });
             },
         });
 
         // Converters for 'tabEditBar' element (HTML to Model)
-        // Optionally disable or remove this if you don't want 'tabEditBar' to be created from HTML content
         conversion.for('upcast').elementToElement({
             model: 'tabEditBar',
             view: (viewElement) => !viewElement,
@@ -304,7 +291,6 @@ export default class TabsPluginEditing extends Plugin {
             },
         });
 
-        // Converters for 'tabTitle' element (making it editable)
         // Converters for 'tabTitle' element
         conversion.for('upcast').elementToElement({
             model: 'tabTitle',
@@ -312,20 +298,19 @@ export default class TabsPluginEditing extends Plugin {
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabTitle',
-            view: (modelElement, { writer }) => {
-                return writer.createEditableElement('div', { class: 'tab-title' });
+            view: (modelElement, { writer: viewWriter }) => {
+                return viewWriter.createEditableElement('div', { class: 'tab-title' });
             },
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabTitle',
-            view: (modelElement, { writer }) => {
-                const div = writer.createEditableElement('div', { class: 'tab-title' });
-                return toWidgetEditable(div, writer);
+            view: (modelElement, { writer: viewWriter }) => {
+                const div = viewWriter.createEditableElement('div', { class: 'tab-title' });
+                return toWidgetEditable(div, viewWriter);
             },
         });
 
         // Converters for 'deleteTabButton' element
-        // Optionally disable or adjust this if you don't want 'deleteTabButton' to be created from HTML content
         conversion.for('upcast').elementToElement({
             model: 'deleteTabButton',
             view: (viewElement) => !viewElement,
@@ -361,7 +346,6 @@ export default class TabsPluginEditing extends Plugin {
         });
 
         // Converters for 'addTabListItem' element
-        // Optionally disable or adjust this if you don't want 'addTabListItem' to be created from HTML content
         conversion.for('upcast').elementToElement({
             model: 'addTabListItem',
             view: (viewElement) => !viewElement,
@@ -385,7 +369,6 @@ export default class TabsPluginEditing extends Plugin {
         });
 
         // Converters for 'addTabButton' element
-        // Optionally remove or disable this if you don't want 'addTabButton' to be created from HTML content
         conversion.for('upcast').elementToElement({
             model: 'addTabButton',
             view: (viewElement) => !viewElement,
@@ -420,10 +403,6 @@ export default class TabsPluginEditing extends Plugin {
             },
         });
 
-        // Helper function to create a 'div' view element for 'tabContent'
-        function createTabContentViewElement(writer) {
-            return writer.createContainerElement('div', { class: 'tab-content', isContentEditable: false });
-        }
         // Converters for 'tabContent' element
         conversion.for('upcast').elementToElement({
             model: 'tabContent',
@@ -431,11 +410,16 @@ export default class TabsPluginEditing extends Plugin {
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabContent',
-            view: (modelElement, { writer }) => createTabContentViewElement(writer),
+            view: (modelElement, { writer: viewWriter }) => {
+                return viewWriter.createContainerElement('div', { class: 'tab-content' });
+            },
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabContent',
-            view: (modelElement, { writer }) => createTabContentViewElement(writer),
+            view: (modelElement, { writer: viewWriter }) => {
+                const div = viewWriter.createContainerElement('div', { class: 'tab-content' });
+                return toWidget(div, viewWriter, { label: 'tab content' });
+            },
         });
 
         // Converters for 'tabNestedContent' element
@@ -445,23 +429,23 @@ export default class TabsPluginEditing extends Plugin {
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabNestedContent',
-            view: (modelElement, { writer }) => {
-                return writer.createContainerElement('div', {
+            view: (modelElement, { writer: viewWriter }) => {
+                return viewWriter.createEditableElement('div', {
                     class: 'tab-nested-content',
                     id: modelElement.getAttribute('id'),
-                    'data-placeholder': modelElement.getAttribute('placeholder'),
+                    placeholder: modelElement.getAttribute('placeholder'),
                 });
             },
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabNestedContent',
-            view: (modelElement, { writer }) => {
-                const div = writer.createEditableElement('div', {
-                    class: `${modelElement.getAttribute('class')} ck-placeholder`,
+            view: (modelElement, { writer: viewWriter }) => {
+                const div = viewWriter.createEditableElement('div', {
+                    class: 'tab-nested-content',
                     id: modelElement.getAttribute('id'),
-                    'data-placeholder': modelElement.getAttribute('placeholder'),
+                    placeholder: modelElement.getAttribute('placeholder'),
                 });
-                return toWidgetEditable(div, writer);
+                return toWidgetEditable(div, viewWriter);
             },
         });
     }
