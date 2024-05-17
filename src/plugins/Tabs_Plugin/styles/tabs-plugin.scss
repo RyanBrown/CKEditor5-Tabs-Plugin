@@ -1,6 +1,9 @@
 $tab-x-padding: 1.5rem;
 $tab-y-padding: 1.75rem;
 
+$tab-x-margin: 0.75rem;
+$tab-y-margin: 1.25rem;
+
 $tab-border-radius: 0.5rem;
 $tab-border-color: #ddd;
 $tab-border-color-active: #ccc;
@@ -12,10 +15,9 @@ $tab-bg-active: #fff;
 
 .tabs-plugin {
     background-color: #fff;
-    margin-bottom: calc($tab-border-width * 2);
 
     .tab-list {
-        align-items: flex-end;
+        align-items: stretch;
         display: flex;
         flex-wrap: wrap;
         list-style: none;
@@ -31,15 +33,31 @@ $tab-bg-active: #fff;
             display: flex;
             flex-direction: column;
             flex-grow: 0;
-            margin-bottom: -$tab-border-width;
-            margin-top: $tab-border-width;
+            justify-content: center;
             max-width: 20rem;
             min-width: 10rem;
-            padding: $tab-x-padding $tab-y-padding;
+            padding: 0;
             position: relative;
+            z-index: 5;
+
+            &::after {
+                background-color: $tab-bg;
+                bottom: -#{$tab-border-width};
+                content: '';
+                display: block;
+                height: $tab-border-width;
+                left: 0;
+                position: absolute;
+                width: 100%;
+                z-index: 3;
+            }
 
             &:hover {
                 background-color: $tab-bg-hover;
+
+                &::after {
+                    background-color: $tab-bg-active;
+                }
             }
 
             &.active,
@@ -47,26 +65,23 @@ $tab-bg-active: #fff;
                 background-color: $tab-bg-active;
                 border: $tab-border-width solid $tab-border-color-active;
                 position: relative;
-                z-index: 3;
 
                 &::after {
                     background-color: $tab-bg-active;
-                    bottom: -$tab-border-width;
-                    content: '';
-                    display: block;
-                    height: $tab-border-width;
-                    left: 0;
-                    position: absolute;
-                    width: 100%;
+                    bottom: -#{calc($tab-border-width * 2)};
+                    height: calc($tab-border-width * 2);
                 }
             }
 
             .tab-title {
+                // background-color: orange;
                 display: block;
                 font-weight: 700;
+                margin: $tab-x-margin $tab-y-margin;
                 position: relative;
                 text-align: center;
-                width: 100%;
+                min-width: 6rem;
+                width: fit-content;
                 word-wrap: break-word;
             }
             // Align the 'move-right-button' right and hide the 'move-left-button'
@@ -94,6 +109,7 @@ $tab-bg-active: #fff;
         }
 
         .add-tab-list-item {
+            align-self: flex-end;
             padding: 0;
         }
     }
@@ -102,7 +118,6 @@ $tab-bg-active: #fff;
         background-color: $tab-bg-active;
         border: $tab-border-width solid $tab-border-color-active;
         position: relative;
-        z-index: 2;
 
         .tab-nested-content {
             display: none;
@@ -246,7 +261,7 @@ $tab-bg-active: #fff;
                 &:before,
                 &:after {
                     display: none;
-                    z-index: 100;
+                    // z-index: 100;
                 }
             }
         }
@@ -287,7 +302,7 @@ $tab-bg-active: #fff;
 // Set the z-index higher than the tabs
 .ck.ck-widget__type-around__button.ck-widget__type-around__button_before,
 .ck.ck-widget__type-around__button.ck-widget__type-around__button_after {
-    z-index: 100;
+    z-index: 1001;
 }
 
 // remove the before/after arrows to insert plugin
