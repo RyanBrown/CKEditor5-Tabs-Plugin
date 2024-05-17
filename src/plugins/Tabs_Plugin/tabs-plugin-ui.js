@@ -60,6 +60,17 @@ export default class TabsPluginUI extends Plugin {
                 this._handleMoveTab(editor, target, evt, 'right');
             }
         });
+
+        editor.editing.view.document.on(
+            'blur',
+            (evt, data) => {
+                const target = data.target; // The element that lost focus.
+                if (target.hasClass('tab-title')) {
+                    this._handleTabTitleBlur(editor, target, evt);
+                }
+            },
+            { priority: 'low' }
+        );
     }
 
     _handleDeleteTab(editor, target, evt) {
@@ -86,6 +97,18 @@ export default class TabsPluginUI extends Plugin {
 
         editor.execute('moveTab', { tabId, direction });
         evt.stop();
+    }
+
+    _handleTabTitleBlur(editor, target, evt) {
+        // Map the view element to the corresponding model element.
+        const modelElement = editor.editing.mapper.toModelElement(target);
+
+        editor.model.change((writer) => {
+            const text = modelElement.getChild(0) ? modelElement.getChild(0).data.trim() : '';
+            if (text === '') {
+                writer.insertText('Tab Name', modelElement, 0);
+            }
+        });
     }
 
     _addNewTab(editor) {
