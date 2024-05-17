@@ -163,8 +163,9 @@ export default class TabsPluginEditing extends Plugin {
         conversion.for('dataDowncast').elementToElement({
             model: 'tabListItem',
             view: (modelElement, { writer: viewWriter }) => {
+                const classes = modelElement.getAttribute('class');
                 return viewWriter.createContainerElement('li', {
-                    class: 'tab-list-item',
+                    class: classes ? `tab-list-item ${classes}` : 'tab-list-item',
                     'data-target': modelElement.getAttribute('data-target'),
                 });
             },
@@ -172,8 +173,9 @@ export default class TabsPluginEditing extends Plugin {
         conversion.for('editingDowncast').elementToElement({
             model: 'tabListItem',
             view: (modelElement, { writer: viewWriter }) => {
+                const classes = modelElement.getAttribute('class');
                 const li = viewWriter.createContainerElement('li', {
-                    class: 'tab-list-item',
+                    class: classes ? `tab-list-item ${classes}` : 'tab-list-item',
                     'data-target': modelElement.getAttribute('data-target'),
                 });
                 return toWidget(li, viewWriter, { label: 'tab list item' });
@@ -430,8 +432,9 @@ export default class TabsPluginEditing extends Plugin {
         conversion.for('dataDowncast').elementToElement({
             model: 'tabNestedContent',
             view: (modelElement, { writer: viewWriter }) => {
+                const classes = modelElement.getAttribute('class');
                 return viewWriter.createEditableElement('div', {
-                    class: 'tab-nested-content',
+                    class: classes ? `tab-nested-content ${classes}` : 'tab-nested-content',
                     id: modelElement.getAttribute('id'),
                     placeholder: modelElement.getAttribute('placeholder'),
                 });
@@ -440,8 +443,9 @@ export default class TabsPluginEditing extends Plugin {
         conversion.for('editingDowncast').elementToElement({
             model: 'tabNestedContent',
             view: (modelElement, { writer: viewWriter }) => {
+                const classes = modelElement.getAttribute('class');
                 const div = viewWriter.createEditableElement('div', {
-                    class: 'tab-nested-content',
+                    class: classes ? `tab-nested-content ${classes}` : 'tab-nested-content',
                     id: modelElement.getAttribute('id'),
                     placeholder: modelElement.getAttribute('placeholder'),
                 });
