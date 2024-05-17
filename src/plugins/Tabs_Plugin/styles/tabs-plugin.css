@@ -1,9 +1,8 @@
 .tabs-plugin {
   background-color: #fff;
-  margin-bottom: 4px;
 }
 .tabs-plugin .tab-list {
-  align-items: flex-end;
+  align-items: stretch;
   display: flex;
   flex-wrap: wrap;
   list-style: none;
@@ -19,24 +18,15 @@
   display: flex;
   flex-direction: column;
   flex-grow: 0;
-  margin-bottom: -2px;
-  margin-top: 2px;
+  justify-content: center;
   max-width: 20rem;
   min-width: 10rem;
-  padding: 1.5rem 1.75rem;
+  padding: 0;
   position: relative;
+  z-index: 5;
 }
-.tabs-plugin .tab-list .tab-list-item:hover {
-  background-color: #fff;
-}
-.tabs-plugin .tab-list .tab-list-item.active, .tabs-plugin .tab-list .tab-list-item.active:hover {
-  background-color: #fff;
-  border: 2px solid #ccc;
-  position: relative;
-  z-index: 3;
-}
-.tabs-plugin .tab-list .tab-list-item.active::after, .tabs-plugin .tab-list .tab-list-item.active:hover::after {
-  background-color: #fff;
+.tabs-plugin .tab-list .tab-list-item::after {
+  background-color: #eee;
   bottom: -2px;
   content: "";
   display: block;
@@ -44,13 +34,32 @@
   left: 0;
   position: absolute;
   width: 100%;
+  z-index: 3;
+}
+.tabs-plugin .tab-list .tab-list-item:hover {
+  background-color: #fff;
+}
+.tabs-plugin .tab-list .tab-list-item:hover::after {
+  background-color: #fff;
+}
+.tabs-plugin .tab-list .tab-list-item.active, .tabs-plugin .tab-list .tab-list-item.active:hover {
+  background-color: #fff;
+  border: 2px solid #ccc;
+  position: relative;
+}
+.tabs-plugin .tab-list .tab-list-item.active::after, .tabs-plugin .tab-list .tab-list-item.active:hover::after {
+  background-color: #fff;
+  bottom: -4px;
+  height: 4px;
 }
 .tabs-plugin .tab-list .tab-list-item .tab-title {
   display: block;
   font-weight: 700;
+  margin: 0.75rem 1.25rem;
   position: relative;
   text-align: center;
-  width: 100%;
+  min-width: 6rem;
+  width: fit-content;
   word-wrap: break-word;
 }
 .tabs-plugin .tab-list .tab-list-item:first-child .tab-edit-bar > .move-buttons-wrapper {
@@ -69,13 +78,13 @@
   display: none;
 }
 .tabs-plugin .tab-list .add-tab-list-item {
+  align-self: flex-end;
   padding: 0;
 }
 .tabs-plugin .tab-content {
   background-color: #fff;
   border: 2px solid #ccc;
   position: relative;
-  z-index: 2;
 }
 .tabs-plugin .tab-content .tab-nested-content {
   display: none;
@@ -257,7 +266,6 @@
 .tab-nested-content .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:before,
 .tab-nested-content .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after {
   display: none;
-  z-index: 100;
 }
 .tab-list .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before, .tab-list .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after,
 .tab-list-item .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before,
@@ -331,7 +339,7 @@
 
 .ck.ck-widget__type-around__button.ck-widget__type-around__button_before,
 .ck.ck-widget__type-around__button.ck-widget__type-around__button_after {
-  z-index: 100;
+  z-index: 1001;
 }
 
 .ck-content .tab-nested-content.ck-placeholder::before {
