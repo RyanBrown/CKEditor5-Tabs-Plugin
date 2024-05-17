@@ -35,7 +35,7 @@ export default class TabsPluginUI extends Plugin {
         return findAllDescendants(
             tabsRoot,
             (node) => node.is('element', 'tabListItem') && node.getAttribute('data-target') === `#${tabId}`
-        );
+        )[0];
     }
 
     findTabNestedContent(tabsRoot, tabId) {
@@ -43,14 +43,15 @@ export default class TabsPluginUI extends Plugin {
         return findAllDescendants(
             tabsRoot,
             (node) => node.is('element', 'tabNestedContent') && node.getAttribute('id') === tabId
-        );
+        )[0];
     }
 
     _registerEventHandlers(editor) {
         editor.editing.view.document.on('click', (evt, data) => {
             const target = data.target; // The element that was clicked.
-            // Delegating the click events to specific handlers based on the class of the clicked element
-            if (target.hasClass('delete-tab-button')) {
+            if (target.hasClass('tab-list-item')) {
+                this._handleTabClick(editor, target, evt);
+            } else if (target.hasClass('delete-tab-button')) {
                 this._handleDeleteTab(editor, target, evt);
             } else if (target.hasClass('add-tab-button')) {
                 this._handleAddTab(editor, evt);
@@ -61,16 +62,109 @@ export default class TabsPluginUI extends Plugin {
             }
         });
 
-        editor.editing.view.document.on(
-            'focusout',
-            (evt, data) => {
-                const target = data.target; // The element that lost focus.
-                if (target.hasClass('tab-title')) {
-                    this._handleTabTitleBlur(editor, target, evt);
-                }
-            },
-            { priority: 'low' }
+        editor.model.document.on('change:data', () => {
+            this._updateEmptyTabTitles(editor);
+        });
+    }
+
+    _updateEmptyTabTitles(editor) {
+        const viewRoot = editor.editing.view.document.getRoot();
+        const tabList = Array.from(viewRoot.getChildren()).find(
+            (child) => child.is('element', 'ul') && child.hasClass('tab-list')
         );
+
+        if (tabList) {
+            const tabTitleElements = Array.from(tabList.getChildren()).filter(
+                (child) => child.is('element', 'li') && child.hasClass('tab-list-item')
+            );
+
+            for (const tabTitleElement of tabTitleElements) {
+                const inputElement = tabTitleElement.getChild(1).getChild(0);
+                if (inputElement && inputElement.is('element', 'input') && inputElement.hasClass('tab-title')) {
+                    const text = inputElement.getAttribute('value').trim();
+                    if (text === '') {
+                        inputElement.setAttribute('value', 'Tab Name');
+                    }
+                }
+            }
+        }
+    }
+
+    _handleTabClick(editor, target, evt) {
+        if (!target.is('element')) {
+            console.error('Clicked target is not an element:', target);
+            return;
+        }
+
+        let tabListItem = target;
+
+        // Traverse up the DOM to find the 'li' element with the 'tab-list-item' class
+        while (tabListItem && (!tabListItem.is('element', 'li') || !tabListItem.hasClass('tab-list-item'))) {
+            tabListItem = tabListItem.parent;
+        }
+
+        if (!tabListItem) {
+            console.error('Tab list item not found for the clicked element:', target);
+            return;
+        }
+
+        const tabId = tabListItem.getAttribute('data-target')?.slice(1);
+
+        if (!tabId) {
+            console.error('Tab ID not found on the tab list item:', tabListItem);
+            return;
+        }
+
+        const model = editor.model;
+        const tabsRootElement = model.document.getRoot().getChild(0);
+
+        if (!tabsRootElement || !tabsRootElement.is('element', 'tabsPlugin')) {
+            console.error('Tabs root element not found or is not a tabsPlugin element');
+            return;
+        }
+
+        const tabListElement = tabsRootElement.getChild(0);
+        const tabContentElement = tabsRootElement.getChild(1);
+
+        if (!tabListElement || !tabListElement.is('element', 'tabList')) {
+            console.error('Tab list element not found or is not a tabList element');
+            return;
+        }
+
+        if (!tabContentElement || !tabContentElement.is('element', 'tabContent')) {
+            console.error('Tab content element not found or is not a tabContent element');
+            return;
+        }
+
+        model.change((writer) => {
+            // Remove the 'active' class from all tab list items
+            for (const item of tabListElement.getChildren()) {
+                writer.removeAttribute('class', item);
+            }
+
+            // Remove the 'active' class from all tab content elements
+            for (const content of tabContentElement.getChildren()) {
+                writer.removeAttribute('class', content);
+            }
+
+            // Add the 'active' class to the selected tab list item
+            writer.setAttribute('class', 'active', tabListItem);
+
+            // Find the corresponding tab content element
+            const tabContentId = `tab${tabId}`;
+            const selectedTabContent = tabContentElement.getChild(
+                tabContentElement.getChildIndex(tabContentElement.getChild(0)) +
+                    Array.from(tabListElement.getChildren()).indexOf(tabListItem)
+            );
+
+            if (selectedTabContent && selectedTabContent.getAttribute('id') === tabContentId) {
+                writer.setAttribute('class', 'active', selectedTabContent);
+            } else {
+                console.error('Selected tab content not found or has an incorrect ID');
+            }
+        });
+
+        evt.stop();
     }
 
     _handleDeleteTab(editor, target, evt) {
