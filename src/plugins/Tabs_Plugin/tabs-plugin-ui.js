@@ -108,7 +108,7 @@ export default class TabsPluginUI extends Plugin {
             return;
         }
 
-        const tabId = tabListItem.getAttribute('data-target')?.slice(1);
+        const tabId = tabListItem.getAttribute('data-target');
 
         if (!tabId) {
             console.error('Tab ID not found on the tab list item:', tabListItem);
@@ -153,9 +153,8 @@ export default class TabsPluginUI extends Plugin {
 
             // Add the 'active' class to the selected tab list item and corresponding tab content element
             writer.addClass('active', tabListItem);
-            const tabContentId = `tab${tabId}`;
             const selectedTabContent = Array.from(tabContentElement.getChildren()).find(
-                (child) => child.getAttribute('id') === tabContentId
+                (child) => child.getAttribute('id') === tabId.slice(1)
             );
             if (selectedTabContent) {
                 writer.addClass('active', selectedTabContent);
