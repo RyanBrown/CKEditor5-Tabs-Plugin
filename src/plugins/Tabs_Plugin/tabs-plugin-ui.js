@@ -115,52 +115,52 @@ export default class TabsPluginUI extends Plugin {
             return;
         }
 
-        const model = editor.model;
-        const tabsRootElement = model.document.getRoot().getChild(0);
+        const viewRoot = editor.editing.view.document.getRoot();
+        const tabsRootElement = Array.from(viewRoot.getChildren()).find(
+            (child) => child.is('element', 'div') && child.hasClass('tabs-plugin')
+        );
 
-        if (!tabsRootElement || !tabsRootElement.is('element', 'tabsPlugin')) {
-            console.error('Tabs root element not found or is not a tabsPlugin element');
+        if (!tabsRootElement) {
+            console.error('Tabs root element not found');
             return;
         }
 
-        const tabListElement = tabsRootElement.getChild(0);
-        const tabContentElement = tabsRootElement.getChild(1);
+        const tabListElement = Array.from(tabsRootElement.getChildren()).find(
+            (child) => child.is('element', 'ul') && child.hasClass('tab-list')
+        );
+        const tabContentElement = Array.from(tabsRootElement.getChildren()).find(
+            (child) => child.is('element', 'div') && child.hasClass('tab-content')
+        );
 
-        if (!tabListElement || !tabListElement.is('element', 'tabList')) {
-            console.error('Tab list element not found or is not a tabList element');
+        if (!tabListElement) {
+            console.error('Tab list element not found');
             return;
         }
 
-        if (!tabContentElement || !tabContentElement.is('element', 'tabContent')) {
-            console.error('Tab content element not found or is not a tabContent element');
+        if (!tabContentElement) {
+            console.error('Tab content element not found');
             return;
         }
 
-        model.change((writer) => {
-            // Remove the 'active' class from all tab list items
+        editor.editing.view.change((writer) => {
+            // Remove the 'active' class from all tab list items and tab content elements
             for (const item of tabListElement.getChildren()) {
-                writer.removeAttribute('class', item);
+                writer.removeClass('active', item);
             }
-
-            // Remove the 'active' class from all tab content elements
             for (const content of tabContentElement.getChildren()) {
-                writer.removeAttribute('class', content);
+                writer.removeClass('active', content);
             }
 
-            // Add the 'active' class to the selected tab list item
-            writer.setAttribute('class', 'active', tabListItem);
-
-            // Find the corresponding tab content element
+            // Add the 'active' class to the selected tab list item and corresponding tab content element
+            writer.addClass('active', tabListItem);
             const tabContentId = `tab${tabId}`;
-            const selectedTabContent = tabContentElement.getChild(
-                tabContentElement.getChildIndex(tabContentElement.getChild(0)) +
-                    Array.from(tabListElement.getChildren()).indexOf(tabListItem)
+            const selectedTabContent = Array.from(tabContentElement.getChildren()).find(
+                (child) => child.getAttribute('id') === tabContentId
             );
-
-            if (selectedTabContent && selectedTabContent.getAttribute('id') === tabContentId) {
-                writer.setAttribute('class', 'active', selectedTabContent);
+            if (selectedTabContent) {
+                writer.addClass('active', selectedTabContent);
             } else {
-                console.error('Selected tab content not found or has an incorrect ID');
+                console.error('Selected tab content not found');
             }
         });
         evt.stop();
