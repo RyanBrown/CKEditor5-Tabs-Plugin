@@ -3,7 +3,10 @@ export class TabsPluginCommand extends Command {
     execute(): void;
 }
 export class MoveTabCommand extends Command {
-    execute(options: any): void;
+    execute({ tabId, direction }: {
+        tabId: any;
+        direction: any;
+    }): void;
 }
 export class DeleteTabCommand extends Command {
     execute(tabId: any): void;

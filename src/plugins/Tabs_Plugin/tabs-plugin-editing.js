@@ -119,9 +119,8 @@ export default class TabsPluginEditing extends Plugin {
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabsPlugin',
-            view: (modelElement, { writer: viewWriter }) => {
-                return viewWriter.createContainerElement('div', { class: 'tabs-plugin' });
-            },
+            view: (modelElement, { writer: viewWriter }) =>
+                viewWriter.createContainerElement('div', { class: 'tabs-plugin' }),
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabsPlugin',
@@ -138,9 +137,8 @@ export default class TabsPluginEditing extends Plugin {
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabList',
-            view: (modelElement, { writer: viewWriter }) => {
-                return viewWriter.createContainerElement('ul', { class: 'tab-list' });
-            },
+            view: (modelElement, { writer: viewWriter }) =>
+                viewWriter.createContainerElement('ul', { class: 'tab-list' }),
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabList',
@@ -184,9 +182,8 @@ export default class TabsPluginEditing extends Plugin {
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabTitle',
-            view: (modelElement, { writer: viewWriter }) => {
-                return viewWriter.createEditableElement('div', { class: 'tab-title' });
-            },
+            view: (modelElement, { writer: viewWriter }) =>
+                viewWriter.createEditableElement('div', { class: 'tab-title' }),
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabTitle',
@@ -203,9 +200,8 @@ export default class TabsPluginEditing extends Plugin {
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabEditBar',
-            view: (modelElement, { writer: viewWriter }) => {
-                return viewWriter.createContainerElement('div', { class: 'tab-edit-bar' });
-            },
+            view: (modelElement, { writer: viewWriter }) =>
+                viewWriter.createContainerElement('div', { class: 'tab-edit-bar' }),
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabEditBar',
@@ -222,11 +218,13 @@ export default class TabsPluginEditing extends Plugin {
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'moveButtonsWrapper',
-            view: (modelElement, { writer }) => writer.createContainerElement('div', { class: 'move-buttons-wrapper' }),
+            view: (modelElement, { writer: viewWriter }) =>
+                viewWriter.createContainerElement('div', { class: 'move-buttons-wrapper' }),
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'moveButtonsWrapper',
-            view: (modelElement, { writer }) => writer.createContainerElement('div', { class: 'move-buttons-wrapper' }),
+            view: (modelElement, { writer: viewWriter }) =>
+                viewWriter.createContainerElement('div', { class: 'move-buttons-wrapper' }),
         });
 
         // Converters for 'moveLeftButton' element (HTML to Model)
@@ -236,27 +234,27 @@ export default class TabsPluginEditing extends Plugin {
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'moveLeftButton',
-            view: (modelElement, { writer }) => {
-                const button = writer.createContainerElement('button', {
+            view: (modelElement, { writer: viewWriter }) => {
+                const button = viewWriter.createContainerElement('button', {
                     class: 'move-left-button',
                     title: modelElement.getAttribute('title') || 'Move Tab Left',
                 });
-                const textSpan = writer.createContainerElement('span');
-                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Move Tab Left'));
-                writer.insert(writer.createPositionAt(button, 0), textSpan);
+                const textSpan = viewWriter.createContainerElement('span');
+                viewWriter.insert(viewWriter.createPositionAt(textSpan, 0), viewWriter.createText('Move Tab Left'));
+                viewWriter.insert(viewWriter.createPositionAt(button, 0), textSpan);
                 return button;
             },
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'moveLeftButton',
-            view: (modelElement, { writer }) => {
-                const button = writer.createContainerElement('button', {
+            view: (modelElement, { writer: viewWriter }) => {
+                const button = viewWriter.createContainerElement('button', {
                     class: 'move-left-button',
                     title: modelElement.getAttribute('title') || 'Move Tab Left',
                 });
-                const textSpan = writer.createContainerElement('span');
-                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Move Tab Left'));
-                writer.insert(writer.createPositionAt(button, 0), textSpan);
+                const textSpan = viewWriter.createContainerElement('span');
+                viewWriter.insert(viewWriter.createPositionAt(textSpan, 0), viewWriter.createText('Move Tab Left'));
+                viewWriter.insert(viewWriter.createPositionAt(button, 0), textSpan);
                 return button;
             },
         });
@@ -268,27 +266,27 @@ export default class TabsPluginEditing extends Plugin {
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'moveRightButton',
-            view: (modelElement, { writer }) => {
-                const button = writer.createContainerElement('button', {
+            view: (modelElement, { writer: viewWriter }) => {
+                const button = viewWriter.createContainerElement('button', {
                     class: 'move-right-button',
                     title: modelElement.getAttribute('title') || 'Move Tab Right',
                 });
-                const textSpan = writer.createContainerElement('span');
-                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Move Tab Right'));
-                writer.insert(writer.createPositionAt(button, 0), textSpan);
+                const textSpan = viewWriter.createContainerElement('span');
+                viewWriter.insert(viewWriter.createPositionAt(textSpan, 0), viewWriter.createText('Move Tab Right'));
+                viewWriter.insert(viewWriter.createPositionAt(button, 0), textSpan);
                 return button;
             },
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'moveRightButton',
-            view: (modelElement, { writer }) => {
-                const button = writer.createContainerElement('button', {
+            view: (modelElement, { writer: viewWriter }) => {
+                const button = viewWriter.createContainerElement('button', {
                     class: 'move-right-button',
                     title: modelElement.getAttribute('title') || 'Move Tab Right',
                 });
-                const textSpan = writer.createContainerElement('span');
-                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Move Tab Right'));
-                writer.insert(writer.createPositionAt(button, 0), textSpan);
+                const textSpan = viewWriter.createContainerElement('span');
+                viewWriter.insert(viewWriter.createPositionAt(textSpan, 0), viewWriter.createText('Move Tab Right'));
+                viewWriter.insert(viewWriter.createPositionAt(button, 0), textSpan);
                 return button;
             },
         });
@@ -300,28 +298,28 @@ export default class TabsPluginEditing extends Plugin {
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'deleteTabButton',
-            view: (modelElement, { writer }) => {
-                const button = writer.createContainerElement('button', {
+            view: (modelElement, { writer: viewWriter }) => {
+                const button = viewWriter.createContainerElement('button', {
                     class: 'delete-tab-button',
                     title: modelElement.getAttribute('title') || 'Delete Tab',
                 });
-                const textSpan = writer.createContainerElement('span');
-                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Delete Tab'));
-                writer.insert(writer.createPositionAt(button, 0), textSpan);
+                const textSpan = viewWriter.createContainerElement('span');
+                viewWriter.insert(viewWriter.createPositionAt(textSpan, 0), viewWriter.createText('Delete Tab'));
+                viewWriter.insert(viewWriter.createPositionAt(button, 0), textSpan);
                 return button;
             },
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'deleteTabButton',
-            view: (modelElement, { writer }) => {
-                const button = writer.createContainerElement('button', {
+            view: (modelElement, { writer: viewWriter }) => {
+                const button = viewWriter.createContainerElement('button', {
                     class: 'delete-tab-button',
                     title: modelElement.getAttribute('title') || 'Delete Tab',
-                    isContentEditable: false, // Buttons shouldn't be editable
+                    isContentEditable: false,
                 });
-                const textSpan = writer.createContainerElement('span');
-                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Delete Tab'));
-                writer.insert(writer.createPositionAt(button, 0), textSpan);
+                const textSpan = viewWriter.createContainerElement('span');
+                viewWriter.insert(viewWriter.createPositionAt(textSpan, 0), viewWriter.createText('Delete Tab'));
+                viewWriter.insert(viewWriter.createPositionAt(button, 0), textSpan);
                 return button;
             },
         });
@@ -338,13 +336,8 @@ export default class TabsPluginEditing extends Plugin {
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'addTabListItem',
-            view: (modelElement, { writer: viewWriter }) => {
-                const li = viewWriter.createContainerElement('li', {
-                    class: 'add-tab-list-item',
-                    isContentEditable: false,
-                });
-                return li;
-            },
+            view: (modelElement, { writer: viewWriter }) =>
+                viewWriter.createContainerElement('li', { class: 'add-tab-list-item', isContentEditable: false }),
         });
 
         // Converters for 'addTabButton' element
@@ -354,28 +347,28 @@ export default class TabsPluginEditing extends Plugin {
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'addTabButton',
-            view: (modelElement, { writer }) => {
-                const button = writer.createContainerElement('button', {
+            view: (modelElement, { writer: viewWriter }) => {
+                const button = viewWriter.createContainerElement('button', {
                     class: 'add-tab-button',
                     title: modelElement.getAttribute('title') || 'Add Tab',
                 });
-                const textSpan = writer.createContainerElement('span');
-                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Add Tab'));
-                writer.insert(writer.createPositionAt(button, 0), textSpan);
+                const textSpan = viewWriter.createContainerElement('span');
+                viewWriter.insert(viewWriter.createPositionAt(textSpan, 0), viewWriter.createText('Add Tab'));
+                viewWriter.insert(viewWriter.createPositionAt(button, 0), textSpan);
                 return button;
             },
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'addTabButton',
-            view: (modelElement, { writer }) => {
-                const button = writer.createContainerElement('button', {
+            view: (modelElement, { writer: viewWriter }) => {
+                const button = viewWriter.createContainerElement('button', {
                     class: 'add-tab-button',
                     title: modelElement.getAttribute('title') || 'Add Tab',
                     isContentEditable: false,
                 });
-                const textSpan = writer.createContainerElement('span');
-                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Add Tab'));
-                writer.insert(writer.createPositionAt(button, 0), textSpan);
+                const textSpan = viewWriter.createContainerElement('span');
+                viewWriter.insert(viewWriter.createPositionAt(textSpan, 0), viewWriter.createText('Add Tab'));
+                viewWriter.insert(viewWriter.createPositionAt(button, 0), textSpan);
                 return button;
             },
         });
@@ -387,9 +380,8 @@ export default class TabsPluginEditing extends Plugin {
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabContent',
-            view: (modelElement, { writer: viewWriter }) => {
-                return viewWriter.createContainerElement('div', { class: 'tab-content' });
-            },
+            view: (modelElement, { writer: viewWriter }) =>
+                viewWriter.createContainerElement('div', { class: 'tab-content' }),
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabContent',
