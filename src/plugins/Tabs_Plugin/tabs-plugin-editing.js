@@ -58,13 +58,14 @@ export default class TabsPluginEditing extends Plugin {
 
         // Define schema for 'tabNestedContent' element
         schema.register('tabNestedContent', {
-            allowAttributes: ['id', 'class', 'placeholder'],
+            allowAttributes: ['id', 'class'],
             allowContentOf: '$block', // Allow block-level elements
             allowIn: 'tabContent',
             disallow: ['tabsPlugin'], // Disallow nesting of tabsPlugin
             isLimit: true,
         });
 
+        // Define schema for 'tabEditBar' element
         schema.register('tabEditBar', {
             allowAttributes: ['class'],
             allowIn: 'tabListItem',
@@ -395,15 +396,15 @@ export default class TabsPluginEditing extends Plugin {
         conversion.for('upcast').elementToElement({
             model: 'tabNestedContent',
             view: { name: 'div', classes: 'tab-nested-content' },
+            converterPriority: 'high',
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabNestedContent',
             view: (modelElement, { writer: viewWriter }) => {
                 const classes = modelElement.getAttribute('class');
-                return viewWriter.createEditableElement('div', {
+                const div = viewWriter.createEditableElement('div', {
                     class: classes ? `tab-nested-content ${classes}` : 'tab-nested-content',
                     id: modelElement.getAttribute('id'),
-                    placeholder: modelElement.getAttribute('placeholder'),
                 });
             },
         });
@@ -414,7 +415,6 @@ export default class TabsPluginEditing extends Plugin {
                 const div = viewWriter.createEditableElement('div', {
                     class: classes ? `tab-nested-content ${classes}` : 'tab-nested-content',
                     id: modelElement.getAttribute('id'),
-                    placeholder: modelElement.getAttribute('placeholder'),
                 });
                 return toWidgetEditable(div, viewWriter);
             },
