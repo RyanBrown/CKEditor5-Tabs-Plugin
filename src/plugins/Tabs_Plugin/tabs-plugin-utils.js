@@ -7,8 +7,8 @@ export function createTabsPluginElement(writer) {
     const tabContent = writer.createElement('tabContent', { class: 'tab-content' });
 
     // Create the first tab using centralized tabId generation
-    let firstTabId = generateTabId();
-    let { tabListItem: firstTabListItem, tabNestedContent: firstTabNestedContent } = createTabElement(
+    const firstTabId = generateTabId();
+    const { tabListItem: firstTabListItem, tabNestedContent: firstTabNestedContent } = createTabElement(
         writer,
         firstTabId
     );
@@ -19,8 +19,8 @@ export function createTabsPluginElement(writer) {
     writer.append(firstTabNestedContent, tabContent);
 
     // Create the second tab using centralized tabId generation
-    let secondTabId = generateTabId();
-    let { tabListItem: secondTabListItem, tabNestedContent: secondTabNestedContent } = createTabElement(
+    const secondTabId = generateTabId();
+    const { tabListItem: secondTabListItem, tabNestedContent: secondTabNestedContent } = createTabElement(
         writer,
         secondTabId
     );
@@ -82,7 +82,6 @@ export function createTabListItem(writer, tabId) {
     const tabTitle = writer.createElement('tabTitle', { class: 'tab-title' });
 
     // Add placeholder text or actual data
-    // writer.insertText(`Tab Name ${tabId}`, tabTitle);
     writer.insertText(`Tab Name`, tabTitle);
 
     writer.append(tabEditBar, tabListItem);
@@ -92,50 +91,26 @@ export function createTabListItem(writer, tabId) {
 }
 
 // Helper function to create a tab-list-item edit bar with move left/right controls
-export function createTabEditBar(writer, tabId) {
-    console.log(`utils.js - createTabEditBar called for #${tabId}`);
-    const tabEditBar = writer.createElement('tabEditBar', {
-        class: 'tab-edit-bar',
+export function createTabContent(writer, tabId) {
+    const tabNestedContent = writer.createElement('tabNestedContent', {
+        id: tabId,
+        class: 'tab-nested-content',
     });
-    // Adding titles to the buttons
-    appendControlElement(writer, tabEditBar, 'moveLeftButton', tabId);
-    appendControlElement(writer, tabEditBar, 'moveRightButton', tabId);
-    return tabEditBar;
+
+    writer.setAttribute('placeholder', `Tab Content ${tabId}`, tabNestedContent);
+    return tabNestedContent;
 }
 
 // Function to create an 'Add Tab' button element
 export function createAddTabButton(writer) {
-    console.log('utils.js - createAddTabButton called');
-    const addTabListItem = writer.createElement('addTabListItem', {
-        class: 'add-tab-list-item',
-    });
+    const addTabListItem = writer.createElement('addTabListItem', { class: 'add-tab-list-item' });
     const addTabButton = writer.createElement('addTabButton');
     writer.append(addTabButton, addTabListItem);
     return addTabListItem;
 }
 
-// Function to create a new tab content element using a given tabId
-export function createTabContent(writer, tabId) {
-    console.log(`utils.js - createTabContent called for #${tabId}`); // Log the usage of tabId for debugging
-
-    // Create the main container for the tab's content
-    const tabNestedContent = writer.createElement('tabNestedContent', {
-        id: tabId, // Use the provided tabId to set the ID of the content container
-        class: 'tab-nested-content',
-    });
-
-    // Set the placeholder attribute
-    writer.setAttribute('placeholder', `Tab Content ${tabId}`, tabNestedContent);
-
-    return tabNestedContent; // Return the complete tab content element
-}
-
 // Utility function to append control elements like move left, move right, and delete
-export function appendControlElement(writer, parent, type, title, buttonTitle, tabId) {
-    console.log(`utils.js - appendControlElement called for #${tabId} - ${type}`);
-    const element = writer.createElement(type, {
-        class: type,
-        title: buttonTitle, // Added title attribute for tooltips
-    });
+export function appendControlElement(writer, parent, type, title) {
+    const element = writer.createElement(type, { class: type, title });
     writer.append(element, parent);
 }

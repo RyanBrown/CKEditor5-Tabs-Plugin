@@ -16,15 +16,6 @@ export default class TabsPluginEditing extends Plugin {
 
         this._defineSchema();
         this._defineConverters();
-
-        // // Handle paste event to ensure plain text in tabTitle
-        // editor.editing.view.document.on('clipboardInput', (evt, data) => {
-        //     const target = data.target;
-
-        //     if (target.is('editableElement') && target.hasClass('tab-title')) {
-        //         data.content = editor.data.htmlProcessor.toView(data.dataTransfer.getData('text/plain'));
-        //     }
-        // });
     }
 
     _defineSchema() {
@@ -33,14 +24,14 @@ export default class TabsPluginEditing extends Plugin {
         // Define schema for the tabs plugin and its child elements
         schema.register('tabsPlugin', {
             allowIn: '$root',
-            isObject: true,
+            allowWhere: '$block',
+            isLimit: true,
         });
 
         // Define schema for 'tabList' element
         schema.register('tabList', {
             allowAttributes: ['class'],
             allowIn: 'tabsPlugin',
-            isObject: true,
         });
 
         // Define schema for 'tabListItem' element
@@ -55,36 +46,34 @@ export default class TabsPluginEditing extends Plugin {
             allowAttributes: ['class'],
             allowContentOf: '$block', // Allow only text content
             allowIn: 'tabListItem',
-            // disallow: ['$inlineObject', 'link', 'bold', 'italic', 'underline', '$block'], // Disallow all inline formatting and block elements
+            disallow: ['$inlineObject', 'link', 'bold', 'italic', 'underline', '$block'], // Disallow all inline formatting and block elements
+            isLimit: true,
         });
 
         // Define schema for 'tabContent' element
         schema.register('tabContent', {
             allowAttributes: ['class'],
             allowIn: 'tabsPlugin',
-            isObject: true,
         });
 
         // Define schema for 'tabNestedContent' element
         schema.register('tabNestedContent', {
             allowAttributes: ['id', 'class', 'placeholder'],
-            allowContentOf: '$block',
+            allowContentOf: '$block', // Allow block-level elements
             allowIn: 'tabContent',
             disallow: ['tabsPlugin'], // Disallow nesting of tabsPlugin
-            isObject: true,
+            isLimit: true,
         });
 
         schema.register('tabEditBar', {
             allowAttributes: ['class'],
             allowIn: 'tabListItem',
-            isObject: true,
         });
 
         // Define schema for 'moveButtonsWrapper' element
         schema.register('moveButtonsWrapper', {
             allowAttributes: ['class'],
             allowIn: 'tabEditBar',
-            isObject: true,
         });
 
         // Define schema for 'moveLeftButton' element
@@ -92,7 +81,6 @@ export default class TabsPluginEditing extends Plugin {
             allowAttributes: ['class', 'title'],
             allowContentOf: [], // Disallow all content within the button
             allowIn: 'moveButtonsWrapper',
-            isObject: true,
         });
 
         // Define schema for 'moveRightButton' element
@@ -100,28 +88,24 @@ export default class TabsPluginEditing extends Plugin {
             allowAttributes: ['class', 'title'],
             allowContentOf: [],
             allowIn: 'moveButtonsWrapper',
-            isObject: true,
         });
 
         // Define schema for 'deleteTabButton' element
         schema.register('deleteTabButton', {
             allowAttributes: ['class', 'title'],
             allowIn: 'tabEditBar',
-            isObject: true,
         });
 
         // Define schema for 'addTabListItem' element
         schema.register('addTabListItem', {
             allowAttributes: ['class'],
             allowIn: 'tabList',
-            isObject: true,
         });
 
         // Define schema for 'addTabButton' element
         schema.register('addTabButton', {
             allowAttributes: ['class', 'title'],
             allowIn: 'addTabListItem',
-            isObject: true,
         });
     }
 
@@ -147,6 +131,7 @@ export default class TabsPluginEditing extends Plugin {
             },
         });
 
+        // Converters for 'tabList' element (HTML to Model)
         conversion.for('upcast').elementToElement({
             model: 'tabList',
             view: { name: 'ul', classes: 'tab-list' },
