@@ -10,7 +10,7 @@ $tab-border-color-active: #ccc;
 $tab-border-width: 2px;
 
 $tab-bg: #eee;
-$tab-bg-hover: #fff;
+$tab-bg-hover: #f7f7f7;
 $tab-bg-active: #fff;
 
 .tabs-plugin {
@@ -56,7 +56,7 @@ $tab-bg-active: #fff;
                 background-color: $tab-bg-hover;
 
                 &::after {
-                    background-color: $tab-bg-active;
+                    background-color: $tab-bg-hover;
                 }
             }
 

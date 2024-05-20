@@ -37,10 +37,10 @@
   z-index: 3;
 }
 .tabs-plugin .tab-list .tab-list-item:hover {
-  background-color: #fff;
+  background-color: #f7f7f7;
 }
 .tabs-plugin .tab-list .tab-list-item:hover::after {
-  background-color: #fff;
+  background-color: #f7f7f7;
 }
 .tabs-plugin .tab-list .tab-list-item.active, .tabs-plugin .tab-list .tab-list-item.active:hover {
   background-color: #fff;
