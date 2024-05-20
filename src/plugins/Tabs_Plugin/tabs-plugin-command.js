@@ -1,22 +1,20 @@
 import { Command } from '@ckeditor/ckeditor5-core';
 import { createTabElement, findAllDescendants } from './tabs-plugin-utils';
 
-// Generates a unique tab ID based on the current timestamp.
-// @returns {string} The generated tab ID.
+// Generates a unique tab ID
 export function generateTabId() {
     return `id_${Date.now()}`;
 }
 
-// Command to insert a new tab into the tabs plugin.
+// Command to insert a new tab
 export class TabsPluginCommand extends Command {
-    // Executes the command to insert a new tab.
     execute() {
         const editor = this.editor;
         const model = editor.model;
 
         model.change((writer) => {
             const tabId = generateTabId();
-            const { tabListItem, tabNestedContent } = createTabElement(writer, tabId, false);
+            const { tabListItem, tabNestedContent } = createTabElement(writer, tabId);
             const tabsRoot = model.document.getRoot();
             const tabList = tabsRoot.getChild(0);
             const tabContent = tabsRoot.getChild(1);
@@ -24,12 +22,10 @@ export class TabsPluginCommand extends Command {
 
             model.insertContent(tabListItem, writer.createPositionBefore(addTabButton));
             model.append(tabNestedContent, tabContent);
-
             writer.setSelection(tabListItem.getChild(1).getChild(0), 0);
         });
     }
 
-    // Refreshes the command's state.
     refresh() {
         const model = this.editor.model;
         const selection = model.document.selection;
@@ -40,18 +36,11 @@ export class TabsPluginCommand extends Command {
 
 // Command to move a tab left or right.
 export class MoveTabCommand extends Command {
-    // Executes the command to move a tab.
-    // @param {Object} options - The command options.
-    // @param {string} options.tabId - The ID of the tab to move.
-    // @param {number} options.direction - The direction to move the tab (-1 for left, 1 for right).
-    execute(options) {
-        const { tabId, direction } = options;
+    execute({ tabId, direction }) {
         const model = this.editor.model;
-
         model.change((writer) => {
             const tabsRoot = model.document.getRoot();
             const tabListItems = findAllDescendants(tabsRoot, (node) => node.is('element', 'tabListItem'));
-
             const currentTabIndex = tabListItems.findIndex((item) => item.getAttribute('data-target') === `#${tabId}`);
             const targetIndex = currentTabIndex + direction;
 
@@ -65,10 +54,8 @@ export class MoveTabCommand extends Command {
     }
 }
 
-// Command to delete a tab.
+// Command to delete a tab
 export class DeleteTabCommand extends Command {
-    // Executes the command to delete a tab.
-    // @param {string} tabId - The ID of the tab to delete.
     execute(tabId) {
         const model = this.editor.model;
         model.change((writer) => {

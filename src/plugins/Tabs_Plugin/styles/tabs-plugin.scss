@@ -10,11 +10,11 @@ $tab-border-color-active: #ccc;
 $tab-border-width: 2px;
 
 $tab-bg: #eee;
-$tab-bg-hover: #fff;
+$tab-bg-hover: #f7f7f7;
 $tab-bg-active: #fff;
 
 .tabs-plugin {
-    background-color: #fff;
+    background-color: $tab-bg-active;
 
     .tab-list {
         align-items: stretch;
@@ -56,7 +56,7 @@ $tab-bg-active: #fff;
                 background-color: $tab-bg-hover;
 
                 &::after {
-                    background-color: $tab-bg-active;
+                    background-color: $tab-bg-hover;
                 }
             }
 
@@ -74,7 +74,6 @@ $tab-bg-active: #fff;
             }
 
             .tab-title {
-                // background-color: orange;
                 display: block;
                 font-weight: 700;
                 margin: $tab-x-margin $tab-y-margin;
@@ -163,11 +162,11 @@ $tab-bg-active: #fff;
         width: 1rem;
     }
 
-    &:focus,
-    &:active {
-        background-color: orange;
-        border-radius: $tab-border-radius;
-    }
+    // &:focus,
+    // &:active {
+    //     background-color: orange;
+    //     border-radius: $tab-border-radius;
+    // }
 
     span {
         align-items: center;
