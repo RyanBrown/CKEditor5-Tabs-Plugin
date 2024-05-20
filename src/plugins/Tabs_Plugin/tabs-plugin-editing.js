@@ -24,94 +24,95 @@ export default class TabsPluginEditing extends Plugin {
 
         // Define schema for the tabs plugin and its child elements
         schema.register('tabsPlugin', {
-            isObject: true,
             allowIn: '$root',
+            isObject: true,
         });
 
         // Define schema for 'tabList' element
         schema.register('tabList', {
-            isObject: true,
-            allowIn: 'tabsPlugin',
             allowAttributes: ['class'],
+            allowIn: 'tabsPlugin',
+            isObject: true,
         });
 
         // Define schema for 'tabListItem' element
         schema.register('tabListItem', {
-            allowIn: 'tabList',
-            allowContentOf: '$block',
             allowAttributes: ['class', 'data-target'],
+            allowContentOf: '$block',
+            allowIn: 'tabList',
         });
 
         // Define schema for 'tabTitle' element
         schema.register('tabTitle', {
-            allowIn: 'tabListItem',
-            allowContentOf: '$block',
             allowAttributes: ['class'],
+            allowContentOf: '$block',
+            allowIn: 'tabListItem',
         });
 
         // Define schema for 'tabContent' element
         schema.register('tabContent', {
-            isObject: true,
-            allowIn: 'tabsPlugin',
             allowAttributes: ['class'],
+            allowIn: 'tabsPlugin',
+            isObject: true,
         });
 
         // Define schema for 'tabNestedContent' element
         schema.register('tabNestedContent', {
-            allowIn: 'tabContent',
             allowAttributes: ['id', 'class', 'placeholder'],
-            isObject: true,
             allowContentOf: '$block',
+            allowIn: 'tabContent',
+            disallow: ['tabsPlugin'], // Disallow nesting of tabsPlugin
+            isObject: true,
         });
 
         schema.register('tabEditBar', {
-            isObject: true,
-            allowIn: 'tabListItem',
             allowAttributes: ['class'],
+            allowIn: 'tabListItem',
+            isObject: true,
         });
 
         // Define schema for 'moveButtonsWrapper' element
         schema.register('moveButtonsWrapper', {
-            isObject: true,
-            allowIn: 'tabEditBar',
             allowAttributes: ['class'],
+            allowIn: 'tabEditBar',
+            isObject: true,
         });
 
         // Define schema for 'moveLeftButton' element
         schema.register('moveLeftButton', {
-            isObject: true,
-            allowIn: 'moveButtonsWrapper',
             allowAttributes: ['class', 'title'],
             allowContentOf: [], // Disallow all content within the button
+            allowIn: 'moveButtonsWrapper',
+            isObject: true,
         });
 
         // Define schema for 'moveRightButton' element
         schema.register('moveRightButton', {
-            isObject: true,
-            allowIn: 'moveButtonsWrapper',
             allowAttributes: ['class', 'title'],
             allowContentOf: [],
+            allowIn: 'moveButtonsWrapper',
+            isObject: true,
         });
 
         // Define schema for 'deleteTabButton' element
         schema.register('deleteTabButton', {
-            isObject: true,
-            allowIn: 'tabEditBar',
             allowAttributes: ['class', 'title'],
+            allowIn: 'tabEditBar',
+            isObject: true,
         });
 
         // Define schema for 'addTabListItem' element
         schema.register('addTabListItem', {
-            isObject: true,
-            allowIn: 'tabList',
             allowAttributes: ['class'],
+            allowIn: 'tabList',
+            isObject: true,
         });
 
         // Define schema for 'addTabButton' element
         schema.register('addTabButton', {
-            isObject: true,
-            allowIn: 'addTabListItem',
             allowAttributes: ['class', 'title'],
+            allowIn: 'addTabListItem',
+            isObject: true,
         });
     }
 
