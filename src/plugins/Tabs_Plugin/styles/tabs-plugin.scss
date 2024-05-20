@@ -14,7 +14,7 @@ $tab-bg-hover: #fff;
 $tab-bg-active: #fff;
 
 .tabs-plugin {
-    background-color: #fff;
+    background-color: $tab-bg-active;
 
     .tab-list {
         align-items: stretch;
@@ -74,7 +74,6 @@ $tab-bg-active: #fff;
             }
 
             .tab-title {
-                // background-color: orange;
                 display: block;
                 font-weight: 700;
                 margin: $tab-x-margin $tab-y-margin;
@@ -163,11 +162,11 @@ $tab-bg-active: #fff;
         width: 1rem;
     }
 
-    &:focus,
-    &:active {
-        background-color: orange;
-        border-radius: $tab-border-radius;
-    }
+    // &:focus,
+    // &:active {
+    //     background-color: orange;
+    //     border-radius: $tab-border-radius;
+    // }
 
     span {
         align-items: center;
