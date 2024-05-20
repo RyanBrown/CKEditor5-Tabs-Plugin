@@ -11,6 +11,8 @@ export default class TabsPluginUI extends Plugin {
         this._registerEventHandlers(editor);
     }
 
+    // Inserts the tabs plugin button into the editor's UI.
+    // @param {Object} editor - The editor instance.
     _insertTabsPlugin(editor) {
         editor.ui.componentFactory.add('tabsPlugin', (locale) => {
             const button = new ButtonView(locale);
@@ -30,6 +32,10 @@ export default class TabsPluginUI extends Plugin {
         });
     }
 
+    // Finds the tab list item with the specified tab ID.
+    // @param {Object} tabsRoot - The root element of the tabs plugin.
+    // @param {string} tabId - The ID of the tab to find.
+    // @returns {Object|undefined} - The found tab list item or undefined if not found.
     findTabListItem(tabsRoot, tabId) {
         // Utilize findAllDescendants to locate the specific tab list item by attribute
         return findAllDescendants(
@@ -38,6 +44,10 @@ export default class TabsPluginUI extends Plugin {
         )[0];
     }
 
+    // Finds the tab nested content with the specified tab ID.
+    // @param {Object} tabsRoot - The root element of the tabs plugin.
+    // @param {string} tabId - The ID of the tab to find.
+    // @returns {Object|undefined} - The found tab nested content or undefined if not found.
     findTabNestedContent(tabsRoot, tabId) {
         // Utilize findAllDescendants to locate the specific tab nested content by ID
         return findAllDescendants(
@@ -46,6 +56,8 @@ export default class TabsPluginUI extends Plugin {
         )[0];
     }
 
+    // Registers event handlers for the tabs plugin.
+    // @param {Object} editor - The editor instance.
     _registerEventHandlers(editor) {
         editor.editing.view.document.on('click', (evt, data) => {
             const target = data.target; // The element that was clicked.
@@ -67,6 +79,8 @@ export default class TabsPluginUI extends Plugin {
         });
     }
 
+    // Updates empty tab titles with a default value.
+    // @param {Object} editor - The editor instance.
     _updateEmptyTabTitles(editor) {
         const viewRoot = editor.editing.view.document.getRoot();
         const tabList = Array.from(viewRoot.getChildren()).find(
@@ -90,6 +104,10 @@ export default class TabsPluginUI extends Plugin {
         }
     }
 
+    // Handles the click event on a tab list item.
+    // @param {Object} editor - The editor instance.
+    // @param {Object} target - The clicked element.
+    // @param {Object} evt - The event object.
     _handleTabClick(editor, target, evt) {
         if (!target.is('element')) {
             console.error('Clicked target is not an element:', target);
@@ -108,65 +126,67 @@ export default class TabsPluginUI extends Plugin {
             return;
         }
 
-        const tabId = tabListItem.getAttribute('data-target')?.slice(1);
+        const tabId = tabListItem.getAttribute('data-target');
 
         if (!tabId) {
             console.error('Tab ID not found on the tab list item:', tabListItem);
             return;
         }
 
-        const model = editor.model;
-        const tabsRootElement = model.document.getRoot().getChild(0);
+        const viewRoot = editor.editing.view.document.getRoot();
+        const tabsRootElement = Array.from(viewRoot.getChildren()).find(
+            (child) => child.is('element', 'div') && child.hasClass('tabs-plugin')
+        );
 
-        if (!tabsRootElement || !tabsRootElement.is('element', 'tabsPlugin')) {
-            console.error('Tabs root element not found or is not a tabsPlugin element');
+        if (!tabsRootElement) {
+            console.error('Tabs root element not found');
             return;
         }
 
-        const tabListElement = tabsRootElement.getChild(0);
-        const tabContentElement = tabsRootElement.getChild(1);
+        const tabListElement = Array.from(tabsRootElement.getChildren()).find(
+            (child) => child.is('element', 'ul') && child.hasClass('tab-list')
+        );
+        const tabContentElement = Array.from(tabsRootElement.getChildren()).find(
+            (child) => child.is('element', 'div') && child.hasClass('tab-content')
+        );
 
-        if (!tabListElement || !tabListElement.is('element', 'tabList')) {
-            console.error('Tab list element not found or is not a tabList element');
+        if (!tabListElement) {
+            console.error('Tab list element not found');
             return;
         }
 
-        if (!tabContentElement || !tabContentElement.is('element', 'tabContent')) {
-            console.error('Tab content element not found or is not a tabContent element');
+        if (!tabContentElement) {
+            console.error('Tab content element not found');
             return;
         }
 
-        model.change((writer) => {
-            // Remove the 'active' class from all tab list items
+        editor.editing.view.change((writer) => {
+            // Remove the 'active' class from all tab list items and tab content elements
             for (const item of tabListElement.getChildren()) {
-                writer.removeAttribute('class', item);
+                writer.removeClass('active', item);
             }
-
-            // Remove the 'active' class from all tab content elements
             for (const content of tabContentElement.getChildren()) {
-                writer.removeAttribute('class', content);
+                writer.removeClass('active', content);
             }
 
-            // Add the 'active' class to the selected tab list item
-            writer.setAttribute('class', 'active', tabListItem);
-
-            // Find the corresponding tab content element
-            const tabContentId = `tab${tabId}`;
-            const selectedTabContent = tabContentElement.getChild(
-                tabContentElement.getChildIndex(tabContentElement.getChild(0)) +
-                    Array.from(tabListElement.getChildren()).indexOf(tabListItem)
+            // Add the 'active' class to the selected tab list item and corresponding tab content element
+            writer.addClass('active', tabListItem);
+            const selectedTabContent = Array.from(tabContentElement.getChildren()).find(
+                (child) => child.getAttribute('id') === tabId.slice(1)
             );
-
-            if (selectedTabContent && selectedTabContent.getAttribute('id') === tabContentId) {
-                writer.setAttribute('class', 'active', selectedTabContent);
+            if (selectedTabContent) {
+                writer.addClass('active', selectedTabContent);
             } else {
-                console.error('Selected tab content not found or has an incorrect ID');
+                console.error('Selected tab content not found');
             }
         });
-
         evt.stop();
     }
 
+    // Handles the delete tab button click event.
+    // @param {Object} editor - The editor instance.
+    // @param {Object} target - The clicked element.
+    // @param {Object} evt - The event object.
     _handleDeleteTab(editor, target, evt) {
         const tabListItem = target.findAncestor('li');
         const tabId = tabListItem.getAttribute('data-target').slice(1).replace('#', '');
@@ -174,11 +194,19 @@ export default class TabsPluginUI extends Plugin {
         evt.stop();
     }
 
+    // Handles the add tab button click event.
+    // @param {Object} editor - The editor instance.
+    // @param {Object} evt - The event object.
     _handleAddTab(editor, evt) {
         this._addNewTab(editor);
         evt.stop();
     }
 
+    // Handles the move tab button click event.
+    // @param {Object} editor - The editor instance.
+    // @param {Object} target - The clicked element.
+    // @param {Object} evt - The event object.
+    // @param {number} direction - The direction to move the tab (-1 for left, 1 for right).
     _handleMoveTab(editor, target, evt, direction) {
         const tabListItem = target.findAncestor('li');
         const tabId = tabListItem.getAttribute('data-target').slice(1);
@@ -187,6 +215,10 @@ export default class TabsPluginUI extends Plugin {
         evt.stop();
     }
 
+    // Handles the blur event on the tab title input.
+    // @param {Object} editor - The editor instance.
+    // @param {Object} target - The blurred element.
+    // @param {Object} evt - The event object.
     _handleTabTitleBlur(editor, target, evt) {
         const modelElement = editor.editing.mapper.toModelElement(target);
 
@@ -198,6 +230,8 @@ export default class TabsPluginUI extends Plugin {
         });
     }
 
+    // Adds a new tab to the tabs plugin.
+    // @param {Object} editor - The editor instance.
     _addNewTab(editor) {
         editor.model.change((writer) => {
             // Get the root element of the document

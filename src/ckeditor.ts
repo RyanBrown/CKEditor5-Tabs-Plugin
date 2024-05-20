@@ -162,6 +162,8 @@ class Editor extends ClassicEditor {
         table: {
             contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells', 'tableCellProperties', 'tableProperties'],
         },
+        title: { placeholder: '' },
+        placeholder: '',
     };
 }
 
