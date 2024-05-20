@@ -163,7 +163,6 @@ export default class TabsPluginUI extends Plugin {
                 console.error('Selected tab content not found or has an incorrect ID');
             }
         });
-
         evt.stop();
     }
 

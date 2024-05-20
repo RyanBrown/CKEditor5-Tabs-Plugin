@@ -81,8 +81,7 @@ $tab-bg-active: #fff;
                 position: relative;
                 text-align: center;
                 min-width: 6rem;
-                width: fit-content;
-                word-wrap: break-word;
+                word-break: break-word;
             }
             // Align the 'move-right-button' right and hide the 'move-left-button'
             &:first-child .tab-edit-bar > .move-buttons-wrapper {
