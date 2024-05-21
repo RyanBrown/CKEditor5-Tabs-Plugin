@@ -85,16 +85,16 @@
 .tabs-plugin .tab-list .tab-list-item:first-child .tab-edit-bar > .move-buttons-wrapper .move-left-button {
   display: none;
 }
-.tabs-plugin .tab-list .tab-list-item:nth-last-child(3) .tab-edit-bar > .move-buttons-wrapper {
+.tabs-plugin .tab-list .tab-list-item:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper {
   justify-content: flex-start;
 }
-.tabs-plugin .tab-list .tab-list-item:nth-last-child(3) .tab-edit-bar > .move-buttons-wrapper .move-right-button {
+.tabs-plugin .tab-list .tab-list-item:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper .move-right-button {
   display: none;
 }
-.tabs-plugin .tab-list .tab-list-item:nth-last-child(3):first-child .tab-edit-bar {
+.tabs-plugin .tab-list .tab-list-item:nth-last-child(2):first-child .tab-edit-bar {
   display: none;
 }
-.tabs-plugin .tab-list .tab-list-item:nth-last-child(3):first-child .tab-title {
+.tabs-plugin .tab-list .tab-list-item:nth-last-child(2):first-child .tab-title {
   margin: 0.75rem 1.25rem;
 }
 .tabs-plugin .tab-list .add-tab-list-item {

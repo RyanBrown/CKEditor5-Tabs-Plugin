@@ -118,7 +118,7 @@ $transition-speed: 200ms ease-in-out;
                 }
             }
             // Align the 'move-left-button' left and hide the 'move-right-button' for the last tab
-            &:nth-last-child(3) .tab-edit-bar > .move-buttons-wrapper {
+            &:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper {
                 justify-content: flex-start;
 
                 .move-right-button {
@@ -126,7 +126,7 @@ $transition-speed: 200ms ease-in-out;
                 }
             }
             // Hide the 'tab-edit-bar' if only one tab is visible
-            &:nth-last-child(3):first-child {
+            &:nth-last-child(2):first-child {
                 .tab-edit-bar {
                     display: none;
                 }

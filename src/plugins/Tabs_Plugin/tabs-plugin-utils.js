@@ -88,7 +88,6 @@ export function createTabContent(writer, tabId) {
     return writer.createElement('tabNestedContent', {
         id: tabId,
         class: 'tab-nested-content',
-        placeholder: `Tab Content ${tabId}`,
     });
 }
 
