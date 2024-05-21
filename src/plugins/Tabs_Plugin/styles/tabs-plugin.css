@@ -10,16 +10,15 @@
   padding: 0;
 }
 .tabs-plugin .tab-list .tab-list-item {
-  align-items: center;
   background-color: #eee;
   border-radius: 0.5rem 0.5rem 0 0;
   border: 2px solid #ddd;
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  flex-grow: 0;
   justify-content: center;
   max-width: 20rem;
+  min-height: 5.625rem;
   min-width: 10rem;
   padding: 0;
   position: relative;
@@ -54,13 +53,30 @@
   bottom: -4px;
   height: 4px;
 }
+.tabs-plugin .tab-list .tab-list-item .tab-edit-bar {
+  align-items: center;
+  display: flex;
+  flex: 1 1 0;
+  margin-bottom: 40px;
+  margin: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+.tabs-plugin .tab-list .tab-list-item .tab-edit-bar .move-buttons-wrapper {
+  display: flex;
+  flex: 1 1 0;
+  justify-content: space-between;
+}
 .tabs-plugin .tab-list .tab-list-item .tab-title {
-  display: block;
+  align-items: center;
+  display: flex;
   font-weight: 700;
-  margin: 0.75rem 1.25rem;
+  justify-content: center;
+  margin: 2.75rem 1.25rem 0.75rem;
+  min-width: 6rem;
   position: relative;
   text-align: center;
-  min-width: 6rem;
   word-break: break-word;
 }
 .tabs-plugin .tab-list .tab-list-item:first-child .tab-edit-bar > .move-buttons-wrapper {
@@ -75,8 +91,11 @@
 .tabs-plugin .tab-list .tab-list-item:nth-last-child(3) .tab-edit-bar > .move-buttons-wrapper .move-right-button {
   display: none;
 }
-.tabs-plugin .tab-list .tab-list-item:nth-last-child(3):first-child .tab-edit-bar > .delete-tab-button {
+.tabs-plugin .tab-list .tab-list-item:nth-last-child(3):first-child .tab-edit-bar {
   display: none;
+}
+.tabs-plugin .tab-list .tab-list-item:nth-last-child(3):first-child .tab-title {
+  margin: 0.75rem 1.25rem;
 }
 .tabs-plugin .tab-list .add-tab-list-item {
   align-self: flex-end;
@@ -98,17 +117,6 @@
 .tabs-plugin .tab-content .tab-nested-content.active {
   display: block;
   padding: 1rem;
-}
-
-.tab-edit-bar {
-  align-items: center;
-  display: flex;
-  width: 100%;
-}
-.tab-edit-bar .move-buttons-wrapper {
-  display: flex;
-  flex: 1 1 0;
-  justify-content: space-between;
 }
 
 .add-tab-button,

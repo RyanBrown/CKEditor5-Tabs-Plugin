@@ -34,16 +34,15 @@ $transition-speed: 200ms ease-in-out;
 
         // Individual tab list item
         .tab-list-item {
-            align-items: center;
             background-color: $tab-bg;
             border-radius: $tab-border-radius $tab-border-radius 0 0;
             border: $tab-border-width solid $tab-border-color;
             cursor: pointer;
             display: flex;
             flex-direction: column;
-            flex-grow: 0;
             justify-content: center;
             max-width: 20rem;
+            min-height: 5.625rem;
             min-width: 10rem;
             padding: 0;
             position: relative;
@@ -69,7 +68,6 @@ $transition-speed: 200ms ease-in-out;
                     background-color: $tab-bg-hover;
                 }
             }
-
             &.active,
             &.active:hover {
                 background-color: $tab-bg-active;
@@ -82,14 +80,33 @@ $transition-speed: 200ms ease-in-out;
                     height: calc($tab-border-width * 2);
                 }
             }
+            // Editing buttons container
+            .tab-edit-bar {
+                align-items: center;
+                display: flex;
+                flex: 1 1 0;
+                margin-bottom: 40px;
+                margin: 0;
+                position: absolute;
+                top: 0;
+                width: 100%;
+
+                .move-buttons-wrapper {
+                    display: flex;
+                    flex: 1 1 0;
+                    justify-content: space-between;
+                }
+            }
             // Title of the tab
             .tab-title {
-                display: block;
+                align-items: center;
+                display: flex;
                 font-weight: 700;
-                margin: $tab-x-margin $tab-y-margin;
+                justify-content: center;
+                margin: calc(2rem + $tab-x-margin) $tab-y-margin $tab-x-margin;
+                min-width: 6rem;
                 position: relative;
                 text-align: center;
-                min-width: 6rem;
                 word-break: break-word;
             }
             // Align the 'move-right-button' left and hide the 'move-left-button' for the first tab
@@ -108,9 +125,14 @@ $transition-speed: 200ms ease-in-out;
                     display: none;
                 }
             }
-            // Hide the 'delete-tab-button' if only one tab is visible
-            &:nth-last-child(3):first-child .tab-edit-bar > .delete-tab-button {
-                display: none;
+            // Hide the 'tab-edit-bar' if only one tab is visible
+            &:nth-last-child(3):first-child {
+                .tab-edit-bar {
+                    display: none;
+                }
+                .tab-title {
+                    margin: $tab-x-margin $tab-y-margin;
+                }
             }
         }
         // Container for the add tab button
@@ -142,19 +164,6 @@ $transition-speed: 200ms ease-in-out;
                 padding: 1rem;
             }
         }
-    }
-}
-
-// Editing buttons container
-.tab-edit-bar {
-    align-items: center;
-    display: flex;
-    width: 100%;
-
-    .move-buttons-wrapper {
-        display: flex;
-        flex: 1 1 0;
-        justify-content: space-between;
     }
 }
 
