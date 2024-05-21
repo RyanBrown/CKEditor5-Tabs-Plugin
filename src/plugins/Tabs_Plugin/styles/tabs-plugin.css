@@ -23,8 +23,8 @@
   min-width: 10rem;
   padding: 0;
   position: relative;
-  z-index: 5;
   transition: background-color 200ms ease-in-out, border-color 200ms ease-in-out;
+  z-index: 5;
 }
 .tabs-plugin .tab-list .tab-list-item::after {
   background-color: #eee;
@@ -34,9 +34,9 @@
   height: 2px;
   left: 0;
   position: absolute;
+  transition: background-color 200ms ease-in-out;
   width: 100%;
   z-index: 3;
-  transition: background-color 200ms ease-in-out;
 }
 .tabs-plugin .tab-list .tab-list-item:hover {
   background-color: #f7f7f7;
@@ -133,6 +133,7 @@
   content: "";
   display: block;
   height: 1rem;
+  transition: background-image 200ms ease-in-out;
   width: 1rem;
 }
 .add-tab-button span,
@@ -145,38 +146,30 @@
 
 .move-left-button::before {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='#333333'/%3E%3C/svg%3E");
-  transition: background-image 200ms ease-in-out;
 }
 .move-left-button:hover::before {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='#266de2'/%3E%3C/svg%3E");
-  transition: background-image 200ms ease-in-out;
 }
 
 .move-right-button::before {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='#333333'/%3E%3C/svg%3E");
-  transition: background-image 200ms ease-in-out;
 }
 .move-right-button:hover::before {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='#266de2'/%3E%3C/svg%3E");
-  transition: background-image 200ms ease-in-out;
 }
 
 .delete-tab-button::before {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='#333333'/%3E%3C/svg%3E");
-  transition: background-image 200ms ease-in-out;
 }
 .delete-tab-button:hover::before {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='#ff0000'/%3E%3C/svg%3E");
-  transition: background-image 200ms ease-in-out;
 }
 
 .add-tab-button::before {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#333333'/%3E%3C/svg%3E");
-  transition: background-image 200ms ease-in-out;
 }
 .add-tab-button:hover::before {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#266de2'/%3E%3C/svg%3E");
-  transition: background-image 200ms ease-in-out;
 }
 
 .tab-list.ck-widget.ck-widget_selected,

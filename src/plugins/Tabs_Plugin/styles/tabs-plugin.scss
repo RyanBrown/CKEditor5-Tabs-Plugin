@@ -1,23 +1,29 @@
+// Padding variables
 $tab-x-padding: 1.5rem;
 $tab-y-padding: 1.75rem;
 
+// Margin variables
 $tab-x-margin: 0.75rem;
 $tab-y-margin: 1.25rem;
 
+// Border variables
 $tab-border-radius: 0.5rem;
 $tab-border-color: #ddd;
 $tab-border-color-active: #ccc;
 $tab-border-width: 2px;
 
+// Background-color variables
 $tab-bg: #eee;
 $tab-bg-hover: #f7f7f7;
 $tab-bg-active: #fff;
 
 $transition-speed: 200ms ease-in-out;
 
+// Main tabs plugin container
 .tabs-plugin {
     background-color: $tab-bg-active;
 
+    // Tab list container
     .tab-list {
         align-items: stretch;
         display: flex;
@@ -26,6 +32,7 @@ $transition-speed: 200ms ease-in-out;
         margin: 0;
         padding: 0;
 
+        // Individual tab list item
         .tab-list-item {
             align-items: center;
             background-color: $tab-bg;
@@ -40,8 +47,8 @@ $transition-speed: 200ms ease-in-out;
             min-width: 10rem;
             padding: 0;
             position: relative;
-            z-index: 5;
             transition: background-color $transition-speed, border-color $transition-speed;
+            z-index: 5;
 
             &::after {
                 background-color: $tab-bg;
@@ -51,9 +58,9 @@ $transition-speed: 200ms ease-in-out;
                 height: $tab-border-width;
                 left: 0;
                 position: absolute;
+                transition: background-color $transition-speed;
                 width: 100%;
                 z-index: 3;
-                transition: background-color $transition-speed;
             }
             &:hover {
                 background-color: $tab-bg-hover;
@@ -75,6 +82,7 @@ $transition-speed: 200ms ease-in-out;
                     height: calc($tab-border-width * 2);
                 }
             }
+            // Title of the tab
             .tab-title {
                 display: block;
                 font-weight: 700;
@@ -84,7 +92,7 @@ $transition-speed: 200ms ease-in-out;
                 min-width: 6rem;
                 word-break: break-word;
             }
-            // Align the 'move-right-button' left and hide the 'move-left-button'
+            // Align the 'move-right-button' left and hide the 'move-left-button' for the first tab
             &:first-child .tab-edit-bar > .move-buttons-wrapper {
                 justify-content: flex-end;
 
@@ -92,7 +100,7 @@ $transition-speed: 200ms ease-in-out;
                     display: none;
                 }
             }
-            // Align the 'move-left-button' left and hide the 'move-right-button'
+            // Align the 'move-left-button' left and hide the 'move-right-button' for the last tab
             &:nth-last-child(3) .tab-edit-bar > .move-buttons-wrapper {
                 justify-content: flex-start;
 
@@ -105,6 +113,7 @@ $transition-speed: 200ms ease-in-out;
                 display: none;
             }
         }
+        // Container for the add tab button
         .add-tab-list-item {
             align-self: flex-end;
             padding: 0;
@@ -115,6 +124,7 @@ $transition-speed: 200ms ease-in-out;
         }
     }
 
+    // Content of the tabs
     .tab-content {
         background-color: $tab-bg-active;
         border: $tab-border-width solid $tab-border-color-active;
@@ -135,7 +145,7 @@ $transition-speed: 200ms ease-in-out;
     }
 }
 
-// Editing Buttons
+// Editing buttons container
 .tab-edit-bar {
     align-items: center;
     display: flex;
@@ -148,6 +158,7 @@ $transition-speed: 200ms ease-in-out;
     }
 }
 
+// Individual buttons (add, delete, move-left, move-right)
 .add-tab-button,
 .delete-tab-button,
 .move-left-button,
@@ -165,6 +176,7 @@ $transition-speed: 200ms ease-in-out;
         content: '';
         display: block;
         height: 1rem;
+        transition: background-image $transition-speed;
         width: 1rem;
     }
     span {
@@ -173,51 +185,47 @@ $transition-speed: 200ms ease-in-out;
     }
 }
 
+// Move left button
 .move-left-button {
     &::before {
         background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='#333333'/%3E%3C/svg%3E");
-        transition: background-image $transition-speed;
     }
     &:hover::before {
         background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='#266de2'/%3E%3C/svg%3E");
-        transition: background-image $transition-speed;
     }
 }
 
+// Move right button
 .move-right-button {
     &::before {
         background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='#333333'/%3E%3C/svg%3E");
-        transition: background-image $transition-speed;
     }
     &:hover::before {
         background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='#266de2'/%3E%3C/svg%3E");
-        transition: background-image $transition-speed;
     }
 }
 
+// Delete tab button
 .delete-tab-button {
     &::before {
         background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='#333333'/%3E%3C/svg%3E");
-        transition: background-image $transition-speed;
     }
     &:hover::before {
         background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='#ff0000'/%3E%3C/svg%3E");
-        transition: background-image $transition-speed;
     }
 }
 
+// Add tab button
 .add-tab-button {
     &::before {
         background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#333333'/%3E%3C/svg%3E");
-        transition: background-image $transition-speed;
     }
     &:hover::before {
         background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#266de2'/%3E%3C/svg%3E");
-        transition: background-image $transition-speed;
     }
 }
 
-// hide outline on elements
+// Hide outline on elements when selected in the editor
 .tab-list,
 .tab-list-item,
 .tab-edit-bar,
@@ -262,7 +270,6 @@ $transition-speed: 200ms ease-in-out;
                 &:before,
                 &:after {
                     display: none;
-                    // z-index: 100;
                 }
             }
         }
@@ -280,6 +287,7 @@ $transition-speed: 200ms ease-in-out;
     }
 }
 
+// Remove outline on blurred editor
 .ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected,
 .ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover {
     .tab-list,
@@ -300,7 +308,7 @@ $transition-speed: 200ms ease-in-out;
     outline: none !important;
 }
 
-// Set the z-index higher than the tabs
+// Set the z-index higher than the tabs for type-around buttons
 .ck.ck-widget__type-around__button.ck-widget__type-around__button_before,
 .ck.ck-widget__type-around__button.ck-widget__type-around__button_after {
     z-index: 1001;
@@ -311,6 +319,7 @@ $transition-speed: 200ms ease-in-out;
 //   display: none;
 // }
 
+// Placeholder styling for nested content in the editor
 .ck-content .tab-nested-content.ck-placeholder::before {
     content: attr(data-placeholder);
     color: #999;
