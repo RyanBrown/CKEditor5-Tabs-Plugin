@@ -1,5 +1,4 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
-import { toWidget, toWidgetEditable } from '@ckeditor/ckeditor5-widget';
 import { Widget } from '@ckeditor/ckeditor5-widget';
 import { TabsPluginCommand, DeleteTabCommand, MoveTabCommand } from './tabs-plugin-command';
 
@@ -63,6 +62,7 @@ export default class TabsPluginEditing extends Plugin {
         schema.register('tabEditBar', {
             allowAttributes: ['class'],
             allowIn: 'tabListItem',
+            isContentEditable: false,
         });
         // Define schema for 'moveButtonsWrapper' element
         schema.register('moveButtonsWrapper', {
@@ -93,6 +93,7 @@ export default class TabsPluginEditing extends Plugin {
         schema.register('addTabButton', {
             allowAttributes: ['class', 'title'],
             allowIn: 'addTabListItem',
+            isContentEditable: false,
         });
     }
 
@@ -205,8 +206,10 @@ export default class TabsPluginEditing extends Plugin {
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'moveButtonsWrapper',
-            view: (modelElement, { writer: viewWriter }) =>
-                viewWriter.createContainerElement('div', { class: 'move-buttons-wrapper' }),
+            view: (modelElement, { writer: viewWriter }) => {
+                const div = viewWriter.createContainerElement('div', { class: 'move-buttons-wrapper' });
+                return div;
+            },
         });
         // Converters for 'moveLeftButton' element (HTML to Model)
         conversion.for('upcast').elementToElement({
@@ -232,6 +235,7 @@ export default class TabsPluginEditing extends Plugin {
                 const button = viewWriter.createContainerElement('button', {
                     class: 'move-left-button',
                     title: modelElement.getAttribute('title') || 'Move Tab Left',
+                    isContentEditable: false,
                 });
                 const textSpan = viewWriter.createContainerElement('span');
                 viewWriter.insert(viewWriter.createPositionAt(textSpan, 0), viewWriter.createText('Move Tab Left'));
@@ -263,6 +267,7 @@ export default class TabsPluginEditing extends Plugin {
                 const button = viewWriter.createContainerElement('button', {
                     class: 'move-right-button',
                     title: modelElement.getAttribute('title') || 'Move Tab Right',
+                    isContentEditable: false,
                 });
                 const textSpan = viewWriter.createContainerElement('span');
                 viewWriter.insert(viewWriter.createPositionAt(textSpan, 0), viewWriter.createText('Move Tab Right'));
