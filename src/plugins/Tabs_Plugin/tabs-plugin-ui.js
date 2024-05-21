@@ -31,7 +31,7 @@ export default class TabsPluginUI extends Plugin {
         });
     }
 
-    // Registers event handlers for the tabs plugin.
+    // Registers event handlers for the tabs plugin
     _registerEventHandlers(editor) {
         editor.editing.view.document.on('click', (evt, data) => {
             const target = data.target;
@@ -77,6 +77,7 @@ export default class TabsPluginUI extends Plugin {
         }
     }
 
+    // Handles the tab click event
     _handleTabClick(editor, target, evt) {
         let tabListItem = target;
 
@@ -91,6 +92,7 @@ export default class TabsPluginUI extends Plugin {
         evt.stop();
     }
 
+    // Activates the specified tab
     _activateTab(editor, tabListItem) {
         const tabId = tabListItem.getAttribute('data-target');
         const viewRoot = editor.editing.view.document.getRoot();
@@ -195,6 +197,7 @@ export default class TabsPluginUI extends Plugin {
         evt.stop();
     }
 
+    // Adds a new tab to the tabs plugin
     _addNewTab(editor) {
         editor.model.change((writer) => {
             // Get the root element of the document
