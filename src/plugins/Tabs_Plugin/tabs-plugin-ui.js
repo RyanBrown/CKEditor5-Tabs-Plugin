@@ -35,7 +35,7 @@ export default class TabsPluginUI extends Plugin {
     _registerEventHandlers(editor) {
         editor.editing.view.document.on('click', (evt, data) => {
             const target = data.target;
-            if (target.hasClass('tab-list-item')) {
+            if (target.hasClass('tab-list-item') || target.hasClass('tab-title')) {
                 this._handleTabClick(editor, target, evt);
             } else if (target.hasClass('delete-tab-button')) {
                 this._handleDeleteTab(editor, target, evt);
@@ -78,29 +78,21 @@ export default class TabsPluginUI extends Plugin {
     }
 
     _handleTabClick(editor, target, evt) {
-        if (!target.is('element')) {
-            console.error('Clicked target is not an element:', target);
-            return;
-        }
-
         let tabListItem = target;
 
-        // Traverse up the DOM to find the 'li' element with the 'tab-list-item' class
-        while (tabListItem && (!tabListItem.is('element', 'li') || !tabListItem.hasClass('tab-list-item'))) {
+        while (tabListItem && !tabListItem.hasClass('tab-list-item')) {
             tabListItem = tabListItem.parent;
         }
 
-        if (!tabListItem) {
-            console.error('Tab list item not found for the clicked element:', target);
-            return;
+        if (tabListItem) {
+            this._activateTab(editor, tabListItem);
         }
 
+        evt.stop();
+    }
+
+    _activateTab(editor, tabListItem) {
         const tabId = tabListItem.getAttribute('data-target');
-        if (!tabId) {
-            console.error('Tab ID not found on the tab list item:', tabListItem);
-            return;
-        }
-
         const viewRoot = editor.editing.view.document.getRoot();
         const tabsRootElement = Array.from(viewRoot.getChildren()).find(
             (child) => child.is('element', 'div') && child.hasClass('tabs-plugin')
@@ -143,7 +135,6 @@ export default class TabsPluginUI extends Plugin {
                 console.error('Selected tab content not found');
             }
         });
-        evt.stop();
     }
 
     // Handles the delete tab button click event
@@ -168,19 +159,6 @@ export default class TabsPluginUI extends Plugin {
         evt.stop();
     }
 
-    // Handles the blur event on the tab title input
-    _handleTabTitleBlur(editor, target, evt) {
-        const modelElement = editor.editing.mapper.toModelElement(target);
-
-        editor.model.change((writer) => {
-            const text = modelElement.getChild(0) ? modelElement.getChild(0).data.trim() : '';
-            if (text === '') {
-                writer.insertText('Tab Name', modelElement, 0);
-            }
-        });
-    }
-
-    // Adds a new tab to the tabs plugin
     _addNewTab(editor) {
         editor.model.change((writer) => {
             // Get the root element of the document
@@ -214,7 +192,6 @@ export default class TabsPluginUI extends Plugin {
                 }
             }
 
-            // If not found, create them
             if (!tabList) {
                 tabList = writer.createElement('tabList');
                 writer.append(tabList, tabsPlugin);
