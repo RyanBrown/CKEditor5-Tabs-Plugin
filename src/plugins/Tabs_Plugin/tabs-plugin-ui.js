@@ -141,7 +141,26 @@ export default class TabsPluginUI extends Plugin {
     _handleDeleteTab(editor, target, evt) {
         const tabListItem = target.findAncestor('li');
         const tabId = tabListItem.getAttribute('data-target').slice(1);
-        editor.execute('deleteTab', tabId);
+        const wasActive = tabListItem.hasClass('active');
+
+        editor.model.change((writer) => {
+            editor.execute('deleteTab', tabId);
+
+            if (wasActive) {
+                const tabList = tabListItem.parent;
+                const tabListItems = Array.from(tabList.getChildren()).filter(
+                    (child) => child.is('element', 'li') && child.hasClass('tab-list-item')
+                );
+                const index = tabListItems.indexOf(tabListItem);
+
+                // Find the next tab to activate
+                const nextTab = tabListItems[index - 1] || tabListItems[index + 1];
+                if (nextTab) {
+                    this._activateTab(editor, nextTab);
+                }
+            }
+        });
+
         evt.stop();
     }
 
