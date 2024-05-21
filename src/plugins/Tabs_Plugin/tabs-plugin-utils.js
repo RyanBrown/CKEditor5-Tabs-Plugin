@@ -69,10 +69,10 @@ export function createTabListItem(writer, tabId) {
     const tabEditBar = writer.createElement('tabEditBar', { class: 'tab-edit-bar' });
     const moveButtonsWrapper = writer.createElement('moveButtonsWrapper', { class: 'move-buttons-wrapper' });
 
-    appendControlElement(writer, moveButtonsWrapper, 'moveLeftButton', 'Move Left');
-    appendControlElement(writer, moveButtonsWrapper, 'moveRightButton', 'Move Right');
+    appendControlElement(writer, moveButtonsWrapper, 'moveLeftButton', 'Move Tab Left');
+    appendControlElement(writer, moveButtonsWrapper, 'moveRightButton', 'Move Tab Right');
     writer.append(moveButtonsWrapper, tabEditBar);
-    appendControlElement(writer, tabEditBar, 'deleteTabButton', 'Delete');
+    appendControlElement(writer, tabEditBar, 'deleteTabButton', 'Delete Tab');
 
     const tabTitle = writer.createElement('tabTitle', { class: 'tab-title' });
     writer.insertText(`Tab Name`, tabTitle);
