@@ -51,7 +51,6 @@ $tab-bg-active: #fff;
                 width: 100%;
                 z-index: 3;
             }
-
             &:hover {
                 background-color: $tab-bg-hover;
 
@@ -72,7 +71,6 @@ $tab-bg-active: #fff;
                     height: calc($tab-border-width * 2);
                 }
             }
-
             .tab-title {
                 display: block;
                 font-weight: 700;
@@ -82,7 +80,6 @@ $tab-bg-active: #fff;
                 min-width: 6rem;
                 word-break: break-word;
             }
-            // Align the 'move-right-button' right and hide the 'move-left-button'
             &:first-child .tab-edit-bar > .move-buttons-wrapper {
                 justify-content: flex-end;
 
@@ -90,22 +87,17 @@ $tab-bg-active: #fff;
                     display: none;
                 }
             }
-            // Align the 'move-left-button' left and hide the 'move-right-button'
-            &:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper {
+            &:nth-last-child(3) .tab-edit-bar > .move-buttons-wrapper {
                 justify-content: flex-start;
 
                 .move-right-button {
                     display: none;
                 }
             }
-            // Hide the 'delete-tab-button' if only one tab is visible
-            &:nth-last-child(2):first-child {
-                .tab-edit-bar > .delete-tab-button {
-                    display: none;
-                }
+            &:nth-last-child(3):first-child .tab-edit-bar > .delete-tab-button {
+                display: none;
             }
         }
-
         .add-tab-list-item {
             align-self: flex-end;
             padding: 0;
