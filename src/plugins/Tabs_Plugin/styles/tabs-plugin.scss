@@ -80,6 +80,7 @@ $tab-bg-active: #fff;
                 min-width: 6rem;
                 word-break: break-word;
             }
+            // Align the 'move-right-button' left and hide the 'move-left-button'
             &:first-child .tab-edit-bar > .move-buttons-wrapper {
                 justify-content: flex-end;
 
@@ -87,6 +88,7 @@ $tab-bg-active: #fff;
                     display: none;
                 }
             }
+            // Align the 'move-left-button' left and hide the 'move-right-button'
             &:nth-last-child(3) .tab-edit-bar > .move-buttons-wrapper {
                 justify-content: flex-start;
 
@@ -94,6 +96,7 @@ $tab-bg-active: #fff;
                     display: none;
                 }
             }
+            // Hide the 'delete-tab-button' if only one tab is visible
             &:nth-last-child(3):first-child .tab-edit-bar > .delete-tab-button {
                 display: none;
             }
@@ -101,6 +104,10 @@ $tab-bg-active: #fff;
         .add-tab-list-item {
             align-self: flex-end;
             padding: 0;
+
+            .add-tab-button {
+                padding: $tab-x-padding $tab-y-padding;
+            }
         }
     }
 
@@ -153,21 +160,10 @@ $tab-bg-active: #fff;
         height: 1rem;
         width: 1rem;
     }
-
-    // &:focus,
-    // &:active {
-    //     background-color: orange;
-    //     border-radius: $tab-border-radius;
-    // }
-
     span {
         align-items: center;
         display: none;
     }
-}
-
-.add-tab-button {
-    padding: $tab-x-padding $tab-y-padding;
 }
 
 .move-left-button {

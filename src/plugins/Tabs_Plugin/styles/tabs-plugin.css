@@ -80,6 +80,9 @@
   align-self: flex-end;
   padding: 0;
 }
+.tabs-plugin .tab-list .add-tab-list-item .add-tab-button {
+  padding: 1.5rem 1.75rem;
+}
 .tabs-plugin .tab-content {
   background-color: #fff;
   border: 2px solid #ccc;
@@ -135,10 +138,6 @@
 .move-right-button span {
   align-items: center;
   display: none;
-}
-
-.add-tab-button {
-  padding: 1.5rem 1.75rem;
 }
 
 .move-left-button::before {
