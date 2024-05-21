@@ -31,11 +31,11 @@ export default class TabsPluginUI extends Plugin {
         });
     }
 
-    // Registers event handlers for the tabs plugin.
+    // Registers event handlers for the tabs plugin
     _registerEventHandlers(editor) {
         editor.editing.view.document.on('click', (evt, data) => {
             const target = data.target;
-            if (target.hasClass('tab-list-item')) {
+            if (target.hasClass('tab-list-item') || target.hasClass('tab-title')) {
                 this._handleTabClick(editor, target, evt);
             } else if (target.hasClass('delete-tab-button')) {
                 this._handleDeleteTab(editor, target, evt);
@@ -77,30 +77,24 @@ export default class TabsPluginUI extends Plugin {
         }
     }
 
+    // Handles the tab click event
     _handleTabClick(editor, target, evt) {
-        if (!target.is('element')) {
-            console.error('Clicked target is not an element:', target);
-            return;
-        }
-
         let tabListItem = target;
 
-        // Traverse up the DOM to find the 'li' element with the 'tab-list-item' class
-        while (tabListItem && (!tabListItem.is('element', 'li') || !tabListItem.hasClass('tab-list-item'))) {
+        while (tabListItem && !tabListItem.hasClass('tab-list-item')) {
             tabListItem = tabListItem.parent;
         }
 
-        if (!tabListItem) {
-            console.error('Tab list item not found for the clicked element:', target);
-            return;
+        if (tabListItem) {
+            this._activateTab(editor, tabListItem);
         }
 
+        evt.stop();
+    }
+
+    // Activates the specified tab
+    _activateTab(editor, tabListItem) {
         const tabId = tabListItem.getAttribute('data-target');
-        if (!tabId) {
-            console.error('Tab ID not found on the tab list item:', tabListItem);
-            return;
-        }
-
         const viewRoot = editor.editing.view.document.getRoot();
         const tabsRootElement = Array.from(viewRoot.getChildren()).find(
             (child) => child.is('element', 'div') && child.hasClass('tabs-plugin')
@@ -143,14 +137,32 @@ export default class TabsPluginUI extends Plugin {
                 console.error('Selected tab content not found');
             }
         });
-        evt.stop();
     }
 
     // Handles the delete tab button click event
     _handleDeleteTab(editor, target, evt) {
         const tabListItem = target.findAncestor('li');
         const tabId = tabListItem.getAttribute('data-target').slice(1);
-        editor.execute('deleteTab', tabId);
+        const wasActive = tabListItem.hasClass('active');
+
+        editor.model.change((writer) => {
+            editor.execute('deleteTab', tabId);
+
+            if (wasActive) {
+                const tabList = tabListItem.parent;
+                const tabListItems = Array.from(tabList.getChildren()).filter(
+                    (child) => child.is('element', 'li') && child.hasClass('tab-list-item')
+                );
+                const index = tabListItems.indexOf(tabListItem);
+
+                // Find the next tab to activate
+                const nextTab = tabListItems[index - 1] || tabListItems[index + 1];
+                if (nextTab) {
+                    this._activateTab(editor, nextTab);
+                }
+            }
+        });
+
         evt.stop();
     }
 
@@ -164,20 +176,25 @@ export default class TabsPluginUI extends Plugin {
     _handleMoveTab(editor, target, evt, direction) {
         const tabListItem = target.findAncestor('li');
         const tabId = tabListItem.getAttribute('data-target').slice(1);
-        editor.execute('moveTab', { tabId, direction });
-        evt.stop();
-    }
-
-    // Handles the blur event on the tab title input
-    _handleTabTitleBlur(editor, target, evt) {
-        const modelElement = editor.editing.mapper.toModelElement(target);
+        const wasActive = tabListItem.hasClass('active');
 
         editor.model.change((writer) => {
-            const text = modelElement.getChild(0) ? modelElement.getChild(0).data.trim() : '';
-            if (text === '') {
-                writer.insertText('Tab Name', modelElement, 0);
+            editor.execute('moveTab', { tabId, direction });
+
+            if (wasActive) {
+                const tabList = tabListItem.parent;
+                const tabListItems = Array.from(tabList.getChildren()).filter(
+                    (child) => child.is('element', 'li') && child.hasClass('tab-list-item')
+                );
+                const movedTabListItem = tabListItems.find((item) => item.getAttribute('data-target') === `#${tabId}`);
+
+                if (movedTabListItem) {
+                    this._activateTab(editor, movedTabListItem);
+                }
             }
         });
+
+        evt.stop();
     }
 
     // Adds a new tab to the tabs plugin
@@ -214,7 +231,6 @@ export default class TabsPluginUI extends Plugin {
                 }
             }
 
-            // If not found, create them
             if (!tabList) {
                 tabList = writer.createElement('tabList');
                 writer.append(tabList, tabsPlugin);
