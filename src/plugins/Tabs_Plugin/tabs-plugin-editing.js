@@ -44,9 +44,9 @@ export default class TabsPluginEditing extends Plugin {
         // Define schema for 'tabTitle' element
         schema.register('tabTitle', {
             allowAttributes: ['class'],
-            allowContentOf: '$block', // Allow only text content
+            allowContentOf: '$inline',
             allowIn: 'tabListItem',
-            disallow: ['$inlineObject', 'link', 'bold', 'italic', 'underline', '$block'], // Disallow all inline formatting and block elements
+            disallow: ['$inlineObject', 'link', 'bold', 'italic', 'underline', '$block'],
             isLimit: true,
         });
 
@@ -59,9 +59,9 @@ export default class TabsPluginEditing extends Plugin {
         // Define schema for 'tabNestedContent' element
         schema.register('tabNestedContent', {
             allowAttributes: ['id', 'class'],
-            allowContentOf: '$block', // Allow block-level elements
+            allowContentOf: '$root', // Allow all root-level content, including block elements
             allowIn: 'tabContent',
-            disallow: ['tabsPlugin'], // Disallow nesting of tabsPlugin
+            disallow: ['tabsPlugin'],
             isLimit: true,
         });
 
@@ -80,14 +80,12 @@ export default class TabsPluginEditing extends Plugin {
         // Define schema for 'moveLeftButton' element
         schema.register('moveLeftButton', {
             allowAttributes: ['class', 'title'],
-            allowContentOf: [], // Disallow all content within the button
             allowIn: 'moveButtonsWrapper',
         });
 
         // Define schema for 'moveRightButton' element
         schema.register('moveRightButton', {
             allowAttributes: ['class', 'title'],
-            allowContentOf: [],
             allowIn: 'moveButtonsWrapper',
         });
 
