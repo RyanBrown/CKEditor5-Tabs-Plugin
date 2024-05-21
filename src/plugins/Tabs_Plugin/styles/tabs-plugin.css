@@ -24,6 +24,7 @@
   padding: 0;
   position: relative;
   z-index: 5;
+  transition: background-color 200ms ease-in-out, border-color 200ms ease-in-out;
 }
 .tabs-plugin .tab-list .tab-list-item::after {
   background-color: #eee;
@@ -35,6 +36,7 @@
   position: absolute;
   width: 100%;
   z-index: 3;
+  transition: background-color 200ms ease-in-out;
 }
 .tabs-plugin .tab-list .tab-list-item:hover {
   background-color: #f7f7f7;
@@ -93,7 +95,7 @@
   height: 100%;
   width: 100%;
 }
-.tabs-plugin .tab-content .tab-nested-content.active {
+.tabs-plugin .tab-content .tab-nested-content.active, .tabs-plugin .tab-content .tab-nested-content:nth-last-child(3):first-child {
   display: block;
   padding: 1rem;
 }
@@ -117,6 +119,7 @@
   border: 0;
   cursor: pointer;
   padding: 0.5rem;
+  transition: background-image 200ms ease-in-out;
 }
 .add-tab-button::before, .add-tab-button:hover::before,
 .delete-tab-button::before,
