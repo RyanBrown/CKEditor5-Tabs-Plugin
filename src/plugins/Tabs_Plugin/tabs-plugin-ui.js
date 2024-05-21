@@ -174,7 +174,24 @@ export default class TabsPluginUI extends Plugin {
     _handleMoveTab(editor, target, evt, direction) {
         const tabListItem = target.findAncestor('li');
         const tabId = tabListItem.getAttribute('data-target').slice(1);
-        editor.execute('moveTab', { tabId, direction });
+        const wasActive = tabListItem.hasClass('active');
+
+        editor.model.change((writer) => {
+            editor.execute('moveTab', { tabId, direction });
+
+            if (wasActive) {
+                const tabList = tabListItem.parent;
+                const tabListItems = Array.from(tabList.getChildren()).filter(
+                    (child) => child.is('element', 'li') && child.hasClass('tab-list-item')
+                );
+                const movedTabListItem = tabListItems.find((item) => item.getAttribute('data-target') === `#${tabId}`);
+
+                if (movedTabListItem) {
+                    this._activateTab(editor, movedTabListItem);
+                }
+            }
+        });
+
         evt.stop();
     }
 
