@@ -1,4 +1,5 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
+import { toWidget, toWidgetEditable } from '@ckeditor/ckeditor5-widget';
 import { Widget } from '@ckeditor/ckeditor5-widget';
 import { TabsPluginCommand, DeleteTabCommand, MoveTabCommand } from './tabs-plugin-command';
 
@@ -111,7 +112,8 @@ export default class TabsPluginEditing extends Plugin {
             model: 'tabsPlugin',
             view: (modelElement, { writer: viewWriter }) => {
                 const div = viewWriter.createContainerElement('div', { class: 'tabs-plugin' });
-                return div;
+                return toWidget(div, viewWriter, { label: 'tabs plugin' });
+                // return div;
             },
         });
         // Converters for 'tabList' element (HTML to Model)
@@ -173,7 +175,7 @@ export default class TabsPluginEditing extends Plugin {
             model: 'tabTitle',
             view: (modelElement, { writer: viewWriter }) => {
                 const div = viewWriter.createEditableElement('div', { class: 'tab-title' });
-                return div;
+                return toWidgetEditable(div, viewWriter);
             },
         });
         // Converters for 'tabEditBar' element
@@ -423,7 +425,7 @@ export default class TabsPluginEditing extends Plugin {
                     id: modelElement.getAttribute('id'),
                     draggable: false,
                 });
-                return div;
+                return toWidgetEditable(div, viewWriter);
             },
         });
     }
