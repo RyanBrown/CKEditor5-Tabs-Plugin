@@ -85,11 +85,6 @@ $transition-speed: 200ms ease-in-out;
                 align-items: center;
                 display: flex;
                 flex: 1 1 0;
-                margin-bottom: 40px;
-                margin: 0;
-                position: absolute;
-                top: 0;
-                width: 100%;
 
                 .move-buttons-wrapper {
                     display: flex;
@@ -103,7 +98,7 @@ $transition-speed: 200ms ease-in-out;
                 display: flex;
                 font-weight: 700;
                 justify-content: center;
-                margin: calc(2rem + $tab-x-margin) $tab-y-margin $tab-x-margin;
+                margin: $tab-x-margin $tab-y-margin;
                 min-width: 6rem;
                 position: relative;
                 text-align: center;
