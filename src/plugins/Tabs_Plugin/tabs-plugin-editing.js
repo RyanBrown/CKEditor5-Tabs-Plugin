@@ -41,7 +41,7 @@ export default class TabsPluginEditing extends Plugin {
             allowAttributes: ['class'],
             allowContentOf: '$block',
             allowIn: 'tabListItem',
-            disallow: ['$inlineObject', 'link', 'bold', 'italic', 'underline', '$block'],
+            disallow: ['$inlineObject', 'link', 'bold', 'italic', 'underline', '$block', 'tabsPlugin'],
             isLimit: true,
         });
         // Define schema for 'tabContent' element
