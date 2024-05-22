@@ -156,8 +156,7 @@ export default class TabsPluginEditing extends Plugin {
                     class: classes ? `tab-list-item ${classes}` : 'tab-list-item',
                     'data-target': modelElement.getAttribute('data-target'),
                 });
-                // return toWidget(li, viewWriter, { label: 'tab list item' });
-                return li;
+                return toWidget(li, viewWriter, { label: 'tab list item', isReadOnly: true });
             },
         });
         // Converters for 'tabTitle' element
@@ -174,8 +173,7 @@ export default class TabsPluginEditing extends Plugin {
             model: 'tabTitle',
             view: (modelElement, { writer: viewWriter }) => {
                 const div = viewWriter.createEditableElement('div', { class: 'tab-title' });
-                // return toWidgetEditable(div, viewWriter);
-                return div;
+                return toWidgetEditable(div, viewWriter);
             },
         });
         // Converters for 'tabEditBar' element
@@ -385,7 +383,6 @@ export default class TabsPluginEditing extends Plugin {
                     class: classes ? `tab-nested-content ${classes}` : 'tab-nested-content',
                     id: modelElement.getAttribute('id'),
                 });
-                return div;
             },
         });
         conversion.for('editingDowncast').elementToElement({
@@ -396,8 +393,7 @@ export default class TabsPluginEditing extends Plugin {
                     class: classes ? `tab-nested-content ${classes}` : 'tab-nested-content',
                     id: modelElement.getAttribute('id'),
                 });
-                // return toWidgetEditable(div, viewWriter);
-                return div;
+                return toWidgetEditable(div, viewWriter);
             },
         });
     }
