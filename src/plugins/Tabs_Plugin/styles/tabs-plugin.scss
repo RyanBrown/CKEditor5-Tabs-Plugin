@@ -85,11 +85,6 @@ $transition-speed: 200ms ease-in-out;
                 align-items: center;
                 display: flex;
                 flex: 1 1 0;
-                margin-bottom: 40px;
-                margin: 0;
-                position: absolute;
-                top: 0;
-                width: 100%;
 
                 .move-buttons-wrapper {
                     display: flex;
@@ -103,7 +98,7 @@ $transition-speed: 200ms ease-in-out;
                 display: flex;
                 font-weight: 700;
                 justify-content: center;
-                margin: calc(2rem + $tab-x-margin) $tab-y-margin $tab-x-margin;
+                margin: $tab-x-margin $tab-y-margin;
                 min-width: 6rem;
                 position: relative;
                 text-align: center;
@@ -118,7 +113,7 @@ $transition-speed: 200ms ease-in-out;
                 }
             }
             // Align the 'move-left-button' left and hide the 'move-right-button' for the last tab
-            &:nth-last-child(3) .tab-edit-bar > .move-buttons-wrapper {
+            &:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper {
                 justify-content: flex-start;
 
                 .move-right-button {
@@ -126,7 +121,7 @@ $transition-speed: 200ms ease-in-out;
                 }
             }
             // Hide the 'tab-edit-bar' if only one tab is visible
-            &:nth-last-child(3):first-child {
+            &:nth-last-child(2):first-child {
                 .tab-edit-bar {
                     display: none;
                 }
@@ -155,6 +150,7 @@ $transition-speed: 200ms ease-in-out;
         .tab-nested-content {
             display: none;
             height: 100%;
+            min-height: 5.75rem;
             width: 100%;
 
             &.active {

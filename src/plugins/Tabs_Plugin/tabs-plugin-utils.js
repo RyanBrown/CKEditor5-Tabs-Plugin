@@ -56,7 +56,7 @@ export function findAllDescendants(node, predicate) {
 export function createTabElement(writer, tabId) {
     const tabListItem = createTabListItem(writer, tabId);
     const tabNestedContent = createTabContent(writer, tabId);
-    writer.insertText('Tab Content', tabNestedContent); // Insert the title text
+    // writer.insertText('Tab Content', tabNestedContent); // Insert the title text
     return { tabListItem, tabNestedContent };
 }
 
@@ -88,7 +88,6 @@ export function createTabContent(writer, tabId) {
     return writer.createElement('tabNestedContent', {
         id: tabId,
         class: 'tab-nested-content',
-        placeholder: `Tab Content ${tabId}`,
     });
 }
 
