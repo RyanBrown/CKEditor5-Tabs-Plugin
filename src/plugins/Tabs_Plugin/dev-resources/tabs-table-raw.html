@@ -2,39 +2,40 @@
     <ul class="tab-list">
         <li class="tab-list-item active" data-target="#tab1">
           <table>
-            <thead>
-                <tr>
-                    <th>
-                        <div class="left-arrow arrowtabicon">&nbsp;</div>
-                    </th>
-                    <th>
-                        <div class="right-arrow arrowtabicon">&nbsp;</div>
-                    </th>
-                    <th>
-                        <div class="dropicon" title="Delete Tab">
-                            <p class="droptab droptabicon">&nbsp;</p>
-                        </div>
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td colspan="5">
-                        <div class="tabTitle">Tab 1</div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>  
+                <thead>
+                    <tr>
+                        <th>
+                            <!-- <div class="left-arrow arrowtabicon">&nbsp;</div> -->
+                            <button class="move-left-button" title="Move Tab Left"><span>Move Tab Left</span></button>
+                        </th>
+                        <th>
+                            <!-- <div class="right-arrow arrowtabicon">&nbsp;</div> -->
+                            <button class="move-right-button" title="Move Tab Right"><span>Move Tab Right</span></button>
+                        </th>
+                        <th>
+                            <!-- <div class="dropicon" title="Delete Tab"><p class="droptab droptabicon">&nbsp;</p></div> -->
+                            <button class="delete-tab-button" title="Delete Tab"><span>Delete Tab</span></button>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="5">
+                            <div class="tabTitle">Tab 1</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </li>
+    </ul>
+</div>
 
 
 
           <div class="tab-edit-bar">
                 <div class="move-buttons-wrapper">
                     <button class="move-left-button" title="Move Tab Left"><span>Move Tab Left</span></button>
-                    <button class="move-right-button" title="Move Tab Right">
-                        <span>Move Tab Right</span>
-                    </button>
+                    <button class="move-right-button" title="Move Tab Right"><span>Move Tab Right</span></button>
                 </div>
                 <button class="delete-tab-button" title="Delete Tab"><span>Delete Tab</span></button>
             </div>

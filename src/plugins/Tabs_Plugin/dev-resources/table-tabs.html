@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Tabs Plugin Simple POC</title>
+    <link rel="stylesheet" type="text/css" href="./table-tabs.css" />
+</head>
+
+<body>
+    <!-- <div class="tabs-plugin">
+        <ul class="tab-list">
+            <li class="tab-list-item active" data-target="#tab1">
+                <div class="tab-edit-bar">
+                    <button class="move-left-button" title="move tab left"></button>
+                    <button class="move-right-button" title="move tab right"></button>
+                </div>
+                <div class="title-edit-bar">
+                    <div class="tab-title">Tab Name 1</div>
+                    <button class="remove-tab-button" title="remove tab"></button>
+                </div>
+            </li>
+            <li class="add-tab-list-item"><button class="add-tab-button"></button></li>
+        </ul>
+        <div class="tab-content">
+            <div id="tab1" class="tab-nested-content active">Content 1</div>
+        </div>
+    </div>
+
+    <br /><br /><br /><br /><br /> -->
+
+    <div class="tabcontainer yui3-widget">
+        <div class="ah-tabs-horizontal">
+            <div class="tabheader ah-tabs-horizontal">
+
+                <ul class="tab yui3-tabview-list">
+                    <li class="yui3-tab yui3-tab-selected tablinks">
+                        <div class="yui3-tab-label">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            <!-- <div class="left-arrow">&nbsp;</div> -->
+                                            <button class="move-left-button" title="move tab left"></button>
+                                        </th>
+                                        <th>
+                                            <!-- <div class="right-arrow">&nbsp;</div> -->
+                                            <button class="move-right-button" title="move tab right"></button>
+                                        </th>
+                                        <th>
+                                            <button class="remove-tab-button" title="remove tab"></button>
+                                            <!-- <div class="dropicon"><p class="droptab droptabicon">&nbsp;</p></div> -->
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="5">
+                                            <div class="tabTitle">Tab 1</div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </li>
+                    <li class="tablinks">
+                        <div class="yui3-tab-label">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            <!-- <div class="left-arrow">&nbsp;</div> -->
+                                            <button class="move-left-button" title="move tab left"></button>
+                                        </th>
+                                        <th>
+                                            <!-- <div class="right-arrow">&nbsp;</div> -->
+                                            <button class="move-right-button" title="move tab right"></button>
+                                        </th>
+                                        <th>
+                                            <button class="remove-tab-button" title="remove tab"></button>
+                                            <!-- <div class="dropicon"><p class="droptab droptabicon">&nbsp;</p></div> -->
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="5">
+                                            <div class="tabTitle">Tab 2</div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </li>
+                    <li class="yui3-tab addtab">
+                        <button class="add-tab-button"></button>
+                        <!-- <div class="addicon"><p class="addtabicon">&nbsp;</p></div> -->
+                    </li>
+                </ul>
+            </div>
+            <div class="yui3-tabview-panel">
+                <div class="yui3-tab-panel yui3-tab-panel-selected tabcontent">
+                    Tab 1 Content
+                </div>
+                <div class="yui3-tab-panel tabcontent">
+                    Tab 2 Content
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+
+<script src="./table-tabs.js"></script>
+
+</html>
