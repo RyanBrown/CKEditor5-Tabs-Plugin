@@ -16,7 +16,7 @@ export default class TabsPluginUI extends Plugin {
         editor.ui.componentFactory.add('tabsPlugin', (locale) => {
             const button = new ButtonView(locale);
             button.set({
-                icon: '<svg enable-background="new 0 0 24 24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m23.1 1.6c-.2-.2-.5-.4-.8-.5-.3-.1-.6-.2-1-.2h-18.5c-.4 0-.7.1-1 .2-.4.1-.6.3-.9.5-.5.5-.9 1.3-.9 2.1v16.6c0 1.5 1.2 2.8 2.8 2.8h18.5c1.5 0 2.8-1.2 2.8-2.8v-16.6c-.1-.8-.5-1.6-1-2.1zm-9.3 1.2c.5 0 .9.4.9.9v3.7h-5.5v-3.7c0-.5.4-.9.9-.9zm8.4 17.5c0 .5-.4.9-.9.9h-18.5c-.5 0-.9-.4-.9-.9v-16.6c0-.5.4-.9.9-.9h3.7c.5 0 .9.4.9.9v5.5h14.8zm-5.6-12.9v-3.7c0-.5.4-.9.9-.9h3.7c.5 0 .9.4.9.9v3.7z" fill="#3448c5"/></svg>',
+                icon: '<svg enable-background="new 0 0 24 24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m23.1 1.6c-.2-.2-.5-.4-.8-.5-.3-.1-.6-.2-1-.2h-18.5c-.4 0-.7.1-1 .2-.4.1-.6.3-.9.5-.5.5-.9 1.3-.9 2.1v16.6c0 1.5 1.2 2.8 2.8 2.8h18.5c1.5 0 2.8-1.2 2.8-2.8v-16.6c-.1-.8-.5-1.6-1-2.1zm-9.3 1.2c.5 0 .9.4.9.9v3.7h-5.5v-3.7c0-.5.4-.9.9-.9zm8.4 17.5c0 .5-.4.9-.9.9h-18.5c-.5 0-.9-.4-.9-.9v-16.6c0-.5.4-.9.9-.9h3.7c.5 0 .9.4.9.9v5.5h14.8zm-5.6-12.9v-3.7c0-.5.4-.9.9-.9h3.7c.5 0 .9.4.9.9v3.7z" fill="#00f8c5"/></svg>',
                 label: 'Insert Tabs',
                 tooltip: true,
                 withText: false,
@@ -35,15 +35,15 @@ export default class TabsPluginUI extends Plugin {
     _registerEventHandlers(editor) {
         editor.editing.view.document.on('click', (evt, data) => {
             const target = data.target;
-            if (target.hasClass('tab-list-item') || target.hasClass('tab-title')) {
+            if (target.hasClass('yui3-tab') || target.hasClass('tabTitle')) {
                 this._handleTabClick(editor, target, evt);
             } else if (target.hasClass('delete-tab-button')) {
                 this._handleDeleteTab(editor, target, evt);
             } else if (target.hasClass('add-tab-button')) {
                 this._handleAddTab(editor, evt);
-            } else if (target.hasClass('move-left-button')) {
+            } else if (target.hasClass('left-arrow')) {
                 this._handleMoveTab(editor, target, evt, -1);
-            } else if (target.hasClass('move-right-button')) {
+            } else if (target.hasClass('right-arrow')) {
                 this._handleMoveTab(editor, target, evt, 1);
             }
         });
@@ -57,17 +57,17 @@ export default class TabsPluginUI extends Plugin {
     _updateEmptyTabTitles(editor) {
         const viewRoot = editor.editing.view.document.getRoot();
         const tabList = Array.from(viewRoot.getChildren()).find(
-            (child) => child.is('element', 'ul') && child.hasClass('tab-list')
+            (child) => child.is('element', 'ul') && child.hasClass('tab')
         );
 
         if (tabList) {
             const tabTitleElements = Array.from(tabList.getChildren()).filter(
-                (child) => child.is('element', 'li') && child.hasClass('tab-list-item')
+                (child) => child.is('element', 'li') && child.hasClass('yui3-tab')
             );
 
             for (const tabTitleElement of tabTitleElements) {
                 const inputElement = tabTitleElement.getChild(1).getChild(0);
-                if (inputElement && inputElement.is('element', 'input') && inputElement.hasClass('tab-title')) {
+                if (inputElement && inputElement.is('element', 'input') && inputElement.hasClass('tabTitle')) {
                     const text = inputElement.getAttribute('value').trim();
                     if (text === '') {
                         inputElement.setAttribute('value', 'Tab Name');
@@ -81,7 +81,7 @@ export default class TabsPluginUI extends Plugin {
     _handleTabClick(editor, target, evt) {
         let tabListItem = target;
 
-        while (tabListItem && !tabListItem.hasClass('tab-list-item')) {
+        while (tabListItem && !tabListItem.hasClass('yui3-tab')) {
             tabListItem = tabListItem.parent;
         }
 
@@ -97,7 +97,7 @@ export default class TabsPluginUI extends Plugin {
         const tabId = tabListItem.getAttribute('data-target');
         const viewRoot = editor.editing.view.document.getRoot();
         const tabsRootElement = Array.from(viewRoot.getChildren()).find(
-            (child) => child.is('element', 'div') && child.hasClass('tabs-plugin')
+            (child) => child.is('element', 'div') && child.hasClass('tabcontainer')
         );
 
         if (!tabsRootElement) {
@@ -106,10 +106,10 @@ export default class TabsPluginUI extends Plugin {
         }
 
         const tabListElement = Array.from(tabsRootElement.getChildren()).find(
-            (child) => child.is('element', 'ul') && child.hasClass('tab-list')
+            (child) => child.is('element', 'ul') && child.hasClass('tab')
         );
         const tabContentElement = Array.from(tabsRootElement.getChildren()).find(
-            (child) => child.is('element', 'div') && child.hasClass('tab-content')
+            (child) => child.is('element', 'div') && child.hasClass('yui3-tabview-panel')
         );
 
         if (!tabListElement || !tabContentElement) {
@@ -151,7 +151,7 @@ export default class TabsPluginUI extends Plugin {
             if (wasActive) {
                 const tabList = tabListItem.parent;
                 const tabListItems = Array.from(tabList.getChildren()).filter(
-                    (child) => child.is('element', 'li') && child.hasClass('tab-list-item')
+                    (child) => child.is('element', 'li') && child.hasClass('yui3-tab')
                 );
                 const index = tabListItems.indexOf(tabListItem);
 
@@ -184,7 +184,7 @@ export default class TabsPluginUI extends Plugin {
             if (wasActive) {
                 const tabList = tabListItem.parent;
                 const tabListItems = Array.from(tabList.getChildren()).filter(
-                    (child) => child.is('element', 'li') && child.hasClass('tab-list-item')
+                    (child) => child.is('element', 'li') && child.hasClass('yui3-tab')
                 );
                 const movedTabListItem = tabListItems.find((item) => item.getAttribute('data-target') === `#${tabId}`);
 

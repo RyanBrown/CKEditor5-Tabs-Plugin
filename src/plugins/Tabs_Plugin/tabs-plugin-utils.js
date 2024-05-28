@@ -3,8 +3,8 @@ import { generateTabId } from './tabs-plugin-command';
 // Create tabs plugin element with two initial tabs
 export function createTabsPluginElement(writer) {
     const tabsPlugin = writer.createElement('tabsPlugin');
-    const tabList = writer.createElement('tabList', { class: 'tab-list' });
-    const tabContent = writer.createElement('tabContent', { class: 'tab-content' });
+    const tabList = writer.createElement('tabList', { class: 'tab' });
+    const tabContent = writer.createElement('tabContent', { class: 'yui3-tabview-panel' });
 
     // Create the first tab using centralized tabId generation
     const firstTabId = generateTabId();
@@ -64,7 +64,7 @@ export function createTabElement(writer, tabId) {
 export function createTabListItem(writer, tabId) {
     const tabListItem = writer.createElement('tabListItem', {
         'data-target': `#${tabId}`,
-        class: 'tab-list-item',
+        class: 'yui3-tab',
     });
     const tabEditBar = writer.createElement('tabEditBar', { class: 'tab-edit-bar' });
     const moveButtonsWrapper = writer.createElement('moveButtonsWrapper', { class: 'move-buttons-wrapper' });
@@ -74,7 +74,7 @@ export function createTabListItem(writer, tabId) {
     writer.append(moveButtonsWrapper, tabEditBar);
     appendControlElement(writer, tabEditBar, 'deleteTabButton', 'Delete Tab');
 
-    const tabTitle = writer.createElement('tabTitle', { class: 'tab-title' });
+    const tabTitle = writer.createElement('tabTitle', { class: 'tabTitle' });
     writer.insertText(`Tab Name`, tabTitle);
 
     writer.append(tabEditBar, tabListItem);
@@ -93,7 +93,7 @@ export function createTabContent(writer, tabId) {
 
 // Create 'Add Tab' button
 export function createAddTabButton(writer) {
-    const addTabListItem = writer.createElement('addTabListItem', { class: 'add-tab-list-item' });
+    const addTabListItem = writer.createElement('addTabListItem', { class: 'yui3-tab addtab' });
     const addTabButton = writer.createElement('addTabButton');
     writer.append(addTabButton, addTabListItem);
     return addTabListItem;

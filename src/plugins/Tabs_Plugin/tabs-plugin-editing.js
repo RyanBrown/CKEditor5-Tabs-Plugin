@@ -101,49 +101,52 @@ export default class TabsPluginEditing extends Plugin {
         // Conversion for 'tabsPlugin' element (HTML to Model)
         conversion.for('upcast').elementToElement({
             model: 'tabsPlugin',
-            view: { name: 'div', classes: 'tabs-plugin' },
+            view: { name: 'div', classes: 'tabcontainer' },
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabsPlugin',
-            view: (modelElement, { writer }) => writer.createContainerElement('div', { class: 'tabs-plugin' }),
+            view: (modelElement, { writer }) =>
+                writer.createContainerElement('div', { class: 'tabcontainer yui3-widget' }),
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabsPlugin',
             view: (modelElement, { writer }) => {
-                const div = writer.createContainerElement('div', { class: 'tabs-plugin' });
+                const div = writer.createContainerElement('div', { class: 'tabcontainer yui3-widget' });
                 return toWidget(div, writer, { label: 'tabs plugin' });
             },
         });
+
         // Conversion for 'tabList' element (HTML to Model)
         conversion.for('upcast').elementToElement({
             model: 'tabList',
-            view: { name: 'ul', classes: 'tab-list' },
+            view: { name: 'ul', classes: 'tab yui3-tabview-list' },
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabList',
-            view: (modelElement, { writer }) =>
-                writer.createContainerElement('ul', { class: 'tab-list', draggable: false }),
+            view: (modelElement, { writer }) => writer.createContainerElement('ul', { class: 'tab yui3-tabview-list' }),
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabList',
             view: (modelElement, { writer }) => {
-                const ul = writer.createContainerElement('ul', { class: 'tab-list', draggable: false });
+                const ul = writer.createContainerElement('ul', { class: 'tab yui3-tabview-list' });
                 return ul;
             },
         });
+
         // Conversion for 'tabListItem'
         conversion.for('upcast').elementToElement({
             model: 'tabListItem',
-            view: { name: 'li', classes: 'tab-list-item' },
+            view: { name: 'li', classes: 'yui3-tab yui3-tab-selected tablinks' },
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabListItem',
             view: (modelElement, { writer }) => {
                 const classes = modelElement.getAttribute('class');
                 return writer.createContainerElement('li', {
-                    class: classes ? `tab-list-item ${classes}` : 'tab-list-item',
+                    class: classes
+                        ? `yui3-tab yui3-tab-selected tablinks ${classes}`
+                        : 'yui3-tab yui3-tab-selected tablinks',
                     'data-target': modelElement.getAttribute('data-target'),
-                    draggable: false,
                 });
             },
         });
@@ -152,237 +155,181 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const classes = modelElement.getAttribute('class');
                 const li = writer.createContainerElement('li', {
-                    class: classes ? `tab-list-item ${classes}` : 'tab-list-item',
+                    class: classes
+                        ? `yui3-tab yui3-tab-selected tablinks ${classes}`
+                        : 'yui3-tab yui3-tab-selected tablinks',
                     'data-target': modelElement.getAttribute('data-target'),
-                    draggable: false,
                 });
-                return li;
+                return toWidget(li, writer);
             },
         });
+
         // Conversion for 'tabTitle' element
         conversion.for('upcast').elementToElement({
             model: 'tabTitle',
-            view: { name: 'div', classes: 'tab-title' },
+            view: { name: 'div', classes: 'tabTitle' },
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabTitle',
-            view: (modelElement, { writer }) =>
-                writer.createEditableElement('div', { class: 'tab-title', draggable: false }),
+            view: (modelElement, { writer }) => writer.createEditableElement('div', { class: 'tabTitle' }),
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabTitle',
             view: (modelElement, { writer }) => {
-                const div = writer.createEditableElement('div', { class: 'tab-title', draggable: false });
+                const div = writer.createEditableElement('div', { class: 'tabTitle' });
                 return toWidgetEditable(div, writer);
             },
         });
+
         // Conversion for 'tabEditBar' element
         conversion.for('upcast').elementToElement({
             model: 'tabEditBar',
-            view: () => null,
+            view: { name: 'div', classes: 'yui3-tab-label' },
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabEditBar',
+            view: (modelElement, { writer }) => writer.createContainerElement('div', { class: 'yui3-tab-label' }),
+        });
+        conversion.for('editingDowncast').elementToElement({
+            model: 'tabEditBar',
+            view: (modelElement, { writer }) => {
+                const div = writer.createContainerElement('div', { class: 'yui3-tab-label' });
+                return div;
+            },
+        });
+
+        // Conversion 'moveButtonsWrapper' element
+        conversion.for('upcast').elementToElement({
+            model: 'moveButtonsWrapper',
+            view: { name: 'th' },
+        });
+        conversion.for('dataDowncast').elementToElement({
+            model: 'moveButtonsWrapper',
+            view: (modelElement, { writer }) => writer.createContainerElement('th'),
+        });
+        conversion.for('editingDowncast').elementToElement({
+            model: 'moveButtonsWrapper',
+            view: (modelElement, { writer }) => {
+                const th = writer.createContainerElement('th');
+                return th;
+            },
+        });
+
+        // Conversion for 'moveLeftButton' element (HTML to Model)
+        conversion.for('upcast').elementToElement({
+            model: 'moveLeftButton',
+            view: { name: 'button', classes: 'left-arrow' },
+        });
+        conversion.for('dataDowncast').elementToElement({
+            model: 'moveLeftButton',
             view: (modelElement, { writer }) =>
-                writer.createContainerElement('div', {
-                    class: 'tab-edit-bar',
-                    draggable: false,
-                    contenteditable: false,
+                writer.createContainerElement('button', {
+                    class: 'left-arrow',
+                    title: modelElement.getAttribute('title') || 'move tab left',
                 }),
         });
         conversion.for('editingDowncast').elementToElement({
-            model: 'tabEditBar',
-            view: (modelElement, { writer }) => {
-                const div = writer.createContainerElement('div', {
-                    class: 'tab-edit-bar',
-                    draggable: false,
-                    contenteditable: false,
-                });
-                return div;
-            },
-        });
-        // Conversion 'moveButtonsWrapper' element
-        conversion.for('upcast').elementToElement({ model: 'moveButtonsWrapper', view: () => null });
-        conversion.for('dataDowncast').elementToElement({
-            model: 'moveButtonsWrapper',
+            model: 'moveLeftButton',
             view: (modelElement, { writer }) =>
-                writer.createContainerElement('div', { class: 'move-buttons-wrapper', draggable: false }),
+                writer.createContainerElement('button', {
+                    class: 'left-arrow',
+                    title: modelElement.getAttribute('title') || 'move tab left',
+                }),
         });
-        conversion.for('editingDowncast').elementToElement({
-            model: 'moveButtonsWrapper',
-            view: (modelElement, { writer }) => {
-                const div = writer.createContainerElement('div', { class: 'move-buttons-wrapper', draggable: false });
-                return div;
-            },
-        });
-        // Conversion for 'moveLeftButton' element (HTML to Model)
-        conversion.for('upcast').elementToElement({ model: 'moveLeftButton', view: () => null });
-        conversion.for('dataDowncast').elementToElement({
-            model: 'moveLeftButton',
-            view: (modelElement, { writer }) => {
-                const button = writer.createContainerElement('button', {
-                    class: 'move-left-button',
-                    title: modelElement.getAttribute('title') || 'Move Tab Left',
-                    draggable: false,
-                });
-                const textSpan = writer.createContainerElement('span', { draggable: false });
-                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Move Tab Left'));
-                writer.insert(writer.createPositionAt(button, 0), textSpan);
-                return button;
-            },
-        });
-        conversion.for('editingDowncast').elementToElement({
-            model: 'moveLeftButton',
-            view: (modelElement, { writer }) => {
-                const button = writer.createContainerElement('button', {
-                    class: 'move-left-button',
-                    title: modelElement.getAttribute('title') || 'Move Tab Left',
-                    draggable: false,
-                });
-                const textSpan = writer.createContainerElement('span', { draggable: false });
-                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Move Tab Left'));
-                writer.insert(writer.createPositionAt(button, 0), textSpan);
-                return button;
-            },
-        });
+
         // Conversion for 'moveRightButton' element
-        conversion.for('upcast').elementToElement({ model: 'moveRightButton', view: () => null });
+        conversion.for('upcast').elementToElement({
+            model: 'moveRightButton',
+            view: { name: 'button', classes: 'right-arrow' },
+        });
         conversion.for('dataDowncast').elementToElement({
             model: 'moveRightButton',
-            view: (modelElement, { writer }) => {
-                const button = writer.createContainerElement('button', {
-                    class: 'move-right-button',
-                    title: modelElement.getAttribute('title') || 'Move Tab Right',
-                    draggable: false,
-                });
-                const textSpan = writer.createContainerElement('span', { draggable: false });
-                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Move Tab Right'));
-                writer.insert(writer.createPositionAt(button, 0), textSpan);
-                return button;
-            },
+            view: (modelElement, { writer }) =>
+                writer.createContainerElement('button', {
+                    class: 'right-arrow',
+                    title: modelElement.getAttribute('title') || 'move tab right',
+                }),
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'moveRightButton',
-            view: (modelElement, { writer }) => {
-                const button = writer.createContainerElement('button', {
-                    class: 'move-right-button',
-                    title: modelElement.getAttribute('title') || 'Move Tab Right',
-                    draggable: false,
-                });
-                const textSpan = writer.createContainerElement('span', { draggable: false });
-                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Move Tab Right'));
-                writer.insert(writer.createPositionAt(button, 0), textSpan);
-                return button;
-            },
+            view: (modelElement, { writer }) =>
+                writer.createContainerElement('button', {
+                    class: 'right-arrow',
+                    title: modelElement.getAttribute('title') || 'move tab right',
+                }),
         });
+
         // Conversion for 'deleteTabButton' element
         conversion.for('upcast').elementToElement({
             model: 'deleteTabButton',
-            view: () => null,
+            view: { name: 'button', classes: 'remove-tab-button' },
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'deleteTabButton',
-            view: (modelElement, { writer }) => {
-                const button = writer.createContainerElement('button', {
-                    class: 'delete-tab-button',
-                    title: modelElement.getAttribute('title') || 'Delete Tab',
-                    draggable: false,
-                });
-                const textSpan = writer.createContainerElement('span', { draggable: false });
-                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Delete Tab'));
-                writer.insert(writer.createPositionAt(button, 0), textSpan);
-                return button;
-            },
+            view: (modelElement, { writer }) =>
+                writer.createContainerElement('button', {
+                    class: 'remove-tab-button',
+                    title: modelElement.getAttribute('title') || 'remove tab',
+                }),
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'deleteTabButton',
-            view: (modelElement, { writer }) => {
-                const button = writer.createContainerElement('button', {
-                    class: 'delete-tab-button',
-                    title: modelElement.getAttribute('title') || 'Delete Tab',
-                    isContentEditable: false,
-                    draggable: false,
-                });
-                const textSpan = writer.createContainerElement('span', { draggable: false });
-                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Delete Tab'));
-                writer.insert(writer.createPositionAt(button, 0), textSpan);
-                return button;
-            },
+            view: (modelElement, { writer }) =>
+                writer.createContainerElement('button', {
+                    class: 'remove-tab-button',
+                    title: modelElement.getAttribute('title') || 'remove tab',
+                }),
         });
+
         // Conversion for 'addTabListItem' element
         conversion.for('upcast').elementToElement({
             model: 'addTabListItem',
-            view: () => null,
+            view: { name: 'li', classes: 'yui3-tab addtab' },
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'addTabListItem',
-            view: (modelElement, { writer }) =>
-                writer.createContainerElement('li', { class: 'add-tab-list-item', draggable: false }),
+            view: (modelElement, { writer }) => writer.createContainerElement('li', { class: 'yui3-tab addtab' }),
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'addTabListItem',
-            view: (modelElement, { writer }) =>
-                writer.createContainerElement('li', {
-                    class: 'add-tab-list-item',
-                    isContentEditable: false,
-                    draggable: false,
-                }),
+            view: (modelElement, { writer }) => writer.createContainerElement('li', { class: 'yui3-tab addtab' }),
         });
+
         // Conversion for 'addTabButton' element
         conversion.for('upcast').elementToElement({
             model: 'addTabButton',
-            view: () => null,
+            view: { name: 'button', classes: 'add-tab-button' },
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'addTabButton',
-            view: (modelElement, { writer }) => {
-                const button = writer.createContainerElement('button', {
-                    class: 'add-tab-button',
-                    title: modelElement.getAttribute('title') || 'Add Tab',
-                    draggable: false,
-                });
-                const textSpan = writer.createContainerElement('span', { draggable: false });
-                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Add Tab'));
-                writer.insert(writer.createPositionAt(button, 0), textSpan);
-                return button;
-            },
+            view: (modelElement, { writer }) => writer.createContainerElement('button', { class: 'add-tab-button' }),
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'addTabButton',
-            view: (modelElement, { writer }) => {
-                const button = writer.createContainerElement('button', {
-                    class: 'add-tab-button',
-                    title: modelElement.getAttribute('title') || 'Add Tab',
-                    isContentEditable: false,
-                    draggable: false,
-                });
-                const textSpan = writer.createContainerElement('span', { draggable: false });
-                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Add Tab'));
-                writer.insert(writer.createPositionAt(button, 0), textSpan);
-                return button;
-            },
+            view: (modelElement, { writer }) => writer.createContainerElement('button', { class: 'add-tab-button' }),
         });
+
         // Conversion for 'tabContent' element
         conversion.for('upcast').elementToElement({
             model: 'tabContent',
-            view: { name: 'div', classes: 'tab-content' },
+            view: { name: 'div', classes: 'yui3-tabview-panel' },
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabContent',
-            view: (modelElement, { writer }) =>
-                writer.createContainerElement('div', { class: 'tab-content', draggable: false }),
+            view: (modelElement, { writer }) => writer.createContainerElement('div', { class: 'yui3-tabview-panel' }),
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabContent',
             view: (modelElement, { writer }) => {
-                const div = writer.createContainerElement('div', { class: 'tab-content', draggable: false });
+                const div = writer.createContainerElement('div', { class: 'yui3-tabview-panel' });
                 return div;
             },
         });
+
         // Conversion for 'tabNestedContent' element
         conversion.for('upcast').elementToElement({
             model: 'tabNestedContent',
-            view: { name: 'div', classes: 'tab-nested-content' },
+            view: { name: 'div', classes: 'yui3-tab-panel-selected tabcontent' },
             converterPriority: 'high',
         });
         conversion.for('dataDowncast').elementToElement({
@@ -390,9 +337,10 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const classes = modelElement.getAttribute('class');
                 const div = writer.createEditableElement('div', {
-                    class: classes ? `tab-nested-content ${classes}` : 'tab-nested-content',
+                    class: classes
+                        ? `yui3-tab-panel-selected tabcontent ${classes}`
+                        : 'yui3-tab-panel-selected tabcontent',
                     id: modelElement.getAttribute('id'),
-                    draggable: false,
                 });
                 return div;
             },
@@ -402,9 +350,10 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const classes = modelElement.getAttribute('class');
                 const div = writer.createEditableElement('div', {
-                    class: classes ? `tab-nested-content ${classes}` : 'tab-nested-content',
+                    class: classes
+                        ? `yui3-tab-panel-selected tabcontent ${classes}`
+                        : 'yui3-tab-panel-selected tabcontent',
                     id: modelElement.getAttribute('id'),
-                    draggable: false,
                 });
                 return toWidgetEditable(div, writer);
             },

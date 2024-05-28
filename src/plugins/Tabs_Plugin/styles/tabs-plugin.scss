@@ -20,11 +20,13 @@ $tab-bg-active: #fff;
 $transition-speed: 200ms ease-in-out;
 
 // Main tabs plugin container
-.tabs-plugin {
+// .tabs-plugin {
+.tabcontainer {
     background-color: $tab-bg-active;
 
     // Tab list container
-    .tab-list {
+    // .tab-list {
+    .tab {
         align-items: stretch;
         display: flex;
         flex-wrap: wrap;
@@ -33,7 +35,8 @@ $transition-speed: 200ms ease-in-out;
         padding: 0;
 
         // Individual tab list item
-        .tab-list-item {
+        // .tab-list-item {
+        .yui3-tab {
             background-color: $tab-bg;
             border-radius: $tab-border-radius $tab-border-radius 0 0;
             border: $tab-border-width solid $tab-border-color;
@@ -93,7 +96,8 @@ $transition-speed: 200ms ease-in-out;
                 }
             }
             // Title of the tab
-            .tab-title {
+            // .tab-title {
+            .tabTitle {
                 align-items: center;
                 display: flex;
                 font-weight: 700;
@@ -104,19 +108,21 @@ $transition-speed: 200ms ease-in-out;
                 text-align: center;
                 word-break: break-word;
             }
-            // Align the 'move-right-button' left and hide the 'move-left-button' for the first tab
+            // Align the 'right-arrow' left and hide the 'left-arrow' for the first tab
             &:first-child .tab-edit-bar > .move-buttons-wrapper {
                 justify-content: flex-end;
 
-                .move-left-button {
+                .left-arrow {
+                    // .move-left-button {
                     display: none;
                 }
             }
-            // Align the 'move-left-button' left and hide the 'move-right-button' for the last tab
+            // Align the 'left-arrow' left and hide the 'right-arrow' for the last tab
             &:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper {
                 justify-content: flex-start;
 
-                .move-right-button {
+                // .move-right-button
+                .right-arrow {
                     display: none;
                 }
             }
@@ -125,13 +131,14 @@ $transition-speed: 200ms ease-in-out;
                 .tab-edit-bar {
                     display: none;
                 }
-                .tab-title {
+                .tabTitle {
                     margin: $tab-x-margin $tab-y-margin;
                 }
             }
         }
         // Container for the add tab button
-        .add-tab-list-item {
+        // .add-tab-list-item {
+        .yui3-tab.addtab {
             align-self: flex-end;
             padding: 0;
 
@@ -142,7 +149,8 @@ $transition-speed: 200ms ease-in-out;
     }
 
     // Content of the tabs
-    .tab-content {
+    // .tab-content {
+    .yui3-tabview-panel {
         background-color: $tab-bg-active;
         border: $tab-border-width solid $tab-border-color-active;
         position: relative;
@@ -166,8 +174,8 @@ $transition-speed: 200ms ease-in-out;
 // Individual buttons (add, delete, move-left, move-right)
 .add-tab-button,
 .delete-tab-button,
-.move-left-button,
-.move-right-button {
+.left-arrow,
+.right-arrow {
     background-color: transparent;
     border: 0;
     cursor: pointer;
@@ -191,7 +199,7 @@ $transition-speed: 200ms ease-in-out;
 }
 
 // Move left button
-.move-left-button {
+.left-arrow {
     &::before {
         background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='#333333'/%3E%3C/svg%3E");
     }
@@ -201,7 +209,7 @@ $transition-speed: 200ms ease-in-out;
 }
 
 // Move right button
-.move-right-button {
+.right-arrow {
     &::before {
         background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='#333333'/%3E%3C/svg%3E");
     }
@@ -232,13 +240,13 @@ $transition-speed: 200ms ease-in-out;
 
 // Hide outline on elements when selected in the editor
 .tab-list,
-.tab-list-item,
+.yui3-tab,
 .tab-edit-bar,
-.move-left-button,
-.move-right-button,
+.left-arrow,
+.right-arrow,
 .delete-tab-button,
 .add-tab-button,
-.tab-content,
+.yui3-tabview-panel,
 .tab-nested-content {
     &.ck-widget.ck-widget_selected {
         outline: none !important;
@@ -249,15 +257,15 @@ $transition-speed: 200ms ease-in-out;
     }
 }
 
-.tab-list,
-.tab-list-item,
+.tab,
+.yui3-tab,
 .tab-edit-bar,
-.tab-title,
-.move-left-button,
-.move-right-button,
+.tabTitle,
+.left-arrow,
+.right-arrow,
 .delete-tab-button,
 .add-tab-button,
-.tab-content,
+.yui3-tabview-panel,
 .tab-nested-content {
     .ck-widget,
     .ck-widget:hover {
@@ -295,21 +303,21 @@ $transition-speed: 200ms ease-in-out;
 // Remove outline on blurred editor
 .ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected,
 .ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover {
-    .tab-list,
-    .tab-list-item,
+    .tab,
+    .yui3-tab,
     .tab-edit-bar,
-    .tab-title,
-    .move-left-button,
-    .move-right-button,
+    .tabTitle,
+    .left-arrow,
+    .right-arrow,
     .delete-tab-button,
     .add-tab-button,
-    .tab-content,
+    .yui3-tabview-panel,
     .tab-nested-content {
         outline: none;
     }
 }
 
-.tab-content.ck-widget:hover {
+.yui3-tabview-panel.ck-widget:hover {
     outline: none !important;
 }
 
@@ -383,5 +391,3 @@ $transition-speed: 200ms ease-in-out;
         }
     }
 }
-
-// HTML Structure
