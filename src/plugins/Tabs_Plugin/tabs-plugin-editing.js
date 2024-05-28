@@ -218,66 +218,66 @@ export default class TabsPluginEditing extends Plugin {
         // Conversion for 'moveLeftButton' element (HTML to Model)
         conversion.for('upcast').elementToElement({
             model: 'moveLeftButton',
-            view: { name: 'button', classes: 'left-arrow' },
+            view: { name: 'div', classes: 'left-arrow' },
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'moveLeftButton',
             view: (modelElement, { writer }) =>
-                writer.createContainerElement('button', {
-                    class: 'left-arrow',
-                    title: modelElement.getAttribute('title') || 'move tab left',
+                writer.createContainerElement('div', {
+                    class: 'left-arrow arrowtabicon',
+                    title: modelElement.getAttribute('title') || 'Move Tab Left',
                 }),
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'moveLeftButton',
             view: (modelElement, { writer }) =>
-                writer.createContainerElement('button', {
-                    class: 'left-arrow',
-                    title: modelElement.getAttribute('title') || 'move tab left',
+                writer.createContainerElement('div', {
+                    class: 'left-arrow arrowtabicon',
+                    title: modelElement.getAttribute('title') || 'Move Tab Left',
                 }),
         });
 
         // Conversion for 'moveRightButton' element
         conversion.for('upcast').elementToElement({
             model: 'moveRightButton',
-            view: { name: 'button', classes: 'right-arrow' },
+            view: { name: 'div', classes: 'right-arrow' },
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'moveRightButton',
             view: (modelElement, { writer }) =>
-                writer.createContainerElement('button', {
-                    class: 'right-arrow',
-                    title: modelElement.getAttribute('title') || 'move tab right',
+                writer.createContainerElement('div', {
+                    class: 'right-arrow arrowtabicon',
+                    title: modelElement.getAttribute('title') || 'Move Tab Right',
                 }),
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'moveRightButton',
             view: (modelElement, { writer }) =>
-                writer.createContainerElement('button', {
-                    class: 'right-arrow',
-                    title: modelElement.getAttribute('title') || 'move tab right',
+                writer.createContainerElement('div', {
+                    class: 'right-arrow arrowtabicon',
+                    title: modelElement.getAttribute('title') || 'Move Tab Right',
                 }),
         });
 
         // Conversion for 'deleteTabButton' element
         conversion.for('upcast').elementToElement({
             model: 'deleteTabButton',
-            view: { name: 'button', classes: 'remove-tab-button' },
+            view: { name: 'div', classes: 'dropicon' },
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'deleteTabButton',
             view: (modelElement, { writer }) =>
-                writer.createContainerElement('button', {
-                    class: 'remove-tab-button',
-                    title: modelElement.getAttribute('title') || 'remove tab',
+                writer.createContainerElement('div', {
+                    class: 'dropicon',
+                    title: modelElement.getAttribute('title') || 'Delete Tab',
                 }),
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'deleteTabButton',
             view: (modelElement, { writer }) =>
-                writer.createContainerElement('button', {
-                    class: 'remove-tab-button',
-                    title: modelElement.getAttribute('title') || 'remove tab',
+                writer.createContainerElement('div', {
+                    class: 'dropicon',
+                    title: modelElement.getAttribute('title') || 'Delete Tab',
                 }),
         });
 
@@ -298,15 +298,15 @@ export default class TabsPluginEditing extends Plugin {
         // Conversion for 'addTabButton' element
         conversion.for('upcast').elementToElement({
             model: 'addTabButton',
-            view: { name: 'button', classes: 'add-tab-button' },
+            view: { name: 'div', classes: 'addicon' },
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'addTabButton',
-            view: (modelElement, { writer }) => writer.createContainerElement('button', { class: 'add-tab-button' }),
+            view: (modelElement, { writer }) => writer.createContainerElement('div', { class: 'addicon' }),
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'addTabButton',
-            view: (modelElement, { writer }) => writer.createContainerElement('button', { class: 'add-tab-button' }),
+            view: (modelElement, { writer }) => writer.createContainerElement('div', { class: 'addicon' }),
         });
 
         // Conversion for 'tabContent' element

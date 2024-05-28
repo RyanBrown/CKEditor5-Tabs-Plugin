@@ -3,7 +3,7 @@ import { generateTabId } from './tabs-plugin-command';
 // Create tabs plugin element with two initial tabs
 export function createTabsPluginElement(writer) {
     const tabsPlugin = writer.createElement('tabsPlugin');
-    const tabList = writer.createElement('tabList', { class: 'tab' });
+    const tabList = writer.createElement('tabList', { class: 'tab yui3-tabview-list' });
     const tabContent = writer.createElement('tabContent', { class: 'yui3-tabview-panel' });
 
     // Create the first tab using centralized tabId generation

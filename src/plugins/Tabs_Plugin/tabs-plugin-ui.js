@@ -37,9 +37,9 @@ export default class TabsPluginUI extends Plugin {
             const target = data.target;
             if (target.hasClass('yui3-tab') || target.hasClass('tabTitle')) {
                 this._handleTabClick(editor, target, evt);
-            } else if (target.hasClass('delete-tab-button')) {
+            } else if (target.hasClass('dropicon')) {
                 this._handleDeleteTab(editor, target, evt);
-            } else if (target.hasClass('add-tab-button')) {
+            } else if (target.hasClass('addicon')) {
                 this._handleAddTab(editor, evt);
             } else if (target.hasClass('left-arrow')) {
                 this._handleMoveTab(editor, target, evt, -1);
