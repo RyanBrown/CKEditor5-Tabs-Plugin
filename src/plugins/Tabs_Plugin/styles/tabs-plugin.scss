@@ -331,3 +331,57 @@ $transition-speed: 200ms ease-in-out;
     font-style: italic;
     pointer-events: none;
 }
+
+//// NEW CSS
+.tabcontainer.yui3-widget {
+    .ah-tabs-horizontal.ah-responsiveselecttabs.ah-content-space-v.yui3-ah-responsiveselecttabs-content.yui3-tabview-content {
+        .tabheader.ah-tabs-horizontal {
+            ul.tab.yui3-tabview-list {
+                li.yui3-tab.yui3-tab-selected.tablinks {
+                    .yui3-tab-label {
+                        table {
+                            thead > tr > th {
+                                .left-arrow.arrowtabicon {
+                                }
+                                .right-arrow.arrowtabicon {
+                                }
+                                .dropicon > .droptab.droptabicon {
+                                }
+                            }
+                            tbody > tr > td > .tabTitle {
+                            }
+                        }
+                    }
+                }
+                li.yui3-tab.tablinks {
+                    .yui3-tab-label {
+                        table {
+                            thead > tr > th {
+                                .left-arrow.arrowtabicon {
+                                }
+                                .right-arrow.arrowtabicon {
+                                }
+                                .dropicon > .droptab.droptabicon {
+                                }
+                            }
+                            tbody > tr > td > .tabTitle {
+                            }
+                        }
+                    }
+                    li.yui3-tab.addtab {
+                        .addicon > .addtabicon {
+                        }
+                    }
+                }
+            }
+            .yui3-tabview-panel {
+                .yui3-tab-panel.yui3-tab-panel-selected.tabcontent {
+                }
+                .yui3-tab-panel.tabcontent {
+                }
+            }
+        }
+    }
+}
+
+// HTML Structure
