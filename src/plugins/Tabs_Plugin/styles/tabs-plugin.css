@@ -96,7 +96,7 @@
   align-self: flex-end;
   padding: 0;
 }
-.tabcontainer .tab .yui3-tab.addtab .add-tab-button {
+.tabcontainer .tab .yui3-tab.addtab .addicon {
   padding: 1.5rem 1.75rem;
 }
 .tabcontainer .yui3-tabview-panel {
@@ -104,19 +104,19 @@
   border: 2px solid #ccc;
   position: relative;
 }
-.tabcontainer .yui3-tabview-panel .tab-nested-content {
+.tabcontainer .yui3-tabview-panel .tabcontent {
   display: none;
   height: 100%;
   min-height: 5.75rem;
   width: 100%;
 }
-.tabcontainer .yui3-tabview-panel .tab-nested-content.active {
+.tabcontainer .yui3-tabview-panel .tabcontent.active {
   display: block;
   padding: 1rem;
 }
 
-.add-tab-button,
-.delete-tab-button,
+.addicon,
+.dropicon,
 .left-arrow,
 .right-arrow {
   background-color: transparent;
@@ -125,9 +125,9 @@
   padding: 0.5rem;
   transition: background-image 200ms ease-in-out;
 }
-.add-tab-button::before, .add-tab-button:hover::before,
-.delete-tab-button::before,
-.delete-tab-button:hover::before,
+.addicon::before, .addicon:hover::before,
+.dropicon::before,
+.dropicon:hover::before,
 .left-arrow::before,
 .left-arrow:hover::before,
 .right-arrow::before,
@@ -140,8 +140,8 @@
   transition: background-image 200ms ease-in-out;
   width: 1rem;
 }
-.add-tab-button span,
-.delete-tab-button span,
+.addicon span,
+.dropicon span,
 .left-arrow span,
 .right-arrow span {
   align-items: center;
@@ -162,40 +162,40 @@
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='#266de2'/%3E%3C/svg%3E");
 }
 
-.delete-tab-button::before {
+.dropicon::before {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='#333333'/%3E%3C/svg%3E");
 }
-.delete-tab-button:hover::before {
+.dropicon:hover::before {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='#ff0000'/%3E%3C/svg%3E");
 }
 
-.add-tab-button::before {
+.addicon::before {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#333333'/%3E%3C/svg%3E");
 }
-.add-tab-button:hover::before {
+.addicon:hover::before {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#266de2'/%3E%3C/svg%3E");
 }
 
-.tab-list.ck-widget.ck-widget_selected,
+.tab.ck-widget.ck-widget_selected,
 .yui3-tab.ck-widget.ck-widget_selected,
 .tab-edit-bar.ck-widget.ck-widget_selected,
 .left-arrow.ck-widget.ck-widget_selected,
 .right-arrow.ck-widget.ck-widget_selected,
-.delete-tab-button.ck-widget.ck-widget_selected,
-.add-tab-button.ck-widget.ck-widget_selected,
+.dropicon.ck-widget.ck-widget_selected,
+.addicon.ck-widget.ck-widget_selected,
 .yui3-tabview-panel.ck-widget.ck-widget_selected,
-.tab-nested-content.ck-widget.ck-widget_selected {
+.tabcontent.ck-widget.ck-widget_selected {
   outline: none !important;
 }
-.tab-list .ck.ck-reset_all.ck-widget__type-around,
+.tab .ck.ck-reset_all.ck-widget__type-around,
 .yui3-tab .ck.ck-reset_all.ck-widget__type-around,
 .tab-edit-bar .ck.ck-reset_all.ck-widget__type-around,
 .left-arrow .ck.ck-reset_all.ck-widget__type-around,
 .right-arrow .ck.ck-reset_all.ck-widget__type-around,
-.delete-tab-button .ck.ck-reset_all.ck-widget__type-around,
-.add-tab-button .ck.ck-reset_all.ck-widget__type-around,
+.dropicon .ck.ck-reset_all.ck-widget__type-around,
+.addicon .ck.ck-reset_all.ck-widget__type-around,
 .yui3-tabview-panel .ck.ck-reset_all.ck-widget__type-around,
-.tab-nested-content .ck.ck-reset_all.ck-widget__type-around {
+.tabcontent .ck.ck-reset_all.ck-widget__type-around {
   display: none !important;
 }
 
@@ -211,14 +211,14 @@
 .left-arrow .ck-widget:hover,
 .right-arrow .ck-widget,
 .right-arrow .ck-widget:hover,
-.delete-tab-button .ck-widget,
-.delete-tab-button .ck-widget:hover,
-.add-tab-button .ck-widget,
-.add-tab-button .ck-widget:hover,
+.dropicon .ck-widget,
+.dropicon .ck-widget:hover,
+.addicon .ck-widget,
+.addicon .ck-widget:hover,
 .yui3-tabview-panel .ck-widget,
 .yui3-tabview-panel .ck-widget:hover,
-.tab-nested-content .ck-widget,
-.tab-nested-content .ck-widget:hover {
+.tabcontent .ck-widget,
+.tabcontent .ck-widget:hover {
   transition: none;
 }
 .tab .ck-widget:hover, .tab.ck-widget.ck-widget_selected,
@@ -232,14 +232,14 @@
 .left-arrow.ck-widget.ck-widget_selected,
 .right-arrow .ck-widget:hover,
 .right-arrow.ck-widget.ck-widget_selected,
-.delete-tab-button .ck-widget:hover,
-.delete-tab-button.ck-widget.ck-widget_selected,
-.add-tab-button .ck-widget:hover,
-.add-tab-button.ck-widget.ck-widget_selected,
+.dropicon .ck-widget:hover,
+.dropicon.ck-widget.ck-widget_selected,
+.addicon .ck-widget:hover,
+.addicon.ck-widget.ck-widget_selected,
 .yui3-tabview-panel .ck-widget:hover,
 .yui3-tabview-panel.ck-widget.ck-widget_selected,
-.tab-nested-content .ck-widget:hover,
-.tab-nested-content.ck-widget.ck-widget_selected {
+.tabcontent .ck-widget:hover,
+.tabcontent.ck-widget.ck-widget_selected {
   outline: none;
 }
 .tab .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:before, .tab .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after,
@@ -253,14 +253,14 @@
 .left-arrow .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after,
 .right-arrow .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:before,
 .right-arrow .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after,
-.delete-tab-button .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:before,
-.delete-tab-button .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after,
-.add-tab-button .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:before,
-.add-tab-button .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after,
+.dropicon .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:before,
+.dropicon .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after,
+.addicon .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:before,
+.addicon .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after,
 .yui3-tabview-panel .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:before,
 .yui3-tabview-panel .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after,
-.tab-nested-content .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:before,
-.tab-nested-content .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after {
+.tabcontent .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:before,
+.tabcontent .ck-widget.ck-widget_selected > .ck-widget__type-around > .ck-widget__type-around__button:after {
   display: none;
 }
 .tab .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before, .tab .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after,
@@ -274,14 +274,14 @@
 .left-arrow .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after,
 .right-arrow .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before,
 .right-arrow .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after,
-.delete-tab-button .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before,
-.delete-tab-button .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after,
-.add-tab-button .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before,
-.add-tab-button .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after,
+.dropicon .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before,
+.dropicon .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after,
+.addicon .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before,
+.addicon .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after,
 .yui3-tabview-panel .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before,
 .yui3-tabview-panel .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after,
-.tab-nested-content .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before,
-.tab-nested-content .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after {
+.tabcontent .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:before,
+.tabcontent .ck-widget > .ck-widget__type-around > .ck-widget__type-around__button:hover:after {
   display: none;
 }
 .tab .ck-widget.ck-widget_selected, .tab .ck-widget.ck-widget_selected:hover,
@@ -295,14 +295,14 @@
 .left-arrow .ck-widget.ck-widget_selected:hover,
 .right-arrow .ck-widget.ck-widget_selected,
 .right-arrow .ck-widget.ck-widget_selected:hover,
-.delete-tab-button .ck-widget.ck-widget_selected,
-.delete-tab-button .ck-widget.ck-widget_selected:hover,
-.add-tab-button .ck-widget.ck-widget_selected,
-.add-tab-button .ck-widget.ck-widget_selected:hover,
+.dropicon .ck-widget.ck-widget_selected,
+.dropicon .ck-widget.ck-widget_selected:hover,
+.addicon .ck-widget.ck-widget_selected,
+.addicon .ck-widget.ck-widget_selected:hover,
 .yui3-tabview-panel .ck-widget.ck-widget_selected,
 .yui3-tabview-panel .ck-widget.ck-widget_selected:hover,
-.tab-nested-content .ck-widget.ck-widget_selected,
-.tab-nested-content .ck-widget.ck-widget_selected:hover {
+.tabcontent .ck-widget.ck-widget_selected,
+.tabcontent .ck-widget.ck-widget_selected:hover {
   outline: none;
 }
 
@@ -312,20 +312,20 @@
 .ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .tabTitle,
 .ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .left-arrow,
 .ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .right-arrow,
-.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .delete-tab-button,
-.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .add-tab-button,
+.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .dropicon,
+.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .addicon,
 .ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .yui3-tabview-panel,
-.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .tab-nested-content,
+.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected .tabcontent,
 .ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .tab,
 .ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .yui3-tab,
 .ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .tab-edit-bar,
 .ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .tabTitle,
 .ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .left-arrow,
 .ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .right-arrow,
-.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .delete-tab-button,
-.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .add-tab-button,
+.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .dropicon,
+.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .addicon,
 .ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .yui3-tabview-panel,
-.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .tab-nested-content {
+.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover .tabcontent {
   outline: none;
 }
 
@@ -338,7 +338,7 @@
   z-index: 1001;
 }
 
-.ck-content .tab-nested-content.ck-placeholder::before {
+.ck-content .tabcontent.ck-placeholder::before {
   content: attr(data-placeholder);
   color: #999;
   font-style: italic;

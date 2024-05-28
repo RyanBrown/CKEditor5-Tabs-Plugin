@@ -142,7 +142,8 @@ $transition-speed: 200ms ease-in-out;
             align-self: flex-end;
             padding: 0;
 
-            .add-tab-button {
+            // .add-tab-button,
+            .addicon {
                 padding: $tab-x-padding $tab-y-padding;
             }
         }
@@ -155,7 +156,8 @@ $transition-speed: 200ms ease-in-out;
         border: $tab-border-width solid $tab-border-color-active;
         position: relative;
 
-        .tab-nested-content {
+        // .tab-nested-content {
+        .tabcontent {
             display: none;
             height: 100%;
             min-height: 5.75rem;
@@ -172,8 +174,8 @@ $transition-speed: 200ms ease-in-out;
 }
 
 // Individual buttons (add, delete, move-left, move-right)
-.add-tab-button,
-.delete-tab-button,
+.addicon,
+.dropicon,
 .left-arrow,
 .right-arrow {
     background-color: transparent;
@@ -219,7 +221,7 @@ $transition-speed: 200ms ease-in-out;
 }
 
 // Delete tab button
-.delete-tab-button {
+.dropicon {
     &::before {
         background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='#333333'/%3E%3C/svg%3E");
     }
@@ -229,7 +231,7 @@ $transition-speed: 200ms ease-in-out;
 }
 
 // Add tab button
-.add-tab-button {
+.addicon {
     &::before {
         background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#333333'/%3E%3C/svg%3E");
     }
@@ -239,15 +241,15 @@ $transition-speed: 200ms ease-in-out;
 }
 
 // Hide outline on elements when selected in the editor
-.tab-list,
+.tab,
 .yui3-tab,
 .tab-edit-bar,
 .left-arrow,
 .right-arrow,
-.delete-tab-button,
-.add-tab-button,
+.dropicon,
+.addicon,
 .yui3-tabview-panel,
-.tab-nested-content {
+.tabcontent {
     &.ck-widget.ck-widget_selected {
         outline: none !important;
     }
@@ -263,10 +265,10 @@ $transition-speed: 200ms ease-in-out;
 .tabTitle,
 .left-arrow,
 .right-arrow,
-.delete-tab-button,
-.add-tab-button,
+.dropicon,
+.addicon,
 .yui3-tabview-panel,
-.tab-nested-content {
+.tabcontent {
     .ck-widget,
     .ck-widget:hover {
         transition: none;
@@ -309,10 +311,10 @@ $transition-speed: 200ms ease-in-out;
     .tabTitle,
     .left-arrow,
     .right-arrow,
-    .delete-tab-button,
-    .add-tab-button,
+    .dropicon,
+    .addicon,
     .yui3-tabview-panel,
-    .tab-nested-content {
+    .tabcontent {
         outline: none;
     }
 }
@@ -333,7 +335,7 @@ $transition-speed: 200ms ease-in-out;
 // }
 
 // Placeholder styling for nested content in the editor
-.ck-content .tab-nested-content.ck-placeholder::before {
+.ck-content .tabcontent.ck-placeholder::before {
     content: attr(data-placeholder);
     color: #999;
     font-style: italic;
