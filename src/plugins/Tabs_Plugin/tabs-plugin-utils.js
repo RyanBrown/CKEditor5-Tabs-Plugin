@@ -4,6 +4,7 @@ import { generateTabId } from './tabs-plugin-command';
 export function createTabsPluginElement(writer) {
     const tabsPlugin = writer.createElement('tabsPlugin');
     const containerDiv = writer.createElement('containerDiv', { class: 'container' });
+    const tabHeader = writer.createElement('tabHeader', { class: 'tabheader' });
 
     const tabList = writer.createElement('tabList', { class: 'tabList' });
     const tabContent = writer.createElement('tabContent', { class: 'tabContent' });
@@ -33,8 +34,13 @@ export function createTabsPluginElement(writer) {
     const addTabButton = createAddTabButton(writer);
     writer.append(addTabButton, tabList);
 
-    // Append tabList and tabContent to the containerDiv
-    writer.append(tabList, containerDiv);
+    // Append tabList to the tabHeader
+    writer.append(tabList, tabHeader);
+
+    // Append tabHeader to the containerDiv
+    writer.append(tabHeader, containerDiv);
+
+    // Append tabContent to the containerDiv
     writer.append(tabContent, containerDiv);
 
     // Append the containerDiv to tabsPlugin
