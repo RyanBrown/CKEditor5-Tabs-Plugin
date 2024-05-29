@@ -32,10 +32,15 @@ export default class TabsPluginEditing extends Plugin {
             allowAttributes: ['class'],
             allowIn: 'tabsPlugin',
         });
+        // Define schema for 'tabHeader' element
+        schema.register('tabHeader', {
+            allowAttributes: ['class'],
+            allowIn: 'containerDiv',
+        });
         // Define schema for 'tabList' element
         schema.register('tabList', {
             allowAttributes: ['class'],
-            allowIn: 'containerDiv',
+            allowIn: 'tabHeader',
         });
         // Define schema for 'tabListItem' element
         schema.register('tabListItem', {
@@ -142,6 +147,24 @@ export default class TabsPluginEditing extends Plugin {
                 const div = writer.createContainerElement('div', {
                     class: 'ah-tabs-horizontal ah-responsiveselecttabs ah-content-space-v yui3-ah-responsiveselecttabs-content yui3-tabview-content',
                 });
+                return toWidget(div, writer);
+            },
+        });
+
+        // Conversion for 'tabHeader' element (HTML to Model)
+        conversion.for('upcast').elementToElement({
+            model: 'tabHeader',
+            view: { name: 'div', classes: 'tabheader ah-tabs-horizontal' },
+        });
+        conversion.for('dataDowncast').elementToElement({
+            model: 'tabHeader',
+            view: (modelElement, { writer }) =>
+                writer.createContainerElement('div', { class: 'tabheader ah-tabs-horizontal' }),
+        });
+        conversion.for('editingDowncast').elementToElement({
+            model: 'tabHeader',
+            view: (modelElement, { writer }) => {
+                const div = writer.createContainerElement('div', { class: 'tabheader ah-tabs-horizontal' });
                 return toWidget(div, writer);
             },
         });
