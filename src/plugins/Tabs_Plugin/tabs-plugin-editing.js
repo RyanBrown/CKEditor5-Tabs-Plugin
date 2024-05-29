@@ -27,10 +27,15 @@ export default class TabsPluginEditing extends Plugin {
             allowWhere: '$block',
             isLimit: true,
         });
+        // Define schema for 'containerDiv' element
+        schema.register('containerDiv', {
+            allowAttributes: ['class'],
+            allowIn: 'tabsPlugin',
+        });
         // Define schema for 'tabList' element
         schema.register('tabList', {
             allowAttributes: ['class'],
-            allowIn: 'tabsPlugin',
+            allowIn: 'containerDiv',
         });
         // Define schema for 'tabListItem' element
         schema.register('tabListItem', {
@@ -98,7 +103,6 @@ export default class TabsPluginEditing extends Plugin {
     _defineConverters() {
         const conversion = this.editor.conversion;
 
-        // Conversion for 'tabsPlugin' element (HTML to Model)
         conversion.for('upcast').elementToElement({
             model: 'tabsPlugin',
             view: { name: 'div', classes: 'tabcontainer' },
@@ -113,6 +117,32 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const div = writer.createContainerElement('div', { class: 'tabcontainer yui3-widget' });
                 return toWidget(div, writer, { label: 'tabs plugin' });
+            },
+        });
+
+        // Conversion for 'containerDiv' element (HTML to Model)
+        conversion.for('upcast').elementToElement({
+            model: 'containerDiv',
+            view: {
+                name: 'div',
+                classes:
+                    'ah-tabs-horizontal ah-responsiveselecttabs ah-content-space-v yui3-ah-responsiveselecttabs-content yui3-tabview-content',
+            },
+        });
+        conversion.for('dataDowncast').elementToElement({
+            model: 'containerDiv',
+            view: (modelElement, { writer }) =>
+                writer.createContainerElement('div', {
+                    class: 'ah-tabs-horizontal ah-responsiveselecttabs ah-content-space-v yui3-ah-responsiveselecttabs-content yui3-tabview-content',
+                }),
+        });
+        conversion.for('editingDowncast').elementToElement({
+            model: 'containerDiv',
+            view: (modelElement, { writer }) => {
+                const div = writer.createContainerElement('div', {
+                    class: 'ah-tabs-horizontal ah-responsiveselecttabs ah-content-space-v yui3-ah-responsiveselecttabs-content yui3-tabview-content',
+                });
+                return toWidget(div, writer);
             },
         });
 
