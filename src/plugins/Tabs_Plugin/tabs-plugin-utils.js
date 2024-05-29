@@ -56,7 +56,6 @@ export function findAllDescendants(node, predicate) {
 export function createTabElement(writer, tabId) {
     const tabListItem = createTabListItem(writer, tabId);
     const tabNestedContent = createTabContent(writer, tabId);
-    // writer.insertText('Tab Content', tabNestedContent); // Insert the title text
     return { tabListItem, tabNestedContent };
 }
 
@@ -64,9 +63,9 @@ export function createTabElement(writer, tabId) {
 export function createTabListItem(writer, tabId) {
     const tabListItem = writer.createElement('tabListItem', {
         'data-target': `#${tabId}`,
-        class: 'yui3-tab',
+        class: 'yui3-tab yui3-tab-selected tablinks',
     });
-    const tabEditBar = writer.createElement('tabEditBar', { class: 'tab-edit-bar' });
+    const tabEditBar = writer.createElement('tabEditBar', { class: 'yui3-tab-label' });
     const moveButtonsWrapper = writer.createElement('moveButtonsWrapper', { class: 'move-buttons-wrapper' });
 
     appendControlElement(writer, moveButtonsWrapper, 'moveLeftButton', 'Move Tab Left');
@@ -87,7 +86,7 @@ export function createTabListItem(writer, tabId) {
 export function createTabContent(writer, tabId) {
     return writer.createElement('tabNestedContent', {
         id: tabId,
-        class: 'tab-nested-content',
+        class: 'yui3-tab-panel-selected tabcontent',
     });
 }
 
