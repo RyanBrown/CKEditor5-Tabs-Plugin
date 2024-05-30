@@ -43,12 +43,12 @@
 .tabcontainer .tab .yui3-tab:hover::after {
   background-color: #f7f7f7;
 }
-.tabcontainer .tab .yui3-tab.active, .tabcontainer .tab .yui3-tab.active:hover {
+.tabcontainer .tab .yui3-tab.active, .tabcontainer .tab .yui3-tab.active:hover, .tabcontainer .tab .yui3-tab.yui3-tab-selected, .tabcontainer .tab .yui3-tab.yui3-tab-selected:hover {
   background-color: #fff;
   border: 2px solid #ccc;
   position: relative;
 }
-.tabcontainer .tab .yui3-tab.active::after, .tabcontainer .tab .yui3-tab.active:hover::after {
+.tabcontainer .tab .yui3-tab.active::after, .tabcontainer .tab .yui3-tab.active:hover::after, .tabcontainer .tab .yui3-tab.yui3-tab-selected::after, .tabcontainer .tab .yui3-tab.yui3-tab-selected:hover::after {
   background-color: #fff;
   bottom: -4px;
   height: 4px;
@@ -110,7 +110,7 @@
   min-height: 5.75rem;
   width: 100%;
 }
-.tabcontainer .yui3-tabview-panel .tabcontent.active {
+.tabcontainer .yui3-tabview-panel .tabcontent.active, .tabcontainer .yui3-tabview-panel .tabcontent.yui3-tab-panel-selected {
   display: block;
   padding: 1rem;
 }
@@ -343,4 +343,8 @@
   color: #999;
   font-style: italic;
   pointer-events: none;
+}
+
+th {
+  border: 1px solid orange !important;
 }

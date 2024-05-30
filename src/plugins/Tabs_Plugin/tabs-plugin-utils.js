@@ -75,7 +75,7 @@ export function createTabElement(writer, tabId) {
 export function createTabListItem(writer, tabId) {
     const tabListItem = writer.createElement('tabListItem', {
         'data-target': `#${tabId}`,
-        class: 'yui3-tab yui3-tab-selected tablinks',
+        class: 'yui3-tab tablinks',
     });
     const tabEditBar = writer.createElement('tabEditBar', { class: 'yui3-tab-label' });
 
@@ -131,7 +131,7 @@ export function createTabListItem(writer, tabId) {
 export function createTabContent(writer, tabId) {
     const tabContent = writer.createElement('tabNestedContent', {
         id: tabId,
-        class: 'yui3-tab-panel-selected tabcontent',
+        class: 'yui3-tab-panel tabcontent',
     });
     if (!tabContent) {
         console.error('Failed to create tab content');

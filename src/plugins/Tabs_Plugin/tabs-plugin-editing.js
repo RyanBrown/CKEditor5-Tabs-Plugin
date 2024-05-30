@@ -211,16 +211,14 @@ export default class TabsPluginEditing extends Plugin {
         // Conversion for 'tabListItem'
         conversion.for('upcast').elementToElement({
             model: 'tabListItem',
-            view: { name: 'li', classes: 'yui3-tab yui3-tab-selected tablinks' },
+            view: { name: 'li', classes: 'yui3-tab tablinks' },
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabListItem',
             view: (modelElement, { writer }) => {
                 const classes = modelElement.getAttribute('class');
                 return writer.createContainerElement('li', {
-                    class: classes
-                        ? `yui3-tab yui3-tab-selected tablinks ${classes}`
-                        : 'yui3-tab yui3-tab-selected tablinks',
+                    class: classes ? `yui3-tab tablinks ${classes}` : 'yui3-tab tablinks',
                     'data-target': modelElement.getAttribute('data-target'),
                 });
             },
@@ -230,9 +228,7 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const classes = modelElement.getAttribute('class');
                 const li = writer.createContainerElement('li', {
-                    class: classes
-                        ? `yui3-tab yui3-tab-selected tablinks ${classes}`
-                        : 'yui3-tab yui3-tab-selected tablinks',
+                    class: classes ? `yui3-tab tablinks ${classes}` : 'yui3-tab tablinks',
                     'data-target': modelElement.getAttribute('data-target'),
                 });
                 return toWidget(li, writer);
@@ -404,7 +400,7 @@ export default class TabsPluginEditing extends Plugin {
         // Conversion for 'tabNestedContent' element
         conversion.for('upcast').elementToElement({
             model: 'tabNestedContent',
-            view: { name: 'div', classes: 'yui3-tab-panel-selected tabcontent' },
+            view: { name: 'div', classes: 'yui3-tab-panel tabcontent' },
             converterPriority: 'high',
         });
         conversion.for('dataDowncast').elementToElement({
@@ -412,9 +408,7 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const classes = modelElement.getAttribute('class');
                 const div = writer.createEditableElement('div', {
-                    class: classes
-                        ? `yui3-tab-panel-selected tabcontent ${classes}`
-                        : 'yui3-tab-panel-selected tabcontent',
+                    class: classes ? `yui3-tab-panel tabcontent ${classes}` : 'yui3-tab-panel tabcontent',
                     id: modelElement.getAttribute('id'),
                 });
                 return div;
@@ -425,9 +419,7 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const classes = modelElement.getAttribute('class');
                 const div = writer.createEditableElement('div', {
-                    class: classes
-                        ? `yui3-tab-panel-selected tabcontent ${classes}`
-                        : 'yui3-tab-panel-selected tabcontent',
+                    class: classes ? `yui3-tab-panel tabcontent ${classes}` : 'yui3-tab-panel tabcontent',
                     id: modelElement.getAttribute('id'),
                 });
                 return toWidgetEditable(div, writer);
