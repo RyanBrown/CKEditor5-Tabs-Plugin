@@ -78,28 +78,65 @@ export function createTabListItem(writer, tabId) {
         class: 'yui3-tab yui3-tab-selected tablinks',
     });
     const tabEditBar = writer.createElement('tabEditBar', { class: 'yui3-tab-label' });
-    const moveButtonsWrapper = writer.createElement('moveButtonsWrapper', { class: 'move-buttons-wrapper' });
 
-    appendControlElement(writer, moveButtonsWrapper, 'moveLeftButton', 'Move Tab Left');
-    appendControlElement(writer, moveButtonsWrapper, 'moveRightButton', 'Move Tab Right');
-    writer.append(moveButtonsWrapper, tabEditBar);
-    appendControlElement(writer, tabEditBar, 'deleteTabButton', 'Delete Tab');
+    // Create the table structure inside the tabEditBar
+    const table = writer.createElement('table');
+
+    const thead = writer.createElement('thead');
+    const trHead = writer.createElement('tr');
+
+    const th1 = writer.createElement('th');
+    const moveLeftButton = writer.createElement('moveLeftButton', {
+        class: 'left-arrow arrowtabicon',
+        title: 'Move Tab Left',
+    });
+    writer.append(moveLeftButton, th1);
+    writer.append(th1, trHead);
+
+    const th2 = writer.createElement('th');
+    const moveRightButton = writer.createElement('moveRightButton', {
+        class: 'right-arrow arrowtabicon',
+        title: 'Move Tab Right',
+    });
+    writer.append(moveRightButton, th2);
+    writer.append(th2, trHead);
+
+    const th3 = writer.createElement('th');
+    const deleteTabButton = writer.createElement('deleteTabButton', { class: 'dropicon', title: 'Delete Tab' });
+    writer.append(deleteTabButton, th3);
+    writer.append(th3, trHead);
+
+    writer.append(trHead, thead);
+    writer.append(thead, table);
+
+    const tbody = writer.createElement('tbody');
+    const trBody = writer.createElement('tr');
+    const td = writer.createElement('td', { colspan: '3' });
 
     const tabTitle = writer.createElement('tabTitle', { class: 'tabTitle' });
-    writer.insertText(`Tab Name`, tabTitle);
+    writer.insertText('Tab Name', tabTitle);
+    writer.append(tabTitle, td);
 
+    writer.append(td, trBody);
+    writer.append(trBody, tbody);
+    writer.append(tbody, table);
+
+    writer.append(table, tabEditBar);
     writer.append(tabEditBar, tabListItem);
-    writer.append(tabTitle, tabListItem);
 
     return tabListItem;
 }
 
 // Create tab content
 export function createTabContent(writer, tabId) {
-    return writer.createElement('tabNestedContent', {
+    const tabContent = writer.createElement('tabNestedContent', {
         id: tabId,
         class: 'yui3-tab-panel-selected tabcontent',
     });
+    if (!tabContent) {
+        console.error('Failed to create tab content');
+    }
+    return tabContent;
 }
 
 // Create 'Add Tab' button

@@ -87,6 +87,8 @@ export default class TabsPluginUI extends Plugin {
 
         if (tabListItem) {
             this._activateTab(editor, tabListItem);
+        } else {
+            console.error('Tab list item not found');
         }
 
         evt.stop();

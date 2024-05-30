@@ -103,6 +103,28 @@ export default class TabsPluginEditing extends Plugin {
             allowAttributes: ['class', 'title'],
             allowIn: 'addTabListItem',
         });
+
+        // Define schema for 'thead' element
+        schema.register('thead', {
+            allowIn: 'table',
+        });
+        // Define schema for 'tr' element
+        schema.register('tr', {
+            allowIn: ['thead', 'tbody'],
+        });
+        // Define schema for 'th' element
+        schema.register('th', {
+            allowIn: 'tr',
+        });
+        // Define schema for 'tbody' element
+        schema.register('tbody', {
+            allowIn: 'table',
+        });
+        // Define schema for 'td' element
+        schema.register('td', {
+            allowIn: 'tr',
+            allowAttributes: ['colspan'],
+        });
     }
 
     _defineConverters() {
@@ -410,6 +432,65 @@ export default class TabsPluginEditing extends Plugin {
                 });
                 return toWidgetEditable(div, writer);
             },
+        });
+
+        // Converter for 'table' element
+        conversion.for('downcast').elementToElement({
+            model: 'table',
+            view: (modelElement, { writer }) => {
+                const table = writer.createContainerElement('table');
+                return table;
+            },
+        });
+        // Converter for 'thead' element
+        conversion.for('upcast').elementToElement({
+            model: 'thead',
+            view: 'thead',
+        });
+        conversion.for('downcast').elementToElement({
+            model: 'thead',
+            view: 'thead',
+        });
+
+        // Converter for 'tr' element
+        conversion.for('upcast').elementToElement({
+            model: 'tr',
+            view: 'tr',
+        });
+        conversion.for('downcast').elementToElement({
+            model: 'tr',
+            view: 'tr',
+        });
+
+        // Converter for 'th' element
+        conversion.for('upcast').elementToElement({
+            model: 'th',
+            view: 'th',
+        });
+        conversion.for('downcast').elementToElement({
+            model: 'th',
+            view: 'th',
+        });
+
+        // Converter for 'tbody' element
+        conversion.for('upcast').elementToElement({
+            model: 'tbody',
+            view: 'tbody',
+        });
+        conversion.for('downcast').elementToElement({
+            model: 'tbody',
+            view: 'tbody',
+        });
+
+        // Converter for 'td' element
+        conversion.for('upcast').elementToElement({
+            model: 'td',
+            view: 'td',
+            converterPriority: 'high',
+        });
+        conversion.for('downcast').elementToElement({
+            model: 'td',
+            view: 'td',
         });
     }
 }
