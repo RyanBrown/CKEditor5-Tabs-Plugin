@@ -86,8 +86,12 @@ export function createTabListItem(writer, tabId) {
     // Create the table structure inside the tabEditBar
     const table = writer.createElement('table');
 
+    // Create thead and append it to the table
     const thead = writer.createElement('thead');
+    writer.append(thead, table);
+
     const trHead = writer.createElement('tr');
+    writer.append(trHead, thead);
 
     const th1 = writer.createElement('th');
     const moveLeftButton = writer.createElement('moveLeftButton', {
@@ -110,20 +114,19 @@ export function createTabListItem(writer, tabId) {
     writer.append(deleteTabButton, th3);
     writer.append(th3, trHead);
 
-    writer.append(trHead, thead);
-    writer.append(thead, table);
-
+    // Create tbody and append it to the table
     const tbody = writer.createElement('tbody');
+    writer.append(tbody, table);
+
     const trBody = writer.createElement('tr');
+    writer.append(trBody, tbody);
+
     const td = writer.createElement('td', { colspan: '3' });
+    writer.append(td, trBody);
 
     const tabTitle = writer.createElement('tabTitle', { class: 'tabTitle' });
     writer.insertText('Tab Name', tabTitle);
     writer.append(tabTitle, td);
-
-    writer.append(td, trBody);
-    writer.append(trBody, tbody);
-    writer.append(tbody, table);
 
     writer.append(table, tabEditBar);
     writer.append(tabEditBar, tabListItem);
