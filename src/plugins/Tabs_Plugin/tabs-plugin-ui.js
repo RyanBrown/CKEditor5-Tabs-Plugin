@@ -206,40 +206,13 @@ export default class TabsPluginUI extends Plugin {
             const root = editor.model.document.getRoot();
 
             // Find tabsPlugin, tabList, and tabContent by querying for them directly
-            let tabsPlugin = null;
-            let tabList = null;
-            let tabContent = null;
+            const tabsPlugin = findAllDescendants(root, (node) => node.is('element', 'tabsPlugin'))[0];
+            const tabList = findAllDescendants(tabsPlugin, (node) => node.is('element', 'tabList'))[0];
+            const tabContent = findAllDescendants(tabsPlugin, (node) => node.is('element', 'tabContent'))[0];
 
-            // Search for the tabsPlugin element
-            for (const node of root.getChildren()) {
-                if (node.is('element', 'tabsPlugin')) {
-                    tabsPlugin = node;
-                    break;
-                }
-            }
-
-            // If tabsPlugin is not found, create it and append to the root
-            if (!tabsPlugin) {
-                tabsPlugin = writer.createElement('tabsPlugin');
-                writer.append(tabsPlugin, root);
-            }
-
-            // Within tabsPlugin, find or create tabList and tabContent
-            for (const node of tabsPlugin.getChildren()) {
-                if (node.is('element', 'tabList')) {
-                    tabList = node;
-                } else if (node.is('element', 'tabContent')) {
-                    tabContent = node;
-                }
-            }
-
-            if (!tabList) {
-                tabList = writer.createElement('tabList');
-                writer.append(tabList, tabsPlugin);
-            }
-            if (!tabContent) {
-                tabContent = writer.createElement('tabContent');
-                writer.append(tabContent, tabsPlugin);
+            if (!tabList || !tabContent) {
+                console.error('Tab list or content element not found');
+                return;
             }
 
             // Generate a unique tabId for the new tab using centralized method
@@ -247,11 +220,16 @@ export default class TabsPluginUI extends Plugin {
             // Use the utility function to create a new tab list item and content
             const { tabListItem, tabNestedContent } = createTabElement(writer, newTabId);
             // Find the "Add Tab" button in the tabList
-            const addTabButton = tabList.getChild(tabList.childCount - 1);
-            // Insert the new tab list item before the "Add Tab" button
-            writer.insert(tabListItem, addTabButton, 'before');
-            // Append the new tab content to the tabContent
-            writer.append(tabNestedContent, tabContent);
+            const addTabButton = findAllDescendants(tabList, (node) => node.is('element', 'addTabListItem'))[0];
+
+            if (addTabButton) {
+                // Insert the new tab list item before the "Add Tab" button
+                writer.insert(tabListItem, writer.createPositionBefore(addTabButton));
+                // Append the new tab content to the tabContent
+                writer.append(tabNestedContent, tabContent);
+            } else {
+                console.error('"Add Tab" button not found');
+            }
         });
     }
 }
