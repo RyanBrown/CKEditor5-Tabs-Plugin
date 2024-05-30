@@ -92,6 +92,15 @@
 .tabcontainer .tab .yui3-tab:nth-last-child(2):first-child .tabTitle {
   margin: 0.75rem 1.25rem;
 }
+.tabcontainer .tab .yui3-tab .arrowtabicon,
+.tabcontainer .tab .yui3-tab .dropicon {
+  align-items: center;
+  background-color: orange;
+  display: flex;
+  height: 2.5rem;
+  justify-content: center;
+  width: 2.5rem;
+}
 .tabcontainer .tab .yui3-tab.addtab {
   align-self: flex-end;
   padding: 0;
@@ -343,8 +352,4 @@
   color: #999;
   font-style: italic;
   pointer-events: none;
-}
-
-th {
-  border: 1px solid orange !important;
 }

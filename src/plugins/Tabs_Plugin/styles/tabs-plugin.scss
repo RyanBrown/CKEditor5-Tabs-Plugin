@@ -137,6 +137,15 @@ $transition-speed: 200ms ease-in-out;
                     margin: $tab-x-margin $tab-y-margin;
                 }
             }
+            .arrowtabicon,
+            .dropicon {
+                align-items: center;
+                background-color: orange;
+                display: flex;
+                height: 2.5rem;
+                justify-content: center;
+                width: 2.5rem;
+            }
         }
         // Container for the add tab button
         // .add-tab-list-item {
@@ -395,9 +404,4 @@ $transition-speed: 200ms ease-in-out;
             }
         }
     }
-}
-
-// Overrides
-th {
-    border: 1px solid orange !important;
 }
