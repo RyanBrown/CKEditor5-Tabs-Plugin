@@ -3,11 +3,13 @@ import { generateTabId } from './tabs-plugin-command';
 // Create tabs plugin element with two initial tabs
 export function createTabsPluginElement(writer) {
     const tabsPlugin = writer.createElement('tabsPlugin');
-    const containerDiv = writer.createElement('containerDiv', { class: 'container' });
-    const tabHeader = writer.createElement('tabHeader', { class: 'tabheader' });
+    const containerDiv = writer.createElement('containerDiv', {
+        class: 'ah-tabs-horizontal ah-responsiveselecttabs ah-content-space-v yui3-ah-responsiveselecttabs-content yui3-tabview-content',
+    });
+    const tabHeader = writer.createElement('tabHeader', { class: 'tabheader ah-tabs-horizontal' });
 
-    const tabList = writer.createElement('tabList', { class: 'tabList' });
-    const tabContent = writer.createElement('tabContent', { class: 'tabContent' });
+    const tabList = writer.createElement('tabList', { class: 'tab yui3-tabview-list' });
+    const tabContent = writer.createElement('tabContent', { class: 'yui3-tabview-panel' });
 
     // Create the first tab using centralized tabId generation
     const firstTabId = generateTabId();
@@ -112,6 +114,11 @@ export function createTabListItem(writer, tabId) {
     writer.append(th2, trHead);
 
     const th3 = writer.createElement('th');
+    writer.insertText('\u00A0', th3); // Insert a non-breaking space
+    const th4 = writer.createElement('th'); // extra bloat to match UCE
+    writer.insertText('\u00A0', th4); // Insert a non-breaking space
+    const th5 = writer.createElement('th'); // extra bloat to match UCE
+
     const deleteTabButton = writer.createElement('deleteTabButton', {
         class: 'dropicon',
         title: 'Delete Tab',
@@ -125,8 +132,10 @@ export function createTabListItem(writer, tabId) {
     });
     writer.insertText('\u00A0', droptab); // Insert a non-breaking space
     writer.append(droptab, deleteTabButton);
-    writer.append(deleteTabButton, th3);
+    writer.append(deleteTabButton, th5);
     writer.append(th3, trHead);
+    writer.append(th4, trHead);
+    writer.append(th5, trHead);
 
     // Create tbody and append it to the table
     const tbody = writer.createElement('tbody');
@@ -135,7 +144,7 @@ export function createTabListItem(writer, tabId) {
     const trBody = writer.createElement('tr');
     writer.append(trBody, tbody);
 
-    const td = writer.createElement('td', { colspan: '3' });
+    const td = writer.createElement('td', { colspan: '5' });
     writer.append(td, trBody);
 
     const tabTitle = writer.createElement('tabTitle', { class: 'tabTitle' });

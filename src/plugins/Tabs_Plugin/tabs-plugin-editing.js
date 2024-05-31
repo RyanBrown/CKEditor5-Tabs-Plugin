@@ -135,6 +135,7 @@ export default class TabsPluginEditing extends Plugin {
     _defineConverters() {
         const conversion = this.editor.conversion;
 
+        // Conversion for 'tabcontainer' element (HTML to Model)
         conversion.for('upcast').elementToElement({
             model: 'tabsPlugin',
             view: { name: 'div', classes: 'tabcontainer' },
