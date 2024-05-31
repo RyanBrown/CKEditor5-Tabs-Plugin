@@ -67,7 +67,7 @@ export default class TabsPluginUI extends Plugin {
 
             for (const tabTitleElement of tabTitleElements) {
                 const inputElement = tabTitleElement.getChild(1).getChild(0);
-                if (inputElement && inputElement.is('element', 'input') && inputElement.hasClass('tabTitle')) {
+                if (inputElement && inputElement.is('element', 'div') && inputElement.hasClass('tabTitle')) {
                     const text = inputElement.getAttribute('value').trim();
                     if (text === '') {
                         inputElement.setAttribute('value', 'Tab Name');
@@ -125,7 +125,7 @@ export default class TabsPluginUI extends Plugin {
                 writer.removeClass('yui3-tab-selected', item);
             }
             for (const content of tabContentElement.getChildren()) {
-                writer.removeClass('yui3-tab-panel-selected ', content);
+                writer.removeClass('yui3-tab-panel-selected', content);
             }
 
             // Add the 'active' class to the selected tab list item and corresponding tab content element
@@ -134,7 +134,7 @@ export default class TabsPluginUI extends Plugin {
                 (child) => child.getAttribute('id') === tabId.slice(1)
             );
             if (selectedTabContent) {
-                writer.addClass('yui3-tab-panel-selected ', selectedTabContent);
+                writer.addClass('yui3-tab-panel-selected', selectedTabContent);
             } else {
                 console.error('Selected tab content not found');
             }

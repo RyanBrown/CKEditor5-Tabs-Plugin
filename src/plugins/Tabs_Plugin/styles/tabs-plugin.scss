@@ -250,159 +250,159 @@ $transition-speed: 200ms ease-in-out;
     }
 }
 
-// Hide outline on elements when selected in the editor
-.tab,
-.yui3-tab,
-.tab-edit-bar,
-.left-arrow,
-.right-arrow,
-.dropicon,
-.addicon,
-.yui3-tabview-panel,
-.tabcontent {
-    &.ck-widget.ck-widget_selected {
-        outline: none !important;
-    }
+// // Hide outline on elements when selected in the editor
+// .tab,
+// .yui3-tab,
+// .tab-edit-bar,
+// .left-arrow,
+// .right-arrow,
+// .dropicon,
+// .addicon,
+// .yui3-tabview-panel,
+// .tabcontent {
+//     &.ck-widget.ck-widget_selected {
+//         outline: none !important;
+//     }
 
-    .ck.ck-reset_all.ck-widget__type-around {
-        display: none !important;
-    }
-}
-
-.tab,
-.yui3-tab,
-.tab-edit-bar,
-.tabTitle,
-.left-arrow,
-.right-arrow,
-.dropicon,
-.addicon,
-.yui3-tabview-panel,
-.tabcontent {
-    .ck-widget,
-    .ck-widget:hover {
-        transition: none;
-    }
-
-    .ck-widget:hover,
-    &.ck-widget.ck-widget_selected {
-        outline: none;
-    }
-
-    .ck-widget {
-        &.ck-widget_selected {
-            > .ck-widget__type-around > .ck-widget__type-around__button {
-                &:before,
-                &:after {
-                    display: none;
-                }
-            }
-        }
-        > .ck-widget__type-around > .ck-widget__type-around__button {
-            &:hover:before,
-            &:hover:after {
-                display: none;
-            }
-        }
-
-        &.ck-widget_selected,
-        &.ck-widget_selected:hover {
-            outline: none;
-        }
-    }
-}
-
-// Remove outline on blurred editor
-.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected,
-.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover {
-    .tab,
-    .yui3-tab,
-    .tab-edit-bar,
-    .tabTitle,
-    .left-arrow,
-    .right-arrow,
-    .dropicon,
-    .addicon,
-    .yui3-tabview-panel,
-    .tabcontent {
-        outline: none;
-    }
-}
-
-.yui3-tabview-panel.ck-widget:hover {
-    outline: none !important;
-}
-
-// Set the z-index higher than the tabs for type-around buttons
-.ck.ck-widget__type-around__button.ck-widget__type-around__button_before,
-.ck.ck-widget__type-around__button.ck-widget__type-around__button_after {
-    z-index: 1001;
-}
-
-// remove the before/after arrows to insert plugin
-// .ck-widget__type-around {
-//   display: none;
+//     .ck.ck-reset_all.ck-widget__type-around {
+//         display: none !important;
+//     }
 // }
 
-// Placeholder styling for nested content in the editor
-.ck-content .tabcontent.ck-placeholder::before {
-    content: attr(data-placeholder);
-    color: #999;
-    font-style: italic;
-    pointer-events: none;
-}
+// .tab,
+// .yui3-tab,
+// .tab-edit-bar,
+// .tabTitle,
+// .left-arrow,
+// .right-arrow,
+// .dropicon,
+// .addicon,
+// .yui3-tabview-panel,
+// .tabcontent {
+//     .ck-widget,
+//     .ck-widget:hover {
+//         transition: none;
+//     }
+
+//     .ck-widget:hover,
+//     &.ck-widget.ck-widget_selected {
+//         outline: none;
+//     }
+
+//     .ck-widget {
+//         &.ck-widget_selected {
+//             > .ck-widget__type-around > .ck-widget__type-around__button {
+//                 &:before,
+//                 &:after {
+//                     display: none;
+//                 }
+//             }
+//         }
+//         > .ck-widget__type-around > .ck-widget__type-around__button {
+//             &:hover:before,
+//             &:hover:after {
+//                 display: none;
+//             }
+//         }
+
+//         &.ck-widget_selected,
+//         &.ck-widget_selected:hover {
+//             outline: none;
+//         }
+//     }
+// }
+
+// // Remove outline on blurred editor
+// .ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected,
+// .ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover {
+//     .tab,
+//     .yui3-tab,
+//     .tab-edit-bar,
+//     .tabTitle,
+//     .left-arrow,
+//     .right-arrow,
+//     .dropicon,
+//     .addicon,
+//     .yui3-tabview-panel,
+//     .tabcontent {
+//         outline: none;
+//     }
+// }
+
+// .yui3-tabview-panel.ck-widget:hover {
+//     outline: none !important;
+// }
+
+// // Set the z-index higher than the tabs for type-around buttons
+// .ck.ck-widget__type-around__button.ck-widget__type-around__button_before,
+// .ck.ck-widget__type-around__button.ck-widget__type-around__button_after {
+//     z-index: 1001;
+// }
+
+// // remove the before/after arrows to insert plugin
+// // .ck-widget__type-around {
+// //   display: none;
+// // }
+
+// // Placeholder styling for nested content in the editor
+// .ck-content .tabcontent.ck-placeholder::before {
+//     content: attr(data-placeholder);
+//     color: #999;
+//     font-style: italic;
+//     pointer-events: none;
+// }
 
 //// NEW CSS
-.tabcontainer.yui3-widget {
-    .ah-tabs-horizontal.ah-responsiveselecttabs.ah-content-space-v.yui3-ah-responsiveselecttabs-content.yui3-tabview-content {
-        .tabheader.ah-tabs-horizontal {
-            ul.tab.yui3-tabview-list {
-                li.yui3-tab.yui3-tab-selected.tablinks {
-                    .yui3-tab-label {
-                        table {
-                            thead > tr > th {
-                                .left-arrow.arrowtabicon {
-                                }
-                                .right-arrow.arrowtabicon {
-                                }
-                                .dropicon > .droptab.droptabicon {
-                                }
-                            }
-                            tbody > tr > td > .tabTitle {
-                            }
-                        }
-                    }
-                }
-                li.yui3-tab.tablinks {
-                    .yui3-tab-label {
-                        table {
-                            thead > tr > th {
-                                .left-arrow.arrowtabicon {
-                                }
-                                .right-arrow.arrowtabicon {
-                                }
-                                .dropicon > .droptab.droptabicon {
-                                }
-                            }
-                            tbody > tr > td > .tabTitle {
-                            }
-                        }
-                    }
-                }
-                li.yui3-tab.addtab {
-                    .addicon > .addtabicon {
-                    }
-                }
-            }
-            .yui3-tabview-panel {
-                .yui3-tab-panel.yui3-tab-panel-selected.tabcontent {
-                }
-                .yui3-tab-panel.tabcontent {
-                }
-            }
-        }
-    }
-}
+// .tabcontainer.yui3-widget {
+//     .ah-tabs-horizontal.ah-responsiveselecttabs.ah-content-space-v.yui3-ah-responsiveselecttabs-content.yui3-tabview-content {
+//         .tabheader.ah-tabs-horizontal {
+//             ul.tab.yui3-tabview-list {
+//                 li.yui3-tab.yui3-tab-selected.tablinks {
+//                     .yui3-tab-label {
+//                         table {
+//                             thead > tr > th {
+//                                 .left-arrow.arrowtabicon {
+//                                 }
+//                                 .right-arrow.arrowtabicon {
+//                                 }
+//                                 .dropicon > .droptab.droptabicon {
+//                                 }
+//                             }
+//                             tbody > tr > td > .tabTitle {
+//                             }
+//                         }
+//                     }
+//                 }
+//                 li.yui3-tab.tablinks {
+//                     .yui3-tab-label {
+//                         table {
+//                             thead > tr > th {
+//                                 .left-arrow.arrowtabicon {
+//                                 }
+//                                 .right-arrow.arrowtabicon {
+//                                 }
+//                                 .dropicon > .droptab.droptabicon {
+//                                 }
+//                             }
+//                             tbody > tr > td > .tabTitle {
+//                             }
+//                         }
+//                     }
+//                 }
+//                 li.yui3-tab.addtab {
+//                     .addicon > .addtabicon {
+//                     }
+//                 }
+//             }
+//             .yui3-tabview-panel {
+//                 .yui3-tab-panel.yui3-tab-panel-selected.tabcontent {
+//                 }
+//                 .yui3-tab-panel.tabcontent {
+//                 }
+//             }
+//         }
+//     }
+// }
 
 table {
     border: 1px solid red !important;
