@@ -113,28 +113,26 @@ export function createTabListItem(writer, tabId) {
     writer.append(moveRightButton, th2);
     writer.append(th2, trHead);
 
+    // Add empty <th> elements for spacing
     const th3 = writer.createElement('th');
     writer.insertText('\u00A0', th3); // Insert a non-breaking space
-    const th4 = writer.createElement('th'); // extra bloat to match UCE
-    writer.insertText('\u00A0', th4); // Insert a non-breaking space
-    const th5 = writer.createElement('th'); // extra bloat to match UCE
+    writer.append(th3, trHead);
 
+    const th4 = writer.createElement('th');
+    writer.insertText('\u00A0', th4); // Insert a non-breaking space
+    writer.append(th4, trHead);
+
+    const th5 = writer.createElement('th');
     const deleteTabButton = writer.createElement('deleteTabButton', {
         class: 'dropicon',
         title: 'Delete Tab',
-        contenteditable: 'false',
     });
-    const droptab = writer.createElement('paragraph', {
-        class: 'droptab',
-        // class: 'droptab droptabicon',
-        contenteditable: 'true',
-        // onclick: 'parent.dropActiveTab(event);',
+    const dropParagraph = writer.createElement('paragraph', {
+        class: 'droptab droptabicon',
     });
-    writer.insertText('\u00A0', droptab); // Insert a non-breaking space
-    writer.append(droptab, deleteTabButton);
+    writer.insertText('\u00A0', dropParagraph);
+    writer.append(dropParagraph, deleteTabButton);
     writer.append(deleteTabButton, th5);
-    writer.append(th3, trHead);
-    writer.append(th4, trHead);
     writer.append(th5, trHead);
 
     // Create tbody and append it to the table

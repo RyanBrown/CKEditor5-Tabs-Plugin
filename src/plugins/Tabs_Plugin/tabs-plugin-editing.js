@@ -93,6 +93,11 @@ export default class TabsPluginEditing extends Plugin {
             allowAttributes: ['class', 'title'],
             allowIn: 'tabEditBar',
         });
+        // Define schema for 'deleteTabButton' element
+        schema.register('dropParagraph', {
+            allowAttributes: ['class', 'title'],
+            allowIn: 'tabEditBar',
+        });
         // // Define schema for 'paragraph' element
         // schema.register('paragraph', {
         //     allowAttributes: ['class', 'contenteditable'],
@@ -339,7 +344,7 @@ export default class TabsPluginEditing extends Plugin {
         // Conversion for 'deleteTabButton' element
         conversion.for('upcast').elementToElement({
             model: 'deleteTabButton',
-            view: { name: 'div', classes: 'dropicon' },
+            view: { name: 'div', classes: 'dropicon', attributes: { contenteditable: 'false' } },
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'deleteTabButton',
@@ -347,6 +352,7 @@ export default class TabsPluginEditing extends Plugin {
                 writer.createContainerElement('div', {
                     class: 'dropicon',
                     title: modelElement.getAttribute('title') || 'Delete Tab',
+                    contenteditable: 'false',
                 }),
         });
         conversion.for('editingDowncast').elementToElement({
@@ -355,7 +361,34 @@ export default class TabsPluginEditing extends Plugin {
                 writer.createContainerElement('div', {
                     class: 'dropicon',
                     title: modelElement.getAttribute('title') || 'Delete Tab',
+                    contenteditable: 'false',
                 }),
+        });
+
+        // Conversion for 'paragraph' element
+        conversion.for('upcast').elementToElement({
+            model: 'paragraph',
+            view: { name: 'p', classes: 'droptab droptabicon', attributes: { contenteditable: 'true' } },
+        });
+        conversion.for('dataDowncast').elementToElement({
+            model: 'paragraph',
+            view: (modelElement, { writer }) => {
+                const paragraph = writer.createContainerElement('p', {
+                    class: 'droptab droptabicon',
+                    contenteditable: 'true',
+                });
+                return paragraph;
+            },
+        });
+        conversion.for('editingDowncast').elementToElement({
+            model: 'paragraph',
+            view: (modelElement, { writer }) => {
+                const paragraph = writer.createContainerElement('p', {
+                    class: 'droptab droptabicon',
+                    contenteditable: 'true',
+                });
+                return paragraph;
+            },
         });
 
         // // Conversion for 'paragraph' element

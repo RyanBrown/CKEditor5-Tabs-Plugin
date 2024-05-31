@@ -146,8 +146,10 @@ $transition-speed: 200ms ease-in-out;
                 justify-content: center;
                 width: 2.5rem;
             }
-        }
-        // Container for the add tab button
+            .dropicon {
+                background-color: #00ffff;
+            }
+        } // Container for the add tab button
         // .add-tab-list-item {
         .yui3-tab.addtab {
             align-self: flex-end;
@@ -186,10 +188,10 @@ $transition-speed: 200ms ease-in-out;
 }
 
 // Individual buttons (add, delete, move-left, move-right)
-.addicon,
-.dropicon,
-.left-arrow,
-.right-arrow {
+.addicon {
+    // .dropicon,
+    // .left-arrow,
+    // .right-arrow {
     background-color: transparent;
     border: 0;
     cursor: pointer;
@@ -214,20 +216,16 @@ $transition-speed: 200ms ease-in-out;
 
 // Move left button
 .left-arrow {
-    &::before {
-        background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='#333333'/%3E%3C/svg%3E");
-    }
-    &:hover::before {
+    background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='#333333'/%3E%3C/svg%3E");
+    &:hover {
         background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='#266de2'/%3E%3C/svg%3E");
     }
 }
 
 // Move right button
 .right-arrow {
-    &::before {
-        background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='#333333'/%3E%3C/svg%3E");
-    }
-    &:hover::before {
+    background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='#333333'/%3E%3C/svg%3E");
+    &:hover {
         background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='#266de2'/%3E%3C/svg%3E");
     }
 }
@@ -404,4 +402,8 @@ $transition-speed: 200ms ease-in-out;
             }
         }
     }
+}
+
+table {
+    border: 1px solid red !important;
 }

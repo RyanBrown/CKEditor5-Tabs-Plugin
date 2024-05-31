@@ -101,6 +101,9 @@
   justify-content: center;
   width: 2.5rem;
 }
+.tabcontainer .tab .yui3-tab .dropicon {
+  background-color: #00ffff;
+}
 .tabcontainer .tab .yui3-tab.addtab {
   align-self: flex-end;
   padding: 0;
@@ -124,23 +127,14 @@
   padding: 1rem;
 }
 
-.addicon,
-.dropicon,
-.left-arrow,
-.right-arrow {
+.addicon {
   background-color: transparent;
   border: 0;
   cursor: pointer;
   padding: 0.5rem;
   transition: background-image 200ms ease-in-out;
 }
-.addicon::before, .addicon:hover::before,
-.dropicon::before,
-.dropicon:hover::before,
-.left-arrow::before,
-.left-arrow:hover::before,
-.right-arrow::before,
-.right-arrow:hover::before {
+.addicon::before, .addicon:hover::before {
   background-repeat: no-repeat;
   background-size: cover;
   content: "";
@@ -149,25 +143,22 @@
   transition: background-image 200ms ease-in-out;
   width: 1rem;
 }
-.addicon span,
-.dropicon span,
-.left-arrow span,
-.right-arrow span {
+.addicon span {
   align-items: center;
   display: none;
 }
 
-.left-arrow::before {
+.left-arrow {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='#333333'/%3E%3C/svg%3E");
 }
-.left-arrow:hover::before {
+.left-arrow:hover {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='#266de2'/%3E%3C/svg%3E");
 }
 
-.right-arrow::before {
+.right-arrow {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='#333333'/%3E%3C/svg%3E");
 }
-.right-arrow:hover::before {
+.right-arrow:hover {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='#266de2'/%3E%3C/svg%3E");
 }
 
@@ -352,4 +343,8 @@
   color: #999;
   font-style: italic;
   pointer-events: none;
+}
+
+table {
+  border: 1px solid red !important;
 }
