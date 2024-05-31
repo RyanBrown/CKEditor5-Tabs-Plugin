@@ -378,7 +378,6 @@ export default class TabsPluginEditing extends Plugin {
         conversion.for('upcast').elementToElement({
             model: 'td',
             view: 'td',
-            converterPriority: 'high',
         });
         conversion.for('downcast').elementToElement({
             model: 'td',
