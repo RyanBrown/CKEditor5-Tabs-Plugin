@@ -123,17 +123,7 @@ export function createTabListItem(writer, tabId) {
     writer.append(th4, trHead);
 
     const th5 = writer.createElement('th');
-    const deleteTabButton = writer.createElement('deleteTabButton', {
-        class: 'dropicon',
-        title: 'Delete Tab',
-        contenteditable: 'false',
-    });
-    const dropParagraph = writer.createElement('paragraph', {
-        class: 'droptab droptabicon',
-        contenteditable: 'true',
-    });
-    writer.insertText('\u00A0', dropParagraph);
-    writer.append(dropParagraph, deleteTabButton);
+    const deleteTabButton = createDeleteTabButton(writer);
     writer.append(deleteTabButton, th5);
     writer.append(th5, trHead);
 
@@ -155,6 +145,22 @@ export function createTabListItem(writer, tabId) {
     writer.append(tabEditBar, tabListItem);
 
     return tabListItem;
+}
+
+function createDeleteTabButton(writer) {
+    const deleteTabButton = writer.createElement('deleteTabButton', {
+        class: 'dropicon',
+        title: 'Delete Tab',
+        contenteditable: 'false',
+    });
+    const dropParagraph = writer.createElement('paragraph', {
+        class: 'droptab droptabicon',
+        contenteditable: 'true',
+        title: 'nested',
+    });
+    writer.insertText('\u00A0', dropParagraph);
+    writer.append(dropParagraph, deleteTabButton);
+    return deleteTabButton;
 }
 
 // Create tab content
