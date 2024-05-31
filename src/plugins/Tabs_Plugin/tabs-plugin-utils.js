@@ -98,6 +98,7 @@ export function createTabListItem(writer, tabId) {
         class: 'left-arrow arrowtabicon',
         title: 'Move Tab Left',
     });
+    writer.insertText('\u00A0', moveLeftButton); // Insert a non-breaking space
     writer.append(moveLeftButton, th1);
     writer.append(th1, trHead);
 
@@ -106,11 +107,24 @@ export function createTabListItem(writer, tabId) {
         class: 'right-arrow arrowtabicon',
         title: 'Move Tab Right',
     });
+    writer.insertText('\u00A0', moveRightButton); // Insert a non-breaking space
     writer.append(moveRightButton, th2);
     writer.append(th2, trHead);
 
     const th3 = writer.createElement('th');
-    const deleteTabButton = writer.createElement('deleteTabButton', { class: 'dropicon', title: 'Delete Tab' });
+    const deleteTabButton = writer.createElement('deleteTabButton', {
+        class: 'dropicon',
+        title: 'Delete Tab',
+        contenteditable: 'false',
+    });
+    const droptab = writer.createElement('paragraph', {
+        class: 'droptab',
+        // class: 'droptab droptabicon',
+        contenteditable: 'true',
+        // onclick: 'parent.dropActiveTab(event);',
+    });
+    writer.insertText('\u00A0', droptab); // Insert a non-breaking space
+    writer.append(droptab, deleteTabButton);
     writer.append(deleteTabButton, th3);
     writer.append(th3, trHead);
 

@@ -93,6 +93,11 @@ export default class TabsPluginEditing extends Plugin {
             allowAttributes: ['class', 'title'],
             allowIn: 'tabEditBar',
         });
+        // // Define schema for 'paragraph' element
+        // schema.register('paragraph', {
+        //     allowAttributes: ['class', 'contenteditable'],
+        //     allowIn: 'deleteTabButton',
+        // });
         // Define schema for 'addTabListItem' element
         schema.register('addTabListItem', {
             allowAttributes: ['class'],
@@ -351,6 +356,28 @@ export default class TabsPluginEditing extends Plugin {
                     title: modelElement.getAttribute('title') || 'Delete Tab',
                 }),
         });
+
+        // // Conversion for 'paragraph' element
+        // conversion.for('upcast').elementToElement({
+        //     model: 'paragraph',
+        //     view: { name: 'p', classes: 'droptab droptabicon' },
+        // });
+        // conversion.for('dataDowncast').elementToElement({
+        //     model: 'paragraph',
+        //     view: (modelElement, { writer }) =>
+        //         writer.createContainerElement('p', {
+        //             class: modelElement.getAttribute('class') || 'droptab droptabicon',
+        //             contenteditable: modelElement.getAttribute('contenteditable') || 'true',
+        //         }),
+        // });
+        // conversion.for('editingDowncast').elementToElement({
+        //     model: 'paragraph',
+        //     view: (modelElement, { writer }) =>
+        //         writer.createContainerElement('p', {
+        //             class: modelElement.getAttribute('class') || 'droptab droptabicon',
+        //             contenteditable: modelElement.getAttribute('contenteditable') || 'true',
+        //         }),
+        // });
 
         // Conversion for 'addTabListItem' element
         conversion.for('upcast').elementToElement({
