@@ -126,9 +126,11 @@ export function createTabListItem(writer, tabId) {
     const deleteTabButton = writer.createElement('deleteTabButton', {
         class: 'dropicon',
         title: 'Delete Tab',
+        contenteditable: 'false',
     });
     const dropParagraph = writer.createElement('paragraph', {
         class: 'droptab droptabicon',
+        contenteditable: 'true',
     });
     writer.insertText('\u00A0', dropParagraph);
     writer.append(dropParagraph, deleteTabButton);
