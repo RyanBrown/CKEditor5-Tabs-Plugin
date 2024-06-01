@@ -20,11 +20,14 @@ $tab-bg-active: #fff;
 $transition-speed: 200ms ease-in-out;
 
 // Main tabs plugin container
-.tabs-plugin {
+// .tabs-plugin {
+.tabcontainer {
     background-color: $tab-bg-active;
 
     // Tab list container
-    .tab-list {
+    // .tab-list {
+    // .tab {
+    .yui3-tabview-list {
         align-items: stretch;
         display: flex;
         flex-wrap: wrap;
@@ -33,7 +36,8 @@ $transition-speed: 200ms ease-in-out;
         padding: 0;
 
         // Individual tab list item
-        .tab-list-item {
+        // .tab-list-item {
+        .tablinks {
             background-color: $tab-bg;
             border-radius: $tab-border-radius $tab-border-radius 0 0;
             border: $tab-border-width solid $tab-border-color;
@@ -68,8 +72,10 @@ $transition-speed: 200ms ease-in-out;
                     background-color: $tab-bg-hover;
                 }
             }
-            &.active,
-            &.active:hover {
+            &.yui3-tab-selected,
+            &.yui3-tab-selected:hover {
+                // &.active,
+                // &.active:hover {
                 background-color: $tab-bg-active;
                 border: $tab-border-width solid $tab-border-color-active;
                 position: relative;
@@ -108,7 +114,8 @@ $transition-speed: 200ms ease-in-out;
             &:first-child .tab-edit-bar > .move-buttons-wrapper {
                 justify-content: flex-end;
 
-                .move-left-button {
+                // .move-left-button {
+                .left-arrow {
                     display: none;
                 }
             }
@@ -116,7 +123,8 @@ $transition-speed: 200ms ease-in-out;
             &:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper {
                 justify-content: flex-start;
 
-                .move-right-button {
+                // .move-right-button {
+                .right-arrow {
                     display: none;
                 }
             }
@@ -131,29 +139,33 @@ $transition-speed: 200ms ease-in-out;
             }
         }
         // Container for the add tab button
-        .add-tab-list-item {
+        // .add-tab-list-item {
+        .addtab {
             align-self: flex-end;
             padding: 0;
-
-            .add-tab-button {
+            // .add-tab-button {
+            .addicon {
                 padding: $tab-x-padding $tab-y-padding;
             }
         }
     }
 
     // Content of the tabs
-    .tab-content {
+    // .tab-content {
+    .yui3-tabview-panel {
         background-color: $tab-bg-active;
         border: $tab-border-width solid $tab-border-color-active;
         position: relative;
 
-        .tab-nested-content {
+        // .tab-nested-content {
+        .yui3-tab-panel {
             display: none;
             height: 100%;
             min-height: 5.75rem;
             width: 100%;
 
-            &.active {
+            // &.active {
+            &.yui3-tab-panel-selected {
                 // Add fallback for active on first-child
                 // &:nth-last-child(3):first-child {
                 display: block;
@@ -164,10 +176,14 @@ $transition-speed: 200ms ease-in-out;
 }
 
 // Individual buttons (add, delete, move-left, move-right)
-.add-tab-button,
-.delete-tab-button,
-.move-left-button,
-.move-right-button {
+// .add-tab-button,
+// .delete-tab-button,
+// .move-left-button,
+// .move-right-button {
+.addicon,
+.dropicon,
+.left-arrow,
+.right-arrow {
     background-color: transparent;
     border: 0;
     cursor: pointer;
@@ -191,7 +207,8 @@ $transition-speed: 200ms ease-in-out;
 }
 
 // Move left button
-.move-left-button {
+// .move-left-button {
+.left-arrow {
     &::before {
         background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='#333333'/%3E%3C/svg%3E");
     }
@@ -200,7 +217,8 @@ $transition-speed: 200ms ease-in-out;
     }
 }
 // Move right button
-.move-right-button {
+// .move-right-button {
+.right-arrow {
     &::before {
         background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='#333333'/%3E%3C/svg%3E");
     }
@@ -209,7 +227,8 @@ $transition-speed: 200ms ease-in-out;
     }
 }
 // Delete tab button
-.delete-tab-button {
+// .delete-tab-button {
+.dropicon {
     &::before {
         background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='#333333'/%3E%3C/svg%3E");
     }
@@ -218,7 +237,7 @@ $transition-speed: 200ms ease-in-out;
     }
 }
 // Add tab button
-.add-tab-button {
+.addicon {
     &::before {
         background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#333333'/%3E%3C/svg%3E");
     }

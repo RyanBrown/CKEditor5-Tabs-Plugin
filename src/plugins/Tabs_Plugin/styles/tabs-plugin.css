@@ -1,7 +1,7 @@
-.tabs-plugin {
+.tabcontainer {
   background-color: #fff;
 }
-.tabs-plugin .tab-list {
+.tabcontainer .yui3-tabview-list {
   align-items: stretch;
   display: flex;
   flex-wrap: wrap;
@@ -9,7 +9,7 @@
   margin: 0;
   padding: 0;
 }
-.tabs-plugin .tab-list .tab-list-item {
+.tabcontainer .yui3-tabview-list .tablinks {
   background-color: #eee;
   border-radius: 0.5rem 0.5rem 0 0;
   border: 2px solid #ddd;
@@ -25,7 +25,7 @@
   transition: background-color 200ms ease-in-out, border-color 200ms ease-in-out;
   z-index: 5;
 }
-.tabs-plugin .tab-list .tab-list-item::after {
+.tabcontainer .yui3-tabview-list .tablinks::after {
   background-color: #eee;
   bottom: -2px;
   content: "";
@@ -37,33 +37,33 @@
   width: 100%;
   z-index: 3;
 }
-.tabs-plugin .tab-list .tab-list-item:hover {
+.tabcontainer .yui3-tabview-list .tablinks:hover {
   background-color: #f7f7f7;
 }
-.tabs-plugin .tab-list .tab-list-item:hover::after {
+.tabcontainer .yui3-tabview-list .tablinks:hover::after {
   background-color: #f7f7f7;
 }
-.tabs-plugin .tab-list .tab-list-item.active, .tabs-plugin .tab-list .tab-list-item.active:hover {
+.tabcontainer .yui3-tabview-list .tablinks.yui3-tab-selected, .tabcontainer .yui3-tabview-list .tablinks.yui3-tab-selected:hover {
   background-color: #fff;
   border: 2px solid #ccc;
   position: relative;
 }
-.tabs-plugin .tab-list .tab-list-item.active::after, .tabs-plugin .tab-list .tab-list-item.active:hover::after {
+.tabcontainer .yui3-tabview-list .tablinks.yui3-tab-selected::after, .tabcontainer .yui3-tabview-list .tablinks.yui3-tab-selected:hover::after {
   background-color: #fff;
   bottom: -4px;
   height: 4px;
 }
-.tabs-plugin .tab-list .tab-list-item .tab-edit-bar {
+.tabcontainer .yui3-tabview-list .tablinks .tab-edit-bar {
   align-items: center;
   display: flex;
   flex: 1 1 0;
 }
-.tabs-plugin .tab-list .tab-list-item .tab-edit-bar .move-buttons-wrapper {
+.tabcontainer .yui3-tabview-list .tablinks .tab-edit-bar .move-buttons-wrapper {
   display: flex;
   flex: 1 1 0;
   justify-content: space-between;
 }
-.tabs-plugin .tab-list .tab-list-item .tab-title {
+.tabcontainer .yui3-tabview-list .tablinks .tab-title {
   align-items: center;
   display: flex;
   font-weight: 700;
@@ -74,64 +74,64 @@
   text-align: center;
   word-break: break-word;
 }
-.tabs-plugin .tab-list .tab-list-item:first-child .tab-edit-bar > .move-buttons-wrapper {
+.tabcontainer .yui3-tabview-list .tablinks:first-child .tab-edit-bar > .move-buttons-wrapper {
   justify-content: flex-end;
 }
-.tabs-plugin .tab-list .tab-list-item:first-child .tab-edit-bar > .move-buttons-wrapper .move-left-button {
+.tabcontainer .yui3-tabview-list .tablinks:first-child .tab-edit-bar > .move-buttons-wrapper .left-arrow {
   display: none;
 }
-.tabs-plugin .tab-list .tab-list-item:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper {
+.tabcontainer .yui3-tabview-list .tablinks:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper {
   justify-content: flex-start;
 }
-.tabs-plugin .tab-list .tab-list-item:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper .move-right-button {
+.tabcontainer .yui3-tabview-list .tablinks:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper .right-arrow {
   display: none;
 }
-.tabs-plugin .tab-list .tab-list-item:nth-last-child(2):first-child .tab-edit-bar {
+.tabcontainer .yui3-tabview-list .tablinks:nth-last-child(2):first-child .tab-edit-bar {
   display: none;
 }
-.tabs-plugin .tab-list .tab-list-item:nth-last-child(2):first-child .tab-title {
+.tabcontainer .yui3-tabview-list .tablinks:nth-last-child(2):first-child .tab-title {
   margin: 0.75rem 1.25rem;
 }
-.tabs-plugin .tab-list .add-tab-list-item {
+.tabcontainer .yui3-tabview-list .addtab {
   align-self: flex-end;
   padding: 0;
 }
-.tabs-plugin .tab-list .add-tab-list-item .add-tab-button {
+.tabcontainer .yui3-tabview-list .addtab .addicon {
   padding: 1.5rem 1.75rem;
 }
-.tabs-plugin .tab-content {
+.tabcontainer .yui3-tabview-panel {
   background-color: #fff;
   border: 2px solid #ccc;
   position: relative;
 }
-.tabs-plugin .tab-content .tab-nested-content {
+.tabcontainer .yui3-tabview-panel .yui3-tab-panel {
   display: none;
   height: 100%;
   min-height: 5.75rem;
   width: 100%;
 }
-.tabs-plugin .tab-content .tab-nested-content.active {
+.tabcontainer .yui3-tabview-panel .yui3-tab-panel.yui3-tab-panel-selected {
   display: block;
   padding: 1rem;
 }
 
-.add-tab-button,
-.delete-tab-button,
-.move-left-button,
-.move-right-button {
+.addicon,
+.dropicon,
+.left-arrow,
+.right-arrow {
   background-color: transparent;
   border: 0;
   cursor: pointer;
   padding: 0.5rem;
   transition: background-image 200ms ease-in-out;
 }
-.add-tab-button::before, .add-tab-button:hover::before,
-.delete-tab-button::before,
-.delete-tab-button:hover::before,
-.move-left-button::before,
-.move-left-button:hover::before,
-.move-right-button::before,
-.move-right-button:hover::before {
+.addicon::before, .addicon:hover::before,
+.dropicon::before,
+.dropicon:hover::before,
+.left-arrow::before,
+.left-arrow:hover::before,
+.right-arrow::before,
+.right-arrow:hover::before {
   background-repeat: no-repeat;
   background-size: cover;
   content: "";
@@ -140,38 +140,38 @@
   transition: background-image 200ms ease-in-out;
   width: 1rem;
 }
-.add-tab-button span,
-.delete-tab-button span,
-.move-left-button span,
-.move-right-button span {
+.addicon span,
+.dropicon span,
+.left-arrow span,
+.right-arrow span {
   align-items: center;
   display: none;
 }
 
-.move-left-button::before {
+.left-arrow::before {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='#333333'/%3E%3C/svg%3E");
 }
-.move-left-button:hover::before {
+.left-arrow:hover::before {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='#266de2'/%3E%3C/svg%3E");
 }
 
-.move-right-button::before {
+.right-arrow::before {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='#333333'/%3E%3C/svg%3E");
 }
-.move-right-button:hover::before {
+.right-arrow:hover::before {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='#266de2'/%3E%3C/svg%3E");
 }
 
-.delete-tab-button::before {
+.dropicon::before {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='#333333'/%3E%3C/svg%3E");
 }
-.delete-tab-button:hover::before {
+.dropicon:hover::before {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='#ff0000'/%3E%3C/svg%3E");
 }
 
-.add-tab-button::before {
+.addicon::before {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#333333'/%3E%3C/svg%3E");
 }
-.add-tab-button:hover::before {
+.addicon:hover::before {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#266de2'/%3E%3C/svg%3E");
 }

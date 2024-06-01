@@ -16,8 +16,8 @@ export class TabsPluginCommand extends Command {
             const tabId = generateTabId();
             const { tabListItem, tabNestedContent } = createTabElement(writer, tabId);
             const tabsRoot = model.document.getRoot();
-            const tabList = tabsRoot.getChild(0);
-            const tabContent = tabsRoot.getChild(1);
+            const tabList = findAllDescendants(tabsRoot, (node) => node.is('element', 'tabList'))[0];
+            const tabContent = findAllDescendants(tabsRoot, (node) => node.is('element', 'tabContent'))[0];
             const addTabButton = tabList.getChild(tabList.childCount - 1);
 
             model.insertContent(tabListItem, writer.createPositionBefore(addTabButton));
@@ -34,7 +34,7 @@ export class TabsPluginCommand extends Command {
     }
 }
 
-// Command to move a tab left or right.
+// Command to move a tab left or right
 export class MoveTabCommand extends Command {
     execute({ tabId, direction }) {
         const model = this.editor.model;

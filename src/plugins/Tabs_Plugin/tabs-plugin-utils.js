@@ -3,8 +3,10 @@ import { generateTabId } from './tabs-plugin-command';
 // Create tabs plugin element with two initial tabs
 export function createTabsPluginElement(writer) {
     const tabsPlugin = writer.createElement('tabsPlugin');
-    const tabList = writer.createElement('tabList', { class: 'tab-list' });
-    const tabContent = writer.createElement('tabContent', { class: 'tab-content' });
+    const containerDiv = writer.createElement('containerDiv');
+    const tabHeader = writer.createElement('tabHeader');
+    const tabList = writer.createElement('tabList');
+    const tabContent = writer.createElement('tabContent');
 
     // Create the first tab using centralized tabId generation
     const firstTabId = generateTabId();
@@ -13,8 +15,12 @@ export function createTabsPluginElement(writer) {
         firstTabId
     );
     // Add active class to the first tab and content
-    writer.setAttribute('class', `${firstTabListItem.getAttribute('class')} active`, firstTabListItem);
-    writer.setAttribute('class', `${firstTabNestedContent.getAttribute('class')} active`, firstTabNestedContent);
+    writer.setAttribute('class', `${firstTabListItem.getAttribute('class')} yui3-tab-selected`, firstTabListItem);
+    writer.setAttribute(
+        'class',
+        `${firstTabNestedContent.getAttribute('class')} yui3-tab-panel-selected`,
+        firstTabNestedContent
+    );
     writer.append(firstTabListItem, tabList);
     writer.append(firstTabNestedContent, tabContent);
 
@@ -31,8 +37,14 @@ export function createTabsPluginElement(writer) {
     const addTabButton = createAddTabButton(writer);
     writer.append(addTabButton, tabList);
 
-    writer.append(tabList, tabsPlugin);
-    writer.append(tabContent, tabsPlugin);
+    // Append tabList to the tabHeader
+    writer.append(tabList, tabHeader);
+    // Append tabHeader to the containerDiv
+    writer.append(tabHeader, containerDiv);
+    // Append tabContent to the containerDiv
+    writer.append(tabContent, containerDiv);
+    // Append the containerDiv to tabsPlugin
+    writer.append(containerDiv, tabsPlugin);
 
     return tabsPlugin;
 }
@@ -56,7 +68,6 @@ export function findAllDescendants(node, predicate) {
 export function createTabElement(writer, tabId) {
     const tabListItem = createTabListItem(writer, tabId);
     const tabNestedContent = createTabContent(writer, tabId);
-    // writer.insertText('Tab Content', tabNestedContent); // Insert the title text
     return { tabListItem, tabNestedContent };
 }
 
@@ -87,13 +98,13 @@ export function createTabListItem(writer, tabId) {
 export function createTabContent(writer, tabId) {
     return writer.createElement('tabNestedContent', {
         id: tabId,
-        class: 'tab-nested-content',
+        class: 'yui3-tab-panel',
     });
 }
 
 // Create 'Add Tab' button
 export function createAddTabButton(writer) {
-    const addTabListItem = writer.createElement('addTabListItem', { class: 'add-tab-list-item' });
+    const addTabListItem = writer.createElement('addTabListItem', { class: 'addtab' });
     const addTabButton = writer.createElement('addTabButton');
     writer.append(addTabButton, addTabListItem);
     return addTabListItem;

@@ -16,7 +16,7 @@ export default class TabsPluginUI extends Plugin {
         editor.ui.componentFactory.add('tabsPlugin', (locale) => {
             const button = new ButtonView(locale);
             button.set({
-                icon: '<svg enable-background="new 0 0 24 24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m23.1 1.6c-.2-.2-.5-.4-.8-.5-.3-.1-.6-.2-1-.2h-18.5c-.4 0-.7.1-1 .2-.4.1-.6.3-.9.5-.5.5-.9 1.3-.9 2.1v16.6c0 1.5 1.2 2.8 2.8 2.8h18.5c1.5 0 2.8-1.2 2.8-2.8v-16.6c-.1-.8-.5-1.6-1-2.1zm-9.3 1.2c.5 0 .9.4.9.9v3.7h-5.5v-3.7c0-.5.4-.9.9-.9zm8.4 17.5c0 .5-.4.9-.9.9h-18.5c-.5 0-.9-.4-.9-.9v-16.6c0-.5.4-.9.9-.9h3.7c.5 0 .9.4.9.9v5.5h14.8zm-5.6-12.9v-3.7c0-.5.4-.9.9-.9h3.7c.5 0 .9.4.9.9v3.7z" fill="#00f8c5"/></svg>',
+                icon: '<svg enable-background="new 0 0 24 24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m23.1 1.6c-.2-.2-.5-.4-.8-.5-.3-.1-.6-.2-1-.2h-18.5c-.4 0-.7.1-1 .2-.4.1-.6.3-.9.5-.5.5-.9 1.3-.9 2.1v16.6c0 1.5 1.2 2.8 2.8 2.8h18.5c1.5 0 2.8-1.2 2.8-2.8v-16.6c-.1-.8-.5-1.6-1-2.1zm-9.3 1.2c.5 0 .9.4.9.9v3.7h-5.5v-3.7c0-.5.4-.9.9-.9zm8.4 17.5c0 .5-.4.9-.9.9h-18.5c-.5 0-.9-.4-.9-.9v-16.6c0-.5.4-.9.9-.9h3.7c.5 0 .9.4.9.9v5.5h14.8zm-5.6-12.9v-3.7c0-.5.4-.9.9-.9h3.7c.5 0 .9.4.9.9v3.7z" fill="#ff00ff"/></svg>',
                 label: 'Insert Tabs',
                 tooltip: true,
                 withText: false,
@@ -37,13 +37,13 @@ export default class TabsPluginUI extends Plugin {
             const target = data.target;
             if (target.hasClass('tab-list-item') || target.hasClass('tab-title')) {
                 this._handleTabClick(editor, target, evt);
-            } else if (target.hasClass('delete-tab-button')) {
+            } else if (target.hasClass('dropicon')) {
                 this._handleDeleteTab(editor, target, evt);
-            } else if (target.hasClass('add-tab-button')) {
+            } else if (target.hasClass('addicon')) {
                 this._handleAddTab(editor, evt);
-            } else if (target.hasClass('move-left-button')) {
+            } else if (target.hasClass('left-arrow')) {
                 this._handleMoveTab(editor, target, evt, -1);
-            } else if (target.hasClass('move-right-button')) {
+            } else if (target.hasClass('right-arrow')) {
                 this._handleMoveTab(editor, target, evt, 1);
             }
         });
@@ -57,7 +57,7 @@ export default class TabsPluginUI extends Plugin {
     _updateEmptyTabTitles(editor) {
         const viewRoot = editor.editing.view.document.getRoot();
         const tabList = Array.from(viewRoot.getChildren()).find(
-            (child) => child.is('element', 'ul') && child.hasClass('tab-list')
+            (child) => child.is('element', 'ul') && child.hasClass('yui3-tabview-list')
         );
 
         if (tabList) {
@@ -97,7 +97,7 @@ export default class TabsPluginUI extends Plugin {
         const tabId = tabListItem.getAttribute('data-target');
         const viewRoot = editor.editing.view.document.getRoot();
         const tabsRootElement = Array.from(viewRoot.getChildren()).find(
-            (child) => child.is('element', 'div') && child.hasClass('tabs-plugin')
+            (child) => child.is('element', 'div') && child.hasClass('tabcontainer')
         );
 
         if (!tabsRootElement) {
@@ -105,11 +105,20 @@ export default class TabsPluginUI extends Plugin {
             return;
         }
 
-        const tabListElement = Array.from(tabsRootElement.getChildren()).find(
-            (child) => child.is('element', 'ul') && child.hasClass('tab-list')
+        const containerDivElement = Array.from(tabsRootElement.getChildren()).find(
+            (child) => child.is('element', 'div') && child.hasClass('container-div')
         );
-        const tabContentElement = Array.from(tabsRootElement.getChildren()).find(
-            (child) => child.is('element', 'div') && child.hasClass('tab-content')
+
+        if (!containerDivElement) {
+            console.error('Container div element not found');
+            return;
+        }
+
+        const tabListElement = Array.from(containerDivElement.getChildren()).find(
+            (child) => child.is('element', 'ul') && child.hasClass('yui3-tabview-list')
+        );
+        const tabContentElement = Array.from(containerDivElement.getChildren()).find(
+            (child) => child.is('element', 'div') && child.hasClass('yui3-tabview-panel')
         );
 
         if (!tabListElement || !tabContentElement) {
@@ -120,19 +129,19 @@ export default class TabsPluginUI extends Plugin {
         editor.editing.view.change((writer) => {
             // Remove the 'active' class from all tab list items and tab content elements
             for (const item of tabListElement.getChildren()) {
-                writer.removeClass('active', item);
+                writer.removeClass('yui3-tab-selected', item);
             }
             for (const content of tabContentElement.getChildren()) {
-                writer.removeClass('active', content);
+                writer.removeClass('yui3-tab-panel-selected', content);
             }
 
             // Add the 'active' class to the selected tab list item and corresponding tab content element
-            writer.addClass('active', tabListItem);
+            writer.addClass('yui3-tab-selected', tabListItem);
             const selectedTabContent = Array.from(tabContentElement.getChildren()).find(
                 (child) => child.getAttribute('id') === tabId.slice(1)
             );
             if (selectedTabContent) {
-                writer.addClass('active', selectedTabContent);
+                writer.addClass('yui3-tab-panel-selected', selectedTabContent);
             } else {
                 console.error('Selected tab content not found');
             }
@@ -143,7 +152,7 @@ export default class TabsPluginUI extends Plugin {
     _handleDeleteTab(editor, target, evt) {
         const tabListItem = target.findAncestor('li');
         const tabId = tabListItem.getAttribute('data-target').slice(1);
-        const wasActive = tabListItem.hasClass('active');
+        const wasActive = tabListItem.hasClass('yui3-tab-selected');
 
         editor.model.change((writer) => {
             editor.execute('deleteTab', tabId);
@@ -176,7 +185,7 @@ export default class TabsPluginUI extends Plugin {
     _handleMoveTab(editor, target, evt, direction) {
         const tabListItem = target.findAncestor('li');
         const tabId = tabListItem.getAttribute('data-target').slice(1);
-        const wasActive = tabListItem.hasClass('active');
+        const wasActive = tabListItem.hasClass('yui3-tab-selected');
 
         editor.model.change((writer) => {
             editor.execute('moveTab', { tabId, direction });
@@ -203,8 +212,10 @@ export default class TabsPluginUI extends Plugin {
             // Get the root element of the document
             const root = editor.model.document.getRoot();
 
-            // Find tabsPlugin, tabList, and tabContent by querying for them directly
+            // Find tabsPlugin, containerDiv, tabList, and tabContent by querying for them directly
             let tabsPlugin = null;
+            let containerDiv = null;
+            let tabHeader = null;
             let tabList = null;
             let tabContent = null;
 
@@ -222,22 +233,44 @@ export default class TabsPluginUI extends Plugin {
                 writer.append(tabsPlugin, root);
             }
 
-            // Within tabsPlugin, find or create tabList and tabContent
+            // Within tabsPlugin, find or create containerDiv, tabHeader, tabList, and tabContent
             for (const node of tabsPlugin.getChildren()) {
-                if (node.is('element', 'tabList')) {
-                    tabList = node;
+                if (node.is('element', 'containerDiv')) {
+                    containerDiv = node;
+                    break;
+                }
+            }
+
+            if (!containerDiv) {
+                containerDiv = writer.createElement('containerDiv');
+                writer.append(containerDiv, tabsPlugin);
+            }
+            for (const node of containerDiv.getChildren()) {
+                if (node.is('element', 'tabHeader')) {
+                    tabHeader = node;
                 } else if (node.is('element', 'tabContent')) {
                     tabContent = node;
                 }
             }
 
+            if (!tabHeader) {
+                tabHeader = writer.createElement('tabHeader');
+                writer.append(tabHeader, containerDiv);
+            }
+            for (const node of tabHeader.getChildren()) {
+                if (node.is('element', 'tabList')) {
+                    tabList = node;
+                    break;
+                }
+            }
+
             if (!tabList) {
                 tabList = writer.createElement('tabList');
-                writer.append(tabList, tabsPlugin);
+                writer.append(tabList, tabHeader);
             }
             if (!tabContent) {
                 tabContent = writer.createElement('tabContent');
-                writer.append(tabContent, tabsPlugin);
+                writer.append(tabContent, containerDiv);
             }
 
             // Generate a unique tabId for the new tab using centralized method
@@ -247,9 +280,12 @@ export default class TabsPluginUI extends Plugin {
             // Find the "Add Tab" button in the tabList
             const addTabButton = tabList.getChild(tabList.childCount - 1);
             // Insert the new tab list item before the "Add Tab" button
-            writer.insert(tabListItem, addTabButton, 'before');
+            writer.insert(tabListItem, writer.createPositionBefore(addTabButton));
             // Append the new tab content to the tabContent
             writer.append(tabNestedContent, tabContent);
+
+            // Activate the newly added tab
+            this._activateTab(editor, tabListItem);
         });
     }
 }
