@@ -35,7 +35,7 @@ export default class TabsPluginUI extends Plugin {
     _registerEventHandlers(editor) {
         editor.editing.view.document.on('click', (evt, data) => {
             const target = data.target;
-            if (target.hasClass('tab-list-item') || target.hasClass('tab-title')) {
+            if (target.hasClass('tab-list-item') || target.hasClass('tabTitle')) {
                 this._handleTabClick(editor, target, evt);
             } else if (target.hasClass('dropicon')) {
                 this._handleDeleteTab(editor, target, evt);
@@ -67,7 +67,7 @@ export default class TabsPluginUI extends Plugin {
 
             for (const tabTitleElement of tabTitleElements) {
                 const inputElement = tabTitleElement.getChild(1).getChild(0);
-                if (inputElement && inputElement.is('element', 'input') && inputElement.hasClass('tab-title')) {
+                if (inputElement && inputElement.is('element', 'input') && inputElement.hasClass('tabTitle')) {
                     const text = inputElement.getAttribute('value').trim();
                     if (text === '') {
                         inputElement.setAttribute('value', 'Tab Name');

@@ -73,39 +73,92 @@ export function createTabElement(writer, tabId) {
 
 // Create tab list item
 export function createTabListItem(writer, tabId) {
-    const tabListItem = writer.createElement('tabListItem', {
-        'data-target': `#${tabId}`,
-        class: 'tab-list-item',
-    });
-    const tabEditBar = writer.createElement('tabEditBar', { class: 'tab-edit-bar' });
-    const moveButtonsWrapper = writer.createElement('moveButtonsWrapper', { class: 'move-buttons-wrapper' });
+    const tabListItem = writer.createElement('tabListItem', { 'data-target': `#${tabId}` });
+    const tabEditBar = writer.createElement('tabEditBar');
 
-    appendControlElement(writer, moveButtonsWrapper, 'moveLeftButton', 'Move Tab Left');
-    appendControlElement(writer, moveButtonsWrapper, 'moveRightButton', 'Move Tab Right');
-    writer.append(moveButtonsWrapper, tabEditBar);
-    appendControlElement(writer, tabEditBar, 'deleteTabButton', 'Delete Tab');
+    // Create the table structure inside the tabEditBar
+    const table = writer.createElement('table');
 
-    const tabTitle = writer.createElement('tabTitle', { class: 'tab-title' });
-    writer.insertText(`Tab Name`, tabTitle);
+    // Create thead and append it to the table
+    const thead = writer.createElement('thead');
+    writer.append(thead, table);
 
+    const trHead = writer.createElement('tr');
+    writer.append(trHead, thead);
+
+    const th1 = writer.createElement('th');
+    const moveLeftButton = writer.createElement('moveLeftButton');
+    writer.insertText('\u00A0', moveLeftButton); // Insert a non-breaking space
+    writer.append(moveLeftButton, th1);
+    writer.append(th1, trHead);
+
+    const th2 = writer.createElement('th');
+    const moveRightButton = writer.createElement('moveRightButton');
+    writer.insertText('\u00A0', moveRightButton); // Insert a non-breaking space
+    writer.append(moveRightButton, th2);
+    writer.append(th2, trHead);
+
+    // Add empty <th> elements for spacing
+    const th3 = writer.createElement('th');
+    writer.insertText('\u00A0', th3); // Insert a non-breaking space
+    writer.append(th3, trHead);
+
+    const th4 = writer.createElement('th');
+    writer.insertText('\u00A0', th4); // Insert a non-breaking space
+    writer.append(th4, trHead);
+
+    const th5 = writer.createElement('th');
+    const deleteTabButton = createDeleteTabButton(writer);
+    writer.append(deleteTabButton, th5);
+    writer.append(th5, trHead);
+
+    // Create tbody and append it to the table
+    const tbody = writer.createElement('tbody');
+    writer.append(tbody, table);
+
+    const trBody = writer.createElement('tr');
+    writer.append(trBody, tbody);
+
+    const td = writer.createElement('td', { colspan: '5' });
+    writer.append(td, trBody);
+
+    const tabTitle = writer.createElement('tabTitle', { class: 'tabTitle' });
+    writer.insertText('Tab Name', tabTitle);
+    writer.append(tabTitle, td);
+
+    writer.append(table, tabEditBar);
     writer.append(tabEditBar, tabListItem);
-    writer.append(tabTitle, tabListItem);
 
     return tabListItem;
 }
 
+function createDeleteTabButton(writer) {
+    const deleteTabButton = writer.createElement('deleteTabButton');
+    const dropParagraph = writer.createElement('dropParagraph');
+    writer.insertText('\u00A0', dropParagraph);
+    writer.append(dropParagraph, deleteTabButton);
+    return deleteTabButton;
+}
+
 // Create tab content
 export function createTabContent(writer, tabId) {
-    return writer.createElement('tabNestedContent', {
+    const tabContent = writer.createElement('tabNestedContent', {
         id: tabId,
-        class: 'yui3-tab-panel',
+        class: 'yui3-tab-panel tabcontent',
     });
+    if (!tabContent) {
+        console.error('Failed to create tab content');
+    }
+    return tabContent;
 }
 
 // Create 'Add Tab' button
 export function createAddTabButton(writer) {
-    const addTabListItem = writer.createElement('addTabListItem', { class: 'addtab' });
+    const addTabListItem = writer.createElement('addTabListItem');
     const addTabButton = writer.createElement('addTabButton');
+    const addTabIcon = writer.createElement('addTabIcon');
+    writer.insertText('\u00A0', addTabIcon);
+    writer.append(addTabIcon, addTabButton);
     writer.append(addTabButton, addTabListItem);
     return addTabListItem;
 }

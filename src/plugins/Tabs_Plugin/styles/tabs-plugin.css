@@ -63,12 +63,11 @@
   flex: 1 1 0;
   justify-content: space-between;
 }
-.tabcontainer .yui3-tabview-list .tablinks .tab-title {
+.tabcontainer .yui3-tabview-list .tablinks .tabTitle {
   align-items: center;
   display: flex;
   font-weight: 700;
   justify-content: center;
-  margin: 0.75rem 1.25rem;
   min-width: 6rem;
   position: relative;
   text-align: center;
@@ -89,7 +88,7 @@
 .tabcontainer .yui3-tabview-list .tablinks:nth-last-child(2):first-child .tab-edit-bar {
   display: none;
 }
-.tabcontainer .yui3-tabview-list .tablinks:nth-last-child(2):first-child .tab-title {
+.tabcontainer .yui3-tabview-list .tablinks:nth-last-child(2):first-child .tabTitle {
   margin: 0.75rem 1.25rem;
 }
 .tabcontainer .yui3-tabview-list .addtab {
@@ -119,59 +118,49 @@
 .dropicon,
 .left-arrow,
 .right-arrow {
-  background-color: transparent;
-  border: 0;
+  background-repeat: no-repeat;
+  background-size: cover;
   cursor: pointer;
+  display: block;
+  height: 1.5rem;
+  width: 1.5rem;
   padding: 0.5rem;
   transition: background-image 200ms ease-in-out;
 }
-.addicon::before, .addicon:hover::before,
-.dropicon::before,
-.dropicon:hover::before,
-.left-arrow::before,
-.left-arrow:hover::before,
-.right-arrow::before,
-.right-arrow:hover::before {
-  background-repeat: no-repeat;
-  background-size: cover;
-  content: "";
-  display: block;
-  height: 1rem;
+.addicon:hover,
+.dropicon:hover,
+.left-arrow:hover,
+.right-arrow:hover {
   transition: background-image 200ms ease-in-out;
-  width: 1rem;
-}
-.addicon span,
-.dropicon span,
-.left-arrow span,
-.right-arrow span {
-  align-items: center;
-  display: none;
 }
 
-.left-arrow::before {
+.left-arrow {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='#333333'/%3E%3C/svg%3E");
 }
-.left-arrow:hover::before {
+.left-arrow:hover {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='#266de2'/%3E%3C/svg%3E");
 }
 
-.right-arrow::before {
+.right-arrow {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='#333333'/%3E%3C/svg%3E");
 }
-.right-arrow:hover::before {
+.right-arrow:hover {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='#266de2'/%3E%3C/svg%3E");
 }
 
-.dropicon::before {
+.dropicon {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='#333333'/%3E%3C/svg%3E");
 }
-.dropicon:hover::before {
+.dropicon:hover {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='#ff0000'/%3E%3C/svg%3E");
 }
+.dropicon .droptab.droptabicon {
+  display: none;
+}
 
-.addicon::before {
+.addicon {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#333333'/%3E%3C/svg%3E");
 }
-.addicon:hover::before {
+.addicon:hover {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#266de2'/%3E%3C/svg%3E");
 }
