@@ -16,16 +16,8 @@ export class TabsPluginCommand extends Command {
             const tabId = generateTabId();
             const { tabListItem, tabNestedContent } = createTabElement(writer, tabId);
             const tabsRoot = model.document.getRoot();
-            if (!tabsRoot) {
-                console.error('Tabs root element is not found');
-                return;
-            }
             const tabList = tabsRoot.getChild(0);
             const tabContent = tabsRoot.getChild(1);
-            if (!tabList || !tabContent) {
-                console.error('Tab list or content element is not found');
-                return;
-            }
             const addTabButton = tabList.getChild(tabList.childCount - 1);
 
             model.insertContent(tabListItem, writer.createPositionBefore(addTabButton));

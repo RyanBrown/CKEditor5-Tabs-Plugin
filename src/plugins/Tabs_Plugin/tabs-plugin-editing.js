@@ -27,20 +27,10 @@ export default class TabsPluginEditing extends Plugin {
             allowWhere: '$block',
             isLimit: true,
         });
-        // Define schema for 'containerDiv' element
-        schema.register('containerDiv', {
-            allowAttributes: ['class'],
-            allowIn: 'tabsPlugin',
-        });
-        // Define schema for 'tabHeader' element
-        schema.register('tabHeader', {
-            allowAttributes: ['class'],
-            allowIn: 'containerDiv',
-        });
         // Define schema for 'tabList' element
         schema.register('tabList', {
             allowAttributes: ['class'],
-            allowIn: 'tabHeader',
+            allowIn: 'tabsPlugin',
         });
         // Define schema for 'tabListItem' element
         schema.register('tabListItem', {
@@ -93,11 +83,6 @@ export default class TabsPluginEditing extends Plugin {
             allowAttributes: ['class', 'title'],
             allowIn: 'tabEditBar',
         });
-        // Define schema for 'dropParagraph' element
-        schema.register('dropParagraph', {
-            allowAttributes: ['class', 'title'],
-            allowIn: 'tabEditBar',
-        });
         // Define schema for 'addTabListItem' element
         schema.register('addTabListItem', {
             allowAttributes: ['class'],
@@ -108,93 +93,48 @@ export default class TabsPluginEditing extends Plugin {
             allowAttributes: ['class', 'title'],
             allowIn: 'addTabListItem',
         });
-
-        // Define schema for 'thead' element
-        schema.register('thead', {
-            allowIn: 'table',
-        });
-        // Define schema for 'tr' element
-        schema.register('tr', {
-            allowIn: ['thead', 'tbody'],
-        });
-        // Define schema for 'th' element
-        schema.register('th', {
-            allowIn: 'tr',
-        });
-        // Define schema for 'tbody' element
-        schema.register('tbody', {
-            allowIn: 'table',
-        });
-        // Define schema for 'td' element
-        schema.register('td', {
-            allowIn: 'tr',
-            allowAttributes: ['colspan'],
-        });
     }
 
     _defineConverters() {
         const conversion = this.editor.conversion;
 
-        // Conversion for 'tabcontainer' element
+        // Conversion for 'tabsPlugin' element
         conversion.for('upcast').elementToElement({
             model: 'tabsPlugin',
-            view: { name: 'div', classes: 'tabcontainer' },
+            view: { name: 'div', classes: 'tabs-plugin' },
         });
         conversion.for('downcast').elementToElement({
             model: 'tabsPlugin',
-            view: { name: 'div', classes: 'tabcontainer yui3-widget' },
-        });
-
-        // Conversion for 'containerDiv' element
-        conversion.for('upcast').elementToElement({
-            model: 'containerDiv',
-            view: {
-                name: 'div',
-                classes:
-                    'ah-tabs-horizontal ah-responsiveselecttabs ah-content-space-v yui3-ah-responsiveselecttabs-content yui3-tabview-content',
+            view: (modelElement, { writer }) => {
+                const div = writer.createContainerElement('div', { class: 'tabs-plugin' });
+                return toWidget(div, writer, { label: 'tabs plugin' });
             },
-        });
-        conversion.for('downcast').elementToElement({
-            model: 'containerDiv',
-            view: {
-                name: 'div',
-                classes:
-                    'ah-tabs-horizontal ah-responsiveselecttabs ah-content-space-v yui3-ah-responsiveselecttabs-content yui3-tabview-content',
-            },
-        });
-
-        // Conversion for 'tabHeader' element
-        conversion.for('upcast').elementToElement({
-            model: 'tabHeader',
-            view: { name: 'div', classes: 'tabheader ah-tabs-horizontal' },
-        });
-        conversion.for('downcast').elementToElement({
-            model: 'tabHeader',
-            view: { name: 'div', classes: 'tabheader ah-tabs-horizontal' },
         });
 
         // Conversion for 'tabList' element
         conversion.for('upcast').elementToElement({
             model: 'tabList',
-            view: { name: 'ul', classes: 'tab yui3-tabview-list' },
+            view: { name: 'ul', classes: 'tab-list' },
         });
         conversion.for('downcast').elementToElement({
             model: 'tabList',
-            view: { name: 'ul', classes: 'tab yui3-tabview-list' },
+            view: (modelElement, { writer }) =>
+                writer.createContainerElement('ul', { class: 'tab-list', draggable: false }),
         });
 
-        // Conversion for 'tabListItem' element
+        // Conversion for 'tabListItem'
         conversion.for('upcast').elementToElement({
             model: 'tabListItem',
-            view: { name: 'li', classes: 'yui3-tab tablinks' },
+            view: { name: 'li', classes: 'tab-list-item' },
         });
         conversion.for('downcast').elementToElement({
             model: 'tabListItem',
             view: (modelElement, { writer }) => {
                 const classes = modelElement.getAttribute('class');
                 return writer.createContainerElement('li', {
-                    class: classes ? `yui3-tab tablinks ${classes}` : 'yui3-tab tablinks',
+                    class: classes ? `tab-list-item ${classes}` : 'tab-list-item',
                     'data-target': modelElement.getAttribute('data-target'),
+                    draggable: false,
                 });
             },
         });
@@ -202,186 +142,157 @@ export default class TabsPluginEditing extends Plugin {
         // Conversion for 'tabTitle' element
         conversion.for('upcast').elementToElement({
             model: 'tabTitle',
-            view: { name: 'div', classes: 'tabTitle' },
+            view: { name: 'div', classes: 'tab-title' },
         });
         conversion.for('downcast').elementToElement({
             model: 'tabTitle',
-            view: { name: 'div', classes: 'tabTitle' },
+            view: (modelElement, { writer }) => {
+                const div = writer.createEditableElement('div', { class: 'tab-title', draggable: false });
+                return toWidgetEditable(div, writer);
+            },
         });
 
         // Conversion for 'tabEditBar' element
         conversion.for('upcast').elementToElement({
             model: 'tabEditBar',
-            view: { name: 'div', classes: 'yui3-tab-label' },
+            view: () => null,
         });
         conversion.for('downcast').elementToElement({
             model: 'tabEditBar',
-            view: { name: 'div', classes: 'yui3-tab-label' },
+            view: (modelElement, { writer }) =>
+                writer.createContainerElement('div', {
+                    class: 'tab-edit-bar',
+                    draggable: false,
+                    contenteditable: false,
+                }),
         });
 
         // Conversion 'moveButtonsWrapper' element
-        conversion.for('upcast').elementToElement({
-            model: 'moveButtonsWrapper',
-            view: { name: 'th' },
-        });
+        conversion.for('upcast').elementToElement({ model: 'moveButtonsWrapper', view: () => null });
         conversion.for('downcast').elementToElement({
             model: 'moveButtonsWrapper',
-            view: { name: 'th' },
+            view: (modelElement, { writer }) =>
+                writer.createContainerElement('div', { class: 'move-buttons-wrapper', draggable: false }),
         });
 
         // Conversion for 'moveLeftButton' element
-        conversion.for('upcast').elementToElement({
-            model: 'moveLeftButton',
-            view: { name: 'div', classes: 'left-arrow' },
-        });
+        conversion.for('upcast').elementToElement({ model: 'moveLeftButton', view: () => null });
         conversion.for('downcast').elementToElement({
             model: 'moveLeftButton',
-            view: (modelElement, { writer }) =>
-                writer.createContainerElement('div', {
-                    class: 'left-arrow arrowtabicon',
+            view: (modelElement, { writer }) => {
+                const button = writer.createContainerElement('button', {
+                    class: 'move-left-button',
                     title: modelElement.getAttribute('title') || 'Move Tab Left',
-                }),
+                    draggable: false,
+                });
+                const textSpan = writer.createContainerElement('span', { draggable: false });
+                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Move Tab Left'));
+                writer.insert(writer.createPositionAt(button, 0), textSpan);
+                return button;
+            },
         });
 
         // Conversion for 'moveRightButton' element
-        conversion.for('upcast').elementToElement({
-            model: 'moveRightButton',
-            view: { name: 'div', classes: 'right-arrow' },
-        });
+        conversion.for('upcast').elementToElement({ model: 'moveRightButton', view: () => null });
         conversion.for('downcast').elementToElement({
             model: 'moveRightButton',
-            view: (modelElement, { writer }) =>
-                writer.createContainerElement('div', {
-                    class: 'right-arrow arrowtabicon',
+            view: (modelElement, { writer }) => {
+                const button = writer.createContainerElement('button', {
+                    class: 'move-right-button',
                     title: modelElement.getAttribute('title') || 'Move Tab Right',
-                }),
+                    draggable: false,
+                });
+                const textSpan = writer.createContainerElement('span', { draggable: false });
+                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Move Tab Right'));
+                writer.insert(writer.createPositionAt(button, 0), textSpan);
+                return button;
+            },
         });
 
         // Conversion for 'deleteTabButton' element
         conversion.for('upcast').elementToElement({
             model: 'deleteTabButton',
-            view: { name: 'div', classes: 'dropicon', attributes: { contenteditable: 'false' } },
+            view: () => null,
         });
         conversion.for('downcast').elementToElement({
             model: 'deleteTabButton',
-            view: (modelElement, { writer }) =>
-                writer.createContainerElement('div', {
-                    class: 'dropicon',
+            view: (modelElement, { writer }) => {
+                const button = writer.createContainerElement('button', {
+                    class: 'delete-tab-button',
                     title: modelElement.getAttribute('title') || 'Delete Tab',
-                    contenteditable: 'false',
-                }),
-        });
-
-        // Conversion for 'paragraph' element
-        conversion.for('upcast').elementToElement({
-            model: 'paragraph',
-            view: { name: 'p', classes: 'droptab droptabicon', attributes: { contenteditable: 'true' } },
-        });
-        conversion.for('downcast').elementToElement({
-            model: 'paragraph',
-            view: { name: 'p', classes: 'droptab droptabicon', attributes: { contenteditable: 'true' } },
+                    draggable: false,
+                });
+                const textSpan = writer.createContainerElement('span', { draggable: false });
+                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Delete Tab'));
+                writer.insert(writer.createPositionAt(button, 0), textSpan);
+                return button;
+            },
         });
 
         // Conversion for 'addTabListItem' element
         conversion.for('upcast').elementToElement({
             model: 'addTabListItem',
-            view: { name: 'li', classes: 'yui3-tab addtab' },
+            view: () => null,
         });
         conversion.for('downcast').elementToElement({
             model: 'addTabListItem',
-            view: { name: 'li', classes: 'yui3-tab addtab' },
+            view: (modelElement, { writer }) =>
+                writer.createContainerElement('li', {
+                    class: 'add-tab-list-item',
+                    isContentEditable: false,
+                    draggable: false,
+                }),
         });
 
         // Conversion for 'addTabButton' element
         conversion.for('upcast').elementToElement({
             model: 'addTabButton',
-            view: { name: 'div', classes: 'addicon' },
+            view: () => null,
         });
         conversion.for('downcast').elementToElement({
             model: 'addTabButton',
-            view: { name: 'div', classes: 'addicon' },
+            view: (modelElement, { writer }) => {
+                const button = writer.createContainerElement('button', {
+                    class: 'add-tab-button',
+                    title: modelElement.getAttribute('title') || 'Add Tab',
+                    isContentEditable: false,
+                    draggable: false,
+                });
+                const textSpan = writer.createContainerElement('span', { draggable: false });
+                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Add Tab'));
+                writer.insert(writer.createPositionAt(button, 0), textSpan);
+                return button;
+            },
         });
 
         // Conversion for 'tabContent' element
         conversion.for('upcast').elementToElement({
             model: 'tabContent',
-            view: { name: 'div', classes: 'yui3-tabview-panel' },
+            view: { name: 'div', classes: 'tab-content' },
         });
         conversion.for('downcast').elementToElement({
             model: 'tabContent',
-            view: { name: 'div', classes: 'yui3-tabview-panel' },
+            view: (modelElement, { writer }) =>
+                writer.createContainerElement('div', { class: 'tab-content', draggable: false }),
         });
 
         // Conversion for 'tabNestedContent' element
         conversion.for('upcast').elementToElement({
             model: 'tabNestedContent',
-            view: { name: 'div', classes: 'yui3-tab-panel tabcontent' },
+            view: { name: 'div', classes: 'tab-nested-content' },
             converterPriority: 'high',
         });
         conversion.for('downcast').elementToElement({
             model: 'tabNestedContent',
             view: (modelElement, { writer }) => {
                 const classes = modelElement.getAttribute('class');
-                return writer.createEditableElement('div', {
-                    class: classes ? `yui3-tab-panel tabcontent ${classes}` : 'yui3-tab-panel tabcontent',
+                const div = writer.createEditableElement('div', {
+                    class: classes ? `tab-nested-content ${classes}` : 'tab-nested-content',
                     id: modelElement.getAttribute('id'),
+                    draggable: false,
                 });
+                return toWidgetEditable(div, writer);
             },
-        });
-
-        // Converter for 'table' element
-        conversion.for('downcast').elementToElement({
-            model: 'table',
-            view: { name: 'table' },
-        });
-        // Converter for 'thead' element
-        conversion.for('upcast').elementToElement({
-            model: 'thead',
-            view: 'thead',
-        });
-        conversion.for('downcast').elementToElement({
-            model: 'thead',
-            view: 'thead',
-        });
-
-        // Converter for 'tr' element
-        conversion.for('upcast').elementToElement({
-            model: 'tr',
-            view: 'tr',
-        });
-        conversion.for('downcast').elementToElement({
-            model: 'tr',
-            view: 'tr',
-        });
-
-        // Converter for 'th' element
-        conversion.for('upcast').elementToElement({
-            model: 'th',
-            view: 'th',
-        });
-        conversion.for('downcast').elementToElement({
-            model: 'th',
-            view: 'th',
-        });
-
-        // Converter for 'tbody' element
-        conversion.for('upcast').elementToElement({
-            model: 'tbody',
-            view: 'tbody',
-        });
-        conversion.for('downcast').elementToElement({
-            model: 'tbody',
-            view: 'tbody',
-        });
-
-        // Converter for 'td' element
-        conversion.for('upcast').elementToElement({
-            model: 'td',
-            view: 'td',
-        });
-        conversion.for('downcast').elementToElement({
-            model: 'td',
-            view: 'td',
         });
     }
 }
