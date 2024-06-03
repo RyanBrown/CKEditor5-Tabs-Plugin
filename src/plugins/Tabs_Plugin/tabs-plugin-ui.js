@@ -4,19 +4,21 @@ import { createTabsPluginElement, createTabElement, findAllDescendants } from '.
 import { generateTabId } from './tabs-plugin-command';
 import './styles/tabs-plugin.css';
 
+// Plugin to handle the UI for the tabs plugin.
 export default class TabsPluginUI extends Plugin {
+    // Initializes the plugin.
     init() {
         const editor = this.editor;
         this._insertTabsPlugin(editor);
         this._registerEventHandlers(editor);
     }
 
-    // Inserts the tabs plugin button into the editor's UI
+    // Inserts the tabs plugin button into the editor's UI.
     _insertTabsPlugin(editor) {
         editor.ui.componentFactory.add('tabsPlugin', (locale) => {
             const button = new ButtonView(locale);
             button.set({
-                icon: '<svg enable-background="new 0 0 24 24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m23.1 1.6c-.2-.2-.5-.4-.8-.5-.3-.1-.6-.2-1-.2h-18.5c-.4 0-.7.1-1 .2-.4.1-.6.3-.9.5-.5.5-.9 1.3-.9 2.1v16.6c0 1.5 1.2 2.8 2.8 2.8h18.5c1.5 0 2.8-1.2 2.8-2.8v-16.6c-.1-.8-.5-1.6-1-2.1zm-9.3 1.2c.5 0 .9.4.9.9v3.7h-5.5v-3.7c0-.5.4-.9.9-.9zm8.4 17.5c0 .5-.4.9-.9.9h-18.5c-.5 0-.9-.4-.9-.9v-16.6c0-.5.4-.9.9-.9h3.7c.5 0 .9.4.9.9v5.5h14.8zm-5.6-12.9v-3.7c0-.5.4-.9.9-.9h3.7c.5 0 .9.4.9.9v3.7z" fill="#3448c5"/></svg>',
+                icon: '<svg enable-background="new 0 0 24 24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m23.1 1.6c-.2-.2-.5-.4-.8-.5-.3-.1-.6-.2-1-.2h-18.5c-.4 0-.7.1-1 .2-.4.1-.6.3-.9.5-.5.5-.9 1.3-.9 2.1v16.6c0 1.5 1.2 2.8 2.8 2.8h18.5c1.5 0 2.8-1.2 2.8-2.8v-16.6c-.1-.8-.5-1.6-1-2.1zm-9.3 1.2c.5 0 .9.4.9.9v3.7h-5.5v-3.7c0-.5.4-.9.9-.9zm8.4 17.5c0 .5-.4.9-.9.9h-18.5c-.5 0-.9-.4-.9-.9v-16.6c0-.5.4-.9.9-.9h3.7c.5 0 .9.4.9.9v5.5h14.8zm-5.6-12.9v-3.7c0-.5.4-.9.9-.9h3.7c.5 0 .9.4.9.9v3.7z" fill="#333333"/></svg>',
                 label: 'Insert Tabs',
                 tooltip: true,
                 withText: false,
@@ -31,7 +33,7 @@ export default class TabsPluginUI extends Plugin {
         });
     }
 
-    // Registers event handlers for the tabs plugin
+    // Registers event handlers for the tabs plugin.
     _registerEventHandlers(editor) {
         editor.editing.view.document.on('click', (evt, data) => {
             const target = data.target;
@@ -53,7 +55,7 @@ export default class TabsPluginUI extends Plugin {
         });
     }
 
-    // Updates empty tab titles with a default value
+    // Updates empty tab titles with a default value.
     _updateEmptyTabTitles(editor) {
         const viewRoot = editor.editing.view.document.getRoot();
         const tabList = Array.from(viewRoot.getChildren()).find(
@@ -77,7 +79,7 @@ export default class TabsPluginUI extends Plugin {
         }
     }
 
-    // Handles the tab click event
+    // Handles the tab click event.
     _handleTabClick(editor, target, evt) {
         let tabListItem = target;
 
@@ -92,7 +94,7 @@ export default class TabsPluginUI extends Plugin {
         evt.stop();
     }
 
-    // Activates the specified tab
+    // Activates the specified tab.
     _activateTab(editor, tabListItem) {
         const tabId = tabListItem.getAttribute('data-target');
         const viewRoot = editor.editing.view.document.getRoot();
@@ -118,7 +120,6 @@ export default class TabsPluginUI extends Plugin {
         }
 
         editor.editing.view.change((writer) => {
-            // Remove the 'active' class from all tab list items and tab content elements
             for (const item of tabListElement.getChildren()) {
                 writer.removeClass('active', item);
             }
@@ -126,7 +127,6 @@ export default class TabsPluginUI extends Plugin {
                 writer.removeClass('active', content);
             }
 
-            // Add the 'active' class to the selected tab list item and corresponding tab content element
             writer.addClass('active', tabListItem);
             const selectedTabContent = Array.from(tabContentElement.getChildren()).find(
                 (child) => child.getAttribute('id') === tabId.slice(1)
@@ -139,7 +139,7 @@ export default class TabsPluginUI extends Plugin {
         });
     }
 
-    // Handles the delete tab button click event
+    // Handles the delete tab button click event.
     _handleDeleteTab(editor, target, evt) {
         const tabListItem = target.findAncestor('li');
         const tabId = tabListItem.getAttribute('data-target').slice(1);
@@ -155,7 +155,6 @@ export default class TabsPluginUI extends Plugin {
                 );
                 const index = tabListItems.indexOf(tabListItem);
 
-                // Find the next tab to activate
                 const nextTab = tabListItems[index - 1] || tabListItems[index + 1];
                 if (nextTab) {
                     this._activateTab(editor, nextTab);
@@ -166,13 +165,13 @@ export default class TabsPluginUI extends Plugin {
         evt.stop();
     }
 
-    // Handles the add tab button click event
+    // Handles the add tab button click event.
     _handleAddTab(editor, evt) {
         this._addNewTab(editor);
         evt.stop();
     }
 
-    // Handles the move tab button click event
+    // Handles the move tab button click event.
     _handleMoveTab(editor, target, evt, direction) {
         const tabListItem = target.findAncestor('li');
         const tabId = tabListItem.getAttribute('data-target').slice(1);
@@ -197,7 +196,7 @@ export default class TabsPluginUI extends Plugin {
         evt.stop();
     }
 
-    // Adds a new tab to the tabs plugin
+    // Adds a new tab to the tabs plugin.
     _addNewTab(editor) {
         editor.model.change((writer) => {
             // Get the root element of the document

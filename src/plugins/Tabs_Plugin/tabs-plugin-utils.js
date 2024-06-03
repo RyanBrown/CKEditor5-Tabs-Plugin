@@ -3,8 +3,8 @@ import { generateTabId } from './tabs-plugin-command';
 // Create tabs plugin element with two initial tabs
 export function createTabsPluginElement(writer) {
     const tabsPlugin = writer.createElement('tabsPlugin');
-    const tabList = writer.createElement('tabList', { class: 'tab-list' });
-    const tabContent = writer.createElement('tabContent', { class: 'tab-content' });
+    const tabList = writer.createElement('tabList');
+    const tabContent = writer.createElement('tabContent');
 
     // Create the first tab using centralized tabId generation
     const firstTabId = generateTabId();
@@ -62,19 +62,16 @@ export function createTabElement(writer, tabId) {
 
 // Create tab list item
 export function createTabListItem(writer, tabId) {
-    const tabListItem = writer.createElement('tabListItem', {
-        'data-target': `#${tabId}`,
-        class: 'tab-list-item',
-    });
-    const tabEditBar = writer.createElement('tabEditBar', { class: 'tab-edit-bar' });
-    const moveButtonsWrapper = writer.createElement('moveButtonsWrapper', { class: 'move-buttons-wrapper' });
+    const tabListItem = writer.createElement('tabListItem', { 'data-target': `#${tabId}` });
+    const tabEditBar = writer.createElement('tabEditBar');
+    const moveButtonsWrapper = writer.createElement('moveButtonsWrapper');
 
-    appendControlElement(writer, moveButtonsWrapper, 'moveLeftButton', 'Move Tab Left');
-    appendControlElement(writer, moveButtonsWrapper, 'moveRightButton', 'Move Tab Right');
+    appendControlElement(writer, moveButtonsWrapper, 'moveLeftButton');
+    appendControlElement(writer, moveButtonsWrapper, 'moveRightButton');
     writer.append(moveButtonsWrapper, tabEditBar);
-    appendControlElement(writer, tabEditBar, 'deleteTabButton', 'Delete Tab');
+    appendControlElement(writer, tabEditBar, 'deleteTabButton');
 
-    const tabTitle = writer.createElement('tabTitle', { class: 'tab-title' });
+    const tabTitle = writer.createElement('tabTitle');
     writer.insertText(`Tab Name`, tabTitle);
 
     writer.append(tabEditBar, tabListItem);
@@ -85,15 +82,12 @@ export function createTabListItem(writer, tabId) {
 
 // Create tab content
 export function createTabContent(writer, tabId) {
-    return writer.createElement('tabNestedContent', {
-        id: tabId,
-        class: 'tab-nested-content',
-    });
+    return writer.createElement('tabNestedContent', { id: tabId });
 }
 
 // Create 'Add Tab' button
 export function createAddTabButton(writer) {
-    const addTabListItem = writer.createElement('addTabListItem', { class: 'add-tab-list-item' });
+    const addTabListItem = writer.createElement('addTabListItem');
     const addTabButton = writer.createElement('addTabButton');
     writer.append(addTabButton, addTabListItem);
     return addTabListItem;

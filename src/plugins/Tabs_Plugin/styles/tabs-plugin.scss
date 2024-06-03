@@ -154,8 +154,6 @@ $transition-speed: 200ms ease-in-out;
             width: 100%;
 
             &.active {
-                // Add fallback for active on first-child
-                // &:nth-last-child(3):first-child {
                 display: block;
                 padding: 1rem;
             }
@@ -230,104 +228,8 @@ $transition-speed: 200ms ease-in-out;
     }
 }
 
-// Hide outline on elements when selected in the editor
-.tab-list,
-.tab-list-item,
-.tab-edit-bar,
-.move-left-button,
-.move-right-button,
-.delete-tab-button,
-.add-tab-button,
-.tab-content,
-.tab-nested-content {
-    &.ck-widget.ck-widget_selected {
-        outline: none !important;
-    }
-
-    .ck.ck-reset_all.ck-widget__type-around {
-        display: none !important;
-    }
-}
-
-.tab-list,
-.tab-list-item,
-.tab-edit-bar,
-.tab-title,
-.move-left-button,
-.move-right-button,
-.delete-tab-button,
-.add-tab-button,
-.tab-content,
-.tab-nested-content {
-    .ck-widget,
-    .ck-widget:hover {
-        transition: none;
-    }
-
-    .ck-widget:hover,
-    &.ck-widget.ck-widget_selected {
-        outline: none;
-    }
-
-    .ck-widget {
-        &.ck-widget_selected {
-            > .ck-widget__type-around > .ck-widget__type-around__button {
-                &:before,
-                &:after {
-                    display: none;
-                }
-            }
-        }
-        > .ck-widget__type-around > .ck-widget__type-around__button {
-            &:hover:before,
-            &:hover:after {
-                display: none;
-            }
-        }
-
-        &.ck-widget_selected,
-        &.ck-widget_selected:hover {
-            outline: none;
-        }
-    }
-}
-
-// Remove outline on blurred editor
-.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected,
-.ck-editor__editable.ck-blurred .ck-widget.ck-widget_selected:hover {
-    .tab-list,
-    .tab-list-item,
-    .tab-edit-bar,
-    .tab-title,
-    .move-left-button,
-    .move-right-button,
-    .delete-tab-button,
-    .add-tab-button,
-    .tab-content,
-    .tab-nested-content {
-        outline: none;
-    }
-}
-
-.tab-content.ck-widget:hover {
-    outline: none !important;
-}
-
 // Set the z-index higher than the tabs for type-around buttons
 .ck.ck-widget__type-around__button.ck-widget__type-around__button_before,
 .ck.ck-widget__type-around__button.ck-widget__type-around__button_after {
     z-index: 1001;
-}
-
-// remove the before/after arrows to insert plugin
-// .ck-widget__type-around {
-//   display: none;
-// }
-
-// Placeholder styling for nested content in the editor
-.ck-content .tab-nested-content.ck-placeholder::before {
-    content: attr(data-placeholder);
-    color: #999;
-    font-style: italic;
-    pointer-events: none;
 }
