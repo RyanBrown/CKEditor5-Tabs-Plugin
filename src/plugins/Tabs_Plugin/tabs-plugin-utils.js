@@ -162,9 +162,3 @@ export function createAddTabButton(writer) {
     writer.append(addTabButton, addTabListItem);
     return addTabListItem;
 }
-
-// Append control element
-export function appendControlElement(writer, parent, type, title) {
-    const element = writer.createElement(type, { class: type, title });
-    writer.append(element, parent);
-}
