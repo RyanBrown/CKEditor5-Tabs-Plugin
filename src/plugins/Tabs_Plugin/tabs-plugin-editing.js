@@ -128,7 +128,7 @@ export default class TabsPluginEditing extends Plugin {
             },
         });
 
-        // Conversion for 'tabListItem'
+        // Conversion for 'tabListItem' element
         conversion.for('upcast').elementToElement({
             model: 'tabListItem',
             view: { name: 'li', classes: 'tab-list-item' },
@@ -142,6 +142,36 @@ export default class TabsPluginEditing extends Plugin {
                     'data-target': modelElement.getAttribute('data-target'),
                     draggable: false,
                 });
+            },
+        });
+
+        // Conversion for 'tabContent' element
+        conversion.for('upcast').elementToElement({
+            model: 'tabContent',
+            view: { name: 'div', classes: 'tab-content' },
+        });
+        conversion.for('downcast').elementToElement({
+            model: 'tabContent',
+            view: (modelElement, { writer }) => {
+                return writer.createContainerElement('div', { class: 'tab-content', draggable: 'false' });
+            },
+        });
+
+        // Conversion for 'tabNestedContent' element
+        conversion.for('upcast').elementToElement({
+            model: 'tabNestedContent',
+            view: { name: 'div', classes: 'tab-nested-content' },
+        });
+        conversion.for('downcast').elementToElement({
+            model: 'tabNestedContent',
+            view: (modelElement, { writer }) => {
+                const classes = modelElement.getAttribute('class');
+                const div = writer.createEditableElement('div', {
+                    class: classes ? `tab-nested-content ${classes}` : 'tab-nested-content',
+                    id: modelElement.getAttribute('id'),
+                    draggable: false,
+                });
+                return toWidgetEditable(div, writer);
             },
         });
 
@@ -168,13 +198,13 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 return writer.createContainerElement('div', {
                     class: 'tab-edit-bar',
-                    draggable: 'false', // Set draggable to false as a string
+                    draggable: 'false',
                     contenteditable: 'false',
                 });
             },
         });
 
-        // Conversion 'moveButtonsWrapper' element
+        // Conversion for 'moveButtonsWrapper' element
         conversion.for('upcast').elementToElement({ model: 'moveButtonsWrapper', view: () => null });
         conversion.for('downcast').elementToElement({
             model: 'moveButtonsWrapper',
@@ -253,37 +283,6 @@ export default class TabsPluginEditing extends Plugin {
                     title: 'Add Tab',
                     draggable: 'false',
                 });
-            },
-        });
-
-        // Conversion for 'tabContent' element
-        conversion.for('upcast').elementToElement({
-            model: 'tabContent',
-            view: { name: 'div', classes: 'tab-content' },
-        });
-        conversion.for('downcast').elementToElement({
-            model: 'tabContent',
-            view: (modelElement, { writer }) => {
-                return writer.createContainerElement('div', { class: 'tab-content', draggable: 'false' });
-            },
-        });
-
-        // Conversion for 'tabNestedContent' element
-        conversion.for('upcast').elementToElement({
-            model: 'tabNestedContent',
-            view: { name: 'div', classes: 'tab-nested-content' },
-            converterPriority: 'high',
-        });
-        conversion.for('downcast').elementToElement({
-            model: 'tabNestedContent',
-            view: (modelElement, { writer }) => {
-                const classes = modelElement.getAttribute('class');
-                const div = writer.createEditableElement('div', {
-                    class: classes ? `tab-nested-content ${classes}` : 'tab-nested-content',
-                    id: modelElement.getAttribute('id'),
-                    draggable: false,
-                });
-                return toWidgetEditable(div, writer);
             },
         });
     }

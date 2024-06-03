@@ -31,6 +31,7 @@ export function createTabsPluginElement(writer) {
     const addTabButton = createAddTabButton(writer);
     writer.append(addTabButton, tabList);
 
+    // Append tabList and tabContent in the correct order
     writer.append(tabList, tabsPlugin);
     writer.append(tabContent, tabsPlugin);
 
