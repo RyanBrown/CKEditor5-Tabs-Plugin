@@ -204,7 +204,8 @@ export default class TabsPluginEditing extends Plugin {
                 return writer.createContainerElement('li', {
                     class: classes ? `yui3-tab tablinks ${classes}` : 'yui3-tab tablinks',
                     'data-target': modelElement.getAttribute('data-target'),
-                    // style: 'width: 150px;', // Remove if tabs load correctly
+                    style: 'width: 150px;', // Remove if tabs load correctly
+                    contenteditable: 'true',
                 });
             },
         });
@@ -266,6 +267,7 @@ export default class TabsPluginEditing extends Plugin {
                 writer.createContainerElement('div', {
                     class: 'left-arrow arrowtabicon',
                     title: modelElement.getAttribute('title') || 'Move Tab',
+                    contenteditable: 'true',
                 }),
         });
 
@@ -280,6 +282,7 @@ export default class TabsPluginEditing extends Plugin {
                 writer.createContainerElement('div', {
                     class: 'right-arrow arrowtabicon',
                     title: modelElement.getAttribute('title') || 'Move Tab',
+                    contenteditable: 'true',
                 }),
         });
 
@@ -305,7 +308,7 @@ export default class TabsPluginEditing extends Plugin {
         });
         conversion.for('downcast').elementToElement({
             model: 'dropParagraph',
-            view: { name: 'p', classes: 'droptab droptabicon', attributes: { contenteditable: 'false' } },
+            view: { name: 'p', classes: 'droptab droptabicon', attributes: { contenteditable: 'true' } },
         });
 
         // Conversion for 'addTabListItem' element

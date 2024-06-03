@@ -141,11 +141,12 @@ $transition-speed: 200ms ease-in-out;
         // Container for the add tab button
         .addtab {
             align-self: flex-end;
-            padding: 0;
+            padding: $tab-x-padding $tab-y-padding;
+
             // .add-tab-button {
-            .addicon {
-                padding: $tab-x-padding $tab-y-padding;
-            }
+            // .addicon {
+            //     padding: $tab-x-padding $tab-y-padding;
+            // }
         }
     }
 
@@ -173,6 +174,10 @@ $transition-speed: 200ms ease-in-out;
     }
 }
 
+.arrowtabicon {
+    user-select: none !important;
+}
+
 // Individual buttons (add, delete, move-left, move-right)
 // .addicon,
 .addtabicon,
@@ -184,9 +189,11 @@ $transition-speed: 200ms ease-in-out;
     cursor: pointer;
     display: block;
     height: 1.5rem;
-    width: 1.5rem;
+    margin: 0;
     padding: 0;
     transition: background-image $transition-speed;
+    width: 1.5rem;
+
     &:hover {
         transition: background-image $transition-speed;
     }
