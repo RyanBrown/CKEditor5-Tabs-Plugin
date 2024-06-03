@@ -232,44 +232,36 @@ $transition-speed: 200ms ease-in-out;
     }
 }
 
-.yui3-tab-label {
+.yui3-tab {
     table {
         width: 100%;
+    }
 
-        thead > tr {
-            // background-color: #66ff00;
-            display: flex;
+    // Align the 'move-right-button' left and hide the 'move-left-button' for the first tab
+    &:first-child .yui3-tab-label > table > thead > tr > th {
+        justify-content: flex-end;
 
-            th {
-                width: 1.5rem;
-
-                // &:first-child {
-                //     justify-content: flex-end;
-
-                //     // .move-left-button {
-                //     .left-arrow {
-                //         display: none;
-                //     }
-                // }
-
-                &:nth-child(2) {
-                    // background-color: red;
-                    display: flex;
-                    flex: 1 1 0;
-                    justify-content: flex-end;
-                }
-                &:last-child {
-                    // background-color: #00bbff;
-                    justify-content: flex-end;
-                }
-
-                &:nth-last-child(2):first-child {
-                    display: none;
-                }
-            }
+        // .move-left-button {
+        .left-arrow {
+            visibility: hidden;
         }
-        tbody > tr {
-            background-color: orange;
+    }
+    // Align the 'move-left-button' left and hide the 'move-right-button' for the last tab
+    &:nth-last-child(2) .yui3-tab-label > table > thead > tr > th {
+        justify-content: flex-start;
+
+        // .move-right-button {
+        .right-arrow {
+            visibility: hidden;
+        }
+    }
+    // Hide the 'tab-edit-bar' if only one tab is visible
+    &:nth-last-child(2):first-child {
+        .yui3-tab-label > table > thead {
+            display: none;
+        }
+        .tabTitle {
+            margin: $tab-x-margin $tab-y-margin;
         }
     }
 }

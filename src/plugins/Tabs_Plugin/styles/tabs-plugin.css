@@ -139,26 +139,24 @@
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#266de2'/%3E%3C/svg%3E");
 }
 
-.yui3-tab-label table {
+.yui3-tab table {
   width: 100%;
 }
-.yui3-tab-label table thead > tr {
-  display: flex;
-}
-.yui3-tab-label table thead > tr th {
-  width: 1.5rem;
-}
-.yui3-tab-label table thead > tr th:nth-child(2) {
-  display: flex;
-  flex: 1 1 0;
+.yui3-tab:first-child .yui3-tab-label > table > thead > tr > th {
   justify-content: flex-end;
 }
-.yui3-tab-label table thead > tr th:last-child {
-  justify-content: flex-end;
+.yui3-tab:first-child .yui3-tab-label > table > thead > tr > th .left-arrow {
+  visibility: hidden;
 }
-.yui3-tab-label table thead > tr th:nth-last-child(2):first-child {
+.yui3-tab:nth-last-child(2) .yui3-tab-label > table > thead > tr > th {
+  justify-content: flex-start;
+}
+.yui3-tab:nth-last-child(2) .yui3-tab-label > table > thead > tr > th .right-arrow {
+  visibility: hidden;
+}
+.yui3-tab:nth-last-child(2):first-child .yui3-tab-label > table > thead {
   display: none;
 }
-.yui3-tab-label table tbody > tr {
-  background-color: orange;
+.yui3-tab:nth-last-child(2):first-child .tabTitle {
+  margin: 0.75rem 1.25rem;
 }
