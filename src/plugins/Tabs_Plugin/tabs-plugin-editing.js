@@ -47,11 +47,16 @@ export default class TabsPluginEditing extends Plugin {
             allowAttributes: ['class', 'data-target'],
             allowIn: 'tabList',
         });
+        // Define schema for 'tabListTable' element
+        schema.register('tabListTable', {
+            allowAttributes: ['class'],
+            allowIn: 'tabListItem',
+        });
         // Define schema for 'tabTitle' element
         schema.register('tabTitle', {
             allowAttributes: ['class'],
             allowContentOf: '$block',
-            allowIn: 'tabListItem',
+            allowIn: 'tabListTable',
             disallow: ['$inlineObject', 'link', 'bold', 'italic', 'underline', '$block', 'tabsPlugin'],
             isLimit: true,
         });
@@ -199,8 +204,19 @@ export default class TabsPluginEditing extends Plugin {
                 return writer.createContainerElement('li', {
                     class: classes ? `yui3-tab tablinks ${classes}` : 'yui3-tab tablinks',
                     'data-target': modelElement.getAttribute('data-target'),
+                    // style: 'width: 150px;', // Remove if tabs load correctly
                 });
             },
+        });
+
+        // Conversion for 'tabListTable' element
+        conversion.for('upcast').elementToElement({
+            model: 'tabListTable',
+            view: { name: 'table' },
+        });
+        conversion.for('downcast').elementToElement({
+            model: 'tabListTable',
+            view: { name: 'table' },
         });
 
         // Conversion for 'tabTitle' element
@@ -214,7 +230,7 @@ export default class TabsPluginEditing extends Plugin {
                 return writer.createContainerElement('div', {
                     class: 'tabTitle',
                     contenteditable: 'true',
-                    style: 'width: 150px; height: 22px;',
+                    // style: 'width: 150px; height: 22px;', // Remove if tabs load correctly
                 });
             },
         });
@@ -285,11 +301,11 @@ export default class TabsPluginEditing extends Plugin {
         // Conversion for 'dropParagraph' element
         conversion.for('upcast').elementToElement({
             model: 'dropParagraph',
-            view: { name: 'p', classes: 'droptab droptabicon', attributes: { contenteditable: 'true' } },
+            view: { name: 'p', classes: 'droptab droptabicon', attributes: { contenteditable: 'false' } },
         });
         conversion.for('downcast').elementToElement({
             model: 'dropParagraph',
-            view: { name: 'p', classes: 'droptab droptabicon', attributes: { contenteditable: 'true' } },
+            view: { name: 'p', classes: 'droptab droptabicon', attributes: { contenteditable: 'false' } },
         });
 
         // Conversion for 'addTabListItem' element
@@ -305,13 +321,13 @@ export default class TabsPluginEditing extends Plugin {
         // Conversion for 'addTabButton' element
         conversion.for('upcast').elementToElement({
             model: 'addTabButton',
-            view: { name: 'div', classes: 'addicon' },
+            view: { name: 'div', classes: 'addtabicon' },
         });
         conversion.for('downcast').elementToElement({
             model: 'addTabButton',
             view: (modelElement, { writer }) =>
                 writer.createContainerElement('div', {
-                    class: 'addicon',
+                    class: 'addtabicon',
                     title: modelElement.getAttribute('title') || 'Add Tab',
                     contenteditable: 'false',
                 }),
@@ -325,10 +341,7 @@ export default class TabsPluginEditing extends Plugin {
         conversion.for('downcast').elementToElement({
             model: 'addTabIcon',
             view: (modelElement, { writer }) =>
-                writer.createContainerElement('p', {
-                    class: 'addtabicon',
-                    contenteditable: 'true',
-                }),
+                writer.createContainerElement('p', { class: 'addtabicon', contenteditable: 'false' }),
         });
 
         // Conversion for 'tabContent' element

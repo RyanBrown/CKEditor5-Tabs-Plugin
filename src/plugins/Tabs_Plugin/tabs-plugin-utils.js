@@ -77,7 +77,7 @@ export function createTabListItem(writer, tabId) {
     const tabEditBar = writer.createElement('tabEditBar');
 
     // Create the table structure inside the tabEditBar
-    const table = writer.createElement('table');
+    const table = writer.createElement('tabListTable');
 
     // Create thead and append it to the table
     const thead = writer.createElement('thead');
@@ -98,14 +98,14 @@ export function createTabListItem(writer, tabId) {
     writer.append(moveRightButton, th2);
     writer.append(th2, trHead);
 
-    // Add empty <th> elements for spacing
-    const th3 = writer.createElement('th');
-    writer.insertText('\u00A0', th3); // Insert a non-breaking space
-    writer.append(th3, trHead);
+    // // Add empty <th> elements for spacing
+    // const th3 = writer.createElement('th');
+    // writer.insertText('\u00A0', th3); // Insert a non-breaking space
+    // writer.append(th3, trHead);
 
-    const th4 = writer.createElement('th');
-    writer.insertText('\u00A0', th4); // Insert a non-breaking space
-    writer.append(th4, trHead);
+    // const th4 = writer.createElement('th');
+    // writer.insertText('\u00A0', th4); // Insert a non-breaking space
+    // writer.append(th4, trHead);
 
     const th5 = writer.createElement('th');
     const deleteTabButton = createDeleteTabButton(writer);

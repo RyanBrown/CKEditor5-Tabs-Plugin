@@ -20,7 +20,7 @@
   max-width: 20rem;
   min-height: 5.625rem;
   min-width: 10rem;
-  padding: 0;
+  padding: 0.5rem;
   position: relative;
   transition: background-color 200ms ease-in-out, border-color 200ms ease-in-out;
   z-index: 5;
@@ -53,16 +53,6 @@
   bottom: -4px;
   height: 4px;
 }
-.tabcontainer .yui3-tabview-list .tablinks .tab-edit-bar {
-  align-items: center;
-  display: flex;
-  flex: 1 1 0;
-}
-.tabcontainer .yui3-tabview-list .tablinks .tab-edit-bar .move-buttons-wrapper {
-  display: flex;
-  flex: 1 1 0;
-  justify-content: space-between;
-}
 .tabcontainer .yui3-tabview-list .tablinks .tabTitle {
   align-items: center;
   display: flex;
@@ -72,24 +62,6 @@
   position: relative;
   text-align: center;
   word-break: break-word;
-}
-.tabcontainer .yui3-tabview-list .tablinks:first-child .tab-edit-bar > .move-buttons-wrapper {
-  justify-content: flex-end;
-}
-.tabcontainer .yui3-tabview-list .tablinks:first-child .tab-edit-bar > .move-buttons-wrapper .left-arrow {
-  display: none;
-}
-.tabcontainer .yui3-tabview-list .tablinks:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper {
-  justify-content: flex-start;
-}
-.tabcontainer .yui3-tabview-list .tablinks:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper .right-arrow {
-  display: none;
-}
-.tabcontainer .yui3-tabview-list .tablinks:nth-last-child(2):first-child .tab-edit-bar {
-  display: none;
-}
-.tabcontainer .yui3-tabview-list .tablinks:nth-last-child(2):first-child .tabTitle {
-  margin: 0.75rem 1.25rem;
 }
 .tabcontainer .yui3-tabview-list .addtab {
   align-self: flex-end;
@@ -114,7 +86,7 @@
   padding: 1rem;
 }
 
-.addicon,
+.addtabicon,
 .dropicon,
 .left-arrow,
 .right-arrow {
@@ -124,10 +96,10 @@
   display: block;
   height: 1.5rem;
   width: 1.5rem;
-  padding: 0.5rem;
+  padding: 0;
   transition: background-image 200ms ease-in-out;
 }
-.addicon:hover,
+.addtabicon:hover,
 .dropicon:hover,
 .left-arrow:hover,
 .right-arrow:hover {
@@ -158,9 +130,33 @@
   display: none;
 }
 
-.addicon {
+.addtabicon {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#333333'/%3E%3C/svg%3E");
 }
-.addicon:hover {
+.addtabicon:hover {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#266de2'/%3E%3C/svg%3E");
+}
+
+.yui3-tab-label table {
+  width: 100%;
+}
+.yui3-tab-label table thead > tr {
+  display: flex;
+}
+.yui3-tab-label table thead > tr th {
+  width: 1.5rem;
+}
+.yui3-tab-label table thead > tr th:nth-child(2) {
+  display: flex;
+  flex: 1 1 0;
+  justify-content: flex-end;
+}
+.yui3-tab-label table thead > tr th:last-child {
+  justify-content: flex-end;
+}
+.yui3-tab-label table thead > tr th:nth-last-child(2):first-child {
+  display: none;
+}
+.yui3-tab-label table tbody > tr {
+  background-color: orange;
 }
