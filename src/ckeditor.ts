@@ -89,7 +89,7 @@ class Editor extends ClassicEditor {
         TableToolbar,
         TextPartLanguage,
         TextTransformation,
-        Title,
+        // Title,
         TodoList,
         Underline,
         Undo,
@@ -162,7 +162,6 @@ class Editor extends ClassicEditor {
         table: {
             contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells', 'tableCellProperties', 'tableProperties'],
         },
-        title: { placeholder: '' },
         placeholder: '',
     };
 }
