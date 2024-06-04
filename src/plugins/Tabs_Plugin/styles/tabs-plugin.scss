@@ -19,6 +19,10 @@ $tab-bg-active: #fff;
 
 $transition-speed: 200ms ease-in-out;
 
+.data-downcast-view {
+    display: none !important;
+}
+
 // Main tabs plugin container
 .tabs-plugin {
     background-color: $tab-bg-active;

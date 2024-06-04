@@ -147,7 +147,6 @@ export default class TabsPluginEditing extends Plugin {
                 return writer.createContainerElement('li', {
                     class: classes ? `tab-list-item data-downcast ${classes}` : 'tab-list-item data-downcast',
                     'data-target': modelElement.getAttribute('data-target'),
-                    draggable: false,
                 });
             },
         });
@@ -172,7 +171,7 @@ export default class TabsPluginEditing extends Plugin {
         conversion.for('dataDowncast').elementToElement({
             model: 'tabTitle',
             view: (modelElement, { writer }) =>
-                writer.createEditableElement('div', { class: 'tab-title data-downcast', draggable: false }),
+                writer.createEditableElement('div', { class: 'tab-title data-downcast' }),
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabTitle',
@@ -190,11 +189,7 @@ export default class TabsPluginEditing extends Plugin {
         conversion.for('dataDowncast').elementToElement({
             model: 'tabEditBar',
             view: (modelElement, { writer }) =>
-                writer.createContainerElement('div', {
-                    class: 'tab-edit-bar data-downcast',
-                    draggable: false,
-                    contenteditable: false,
-                }),
+                writer.createContainerElement('div', { class: 'tab-edit-bar data-downcast-view' }),
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabEditBar',
@@ -213,7 +208,7 @@ export default class TabsPluginEditing extends Plugin {
         conversion.for('dataDowncast').elementToElement({
             model: 'moveButtonsWrapper',
             view: (modelElement, { writer }) =>
-                writer.createContainerElement('div', { class: 'move-buttons-wrapper data-downcast', draggable: false }),
+                writer.createContainerElement('div', { class: 'move-buttons-wrapper data-downcast-view' }),
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'moveButtonsWrapper',
@@ -229,7 +224,7 @@ export default class TabsPluginEditing extends Plugin {
             model: 'moveLeftButton',
             view: (modelElement, { writer }) => {
                 const button = writer.createContainerElement('button', {
-                    class: 'move-left-button data-downcast',
+                    class: 'move-left-button data-downcast-view',
                     title: modelElement.getAttribute('title') || 'Move Tab Left',
                     draggable: false,
                 });
@@ -260,7 +255,7 @@ export default class TabsPluginEditing extends Plugin {
             model: 'moveRightButton',
             view: (modelElement, { writer }) => {
                 const button = writer.createContainerElement('button', {
-                    class: 'move-right-button data-downcast',
+                    class: 'move-right-button data-downcast-view',
                     title: modelElement.getAttribute('title') || 'Move Tab Right',
                     draggable: false,
                 });
@@ -294,7 +289,7 @@ export default class TabsPluginEditing extends Plugin {
             model: 'deleteTabButton',
             view: (modelElement, { writer }) => {
                 const button = writer.createContainerElement('button', {
-                    class: 'delete-tab-button data-downcast',
+                    class: 'delete-tab-button data-downcast-view',
                     title: modelElement.getAttribute('title') || 'Delete Tab',
                     draggable: false,
                 });
@@ -328,7 +323,10 @@ export default class TabsPluginEditing extends Plugin {
         conversion.for('dataDowncast').elementToElement({
             model: 'addTabListItem',
             view: (modelElement, { writer }) =>
-                writer.createContainerElement('li', { class: 'add-tab-list-item data-downcast', draggable: false }),
+                writer.createContainerElement('li', {
+                    class: 'add-tab-list-item data-downcast-view',
+                    draggable: false,
+                }),
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'addTabListItem',
@@ -349,7 +347,7 @@ export default class TabsPluginEditing extends Plugin {
             model: 'addTabButton',
             view: (modelElement, { writer }) => {
                 const button = writer.createContainerElement('button', {
-                    class: 'add-tab-button data-downcast',
+                    class: 'add-tab-button data-downcast-view',
                     title: modelElement.getAttribute('title') || 'Add Tab',
                     draggable: false,
                 });
