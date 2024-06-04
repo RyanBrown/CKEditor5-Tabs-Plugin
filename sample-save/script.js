@@ -16,7 +16,7 @@ watchdog.setDestructor((editor) => {
 watchdog.on('error', handleSampleError);
 
 watchdog
-    .create(document.querySelector('.editor'), {
+    .create(document.querySelector('#editor'), {
         // Editor configuration.
     })
     .catch(handleSampleError);
@@ -34,17 +34,46 @@ function handleSampleError(error) {
 }
 
 function saveContent() {
-    const content = editor.getData();
+    const content = window.editor.getData();
     localStorage.setItem('ckeditorContent', content);
     displayContent();
+}
+
+function resetContent() {
+    localStorage.removeItem('ckeditorContent');
+    window.editor.setData('');
+    if (window.readonlyEditor) {
+        window.readonlyEditor.setData('');
+    }
+    document.getElementById('content-display').innerHTML = '';
 }
 
 function displayContent() {
     const savedContent = localStorage.getItem('ckeditorContent');
     if (savedContent) {
+        if (window.readonlyEditor) {
+            window.readonlyEditor.setData(savedContent);
+        }
         document.getElementById('content-display').innerHTML = savedContent;
     }
 }
 
-// Load content on page load
-document.addEventListener('DOMContentLoaded', displayContent);
+// Load content on page load and initialize the readonly editor
+document.addEventListener('DOMContentLoaded', () => {
+    displayContent();
+
+    CKSource.Editor.create(document.querySelector('#readonly-editor'), {
+        toolbar: [],
+        isReadOnly: true,
+    })
+        .then((editor) => {
+            window.readonlyEditor = editor;
+            const savedContent = localStorage.getItem('ckeditorContent');
+            if (savedContent) {
+                editor.setData(savedContent);
+            }
+        })
+        .catch((error) => {
+            console.error('There was a problem initializing the read-only editor:', error);
+        });
+});

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
-	Copyright (c) 2014-2024, CKSource Holding sp. z o.o. All rights reserved.
-	This file is licensed under the terms of the MIT License (see LICENSE.md).
+    Copyright (c) 2014-2024, CKSource Holding sp. z o.o. All rights reserved.
+    This file is licensed under the terms of the MIT License (see LICENSE.md).
 -->
 
 <html lang="en" dir="ltr">
@@ -40,15 +40,22 @@
         <div class="centered">
             <div class="row row-editor">
                 <div class="editor-container">
-                    <div class="editor"></div>
+                    <div class="editor" id="editor"></div>
                 </div>
             </div>
         </div>
         <div class="centered">
             <button type="button" class="save-btn" onclick="saveContent()">Save Content</button>
+            <button type="button" class="reset-btn" onclick="resetContent()">Reset Content</button>
         </div>
         <div class="centered">
-            <h2>(dataDowncast) Content View</h2>
+            <h2>Read-Only: Content View</h2>
+            <div id="readonly-editor-container">
+                <div id="readonly-editor"></div>
+            </div>
+        </div>
+        <div class="centered">
+            <h2>dataDowncast: Content View</h2>
             <div id="content-display" class="content-view"></div>
         </div>
         <footer>
