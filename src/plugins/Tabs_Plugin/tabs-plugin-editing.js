@@ -1,5 +1,5 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
-import { toWidget, toWidgetEditable } from '@ckeditor/ckeditor5-widget';
+import { toWidget } from '@ckeditor/ckeditor5-widget';
 import { Widget } from '@ckeditor/ckeditor5-widget';
 import { TabsPluginCommand, DeleteTabCommand, MoveTabCommand } from './tabs-plugin-command';
 
@@ -73,11 +73,6 @@ export default class TabsPluginEditing extends Plugin {
             disallow: ['tabsPlugin'],
             isLimit: true,
         });
-        // // Define schema for 'tabEditBar' element
-        // schema.register('tabEditBar', {
-        //     allowAttributes: ['class'],
-        //     allowIn: 'tabListItem',
-        // });
         // Define schema for 'moveButtonsWrapper' element
         schema.register('moveButtonsWrapper', {
             allowAttributes: ['class'],
@@ -113,7 +108,7 @@ export default class TabsPluginEditing extends Plugin {
             allowAttributes: ['class', 'title'],
             allowIn: 'addTabListItem',
         });
-        // Define schema for 'addTabButton' element
+        // Define schema for 'addTabIcon' element
         schema.register('addTabIcon', {
             allowAttributes: ['class', 'title'],
             allowIn: 'addTabButton',
@@ -153,6 +148,50 @@ export default class TabsPluginEditing extends Plugin {
             model: 'tabsPlugin',
             view: { name: 'div', classes: 'tabcontainer yui3-widget' },
         });
+        // conversion.for('downcast').elementToElement({
+        //     model: 'tabsPlugin',
+        //     view: (modelElement, { writer }) => {
+        //         // Create the main container div with specified classes and attributes
+        //         const container = writer.createContainerElement('div', {
+        //             class: 'tabcontainer yui3-widget',
+        //             contenteditable: 'false',
+        //             unselectable: 'on',
+        //         });
+
+        //         // Create the inner div with specified classes
+        //         const innerDiv = writer.createContainerElement('div', {
+        //             class: 'ah-tabs-horizontal ah-responsiveselecttabs ah-content-space-v yui3-ah-responsiveselecttabs-content yui3-tabview-content',
+        //         });
+
+        //         // Create the tab header div with specified class
+        //         const tabHeader = writer.createContainerElement('div', {
+        //             class: 'tabheader ah-tabs-horizontal',
+        //         });
+
+        //         // Create the tab list ul inside the tab header
+        //         const tabList = writer.createContainerElement('ul', {
+        //             class: 'tab yui3-tabview-list',
+        //         });
+
+        //         // Create the tab content div with specified class
+        //         const tabContent = writer.createContainerElement('div', {
+        //             class: 'yui3-tabview-panel',
+        //         });
+
+        //         // Insert the tab list inside the tab header
+        //         writer.insert(writer.createPositionAt(tabHeader, 0), tabList);
+
+        //         // Insert the tab header and tab content inside the inner div
+        //         writer.insert(writer.createPositionAt(innerDiv, 0), tabHeader);
+        //         writer.insert(writer.createPositionAt(innerDiv, 1), tabContent);
+
+        //         // Insert the inner div inside the main container
+        //         writer.insert(writer.createPositionAt(container, 0), innerDiv);
+
+        //         // Return the container as a widget
+        //         return toWidget(container, writer);
+        //     },
+        // });
 
         // Conversion for 'containerDiv' element
         conversion.for('upcast').elementToElement({
@@ -209,6 +248,81 @@ export default class TabsPluginEditing extends Plugin {
                 });
             },
         });
+        // conversion.for('downcast').elementToElement({
+        //     model: 'tabListItem',
+        //     view: (modelElement, { writer }) => {
+        //         const classes = modelElement.getAttribute('class');
+        //         const container = writer.createContainerElement('li', {
+        //             class: classes ? `yui3-tab tablinks ${classes}` : 'yui3-tab tablinks',
+        //             'data-target': modelElement.getAttribute('data-target'),
+        //             style: 'width: 150px;',
+        //             contenteditable: 'true',
+        //         });
+
+        //         const tabLabel = writer.createContainerElement('div', { class: 'yui3-tab-label' });
+
+        //         const table = writer.createContainerElement('table');
+        //         const thead = writer.createContainerElement('thead');
+        //         const trHead = writer.createContainerElement('tr');
+
+        //         const th1 = writer.createContainerElement('th');
+        //         const moveLeftButton = writer.createContainerElement('div', {
+        //             class: 'left-arrow arrowtabicon',
+        //             contenteditable: 'true',
+        //             title: 'Move Tab',
+        //         });
+        //         writer.insert(writer.createPositionAt(moveLeftButton, 0), writer.createText('\u00A0'));
+        //         writer.insert(writer.createPositionAt(th1, 0), moveLeftButton);
+
+        //         const th2 = writer.createContainerElement('th');
+        //         const moveRightButton = writer.createContainerElement('div', {
+        //             class: 'right-arrow arrowtabicon',
+        //             contenteditable: 'true',
+        //             title: 'Move Tab',
+        //         });
+        //         writer.insert(writer.createPositionAt(moveRightButton, 0), writer.createText('\u00A0'));
+        //         writer.insert(writer.createPositionAt(th2, 0), moveRightButton);
+
+        //         const th3 = writer.createContainerElement('th');
+        //         const deleteTabButton = writer.createContainerElement('div', {
+        //             class: 'dropicon',
+        //             contenteditable: 'false',
+        //             title: 'Delete Tab',
+        //         });
+        //         const dropParagraph = writer.createContainerElement('p', {
+        //             class: 'droptab droptabicon',
+        //             contenteditable: 'true',
+        //         });
+        //         writer.insert(writer.createPositionAt(dropParagraph, 0), writer.createText('\u00A0'));
+        //         writer.insert(writer.createPositionAt(deleteTabButton, 0), dropParagraph);
+        //         writer.insert(writer.createPositionAt(th3, 0), deleteTabButton);
+
+        //         writer.insert(writer.createPositionAt(trHead, 0), th1);
+        //         writer.insert(writer.createPositionAt(trHead, 1), th2);
+        //         writer.insert(writer.createPositionAt(trHead, 2), th3);
+        //         writer.insert(writer.createPositionAt(thead, 0), trHead);
+
+        //         const tbody = writer.createContainerElement('tbody');
+        //         const trBody = writer.createContainerElement('tr');
+        //         const td = writer.createContainerElement('td', { colspan: '5' });
+        //         const tabTitle = writer.createContainerElement('div', {
+        //             class: 'tabTitle',
+        //             contenteditable: 'true',
+        //             style: 'width: 150px; height: 22px;',
+        //         });
+        //         writer.insert(writer.createPositionAt(tabTitle, 0), writer.createText('Tab Name'));
+        //         writer.insert(writer.createPositionAt(td, 0), tabTitle);
+        //         writer.insert(writer.createPositionAt(trBody, 0), td);
+        //         writer.insert(writer.createPositionAt(tbody, 0), trBody);
+
+        //         writer.insert(writer.createPositionAt(table, 0), thead);
+        //         writer.insert(writer.createPositionAt(table, 1), tbody);
+        //         writer.insert(writer.createPositionAt(tabLabel, 0), table);
+        //         writer.insert(writer.createPositionAt(container, 0), tabLabel);
+
+        //         return container;
+        //     },
+        // });
 
         // Conversion for 'tabListTable' element
         conversion.for('upcast').elementToElement({
