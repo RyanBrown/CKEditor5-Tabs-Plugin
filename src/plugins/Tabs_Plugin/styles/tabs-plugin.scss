@@ -32,6 +32,10 @@ $transition-speed: 200ms ease-in-out;
         margin: 0;
         padding: 0;
 
+        &.data-downcast {
+            background: #ff00ff;
+        }
+
         // Individual tab list item
         .tab-list-item {
             background-color: $tab-bg;
@@ -48,6 +52,10 @@ $transition-speed: 200ms ease-in-out;
             position: relative;
             transition: background-color $transition-speed, border-color $transition-speed;
             z-index: 5;
+
+            &.data-downcast {
+                background: #ff00ff;
+            }
 
             &::after {
                 background-color: $tab-bg;
@@ -146,6 +154,10 @@ $transition-speed: 200ms ease-in-out;
         background-color: $tab-bg-active;
         border: $tab-border-width solid $tab-border-color-active;
         position: relative;
+
+        &.data-downcast {
+            background: #ff00ff;
+        }
 
         .tab-nested-content {
             display: none;

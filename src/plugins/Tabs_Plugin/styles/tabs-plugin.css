@@ -9,6 +9,9 @@
   margin: 0;
   padding: 0;
 }
+.tabs-plugin .tab-list.data-downcast {
+  background: #ff00ff;
+}
 .tabs-plugin .tab-list .tab-list-item {
   background-color: #eee;
   border-radius: 0.5rem 0.5rem 0 0;
@@ -24,6 +27,9 @@
   position: relative;
   transition: background-color 200ms ease-in-out, border-color 200ms ease-in-out;
   z-index: 5;
+}
+.tabs-plugin .tab-list .tab-list-item.data-downcast {
+  background: #ff00ff;
 }
 .tabs-plugin .tab-list .tab-list-item::after {
   background-color: #eee;
@@ -103,6 +109,9 @@
   background-color: #fff;
   border: 2px solid #ccc;
   position: relative;
+}
+.tabs-plugin .tab-content.data-downcast {
+  background: #ff00ff;
 }
 .tabs-plugin .tab-content .tab-nested-content {
   display: none;

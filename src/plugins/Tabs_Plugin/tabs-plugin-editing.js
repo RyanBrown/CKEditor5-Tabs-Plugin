@@ -132,7 +132,18 @@ export default class TabsPluginEditing extends Plugin {
             model: 'tabListItem',
             view: { name: 'li', classes: 'tab-list-item' },
         });
-        conversion.for('downcast').elementToElement({
+        conversion.for('dataDowncast').elementToElement({
+            model: 'tabListItem',
+            view: (modelElement, { writer }) => {
+                const classes = modelElement.getAttribute('class');
+                return writer.createContainerElement('li', {
+                    class: classes ? `tab-list-item data-downcast ${classes}` : 'tab-list-item data-downcast',
+                    'data-target': modelElement.getAttribute('data-target'),
+                    draggable: false,
+                });
+            },
+        });
+        conversion.for('editingDowncast').elementToElement({
             model: 'tabListItem',
             view: (modelElement, { writer }) => {
                 const classes = modelElement.getAttribute('class');
@@ -149,7 +160,13 @@ export default class TabsPluginEditing extends Plugin {
             model: 'tabContent',
             view: { name: 'div', classes: 'tab-content' },
         });
-        conversion.for('downcast').elementToElement({
+        conversion.for('dataDowncast').elementToElement({
+            model: 'tabContent',
+            view: (modelElement, { writer }) => {
+                return writer.createContainerElement('div', { class: 'tab-content data-downcast', draggable: 'false' });
+            },
+        });
+        conversion.for('editingDowncast').elementToElement({
             model: 'tabContent',
             view: (modelElement, { writer }) => {
                 return writer.createContainerElement('div', { class: 'tab-content', draggable: 'false' });
@@ -161,7 +178,19 @@ export default class TabsPluginEditing extends Plugin {
             model: 'tabNestedContent',
             view: { name: 'div', classes: 'tab-nested-content' },
         });
-        conversion.for('downcast').elementToElement({
+        conversion.for('dataDowncast').elementToElement({
+            model: 'tabNestedContent',
+            view: (modelElement, { writer }) => {
+                const classes = modelElement.getAttribute('class');
+                const div = writer.createEditableElement('div', {
+                    class: classes ? `tab-nested-content data-downcast ${classes}` : 'tab-nested-content data-downcast',
+                    id: modelElement.getAttribute('id'),
+                    draggable: false,
+                });
+                return toWidgetEditable(div, writer);
+            },
+        });
+        conversion.for('editingDowncast').elementToElement({
             model: 'tabNestedContent',
             view: (modelElement, { writer }) => {
                 const classes = modelElement.getAttribute('class');
@@ -179,7 +208,14 @@ export default class TabsPluginEditing extends Plugin {
             model: 'tabTitle',
             view: { name: 'div', classes: 'tab-title' },
         });
-        conversion.for('downcast').elementToElement({
+        conversion.for('dataDowncast').elementToElement({
+            model: 'tabTitle',
+            view: (modelElement, { writer }) => {
+                const div = writer.createEditableElement('div', { class: 'tab-title', draggable: false });
+                return toWidgetEditable(div, writer);
+            },
+        });
+        conversion.for('editingDowncast').elementToElement({
             model: 'tabTitle',
             view: (modelElement, { writer }) => {
                 const div = writer.createEditableElement('div', { class: 'tab-title', draggable: false });
