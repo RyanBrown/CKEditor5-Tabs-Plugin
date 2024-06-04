@@ -50,6 +50,13 @@ export default class TabsPluginUI extends Plugin {
             }
         });
 
+        editor.editing.view.document.on('click', (evt, data) => {
+            const target = data.target;
+            if (target.hasClass('tab-list-item') || target.hasClass('tab-title')) {
+                this._handleTabClick(editor, target, evt);
+            }
+        });
+
         editor.model.document.on('change:data', () => {
             this._updateEmptyTabTitles(editor);
         });
