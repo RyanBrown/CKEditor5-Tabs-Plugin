@@ -20,12 +20,10 @@ $tab-bg-active: #fff;
 $transition-speed: 200ms ease-in-out;
 
 // Main tabs plugin container
-// .tabs-plugin {
 .tabcontainer {
     background-color: $tab-bg-active;
 
     // Tab list container
-    // .tab-list {
     // .tab {
     .yui3-tabview-list {
         align-items: stretch;
@@ -36,7 +34,6 @@ $transition-speed: 200ms ease-in-out;
         padding: 0;
 
         // Individual tab list item
-        // .tab-list-item {
         .tablinks {
             background-color: $tab-bg;
             border-radius: $tab-border-radius $tab-border-radius 0 0;
@@ -86,18 +83,7 @@ $transition-speed: 200ms ease-in-out;
                     height: calc($tab-border-width * 2);
                 }
             }
-            // // Editing buttons container
-            // .tab-edit-bar {
-            //     align-items: center;
-            //     display: flex;
-            //     flex: 1 1 0;
 
-            //     .move-buttons-wrapper {
-            //         display: flex;
-            //         flex: 1 1 0;
-            //         justify-content: space-between;
-            //     }
-            // }
             // Title of the tab
             .tabTitle {
                 align-items: center;
@@ -110,43 +96,11 @@ $transition-speed: 200ms ease-in-out;
                 text-align: center;
                 word-break: break-word;
             }
-            // // Align the 'move-right-button' left and hide the 'move-left-button' for the first tab
-            // &:first-child .tab-edit-bar > .move-buttons-wrapper {
-            //     justify-content: flex-end;
-
-            //     // .move-left-button {
-            //     .left-arrow {
-            //         display: none;
-            //     }
-            // }
-            // // Align the 'move-left-button' left and hide the 'move-right-button' for the last tab
-            // &:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper {
-            //     justify-content: flex-start;
-
-            //     // .move-right-button {
-            //     .right-arrow {
-            //         display: none;
-            //     }
-            // }
-            // // Hide the 'tab-edit-bar' if only one tab is visible
-            // &:nth-last-child(2):first-child {
-            //     .tab-edit-bar {
-            //         display: none;
-            //     }
-            //     .tabTitle {
-            //         margin: $tab-x-margin $tab-y-margin;
-            //     }
-            // }
         }
         // Container for the add tab button
         .addtab {
             align-self: flex-end;
-            padding: $tab-x-padding $tab-y-padding;
-
-            // .add-tab-button {
-            // .addicon {
-            //     padding: $tab-x-padding $tab-y-padding;
-            // }
+            padding: $tab-x-padding;
         }
     }
 
@@ -156,17 +110,13 @@ $transition-speed: 200ms ease-in-out;
         border: $tab-border-width solid $tab-border-color-active;
         position: relative;
 
-        // .tab-nested-content {
         .yui3-tab-panel {
             display: none;
             height: 100%;
             min-height: 5.75rem;
             width: 100%;
 
-            // &.active {
             &.yui3-tab-panel-selected {
-                // Add fallback for active on first-child
-                // &:nth-last-child(3):first-child {
                 display: block;
                 padding: 1rem;
             }
@@ -184,8 +134,9 @@ $transition-speed: 200ms ease-in-out;
 .dropicon,
 .left-arrow,
 .right-arrow {
+    background-position: center;
     background-repeat: no-repeat;
-    background-size: cover;
+    background-size: 1.25rem;
     cursor: pointer;
     display: block;
     height: 1.5rem;
@@ -219,7 +170,6 @@ $transition-speed: 200ms ease-in-out;
     &:hover {
         background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='#ff0000'/%3E%3C/svg%3E");
     }
-
     .droptab.droptabicon {
         display: none;
     }
@@ -227,6 +177,7 @@ $transition-speed: 200ms ease-in-out;
 // Add tab button
 .addtabicon {
     background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#333333'/%3E%3C/svg%3E");
+    background-size: 1.5rem;
     &:hover {
         background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#266de2'/%3E%3C/svg%3E");
     }
@@ -235,6 +186,23 @@ $transition-speed: 200ms ease-in-out;
 .yui3-tab {
     table {
         width: 100%;
+        tr {
+            display: flex;
+        }
+
+        th {
+            border: 1px solid #ccc;
+            width: 28px;
+
+            &:last-child {
+                justify-content: flex-end;
+            }
+        }
+
+        td {
+            border: 1px solid #ff0000;
+            width: 100%;
+        }
     }
 
     // Align the 'move-right-button' left and hide the 'move-left-button' for the first tab
