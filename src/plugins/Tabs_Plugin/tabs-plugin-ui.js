@@ -33,8 +33,11 @@ export default class TabsPluginUI extends Plugin {
 
     // Registers event handlers for the tabs plugin
     _registerEventHandlers(editor) {
+        // Register the click event on the editor's view document
         editor.editing.view.document.on('click', (evt, data) => {
             const target = data.target;
+
+            // Handle clicks on different tab-related elements
             if (target.hasClass('tablinks') || target.hasClass('tabTitle')) {
                 this._handleTabClick(editor, target, evt);
             } else if (target.hasClass('dropicon')) {
@@ -47,7 +50,7 @@ export default class TabsPluginUI extends Plugin {
                 this._handleMoveTab(editor, target, evt, 1);
             }
         });
-
+        // Ensure that empty tab titles are updated when the document data changes
         editor.model.document.on('change:data', () => {
             this._updateEmptyTabTitles(editor);
         });
@@ -81,21 +84,23 @@ export default class TabsPluginUI extends Plugin {
     _handleTabClick(editor, target, evt) {
         let tabListItem = target;
 
+        // Traverse up the DOM tree to find the parent 'li' element with the 'tablinks' class
         while (tabListItem && !tabListItem.hasClass('tablinks')) {
             tabListItem = tabListItem.parent;
         }
-
+        // If the 'tablinks' element is found, activate the tab
         if (tabListItem) {
             this._activateTab(editor, tabListItem);
         }
-
         evt.stop();
     }
 
     // Activates the specified tab
     _activateTab(editor, tabListItem) {
-        const tabId = tabListItem.getAttribute('data-target');
+        const tabId = tabListItem.getAttribute('data-target').slice(1); // Get the tab ID
         const viewRoot = editor.editing.view.document.getRoot();
+
+        // Find the main tabs container element
         const tabsRootElement = Array.from(viewRoot.getChildren()).find(
             (child) => child.is('element', 'div') && child.hasClass('tabcontainer')
         );
@@ -105,8 +110,9 @@ export default class TabsPluginUI extends Plugin {
             return;
         }
 
+        // Find the container div element within the tabs container
         const containerDivElement = Array.from(tabsRootElement.getChildren()).find(
-            (child) => child.is('element', 'div') && child.hasClass('container-div')
+            (child) => child.is('element', 'div') && child.hasClass('ah-tabs-horizontal')
         );
 
         if (!containerDivElement) {
@@ -114,6 +120,7 @@ export default class TabsPluginUI extends Plugin {
             return;
         }
 
+        // Find the tab list and content elements within the container div
         const tabListElement = Array.from(containerDivElement.getChildren()).find(
             (child) => child.is('element', 'ul') && child.hasClass('yui3-tabview-list')
         );
@@ -127,7 +134,7 @@ export default class TabsPluginUI extends Plugin {
         }
 
         editor.editing.view.change((writer) => {
-            // Remove the 'active' class from all tab list items and tab content elements
+            // Remove the 'selected' class from all tab list items and tab content elements
             for (const item of tabListElement.getChildren()) {
                 writer.removeClass('yui3-tab-selected', item);
             }
@@ -135,10 +142,10 @@ export default class TabsPluginUI extends Plugin {
                 writer.removeClass('yui3-tab-panel-selected', content);
             }
 
-            // Add the 'active' class to the selected tab list item and corresponding tab content element
+            // Add the 'selected' class to the clicked tab list item and the corresponding tab content element
             writer.addClass('yui3-tab-selected', tabListItem);
             const selectedTabContent = Array.from(tabContentElement.getChildren()).find(
-                (child) => child.getAttribute('id') === tabId.slice(1)
+                (child) => child.getAttribute('id') === tabId
             );
             if (selectedTabContent) {
                 writer.addClass('yui3-tab-panel-selected', selectedTabContent);
@@ -171,7 +178,6 @@ export default class TabsPluginUI extends Plugin {
                 }
             }
         });
-
         evt.stop();
     }
 
