@@ -28,7 +28,6 @@ export default class TabsPluginEditing extends Plugin {
         // Define schema for the tabs plugin and its child elements
         schema.register('tabsPlugin', {
             allowIn: '$root',
-            allowWhere: '$block',
             isLimit: true,
         });
         // Define schema for 'tabList' element
@@ -221,7 +220,7 @@ export default class TabsPluginEditing extends Plugin {
                 return writer.createEmptyElement('button', {
                     class: 'move-left-button',
                     title: 'Move Tab Left',
-                    draggable: 'false',
+                    draggable: false,
                 });
             },
         });
@@ -234,7 +233,7 @@ export default class TabsPluginEditing extends Plugin {
                 return writer.createEmptyElement('button', {
                     class: 'move-right-button',
                     title: 'Move Tab Right',
-                    draggable: 'false',
+                    draggable: false,
                 });
             },
         });
@@ -250,7 +249,7 @@ export default class TabsPluginEditing extends Plugin {
                 return writer.createEmptyElement('button', {
                     class: 'delete-tab-button',
                     title: 'Delete Tab',
-                    draggable: 'false',
+                    draggable: false,
                 });
             },
         });
@@ -265,7 +264,7 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 return writer.createContainerElement('li', {
                     class: 'add-tab-list-item',
-                    draggable: 'false',
+                    draggable: false,
                 });
             },
         });
@@ -281,7 +280,7 @@ export default class TabsPluginEditing extends Plugin {
                 return writer.createEmptyElement('button', {
                     class: 'add-tab-button',
                     title: 'Add Tab',
-                    draggable: 'false',
+                    draggable: false,
                 });
             },
         });

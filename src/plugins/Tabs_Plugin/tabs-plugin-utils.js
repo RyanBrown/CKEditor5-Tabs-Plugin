@@ -57,7 +57,6 @@ export function findAllDescendants(node, predicate) {
 export function createTabElement(writer, tabId) {
     const tabListItem = createTabListItem(writer, tabId);
     const tabNestedContent = createTabContent(writer, tabId);
-    // writer.insertText('Tab Content', tabNestedContent); // Insert the title text
     return { tabListItem, tabNestedContent };
 }
 
@@ -67,13 +66,13 @@ export function createTabListItem(writer, tabId) {
     const tabEditBar = writer.createElement('tabEditBar');
     const moveButtonsWrapper = writer.createElement('moveButtonsWrapper');
 
-    appendControlElement(writer, moveButtonsWrapper, 'moveLeftButton');
-    appendControlElement(writer, moveButtonsWrapper, 'moveRightButton');
+    appendControlElement(writer, moveButtonsWrapper, 'moveLeftButton', 'Move Tab Left');
+    appendControlElement(writer, moveButtonsWrapper, 'moveRightButton', 'Move Tab Right');
     writer.append(moveButtonsWrapper, tabEditBar);
-    appendControlElement(writer, tabEditBar, 'deleteTabButton');
+    appendControlElement(writer, tabEditBar, 'deleteTabButton', 'Delete Tab');
 
     const tabTitle = writer.createElement('tabTitle');
-    writer.insertText(`Tab Name`, tabTitle);
+    writer.insertText(`Tab Name ${tabId}`, tabTitle);
 
     writer.append(tabEditBar, tabListItem);
     writer.append(tabTitle, tabListItem);
@@ -89,7 +88,7 @@ export function createTabContent(writer, tabId) {
 // Create 'Add Tab' button
 export function createAddTabButton(writer) {
     const addTabListItem = writer.createElement('addTabListItem');
-    const addTabButton = writer.createElement('addTabButton');
+    const addTabButton = writer.createElement('addTabButton', { title: 'Add Tab' });
     writer.append(addTabButton, addTabListItem);
     return addTabListItem;
 }
