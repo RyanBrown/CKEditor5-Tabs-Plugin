@@ -39,6 +39,7 @@ import { Undo } from '@ckeditor/ckeditor5-undo';
 import { EditorWatchdog } from '@ckeditor/ckeditor5-watchdog';
 
 // Custom Plugins
+import AccordionPlugin from './plugins/accordion_plugin/accordion';
 import TabsPlugin from './plugins/Tabs_Plugin/tabs-plugin';
 
 // You can read more about extending the build with additional plugins in the "Installing plugins" guide.
@@ -94,6 +95,7 @@ class Editor extends ClassicEditor {
         Underline,
         Undo,
         // Custom Plugins
+        AccordionPlugin,
         TabsPlugin,
     ];
 
@@ -144,6 +146,7 @@ class Editor extends ClassicEditor {
                 '|',
                 'removeFormat',
                 '|',
+                'accordionPlugin',
                 'tabsPlugin',
             ],
             shouldNotGroupWhenFull: true,
