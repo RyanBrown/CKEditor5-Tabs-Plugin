@@ -191,6 +191,8 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const div = writer.createContainerElement('div', {
                     class: 'ah-tabs-horizontal ah-responsiveselecttabs ah-content-space-v yui3-ah-responsiveselecttabs-content yui3-tabview-content',
+                    draggable: false,
+                    contenteditable: 'false',
                 });
                 return div;
             },
@@ -214,6 +216,8 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const div = writer.createContainerElement('div', {
                     class: 'tabheader ah-tabs-horizontal',
+                    draggable: false,
+                    contenteditable: 'false',
                 });
                 return div;
             },
@@ -232,7 +236,11 @@ export default class TabsPluginEditing extends Plugin {
         conversion.for('editingDowncast').elementToElement({
             model: 'tabList',
             view: (modelElement, { writer }) => {
-                const ul = writer.createContainerElement('ul', { class: 'tab yui3-tabview-list', draggable: false });
+                const ul = writer.createContainerElement('ul', {
+                    class: 'tab yui3-tabview-list',
+                    draggable: false,
+                    contenteditable: 'false',
+                });
                 return ul;
             },
         });
@@ -260,6 +268,7 @@ export default class TabsPluginEditing extends Plugin {
                     class: classes ? `yui3-tab tablinks ${classes}` : 'yui3-tab tablinks',
                     'data-target': modelElement.getAttribute('data-target'),
                     draggable: false,
+                    contenteditable: 'false',
                 });
                 return li;
             },
@@ -370,6 +379,7 @@ export default class TabsPluginEditing extends Plugin {
                     class: 'left-arrow arrowtabicon',
                     title: modelElement.getAttribute('title') || 'Move Tab',
                     draggable: false,
+                    contenteditable: 'false',
                 }),
         });
 
@@ -394,6 +404,7 @@ export default class TabsPluginEditing extends Plugin {
                     class: 'right-arrow arrowtabicon',
                     title: modelElement.getAttribute('title') || 'Move Tab',
                     draggable: false,
+                    contenteditable: 'false',
                 }),
         });
 
@@ -417,6 +428,7 @@ export default class TabsPluginEditing extends Plugin {
                     class: 'dropicon',
                     title: modelElement.getAttribute('title') || 'Delete Tab',
                     draggable: false,
+                    contenteditable: 'false',
                 }),
         });
 
@@ -440,6 +452,7 @@ export default class TabsPluginEditing extends Plugin {
                 return writer.createContainerElement('p', {
                     class: 'droptab droptabicon',
                     title: modelElement.getAttribute('title'),
+                    contenteditable: 'false',
                 });
             },
         });
