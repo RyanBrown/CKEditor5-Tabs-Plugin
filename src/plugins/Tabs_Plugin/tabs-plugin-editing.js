@@ -21,7 +21,7 @@ export default class TabsPluginEditing extends Plugin {
     _defineSchema() {
         const schema = this.editor.model.schema;
 
-        // Define schema for 'tabsPlugin' element
+        // Define schema for the tabs plugin and its child elements
         schema.register('tabsPlugin', {
             allowIn: '$root',
             isLimit: true,
@@ -30,11 +30,13 @@ export default class TabsPluginEditing extends Plugin {
         schema.register('containerDiv', {
             allowAttributes: ['class'],
             allowIn: 'tabsPlugin',
+            isLimit: true,
         });
         // Define schema for 'tabHeader' element
         schema.register('tabHeader', {
             allowAttributes: ['class'],
             allowIn: 'containerDiv',
+            isLimit: true,
         });
         // Define schema for 'tabList' element
         schema.register('tabList', {
@@ -58,7 +60,7 @@ export default class TabsPluginEditing extends Plugin {
         schema.register('tabTitle', {
             allowAttributes: ['class'],
             allowContentOf: '$block',
-            allowIn: 'tabListTable',
+            allowIn: 'tabListItem',
             isLimit: true,
         });
         // Define schema for 'tabContent' element
@@ -70,7 +72,7 @@ export default class TabsPluginEditing extends Plugin {
         // Define schema for 'tabNestedContent' element
         schema.register('tabNestedContent', {
             allowAttributes: ['id', 'class'],
-            allowContentOf: '$root',
+            allowContentOf: '$root', // Allow all root-level content, including block elements
             allowIn: 'tabContent',
             isLimit: true,
         });
@@ -95,7 +97,7 @@ export default class TabsPluginEditing extends Plugin {
         // Define schema for 'deleteTabButton' element
         schema.register('deleteTabButton', {
             allowAttributes: ['class', 'title'],
-            allowIn: 'tabListItem',
+            allowIn: 'tabEditBar',
             isLimit: true,
         });
         // Define schema for 'dropParagraph' element
@@ -152,11 +154,13 @@ export default class TabsPluginEditing extends Plugin {
         conversion.for('upcast').elementToElement({
             model: 'tabsPlugin',
             view: { name: 'div', classes: 'tabcontainer' },
+            converterPriority: 'high',
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabsPlugin',
             view: (modelElement, { writer }) =>
                 writer.createContainerElement('div', { class: 'tabcontainer yui3-widget', draggable: false }),
+            converterPriority: 'high',
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabsPlugin',
@@ -168,6 +172,7 @@ export default class TabsPluginEditing extends Plugin {
                 });
                 return toWidget(container, writer);
             },
+            converterPriority: 'high',
         });
 
         // Conversion for 'containerDiv' element
@@ -178,6 +183,7 @@ export default class TabsPluginEditing extends Plugin {
                 classes:
                     'ah-tabs-horizontal ah-responsiveselecttabs ah-content-space-v yui3-ah-responsiveselecttabs-content yui3-tabview-content',
             },
+            converterPriority: 'high',
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'containerDiv',
@@ -187,6 +193,7 @@ export default class TabsPluginEditing extends Plugin {
                     draggable: false,
                 });
             },
+            converterPriority: 'high',
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'containerDiv',
@@ -198,12 +205,14 @@ export default class TabsPluginEditing extends Plugin {
                 });
                 return div;
             },
+            converterPriority: 'high',
         });
 
         // Conversion for 'tabHeader' element
         conversion.for('upcast').elementToElement({
             model: 'tabHeader',
             view: { name: 'div', classes: 'tabheader ah-tabs-horizontal' },
+            converterPriority: 'high',
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabHeader',
@@ -213,6 +222,7 @@ export default class TabsPluginEditing extends Plugin {
                     draggable: false,
                 });
             },
+            converterPriority: 'high',
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabHeader',
@@ -224,17 +234,20 @@ export default class TabsPluginEditing extends Plugin {
                 });
                 return div;
             },
+            converterPriority: 'high',
         });
 
         // Conversion for 'tabList' element
         conversion.for('upcast').elementToElement({
             model: 'tabList',
             view: { name: 'ul', classes: 'tab yui3-tabview-list' },
+            converterPriority: 'high',
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabList',
             view: (modelElement, { writer }) =>
                 writer.createContainerElement('ul', { class: 'tab yui3-tabview-list', draggable: false }),
+            converterPriority: 'high',
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabList',
@@ -246,12 +259,14 @@ export default class TabsPluginEditing extends Plugin {
                 });
                 return ul;
             },
+            converterPriority: 'high',
         });
 
         // Conversion for 'tabListItem' element
         conversion.for('upcast').elementToElement({
             model: 'tabListItem',
             view: { name: 'li', classes: 'yui3-tab tablinks' },
+            converterPriority: 'high',
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabListItem',
@@ -263,6 +278,7 @@ export default class TabsPluginEditing extends Plugin {
                     draggable: false,
                 });
             },
+            converterPriority: 'high',
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabListItem',
@@ -276,6 +292,7 @@ export default class TabsPluginEditing extends Plugin {
                 });
                 return li;
             },
+            converterPriority: 'high',
         });
 
         // Conversion for 'tabListTable' element
@@ -289,6 +306,7 @@ export default class TabsPluginEditing extends Plugin {
                 const table = writer.createContainerElement('table', { draggable: false });
                 return table;
             },
+            converterPriority: 'high',
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabListTable',
@@ -296,18 +314,21 @@ export default class TabsPluginEditing extends Plugin {
                 const table = writer.createContainerElement('table', { draggable: false });
                 return table;
             },
+            converterPriority: 'high',
         });
 
         // Conversion for 'tabTitle' element
         conversion.for('upcast').elementToElement({
             model: 'tabTitle',
             view: { name: 'div', classes: 'tabTitle' },
+            converterPriority: 'high',
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabTitle',
             view: (modelElement, { writer }) => {
                 return writer.createEditableElement('div', { class: 'tabTitle', draggable: false });
             },
+            converterPriority: 'high',
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabTitle',
@@ -319,18 +340,21 @@ export default class TabsPluginEditing extends Plugin {
                 });
                 return toWidgetEditable(div, writer);
             },
+            converterPriority: 'high',
         });
 
         // Conversion for 'tabEditBar' element
         conversion.for('upcast').elementToElement({
             model: 'tabEditBar',
             view: { name: 'div', classes: 'yui3-tab-label' },
+            converterPriority: 'high',
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabEditBar',
             view: (modelElement, { writer }) => {
                 return writer.createContainerElement('div', { class: 'yui3-tab-label', draggable: false });
             },
+            converterPriority: 'high',
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabEditBar',
@@ -342,18 +366,21 @@ export default class TabsPluginEditing extends Plugin {
                 });
                 return div;
             },
+            converterPriority: 'high',
         });
 
         // Conversion for 'moveButtonsWrapper' element
         conversion.for('upcast').elementToElement({
             model: 'moveButtonsWrapper',
             view: { name: 'div', classes: 'move-buttons-wrapper' },
+            converterPriority: 'high',
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'moveButtonsWrapper',
             view: (modelElement, { writer }) => {
                 return writer.createContainerElement('div', { class: 'move-buttons-wrapper', draggable: false });
             },
+            converterPriority: 'high',
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'moveButtonsWrapper',
@@ -361,12 +388,14 @@ export default class TabsPluginEditing extends Plugin {
                 const div = writer.createContainerElement('div', { class: 'move-buttons-wrapper', draggable: false });
                 return div;
             },
+            converterPriority: 'high',
         });
 
         // Conversion for 'moveLeftButton' element
         conversion.for('upcast').elementToElement({
             model: 'moveLeftButton',
             view: { name: 'div', classes: 'left-arrow' },
+            converterPriority: 'high',
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'moveLeftButton',
@@ -376,6 +405,7 @@ export default class TabsPluginEditing extends Plugin {
                     title: modelElement.getAttribute('title') || 'Move Tab',
                     draggable: false,
                 }),
+            converterPriority: 'high',
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'moveLeftButton',
@@ -386,12 +416,14 @@ export default class TabsPluginEditing extends Plugin {
                     draggable: false,
                     contenteditable: 'false',
                 }),
+            converterPriority: 'high',
         });
 
         // Conversion for 'moveRightButton' element
         conversion.for('upcast').elementToElement({
             model: 'moveRightButton',
             view: { name: 'div', classes: 'right-arrow' },
+            converterPriority: 'high',
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'moveRightButton',
@@ -401,6 +433,7 @@ export default class TabsPluginEditing extends Plugin {
                     title: modelElement.getAttribute('title') || 'Move Tab',
                     draggable: false,
                 }),
+            converterPriority: 'high',
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'moveRightButton',
@@ -411,12 +444,14 @@ export default class TabsPluginEditing extends Plugin {
                     draggable: false,
                     contenteditable: 'false',
                 }),
+            converterPriority: 'high',
         });
 
         // Conversion for 'deleteTabButton' element
         conversion.for('upcast').elementToElement({
             model: 'deleteTabButton',
             view: { name: 'div', classes: 'dropicon' },
+            converterPriority: 'high',
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'deleteTabButton',
@@ -426,6 +461,7 @@ export default class TabsPluginEditing extends Plugin {
                     title: modelElement.getAttribute('title') || 'Delete Tab',
                     draggable: false,
                 }),
+            converterPriority: 'high',
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'deleteTabButton',
@@ -436,12 +472,14 @@ export default class TabsPluginEditing extends Plugin {
                     draggable: false,
                     contenteditable: 'false',
                 }),
+            converterPriority: 'high',
         });
 
         // Conversion for 'dropParagraph' element
         conversion.for('upcast').elementToElement({
             model: 'dropParagraph',
             view: { name: 'p', classes: 'droptab droptabicon' },
+            converterPriority: 'high',
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'dropParagraph',
@@ -452,6 +490,7 @@ export default class TabsPluginEditing extends Plugin {
                     draggable: false,
                 });
             },
+            converterPriority: 'high',
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'dropParagraph',
@@ -463,6 +502,7 @@ export default class TabsPluginEditing extends Plugin {
                     contenteditable: 'false',
                 });
             },
+            converterPriority: 'high',
         });
 
         // Conversion for 'addTabListItem' element
@@ -477,6 +517,7 @@ export default class TabsPluginEditing extends Plugin {
                     class: 'yui3-tab addtab',
                     draggable: false,
                 }),
+            converterPriority: 'high',
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'addTabListItem',
@@ -488,6 +529,7 @@ export default class TabsPluginEditing extends Plugin {
                 });
                 return li;
             },
+            converterPriority: 'high',
         });
 
         // Conversion for 'addTabButton' element
@@ -503,6 +545,7 @@ export default class TabsPluginEditing extends Plugin {
                     title: modelElement.getAttribute('title') || 'Add Tab',
                     draggable: false,
                 }),
+            converterPriority: 'high',
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'addTabButton',
@@ -513,17 +556,20 @@ export default class TabsPluginEditing extends Plugin {
                     isContentEditable: false,
                     draggable: false,
                 }),
+            converterPriority: 'high',
         });
 
         // Conversion for 'addTabIcon' element
         conversion.for('upcast').elementToElement({
             model: 'addTabIcon',
             view: { name: 'p', classes: 'addtabicon' },
+            converterPriority: 'high',
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'addTabIcon',
             view: (modelElement, { writer }) =>
                 writer.createContainerElement('p', { class: 'addtabicon', draggable: false }),
+            converterPriority: 'high',
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'addTabIcon',
@@ -531,18 +577,21 @@ export default class TabsPluginEditing extends Plugin {
                 const p = writer.createContainerElement('p', { class: 'addtabicon', draggable: false });
                 return p;
             },
+            converterPriority: 'high',
         });
 
         // Conversion for 'tabContent' element
         conversion.for('upcast').elementToElement({
             model: 'tabContent',
             view: { name: 'div', classes: 'yui3-tabview-panel' },
+            converterPriority: 'high',
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabContent',
             view: (modelElement, { writer }) => {
                 return writer.createContainerElement('div', { class: 'yui3-tabview-panel', draggable: false });
             },
+            converterPriority: 'high',
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabContent',
@@ -550,6 +599,7 @@ export default class TabsPluginEditing extends Plugin {
                 const div = writer.createContainerElement('div', { class: 'yui3-tabview-panel', draggable: false });
                 return div;
             },
+            converterPriority: 'high',
         });
 
         // Conversion for 'tabNestedContent' element
@@ -567,6 +617,7 @@ export default class TabsPluginEditing extends Plugin {
                     draggable: false,
                 });
             },
+            converterPriority: 'high',
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabNestedContent',
@@ -580,6 +631,7 @@ export default class TabsPluginEditing extends Plugin {
                 });
                 return toWidgetEditable(div, writer);
             },
+            converterPriority: 'high',
         });
 
         // Conversion for table elements
@@ -588,12 +640,14 @@ export default class TabsPluginEditing extends Plugin {
             conversion.for('upcast').elementToElement({
                 model: element,
                 view: element,
+                converterPriority: 'high',
             });
             conversion.for('dataDowncast').elementToElement({
                 model: element,
                 view: (modelElement, { writer }) => {
                     return writer.createContainerElement(element, { draggable: false });
                 },
+                converterPriority: 'high',
             });
             conversion.for('editingDowncast').elementToElement({
                 model: element,
@@ -604,6 +658,7 @@ export default class TabsPluginEditing extends Plugin {
                     });
                     return toWidget(el, writer);
                 },
+                converterPriority: 'high',
             });
         }
     }
