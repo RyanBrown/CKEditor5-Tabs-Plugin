@@ -166,12 +166,21 @@ export default class TabsPluginEditing extends Plugin {
                     'ah-tabs-horizontal ah-responsiveselecttabs ah-content-space-v yui3-ah-responsiveselecttabs-content yui3-tabview-content',
             },
         });
-        conversion.for('downcast').elementToElement({
+        conversion.for('dataDowncast').elementToElement({
             model: 'containerDiv',
             view: {
                 name: 'div',
                 classes:
                     'ah-tabs-horizontal ah-responsiveselecttabs ah-content-space-v yui3-ah-responsiveselecttabs-content yui3-tabview-content',
+            },
+        });
+        conversion.for('editingDowncast').elementToElement({
+            model: 'containerDiv',
+            view: (modelElement, { writer }) => {
+                const div = writer.createContainerElement('div', {
+                    class: 'ah-tabs-horizontal ah-responsiveselecttabs ah-content-space-v yui3-ah-responsiveselecttabs-content yui3-tabview-content',
+                });
+                return toWidget(div, writer);
             },
         });
 
@@ -180,9 +189,18 @@ export default class TabsPluginEditing extends Plugin {
             model: 'tabHeader',
             view: { name: 'div', classes: 'tabheader ah-tabs-horizontal' },
         });
-        conversion.for('downcast').elementToElement({
+        conversion.for('dataDowncast').elementToElement({
             model: 'tabHeader',
             view: { name: 'div', classes: 'tabheader ah-tabs-horizontal' },
+        });
+        conversion.for('editingDowncast').elementToElement({
+            model: 'tabHeader',
+            view: (modelElement, { writer }) => {
+                const div = writer.createContainerElement('div', {
+                    class: 'tabheader ah-tabs-horizontal',
+                });
+                return toWidget(div, writer);
+            },
         });
 
         // Conversion for 'tabList' element
@@ -190,9 +208,18 @@ export default class TabsPluginEditing extends Plugin {
             model: 'tabList',
             view: { name: 'ul', classes: 'tab yui3-tabview-list' },
         });
-        conversion.for('downcast').elementToElement({
+        conversion.for('dataDowncast').elementToElement({
             model: 'tabList',
             view: { name: 'ul', classes: 'tab yui3-tabview-list' },
+        });
+        conversion.for('editingDowncast').elementToElement({
+            model: 'tabList',
+            view: (modelElement, { writer }) => {
+                const ul = writer.createContainerElement('ul', {
+                    class: 'tab yui3-tabview-list',
+                });
+                return toWidget(ul, writer);
+            },
         });
 
         // Conversion for 'tabListItem' element
@@ -226,9 +253,16 @@ export default class TabsPluginEditing extends Plugin {
             model: 'tabListTable',
             view: { name: 'table' },
         });
-        conversion.for('downcast').elementToElement({
+        conversion.for('dataDowncast').elementToElement({
             model: 'tabListTable',
             view: { name: 'table' },
+        });
+        conversion.for('editingDowncast').elementToElement({
+            model: 'tabListTable',
+            view: (modelElement, { writer }) => {
+                const table = writer.createContainerElement('table');
+                return toWidget(table, writer);
+            },
         });
 
         // Conversion for 'tabTitle' element
@@ -258,9 +292,18 @@ export default class TabsPluginEditing extends Plugin {
             model: 'tabEditBar',
             view: { name: 'div', classes: 'yui3-tab-label' },
         });
-        conversion.for('downcast').elementToElement({
+        conversion.for('dataDowncast').elementToElement({
             model: 'tabEditBar',
             view: { name: 'div', classes: 'yui3-tab-label' },
+        });
+        conversion.for('editingDowncast').elementToElement({
+            model: 'tabEditBar',
+            view: (modelElement, { writer }) => {
+                const div = writer.createContainerElement('div', {
+                    class: 'yui3-tab-label',
+                });
+                return toWidget(div, writer);
+            },
         });
 
         // Conversion for 'moveButtonsWrapper' element
@@ -268,9 +311,16 @@ export default class TabsPluginEditing extends Plugin {
             model: 'moveButtonsWrapper',
             view: { name: 'th' },
         });
-        conversion.for('downcast').elementToElement({
+        conversion.for('dataDowncast').elementToElement({
             model: 'moveButtonsWrapper',
             view: { name: 'th' },
+        });
+        conversion.for('editingDowncast').elementToElement({
+            model: 'moveButtonsWrapper',
+            view: (modelElement, { writer }) => {
+                const th = writer.createContainerElement('th');
+                return toWidget(th, writer);
+            },
         });
 
         // Conversion for 'moveLeftButton' element
@@ -344,9 +394,23 @@ export default class TabsPluginEditing extends Plugin {
             model: 'dropParagraph',
             view: { name: 'p', classes: 'droptab droptabicon' },
         });
-        conversion.for('downcast').elementToElement({
+        conversion.for('dataDowncast').elementToElement({
             model: 'dropParagraph',
-            view: { name: 'p', classes: 'droptab droptabicon' },
+            view: (modelElement, { writer }) => {
+                return writer.createContainerElement('p', {
+                    class: 'droptab droptabicon',
+                    title: modelElement.getAttribute('title'),
+                });
+            },
+        });
+        conversion.for('editingDowncast').elementToElement({
+            model: 'dropParagraph',
+            view: (modelElement, { writer }) => {
+                return writer.createContainerElement('p', {
+                    class: 'droptab droptabicon',
+                    title: modelElement.getAttribute('title'),
+                });
+            },
         });
 
         // Conversion for 'addTabListItem' element
@@ -354,9 +418,22 @@ export default class TabsPluginEditing extends Plugin {
             model: 'addTabListItem',
             view: { name: 'li', classes: 'yui3-tab addtab' },
         });
-        conversion.for('downcast').elementToElement({
+        conversion.for('dataDowncast').elementToElement({
             model: 'addTabListItem',
-            view: { name: 'li', classes: 'yui3-tab addtab' },
+            view: (modelElement, { writer }) => {
+                return writer.createContainerElement('li', {
+                    class: 'yui3-tab addtab',
+                });
+            },
+        });
+        conversion.for('editingDowncast').elementToElement({
+            model: 'addTabListItem',
+            view: (modelElement, { writer }) => {
+                const li = writer.createContainerElement('li', {
+                    class: 'yui3-tab addtab',
+                });
+                return toWidget(li, writer);
+            },
         });
 
         // Conversion for 'addTabButton' element
@@ -386,9 +463,16 @@ export default class TabsPluginEditing extends Plugin {
             model: 'addTabIcon',
             view: { name: 'p', classes: 'addtabicon' },
         });
-        conversion.for('downcast').elementToElement({
+        conversion.for('dataDowncast').elementToElement({
             model: 'addTabIcon',
             view: (modelElement, { writer }) => writer.createContainerElement('p', { class: 'addtabicon' }),
+        });
+        conversion.for('editingDowncast').elementToElement({
+            model: 'addTabIcon',
+            view: (modelElement, { writer }) => {
+                const p = writer.createContainerElement('p', { class: 'addtabicon' });
+                return toWidget(p, writer);
+            },
         });
 
         // Conversion for 'tabContent' element
@@ -396,9 +480,18 @@ export default class TabsPluginEditing extends Plugin {
             model: 'tabContent',
             view: { name: 'div', classes: 'yui3-tabview-panel' },
         });
-        conversion.for('downcast').elementToElement({
+        conversion.for('dataDowncast').elementToElement({
             model: 'tabContent',
             view: { name: 'div', classes: 'yui3-tabview-panel' },
+        });
+        conversion.for('editingDowncast').elementToElement({
+            model: 'tabContent',
+            view: (modelElement, { writer }) => {
+                const div = writer.createContainerElement('div', {
+                    class: 'yui3-tabview-panel',
+                });
+                return toWidget(div, writer);
+            },
         });
 
         // Conversion for 'tabNestedContent' element
@@ -435,9 +528,16 @@ export default class TabsPluginEditing extends Plugin {
                 model: element,
                 view: element,
             });
-            conversion.for('downcast').elementToElement({
+            conversion.for('dataDowncast').elementToElement({
                 model: element,
                 view: element,
+            });
+            conversion.for('editingDowncast').elementToElement({
+                model: element,
+                view: (modelElement, { writer }) => {
+                    const el = writer.createContainerElement(element);
+                    return toWidget(el, writer);
+                },
             });
         }
     }
