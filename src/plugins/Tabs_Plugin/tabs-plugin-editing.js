@@ -24,7 +24,6 @@ export default class TabsPluginEditing extends Plugin {
         // Define schema for 'tabsPlugin' element
         schema.register('tabsPlugin', {
             allowIn: '$root',
-            allowWhere: '$block',
             isLimit: true,
         });
         // Define schema for 'containerDiv' element
@@ -40,17 +39,20 @@ export default class TabsPluginEditing extends Plugin {
         // Define schema for 'tabList' element
         schema.register('tabList', {
             allowAttributes: ['class'],
-            allowIn: 'tabHeader',
+            allowIn: 'tabsPlugin',
+            isLimit: true,
         });
         // Define schema for 'tabListItem' element
         schema.register('tabListItem', {
             allowAttributes: ['class', 'data-target'],
             allowIn: 'tabList',
+            isLimit: true,
         });
         // Define schema for 'tabListTable' element
         schema.register('tabListTable', {
             allowAttributes: ['class'],
             allowIn: 'tabListItem',
+            isLimit: true,
         });
         // Define schema for 'tabTitle' element
         schema.register('tabTitle', {
@@ -63,75 +65,84 @@ export default class TabsPluginEditing extends Plugin {
         schema.register('tabContent', {
             allowAttributes: ['class'],
             allowIn: 'tabsPlugin',
+            isLimit: true,
         });
         // Define schema for 'tabNestedContent' element
         schema.register('tabNestedContent', {
             allowAttributes: ['id', 'class'],
-            allowContentOf: '$root', // Allow all root-level content, including block elements
+            allowContentOf: '$root',
             allowIn: 'tabContent',
             isLimit: true,
         });
-        // // Define schema for 'moveButtonsWrapper' element
-        // schema.register('moveButtonsWrapper', {
-        //     allowAttributes: ['class'],
-        //     allowIn: 'tabEditBar',
-        // });
-        // // Define schema for 'moveLeftButton' element
-        // schema.register('moveLeftButton', {
-        //     allowAttributes: ['class', 'title'],
-        //     allowIn: 'moveButtonsWrapper',
-        // });
-        // // Define schema for 'moveRightButton' element
-        // schema.register('moveRightButton', {
-        //     allowAttributes: ['class', 'title'],
-        //     allowIn: 'moveButtonsWrapper',
-        // });
-        // // Define schema for 'deleteTabButton' element
-        // schema.register('deleteTabButton', {
-        //     allowAttributes: ['class', 'title'],
-        //     allowIn: 'tabEditBar',
-        // });
-        // // Define schema for 'dropParagraph' element
-        // schema.register('dropParagraph', {
-        //     allowAttributes: ['class', 'title'],
-        //     allowIn: 'tabEditBar',
-        // });
-        // // Define schema for 'addTabListItem' element
-        // schema.register('addTabListItem', {
-        //     allowAttributes: ['class'],
-        //     allowIn: 'tabList',
-        // });
-        // // Define schema for 'addTabButton' element
-        // schema.register('addTabButton', {
-        //     allowAttributes: ['class', 'title'],
-        //     allowIn: 'addTabListItem',
-        // });
-        // // Define schema for 'addTabIcon' element
-        // schema.register('addTabIcon', {
-        //     allowAttributes: ['class', 'title'],
-        //     allowIn: 'addTabButton',
-        // });
-        // // Define schema for 'thead' element
-        // schema.register('thead', {
-        //     allowIn: 'table',
-        // });
-        // // Define schema for 'tr' element
-        // schema.register('tr', {
-        //     allowIn: ['thead', 'tbody'],
-        // });
-        // // Define schema for 'th' element
-        // schema.register('th', {
-        //     allowIn: 'tr',
-        // });
-        // // Define schema for 'tbody' element
-        // schema.register('tbody', {
-        //     allowIn: 'table',
-        // });
-        // // Define schema for 'td' element
-        // schema.register('td', {
-        //     allowIn: 'tr',
-        //     allowAttributes: ['colspan'],
-        // });
+        // Define schema for 'moveButtonsWrapper' element
+        schema.register('moveButtonsWrapper', {
+            allowAttributes: ['class'],
+            allowIn: 'tabListItem',
+            isLimit: true,
+        });
+        // Define schema for 'moveLeftButton' element
+        schema.register('moveLeftButton', {
+            allowAttributes: ['class', 'title'],
+            allowIn: 'moveButtonsWrapper',
+            isLimit: true,
+        });
+        // Define schema for 'moveRightButton' element
+        schema.register('moveRightButton', {
+            allowAttributes: ['class', 'title'],
+            allowIn: 'moveButtonsWrapper',
+            isLimit: true,
+        });
+        // Define schema for 'deleteTabButton' element
+        schema.register('deleteTabButton', {
+            allowAttributes: ['class', 'title'],
+            allowIn: 'tabListItem',
+            isLimit: true,
+        });
+        // Define schema for 'dropParagraph' element
+        schema.register('dropParagraph', {
+            allowAttributes: ['class', 'title'],
+            allowIn: 'tabListItem',
+            isLimit: true,
+        });
+        // Define schema for 'addTabListItem' element
+        schema.register('addTabListItem', {
+            allowAttributes: ['class'],
+            allowIn: 'tabList',
+            isLimit: true,
+        });
+        // Define schema for 'addTabButton' element
+        schema.register('addTabButton', {
+            allowAttributes: ['class', 'title'],
+            allowIn: 'addTabListItem',
+            isLimit: true,
+        });
+        // Define schema for 'addTabIcon' element
+        schema.register('addTabIcon', {
+            allowAttributes: ['class', 'title'],
+            allowIn: 'addTabButton',
+            isLimit: true,
+        });
+        // Define schema for 'thead' element
+        schema.register('thead', {
+            allowIn: 'table',
+        });
+        // Define schema for 'tr' element
+        schema.register('tr', {
+            allowIn: ['thead', 'tbody'],
+        });
+        // Define schema for 'th' element
+        schema.register('th', {
+            allowIn: 'tr',
+        });
+        // Define schema for 'tbody' element
+        schema.register('tbody', {
+            allowIn: 'table',
+        });
+        // Define schema for 'td' element
+        schema.register('td', {
+            allowIn: 'tr',
+            allowAttributes: ['colspan'],
+        });
     }
 
     _defineConverters() {
@@ -144,7 +155,8 @@ export default class TabsPluginEditing extends Plugin {
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabsPlugin',
-            view: { name: 'div', classes: 'tabcontainer yui3-widget' },
+            view: (modelElement, { writer }) =>
+                writer.createContainerElement('div', { class: 'tabcontainer yui3-widget' }),
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabsPlugin',
@@ -168,10 +180,10 @@ export default class TabsPluginEditing extends Plugin {
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'containerDiv',
-            view: {
-                name: 'div',
-                classes:
-                    'ah-tabs-horizontal ah-responsiveselecttabs ah-content-space-v yui3-ah-responsiveselecttabs-content yui3-tabview-content',
+            view: (modelElement, { writer }) => {
+                const div = writer.createContainerElement('div', {
+                    class: 'ah-tabs-horizontal ah-responsiveselecttabs ah-content-space-v yui3-ah-responsiveselecttabs-content yui3-tabview-content',
+                });
             },
         });
         conversion.for('editingDowncast').elementToElement({
@@ -191,7 +203,12 @@ export default class TabsPluginEditing extends Plugin {
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabHeader',
-            view: { name: 'div', classes: 'tabheader ah-tabs-horizontal' },
+            view: (modelElement, { writer }) => {
+                const div = writer.createContainerElement('div', {
+                    class: 'tabheader ah-tabs-horizontal',
+                });
+                return toWidget(div, writer);
+            },
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabHeader',
@@ -210,14 +227,13 @@ export default class TabsPluginEditing extends Plugin {
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabList',
-            view: { name: 'ul', classes: 'tab yui3-tabview-list' },
+            view: (modelElement, { writer }) =>
+                writer.createContainerElement('ul', { class: 'tab yui3-tabview-list', draggable: false }),
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabList',
             view: (modelElement, { writer }) => {
-                const ul = writer.createContainerElement('ul', {
-                    class: 'tab yui3-tabview-list',
-                });
+                const ul = writer.createContainerElement('ul', { class: 'tab yui3-tabview-list', draggable: false });
                 return toWidget(ul, writer);
             },
         });
@@ -241,10 +257,12 @@ export default class TabsPluginEditing extends Plugin {
             model: 'tabListItem',
             view: (modelElement, { writer }) => {
                 const classes = modelElement.getAttribute('class');
-                return writer.createContainerElement('li', {
+                const li = writer.createContainerElement('li', {
                     class: classes ? `yui3-tab tablinks ${classes}` : 'yui3-tab tablinks',
                     'data-target': modelElement.getAttribute('data-target'),
+                    draggable: false,
                 });
+                return toWidget(li, writer);
             },
         });
 
@@ -255,7 +273,10 @@ export default class TabsPluginEditing extends Plugin {
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabListTable',
-            view: { name: 'table' },
+            view: (modelElement, { writer }) => {
+                const table = writer.createContainerElement('table');
+                return toWidget(table, writer);
+            },
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabListTable',
@@ -272,7 +293,9 @@ export default class TabsPluginEditing extends Plugin {
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabTitle',
-            view: { name: 'div', classes: 'tabTitle' },
+            view: (modelElement, { writer }) => {
+                return writer.createEditableElement('div', { class: 'tabTitle' });
+            },
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabTitle',
@@ -294,32 +317,36 @@ export default class TabsPluginEditing extends Plugin {
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabEditBar',
-            view: { name: 'div', classes: 'yui3-tab-label' },
+            view: (modelElement, { writer }) => writer.createContainerElement('div', { class: 'yui3-tab-label' }),
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabEditBar',
             view: (modelElement, { writer }) => {
                 const div = writer.createContainerElement('div', {
                     class: 'yui3-tab-label',
+                    draggable: false,
+                    contenteditable: false,
                 });
-                return toWidget(div, writer);
+                return div;
             },
         });
 
         // Conversion for 'moveButtonsWrapper' element
         conversion.for('upcast').elementToElement({
             model: 'moveButtonsWrapper',
-            view: { name: 'th' },
+            view: { name: 'th', classes: 'move-buttons-wrapper' },
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'moveButtonsWrapper',
-            view: { name: 'th' },
+            view: (modelElement, { writer }) => {
+                return writer.createContainerElement('th', { class: 'move-buttons-wrapper' });
+            },
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'moveButtonsWrapper',
             view: (modelElement, { writer }) => {
-                const th = writer.createContainerElement('th');
-                return toWidget(th, writer);
+                const th = writer.createContainerElement('th', { class: 'move-buttons-wrapper' });
+                return toWidget(div, writer);
             },
         });
 
@@ -334,6 +361,7 @@ export default class TabsPluginEditing extends Plugin {
                 writer.createContainerElement('div', {
                     class: 'left-arrow arrowtabicon',
                     title: modelElement.getAttribute('title') || 'Move Tab',
+                    draggable: false,
                 }),
         });
         conversion.for('editingDowncast').elementToElement({
@@ -342,6 +370,7 @@ export default class TabsPluginEditing extends Plugin {
                 writer.createContainerElement('div', {
                     class: 'left-arrow arrowtabicon',
                     title: modelElement.getAttribute('title') || 'Move Tab',
+                    draggable: false,
                 }),
         });
 
@@ -356,6 +385,7 @@ export default class TabsPluginEditing extends Plugin {
                 writer.createContainerElement('div', {
                     class: 'right-arrow arrowtabicon',
                     title: modelElement.getAttribute('title') || 'Move Tab',
+                    draggable: false,
                 }),
         });
         conversion.for('editingDowncast').elementToElement({
@@ -364,6 +394,7 @@ export default class TabsPluginEditing extends Plugin {
                 writer.createContainerElement('div', {
                     class: 'right-arrow arrowtabicon',
                     title: modelElement.getAttribute('title') || 'Move Tab',
+                    draggable: false,
                 }),
         });
 
@@ -386,6 +417,7 @@ export default class TabsPluginEditing extends Plugin {
                 writer.createContainerElement('div', {
                     class: 'dropicon',
                     title: modelElement.getAttribute('title') || 'Delete Tab',
+                    draggable: false,
                 }),
         });
 
@@ -420,17 +452,19 @@ export default class TabsPluginEditing extends Plugin {
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'addTabListItem',
-            view: (modelElement, { writer }) => {
-                return writer.createContainerElement('li', {
+            view: (modelElement, { writer }) =>
+                writer.createContainerElement('li', {
                     class: 'yui3-tab addtab',
-                });
-            },
+                    draggable: false,
+                }),
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'addTabListItem',
             view: (modelElement, { writer }) => {
                 const li = writer.createContainerElement('li', {
                     class: 'yui3-tab addtab',
+                    isContentEditable: false,
+                    draggable: false,
                 });
                 return toWidget(li, writer);
             },
@@ -447,6 +481,7 @@ export default class TabsPluginEditing extends Plugin {
                 writer.createContainerElement('div', {
                     class: 'addtabicon',
                     title: modelElement.getAttribute('title') || 'Add Tab',
+                    draggable: false,
                 }),
         });
         conversion.for('editingDowncast').elementToElement({
@@ -455,6 +490,8 @@ export default class TabsPluginEditing extends Plugin {
                 writer.createContainerElement('div', {
                     class: 'addtabicon',
                     title: modelElement.getAttribute('title') || 'Add Tab',
+                    isContentEditable: false,
+                    draggable: false,
                 }),
         });
 
@@ -482,14 +519,13 @@ export default class TabsPluginEditing extends Plugin {
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabContent',
-            view: { name: 'div', classes: 'yui3-tabview-panel' },
+            view: (modelElement, { writer }) =>
+                writer.createContainerElement('div', { class: 'yui3-tabview-panel', draggable: false }),
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabContent',
             view: (modelElement, { writer }) => {
-                const div = writer.createContainerElement('div', {
-                    class: 'yui3-tabview-panel',
-                });
+                const div = writer.createContainerElement('div', { class: 'yui3-tabview-panel', draggable: false });
                 return toWidget(div, writer);
             },
         });
@@ -513,11 +549,12 @@ export default class TabsPluginEditing extends Plugin {
             model: 'tabNestedContent',
             view: (modelElement, { writer }) => {
                 const classes = modelElement.getAttribute('class');
-                return writer.createEditableElement('div', {
+                const div = writer.createEditableElement('div', {
                     class: classes ? `yui3-tab-panel tabcontent ${classes}` : 'yui3-tab-panel tabcontent',
                     id: modelElement.getAttribute('id'),
                     contenteditable: 'true',
                 });
+                return toWidgetEditable(div, writer);
             },
         });
 
