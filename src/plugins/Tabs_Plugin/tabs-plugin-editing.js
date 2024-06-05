@@ -30,13 +30,11 @@ export default class TabsPluginEditing extends Plugin {
         schema.register('containerDiv', {
             allowAttributes: ['class'],
             allowIn: 'tabsPlugin',
-            isLimit: true,
         });
         // Define schema for 'tabHeader' element
         schema.register('tabHeader', {
             allowAttributes: ['class'],
             allowIn: 'containerDiv',
-            isLimit: true,
         });
         // Define schema for 'tabList' element
         schema.register('tabList', {
@@ -127,23 +125,28 @@ export default class TabsPluginEditing extends Plugin {
         // Define schema for 'thead' element
         schema.register('thead', {
             allowIn: 'table',
+            isLimit: true,
         });
         // Define schema for 'tr' element
         schema.register('tr', {
             allowIn: ['thead', 'tbody'],
+            isLimit: true,
         });
         // Define schema for 'th' element
         schema.register('th', {
             allowIn: 'tr',
+            isLimit: true,
         });
         // Define schema for 'tbody' element
         schema.register('tbody', {
             allowIn: 'table',
+            isLimit: true,
         });
         // Define schema for 'td' element
         schema.register('td', {
             allowIn: 'tr',
             allowAttributes: ['colspan'],
+            isLimit: true,
         });
     }
 
@@ -634,32 +637,162 @@ export default class TabsPluginEditing extends Plugin {
             converterPriority: 'high',
         });
 
-        // Conversion for table elements
-        const tableElements = ['table', 'thead', 'tr', 'th', 'tbody', 'td'];
-        for (const element of tableElements) {
-            conversion.for('upcast').elementToElement({
-                model: element,
-                view: element,
-                converterPriority: 'high',
-            });
-            conversion.for('dataDowncast').elementToElement({
-                model: element,
-                view: (modelElement, { writer }) => {
-                    return writer.createContainerElement(element, { draggable: false });
-                },
-                converterPriority: 'high',
-            });
-            conversion.for('editingDowncast').elementToElement({
-                model: element,
-                view: (modelElement, { writer }) => {
-                    const el = writer.createContainerElement(element, {
-                        draggable: false,
-                        contenteditable: 'false',
-                    });
-                    return toWidget(el, writer);
-                },
-                converterPriority: 'high',
-            });
-        }
+        // Separate conversions for table elements
+
+        // Conversion for 'table' element
+        conversion.for('upcast').elementToElement({
+            model: 'table',
+            view: 'table',
+            converterPriority: 'high',
+        });
+        conversion.for('dataDowncast').elementToElement({
+            model: 'table',
+            view: (modelElement, { writer }) => {
+                const el = writer.createContainerElement('table', { draggable: false });
+                return el;
+            },
+            converterPriority: 'high',
+        });
+        conversion.for('editingDowncast').elementToElement({
+            model: 'table',
+            view: (modelElement, { writer }) => {
+                const el = writer.createContainerElement('table', {
+                    draggable: false,
+                    contenteditable: 'false',
+                });
+                return toWidget(el, writer);
+            },
+            converterPriority: 'high',
+        });
+
+        // Conversion for 'thead' element
+        conversion.for('upcast').elementToElement({
+            model: 'thead',
+            view: 'thead',
+            converterPriority: 'high',
+        });
+        conversion.for('dataDowncast').elementToElement({
+            model: 'thead',
+            view: (modelElement, { writer }) => {
+                const el = writer.createContainerElement('thead', { draggable: false });
+                return el;
+            },
+            converterPriority: 'high',
+        });
+        conversion.for('editingDowncast').elementToElement({
+            model: 'thead',
+            view: (modelElement, { writer }) => {
+                const el = writer.createContainerElement('thead', {
+                    draggable: false,
+                    contenteditable: 'false',
+                });
+                return toWidget(el, writer);
+            },
+            converterPriority: 'high',
+        });
+
+        // Conversion for 'tr' element
+        conversion.for('upcast').elementToElement({
+            model: 'tr',
+            view: 'tr',
+            converterPriority: 'high',
+        });
+        conversion.for('dataDowncast').elementToElement({
+            model: 'tr',
+            view: (modelElement, { writer }) => {
+                const el = writer.createContainerElement('tr', { draggable: false });
+                return el;
+            },
+            converterPriority: 'high',
+        });
+        conversion.for('editingDowncast').elementToElement({
+            model: 'tr',
+            view: (modelElement, { writer }) => {
+                const el = writer.createContainerElement('tr', {
+                    draggable: false,
+                    contenteditable: 'false',
+                });
+                return toWidget(el, writer);
+            },
+            converterPriority: 'high',
+        });
+
+        // Conversion for 'th' element
+        conversion.for('upcast').elementToElement({
+            model: 'th',
+            view: 'th',
+            converterPriority: 'high',
+        });
+        conversion.for('dataDowncast').elementToElement({
+            model: 'th',
+            view: (modelElement, { writer }) => {
+                const el = writer.createContainerElement('th', { draggable: false });
+                return el;
+            },
+            converterPriority: 'high',
+        });
+        conversion.for('editingDowncast').elementToElement({
+            model: 'th',
+            view: (modelElement, { writer }) => {
+                const el = writer.createContainerElement('th', {
+                    draggable: false,
+                    contenteditable: 'false',
+                });
+                return toWidget(el, writer);
+            },
+            converterPriority: 'high',
+        });
+
+        // Conversion for 'tbody' element
+        conversion.for('upcast').elementToElement({
+            model: 'tbody',
+            view: 'tbody',
+            converterPriority: 'high',
+        });
+        conversion.for('dataDowncast').elementToElement({
+            model: 'tbody',
+            view: (modelElement, { writer }) => {
+                const el = writer.createContainerElement('tbody', { draggable: false });
+                return el;
+            },
+            converterPriority: 'high',
+        });
+        conversion.for('editingDowncast').elementToElement({
+            model: 'tbody',
+            view: (modelElement, { writer }) => {
+                const el = writer.createContainerElement('tbody', {
+                    draggable: false,
+                    contenteditable: 'false',
+                });
+                return toWidget(el, writer);
+            },
+            converterPriority: 'high',
+        });
+
+        // Conversion for 'td' element
+        conversion.for('upcast').elementToElement({
+            model: 'td',
+            view: 'td',
+            converterPriority: 'high',
+        });
+        conversion.for('dataDowncast').elementToElement({
+            model: 'td',
+            view: (modelElement, { writer }) => {
+                const el = writer.createContainerElement('td', { draggable: false });
+                return el;
+            },
+            converterPriority: 'high',
+        });
+        conversion.for('editingDowncast').elementToElement({
+            model: 'td',
+            view: (modelElement, { writer }) => {
+                const el = writer.createContainerElement('td', {
+                    draggable: false,
+                    contenteditable: 'false',
+                });
+                return toWidget(el, writer);
+            },
+            converterPriority: 'high',
+        });
     }
 }
