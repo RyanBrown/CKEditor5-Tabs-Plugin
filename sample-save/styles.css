@@ -516,7 +516,8 @@ footer {
     }
 }
 
-.save-btn {
+.save-btn,
+.reset-btn {
     background-color: #0099ff;
     border-radius: 1.5rem;
     border: none;
@@ -527,26 +528,25 @@ footer {
     margin-top: 1rem;
     padding: 0.75rem 1.25rem;
 }
+
+.save-btn {
+    background-color: #0099ff;
+}
+
 .save-btn:hover {
     background-color: #0181d6;
 }
 
 .reset-btn {
     background-color: #929292;
-    border-radius: 1.5rem;
-    border: none;
-    color: #fff;
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: 700;
-    margin-left: 0.5rem; /* Add some space between the buttons */
-    margin-top: 1rem;
-    padding: 0.75rem 1.25rem;
+    margin-left: 0.5rem;
 }
+
 .reset-btn:hover {
     background-color: #7f7f7f;
 }
 
+/* Content view styles */
 .content-view {
     border: 1px solid #ccc;
     border-radius: 0.25rem;
