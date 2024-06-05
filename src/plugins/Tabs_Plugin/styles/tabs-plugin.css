@@ -1,7 +1,3 @@
-.data-downcast-view {
-  display: none !important;
-}
-
 .tabs-plugin {
   background-color: #fff;
 }
@@ -12,9 +8,6 @@
   list-style: none;
   margin: 0;
   padding: 0;
-}
-.tabs-plugin .tab-list.data-downcast {
-  background: #ff00ff;
 }
 .tabs-plugin .tab-list .tab-list-item {
   background-color: #eee;
@@ -31,9 +24,6 @@
   position: relative;
   transition: background-color 200ms ease-in-out, border-color 200ms ease-in-out;
   z-index: 5;
-}
-.tabs-plugin .tab-list .tab-list-item.data-downcast {
-  background: #ff00ff;
 }
 .tabs-plugin .tab-list .tab-list-item::after {
   background-color: #eee;
@@ -114,9 +104,6 @@
   border: 2px solid #ccc;
   position: relative;
 }
-.tabs-plugin .tab-content.data-downcast {
-  background: #ff00ff;
-}
 .tabs-plugin .tab-content .tab-nested-content {
   display: none;
   height: 100%;
@@ -192,4 +179,14 @@
 .ck.ck-widget__type-around__button.ck-widget__type-around__button_before,
 .ck.ck-widget__type-around__button.ck-widget__type-around__button_after {
   z-index: 1001;
+}
+
+.ck-editor__editable.ck-read-only .tab-edit-bar,
+.ck-editor__editable.ck-read-only .move-buttons-wrapper,
+.ck-editor__editable.ck-read-only .move-left-button,
+.ck-editor__editable.ck-read-only .move-right-button,
+.ck-editor__editable.ck-read-only .delete-tab-button,
+.ck-editor__editable.ck-read-only .add-tab-list-item,
+.ck-editor__editable.ck-read-only .add-tab-button {
+  display: none !important;
 }

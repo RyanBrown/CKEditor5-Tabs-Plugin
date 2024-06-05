@@ -334,7 +334,6 @@ export default class TabsPluginEditing extends Plugin {
                 const button = writer.createContainerElement('button', {
                     class: 'delete-tab-button',
                     title: modelElement.getAttribute('title') || 'Delete Tab',
-                    isContentEditable: false,
                     draggable: false,
                 });
                 const textSpan = writer.createContainerElement('span', { draggable: false });
@@ -365,7 +364,6 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const li = writer.createContainerElement('li', {
                     class: 'add-tab-list-item',
-                    isContentEditable: false,
                     draggable: false,
                 });
                 return li;
@@ -400,7 +398,6 @@ export default class TabsPluginEditing extends Plugin {
                 const button = writer.createContainerElement('button', {
                     class: 'add-tab-button',
                     title: modelElement.getAttribute('title') || 'Add Tab',
-                    isContentEditable: false,
                     draggable: false,
                 });
                 const textSpan = writer.createContainerElement('span', { draggable: false });

@@ -19,10 +19,6 @@ $tab-bg-active: #fff;
 
 $transition-speed: 200ms ease-in-out;
 
-.data-downcast-view {
-    display: none !important;
-}
-
 // Main tabs plugin container
 .tabs-plugin {
     background-color: $tab-bg-active;
@@ -35,10 +31,6 @@ $transition-speed: 200ms ease-in-out;
         list-style: none;
         margin: 0;
         padding: 0;
-
-        &.data-downcast {
-            background: #ff00ff;
-        }
 
         // Individual tab list item
         .tab-list-item {
@@ -56,10 +48,6 @@ $transition-speed: 200ms ease-in-out;
             position: relative;
             transition: background-color $transition-speed, border-color $transition-speed;
             z-index: 5;
-
-            &.data-downcast {
-                background: #ff00ff;
-            }
 
             &::after {
                 background-color: $tab-bg;
@@ -159,10 +147,6 @@ $transition-speed: 200ms ease-in-out;
         border: $tab-border-width solid $tab-border-color-active;
         position: relative;
 
-        &.data-downcast {
-            background: #ff00ff;
-        }
-
         .tab-nested-content {
             display: none;
             height: 100%;
@@ -248,4 +232,17 @@ $transition-speed: 200ms ease-in-out;
 .ck.ck-widget__type-around__button.ck-widget__type-around__button_before,
 .ck.ck-widget__type-around__button.ck-widget__type-around__button_after {
     z-index: 1001;
+}
+
+// Hide elements in read-only view
+.ck-editor__editable.ck-read-only {
+    .tab-edit-bar,
+    .move-buttons-wrapper,
+    .move-left-button,
+    .move-right-button,
+    .delete-tab-button,
+    .add-tab-list-item,
+    .add-tab-button {
+        display: none !important;
+    }
 }
