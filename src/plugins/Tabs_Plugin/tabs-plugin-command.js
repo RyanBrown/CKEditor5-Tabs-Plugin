@@ -8,7 +8,6 @@ export function generateTabId() {
 
 // Command to insert a new tab in the editor.
 export class TabsPluginCommand extends Command {
-    // Executes the command to insert a new tab.
     execute() {
         const editor = this.editor;
         const model = editor.model;
@@ -27,7 +26,6 @@ export class TabsPluginCommand extends Command {
         });
     }
 
-    // Refreshes the command to update its state based on the current selection.
     refresh() {
         const model = this.editor.model;
         const selection = model.document.selection;
@@ -38,7 +36,6 @@ export class TabsPluginCommand extends Command {
 
 // Command to move a tab left or right.
 export class MoveTabCommand extends Command {
-    // Executes the command to move a tab.
     execute({ tabId, direction }) {
         const model = this.editor.model;
         model.change((writer) => {
@@ -59,7 +56,6 @@ export class MoveTabCommand extends Command {
 
 // Command to delete a tab.
 export class DeleteTabCommand extends Command {
-    // Executes the command to delete a tab.
     execute(tabId) {
         const model = this.editor.model;
         model.change((writer) => {

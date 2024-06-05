@@ -24,78 +24,65 @@ export default class TabsPluginEditing extends Plugin {
         // Define schema for the tabs plugin and its child elements
         schema.register('tabsPlugin', {
             allowIn: '$root',
-            // allowWhere: '$block',
             isLimit: true,
         });
-        // Define schema for 'tabList' element
         schema.register('tabList', {
             allowAttributes: ['class'],
             allowIn: 'tabsPlugin',
             isLimit: true,
         });
-        // Define schema for 'tabListItem' element
         schema.register('tabListItem', {
             allowAttributes: ['class', 'data-target'],
             allowIn: 'tabList',
             isLimit: true,
         });
-        // Define schema for 'tabTitle' element
         schema.register('tabTitle', {
             allowAttributes: ['class'],
             allowContentOf: '$block',
             allowIn: 'tabListItem',
             isLimit: true,
         });
-        // Define schema for 'tabContent' element
         schema.register('tabContent', {
             allowAttributes: ['class'],
             allowIn: 'tabsPlugin',
             isLimit: true,
         });
-        // Define schema for 'tabNestedContent' element
         schema.register('tabNestedContent', {
             allowAttributes: ['id', 'class'],
             allowContentOf: '$root', // Allow all root-level content, including block elements
             allowIn: 'tabContent',
             isLimit: true,
         });
-        // Define schema for 'tabEditBar' element
         schema.register('tabEditBar', {
             allowAttributes: ['class'],
             allowIn: 'tabListItem',
             isLimit: true,
         });
-        // Define schema for 'moveButtonsWrapper' element
         schema.register('moveButtonsWrapper', {
             allowAttributes: ['class'],
             allowIn: 'tabEditBar',
             isLimit: true,
         });
-        // Define schema for 'moveLeftButton' element
         schema.register('moveLeftButton', {
             allowAttributes: ['class', 'title'],
             allowIn: 'moveButtonsWrapper',
             isLimit: true,
         });
-        // Define schema for 'moveRightButton' element
         schema.register('moveRightButton', {
             allowAttributes: ['class', 'title'],
             allowIn: 'moveButtonsWrapper',
             isLimit: true,
         });
-        // Define schema for 'deleteTabButton' element
         schema.register('deleteTabButton', {
             allowAttributes: ['class', 'title'],
             allowIn: 'tabEditBar',
             isLimit: true,
         });
-        // Define schema for 'addTabListItem' element
         schema.register('addTabListItem', {
             allowAttributes: ['class'],
             allowIn: 'tabList',
             isLimit: true,
         });
-        // Define schema for 'addTabButton' element
         schema.register('addTabButton', {
             allowAttributes: ['class', 'title'],
             allowIn: 'addTabListItem',

@@ -35,20 +35,24 @@ export default class TabsPluginUI extends Plugin {
 
     // Registers event handlers for the tabs plugin.
     _registerEventHandlers(editor) {
-        editor.editing.view.document.on('click', (evt, data) => {
-            const target = data.target;
-            if (target.hasClass('tab-list-item') || target.hasClass('tab-title')) {
-                this._handleTabClick(editor, target, evt);
-            } else if (target.hasClass('delete-tab-button')) {
-                this._handleDeleteTab(editor, target, evt);
-            } else if (target.hasClass('add-tab-button')) {
-                this._handleAddTab(editor, evt);
-            } else if (target.hasClass('move-left-button')) {
-                this._handleMoveTab(editor, target, evt, -1);
-            } else if (target.hasClass('move-right-button')) {
-                this._handleMoveTab(editor, target, evt, 1);
-            }
-        });
+        editor.editing.view.document.on(
+            'click',
+            (evt, data) => {
+                const target = data.target;
+                if (target.hasClass('tab-list-item') || target.hasClass('tab-title')) {
+                    this._handleTabClick(editor, target, evt);
+                } else if (target.hasClass('delete-tab-button')) {
+                    this._handleDeleteTab(editor, target, evt);
+                } else if (target.hasClass('add-tab-button')) {
+                    this._handleAddTab(editor, evt);
+                } else if (target.hasClass('move-left-button')) {
+                    this._handleMoveTab(editor, target, evt, -1);
+                } else if (target.hasClass('move-right-button')) {
+                    this._handleMoveTab(editor, target, evt, 1);
+                }
+            },
+            { priority: 'high' }
+        ); // Ensure high priority to avoid conflicts with other plugins
 
         editor.editing.view.document.on('click', (evt, data) => {
             const target = data.target;

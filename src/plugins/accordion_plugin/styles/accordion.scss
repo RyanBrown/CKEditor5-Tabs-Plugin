@@ -1,0 +1,75 @@
+// Define variables for reuse
+$font-color: #333;
+$accordion-button-bg: transparent;
+$placeholder-color: #aaa;
+$editable-border-color: #3779eb;
+$icon-size: 1.25rem; // Size for the ::before pseudo-elements
+$border-color: #000;
+
+.panelSection,
+.panelSection .ck-widget .ck-widget_selected {
+    border: 1px solid;
+    margin: 0;
+    padding: 0;
+    width: 100% !important;
+
+    &.close {
+        .tr-panel {
+            display: none;
+        }
+        .aui-buttonitem-content::before {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-chevron-up' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708'/%3E%3C/svg%3E");
+        }
+    }
+
+    table,
+    tr {
+        border: 1px solid $border-color;
+    }
+
+    .button-td {
+        width: 30px;
+    }
+
+    .tr-title {
+        font-weight: bold;
+    }
+
+    &.open {
+        .tr-panel {
+            border: 1px solid $border-color;
+            height: 100px !important;
+        }
+    }
+
+    .P_title {
+        align-items: center;
+        display: flex;
+        min-height: 40px;
+        padding: 0 0.5rem;
+    }
+
+    // Styles for accordion button, including hover effect
+    .aui-buttonitem-content {
+        background-color: $accordion-button-bg;
+        border: 1px solid;
+        color: $font-color;
+        cursor: pointer;
+        display: flex;
+        font-size: 1rem;
+        font-weight: 700;
+        outline: none;
+        padding: 0.5rem;
+        user-select: none;
+
+        // Custom arrow icon before the accordion button
+        &::before {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-chevron-down' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-size: $icon-size;
+            content: '';
+            height: $icon-size;
+            width: $icon-size;
+        }
+    }
+}

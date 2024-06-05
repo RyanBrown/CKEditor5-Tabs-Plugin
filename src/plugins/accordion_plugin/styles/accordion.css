@@ -1,0 +1,63 @@
+.panelSection,
+.panelSection .ck-widget .ck-widget_selected {
+  border: 1px solid;
+  margin: 0;
+  padding: 0;
+  width: 100% !important;
+}
+.panelSection.close .tr-panel,
+.panelSection .ck-widget .ck-widget_selected.close .tr-panel {
+  display: none;
+}
+.panelSection.close .aui-buttonitem-content::before,
+.panelSection .ck-widget .ck-widget_selected.close .aui-buttonitem-content::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-chevron-up' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708'/%3E%3C/svg%3E");
+}
+.panelSection table,
+.panelSection tr,
+.panelSection .ck-widget .ck-widget_selected table,
+.panelSection .ck-widget .ck-widget_selected tr {
+  border: 1px solid #000;
+}
+.panelSection .button-td,
+.panelSection .ck-widget .ck-widget_selected .button-td {
+  width: 30px;
+}
+.panelSection .tr-title,
+.panelSection .ck-widget .ck-widget_selected .tr-title {
+  font-weight: bold;
+}
+.panelSection.open .tr-panel,
+.panelSection .ck-widget .ck-widget_selected.open .tr-panel {
+  border: 1px solid #000;
+  height: 100px !important;
+}
+.panelSection .P_title,
+.panelSection .ck-widget .ck-widget_selected .P_title {
+  align-items: center;
+  display: flex;
+  min-height: 40px;
+  padding: 0 0.5rem;
+}
+.panelSection .aui-buttonitem-content,
+.panelSection .ck-widget .ck-widget_selected .aui-buttonitem-content {
+  background-color: transparent;
+  border: 1px solid;
+  color: #333;
+  cursor: pointer;
+  display: flex;
+  font-size: 1rem;
+  font-weight: 700;
+  outline: none;
+  padding: 0.5rem;
+  user-select: none;
+}
+.panelSection .aui-buttonitem-content::before,
+.panelSection .ck-widget .ck-widget_selected .aui-buttonitem-content::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-chevron-down' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: 1.25rem;
+  content: "";
+  height: 1.25rem;
+  width: 1.25rem;
+}
