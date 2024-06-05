@@ -209,6 +209,7 @@ export default class AccordionEditing extends Plugin {
     }
 
     // Registers event listeners to handle interactions in the editing view.
+    // Registers event listeners to handle interactions in the editing view.
     _registerEventListenersForEditingView() {
         const editor = this.editor;
 
@@ -216,13 +217,12 @@ export default class AccordionEditing extends Plugin {
         editor.editing.view.document.on(
             'click',
             (evt, data) => {
-                evt.stop();
-                data.preventDefault();
-
                 const viewElement = data.target;
                 // Check if the clicked element is an accordion button
+                if (viewElement && viewElement.hasClass('aui-buttonitem-content')) {
+                    evt.stop();
+                    data.preventDefault();
 
-                if (viewElement.name === 'button') {
                     // Get the corresponding view element for the accordion
                     const accordionViewElement = viewElement.findAncestor('table');
 
