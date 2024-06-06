@@ -5,7 +5,7 @@
 .tabcontainer .yui3-tabview-content {
   border: 5px dashed navy;
 }
-.tabcontainer .tab-list {
+.tabcontainer .yui3-tabview-list {
   align-items: stretch;
   display: flex;
   flex-wrap: wrap;
@@ -13,7 +13,7 @@
   margin: 0;
   padding: 0;
 }
-.tabcontainer .tab-list .tab-list-item {
+.tabcontainer .yui3-tabview-list .tab-list-item {
   background-color: #eee;
   border-radius: 0.5rem 0.5rem 0 0;
   border: 2px solid #ddd;
@@ -29,7 +29,7 @@
   transition: background-color 200ms ease-in-out, border-color 200ms ease-in-out;
   z-index: 5;
 }
-.tabcontainer .tab-list .tab-list-item::after {
+.tabcontainer .yui3-tabview-list .tab-list-item::after {
   background-color: #eee;
   bottom: -2px;
   content: "";
@@ -41,33 +41,33 @@
   width: 100%;
   z-index: 3;
 }
-.tabcontainer .tab-list .tab-list-item:hover {
+.tabcontainer .yui3-tabview-list .tab-list-item:hover {
   background-color: #f7f7f7;
 }
-.tabcontainer .tab-list .tab-list-item:hover::after {
+.tabcontainer .yui3-tabview-list .tab-list-item:hover::after {
   background-color: #f7f7f7;
 }
-.tabcontainer .tab-list .tab-list-item.active, .tabcontainer .tab-list .tab-list-item.active:hover {
+.tabcontainer .yui3-tabview-list .tab-list-item.active, .tabcontainer .yui3-tabview-list .tab-list-item.active:hover {
   background-color: #fff;
   border: 2px solid #ccc;
   position: relative;
 }
-.tabcontainer .tab-list .tab-list-item.active::after, .tabcontainer .tab-list .tab-list-item.active:hover::after {
+.tabcontainer .yui3-tabview-list .tab-list-item.active::after, .tabcontainer .yui3-tabview-list .tab-list-item.active:hover::after {
   background-color: #fff;
   bottom: -4px;
   height: 4px;
 }
-.tabcontainer .tab-list .tab-list-item .tab-edit-bar {
+.tabcontainer .yui3-tabview-list .tab-list-item .tab-edit-bar {
   align-items: center;
   display: flex;
   flex: 1 1 0;
 }
-.tabcontainer .tab-list .tab-list-item .tab-edit-bar .move-buttons-wrapper {
+.tabcontainer .yui3-tabview-list .tab-list-item .tab-edit-bar .move-buttons-wrapper {
   display: flex;
   flex: 1 1 0;
   justify-content: space-between;
 }
-.tabcontainer .tab-list .tab-list-item .tab-title {
+.tabcontainer .yui3-tabview-list .tab-list-item .tab-title {
   align-items: center;
   display: flex;
   font-weight: 700;
@@ -78,29 +78,29 @@
   text-align: center;
   word-break: break-word;
 }
-.tabcontainer .tab-list .tab-list-item:first-child .tab-edit-bar > .move-buttons-wrapper {
+.tabcontainer .yui3-tabview-list .tab-list-item:first-child .tab-edit-bar > .move-buttons-wrapper {
   justify-content: flex-end;
 }
-.tabcontainer .tab-list .tab-list-item:first-child .tab-edit-bar > .move-buttons-wrapper .move-left-button {
+.tabcontainer .yui3-tabview-list .tab-list-item:first-child .tab-edit-bar > .move-buttons-wrapper .move-left-button {
   display: none;
 }
-.tabcontainer .tab-list .tab-list-item:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper {
+.tabcontainer .yui3-tabview-list .tab-list-item:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper {
   justify-content: flex-start;
 }
-.tabcontainer .tab-list .tab-list-item:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper .move-right-button {
+.tabcontainer .yui3-tabview-list .tab-list-item:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper .move-right-button {
   display: none;
 }
-.tabcontainer .tab-list .tab-list-item:nth-last-child(2):first-child .tab-edit-bar {
+.tabcontainer .yui3-tabview-list .tab-list-item:nth-last-child(2):first-child .tab-edit-bar {
   display: none;
 }
-.tabcontainer .tab-list .tab-list-item:nth-last-child(2):first-child .tab-title {
+.tabcontainer .yui3-tabview-list .tab-list-item:nth-last-child(2):first-child .tab-title {
   margin: 0.75rem 1.25rem;
 }
-.tabcontainer .tab-list .add-tab-list-item {
+.tabcontainer .yui3-tabview-list .add-tab-list-item {
   align-self: flex-end;
   padding: 0;
 }
-.tabcontainer .tab-list .add-tab-list-item .add-tab-button {
+.tabcontainer .yui3-tabview-list .add-tab-list-item .add-tab-button {
   padding: 1.5rem 1.75rem;
 }
 .tabcontainer .tab-content {

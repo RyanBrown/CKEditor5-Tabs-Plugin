@@ -70,7 +70,7 @@ export default class TabsPluginUI extends Plugin {
     _updateEmptyTabTitles(editor) {
         const viewRoot = editor.editing.view.document.getRoot();
         const tabList = Array.from(viewRoot.getChildren()).find(
-            (child) => child.is('element', 'ul') && child.hasClass('tab-list')
+            (child) => child.is('element', 'ul') && child.hasClass('yui3-tabview-list')
         );
 
         if (tabList) {
@@ -119,7 +119,7 @@ export default class TabsPluginUI extends Plugin {
         }
 
         const tabListElement = Array.from(tabsRootElement.getChildren()).find(
-            (child) => child.is('element', 'ul') && child.hasClass('tab-list')
+            (child) => child.is('element', 'ul') && child.hasClass('yui3-tabview-list')
         );
         const tabContentElement = Array.from(tabsRootElement.getChildren()).find(
             (child) => child.is('element', 'div') && child.hasClass('tab-content')

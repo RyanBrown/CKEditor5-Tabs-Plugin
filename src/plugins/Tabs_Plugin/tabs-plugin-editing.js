@@ -117,19 +117,19 @@ export default class TabsPluginEditing extends Plugin {
         // Conversion for 'tabList' element
         conversion.for('upcast').elementToElement({
             model: 'tabList',
-            view: { name: 'ul', classes: 'tab-list' },
+            view: { name: 'ul', classes: 'yui3-tabview-list' },
             converterPriority: 'high',
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabList',
             view: (modelElement, { writer }) =>
-                writer.createContainerElement('ul', { class: 'tab-list data-downcast', draggable: false }),
+                writer.createContainerElement('ul', { class: 'yui3-tabview-list', draggable: false }),
             converterPriority: 'high',
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabList',
             view: (modelElement, { writer }) => {
-                const ul = writer.createContainerElement('ul', { class: 'tab-list', draggable: false });
+                const ul = writer.createContainerElement('ul', { class: 'yui3-tabview-list', draggable: false });
                 return ul;
             },
             converterPriority: 'high',
@@ -146,7 +146,7 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const classes = modelElement.getAttribute('class');
                 return writer.createContainerElement('li', {
-                    class: classes ? `tab-list-item data-downcast ${classes}` : 'tab-list-item data-downcast',
+                    class: classes ? `tab-list-item ${classes}` : 'tab-list-item',
                     'data-target': modelElement.getAttribute('data-target'),
                 });
             },
