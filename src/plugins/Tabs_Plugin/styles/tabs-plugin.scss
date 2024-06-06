@@ -111,19 +111,19 @@ $transition-speed: 200ms ease-in-out;
                 text-align: center;
                 word-break: break-word;
             }
-            // Align the 'move-right-button' left and hide the 'move-left-button' for the first tab
+            // Align the 'right-arrow' left and hide the 'left-arrow' for the first tab
             &:first-child .tab-edit-bar > .move-buttons-wrapper {
                 justify-content: flex-end;
 
-                .move-left-button {
+                .left-arrow {
                     display: none;
                 }
             }
-            // Align the 'move-left-button' left and hide the 'move-right-button' for the last tab
+            // Align the 'left-arrow' left and hide the 'right-arrow' for the last tab
             &:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper {
                 justify-content: flex-start;
 
-                .move-right-button {
+                .right-arrow {
                     display: none;
                 }
             }
@@ -142,7 +142,7 @@ $transition-speed: 200ms ease-in-out;
             align-self: flex-end;
             padding: 0;
 
-            .add-tab-button {
+            .addicon {
                 padding: $tab-x-padding $tab-y-padding;
             }
         }
@@ -170,10 +170,10 @@ $transition-speed: 200ms ease-in-out;
 }
 
 // Individual buttons (add, delete, move-left, move-right)
-.add-tab-button,
-.delete-tab-button,
-.move-left-button,
-.move-right-button {
+.addicon,
+.dropicon,
+.left-arrow,
+.right-arrow {
     background-color: transparent;
     border: 0;
     cursor: pointer;
@@ -197,7 +197,7 @@ $transition-speed: 200ms ease-in-out;
 }
 
 // Move left button
-.move-left-button {
+.left-arrow {
     &::before {
         background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='#333333'/%3E%3C/svg%3E");
     }
@@ -207,7 +207,7 @@ $transition-speed: 200ms ease-in-out;
 }
 
 // Move right button
-.move-right-button {
+.right-arrow {
     &::before {
         background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='#333333'/%3E%3C/svg%3E");
     }
@@ -217,7 +217,7 @@ $transition-speed: 200ms ease-in-out;
 }
 
 // Delete tab button
-.delete-tab-button {
+.dropicon {
     &::before {
         background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='#333333'/%3E%3C/svg%3E");
     }
@@ -227,7 +227,7 @@ $transition-speed: 200ms ease-in-out;
 }
 
 // Add tab button
-.add-tab-button {
+.addicon {
     &::before {
         background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#333333'/%3E%3C/svg%3E");
     }
@@ -246,11 +246,11 @@ $transition-speed: 200ms ease-in-out;
 .ck-editor__editable.ck-read-only {
     .tab-edit-bar,
     .move-buttons-wrapper,
-    .move-left-button,
-    .move-right-button,
-    .delete-tab-button,
+    .left-arrow,
+    .right-arrow,
+    .dropicon,
     .add-tab-list-item,
-    .add-tab-button {
+    .addicon {
         display: none !important;
     }
 }

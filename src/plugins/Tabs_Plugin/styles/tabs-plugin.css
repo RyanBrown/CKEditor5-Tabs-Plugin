@@ -105,9 +105,9 @@
 .tabcontainer .yui3-tabview-list .yui3-tab.tablinks:first-child .tab-edit-bar > .move-buttons-wrapper {
   justify-content: flex-end;
 }
-.tabcontainer .yui3-tabview-list .yui3-tab:first-child .tab-edit-bar > .move-buttons-wrapper .move-left-button,
-.tabcontainer .yui3-tabview-list .tablinks:first-child .tab-edit-bar > .move-buttons-wrapper .move-left-button,
-.tabcontainer .yui3-tabview-list .yui3-tab.tablinks:first-child .tab-edit-bar > .move-buttons-wrapper .move-left-button {
+.tabcontainer .yui3-tabview-list .yui3-tab:first-child .tab-edit-bar > .move-buttons-wrapper .left-arrow,
+.tabcontainer .yui3-tabview-list .tablinks:first-child .tab-edit-bar > .move-buttons-wrapper .left-arrow,
+.tabcontainer .yui3-tabview-list .yui3-tab.tablinks:first-child .tab-edit-bar > .move-buttons-wrapper .left-arrow {
   display: none;
 }
 .tabcontainer .yui3-tabview-list .yui3-tab:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper,
@@ -115,9 +115,9 @@
 .tabcontainer .yui3-tabview-list .yui3-tab.tablinks:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper {
   justify-content: flex-start;
 }
-.tabcontainer .yui3-tabview-list .yui3-tab:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper .move-right-button,
-.tabcontainer .yui3-tabview-list .tablinks:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper .move-right-button,
-.tabcontainer .yui3-tabview-list .yui3-tab.tablinks:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper .move-right-button {
+.tabcontainer .yui3-tabview-list .yui3-tab:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper .right-arrow,
+.tabcontainer .yui3-tabview-list .tablinks:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper .right-arrow,
+.tabcontainer .yui3-tabview-list .yui3-tab.tablinks:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper .right-arrow {
   display: none;
 }
 .tabcontainer .yui3-tabview-list .yui3-tab:nth-last-child(2):first-child .tab-edit-bar,
@@ -134,7 +134,7 @@
   align-self: flex-end;
   padding: 0;
 }
-.tabcontainer .yui3-tabview-list .add-tab-list-item .add-tab-button {
+.tabcontainer .yui3-tabview-list .add-tab-list-item .addicon {
   padding: 1.5rem 1.75rem;
 }
 .tabcontainer .yui3-tabview-panel {
@@ -155,23 +155,23 @@
   padding: 1rem;
 }
 
-.add-tab-button,
-.delete-tab-button,
-.move-left-button,
-.move-right-button {
+.addicon,
+.dropicon,
+.left-arrow,
+.right-arrow {
   background-color: transparent;
   border: 0;
   cursor: pointer;
   padding: 0.5rem;
   transition: background-image 200ms ease-in-out;
 }
-.add-tab-button::before, .add-tab-button:hover::before,
-.delete-tab-button::before,
-.delete-tab-button:hover::before,
-.move-left-button::before,
-.move-left-button:hover::before,
-.move-right-button::before,
-.move-right-button:hover::before {
+.addicon::before, .addicon:hover::before,
+.dropicon::before,
+.dropicon:hover::before,
+.left-arrow::before,
+.left-arrow:hover::before,
+.right-arrow::before,
+.right-arrow:hover::before {
   background-repeat: no-repeat;
   background-size: cover;
   content: "";
@@ -180,39 +180,39 @@
   transition: background-image 200ms ease-in-out;
   width: 1rem;
 }
-.add-tab-button span,
-.delete-tab-button span,
-.move-left-button span,
-.move-right-button span {
+.addicon span,
+.dropicon span,
+.left-arrow span,
+.right-arrow span {
   align-items: center;
   display: none;
 }
 
-.move-left-button::before {
+.left-arrow::before {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='#333333'/%3E%3C/svg%3E");
 }
-.move-left-button:hover::before {
+.left-arrow:hover::before {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='#266de2'/%3E%3C/svg%3E");
 }
 
-.move-right-button::before {
+.right-arrow::before {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='#333333'/%3E%3C/svg%3E");
 }
-.move-right-button:hover::before {
+.right-arrow:hover::before {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='#266de2'/%3E%3C/svg%3E");
 }
 
-.delete-tab-button::before {
+.dropicon::before {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='#333333'/%3E%3C/svg%3E");
 }
-.delete-tab-button:hover::before {
+.dropicon:hover::before {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='#ff0000'/%3E%3C/svg%3E");
 }
 
-.add-tab-button::before {
+.addicon::before {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#333333'/%3E%3C/svg%3E");
 }
-.add-tab-button:hover::before {
+.addicon:hover::before {
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#266de2'/%3E%3C/svg%3E");
 }
 
@@ -223,10 +223,10 @@
 
 .ck-editor__editable.ck-read-only .tab-edit-bar,
 .ck-editor__editable.ck-read-only .move-buttons-wrapper,
-.ck-editor__editable.ck-read-only .move-left-button,
-.ck-editor__editable.ck-read-only .move-right-button,
-.ck-editor__editable.ck-read-only .delete-tab-button,
+.ck-editor__editable.ck-read-only .left-arrow,
+.ck-editor__editable.ck-read-only .right-arrow,
+.ck-editor__editable.ck-read-only .dropicon,
 .ck-editor__editable.ck-read-only .add-tab-list-item,
-.ck-editor__editable.ck-read-only .add-tab-button {
+.ck-editor__editable.ck-read-only .addicon {
   display: none !important;
 }
