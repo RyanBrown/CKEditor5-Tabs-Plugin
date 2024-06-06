@@ -2,9 +2,6 @@
   background-color: #fff;
   border: 5px solid orange;
 }
-.tabcontainer .yui3-tabview-content {
-  border: 5px dashed navy;
-}
 .tabcontainer .yui3-tabview-list {
   align-items: stretch;
   display: flex;
@@ -13,9 +10,7 @@
   margin: 0;
   padding: 0;
 }
-.tabcontainer .yui3-tabview-list .yui3-tab,
-.tabcontainer .yui3-tabview-list .tablinks,
-.tabcontainer .yui3-tabview-list .yui3-tab.tablinks {
+.tabcontainer .yui3-tabview-list .tablinks {
   background-color: #eee;
   border-radius: 0.5rem 0.5rem 0 0;
   border: 2px solid #ddd;
@@ -31,9 +26,7 @@
   transition: background-color 200ms ease-in-out, border-color 200ms ease-in-out;
   z-index: 5;
 }
-.tabcontainer .yui3-tabview-list .yui3-tab::after,
-.tabcontainer .yui3-tabview-list .tablinks::after,
-.tabcontainer .yui3-tabview-list .yui3-tab.tablinks::after {
+.tabcontainer .yui3-tabview-list .tablinks::after {
   background-color: #eee;
   bottom: -2px;
   content: "";
@@ -45,51 +38,33 @@
   width: 100%;
   z-index: 3;
 }
-.tabcontainer .yui3-tabview-list .yui3-tab:hover,
-.tabcontainer .yui3-tabview-list .tablinks:hover,
-.tabcontainer .yui3-tabview-list .yui3-tab.tablinks:hover {
+.tabcontainer .yui3-tabview-list .tablinks:hover {
   background-color: #f7f7f7;
 }
-.tabcontainer .yui3-tabview-list .yui3-tab:hover::after,
-.tabcontainer .yui3-tabview-list .tablinks:hover::after,
-.tabcontainer .yui3-tabview-list .yui3-tab.tablinks:hover::after {
+.tabcontainer .yui3-tabview-list .tablinks:hover::after {
   background-color: #f7f7f7;
 }
-.tabcontainer .yui3-tabview-list .yui3-tab.active, .tabcontainer .yui3-tabview-list .yui3-tab.active:hover,
-.tabcontainer .yui3-tabview-list .tablinks.active,
-.tabcontainer .yui3-tabview-list .tablinks.active:hover,
-.tabcontainer .yui3-tabview-list .yui3-tab.tablinks.active,
-.tabcontainer .yui3-tabview-list .yui3-tab.tablinks.active:hover {
+.tabcontainer .yui3-tabview-list .tablinks.active, .tabcontainer .yui3-tabview-list .tablinks.active:hover {
   background-color: #fff;
   border: 2px solid #ccc;
   position: relative;
 }
-.tabcontainer .yui3-tabview-list .yui3-tab.active::after, .tabcontainer .yui3-tabview-list .yui3-tab.active:hover::after,
-.tabcontainer .yui3-tabview-list .tablinks.active::after,
-.tabcontainer .yui3-tabview-list .tablinks.active:hover::after,
-.tabcontainer .yui3-tabview-list .yui3-tab.tablinks.active::after,
-.tabcontainer .yui3-tabview-list .yui3-tab.tablinks.active:hover::after {
+.tabcontainer .yui3-tabview-list .tablinks.active::after, .tabcontainer .yui3-tabview-list .tablinks.active:hover::after {
   background-color: #fff;
   bottom: -4px;
   height: 4px;
 }
-.tabcontainer .yui3-tabview-list .yui3-tab .tab-edit-bar,
-.tabcontainer .yui3-tabview-list .tablinks .tab-edit-bar,
-.tabcontainer .yui3-tabview-list .yui3-tab.tablinks .tab-edit-bar {
+.tabcontainer .yui3-tabview-list .tablinks .tab-edit-bar {
   align-items: center;
   display: flex;
   flex: 1 1 0;
 }
-.tabcontainer .yui3-tabview-list .yui3-tab .tab-edit-bar .move-buttons-wrapper,
-.tabcontainer .yui3-tabview-list .tablinks .tab-edit-bar .move-buttons-wrapper,
-.tabcontainer .yui3-tabview-list .yui3-tab.tablinks .tab-edit-bar .move-buttons-wrapper {
+.tabcontainer .yui3-tabview-list .tablinks .tab-edit-bar .move-buttons-wrapper {
   display: flex;
   flex: 1 1 0;
   justify-content: space-between;
 }
-.tabcontainer .yui3-tabview-list .yui3-tab .tabTitle,
-.tabcontainer .yui3-tabview-list .tablinks .tabTitle,
-.tabcontainer .yui3-tabview-list .yui3-tab.tablinks .tabTitle {
+.tabcontainer .yui3-tabview-list .tablinks .tabTitle {
   align-items: center;
   display: flex;
   font-weight: 700;
@@ -100,41 +75,29 @@
   text-align: center;
   word-break: break-word;
 }
-.tabcontainer .yui3-tabview-list .yui3-tab:first-child .tab-edit-bar > .move-buttons-wrapper,
-.tabcontainer .yui3-tabview-list .tablinks:first-child .tab-edit-bar > .move-buttons-wrapper,
-.tabcontainer .yui3-tabview-list .yui3-tab.tablinks:first-child .tab-edit-bar > .move-buttons-wrapper {
+.tabcontainer .yui3-tabview-list .tablinks:first-child .tab-edit-bar > .move-buttons-wrapper {
   justify-content: flex-end;
 }
-.tabcontainer .yui3-tabview-list .yui3-tab:first-child .tab-edit-bar > .move-buttons-wrapper .left-arrow,
-.tabcontainer .yui3-tabview-list .tablinks:first-child .tab-edit-bar > .move-buttons-wrapper .left-arrow,
-.tabcontainer .yui3-tabview-list .yui3-tab.tablinks:first-child .tab-edit-bar > .move-buttons-wrapper .left-arrow {
+.tabcontainer .yui3-tabview-list .tablinks:first-child .tab-edit-bar > .move-buttons-wrapper .left-arrow {
   display: none;
 }
-.tabcontainer .yui3-tabview-list .yui3-tab:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper,
-.tabcontainer .yui3-tabview-list .tablinks:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper,
-.tabcontainer .yui3-tabview-list .yui3-tab.tablinks:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper {
+.tabcontainer .yui3-tabview-list .tablinks:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper {
   justify-content: flex-start;
 }
-.tabcontainer .yui3-tabview-list .yui3-tab:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper .right-arrow,
-.tabcontainer .yui3-tabview-list .tablinks:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper .right-arrow,
-.tabcontainer .yui3-tabview-list .yui3-tab.tablinks:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper .right-arrow {
+.tabcontainer .yui3-tabview-list .tablinks:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper .right-arrow {
   display: none;
 }
-.tabcontainer .yui3-tabview-list .yui3-tab:nth-last-child(2):first-child .tab-edit-bar,
-.tabcontainer .yui3-tabview-list .tablinks:nth-last-child(2):first-child .tab-edit-bar,
-.tabcontainer .yui3-tabview-list .yui3-tab.tablinks:nth-last-child(2):first-child .tab-edit-bar {
+.tabcontainer .yui3-tabview-list .tablinks:nth-last-child(2):first-child .tab-edit-bar {
   display: none;
 }
-.tabcontainer .yui3-tabview-list .yui3-tab:nth-last-child(2):first-child .tabTitle,
-.tabcontainer .yui3-tabview-list .tablinks:nth-last-child(2):first-child .tabTitle,
-.tabcontainer .yui3-tabview-list .yui3-tab.tablinks:nth-last-child(2):first-child .tabTitle {
+.tabcontainer .yui3-tabview-list .tablinks:nth-last-child(2):first-child .tabTitle {
   margin: 0.75rem 1.25rem;
 }
-.tabcontainer .yui3-tabview-list .add-tab-list-item {
+.tabcontainer .yui3-tabview-list .addtab {
   align-self: flex-end;
   padding: 0;
 }
-.tabcontainer .yui3-tabview-list .add-tab-list-item .addicon {
+.tabcontainer .yui3-tabview-list .addtab .addicon {
   padding: 1.5rem 1.75rem;
 }
 .tabcontainer .yui3-tabview-panel {
@@ -142,12 +105,14 @@
   border: 2px solid #ccc;
   position: relative;
 }
+.tabcontainer .yui3-tabview-panel .yui3-tab-panel,
 .tabcontainer .yui3-tabview-panel .yui3-tab-panel.tabcontent {
   display: none;
   height: 100%;
   min-height: 5.75rem;
   width: 100%;
 }
+.tabcontainer .yui3-tabview-panel .yui3-tab-panel.active,
 .tabcontainer .yui3-tabview-panel .yui3-tab-panel.tabcontent.active {
   display: block;
   padding: 1rem;
@@ -224,7 +189,7 @@
 .ck-editor__editable.ck-read-only .left-arrow,
 .ck-editor__editable.ck-read-only .right-arrow,
 .ck-editor__editable.ck-read-only .dropicon,
-.ck-editor__editable.ck-read-only .add-tab-list-item,
+.ck-editor__editable.ck-read-only .addtab,
 .ck-editor__editable.ck-read-only .addicon {
   display: none !important;
 }

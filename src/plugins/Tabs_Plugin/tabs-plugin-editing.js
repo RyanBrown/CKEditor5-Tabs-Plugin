@@ -138,7 +138,7 @@ export default class TabsPluginEditing extends Plugin {
         // Conversion for 'tabListItem' element
         conversion.for('upcast').elementToElement({
             model: 'tabListItem',
-            view: { name: 'li', classes: 'yui3-tab' },
+            view: { name: 'li', classes: 'tablinks' },
             converterPriority: 'high',
         });
         conversion.for('dataDowncast').elementToElement({
@@ -146,7 +146,7 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const classes = modelElement.getAttribute('class');
                 return writer.createContainerElement('li', {
-                    class: classes ? `yui3-tab ${classes}` : 'yui3-tab',
+                    class: classes ? `tablinks ${classes}` : 'tablinks',
                     'data-target': modelElement.getAttribute('data-target'),
                 });
             },
@@ -157,7 +157,7 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const classes = modelElement.getAttribute('class');
                 const li = writer.createContainerElement('li', {
-                    class: classes ? `yui3-tab ${classes}` : 'yui3-tab',
+                    class: classes ? `tablinks ${classes}` : 'tablinks',
                     'data-target': modelElement.getAttribute('data-target'),
                     draggable: false,
                 });
@@ -346,14 +346,14 @@ export default class TabsPluginEditing extends Plugin {
         // Conversion for 'addTabListItem' element
         conversion.for('upcast').elementToElement({
             model: 'addTabListItem',
-            view: { name: 'li', classes: 'add-tab-list-item' },
+            view: { name: 'li', classes: 'addtab' },
             converterPriority: 'high',
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'addTabListItem',
             view: (modelElement, { writer }) =>
                 writer.createContainerElement('li', {
-                    class: 'add-tab-list-item',
+                    classes: 'addtab',
                     draggable: false,
                 }),
             converterPriority: 'high',
@@ -362,7 +362,7 @@ export default class TabsPluginEditing extends Plugin {
             model: 'addTabListItem',
             view: (modelElement, { writer }) => {
                 const li = writer.createContainerElement('li', {
-                    class: 'add-tab-list-item',
+                    classes: 'addtab',
                     draggable: false,
                 });
                 return li;
@@ -373,36 +373,36 @@ export default class TabsPluginEditing extends Plugin {
         // Conversion for 'addTabButton' element
         conversion.for('upcast').elementToElement({
             model: 'addTabButton',
-            view: { name: 'button', classes: 'addicon' },
+            view: { name: 'div', classes: 'addicon' },
             converterPriority: 'high',
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'addTabButton',
             view: (modelElement, { writer }) => {
-                const button = writer.createContainerElement('button', {
+                const div = writer.createContainerElement('div', {
                     class: 'addicon',
                     title: modelElement.getAttribute('title') || 'Add Tab',
                     draggable: false,
                 });
                 const textSpan = writer.createContainerElement('span', { draggable: false });
                 writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Add Tab'));
-                writer.insert(writer.createPositionAt(button, 0), textSpan);
-                return button;
+                writer.insert(writer.createPositionAt(div, 0), textSpan);
+                return div;
             },
             converterPriority: 'high',
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'addTabButton',
             view: (modelElement, { writer }) => {
-                const button = writer.createContainerElement('button', {
+                const div = writer.createContainerElement('div', {
                     class: 'addicon',
                     title: modelElement.getAttribute('title') || 'Add Tab',
                     draggable: false,
                 });
                 const textSpan = writer.createContainerElement('span', { draggable: false });
                 writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Add Tab'));
-                writer.insert(writer.createPositionAt(button, 0), textSpan);
-                return toWidget(button, writer);
+                writer.insert(writer.createPositionAt(div, 0), textSpan);
+                return toWidget(div, writer);
             },
             converterPriority: 'high',
         });

@@ -24,10 +24,6 @@ $transition-speed: 200ms ease-in-out;
     background-color: $tab-bg-active;
     border: 5px solid orange;
 
-    .yui3-tabview-content {
-        border: 5px dashed navy;
-    }
-
     // Tab list container
     .yui3-tabview-list {
         align-items: stretch;
@@ -38,9 +34,7 @@ $transition-speed: 200ms ease-in-out;
         padding: 0;
 
         // Individual tab list item
-        .yui3-tab,
-        .tablinks,
-        .yui3-tab.tablinks {
+        .tablinks {
             background-color: $tab-bg;
             border-radius: $tab-border-radius $tab-border-radius 0 0;
             border: $tab-border-width solid $tab-border-color;
@@ -138,7 +132,7 @@ $transition-speed: 200ms ease-in-out;
             }
         }
         // Container for the add tab button
-        .add-tab-list-item {
+        .addtab {
             align-self: flex-end;
             padding: 0;
 
@@ -154,6 +148,7 @@ $transition-speed: 200ms ease-in-out;
         border: $tab-border-width solid $tab-border-color-active;
         position: relative;
 
+        .yui3-tab-panel,
         .yui3-tab-panel.tabcontent {
             display: none;
             height: 100%;
@@ -248,7 +243,7 @@ $transition-speed: 200ms ease-in-out;
     .left-arrow,
     .right-arrow,
     .dropicon,
-    .add-tab-list-item,
+    .addtab,
     .addicon {
         display: none !important;
     }
