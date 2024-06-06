@@ -47,12 +47,12 @@
 .tabcontainer .yui3-tabview-list .tablinks:hover::after {
   background-color: #f7f7f7;
 }
-.tabcontainer .yui3-tabview-list .tablinks.active, .tabcontainer .yui3-tabview-list .tablinks.active:hover {
+.tabcontainer .yui3-tabview-list .tablinks.yui3-tab-selected, .tabcontainer .yui3-tabview-list .tablinks.yui3-tab-selected:hover {
   background-color: #fff;
   border: 2px solid #ccc;
   position: relative;
 }
-.tabcontainer .yui3-tabview-list .tablinks.active::after, .tabcontainer .yui3-tabview-list .tablinks.active:hover::after {
+.tabcontainer .yui3-tabview-list .tablinks.yui3-tab-selected::after, .tabcontainer .yui3-tabview-list .tablinks.yui3-tab-selected:hover::after {
   background-color: #fff;
   bottom: -4px;
   height: 4px;
@@ -114,7 +114,7 @@
   min-height: 5.75rem;
   width: 100%;
 }
-.tabcontainer .yui3-tabview-panel .tab-nested-content.active {
+.tabcontainer .yui3-tabview-panel .tab-nested-content.yui3-tab-selected {
   display: block;
   padding: 1rem;
 }

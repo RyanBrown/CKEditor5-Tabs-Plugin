@@ -73,8 +73,8 @@ $transition-speed: 200ms ease-in-out;
                     background-color: $tab-bg-hover;
                 }
             }
-            &.active,
-            &.active:hover {
+            &.yui3-tab-selected,
+            &.yui3-tab-selected:hover {
                 background-color: $tab-bg-active;
                 border: $tab-border-width solid $tab-border-color-active;
                 position: relative;
@@ -158,7 +158,7 @@ $transition-speed: 200ms ease-in-out;
             min-height: 5.75rem;
             width: 100%;
 
-            &.active {
+            &.yui3-tab-selected {
                 display: block;
                 padding: 1rem;
             }
