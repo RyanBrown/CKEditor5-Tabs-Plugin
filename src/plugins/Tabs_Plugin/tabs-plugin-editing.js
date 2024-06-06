@@ -169,20 +169,20 @@ export default class TabsPluginEditing extends Plugin {
         // Conversion for 'tabTitle' element
         conversion.for('upcast').elementToElement({
             model: 'tabTitle',
-            view: { name: 'div', classes: 'tab-title' },
+            view: { name: 'div', classes: 'tabTitle' },
             converterPriority: 'high',
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabTitle',
             view: (modelElement, { writer }) => {
-                return writer.createEditableElement('div', { class: 'tab-title' });
+                return writer.createEditableElement('div', { class: 'tabTitle' });
             },
             converterPriority: 'high',
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabTitle',
             view: (modelElement, { writer }) => {
-                const div = writer.createEditableElement('div', { class: 'tab-title' });
+                const div = writer.createEditableElement('div', { class: 'tabTitle' });
                 return toWidgetEditable(div, writer);
             },
             converterPriority: 'high',

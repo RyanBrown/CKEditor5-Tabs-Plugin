@@ -67,7 +67,7 @@
   flex: 1 1 0;
   justify-content: space-between;
 }
-.tabcontainer .yui3-tabview-list .tablinks .tab-title {
+.tabcontainer .yui3-tabview-list .tablinks .tabTitle {
   align-items: center;
   display: flex;
   font-weight: 700;
@@ -93,7 +93,7 @@
 .tabcontainer .yui3-tabview-list .tablinks:nth-last-child(2):first-child .tab-edit-bar {
   display: none;
 }
-.tabcontainer .yui3-tabview-list .tablinks:nth-last-child(2):first-child .tab-title {
+.tabcontainer .yui3-tabview-list .tablinks:nth-last-child(2):first-child .tabTitle {
   margin: 0.75rem 1.25rem;
 }
 .tabcontainer .yui3-tabview-list .add-tab-list-item {

@@ -98,7 +98,7 @@ $transition-speed: 200ms ease-in-out;
                 }
             }
             // Title of the tab
-            .tab-title {
+            .tabTitle {
                 align-items: center;
                 display: flex;
                 font-weight: 700;
@@ -130,7 +130,7 @@ $transition-speed: 200ms ease-in-out;
                 .tab-edit-bar {
                     display: none;
                 }
-                .tab-title {
+                .tabTitle {
                     margin: $tab-x-margin $tab-y-margin;
                 }
             }
