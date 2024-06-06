@@ -39,7 +39,7 @@ export default class TabsPluginUI extends Plugin {
             'click',
             (evt, data) => {
                 const target = data.target;
-                if (target.hasClass('tab-list-item') || target.hasClass('tab-title')) {
+                if (target.hasClass('tablinks') || target.hasClass('tab-title')) {
                     this._handleTabClick(editor, target, evt);
                 } else if (target.hasClass('delete-tab-button')) {
                     this._handleDeleteTab(editor, target, evt);
@@ -56,7 +56,7 @@ export default class TabsPluginUI extends Plugin {
 
         editor.editing.view.document.on('click', (evt, data) => {
             const target = data.target;
-            if (target.hasClass('tab-list-item') || target.hasClass('tab-title')) {
+            if (target.hasClass('tablinks') || target.hasClass('tab-title')) {
                 this._handleTabClick(editor, target, evt);
             }
         });
@@ -75,7 +75,7 @@ export default class TabsPluginUI extends Plugin {
 
         if (tabList) {
             const tabTitleElements = Array.from(tabList.getChildren()).filter(
-                (child) => child.is('element', 'li') && child.hasClass('tab-list-item')
+                (child) => child.is('element', 'li') && child.hasClass('tablinks')
             );
 
             for (const tabTitleElement of tabTitleElements) {
@@ -94,7 +94,7 @@ export default class TabsPluginUI extends Plugin {
     _handleTabClick(editor, target, evt) {
         let tabListItem = target;
 
-        while (tabListItem && !tabListItem.hasClass('tab-list-item')) {
+        while (tabListItem && !tabListItem.hasClass('tablinks')) {
             tabListItem = tabListItem.parent;
         }
 
@@ -162,7 +162,7 @@ export default class TabsPluginUI extends Plugin {
             if (wasActive) {
                 const tabList = tabListItem.parent;
                 const tabListItems = Array.from(tabList.getChildren()).filter(
-                    (child) => child.is('element', 'li') && child.hasClass('tab-list-item')
+                    (child) => child.is('element', 'li') && child.hasClass('tablinks')
                 );
                 const index = tabListItems.indexOf(tabListItem);
 
@@ -194,7 +194,7 @@ export default class TabsPluginUI extends Plugin {
             if (wasActive) {
                 const tabList = tabListItem.parent;
                 const tabListItems = Array.from(tabList.getChildren()).filter(
-                    (child) => child.is('element', 'li') && child.hasClass('tab-list-item')
+                    (child) => child.is('element', 'li') && child.hasClass('tablinks')
                 );
                 const movedTabListItem = tabListItems.find((item) => item.getAttribute('data-target') === `#${tabId}`);
 

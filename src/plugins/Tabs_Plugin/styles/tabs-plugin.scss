@@ -38,7 +38,7 @@ $transition-speed: 200ms ease-in-out;
         padding: 0;
 
         // Individual tab list item
-        .tab-list-item {
+        .tablinks {
             background-color: $tab-bg;
             border-radius: $tab-border-radius $tab-border-radius 0 0;
             border: $tab-border-width solid $tab-border-color;

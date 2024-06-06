@@ -138,7 +138,7 @@ export default class TabsPluginEditing extends Plugin {
         // Conversion for 'tabListItem' element
         conversion.for('upcast').elementToElement({
             model: 'tabListItem',
-            view: { name: 'li', classes: 'tab-list-item' },
+            view: { name: 'li', classes: 'tablinks' },
             converterPriority: 'high',
         });
         conversion.for('dataDowncast').elementToElement({
@@ -146,7 +146,7 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const classes = modelElement.getAttribute('class');
                 return writer.createContainerElement('li', {
-                    class: classes ? `tab-list-item ${classes}` : 'tab-list-item',
+                    class: classes ? `tablinks ${classes}` : 'tablinks',
                     'data-target': modelElement.getAttribute('data-target'),
                 });
             },
@@ -157,7 +157,7 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const classes = modelElement.getAttribute('class');
                 const li = writer.createContainerElement('li', {
-                    class: classes ? `tab-list-item ${classes}` : 'tab-list-item',
+                    class: classes ? `tablinks ${classes}` : 'tablinks',
                     'data-target': modelElement.getAttribute('data-target'),
                     draggable: false,
                 });
