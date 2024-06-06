@@ -16,7 +16,7 @@ export function createTabsPluginElement(writer) {
     writer.setAttribute('class', `${firstTabListItem.getAttribute('class')} yui3-tab-selected`, firstTabListItem);
     writer.setAttribute(
         'class',
-        `${firstTabNestedContent.getAttribute('class')} yui3-tab-selected`,
+        `${firstTabNestedContent.getAttribute('class')} yui3-tab-panel-selected`,
         firstTabNestedContent
     );
     writer.append(firstTabListItem, tabList);

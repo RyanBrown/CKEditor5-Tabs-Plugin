@@ -38,7 +38,9 @@ $transition-speed: 200ms ease-in-out;
         padding: 0;
 
         // Individual tab list item
-        .tablinks {
+        .yui3-tab,
+        .tablinks,
+        .yui3-tab.tablinks {
             background-color: $tab-bg;
             border-radius: $tab-border-radius $tab-border-radius 0 0;
             border: $tab-border-width solid $tab-border-color;
@@ -152,13 +154,14 @@ $transition-speed: 200ms ease-in-out;
         border: $tab-border-width solid $tab-border-color-active;
         position: relative;
 
-        .tab-nested-content {
+        .yui3-tab-panel,
+        .yui3-tab-panel.tabcontent {
             display: none;
             height: 100%;
             min-height: 5.75rem;
             width: 100%;
 
-            &.yui3-tab-selected {
+            &.yui3-tab-panel-selected {
                 display: block;
                 padding: 1rem;
             }

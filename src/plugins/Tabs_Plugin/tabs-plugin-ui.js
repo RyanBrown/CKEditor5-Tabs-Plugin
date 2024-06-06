@@ -39,7 +39,7 @@ export default class TabsPluginUI extends Plugin {
             'click',
             (evt, data) => {
                 const target = data.target;
-                if (target.hasClass('tablinks') || target.hasClass('tabTitle')) {
+                if (target.hasClass('yui3-tab') || target.hasClass('tabTitle')) {
                     this._handleTabClick(editor, target, evt);
                 } else if (target.hasClass('delete-tab-button')) {
                     this._handleDeleteTab(editor, target, evt);
@@ -56,7 +56,7 @@ export default class TabsPluginUI extends Plugin {
 
         editor.editing.view.document.on('click', (evt, data) => {
             const target = data.target;
-            if (target.hasClass('tablinks') || target.hasClass('tabTitle')) {
+            if (target.hasClass('yui3-tab') || target.hasClass('tabTitle')) {
                 this._handleTabClick(editor, target, evt);
             }
         });
@@ -75,7 +75,7 @@ export default class TabsPluginUI extends Plugin {
 
         if (tabList) {
             const tabTitleElements = Array.from(tabList.getChildren()).filter(
-                (child) => child.is('element', 'li') && child.hasClass('tablinks')
+                (child) => child.is('element', 'li') && child.hasClass('yui3-tab')
             );
 
             for (const tabTitleElement of tabTitleElements) {
@@ -94,7 +94,7 @@ export default class TabsPluginUI extends Plugin {
     _handleTabClick(editor, target, evt) {
         let tabListItem = target;
 
-        while (tabListItem && !tabListItem.hasClass('tablinks')) {
+        while (tabListItem && !tabListItem.hasClass('yui3-tab')) {
             tabListItem = tabListItem.parent;
         }
 
@@ -135,7 +135,7 @@ export default class TabsPluginUI extends Plugin {
                 writer.removeClass('yui3-tab-selected', item);
             }
             for (const content of tabContentElement.getChildren()) {
-                writer.removeClass('yui3-tab-selected', content);
+                writer.removeClass('yui3-tab-panel-selected', content);
             }
 
             writer.addClass('yui3-tab-selected', tabListItem);
@@ -143,7 +143,7 @@ export default class TabsPluginUI extends Plugin {
                 (child) => child.getAttribute('id') === tabId.slice(1)
             );
             if (selectedTabContent) {
-                writer.addClass('yui3-tab-selected', selectedTabContent);
+                writer.addClass('yui3-tab-panel-selected', selectedTabContent);
             } else {
                 console.error('Selected tab content not found');
             }
@@ -162,7 +162,7 @@ export default class TabsPluginUI extends Plugin {
             if (wasActive) {
                 const tabList = tabListItem.parent;
                 const tabListItems = Array.from(tabList.getChildren()).filter(
-                    (child) => child.is('element', 'li') && child.hasClass('tablinks')
+                    (child) => child.is('element', 'li') && child.hasClass('yui3-tab')
                 );
                 const index = tabListItems.indexOf(tabListItem);
 
@@ -194,7 +194,7 @@ export default class TabsPluginUI extends Plugin {
             if (wasActive) {
                 const tabList = tabListItem.parent;
                 const tabListItems = Array.from(tabList.getChildren()).filter(
-                    (child) => child.is('element', 'li') && child.hasClass('tablinks')
+                    (child) => child.is('element', 'li') && child.hasClass('yui3-tab')
                 );
                 const movedTabListItem = tabListItems.find((item) => item.getAttribute('data-target') === `#${tabId}`);
 

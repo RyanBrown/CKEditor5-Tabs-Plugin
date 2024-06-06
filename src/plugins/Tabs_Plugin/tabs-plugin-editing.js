@@ -138,7 +138,7 @@ export default class TabsPluginEditing extends Plugin {
         // Conversion for 'tabListItem' element
         conversion.for('upcast').elementToElement({
             model: 'tabListItem',
-            view: { name: 'li', classes: 'tablinks' },
+            view: { name: 'li', classes: 'yui3-tab' },
             converterPriority: 'high',
         });
         conversion.for('dataDowncast').elementToElement({
@@ -146,7 +146,7 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const classes = modelElement.getAttribute('class');
                 return writer.createContainerElement('li', {
-                    class: classes ? `tablinks ${classes}` : 'tablinks',
+                    class: classes ? `yui3-tab ${classes}` : 'yui3-tab',
                     'data-target': modelElement.getAttribute('data-target'),
                 });
             },
@@ -157,7 +157,7 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const classes = modelElement.getAttribute('class');
                 const li = writer.createContainerElement('li', {
-                    class: classes ? `tablinks ${classes}` : 'tablinks',
+                    class: classes ? `yui3-tab ${classes}` : 'yui3-tab',
                     'data-target': modelElement.getAttribute('data-target'),
                     draggable: false,
                 });
@@ -431,7 +431,7 @@ export default class TabsPluginEditing extends Plugin {
         // Conversion for 'tabNestedContent' element
         conversion.for('upcast').elementToElement({
             model: 'tabNestedContent',
-            view: { name: 'div', classes: 'tab-nested-content' },
+            view: { name: 'div', classes: 'yui3-tab-panel' },
             converterPriority: 'high',
         });
         conversion.for('dataDowncast').elementToElement({
@@ -439,7 +439,7 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const classes = modelElement.getAttribute('class');
                 return writer.createEditableElement('div', {
-                    class: classes ? `tab-nested-content ${classes}` : 'tab-nested-content',
+                    class: classes ? `yui3-tab-panel ${classes}` : 'yui3-tab-panel',
                     id: modelElement.getAttribute('id'),
                 });
             },
@@ -450,7 +450,7 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const classes = modelElement.getAttribute('class');
                 const div = writer.createEditableElement('div', {
-                    class: classes ? `tab-nested-content ${classes}` : 'tab-nested-content',
+                    class: classes ? `yui3-tab-panel ${classes}` : 'yui3-tab-panel',
                     id: modelElement.getAttribute('id'),
                 });
                 return toWidgetEditable(div, writer);
