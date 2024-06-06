@@ -1,7 +1,7 @@
-.tabs-plugin {
+.tabcontainer {
   background-color: #fff;
 }
-.tabs-plugin .tab-list {
+.tabcontainer .tab-list {
   align-items: stretch;
   display: flex;
   flex-wrap: wrap;
@@ -9,7 +9,7 @@
   margin: 0;
   padding: 0;
 }
-.tabs-plugin .tab-list .tab-list-item {
+.tabcontainer .tab-list .tab-list-item {
   background-color: #eee;
   border-radius: 0.5rem 0.5rem 0 0;
   border: 2px solid #ddd;
@@ -25,7 +25,7 @@
   transition: background-color 200ms ease-in-out, border-color 200ms ease-in-out;
   z-index: 5;
 }
-.tabs-plugin .tab-list .tab-list-item::after {
+.tabcontainer .tab-list .tab-list-item::after {
   background-color: #eee;
   bottom: -2px;
   content: "";
@@ -37,33 +37,33 @@
   width: 100%;
   z-index: 3;
 }
-.tabs-plugin .tab-list .tab-list-item:hover {
+.tabcontainer .tab-list .tab-list-item:hover {
   background-color: #f7f7f7;
 }
-.tabs-plugin .tab-list .tab-list-item:hover::after {
+.tabcontainer .tab-list .tab-list-item:hover::after {
   background-color: #f7f7f7;
 }
-.tabs-plugin .tab-list .tab-list-item.active, .tabs-plugin .tab-list .tab-list-item.active:hover {
+.tabcontainer .tab-list .tab-list-item.active, .tabcontainer .tab-list .tab-list-item.active:hover {
   background-color: #fff;
   border: 2px solid #ccc;
   position: relative;
 }
-.tabs-plugin .tab-list .tab-list-item.active::after, .tabs-plugin .tab-list .tab-list-item.active:hover::after {
+.tabcontainer .tab-list .tab-list-item.active::after, .tabcontainer .tab-list .tab-list-item.active:hover::after {
   background-color: #fff;
   bottom: -4px;
   height: 4px;
 }
-.tabs-plugin .tab-list .tab-list-item .tab-edit-bar {
+.tabcontainer .tab-list .tab-list-item .tab-edit-bar {
   align-items: center;
   display: flex;
   flex: 1 1 0;
 }
-.tabs-plugin .tab-list .tab-list-item .tab-edit-bar .move-buttons-wrapper {
+.tabcontainer .tab-list .tab-list-item .tab-edit-bar .move-buttons-wrapper {
   display: flex;
   flex: 1 1 0;
   justify-content: space-between;
 }
-.tabs-plugin .tab-list .tab-list-item .tab-title {
+.tabcontainer .tab-list .tab-list-item .tab-title {
   align-items: center;
   display: flex;
   font-weight: 700;
@@ -74,43 +74,43 @@
   text-align: center;
   word-break: break-word;
 }
-.tabs-plugin .tab-list .tab-list-item:first-child .tab-edit-bar > .move-buttons-wrapper {
+.tabcontainer .tab-list .tab-list-item:first-child .tab-edit-bar > .move-buttons-wrapper {
   justify-content: flex-end;
 }
-.tabs-plugin .tab-list .tab-list-item:first-child .tab-edit-bar > .move-buttons-wrapper .move-left-button {
+.tabcontainer .tab-list .tab-list-item:first-child .tab-edit-bar > .move-buttons-wrapper .move-left-button {
   display: none;
 }
-.tabs-plugin .tab-list .tab-list-item:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper {
+.tabcontainer .tab-list .tab-list-item:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper {
   justify-content: flex-start;
 }
-.tabs-plugin .tab-list .tab-list-item:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper .move-right-button {
+.tabcontainer .tab-list .tab-list-item:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper .move-right-button {
   display: none;
 }
-.tabs-plugin .tab-list .tab-list-item:nth-last-child(2):first-child .tab-edit-bar {
+.tabcontainer .tab-list .tab-list-item:nth-last-child(2):first-child .tab-edit-bar {
   display: none;
 }
-.tabs-plugin .tab-list .tab-list-item:nth-last-child(2):first-child .tab-title {
+.tabcontainer .tab-list .tab-list-item:nth-last-child(2):first-child .tab-title {
   margin: 0.75rem 1.25rem;
 }
-.tabs-plugin .tab-list .add-tab-list-item {
+.tabcontainer .tab-list .add-tab-list-item {
   align-self: flex-end;
   padding: 0;
 }
-.tabs-plugin .tab-list .add-tab-list-item .add-tab-button {
+.tabcontainer .tab-list .add-tab-list-item .add-tab-button {
   padding: 1.5rem 1.75rem;
 }
-.tabs-plugin .tab-content {
+.tabcontainer .tab-content {
   background-color: #fff;
   border: 2px solid #ccc;
   position: relative;
 }
-.tabs-plugin .tab-content .tab-nested-content {
+.tabcontainer .tab-content .tab-nested-content {
   display: none;
   height: 100%;
   min-height: 5.75rem;
   width: 100%;
 }
-.tabs-plugin .tab-content .tab-nested-content.active {
+.tabcontainer .tab-content .tab-nested-content.active {
   display: block;
   padding: 1rem;
 }

@@ -110,7 +110,7 @@ export default class TabsPluginUI extends Plugin {
         const tabId = tabListItem.getAttribute('data-target');
         const viewRoot = editor.editing.view.document.getRoot();
         const tabsRootElement = Array.from(viewRoot.getChildren()).find(
-            (child) => child.is('element', 'div') && child.hasClass('tabs-plugin')
+            (child) => child.is('element', 'div') && child.hasClass('tabcontainer')
         );
 
         if (!tabsRootElement) {

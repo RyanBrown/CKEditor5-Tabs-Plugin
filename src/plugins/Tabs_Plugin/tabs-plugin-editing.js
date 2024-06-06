@@ -97,19 +97,18 @@ export default class TabsPluginEditing extends Plugin {
         // Conversion for 'tabsPlugin' element
         conversion.for('upcast').elementToElement({
             model: 'tabsPlugin',
-            view: { name: 'div', classes: 'tabs-plugin' },
+            view: { name: 'div', classes: 'tabcontainer' },
             converterPriority: 'high',
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabsPlugin',
-            view: (modelElement, { writer }) =>
-                writer.createContainerElement('div', { class: 'tabs-plugin data-downcast' }),
+            view: (modelElement, { writer }) => writer.createContainerElement('div', { class: 'tabcontainer' }),
             converterPriority: 'high',
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabsPlugin',
             view: (modelElement, { writer }) => {
-                const div = writer.createContainerElement('div', { class: 'tabs-plugin' });
+                const div = writer.createContainerElement('div', { class: 'tabcontainer' });
                 return toWidget(div, writer, { label: 'tabs plugin' });
             },
             converterPriority: 'high',
