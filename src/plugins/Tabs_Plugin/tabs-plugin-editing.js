@@ -243,11 +243,11 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const button = writer.createContainerElement('button', {
                     class: 'move-left-button',
-                    title: modelElement.getAttribute('title') || 'Move Tab Left',
+                    title: modelElement.getAttribute('title') || 'Move Tab',
                     draggable: false,
                 });
                 const textSpan = writer.createContainerElement('span', { draggable: false });
-                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Move Tab Left'));
+                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Move Tab'));
                 writer.insert(writer.createPositionAt(button, 0), textSpan);
                 return button;
             },
@@ -258,11 +258,11 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const button = writer.createContainerElement('button', {
                     class: 'move-left-button',
-                    title: modelElement.getAttribute('title') || 'Move Tab Left',
+                    title: modelElement.getAttribute('title') || 'Move Tab',
                     draggable: false,
                 });
                 const textSpan = writer.createContainerElement('span', { draggable: false });
-                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Move Tab Left'));
+                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Move Tab'));
                 writer.insert(writer.createPositionAt(button, 0), textSpan);
                 return button;
             },
@@ -280,11 +280,11 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const button = writer.createContainerElement('button', {
                     class: 'move-right-button',
-                    title: modelElement.getAttribute('title') || 'Move Tab Right',
+                    title: modelElement.getAttribute('title') || 'Move Tab',
                     draggable: false,
                 });
                 const textSpan = writer.createContainerElement('span', { draggable: false });
-                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Move Tab Right'));
+                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Move Tab'));
                 writer.insert(writer.createPositionAt(button, 0), textSpan);
                 return button;
             },
@@ -295,11 +295,11 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const button = writer.createContainerElement('button', {
                     class: 'move-right-button',
-                    title: modelElement.getAttribute('title') || 'Move Tab Right',
+                    title: modelElement.getAttribute('title') || 'Move Tab',
                     draggable: false,
                 });
                 const textSpan = writer.createContainerElement('span', { draggable: false });
-                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Move Tab Right'));
+                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Move Tab'));
                 writer.insert(writer.createPositionAt(button, 0), textSpan);
                 return button;
             },
