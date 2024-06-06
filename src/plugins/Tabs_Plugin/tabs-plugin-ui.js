@@ -132,18 +132,18 @@ export default class TabsPluginUI extends Plugin {
 
         editor.editing.view.change((writer) => {
             for (const item of tabListElement.getChildren()) {
-                writer.removeClass('yui3-tab-selected', item);
+                writer.removeClass('active', item);
             }
             for (const content of tabContentElement.getChildren()) {
-                writer.removeClass('yui3-tab-panel-selected', content);
+                writer.removeClass('active', content);
             }
 
-            writer.addClass('yui3-tab-selected', tabListItem);
+            writer.addClass('active', tabListItem);
             const selectedTabContent = Array.from(tabContentElement.getChildren()).find(
                 (child) => child.getAttribute('id') === tabId.slice(1)
             );
             if (selectedTabContent) {
-                writer.addClass('yui3-tab-panel-selected', selectedTabContent);
+                writer.addClass('active', selectedTabContent);
             } else {
                 console.error('Selected tab content not found');
             }
@@ -154,7 +154,7 @@ export default class TabsPluginUI extends Plugin {
     _handleDeleteTab(editor, target, evt) {
         const tabListItem = target.findAncestor('li');
         const tabId = tabListItem.getAttribute('data-target').slice(1);
-        const wasActive = tabListItem.hasClass('yui3-tab-selected');
+        const wasActive = tabListItem.hasClass('active');
 
         editor.model.change((writer) => {
             editor.execute('deleteTab', tabId);
@@ -186,7 +186,7 @@ export default class TabsPluginUI extends Plugin {
     _handleMoveTab(editor, target, evt, direction) {
         const tabListItem = target.findAncestor('li');
         const tabId = tabListItem.getAttribute('data-target').slice(1);
-        const wasActive = tabListItem.hasClass('yui3-tab-selected');
+        const wasActive = tabListItem.hasClass('active');
 
         editor.model.change((writer) => {
             editor.execute('moveTab', { tabId, direction });

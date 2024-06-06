@@ -13,12 +13,8 @@ export function createTabsPluginElement(writer) {
         firstTabId
     );
     // Add active class to the first tab and content
-    writer.setAttribute('class', `${firstTabListItem.getAttribute('class')} yui3-tab-selected`, firstTabListItem);
-    writer.setAttribute(
-        'class',
-        `${firstTabNestedContent.getAttribute('class')} yui3-tab-panel-selected`,
-        firstTabNestedContent
-    );
+    writer.setAttribute('class', `${firstTabListItem.getAttribute('class')} active`, firstTabListItem);
+    writer.setAttribute('class', `${firstTabNestedContent.getAttribute('class')} active`, firstTabNestedContent);
     writer.append(firstTabListItem, tabList);
     writer.append(firstTabNestedContent, tabContent);
 

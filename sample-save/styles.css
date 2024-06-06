@@ -494,7 +494,7 @@ footer {
 }
 
 /* --------- RWD --------------------------------------------------------------------------------------------------- */
-@media screen and (max-width: 800px) {
+/* @media screen and (max-width: 800px) {
     :root {
         --ck-sample-base-spacing: 1em;
     }
@@ -514,7 +514,7 @@ footer {
     main .message h2 {
         font-size: 1.5em;
     }
-}
+} */
 
 .save-btn,
 .reset-btn {
