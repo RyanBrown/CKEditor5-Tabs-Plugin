@@ -1,5 +1,9 @@
 .tabcontainer {
   background-color: #fff;
+  border: 5px solid orange;
+}
+.tabcontainer .yui3-tabview-content {
+  border: 5px dashed navy;
 }
 .tabcontainer .tab-list {
   align-items: stretch;

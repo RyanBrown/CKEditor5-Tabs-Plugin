@@ -22,6 +22,11 @@ $transition-speed: 200ms ease-in-out;
 // Main tabs plugin container
 .tabcontainer {
     background-color: $tab-bg-active;
+    border: 5px solid orange;
+
+    .yui3-tabview-content {
+        border: 5px dashed navy;
+    }
 
     // Tab list container
     .tab-list {
