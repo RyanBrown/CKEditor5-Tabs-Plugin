@@ -122,7 +122,7 @@ export default class TabsPluginUI extends Plugin {
             (child) => child.is('element', 'ul') && child.hasClass('yui3-tabview-list')
         );
         const tabContentElement = Array.from(tabsRootElement.getChildren()).find(
-            (child) => child.is('element', 'div') && child.hasClass('tab-content')
+            (child) => child.is('element', 'div') && child.hasClass('yui3-tabview-panel')
         );
 
         if (!tabListElement || !tabContentElement) {

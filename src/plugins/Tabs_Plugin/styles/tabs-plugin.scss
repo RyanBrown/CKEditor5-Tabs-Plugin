@@ -147,7 +147,7 @@ $transition-speed: 200ms ease-in-out;
     }
 
     // Content of the tabs
-    .tab-content {
+    .yui3-tabview-panel {
         background-color: $tab-bg-active;
         border: $tab-border-width solid $tab-border-color-active;
         position: relative;

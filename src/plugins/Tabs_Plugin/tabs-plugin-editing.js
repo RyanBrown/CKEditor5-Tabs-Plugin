@@ -410,19 +410,19 @@ export default class TabsPluginEditing extends Plugin {
         // Conversion for 'tabContent' element
         conversion.for('upcast').elementToElement({
             model: 'tabContent',
-            view: { name: 'div', classes: 'tab-content' },
+            view: { name: 'div', classes: 'yui3-tabview-panel' },
             converterPriority: 'high',
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabContent',
             view: (modelElement, { writer }) =>
-                writer.createContainerElement('div', { class: 'tab-content', draggable: false }),
+                writer.createContainerElement('div', { class: 'yui3-tabview-panel', draggable: false }),
             converterPriority: 'high',
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabContent',
             view: (modelElement, { writer }) => {
-                const div = writer.createContainerElement('div', { class: 'tab-content', draggable: false });
+                const div = writer.createContainerElement('div', { class: 'yui3-tabview-panel', draggable: false });
                 return div;
             },
             converterPriority: 'high',
