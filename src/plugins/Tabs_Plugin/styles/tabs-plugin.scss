@@ -148,8 +148,7 @@ $transition-speed: 200ms ease-in-out;
         border: $tab-border-width solid $tab-border-color-active;
         position: relative;
 
-        .yui3-tab-panel,
-        .yui3-tab-panel.tabcontent {
+        .tabcontent {
             display: none;
             height: 100%;
             min-height: 5.75rem;

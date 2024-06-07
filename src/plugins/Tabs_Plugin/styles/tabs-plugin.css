@@ -105,15 +105,13 @@
   border: 2px solid #ccc;
   position: relative;
 }
-.tabcontainer .yui3-tabview-panel .yui3-tab-panel,
-.tabcontainer .yui3-tabview-panel .yui3-tab-panel.tabcontent {
+.tabcontainer .yui3-tabview-panel .tabcontent {
   display: none;
   height: 100%;
   min-height: 5.75rem;
   width: 100%;
 }
-.tabcontainer .yui3-tabview-panel .yui3-tab-panel.active,
-.tabcontainer .yui3-tabview-panel .yui3-tab-panel.tabcontent.active {
+.tabcontainer .yui3-tabview-panel .tabcontent.active {
   display: block;
   padding: 1rem;
 }
