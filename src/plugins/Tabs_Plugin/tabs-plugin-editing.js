@@ -353,7 +353,7 @@ export default class TabsPluginEditing extends Plugin {
             model: 'addTabListItem',
             view: (modelElement, { writer }) =>
                 writer.createContainerElement('li', {
-                    classes: 'addtab',
+                    class: 'addtab',
                     draggable: false,
                 }),
             converterPriority: 'high',
@@ -362,7 +362,7 @@ export default class TabsPluginEditing extends Plugin {
             model: 'addTabListItem',
             view: (modelElement, { writer }) => {
                 const li = writer.createContainerElement('li', {
-                    classes: 'addtab',
+                    class: 'addtab',
                     draggable: false,
                 });
                 return li;
@@ -431,7 +431,7 @@ export default class TabsPluginEditing extends Plugin {
         // Conversion for 'tabNestedContent' element
         conversion.for('upcast').elementToElement({
             model: 'tabNestedContent',
-            view: { name: 'div', classes: 'yui3-tab-panel tabcontent' },
+            view: { name: 'div', classes: 'tabcontent' },
             converterPriority: 'high',
         });
         conversion.for('dataDowncast').elementToElement({
@@ -439,7 +439,7 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const classes = modelElement.getAttribute('class');
                 return writer.createEditableElement('div', {
-                    class: classes ? `yui3-tab-panel tabcontent ${classes}` : 'yui3-tab-panel tabcontent',
+                    class: classes ? `tabcontent ${classes}` : 'tabcontent',
                     id: modelElement.getAttribute('id'),
                 });
             },
@@ -450,7 +450,7 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const classes = modelElement.getAttribute('class');
                 const div = writer.createEditableElement('div', {
-                    class: classes ? `yui3-tab-panel tabcontent ${classes}` : 'yui3-tab-panel tabcontent',
+                    class: classes ? `tabcontent ${classes}` : 'tabcontent',
                     id: modelElement.getAttribute('id'),
                 });
                 return toWidgetEditable(div, writer);
