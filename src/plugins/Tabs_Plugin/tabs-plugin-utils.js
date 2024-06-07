@@ -63,19 +63,36 @@ export function createTabElement(writer, tabId) {
 // Create tab list item
 export function createTabListItem(writer, tabId) {
     const tabListItem = writer.createElement('tabListItem', { 'data-target': `#${tabId}` });
-    const tabEditBar = writer.createElement('tabEditBar');
-    const moveButtonsWrapper = writer.createElement('moveButtonsWrapper');
+    const tabListTable = writer.createElement('tabListTable');
+    const tabListTable_thead = writer.createElement('tabListTable_thead');
+    const tabListTable_tbody = writer.createElement('tabListTable_tbody');
 
-    appendControlElement(writer, moveButtonsWrapper, 'moveLeftButton', 'Move Tab Left');
-    appendControlElement(writer, moveButtonsWrapper, 'moveRightButton', 'Move Tab Right');
-    writer.append(moveButtonsWrapper, tabEditBar);
-    appendControlElement(writer, tabEditBar, 'deleteTabButton', 'Delete Tab');
+    const tabListTable_thead_tr = writer.createElement('tabListTable_tr');
+    const tabListTable_th_moveLeft = writer.createElement('tabListTable_th');
+    const tabListTable_th_moveRight = writer.createElement('tabListTable_th');
+    const tabListTable_th_delete = writer.createElement('tabListTable_th');
 
+    appendControlElement(writer, tabListTable_th_moveLeft, 'moveLeftButton', 'Move Tab Left');
+    appendControlElement(writer, tabListTable_th_moveRight, 'moveRightButton', 'Move Tab Right');
+    appendControlElement(writer, tabListTable_th_delete, 'deleteTabButton', 'Delete Tab');
+
+    writer.append(tabListTable_th_moveLeft, tabListTable_thead_tr);
+    writer.append(tabListTable_th_moveRight, tabListTable_thead_tr);
+    writer.append(tabListTable_th_delete, tabListTable_thead_tr);
+    writer.append(tabListTable_thead_tr, tabListTable_thead);
+
+    const tabListTable_tbody_tr = writer.createElement('tabListTable_tr');
+    const tabListTable_td = writer.createElement('tabListTable_td');
     const tabTitle = writer.createElement('tabTitle');
     writer.insertText(`Tab Name ${tabId}`, tabTitle);
 
-    writer.append(tabEditBar, tabListItem);
-    writer.append(tabTitle, tabListItem);
+    writer.append(tabTitle, tabListTable_td);
+    writer.append(tabListTable_td, tabListTable_tbody_tr);
+    writer.append(tabListTable_tbody_tr, tabListTable_tbody);
+
+    writer.append(tabListTable_thead, tabListTable);
+    writer.append(tabListTable_tbody, tabListTable);
+    writer.append(tabListTable, tabListItem);
 
     return tabListItem;
 }
@@ -97,4 +114,5 @@ export function createAddTabButton(writer) {
 export function appendControlElement(writer, parent, type, title) {
     const element = writer.createElement(type, { class: type, title });
     writer.append(element, parent);
+    return element;
 }

@@ -58,16 +58,6 @@ export default class TabsPluginEditing extends Plugin {
             allowIn: 'tabContent',
             isLimit: true,
         });
-        schema.register('tabEditBar', {
-            allowAttributes: ['class'],
-            allowIn: 'tabListItem',
-            isLimit: true,
-        });
-        schema.register('moveButtonsWrapper', {
-            allowAttributes: ['class'],
-            allowIn: 'tabEditBar',
-            isLimit: true,
-        });
         schema.register('moveLeftButton', {
             allowAttributes: ['class', 'title'],
             allowIn: 'tabListTable_th',
@@ -237,50 +227,6 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const div = writer.createEditableElement('div', { class: 'tabTitle' });
                 return toWidgetEditable(div, writer);
-            },
-            converterPriority: 'high',
-        });
-
-        // Conversion for 'tabEditBar' element
-        conversion.for('upcast').elementToElement({
-            model: 'tabEditBar',
-            view: { name: 'thead', classes: 'tab-edit-bar' },
-            converterPriority: 'high',
-        });
-        conversion.for('dataDowncast').elementToElement({
-            model: 'tabEditBar',
-            view: (modelElement, { writer }) => writer.createContainerElement('thead', { class: 'tab-edit-bar' }),
-            converterPriority: 'high',
-        });
-        conversion.for('editingDowncast').elementToElement({
-            model: 'tabEditBar',
-            view: (modelElement, { writer }) => {
-                const thead = writer.createContainerElement('thead', {
-                    class: 'tab-edit-bar',
-                    draggable: false,
-                    contenteditable: false,
-                });
-                return thead;
-            },
-            converterPriority: 'high',
-        });
-
-        // Conversion for 'moveButtonsWrapper' element
-        conversion.for('upcast').elementToElement({
-            model: 'moveButtonsWrapper',
-            view: { name: 'div', classes: 'move-buttons-wrapper' },
-            converterPriority: 'high',
-        });
-        conversion.for('dataDowncast').elementToElement({
-            model: 'moveButtonsWrapper',
-            view: (modelElement, { writer }) => writer.createContainerElement('div', { class: 'move-buttons-wrapper' }),
-            converterPriority: 'high',
-        });
-        conversion.for('editingDowncast').elementToElement({
-            model: 'moveButtonsWrapper',
-            view: (modelElement, { writer }) => {
-                const div = writer.createContainerElement('div', { class: 'move-buttons-wrapper', draggable: false });
-                return div;
             },
             converterPriority: 'high',
         });
