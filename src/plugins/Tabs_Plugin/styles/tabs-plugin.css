@@ -54,44 +54,15 @@
   bottom: -4px;
   height: 4px;
 }
-.tabcontainer .yui3-tabview-list .tablinks .tab-edit-bar {
-  align-items: center;
-  display: flex;
-  flex: 1 1 0;
-}
-.tabcontainer .yui3-tabview-list .tablinks .tab-edit-bar .move-buttons-wrapper {
-  display: flex;
-  flex: 1 1 0;
-  justify-content: space-between;
-}
 .tabcontainer .yui3-tabview-list .tablinks .tabTitle {
   align-items: center;
   display: flex;
   font-weight: 700;
   justify-content: center;
-  margin: 0.75rem 1.25rem;
   min-width: 6rem;
   position: relative;
   text-align: center;
   word-break: break-word;
-}
-.tabcontainer .yui3-tabview-list .tablinks:first-child .tab-edit-bar > .move-buttons-wrapper {
-  justify-content: flex-end;
-}
-.tabcontainer .yui3-tabview-list .tablinks:first-child .tab-edit-bar > .move-buttons-wrapper .left-arrow {
-  display: none;
-}
-.tabcontainer .yui3-tabview-list .tablinks:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper {
-  justify-content: flex-start;
-}
-.tabcontainer .yui3-tabview-list .tablinks:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper .right-arrow {
-  display: none;
-}
-.tabcontainer .yui3-tabview-list .tablinks:nth-last-child(2):first-child .tab-edit-bar {
-  display: none;
-}
-.tabcontainer .yui3-tabview-list .tablinks:nth-last-child(2):first-child .tabTitle {
-  margin: 0.75rem 1.25rem;
 }
 .tabcontainer .yui3-tabview-list .addtab {
   align-self: flex-end;
@@ -190,4 +161,36 @@
 .ck-editor__editable.ck-read-only .addtab,
 .ck-editor__editable.ck-read-only .addicon {
   display: none !important;
+}
+
+.tablinks table tr {
+  display: flex;
+}
+.tablinks table th {
+  border: 1px solid #ccc;
+}
+.tablinks table th:last-child {
+  justify-content: flex-end;
+}
+.tablinks table td {
+  border: 1px solid #ff0000;
+  margin: 0.75rem 1.25rem;
+}
+.tablinks:first-child table > thead > tr > th {
+  justify-content: flex-end;
+}
+.tablinks:first-child table > thead > tr > th .left-arrow {
+  visibility: hidden;
+}
+.tablinks:nth-last-child(2) table > thead > tr > th {
+  justify-content: flex-start;
+}
+.tablinks:nth-last-child(2) table > thead > tr > th .right-arrow {
+  visibility: hidden;
+}
+.tablinks:nth-last-child(2):first-child table > thead {
+  display: none;
+}
+.tablinks:nth-last-child(2):first-child .tabTitle {
+  margin: 0.75rem 1.25rem;
 }

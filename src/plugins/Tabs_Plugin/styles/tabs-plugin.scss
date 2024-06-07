@@ -81,54 +81,18 @@ $transition-speed: 200ms ease-in-out;
                     height: calc($tab-border-width * 2);
                 }
             }
-            // Editing buttons container
-            .tab-edit-bar {
-                align-items: center;
-                display: flex;
-                flex: 1 1 0;
 
-                .move-buttons-wrapper {
-                    display: flex;
-                    flex: 1 1 0;
-                    justify-content: space-between;
-                }
-            }
             // Title of the tab
             .tabTitle {
                 align-items: center;
                 display: flex;
                 font-weight: 700;
                 justify-content: center;
-                margin: $tab-x-margin $tab-y-margin;
+                // margin: $tab-x-margin $tab-y-margin;
                 min-width: 6rem;
                 position: relative;
                 text-align: center;
                 word-break: break-word;
-            }
-            // Align the 'right-arrow' left and hide the 'left-arrow' for the first tab
-            &:first-child .tab-edit-bar > .move-buttons-wrapper {
-                justify-content: flex-end;
-
-                .left-arrow {
-                    display: none;
-                }
-            }
-            // Align the 'left-arrow' left and hide the 'right-arrow' for the last tab
-            &:nth-last-child(2) .tab-edit-bar > .move-buttons-wrapper {
-                justify-content: flex-start;
-
-                .right-arrow {
-                    display: none;
-                }
-            }
-            // Hide the 'tab-edit-bar' if only one tab is visible
-            &:nth-last-child(2):first-child {
-                .tab-edit-bar {
-                    display: none;
-                }
-                .tabTitle {
-                    margin: $tab-x-margin $tab-y-margin;
-                }
             }
         }
         // Container for the add tab button
@@ -245,5 +209,55 @@ $transition-speed: 200ms ease-in-out;
     .addtab,
     .addicon {
         display: none !important;
+    }
+}
+
+.tablinks {
+    table {
+        tr {
+            display: flex;
+        }
+
+        th {
+            border: 1px solid #ccc;
+            // width: 28px;
+
+            &:last-child {
+                justify-content: flex-end;
+            }
+        }
+
+        td {
+            border: 1px solid #ff0000;
+            margin: $tab-x-margin $tab-y-margin;
+        }
+    }
+
+    // Align the 'move-right-button' left and hide the 'move-left-button' for the first tab
+    &:first-child table > thead > tr > th {
+        justify-content: flex-end;
+
+        // .move-left-button {
+        .left-arrow {
+            visibility: hidden;
+        }
+    }
+    // Align the 'move-left-button' left and hide the 'move-right-button' for the last tab
+    &:nth-last-child(2) table > thead > tr > th {
+        justify-content: flex-start;
+
+        // .move-right-button {
+        .right-arrow {
+            visibility: hidden;
+        }
+    }
+    // Hide the 'tab-edit-bar' if only one tab is visible
+    &:nth-last-child(2):first-child {
+        table > thead {
+            display: none;
+        }
+        .tabTitle {
+            margin: $tab-x-margin $tab-y-margin;
+        }
     }
 }
