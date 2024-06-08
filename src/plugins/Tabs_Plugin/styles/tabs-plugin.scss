@@ -22,7 +22,6 @@ $transition-speed: 200ms ease-in-out;
 // Main tabs plugin container
 .tabcontainer {
     background-color: $tab-bg-active;
-    border: 5px solid orange;
 
     // Tab list container
     .yui3-tabview-list {
@@ -89,7 +88,7 @@ $transition-speed: 200ms ease-in-out;
                 font-weight: 700;
                 justify-content: center;
                 // margin: $tab-x-margin $tab-y-margin;
-                min-width: 6rem;
+                min-width: 7rem;
                 position: relative;
                 text-align: center;
                 word-break: break-word;
@@ -127,6 +126,14 @@ $transition-speed: 200ms ease-in-out;
 }
 
 // Individual buttons (add, delete, move-left, move-right)
+
+.dropicon,
+.left-arrow,
+.right-arrow {
+    height: 1.75rem;
+    width: 1.75rem;
+}
+
 .addicon,
 .dropicon,
 .left-arrow,
@@ -134,22 +141,19 @@ $transition-speed: 200ms ease-in-out;
     background-color: transparent;
     border: 0;
     cursor: pointer;
-    padding: 0.5rem;
+    display: block;
     transition: background-image $transition-speed;
 
     &::before,
     &:hover::before {
+        background-position: center;
         background-repeat: no-repeat;
-        background-size: cover;
+        background-size: 1.25rem;
         content: '';
         display: block;
-        height: 1rem;
+        height: 1.75rem;
         transition: background-image $transition-speed;
-        width: 1rem;
-    }
-    span {
-        align-items: center;
-        display: none;
+        width: 1.75rem;
     }
 }
 
@@ -214,42 +218,25 @@ $transition-speed: 200ms ease-in-out;
 
 .tablinks {
     table {
-        tr {
-            display: flex;
-        }
+        margin: $tab-x-margin $tab-y-margin;
 
-        th {
-            border: 1px solid #ccc;
-            // width: 28px;
-
-            &:last-child {
-                justify-content: flex-end;
+        thead tr th {
+            &:nth-child(2) {
+                width: 100%;
             }
-        }
-
-        td {
-            border: 1px solid #ff0000;
-            margin: $tab-x-margin $tab-y-margin;
+            .right-arrow {
+                float: right;
+            }
         }
     }
 
     // Align the 'move-right-button' left and hide the 'move-left-button' for the first tab
-    &:first-child table > thead > tr > th {
-        justify-content: flex-end;
-
-        // .move-left-button {
-        .left-arrow {
-            visibility: hidden;
-        }
+    &:first-child table > thead > tr > th .left-arrow {
+        visibility: hidden;
     }
     // Align the 'move-left-button' left and hide the 'move-right-button' for the last tab
-    &:nth-last-child(2) table > thead > tr > th {
-        justify-content: flex-start;
-
-        // .move-right-button {
-        .right-arrow {
-            visibility: hidden;
-        }
+    &:nth-last-child(2) table > thead > tr > th .right-arrow {
+        visibility: hidden;
     }
     // Hide the 'tab-edit-bar' if only one tab is visible
     &:nth-last-child(2):first-child {

@@ -84,7 +84,8 @@ export function createTabListItem(writer, tabId) {
     const tabListTable_tbody_tr = writer.createElement('tabListTable_tr');
     const tabListTable_td = writer.createElement('tabListTable_td');
     const tabTitle = writer.createElement('tabTitle');
-    writer.insertText(`Tab Name ${tabId}`, tabTitle);
+    // writer.insertText(`Tab Name ${tabId}`, tabTitle);
+    writer.insertText(`Tab Name`, tabTitle);
 
     writer.append(tabTitle, tabListTable_td);
     writer.append(tabListTable_td, tabListTable_tbody_tr);

@@ -180,7 +180,6 @@ export default class TabsPluginEditing extends Plugin {
                 const li = writer.createContainerElement('li', {
                     class: classes ? `tablinks ${classes}` : 'tablinks',
                     'data-target': modelElement.getAttribute('data-target'),
-                    draggable: false,
                 });
                 return li;
             },
@@ -242,8 +241,7 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const div = writer.createContainerElement('div', {
                     class: 'left-arrow',
-                    title: modelElement.getAttribute('title') || 'Move Tab',
-                    draggable: false,
+                    title: 'Move Tab',
                 });
                 return div;
             },
@@ -254,8 +252,7 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const div = writer.createContainerElement('div', {
                     class: 'left-arrow',
-                    title: modelElement.getAttribute('title') || 'Move Tab',
-                    draggable: false,
+                    title: 'Move Tab',
                 });
                 return div;
             },
@@ -273,8 +270,7 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const div = writer.createContainerElement('div', {
                     class: 'right-arrow',
-                    title: modelElement.getAttribute('title') || 'Move Tab',
-                    draggable: false,
+                    title: 'Move Tab',
                 });
                 return div;
             },
@@ -285,8 +281,7 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const div = writer.createContainerElement('div', {
                     class: 'right-arrow',
-                    title: modelElement.getAttribute('title') || 'Move Tab',
-                    draggable: false,
+                    title: 'Move Tab',
                 });
                 return div;
             },
@@ -304,8 +299,7 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const div = writer.createContainerElement('div', {
                     class: 'dropicon',
-                    title: modelElement.getAttribute('title') || 'Delete Tab',
-                    draggable: false,
+                    title: 'Delete Tab',
                 });
                 return div;
             },
@@ -316,8 +310,7 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const div = writer.createContainerElement('div', {
                     class: 'dropicon',
-                    title: modelElement.getAttribute('title') || 'Delete Tab',
-                    draggable: false,
+                    title: 'Delete Tab',
                 });
                 return div;
             },
@@ -335,7 +328,6 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) =>
                 writer.createContainerElement('li', {
                     class: 'addtab',
-                    draggable: false,
                 }),
             converterPriority: 'high',
         });
@@ -344,7 +336,6 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const li = writer.createContainerElement('li', {
                     class: 'addtab',
-                    draggable: false,
                 });
                 return li;
             },
@@ -362,12 +353,8 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const div = writer.createContainerElement('div', {
                     class: 'addicon',
-                    title: modelElement.getAttribute('title') || 'Add Tab',
-                    draggable: false,
+                    title: 'Add Tab',
                 });
-                const textSpan = writer.createContainerElement('span', { draggable: false });
-                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Add Tab'));
-                writer.insert(writer.createPositionAt(div, 0), textSpan);
                 return div;
             },
             converterPriority: 'high',
@@ -377,13 +364,9 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const div = writer.createContainerElement('div', {
                     class: 'addicon',
-                    title: modelElement.getAttribute('title') || 'Add Tab',
-                    draggable: false,
+                    title: 'Add Tab',
                 });
-                const textSpan = writer.createContainerElement('span', { draggable: false });
-                writer.insert(writer.createPositionAt(textSpan, 0), writer.createText('Add Tab'));
-                writer.insert(writer.createPositionAt(div, 0), textSpan);
-                return toWidget(div, writer);
+                return div;
             },
             converterPriority: 'high',
         });

@@ -1,6 +1,5 @@
 .tabcontainer {
   background-color: #fff;
-  border: 5px solid orange;
 }
 .tabcontainer .yui3-tabview-list {
   align-items: stretch;
@@ -59,7 +58,7 @@
   display: flex;
   font-weight: 700;
   justify-content: center;
-  min-width: 6rem;
+  min-width: 7rem;
   position: relative;
   text-align: center;
   word-break: break-word;
@@ -87,6 +86,13 @@
   padding: 1rem;
 }
 
+.dropicon,
+.left-arrow,
+.right-arrow {
+  height: 1.75rem;
+  width: 1.75rem;
+}
+
 .addicon,
 .dropicon,
 .left-arrow,
@@ -94,7 +100,7 @@
   background-color: transparent;
   border: 0;
   cursor: pointer;
-  padding: 0.5rem;
+  display: block;
   transition: background-image 200ms ease-in-out;
 }
 .addicon::before, .addicon:hover::before,
@@ -104,20 +110,14 @@
 .left-arrow:hover::before,
 .right-arrow::before,
 .right-arrow:hover::before {
+  background-position: center;
   background-repeat: no-repeat;
-  background-size: cover;
+  background-size: 1.25rem;
   content: "";
   display: block;
-  height: 1rem;
+  height: 1.75rem;
   transition: background-image 200ms ease-in-out;
-  width: 1rem;
-}
-.addicon span,
-.dropicon span,
-.left-arrow span,
-.right-arrow span {
-  align-items: center;
-  display: none;
+  width: 1.75rem;
 }
 
 .left-arrow::before {
@@ -163,27 +163,17 @@
   display: none !important;
 }
 
-.tablinks table tr {
-  display: flex;
-}
-.tablinks table th {
-  border: 1px solid #ccc;
-}
-.tablinks table th:last-child {
-  justify-content: flex-end;
-}
-.tablinks table td {
-  border: 1px solid #ff0000;
+.tablinks table {
   margin: 0.75rem 1.25rem;
 }
-.tablinks:first-child table > thead > tr > th {
-  justify-content: flex-end;
+.tablinks table thead tr th:nth-child(2) {
+  width: 100%;
+}
+.tablinks table thead tr th .right-arrow {
+  float: right;
 }
 .tablinks:first-child table > thead > tr > th .left-arrow {
   visibility: hidden;
-}
-.tablinks:nth-last-child(2) table > thead > tr > th {
-  justify-content: flex-start;
 }
 .tablinks:nth-last-child(2) table > thead > tr > th .right-arrow {
   visibility: hidden;
