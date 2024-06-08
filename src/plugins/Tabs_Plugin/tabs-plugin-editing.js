@@ -21,6 +21,7 @@ export default class TabsPluginEditing extends Plugin {
         this._defineConverters();
     }
 
+    // Defines the schema for the tabs plugin elements.
     _defineSchema() {
         const schema = this.editor.model.schema;
 
@@ -170,13 +171,16 @@ export default class TabsPluginEditing extends Plugin {
                 classes: 'tablinks',
             },
             converterPriority: 'high',
+            // Converter function to handle the upcast conversion from view to model
             converter: (viewElement, { writer }) => {
                 const dataTarget = viewElement.getAttribute('data-target');
+                // If the 'data-target' attribute is missing, generate a new one using 'newTabId_list_content'
                 if (!dataTarget) {
                     writer.setAttribute('data-target', `#${newTabId_list_content}`, viewElement);
                 }
                 console.log('Upcast tabListItem data-target:', viewElement.getAttribute('data-target'));
                 const classes = viewElement.getAttribute('class');
+                // Create a model 'li' element with the class 'tablinks' and the 'data-target' attribute
                 return writer.createContainerElement('li', {
                     class: classes ? `tablinks ${classes}` : 'tablinks',
                     'data-target': viewElement.getAttribute('data-target'),
@@ -187,12 +191,14 @@ export default class TabsPluginEditing extends Plugin {
             model: 'tabListItem',
             view: (modelElement, { writer }) => {
                 let dataTarget = modelElement.getAttribute('data-target');
+                // If the 'data-target' attribute is missing, generate a new one using 'newTabId_list_content'
                 if (!dataTarget) {
                     dataTarget = `#${newTabId_list_content}`;
                     writer.setAttribute('data-target', dataTarget, modelElement);
                 }
                 console.log('Data downcast tabListItem data-target:', dataTarget);
                 const classes = modelElement.getAttribute('class');
+                // Create a view 'li' element with the class 'tablinks' and the 'data-target' attribute
                 return writer.createContainerElement('li', {
                     class: classes ? `tablinks ${classes}` : 'tablinks',
                     'data-target': dataTarget,
@@ -204,12 +210,14 @@ export default class TabsPluginEditing extends Plugin {
             model: 'tabListItem',
             view: (modelElement, { writer }) => {
                 let dataTarget = modelElement.getAttribute('data-target');
+                // If the 'data-target' attribute is missing, generate a new one using 'newTabId_list_content'
                 if (!dataTarget) {
                     dataTarget = `#${newTabId_list_content}`;
                     writer.setAttribute('data-target', dataTarget, modelElement);
                 }
                 console.log('Editing downcast tabListItem data-target:', dataTarget);
                 const classes = modelElement.getAttribute('class');
+                // Create a view 'li' element with the class 'tablinks' and the 'data-target' attribute
                 const li = writer.createContainerElement('li', {
                     class: classes ? `tablinks ${classes}` : 'tablinks',
                     'data-target': dataTarget,
@@ -433,13 +441,16 @@ export default class TabsPluginEditing extends Plugin {
                 classes: 'tabcontent',
             },
             converterPriority: 'high',
+            // Converter function to handle the upcast conversion from view to model
             converter: (viewElement, { writer }) => {
                 const id = viewElement.getAttribute('id');
+                // If the 'id' attribute is missing, generate a new one using 'newTabId_list_content'
                 if (!id) {
                     writer.setAttribute('id', newTabId_list_content, viewElement);
                 }
                 console.log('Upcast tabNestedContent id:', viewElement.getAttribute('id'));
                 const classes = viewElement.getAttribute('class');
+                // Create a model 'div' element with the class 'tabcontent' and the 'id' attribute
                 return writer.createEditableElement('div', {
                     class: classes ? `tabcontent ${classes}` : 'tabcontent',
                     id: viewElement.getAttribute('id'),
@@ -450,12 +461,14 @@ export default class TabsPluginEditing extends Plugin {
             model: 'tabNestedContent',
             view: (modelElement, { writer }) => {
                 let id = modelElement.getAttribute('id');
+                // If the 'id' attribute is missing, generate a new one using 'newTabId_list_content'
                 if (!id) {
                     id = newTabId_list_content;
                     writer.setAttribute('id', id, modelElement);
                 }
                 console.log('Data downcast tabNestedContent id:', id);
                 const classes = modelElement.getAttribute('class');
+                // Create a view 'div' element with the class 'tabcontent' and the 'id' attribute
                 return writer.createEditableElement('div', {
                     class: classes ? `tabcontent ${classes}` : 'tabcontent',
                     id: id,
@@ -467,16 +480,19 @@ export default class TabsPluginEditing extends Plugin {
             model: 'tabNestedContent',
             view: (modelElement, { writer }) => {
                 let id = modelElement.getAttribute('id');
+                // If the 'id' attribute is missing, generate a new one using 'newTabId_list_content'
                 if (!id) {
                     id = newTabId_list_content;
                     writer.setAttribute('id', id, modelElement);
                 }
                 console.log('Editing downcast tabNestedContent id:', id);
                 const classes = modelElement.getAttribute('class');
+                // Create a view 'div' element with the class 'tabcontent' and the 'id' attribute
                 const div = writer.createEditableElement('div', {
                     class: classes ? `tabcontent ${classes}` : 'tabcontent',
                     id: id,
                 });
+                // Make the 'div' element editable
                 return toWidgetEditable(div, writer);
             },
             converterPriority: 'high',

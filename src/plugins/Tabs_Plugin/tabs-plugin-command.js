@@ -12,6 +12,7 @@ export class TabsPluginCommand extends Command {
         const editor = this.editor;
         const model = editor.model;
 
+        // Change the model to insert a new tab
         model.change((writer) => {
             const tabId = generateTabId();
             const { tabListItem, tabNestedContent } = createTabElement(writer, tabId);
@@ -20,8 +21,11 @@ export class TabsPluginCommand extends Command {
             const tabContent = tabsRoot.getChild(1);
             const addTabButton = tabList.getChild(tabList.childCount - 1);
 
+            // Insert the new tab list item before the "Add Tab" button
             model.insertContent(tabListItem, writer.createPositionBefore(addTabButton));
+            // Append the new tab content to the tab content element
             model.append(tabNestedContent, tabContent);
+            // Set the selection to the newly created tab title
             writer.setSelection(tabListItem.getChild(1).getChild(0), 0);
         });
     }
@@ -30,6 +34,7 @@ export class TabsPluginCommand extends Command {
         const model = this.editor.model;
         const selection = model.document.selection;
         const tabsPluginElement = model.document.getRoot().getChild(0);
+        // Enable the command if there is a tabsPlugin element and the selection allows for a tabListItem
         this.isEnabled = !!tabsPluginElement && model.schema.checkChild(selection.getFirstPosition(), 'tabListItem');
     }
 }
@@ -44,6 +49,7 @@ export class MoveTabCommand extends Command {
             const currentTabIndex = tabListItems.findIndex((item) => item.getAttribute('data-target') === `#${tabId}`);
             const targetIndex = currentTabIndex + direction;
 
+            // Move the tab to the new position if it is within bounds
             if (targetIndex >= 0 && targetIndex < tabListItems.length) {
                 writer.move(
                     writer.createRangeOn(tabListItems[currentTabIndex]),
@@ -62,6 +68,7 @@ export class DeleteTabCommand extends Command {
             const tabsRoot = model.document.getRoot();
             const tabListItems = findAllDescendants(tabsRoot, (node) => node.is('element', 'tabListItem'));
 
+            // Ensure that at least one tab remains
             if (tabListItems.length <= 1) {
                 console.log('Cannot delete the last tab.');
                 return;
@@ -73,6 +80,7 @@ export class DeleteTabCommand extends Command {
                 (node) => node.is('element', 'tabNestedContent') && node.getAttribute('id') === tabId
             )[0];
 
+            // Remove the tab and its content if found
             if (itemToDelete && contentToDelete) {
                 writer.remove(itemToDelete);
                 writer.remove(contentToDelete);
