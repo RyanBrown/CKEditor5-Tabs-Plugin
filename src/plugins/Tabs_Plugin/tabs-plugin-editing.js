@@ -2,6 +2,7 @@ import { Plugin } from '@ckeditor/ckeditor5-core';
 import { toWidget, toWidgetEditable } from '@ckeditor/ckeditor5-widget';
 import { Widget } from '@ckeditor/ckeditor5-widget';
 import { TabsPluginCommand, DeleteTabCommand, MoveTabCommand } from './tabs-plugin-command';
+import { generateTabId } from './tabs-plugin-command';
 
 export default class TabsPluginEditing extends Plugin {
     static get requires() {
@@ -159,27 +160,56 @@ export default class TabsPluginEditing extends Plugin {
         // Conversion for 'tabListItem' element
         conversion.for('upcast').elementToElement({
             model: 'tabListItem',
-            view: { name: 'li', classes: 'tablinks' },
+            view: {
+                name: 'li',
+                classes: 'tablinks',
+            },
             converterPriority: 'high',
+            converter: (viewElement, { writer }) => {
+                const dataTarget = viewElement.getAttribute('data-target');
+                if (!dataTarget) {
+                    const newTabId = generateTabId();
+                    writer.setAttribute('data-target', `#${newTabId}`, viewElement);
+                }
+                const classes = viewElement.getAttribute('class');
+                return writer.createContainerElement('li', {
+                    class: classes ? `tablinks ${classes}` : 'tablinks',
+                    'data-target': viewElement.getAttribute('data-target'),
+                });
+            },
         });
+
         conversion.for('dataDowncast').elementToElement({
             model: 'tabListItem',
             view: (modelElement, { writer }) => {
+                let dataTarget = modelElement.getAttribute('data-target');
+                if (!dataTarget) {
+                    const newTabId = generateTabId();
+                    dataTarget = `#${newTabId}`;
+                    writer.setAttribute('data-target', dataTarget, modelElement);
+                }
                 const classes = modelElement.getAttribute('class');
                 return writer.createContainerElement('li', {
                     class: classes ? `tablinks ${classes}` : 'tablinks',
-                    'data-target': modelElement.getAttribute('data-target'),
+                    'data-target': dataTarget,
                 });
             },
             converterPriority: 'high',
         });
+
         conversion.for('editingDowncast').elementToElement({
             model: 'tabListItem',
             view: (modelElement, { writer }) => {
+                let dataTarget = modelElement.getAttribute('data-target');
+                if (!dataTarget) {
+                    const newTabId = generateTabId();
+                    dataTarget = `#${newTabId}`;
+                    writer.setAttribute('data-target', dataTarget, modelElement);
+                }
                 const classes = modelElement.getAttribute('class');
                 const li = writer.createContainerElement('li', {
                     class: classes ? `tablinks ${classes}` : 'tablinks',
-                    'data-target': modelElement.getAttribute('data-target'),
+                    'data-target': dataTarget,
                 });
                 return li;
             },
@@ -395,27 +425,56 @@ export default class TabsPluginEditing extends Plugin {
         // Conversion for 'tabNestedContent' element
         conversion.for('upcast').elementToElement({
             model: 'tabNestedContent',
-            view: { name: 'div', classes: 'tabcontent' },
+            view: {
+                name: 'div',
+                classes: 'tabcontent',
+            },
             converterPriority: 'high',
+            converter: (viewElement, { writer }) => {
+                const id = viewElement.getAttribute('id');
+                if (!id) {
+                    const newTabId = generateTabId();
+                    writer.setAttribute('id', newTabId, viewElement);
+                }
+                const classes = viewElement.getAttribute('class');
+                return writer.createEditableElement('div', {
+                    class: classes ? `tabcontent ${classes}` : 'tabcontent',
+                    id: viewElement.getAttribute('id'),
+                });
+            },
         });
+
         conversion.for('dataDowncast').elementToElement({
             model: 'tabNestedContent',
             view: (modelElement, { writer }) => {
+                let id = modelElement.getAttribute('id');
+                if (!id) {
+                    const newTabId = generateTabId();
+                    id = newTabId;
+                    writer.setAttribute('id', id, modelElement);
+                }
                 const classes = modelElement.getAttribute('class');
                 return writer.createEditableElement('div', {
                     class: classes ? `tabcontent ${classes}` : 'tabcontent',
-                    id: modelElement.getAttribute('id'),
+                    id: id,
                 });
             },
             converterPriority: 'high',
         });
+
         conversion.for('editingDowncast').elementToElement({
             model: 'tabNestedContent',
             view: (modelElement, { writer }) => {
+                let id = modelElement.getAttribute('id');
+                if (!id) {
+                    const newTabId = generateTabId();
+                    id = newTabId;
+                    writer.setAttribute('id', id, modelElement);
+                }
                 const classes = modelElement.getAttribute('class');
                 const div = writer.createEditableElement('div', {
                     class: classes ? `tabcontent ${classes}` : 'tabcontent',
-                    id: modelElement.getAttribute('id'),
+                    id: id,
                 });
                 return toWidgetEditable(div, writer);
             },
