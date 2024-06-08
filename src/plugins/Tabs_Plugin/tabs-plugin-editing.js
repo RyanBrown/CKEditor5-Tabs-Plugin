@@ -4,6 +4,8 @@ import { Widget } from '@ckeditor/ckeditor5-widget';
 import { TabsPluginCommand, DeleteTabCommand, MoveTabCommand } from './tabs-plugin-command';
 import { generateTabId } from './tabs-plugin-command';
 
+let newTabId_list_content;
+
 export default class TabsPluginEditing extends Plugin {
     static get requires() {
         return [Widget];
@@ -114,6 +116,9 @@ export default class TabsPluginEditing extends Plugin {
 
     // Defines the converters for the tabs plugin elements.
     _defineConverters() {
+        // Generate a unique tab ID and assign it to newTabId_list_content
+        newTabId_list_content = generateTabId();
+
         const conversion = this.editor.conversion;
 
         // Conversion for 'tabsPlugin' element
@@ -168,8 +173,7 @@ export default class TabsPluginEditing extends Plugin {
             converter: (viewElement, { writer }) => {
                 const dataTarget = viewElement.getAttribute('data-target');
                 if (!dataTarget) {
-                    const newTabId = generateTabId();
-                    writer.setAttribute('data-target', `#${newTabId}`, viewElement);
+                    writer.setAttribute('data-target', `#${newTabId_list_content}`, viewElement);
                 }
                 console.log('Upcast tabListItem data-target:', viewElement.getAttribute('data-target'));
                 const classes = viewElement.getAttribute('class');
@@ -184,8 +188,7 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 let dataTarget = modelElement.getAttribute('data-target');
                 if (!dataTarget) {
-                    const newTabId = generateTabId();
-                    dataTarget = `#${newTabId}`;
+                    dataTarget = `#${newTabId_list_content}`;
                     writer.setAttribute('data-target', dataTarget, modelElement);
                 }
                 console.log('Data downcast tabListItem data-target:', dataTarget);
@@ -202,8 +205,7 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 let dataTarget = modelElement.getAttribute('data-target');
                 if (!dataTarget) {
-                    const newTabId = generateTabId();
-                    dataTarget = `#${newTabId}`;
+                    dataTarget = `#${newTabId_list_content}`;
                     writer.setAttribute('data-target', dataTarget, modelElement);
                 }
                 console.log('Editing downcast tabListItem data-target:', dataTarget);
@@ -434,8 +436,7 @@ export default class TabsPluginEditing extends Plugin {
             converter: (viewElement, { writer }) => {
                 const id = viewElement.getAttribute('id');
                 if (!id) {
-                    const newTabId = generateTabId();
-                    writer.setAttribute('id', newTabId, viewElement);
+                    writer.setAttribute('id', newTabId_list_content, viewElement);
                 }
                 console.log('Upcast tabNestedContent id:', viewElement.getAttribute('id'));
                 const classes = viewElement.getAttribute('class');
@@ -450,8 +451,7 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 let id = modelElement.getAttribute('id');
                 if (!id) {
-                    const newTabId = generateTabId();
-                    id = newTabId;
+                    id = newTabId_list_content;
                     writer.setAttribute('id', id, modelElement);
                 }
                 console.log('Data downcast tabNestedContent id:', id);
@@ -468,8 +468,7 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 let id = modelElement.getAttribute('id');
                 if (!id) {
-                    const newTabId = generateTabId();
-                    id = newTabId;
+                    id = newTabId_list_content;
                     writer.setAttribute('id', id, modelElement);
                 }
                 console.log('Editing downcast tabNestedContent id:', id);
