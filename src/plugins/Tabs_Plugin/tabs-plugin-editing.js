@@ -171,6 +171,7 @@ export default class TabsPluginEditing extends Plugin {
                     const newTabId = generateTabId();
                     writer.setAttribute('data-target', `#${newTabId}`, viewElement);
                 }
+                console.log('Upcast tabListItem data-target:', viewElement.getAttribute('data-target'));
                 const classes = viewElement.getAttribute('class');
                 return writer.createContainerElement('li', {
                     class: classes ? `tablinks ${classes}` : 'tablinks',
@@ -178,7 +179,6 @@ export default class TabsPluginEditing extends Plugin {
                 });
             },
         });
-
         conversion.for('dataDowncast').elementToElement({
             model: 'tabListItem',
             view: (modelElement, { writer }) => {
@@ -188,6 +188,7 @@ export default class TabsPluginEditing extends Plugin {
                     dataTarget = `#${newTabId}`;
                     writer.setAttribute('data-target', dataTarget, modelElement);
                 }
+                console.log('Data downcast tabListItem data-target:', dataTarget);
                 const classes = modelElement.getAttribute('class');
                 return writer.createContainerElement('li', {
                     class: classes ? `tablinks ${classes}` : 'tablinks',
@@ -196,7 +197,6 @@ export default class TabsPluginEditing extends Plugin {
             },
             converterPriority: 'high',
         });
-
         conversion.for('editingDowncast').elementToElement({
             model: 'tabListItem',
             view: (modelElement, { writer }) => {
@@ -206,6 +206,7 @@ export default class TabsPluginEditing extends Plugin {
                     dataTarget = `#${newTabId}`;
                     writer.setAttribute('data-target', dataTarget, modelElement);
                 }
+                console.log('Editing downcast tabListItem data-target:', dataTarget);
                 const classes = modelElement.getAttribute('class');
                 const li = writer.createContainerElement('li', {
                     class: classes ? `tablinks ${classes}` : 'tablinks',
@@ -436,6 +437,7 @@ export default class TabsPluginEditing extends Plugin {
                     const newTabId = generateTabId();
                     writer.setAttribute('id', newTabId, viewElement);
                 }
+                console.log('Upcast tabNestedContent id:', viewElement.getAttribute('id'));
                 const classes = viewElement.getAttribute('class');
                 return writer.createEditableElement('div', {
                     class: classes ? `tabcontent ${classes}` : 'tabcontent',
@@ -443,7 +445,6 @@ export default class TabsPluginEditing extends Plugin {
                 });
             },
         });
-
         conversion.for('dataDowncast').elementToElement({
             model: 'tabNestedContent',
             view: (modelElement, { writer }) => {
@@ -453,6 +454,7 @@ export default class TabsPluginEditing extends Plugin {
                     id = newTabId;
                     writer.setAttribute('id', id, modelElement);
                 }
+                console.log('Data downcast tabNestedContent id:', id);
                 const classes = modelElement.getAttribute('class');
                 return writer.createEditableElement('div', {
                     class: classes ? `tabcontent ${classes}` : 'tabcontent',
@@ -461,7 +463,6 @@ export default class TabsPluginEditing extends Plugin {
             },
             converterPriority: 'high',
         });
-
         conversion.for('editingDowncast').elementToElement({
             model: 'tabNestedContent',
             view: (modelElement, { writer }) => {
@@ -471,6 +472,7 @@ export default class TabsPluginEditing extends Plugin {
                     id = newTabId;
                     writer.setAttribute('id', id, modelElement);
                 }
+                console.log('Editing downcast tabNestedContent id:', id);
                 const classes = modelElement.getAttribute('class');
                 const div = writer.createEditableElement('div', {
                     class: classes ? `tabcontent ${classes}` : 'tabcontent',
