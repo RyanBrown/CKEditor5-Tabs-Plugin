@@ -101,6 +101,10 @@ $transition-speed: 200ms ease-in-out;
 
             .addicon {
                 padding: $tab-x-padding $tab-y-padding;
+
+                br {
+                    display: none;
+                }
             }
         }
     }
