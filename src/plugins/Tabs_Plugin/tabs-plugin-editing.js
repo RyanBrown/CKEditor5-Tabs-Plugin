@@ -49,6 +49,7 @@ export default class TabsPluginEditing extends Plugin {
             allowAttributes: ['class'],
             allowContentOf: '$block',
             allowIn: 'tabListTable_td',
+            inheritAllFrom: '$blockObject', // Prevent nested tab plugin
             isLimit: true,
         });
         schema.register('tabContent', {
