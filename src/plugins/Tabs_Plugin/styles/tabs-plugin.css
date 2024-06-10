@@ -18,7 +18,6 @@
   flex-direction: column;
   justify-content: center;
   max-width: 20rem;
-  min-height: 5.625rem;
   min-width: 10rem;
   padding: 0;
   position: relative;
@@ -57,18 +56,38 @@
   align-items: center;
   display: flex;
   font-weight: 700;
+  height: 100%;
   justify-content: center;
   min-width: 7rem;
+  padding: 0 0.375rem;
   position: relative;
   text-align: center;
   word-break: break-word;
 }
 .tabcontainer .yui3-tabview-list .addtab {
   align-self: flex-end;
-  padding: 0;
 }
 .tabcontainer .yui3-tabview-list .addtab .addicon {
-  padding: 1.5rem 1.75rem;
+  cursor: pointer;
+  display: block;
+  padding: 1.5rem;
+  transition: background-image 200ms ease-in-out;
+}
+.tabcontainer .yui3-tabview-list .addtab .addicon::before {
+  background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#333333'/%3E%3C/svg%3E");
+}
+.tabcontainer .yui3-tabview-list .addtab .addicon:hover::before {
+  background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#266de2'/%3E%3C/svg%3E");
+}
+.tabcontainer .yui3-tabview-list .addtab .addicon::before, .tabcontainer .yui3-tabview-list .addtab .addicon:hover::before {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 1.5rem;
+  content: "";
+  display: block;
+  height: 1.5rem;
+  transition: background-image 200ms ease-in-out;
+  width: 1.5rem;
 }
 .tabcontainer .yui3-tabview-list .addtab .addicon br {
   display: none;
@@ -92,23 +111,15 @@
 .dropicon,
 .left-arrow,
 .right-arrow {
-  height: 1.75rem;
-  width: 1.75rem;
-}
-
-.addicon,
-.dropicon,
-.left-arrow,
-.right-arrow {
   background-color: transparent;
   border: 0;
   cursor: pointer;
   display: block;
+  height: 1.5rem;
   transition: background-image 200ms ease-in-out;
+  width: 1.5rem;
 }
-.addicon::before, .addicon:hover::before,
-.dropicon::before,
-.dropicon:hover::before,
+.dropicon::before, .dropicon:hover::before,
 .left-arrow::before,
 .left-arrow:hover::before,
 .right-arrow::before,
@@ -118,9 +129,9 @@
   background-size: 1.25rem;
   content: "";
   display: block;
-  height: 1.75rem;
+  height: 1.5rem;
   transition: background-image 200ms ease-in-out;
-  width: 1.75rem;
+  width: 1.5rem;
 }
 
 .left-arrow::before {
@@ -144,13 +155,6 @@
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='#ff0000'/%3E%3C/svg%3E");
 }
 
-.addicon::before {
-  background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#333333'/%3E%3C/svg%3E");
-}
-.addicon:hover::before {
-  background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#266de2'/%3E%3C/svg%3E");
-}
-
 .ck.ck-widget__type-around__button.ck-widget__type-around__button_before,
 .ck.ck-widget__type-around__button.ck-widget__type-around__button_after {
   z-index: 1001;
@@ -167,13 +171,22 @@
 }
 
 .tablinks table {
-  margin: 0.75rem 1.25rem;
+  height: 100%;
+  margin: 0 0.75rem 1rem;
+}
+.tablinks table thead tr th {
+  opacity: 0;
+  transition: opacity 200ms ease-in-out;
 }
 .tablinks table thead tr th:nth-child(2) {
   width: 100%;
 }
 .tablinks table thead tr th .right-arrow {
   float: right;
+}
+.tablinks:hover table thead tr th {
+  opacity: 1;
+  transition: opacity 200ms ease-in-out;
 }
 .tablinks:first-child table > thead > tr > th .left-arrow {
   visibility: hidden;
@@ -182,8 +195,5 @@
   visibility: hidden;
 }
 .tablinks:nth-last-child(2):first-child table > thead {
-  display: none;
-}
-.tablinks:nth-last-child(2):first-child .tabTitle {
-  margin: 0.75rem 1.25rem;
+  opacity: 0;
 }

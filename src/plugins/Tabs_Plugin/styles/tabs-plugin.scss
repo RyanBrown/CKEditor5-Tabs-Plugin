@@ -42,7 +42,6 @@ $transition-speed: 200ms ease-in-out;
             flex-direction: column;
             justify-content: center;
             max-width: 20rem;
-            min-height: 5.625rem;
             min-width: 10rem;
             padding: 0;
             position: relative;
@@ -86,9 +85,10 @@ $transition-speed: 200ms ease-in-out;
                 align-items: center;
                 display: flex;
                 font-weight: 700;
+                height: 100%;
                 justify-content: center;
-                // margin: $tab-x-margin $tab-y-margin;
                 min-width: 7rem;
+                padding: 0 0.375rem;
                 position: relative;
                 text-align: center;
                 word-break: break-word;
@@ -97,11 +97,32 @@ $transition-speed: 200ms ease-in-out;
         // Container for the add tab button
         .addtab {
             align-self: flex-end;
-            padding: 0;
 
+            // Add tab button styles
             .addicon {
-                padding: $tab-x-padding $tab-y-padding;
+                cursor: pointer;
+                display: block;
+                padding: 1.5rem;
+                transition: background-image $transition-speed;
 
+                &::before {
+                    background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#333333'/%3E%3C/svg%3E");
+                }
+                &:hover::before {
+                    background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#266de2'/%3E%3C/svg%3E");
+                }
+                &::before,
+                &:hover::before {
+                    background-position: center;
+                    background-repeat: no-repeat;
+                    background-size: 1.5rem;
+                    content: '';
+                    display: block;
+                    height: 1.5rem;
+                    transition: background-image $transition-speed;
+                    width: 1.5rem;
+                }
+                // Hide nested content from CKEditor
                 br {
                     display: none;
                 }
@@ -129,16 +150,7 @@ $transition-speed: 200ms ease-in-out;
     }
 }
 
-// Individual buttons (add, delete, move-left, move-right)
-
-.dropicon,
-.left-arrow,
-.right-arrow {
-    height: 1.75rem;
-    width: 1.75rem;
-}
-
-.addicon,
+// Individual buttons (delete, move-left, move-right)
 .dropicon,
 .left-arrow,
 .right-arrow {
@@ -146,7 +158,9 @@ $transition-speed: 200ms ease-in-out;
     border: 0;
     cursor: pointer;
     display: block;
+    height: 1.5rem;
     transition: background-image $transition-speed;
+    width: 1.5rem;
 
     &::before,
     &:hover::before {
@@ -155,9 +169,9 @@ $transition-speed: 200ms ease-in-out;
         background-size: 1.25rem;
         content: '';
         display: block;
-        height: 1.75rem;
+        height: 1.5rem;
         transition: background-image $transition-speed;
-        width: 1.75rem;
+        width: 1.5rem;
     }
 }
 
@@ -191,16 +205,6 @@ $transition-speed: 200ms ease-in-out;
     }
 }
 
-// Add tab button
-.addicon {
-    &::before {
-        background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#333333'/%3E%3C/svg%3E");
-    }
-    &:hover::before {
-        background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#266de2'/%3E%3C/svg%3E");
-    }
-}
-
 // Set the z-index higher than the tabs for type-around buttons
 .ck.ck-widget__type-around__button.ck-widget__type-around__button_before,
 .ck.ck-widget__type-around__button.ck-widget__type-around__button_after {
@@ -222,7 +226,14 @@ $transition-speed: 200ms ease-in-out;
 
 .tablinks {
     table {
-        margin: $tab-x-margin $tab-y-margin;
+        height: 100%;
+        margin: 0 $tab-x-margin 1rem;
+
+        // Hide the tabs arrow and delete button
+        thead tr th {
+            opacity: 0;
+            transition: opacity $transition-speed;
+        }
 
         thead tr th {
             &:nth-child(2) {
@@ -231,6 +242,14 @@ $transition-speed: 200ms ease-in-out;
             .right-arrow {
                 float: right;
             }
+        }
+    }
+
+    &:hover {
+        // Show the tabs arrow and delete button on hover
+        table thead tr th {
+            opacity: 1;
+            transition: opacity $transition-speed;
         }
     }
 
@@ -245,10 +264,7 @@ $transition-speed: 200ms ease-in-out;
     // Hide the 'tab-edit-bar' if only one tab is visible
     &:nth-last-child(2):first-child {
         table > thead {
-            display: none;
-        }
-        .tabTitle {
-            margin: $tab-x-margin $tab-y-margin;
+            opacity: 0;
         }
     }
 }
