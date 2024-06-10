@@ -1,6 +1,7 @@
 export default class TabsPluginUI extends Plugin {
     init(): void;
     _insertTabsPlugin(editor: any): void;
+    _updateButtonState(button: any): void;
     _registerEventHandlers(editor: any): void;
     _updateEmptyTabTitles(editor: any): void;
     _handleTabClick(editor: any, target: any, evt: any): void;

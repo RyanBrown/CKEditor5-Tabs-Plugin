@@ -23,6 +23,9 @@ export default class TabsPluginUI extends Plugin {
                 tooltip: true,
                 withText: false,
             });
+            // Disable the button if the tabs plugin already exists
+            this._updateButtonState(button);
+
             button.on('execute', () => {
                 editor.model.change((writer) => {
                     // Get the root element of the document
@@ -38,13 +41,28 @@ export default class TabsPluginUI extends Plugin {
                             tabsPluginElement,
                             editor.model.document.selection.getFirstPosition()
                         );
+                        // Update the button state after insertion
+                        this._updateButtonState(button);
                     } else {
                         console.warn('Tabs Plugin can only be inserted once.');
                     }
                 });
             });
+            // Listen for changes in the model to update the button state
+            editor.model.document.on('change:data', () => {
+                this._updateButtonState(button);
+            });
             return button;
         });
+    }
+
+    // Updates the state of the tabs plugin button (enabled/disabled)
+    _updateButtonState(button) {
+        const editor = this.editor;
+        const root = editor.model.document.getRoot();
+        const existingTabsPlugin = Array.from(root.getChildren()).find((child) => child.is('element', 'tabsPlugin'));
+
+        button.isEnabled = !existingTabsPlugin;
     }
 
     // Registers event handlers for the tabs plugin.
