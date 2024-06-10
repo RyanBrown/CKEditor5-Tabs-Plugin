@@ -25,8 +25,22 @@ export default class TabsPluginUI extends Plugin {
             });
             button.on('execute', () => {
                 editor.model.change((writer) => {
-                    const tabsPluginElement = createTabsPluginElement(writer);
-                    editor.model.insertContent(tabsPluginElement, editor.model.document.selection.getFirstPosition());
+                    // Get the root element of the document
+                    const root = editor.model.document.getRoot();
+                    // Check if the tabs plugin element already exists
+                    const existingTabsPlugin = Array.from(root.getChildren()).find((child) =>
+                        child.is('element', 'tabsPlugin')
+                    );
+                    // If the tabs plugin does not exist, create and insert it
+                    if (!existingTabsPlugin) {
+                        const tabsPluginElement = createTabsPluginElement(writer);
+                        editor.model.insertContent(
+                            tabsPluginElement,
+                            editor.model.document.selection.getFirstPosition()
+                        );
+                    } else {
+                        console.warn('Tabs Plugin can only be inserted once.');
+                    }
                 });
             });
             return button;
