@@ -1,6 +1,7 @@
 export default class TabsPluginEditing extends Plugin {
     static get requires(): (typeof Widget)[];
     init(): void;
+    _preventButtonClick(evt: any): void;
     _defineSchema(): void;
     _defineConverters(): void;
 }

@@ -68,6 +68,8 @@ export default class TabsPluginUI extends Plugin {
 
     // Registers event handlers for the tabs plugin.
     _registerEventHandlers(editor) {
+        const commandsToDisable = ['link', 'bold', 'italic', 'underline', 'strikethrough', 'subscript', 'superscript'];
+
         editor.editing.view.document.on(
             'click',
             (evt, data) => {
@@ -87,35 +89,52 @@ export default class TabsPluginUI extends Plugin {
             { priority: 'high' }
         ); // Ensure high priority to avoid conflicts with other plugins
 
-        editor.editing.view.document.on('click', (evt, data) => {
-            const target = data.target;
-            if (target.hasClass('tablinks') || target.hasClass('tabTitle')) {
-                this._handleTabClick(editor, target, evt);
+        editor.editing.view.document.on('focus', (evt, data) => {
+            if (data.target.hasClass('tabTitle')) {
+                commandsToDisable.forEach((commandName) => {
+                    const command = editor.commands.get(commandName);
+                    if (command) {
+                        command.forceDisabled('tabTitle');
+                    }
+                });
             }
         });
 
-        editor.model.document.on('change:data', () => {
-            this._updateEmptyTabTitles(editor);
+        editor.editing.view.document.on('blur', (evt, data) => {
+            if (data.target.hasClass('tabTitle')) {
+                commandsToDisable.forEach((commandName) => {
+                    const command = editor.commands.get(commandName);
+                    if (command) {
+                        command.clearForceDisabled('tabTitle');
+                    }
+                });
+            }
         });
 
-        // // New code to handle disabling and enabling toolbar buttons
-        // editor.editing.view.document.on('change:isFocused', (evt, data) => {
-        //     const viewRoot = editor.editing.view.document.getRoot();
-        //     const tabTitleElements = findAllDescendants(
-        //         viewRoot,
-        //         (node) => node.is('element', 'div') && node.hasClass('tabTitle')
-        //     );
+        // Disable the specified buttons if a tabTitle is focused during toolbar rendering
+        editor.ui.on('ready', () => {
+            commandsToDisable.forEach((commandName) => {
+                const button = editor.ui.view.toolbar.items.find(
+                    (item) => item.buttonView && item.buttonView.commandName === commandName
+                );
+                if (button) {
+                    button.on('execute', (evt) => this._preventButtonClick(evt, button), { priority: 'high' });
+                }
+            });
+        });
+    }
 
-        //     const isFocusedInTabTitle = tabTitleElements.some((element) => element.isFocused);
-
-        //     const toolbarItems = ['bold', 'italic', 'underline', 'strikethrough', 'subscript', 'superscript', 'link'];
-        //     toolbarItems.forEach((item) => {
-        //         const command = editor.commands.get(item);
-        //         if (command) {
-        //             command.isEnabled = !isFocusedInTabTitle;
-        //         }
-        //     });
-        // });
+    // Prevent button click if tabTitle is focused
+    _preventButtonClick(evt, button) {
+        const editor = this.editor;
+        const focusedElement = editor.editing.view.document.selection.editableElement;
+        if (focusedElement && focusedElement.hasClass('tabTitle')) {
+            evt.stop();
+            evt.preventDefault();
+            button.isEnabled = false;
+        } else {
+            button.isEnabled = true;
+        }
     }
 
     // Updates empty tab titles with a default value.
@@ -141,26 +160,6 @@ export default class TabsPluginUI extends Plugin {
             }
         }
     }
-
-    // _disableToolbarButtons(editor) {
-    //     const toolbarItems = ['bold', 'italic', 'underline', 'strikethrough', 'subscript', 'superscript', 'link'];
-    //     toolbarItems.forEach((item) => {
-    //         const command = editor.commands.get(item);
-    //         if (command) {
-    //             command.forceDisabled('tabTitle');
-    //         }
-    //     });
-    // }
-
-    // _enableToolbarButtons(editor) {
-    //     const toolbarItems = ['bold', 'italic', 'underline', 'strikethrough', 'subscript', 'superscript', 'link'];
-    //     toolbarItems.forEach((item) => {
-    //         const command = editor.commands.get(item);
-    //         if (command) {
-    //             command.clearForceDisabled('tabTitle');
-    //         }
-    //     });
-    // }
 
     // Handles the tab click event.
     _handleTabClick(editor, target, evt) {
