@@ -242,10 +242,11 @@ $transition-speed: 200ms ease-in-out;
     &:nth-last-child(2) table > thead > tr > th .right-arrow {
         visibility: hidden;
     }
-    // Hide the 'tab-edit-bar' if only one tab is visible
-    &:nth-last-child(2):first-child {
-        table > thead {
-            opacity: 0;
+    // Hide the 'left and right arrow' if only one tab is visible
+    &:nth-last-child(2):first-child table > thead > tr > th {
+        .left-arrow,
+        .right-arrow {
+            visibility: hidden;
         }
     }
 }
@@ -275,7 +276,7 @@ $transition-speed: 200ms ease-in-out;
     }
 }
 
-// Custom delete confirmation modal
+// Custom delete confirmation modal styles
 .confirm-delete-modal {
     background-color: rgba(239, 239, 239, 0.8);
     height: 100%;

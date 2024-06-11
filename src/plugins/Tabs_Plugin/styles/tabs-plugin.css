@@ -179,8 +179,9 @@
 .tablinks:nth-last-child(2) table > thead > tr > th .right-arrow {
   visibility: hidden;
 }
-.tablinks:nth-last-child(2):first-child table > thead {
-  opacity: 0;
+.tablinks:nth-last-child(2):first-child table > thead > tr > th .left-arrow,
+.tablinks:nth-last-child(2):first-child table > thead > tr > th .right-arrow {
+  visibility: hidden;
 }
 
 .ck.ck-widget__type-around__button.ck-widget__type-around__button_before,

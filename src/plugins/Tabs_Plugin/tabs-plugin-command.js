@@ -68,9 +68,12 @@ export class DeleteTabCommand extends Command {
             const tabsRoot = model.document.getRoot();
             const tabListItems = findAllDescendants(tabsRoot, (node) => node.is('element', 'tabListItem'));
 
-            // Ensure that at least one tab remains
+            // If only one tab is remaining, remove the entire tabsPlugin component
             if (tabListItems.length <= 1) {
-                console.log('Cannot delete the last tab.');
+                const tabsPlugin = findAllDescendants(tabsRoot, (node) => node.is('element', 'tabsPlugin'))[0];
+                if (tabsPlugin) {
+                    writer.remove(tabsPlugin);
+                }
                 return;
             }
 

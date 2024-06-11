@@ -239,6 +239,7 @@ export default class TabsPluginUI extends Plugin {
             editor.model.change((writer) => {
                 editor.execute('deleteTab', tabId);
 
+                // Activate the next tab if the deleted tab was active
                 if (wasActive) {
                     const tabList = tabListItem.parent;
                     const tabListItems = Array.from(tabList.getChildren()).filter(
