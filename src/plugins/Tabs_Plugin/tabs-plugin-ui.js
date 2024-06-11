@@ -11,6 +11,7 @@ export default class TabsPluginUI extends Plugin {
         const editor = this.editor;
         this._insertTabsPlugin(editor);
         this._registerEventHandlers(editor);
+        this._createConfirmationModal();
     }
 
     // Inserts the tabs plugin button into the editor's UI.
@@ -227,25 +228,37 @@ export default class TabsPluginUI extends Plugin {
         const tabId = tabListItem.getAttribute('data-target').slice(1);
         const wasActive = tabListItem.hasClass('active');
 
-        // Display confirmation dialog
-        // if (confirm('Are you sure you want to delete this tab?')) {
-        editor.model.change((writer) => {
-            editor.execute('deleteTab', tabId);
+        // Show the custom confirmation dialog
+        const modal = document.querySelector('.confirm-delete-modal');
+        const confirmYes = document.querySelector('.confirm-delete-yes-btn');
+        const confirmNo = document.querySelector('.confirm-delete-no-btn');
 
-            if (wasActive) {
-                const tabList = tabListItem.parent;
-                const tabListItems = Array.from(tabList.getChildren()).filter(
-                    (child) => child.is('element', 'li') && child.hasClass('tablinks')
-                );
-                const index = tabListItems.indexOf(tabListItem);
+        modal.style.display = 'block';
 
-                const nextTab = tabListItems[index - 1] || tabListItems[index + 1];
-                if (nextTab) {
-                    this._activateTab(editor, nextTab);
+        confirmYes.onclick = () => {
+            modal.style.display = 'none';
+            editor.model.change((writer) => {
+                editor.execute('deleteTab', tabId);
+
+                if (wasActive) {
+                    const tabList = tabListItem.parent;
+                    const tabListItems = Array.from(tabList.getChildren()).filter(
+                        (child) => child.is('element', 'li') && child.hasClass('tablinks')
+                    );
+                    const index = tabListItems.indexOf(tabListItem);
+
+                    const nextTab = tabListItems[index - 1] || tabListItems[index + 1];
+                    if (nextTab) {
+                        this._activateTab(editor, nextTab);
+                    }
                 }
-            }
-        });
-        // }
+            });
+        };
+
+        confirmNo.onclick = () => {
+            modal.style.display = 'none';
+        };
+
         evt.stop();
     }
 
@@ -334,5 +347,23 @@ export default class TabsPluginUI extends Plugin {
             // Append the new tab content to the tabContent
             writer.append(tabNestedContent, tabContent);
         });
+    }
+
+    // Create delete tab confirmation modal
+    _createConfirmationModal() {
+        const modalHtml = `
+            <div class="confirm-delete-modal" style="display:none;">
+                <div class="confirm-delete-modal-content">
+                    <p>Are you sure you want to delete this tab?</p>
+                    <footer>
+                        <button class="confirm-delete-yes-btn">Yes</button>
+                        <button class="confirm-delete-no-btn">No</button>
+                    </footer>
+                </div>
+            </div>
+        `;
+        const modalContainer = document.createElement('div');
+        modalContainer.innerHTML = modalHtml;
+        document.body.appendChild(modalContainer);
     }
 }

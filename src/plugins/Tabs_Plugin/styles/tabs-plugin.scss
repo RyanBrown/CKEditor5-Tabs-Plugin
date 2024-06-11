@@ -143,7 +143,7 @@ $transition-speed: 200ms ease-in-out;
             width: 100%;
 
             &.active {
-                display: block;
+                display: inline-block;
                 padding: 1rem;
             }
         }
@@ -272,5 +272,75 @@ $transition-speed: 200ms ease-in-out;
         border: none !important;
         box-shadow: none !important;
         outline: none !important;
+    }
+}
+
+// Custom delete confirmation modal
+.confirm-delete-modal {
+    background-color: rgba(239, 239, 239, 0.8);
+    height: 100%;
+    left: 0;
+    overflow: auto;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 9999;
+
+    .confirm-delete-modal-content {
+        background-color: #fff;
+        border-radius: 0.625rem;
+        box-shadow: 0 0.1875rem 0.5rem rgba(0, 0, 0, 0.15);
+        font-family: 'FSThriveElliotWeb-Regular', sans-serif;
+        left: 50%;
+        padding: 1.5rem 2rem;
+        position: absolute;
+        text-align: center;
+        top: 50%;
+        transform: translate(-50%, -50%);
+
+        footer {
+            display: flex;
+            justify-content: flex-end;
+            margin: 1.5rem 0 0 0;
+            padding: 0;
+        }
+    }
+
+    .confirm-delete-yes-btn,
+    .confirm-delete-no-btn {
+        align-items: center;
+        background-color: #266de2;
+        border-radius: 1.875rem;
+        border: 1px solid #266de2;
+        color: #fff;
+        cursor: pointer;
+        font-weight: 700;
+        justify-content: center;
+        padding: 0.625rem 1rem;
+        transition: all 0.15s;
+
+        &:hover {
+            background-color: #1957bc;
+            border-color: #1957bc;
+            transition: all 0.15s;
+        }
+    }
+
+    .confirm-delete-no-btn {
+        background-color: #fff;
+        border: 1px solid #266de2;
+        color: #266de2;
+        transition: all 0.15s;
+
+        &:hover {
+            background-color: rgba(38, 109, 226, 0.16);
+            border-color: #1957bc;
+            color: #1957bc;
+            transition: all 0.15s;
+        }
+    }
+
+    button + button {
+        margin-left: 0.5rem;
     }
 }
