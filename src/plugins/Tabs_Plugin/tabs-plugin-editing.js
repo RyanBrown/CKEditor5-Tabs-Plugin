@@ -64,6 +64,7 @@ export default class TabsPluginEditing extends Plugin {
         });
     }
 
+    // Disables or enables the specified commands and their corresponding toolbar buttons.
     _disableCommandsAndButtons(commandsToDisable, disable) {
         const editor = this.editor;
         commandsToDisable.forEach((commandName) => {
