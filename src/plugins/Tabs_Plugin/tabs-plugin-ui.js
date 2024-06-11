@@ -227,6 +227,8 @@ export default class TabsPluginUI extends Plugin {
         const tabId = tabListItem.getAttribute('data-target').slice(1);
         const wasActive = tabListItem.hasClass('active');
 
+        // Display confirmation dialog
+        // if (confirm('Are you sure you want to delete this tab?')) {
         editor.model.change((writer) => {
             editor.execute('deleteTab', tabId);
 
@@ -243,7 +245,7 @@ export default class TabsPluginUI extends Plugin {
                 }
             }
         });
-
+        // }
         evt.stop();
     }
 
