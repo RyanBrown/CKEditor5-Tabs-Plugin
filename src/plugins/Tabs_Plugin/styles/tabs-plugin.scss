@@ -205,25 +205,6 @@ $transition-speed: 200ms ease-in-out;
     }
 }
 
-// Set the z-index higher than the tabs for type-around buttons
-.ck.ck-widget__type-around__button.ck-widget__type-around__button_before,
-.ck.ck-widget__type-around__button.ck-widget__type-around__button_after {
-    z-index: 1001;
-}
-
-// Hide elements in read-only view
-.ck-editor__editable.ck-read-only {
-    .tab-edit-bar,
-    .move-buttons-wrapper,
-    .left-arrow,
-    .right-arrow,
-    .dropicon,
-    .addtab,
-    .addicon {
-        display: none !important;
-    }
-}
-
 .tablinks {
     table {
         height: 100%;
@@ -266,5 +247,30 @@ $transition-speed: 200ms ease-in-out;
         table > thead {
             opacity: 0;
         }
+    }
+}
+
+// Set the z-index higher than the tabs for type-around buttons
+.ck.ck-widget__type-around__button.ck-widget__type-around__button_before,
+.ck.ck-widget__type-around__button.ck-widget__type-around__button_after {
+    z-index: 1001;
+}
+
+// Hide elements in read-only view
+.ck-editor__editable.ck-read-only {
+    .tab-edit-bar,
+    .move-buttons-wrapper,
+    .left-arrow,
+    .right-arrow,
+    .dropicon,
+    .addtab,
+    .addicon {
+        visibility: hidden !important;
+    }
+    .tabTitle {
+        background-color: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        outline: none !important;
     }
 }

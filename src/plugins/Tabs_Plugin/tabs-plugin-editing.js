@@ -19,7 +19,57 @@ export default class TabsPluginEditing extends Plugin {
 
         this._defineSchema();
         this._defineConverters();
+
+        // const commandsToDisable = ['link', 'bold', 'italic', 'underline', 'strikethrough', 'subscript', 'superscript'];
+
+        // // Add focus event listener for tabTitle
+        // editor.editing.view.document.on('focus', (evt, data) => {
+        //     if (data.target.hasClass('tabTitle')) {
+        //         console.log(tabTitle + 'focused');
+        //         // Disable the specified buttons in the toolbar
+        //         commandsToDisable.forEach((commandName) => {
+        //             const command = editor.commands.get(commandName);
+        //             if (command) {
+        //                 command.forceDisabled('tabTitle');
+        //             }
+        //         });
+        //     }
+        // });
+
+        // // Add blur event listener for tabTitle to re-enable the specified buttons
+        // editor.editing.view.document.on('blur', (evt, data) => {
+        //     if (data.target.hasClass('tabTitle')) {
+        //         // Re-enable the specified buttons in the toolbar
+        //         commandsToDisable.forEach((commandName) => {
+        //             const command = editor.commands.get(commandName);
+        //             if (command) {
+        //                 command.clearForceDisabled('tabTitle');
+        //             }
+        //         });
+        //     }
+        // });
+
+        // // Disable the specified buttons if a tabTitle is focused during toolbar rendering
+        // editor.ui.on('ready', () => {
+        //     commandsToDisable.forEach((commandName) => {
+        //         const button = editor.ui.view.toolbar.items.find(
+        //             (item) => item.buttonView && item.buttonView.commandName === commandName
+        //         );
+        //         if (button) {
+        //             button.on('execute', this._preventButtonClick, { priority: 'high' });
+        //         }
+        //     });
+        // });
     }
+
+    // _preventButtonClick(evt) {
+    //     const editor = this.editor;
+    //     const focusedElement = editor.editing.view.document.selection.editableElement;
+    //     if (focusedElement && focusedElement.hasClass('tabTitle')) {
+    //         evt.stop();
+    //         evt.preventDefault();
+    //     }
+    // }
 
     // Defines the schema for the tabs plugin elements.
     _defineSchema() {

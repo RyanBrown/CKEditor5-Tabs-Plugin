@@ -96,6 +96,25 @@ export default class TabsPluginUI extends Plugin {
         editor.model.document.on('change:data', () => {
             this._updateEmptyTabTitles(editor);
         });
+
+        // // New code to handle disabling and enabling toolbar buttons
+        // editor.editing.view.document.on('change:isFocused', (evt, data) => {
+        //     const viewRoot = editor.editing.view.document.getRoot();
+        //     const tabTitleElements = findAllDescendants(
+        //         viewRoot,
+        //         (node) => node.is('element', 'div') && node.hasClass('tabTitle')
+        //     );
+
+        //     const isFocusedInTabTitle = tabTitleElements.some((element) => element.isFocused);
+
+        //     const toolbarItems = ['bold', 'italic', 'underline', 'strikethrough', 'subscript', 'superscript', 'link'];
+        //     toolbarItems.forEach((item) => {
+        //         const command = editor.commands.get(item);
+        //         if (command) {
+        //             command.isEnabled = !isFocusedInTabTitle;
+        //         }
+        //     });
+        // });
     }
 
     // Updates empty tab titles with a default value.
@@ -121,6 +140,26 @@ export default class TabsPluginUI extends Plugin {
             }
         }
     }
+
+    // _disableToolbarButtons(editor) {
+    //     const toolbarItems = ['bold', 'italic', 'underline', 'strikethrough', 'subscript', 'superscript', 'link'];
+    //     toolbarItems.forEach((item) => {
+    //         const command = editor.commands.get(item);
+    //         if (command) {
+    //             command.forceDisabled('tabTitle');
+    //         }
+    //     });
+    // }
+
+    // _enableToolbarButtons(editor) {
+    //     const toolbarItems = ['bold', 'italic', 'underline', 'strikethrough', 'subscript', 'superscript', 'link'];
+    //     toolbarItems.forEach((item) => {
+    //         const command = editor.commands.get(item);
+    //         if (command) {
+    //             command.clearForceDisabled('tabTitle');
+    //         }
+    //     });
+    // }
 
     // Handles the tab click event.
     _handleTabClick(editor, target, evt) {

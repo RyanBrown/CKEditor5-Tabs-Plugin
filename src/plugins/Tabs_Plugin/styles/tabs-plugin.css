@@ -155,21 +155,6 @@
   background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='#ff0000'/%3E%3C/svg%3E");
 }
 
-.ck.ck-widget__type-around__button.ck-widget__type-around__button_before,
-.ck.ck-widget__type-around__button.ck-widget__type-around__button_after {
-  z-index: 1001;
-}
-
-.ck-editor__editable.ck-read-only .tab-edit-bar,
-.ck-editor__editable.ck-read-only .move-buttons-wrapper,
-.ck-editor__editable.ck-read-only .left-arrow,
-.ck-editor__editable.ck-read-only .right-arrow,
-.ck-editor__editable.ck-read-only .dropicon,
-.ck-editor__editable.ck-read-only .addtab,
-.ck-editor__editable.ck-read-only .addicon {
-  display: none !important;
-}
-
 .tablinks table {
   height: 100%;
   margin: 0 0.75rem 1rem;
@@ -196,4 +181,25 @@
 }
 .tablinks:nth-last-child(2):first-child table > thead {
   opacity: 0;
+}
+
+.ck.ck-widget__type-around__button.ck-widget__type-around__button_before,
+.ck.ck-widget__type-around__button.ck-widget__type-around__button_after {
+  z-index: 1001;
+}
+
+.ck-editor__editable.ck-read-only .tab-edit-bar,
+.ck-editor__editable.ck-read-only .move-buttons-wrapper,
+.ck-editor__editable.ck-read-only .left-arrow,
+.ck-editor__editable.ck-read-only .right-arrow,
+.ck-editor__editable.ck-read-only .dropicon,
+.ck-editor__editable.ck-read-only .addtab,
+.ck-editor__editable.ck-read-only .addicon {
+  visibility: hidden !important;
+}
+.ck-editor__editable.ck-read-only .tabTitle {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
 }
