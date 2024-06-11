@@ -26,49 +26,62 @@ export default class TabsPluginEditing extends Plugin {
         editor.editing.view.document.on('focus', (evt, data) => {
             if (data.domTarget.closest('.ck-widget__editing') && data.domTarget.closest('.tabTitle')) {
                 console.log('tabTitle focused');
-                // Disable the specified buttons in the toolbar
-                commandsToDisable.forEach((commandName) => {
-                    const command = editor.commands.get(commandName);
-                    if (command) {
-                        command.forceDisabled('tabTitle');
-                    }
-                });
+                // Disable the specified commands and toolbar buttons
+                this._disableCommandsAndButtons(commandsToDisable, true);
             }
         });
 
         // Add blur event listener for tabTitle to re-enable the specified buttons
         editor.editing.view.document.on('blur', (evt, data) => {
             if (data.domTarget.closest('.ck-widget__editing') && data.domTarget.closest('.tabTitle')) {
-                // Re-enable the specified buttons in the toolbar
-                commandsToDisable.forEach((commandName) => {
-                    const command = editor.commands.get(commandName);
-                    if (command) {
-                        command.clearForceDisabled('tabTitle');
-                    }
-                });
+                // Re-enable the specified commands and toolbar buttons
+                this._disableCommandsAndButtons(commandsToDisable, false);
             }
         });
 
-        // Disable the specified buttons if a tabTitle is focused during toolbar rendering
+        // Prevent command execution if a tabTitle is focused
         editor.ui.on('ready', () => {
             commandsToDisable.forEach((commandName) => {
-                const button = editor.ui.view.toolbar.items.find(
-                    (item) => item.buttonView && item.buttonView.commandName === commandName
-                );
-                if (button) {
-                    button.on('execute', this._preventButtonClick, { priority: 'high' });
+                const command = editor.commands.get(commandName);
+                if (command) {
+                    command.on(
+                        'execute',
+                        (evt, data) => {
+                            const focusedElement = editor.editing.view.document.selection.editableElement;
+                            if (focusedElement && focusedElement.hasClass('tabTitle')) {
+                                if (typeof evt.stop === 'function') {
+                                    evt.stop();
+                                }
+                                if (typeof evt.preventDefault === 'function') {
+                                    evt.preventDefault();
+                                }
+                            }
+                        },
+                        { priority: 'high' }
+                    );
                 }
             });
         });
     }
 
-    _preventButtonClick(evt) {
+    _disableCommandsAndButtons(commandsToDisable, disable) {
         const editor = this.editor;
-        const focusedElement = editor.editing.view.document.selection.editableElement;
-        if (focusedElement && focusedElement.hasClass('tabTitle')) {
-            evt.stop();
-            evt.preventDefault();
-        }
+        commandsToDisable.forEach((commandName) => {
+            const command = editor.commands.get(commandName);
+            if (command) {
+                if (disable) {
+                    command.forceDisabled('tabTitle');
+                } else {
+                    command.clearForceDisabled('tabTitle');
+                }
+            }
+            const button = editor.ui.view.toolbar.items.find(
+                (item) => item.buttonView && item.buttonView.commandName === commandName
+            );
+            if (button) {
+                button.isEnabled = !disable;
+            }
+        });
     }
 
     // Defines the schema for the tabs plugin elements.
@@ -634,3 +647,5 @@ export default class TabsPluginEditing extends Plugin {
         });
     }
 }
+
+export { TabsPluginEditing };
