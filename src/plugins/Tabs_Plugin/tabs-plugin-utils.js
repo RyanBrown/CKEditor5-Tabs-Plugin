@@ -85,8 +85,7 @@ export function createTabListItem(writer, tabId) {
     const tabListTable_td = writer.createElement('tabListTable_td', { colspan: '5' });
 
     const tabTitle = writer.createElement('tabTitle', { bold: true });
-    // writer.insertText(`Tab Name ${tabId}`, tabTitle);
-    writer.insertText(`Tab Name`, tabTitle);
+    writer.insertText('Tab Name', tabTitle);
 
     writer.append(tabTitle, tabListTable_td);
     writer.append(tabListTable_td, tabListTable_tbody_tr);
@@ -101,7 +100,11 @@ export function createTabListItem(writer, tabId) {
 
 // Create tab content
 export function createTabContent(writer, tabId) {
-    return writer.createElement('tabNestedContent', { id: tabId });
+    const tabContentElement = writer.createElement('tabNestedContent', { id: tabId });
+    const paragraphElement = writer.createElement('paragraph');
+    writer.insertText('Tab Content', paragraphElement);
+    writer.append(paragraphElement, tabContentElement);
+    return tabContentElement;
 }
 
 // Create 'Add Tab' button
