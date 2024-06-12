@@ -63,6 +63,7 @@ export function createTabElement(writer, tabId) {
 // Create tab list item
 export function createTabListItem(writer, tabId) {
     const tabListItem = writer.createElement('tabListItem', { 'data-target': `#${tabId}` });
+    const tabListItemLabelDiv = writer.createElement('tabListItemLabelDiv');
     const tabListTable = writer.createElement('tabListTable');
     const tabListTable_thead = writer.createElement('tabListTable_thead');
     const tabListTable_tbody = writer.createElement('tabListTable_tbody');
@@ -93,7 +94,9 @@ export function createTabListItem(writer, tabId) {
 
     writer.append(tabListTable_thead, tabListTable);
     writer.append(tabListTable_tbody, tabListTable);
-    writer.append(tabListTable, tabListItem);
+
+    writer.append(tabListTable, tabListItemLabelDiv);
+    writer.append(tabListItemLabelDiv, tabListItem);
 
     return tabListItem;
 }
