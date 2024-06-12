@@ -568,12 +568,7 @@ export default class TabsPluginEditing extends Plugin {
             view: 'thead',
             converterPriority: 'high',
         });
-        conversion.for('dataDowncast').elementToElement({
-            model: 'tabListTable_thead',
-            view: 'thead',
-            converterPriority: 'high',
-        });
-        conversion.for('editingDowncast').elementToElement({
+        conversion.for('downcast').elementToElement({
             model: 'tabListTable_thead',
             view: 'thead',
             converterPriority: 'high',
@@ -585,12 +580,7 @@ export default class TabsPluginEditing extends Plugin {
             view: 'tr',
             converterPriority: 'high',
         });
-        conversion.for('dataDowncast').elementToElement({
-            model: 'tabListTable_tr',
-            view: 'tr',
-            converterPriority: 'high',
-        });
-        conversion.for('editingDowncast').elementToElement({
+        conversion.for('downcast').elementToElement({
             model: 'tabListTable_tr',
             view: 'tr',
             converterPriority: 'high',
@@ -602,12 +592,7 @@ export default class TabsPluginEditing extends Plugin {
             view: 'th',
             converterPriority: 'high',
         });
-        conversion.for('dataDowncast').elementToElement({
-            model: 'tabListTable_th',
-            view: 'th',
-            converterPriority: 'high',
-        });
-        conversion.for('editingDowncast').elementToElement({
+        conversion.for('downcast').elementToElement({
             model: 'tabListTable_th',
             view: 'th',
             converterPriority: 'high',
@@ -619,12 +604,7 @@ export default class TabsPluginEditing extends Plugin {
             view: 'tbody',
             converterPriority: 'high',
         });
-        conversion.for('dataDowncast').elementToElement({
-            model: 'tabListTable_tbody',
-            view: 'tbody',
-            converterPriority: 'high',
-        });
-        conversion.for('editingDowncast').elementToElement({
+        conversion.for('downcast').elementToElement({
             model: 'tabListTable_tbody',
             view: 'tbody',
             converterPriority: 'high',
@@ -636,12 +616,7 @@ export default class TabsPluginEditing extends Plugin {
             view: 'td',
             converterPriority: 'high',
         });
-        conversion.for('dataDowncast').elementToElement({
-            model: 'tabListTable_td',
-            view: 'td',
-            converterPriority: 'high',
-        });
-        conversion.for('editingDowncast').elementToElement({
+        conversion.for('downcast').elementToElement({
             model: 'tabListTable_td',
             view: 'td',
             converterPriority: 'high',
