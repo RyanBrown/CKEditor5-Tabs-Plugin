@@ -142,6 +142,11 @@ export default class TabsPluginEditing extends Plugin {
             allowIn: 'tabListTable_th',
             isLimit: true,
         });
+        schema.register('deleteTabButtonParagraph', {
+            allowAttributes: ['class', 'title'],
+            allowIn: 'deleteTabButton',
+            isLimit: true,
+        });
         schema.register('addTabListItem', {
             allowAttributes: ['class'],
             allowIn: 'tabList',
@@ -418,6 +423,33 @@ export default class TabsPluginEditing extends Plugin {
                 return writer.createContainerElement('div', {
                     class: 'dropicon',
                     title: 'Delete Tab',
+                });
+            },
+            converterPriority: 'high',
+        });
+
+        // Conversion for 'deleteTabButton' element
+        conversion.for('upcast').elementToElement({
+            model: 'deleteTabButtonParagraph',
+            view: { name: 'p', classes: ['droptab', 'droptabicon'] },
+            converterPriority: 'high',
+        });
+        conversion.for('dataDowncast').elementToElement({
+            model: 'deleteTabButtonParagraph',
+            view: (modelElement, { writer }) => {
+                return writer.createContainerElement('p', {
+                    class: 'droptab droptabicon',
+                    onclick: 'parent.dropActiveTab(event);',
+                });
+            },
+            converterPriority: 'high',
+        });
+        conversion.for('editingDowncast').elementToElement({
+            model: 'deleteTabButtonParagraph',
+            view: (modelElement, { writer }) => {
+                return writer.createContainerElement('p', {
+                    class: 'droptab droptabicon',
+                    onclick: 'parent.dropActiveTab(event);',
                 });
             },
             converterPriority: 'high',
