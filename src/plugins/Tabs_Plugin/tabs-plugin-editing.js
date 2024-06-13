@@ -152,11 +152,6 @@ export default class TabsPluginEditing extends Plugin {
             allowIn: 'addTabListItem',
             isLimit: true,
         });
-        schema.register('addicon', {
-            allowAttributes: ['class'],
-            allowIn: 'addTabButton',
-            isLimit: true,
-        });
         schema.register('tabListTable_thead', {
             allowIn: 'tabListTable',
             isLimit: true,
