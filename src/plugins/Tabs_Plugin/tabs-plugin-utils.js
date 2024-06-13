@@ -72,9 +72,9 @@ export function createTabListItem(writer, tabId) {
     const tabListTable_th_moveRight = writer.createElement('tabListTable_th');
     const tabListTable_th_delete = writer.createElement('tabListTable_th');
 
-    appendControlElement(writer, tabListTable_th_moveLeft, 'moveLeftButton', 'Move Tab Left');
-    appendControlElement(writer, tabListTable_th_moveRight, 'moveRightButton', 'Move Tab Right');
-    appendControlElement(writer, tabListTable_th_delete, 'deleteTabButton', 'Delete Tab');
+    appendControlElement(writer, tabListTable_th_moveLeft, 'moveLeftButton');
+    appendControlElement(writer, tabListTable_th_moveRight, 'moveRightButton');
+    appendControlElement(writer, tabListTable_th_delete, 'deleteTabButton');
 
     writer.append(tabListTable_th_moveLeft, tabListTable_thead_tr);
     writer.append(tabListTable_th_moveRight, tabListTable_thead_tr);

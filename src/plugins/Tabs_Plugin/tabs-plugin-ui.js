@@ -264,7 +264,11 @@ export default class TabsPluginUI extends Plugin {
 
     // Handles the add tab button click event.
     _handleAddTab(editor, evt) {
-        this._addNewTab(editor);
+        try {
+            this._addNewTab(editor);
+        } catch (error) {
+            console.error('Error while adding new tab:', error);
+        }
         evt.stop();
     }
 

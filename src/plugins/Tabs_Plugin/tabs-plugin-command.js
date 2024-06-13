@@ -21,6 +21,11 @@ export class TabsPluginCommand extends Command {
             const tabContent = tabsRoot.getChild(1);
             const addTabButton = tabList.getChild(tabList.childCount - 1);
 
+            if (!tabList || !tabContent || !addTabButton) {
+                console.error('One or more required elements are null:', { tabList, tabContent, addTabButton });
+                return;
+            }
+
             // Insert the new tab list item before the "Add Tab" button
             model.insertContent(tabListItem, writer.createPositionBefore(addTabButton));
             // Append the new tab content to the tab content element
