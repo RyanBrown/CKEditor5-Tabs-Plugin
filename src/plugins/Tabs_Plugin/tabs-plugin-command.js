@@ -17,8 +17,8 @@ export class TabsPluginCommand extends Command {
             const tabId = generateTabId();
             const { tabListItem, tabNestedContent } = createTabElement(writer, tabId);
             const tabsRoot = model.document.getRoot();
-            const tabList = tabsRoot.getChild(0);
-            const tabContent = tabsRoot.getChild(1);
+            const tabList = tabsRoot.getChild(0).getChild(1).getChild(0);
+            const tabContent = tabsRoot.getChild(0).getChild(2);
             const addTabButton = tabList.getChild(tabList.childCount - 1);
 
             if (!tabList || !tabContent || !addTabButton) {
@@ -31,7 +31,7 @@ export class TabsPluginCommand extends Command {
             // Append the new tab content to the tab content element
             model.append(tabNestedContent, tabContent);
             // Set the selection to the newly created tab title
-            writer.setSelection(tabListItem.getChild(1).getChild(0), 0);
+            writer.setSelection(tabListItem.getChild(0).getChild(1).getChild(1).getChild(0), 0);
         });
     }
 

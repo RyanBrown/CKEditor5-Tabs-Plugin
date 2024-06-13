@@ -3,6 +3,8 @@ import { generateTabId } from './tabs-plugin-command';
 // Create tabs plugin element with two initial tabs
 export function createTabsPluginElement(writer) {
     const tabsPlugin = writer.createElement('tabsPlugin');
+    const containerDiv = writer.createElement('containerDiv');
+    const tabHeader = writer.createElement('tabHeader');
     const tabList = writer.createElement('tabList');
     const tabContent = writer.createElement('tabContent');
 
@@ -32,8 +34,10 @@ export function createTabsPluginElement(writer) {
     writer.append(addTabButton, tabList);
 
     // Append tabList and tabContent in the correct order
-    writer.append(tabList, tabsPlugin);
-    writer.append(tabContent, tabsPlugin);
+    writer.append(tabList, tabHeader);
+    writer.append(tabHeader, containerDiv);
+    writer.append(tabContent, containerDiv);
+    writer.append(containerDiv, tabsPlugin);
 
     return tabsPlugin;
 }
@@ -63,6 +67,7 @@ export function createTabElement(writer, tabId) {
 // Create tab list item
 export function createTabListItem(writer, tabId) {
     const tabListItem = writer.createElement('tabListItem', { 'data-target': `#${tabId}` });
+    const tabListItemLabel = writer.createElement('tabListItemLabelDiv');
     const tabListTable = writer.createElement('tabListTable');
     const tabListTable_thead = writer.createElement('tabListTable_thead');
     const tabListTable_tbody = writer.createElement('tabListTable_tbody');
@@ -74,7 +79,12 @@ export function createTabListItem(writer, tabId) {
 
     appendControlElement(writer, tabListTable_th_moveLeft, 'moveLeftButton');
     appendControlElement(writer, tabListTable_th_moveRight, 'moveRightButton');
-    appendControlElement(writer, tabListTable_th_delete, 'deleteTabButton');
+
+    // Create the delete tab button with the correct structure
+    const deleteTabButton = writer.createElement('deleteTabButton');
+    const deleteTabButtonParagraph = writer.createElement('deleteTabButtonParagraph');
+    writer.append(deleteTabButtonParagraph, deleteTabButton);
+    writer.append(deleteTabButton, tabListTable_th_delete);
 
     writer.append(tabListTable_th_moveLeft, tabListTable_thead_tr);
     writer.append(tabListTable_th_moveRight, tabListTable_thead_tr);
@@ -93,7 +103,8 @@ export function createTabListItem(writer, tabId) {
 
     writer.append(tabListTable_thead, tabListTable);
     writer.append(tabListTable_tbody, tabListTable);
-    writer.append(tabListTable, tabListItem);
+    writer.append(tabListTable, tabListItemLabel);
+    writer.append(tabListItemLabel, tabListItem);
 
     return tabListItem;
 }

@@ -163,13 +163,9 @@ export default class TabsPluginUI extends Plugin {
 
     // Handles the tab click event.
     _handleTabClick(editor, target, evt) {
-        let tabListItem = target;
+        let tabListItem = target.findAncestor('li');
 
-        while (tabListItem && !tabListItem.hasClass('tablinks')) {
-            tabListItem = tabListItem.parent;
-        }
-
-        if (tabListItem) {
+        if (tabListItem && tabListItem.hasClass('tablinks')) {
             this._activateTab(editor, tabListItem);
         }
 
@@ -189,12 +185,8 @@ export default class TabsPluginUI extends Plugin {
             return;
         }
 
-        const tabListElement = Array.from(tabsRootElement.getChildren()).find(
-            (child) => child.is('element', 'ul') && child.hasClass('yui3-tabview-list')
-        );
-        const tabContentElement = Array.from(tabsRootElement.getChildren()).find(
-            (child) => child.is('element', 'div') && child.hasClass('yui3-tabview-panel')
-        );
+        const tabListElement = tabsRootElement.getChild(0).getChild(0).getChild(0);
+        const tabContentElement = tabsRootElement.getChild(0).getChild(1);
 
         if (!tabListElement || !tabContentElement) {
             console.error('Tab list or content element not found');
@@ -324,20 +316,27 @@ export default class TabsPluginUI extends Plugin {
 
             // Within tabsPlugin, find or create tabList and tabContent
             for (const node of tabsPlugin.getChildren()) {
-                if (node.is('element', 'tabList')) {
-                    tabList = node;
-                } else if (node.is('element', 'tabContent')) {
-                    tabContent = node;
+                if (node.is('element', 'containerDiv')) {
+                    const containerDiv = node;
+                    for (const childNode of containerDiv.getChildren()) {
+                        if (childNode.is('element', 'tabHeader')) {
+                            tabList = childNode.getChild(0);
+                        } else if (childNode.is('element', 'tabContent')) {
+                            tabContent = childNode;
+                        }
+                    }
                 }
             }
 
             if (!tabList) {
+                const tabHeader = writer.createElement('tabHeader');
                 tabList = writer.createElement('tabList');
-                writer.append(tabList, tabsPlugin);
+                writer.append(tabList, tabHeader);
+                writer.append(tabHeader, tabsPlugin.getChild(0));
             }
             if (!tabContent) {
                 tabContent = writer.createElement('tabContent');
-                writer.append(tabContent, tabsPlugin);
+                writer.append(tabContent, tabsPlugin.getChild(0));
             }
 
             // Generate a unique tabId for the new tab using centralized method
@@ -345,9 +344,16 @@ export default class TabsPluginUI extends Plugin {
             // Use the utility function to create a new tab list item and content
             const { tabListItem, tabNestedContent } = createTabElement(writer, newTabId);
             // Find the "Add Tab" button in the tabList
-            const addTabButton = tabList.getChild(tabList.childCount - 1);
-            // Insert the new tab list item before the "Add Tab" button
-            writer.insert(tabListItem, addTabButton, 'before');
+            const addTabButton = Array.from(tabList.getChildren()).find((child) =>
+                child.is('element', 'addTabListItem')
+            );
+            if (addTabButton) {
+                // Insert the new tab list item before the "Add Tab" button
+                writer.insert(tabListItem, writer.createPositionBefore(addTabButton));
+            } else {
+                // Append the new tab list item to the end of the tabList
+                writer.append(tabListItem, tabList);
+            }
             // Append the new tab content to the tabContent
             writer.append(tabNestedContent, tabContent);
         });

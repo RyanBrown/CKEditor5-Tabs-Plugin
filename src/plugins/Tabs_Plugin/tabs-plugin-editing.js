@@ -93,19 +93,19 @@ export default class TabsPluginEditing extends Plugin {
             allowIn: '$root',
             isLimit: true,
         });
-        // schema.register('containerDiv', {
-        //     allowAttributes: ['class'],
-        //     allowIn: 'tabsPlugin',
-        //     isLimit: true,
-        // });
-        // schema.register('tabHeader', {
-        //     allowAttributes: ['class'],
-        //     allowIn: 'containerDiv',
-        //     isLimit: true,
-        // });
-        schema.register('tabList', {
+        schema.register('containerDiv', {
             allowAttributes: ['class'],
             allowIn: 'tabsPlugin',
+            isLimit: true,
+        });
+        schema.register('tabHeader', {
+            allowAttributes: ['class'],
+            allowIn: 'containerDiv',
+            isLimit: true,
+        });
+        schema.register('tabList', {
+            allowAttributes: ['class'],
+            allowIn: 'tabHeader',
             isLimit: true,
         });
         schema.register('tabListItem', {
@@ -120,7 +120,7 @@ export default class TabsPluginEditing extends Plugin {
         });
         schema.register('tabListTable', {
             allowAttributes: ['class'],
-            allowIn: 'tabListItem',
+            allowIn: 'tabListItemLabelDiv',
             isLimit: true,
         });
         schema.register('tabTitle', {
@@ -131,7 +131,7 @@ export default class TabsPluginEditing extends Plugin {
         });
         schema.register('tabContent', {
             allowAttributes: ['class'],
-            allowIn: 'tabsPlugin',
+            allowIn: 'containerDiv',
             isLimit: true,
         });
         schema.register('tabNestedContent', {
@@ -226,47 +226,44 @@ export default class TabsPluginEditing extends Plugin {
             converterPriority: 'high',
         });
 
-        // // Conversion for 'containerDiv' element
-        // conversion.for('upcast').elementToElement({
-        //     model: 'containerDiv',
-        //     view: {
-        //         name: 'div',
-        //         classes: [
-        //             'ah-tabs-horizontal',
-        //             'ah-responsiveselecttabs',
-        //             'ah-content-space-v',
-        //             'yui3-ah-responsiveselecttabs-content',
-        //             'yui3-tabview-content',
-        //         ],
-        //     },
-        //     converterPriority: 'high',
-        // });
-        // conversion.for('downcast').elementToElement({
-        //     model: 'containerDiv',
-        //     view: (modelElement, { writer }) =>
-        //         writer.createContainerElement('div', {
-        //             class: 'ah-tabs-horizontal ah-responsiveselecttabs ah-content-space-v yui3-ah-responsiveselecttabs-content yui3-tabview-content',
-        //         }),
-        //     converterPriority: 'high',
-        // });
+        // Conversion for 'containerDiv' element
+        conversion.for('upcast').elementToElement({
+            model: 'containerDiv',
+            view: {
+                name: 'div',
+                classes: [
+                    'ah-tabs-horizontal',
+                    'ah-responsiveselecttabs',
+                    'ah-content-space-v',
+                    'yui3-ah-responsiveselecttabs-content',
+                    'yui3-tabview-content',
+                ],
+            },
+            converterPriority: 'high',
+        });
+        conversion.for('downcast').elementToElement({
+            model: 'containerDiv',
+            view: (modelElement, { writer }) =>
+                writer.createContainerElement('div', {
+                    class: 'ah-tabs-horizontal ah-responsiveselecttabs ah-content-space-v yui3-ah-responsiveselecttabs-content yui3-tabview-content',
+                }),
+            converterPriority: 'high',
+        });
 
-        // // Conversion for 'containerDiv' element
-        // conversion.for('upcast').elementToElement({
-        //     model: 'tabHeader',
-        //     view: {
-        //         name: 'div',
-        //         classes: ['tabheader', 'ah-tabs-horizontal'],
-        //     },
-        //     converterPriority: 'high',
-        // });
-        // conversion.for('downcast').elementToElement({
-        //     model: 'tabHeader',
-        //     view: (modelElement, { writer }) =>
-        //         writer.createContainerElement('div', {
-        //             class: 'tabheader ah-tabs-horizontal',
-        //         }),
-        //     converterPriority: 'high',
-        // });
+        // Conversion for 'containerDiv' element
+        conversion.for('upcast').elementToElement({
+            model: 'tabHeader',
+            view: { name: 'div', classes: ['tabheader', 'ah-tabs-horizontal'] },
+            converterPriority: 'high',
+        });
+        conversion.for('downcast').elementToElement({
+            model: 'tabHeader',
+            view: (modelElement, { writer }) =>
+                writer.createContainerElement('div', {
+                    class: 'tabheader ah-tabs-horizontal',
+                }),
+            converterPriority: 'high',
+        });
 
         // Conversion for 'tabList' element
         conversion.for('upcast').elementToElement({
@@ -356,23 +353,20 @@ export default class TabsPluginEditing extends Plugin {
             converterPriority: 'high',
         });
 
-        // // Conversion for 'tabListItemLabelDiv' element
-        // conversion.for('upcast').elementToElement({
-        //     model: 'tabListItemLabelDiv',
-        //     view: {
-        //         name: 'div',
-        //         classes: 'yui3-tab-label',
-        //     },
-        //     converterPriority: 'high',
-        // });
-        // conversion.for('downcast').elementToElement({
-        //     model: 'tabListItemLabelDiv',
-        //     view: (modelElement, { writer }) =>
-        //         writer.createContainerElement('div', {
-        //             class: 'yui3-tab-label',
-        //         }),
-        //     converterPriority: 'high',
-        // });
+        // Conversion for 'tabListItemLabelDiv' element
+        conversion.for('upcast').elementToElement({
+            model: 'tabListItemLabelDiv',
+            view: { name: 'div', classes: 'yui3-tab-label' },
+            converterPriority: 'high',
+        });
+        conversion.for('downcast').elementToElement({
+            model: 'tabListItemLabelDiv',
+            view: (modelElement, { writer }) =>
+                writer.createContainerElement('div', {
+                    class: 'yui3-tab-label',
+                }),
+            converterPriority: 'high',
+        });
 
         // Conversion for 'tabListTable' element
         conversion.for('upcast').elementToElement({
