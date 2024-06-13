@@ -110,7 +110,9 @@ export function createTabContent(writer, tabId) {
 // Create 'Add Tab' button
 export function createAddTabButton(writer) {
     const addTabListItem = writer.createElement('addTabListItem');
-    const addTabButton = writer.createElement('addTabButton', { title: 'Add Tab' });
+    const addTabButton = writer.createElement('addTabButton');
+    const addTabIcon = writer.createElement('addTabIcon');
+    writer.append(addTabIcon, addTabButton);
     writer.append(addTabButton, addTabListItem);
     return addTabListItem;
 }
