@@ -122,9 +122,15 @@ $transition-speed: 200ms ease-in-out;
                     transition: background-image $transition-speed;
                     width: 1.5rem;
                 }
-                // Hide nested content from CKEditor
-                br {
-                    display: none;
+
+                .addtabicon {
+                    margin: 0;
+                    visibility: hidden;
+
+                    // Hide nested content from CKEditor
+                    br {
+                        display: none;
+                    }
                 }
             }
         }

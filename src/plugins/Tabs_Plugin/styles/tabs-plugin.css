@@ -89,7 +89,11 @@
   transition: background-image 200ms ease-in-out;
   width: 1.5rem;
 }
-.tabcontainer .yui3-tabview-list .addtab .addicon br {
+.tabcontainer .yui3-tabview-list .addtab .addicon .addtabicon {
+  margin: 0;
+  visibility: hidden;
+}
+.tabcontainer .yui3-tabview-list .addtab .addicon .addtabicon br {
   display: none;
 }
 .tabcontainer .yui3-tabview-panel {

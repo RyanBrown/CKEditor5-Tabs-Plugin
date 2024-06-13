@@ -152,6 +152,11 @@ export default class TabsPluginEditing extends Plugin {
             allowIn: 'addTabListItem',
             isLimit: true,
         });
+        schema.register('addTabIcon', {
+            allowAttributes: ['class'],
+            allowIn: 'addTabButton',
+            isLimit: true,
+        });
         schema.register('tabListTable_thead', {
             allowIn: 'tabListTable',
             isLimit: true,
@@ -464,6 +469,33 @@ export default class TabsPluginEditing extends Plugin {
                 return writer.createContainerElement('div', {
                     class: 'addicon',
                     title: 'Add Tab',
+                });
+            },
+            converterPriority: 'high',
+        });
+
+        // Conversion for 'addTabIcon' element
+        conversion.for('upcast').elementToElement({
+            model: 'addTabIcon',
+            view: { name: 'p', classes: 'addtabicon' },
+            converterPriority: 'high',
+        });
+        conversion.for('dataDowncast').elementToElement({
+            model: 'addTabIcon',
+            view: (modelElement, { writer }) => {
+                return writer.createContainerElement('p', {
+                    class: 'addtabicon',
+                    onclick: 'parent.addTab(event);',
+                });
+            },
+            converterPriority: 'high',
+        });
+        conversion.for('editingDowncast').elementToElement({
+            model: 'addTabIcon',
+            view: (modelElement, { writer }) => {
+                return writer.createContainerElement('p', {
+                    class: 'addtabicon',
+                    onclick: 'parent.addTab(event);',
                 });
             },
             converterPriority: 'high',
