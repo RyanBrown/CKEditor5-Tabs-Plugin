@@ -679,5 +679,3 @@ export default class TabsPluginEditing extends Plugin {
         });
     }
 }
-
-export { TabsPluginEditing };
