@@ -271,13 +271,7 @@ export default class TabsPluginEditing extends Plugin {
             view: { name: 'ul', classes: ['tab', 'yui3-tabview-list'] },
             converterPriority: 'high',
         });
-        conversion.for('dataDowncast').elementToElement({
-            model: 'tabList',
-            view: (modelElement, { writer }) =>
-                writer.createContainerElement('ul', { class: 'tab yui3-tabview-list', draggable: false }),
-            converterPriority: 'high',
-        });
-        conversion.for('editingDowncast').elementToElement({
+        conversion.for('downcast').elementToElement({
             model: 'tabList',
             view: (modelElement, { writer }) => {
                 return writer.createContainerElement('ul', {
@@ -373,14 +367,7 @@ export default class TabsPluginEditing extends Plugin {
             model: 'tabListTable',
             view: { name: 'table' },
         });
-        conversion.for('dataDowncast').elementToElement({
-            model: 'tabListTable',
-            view: (modelElement, { writer }) => {
-                return writer.createContainerElement('table');
-            },
-            converterPriority: 'high',
-        });
-        conversion.for('editingDowncast').elementToElement({
+        conversion.for('downcast').elementToElement({
             model: 'tabListTable',
             view: (modelElement, { writer }) => {
                 return writer.createContainerElement('table');
@@ -474,17 +461,7 @@ export default class TabsPluginEditing extends Plugin {
             view: { name: 'div', classes: 'dropicon' },
             converterPriority: 'high',
         });
-        conversion.for('dataDowncast').elementToElement({
-            model: 'deleteTabButton',
-            view: (modelElement, { writer }) => {
-                return writer.createContainerElement('div', {
-                    class: 'dropicon',
-                    title: 'Delete Tab',
-                });
-            },
-            converterPriority: 'high',
-        });
-        conversion.for('editingDowncast').elementToElement({
+        conversion.for('downcast').elementToElement({
             model: 'deleteTabButton',
             view: (modelElement, { writer }) => {
                 return writer.createContainerElement('div', {
@@ -528,15 +505,7 @@ export default class TabsPluginEditing extends Plugin {
             view: { name: 'li', classes: ['yui3-tab', 'addtab'] },
             converterPriority: 'high',
         });
-        conversion.for('dataDowncast').elementToElement({
-            model: 'addTabListItem',
-            view: (modelElement, { writer }) =>
-                writer.createContainerElement('li', {
-                    class: 'yui3-tab addtab',
-                }),
-            converterPriority: 'high',
-        });
-        conversion.for('editingDowncast').elementToElement({
+        conversion.for('downcast').elementToElement({
             model: 'addTabListItem',
             view: (modelElement, { writer }) => {
                 return writer.createContainerElement('li', {
@@ -606,16 +575,13 @@ export default class TabsPluginEditing extends Plugin {
             view: { name: 'div', classes: 'yui3-tabview-panel' },
             converterPriority: 'high',
         });
-        conversion.for('dataDowncast').elementToElement({
-            model: 'tabContent',
-            view: (modelElement, { writer }) =>
-                writer.createContainerElement('div', { class: 'yui3-tabview-panel', draggable: false }),
-            converterPriority: 'high',
-        });
-        conversion.for('editingDowncast').elementToElement({
+        conversion.for('downcast').elementToElement({
             model: 'tabContent',
             view: (modelElement, { writer }) => {
-                return writer.createContainerElement('div', { class: 'yui3-tabview-panel', draggable: false });
+                return writer.createContainerElement('div', {
+                    class: 'yui3-tabview-panel',
+                    draggable: false, // Assuming draggable is always false
+                });
             },
             converterPriority: 'high',
         });
