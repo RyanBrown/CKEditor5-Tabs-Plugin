@@ -36,11 +36,29 @@
   width: 100%;
   z-index: 3;
 }
+.tabcontainer .yui3-tabview-list .tablinks table {
+  height: 100%;
+  margin: 0 0.75rem 1rem;
+}
+.tabcontainer .yui3-tabview-list .tablinks table thead tr th {
+  opacity: 0;
+  transition: opacity 200ms ease-in-out;
+}
+.tabcontainer .yui3-tabview-list .tablinks table thead tr th:nth-child(2) {
+  width: 100%;
+}
+.tabcontainer .yui3-tabview-list .tablinks table thead tr th .right-arrow {
+  float: right;
+}
 .tabcontainer .yui3-tabview-list .tablinks:hover {
   background-color: #f7f7f7;
 }
 .tabcontainer .yui3-tabview-list .tablinks:hover::after {
   background-color: #f7f7f7;
+}
+.tabcontainer .yui3-tabview-list .tablinks:hover table thead tr th {
+  opacity: 1;
+  transition: opacity 200ms ease-in-out;
 }
 .tabcontainer .yui3-tabview-list .tablinks.active, .tabcontainer .yui3-tabview-list .tablinks.active:hover {
   background-color: #fff;
@@ -51,6 +69,16 @@
   background-color: #fff;
   bottom: -4px;
   height: 4px;
+}
+.tabcontainer .yui3-tabview-list .tablinks:first-child table > thead > tr > th .left-arrow {
+  visibility: hidden;
+}
+.tabcontainer .yui3-tabview-list .tablinks:nth-last-child(2) table > thead > tr > th .right-arrow {
+  visibility: hidden;
+}
+.tabcontainer .yui3-tabview-list .tablinks:nth-last-child(2):first-child table > thead > tr > th .left-arrow,
+.tabcontainer .yui3-tabview-list .tablinks:nth-last-child(2):first-child table > thead > tr > th .right-arrow {
+  visibility: hidden;
 }
 .tabcontainer .yui3-tabview-list .tablinks .tabTitle {
   align-items: center;
@@ -73,13 +101,8 @@
   padding: 1.5rem;
   transition: background-image 200ms ease-in-out;
 }
-.tabcontainer .yui3-tabview-list .addtab .addicon::before {
-  background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#333333'/%3E%3C/svg%3E");
-}
-.tabcontainer .yui3-tabview-list .addtab .addicon:hover::before {
-  background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#1957bc'/%3E%3C/svg%3E");
-}
 .tabcontainer .yui3-tabview-list .addtab .addicon::before, .tabcontainer .yui3-tabview-list .addtab .addicon:hover::before {
+  background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#333333'/%3E%3C/svg%3E");
   background-position: center;
   background-repeat: no-repeat;
   background-size: 1.5rem;
@@ -88,6 +111,9 @@
   height: 1.5rem;
   transition: background-image 200ms ease-in-out;
   width: 1.5rem;
+}
+.tabcontainer .yui3-tabview-list .addtab .addicon:hover::before {
+  background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#1957bc'/%3E%3C/svg%3E");
 }
 .tabcontainer .yui3-tabview-list .addtab .addicon .addtabicon {
   margin: 0;
@@ -162,42 +188,11 @@
   display: none;
 }
 
-.tablinks table {
-  height: 100%;
-  margin: 0 0.75rem 1rem;
-}
-.tablinks table thead tr th {
-  opacity: 0;
-  transition: opacity 200ms ease-in-out;
-}
-.tablinks table thead tr th:nth-child(2) {
-  width: 100%;
-}
-.tablinks table thead tr th .right-arrow {
-  float: right;
-}
-.tablinks:hover table thead tr th {
-  opacity: 1;
-  transition: opacity 200ms ease-in-out;
-}
-.tablinks:first-child table > thead > tr > th .left-arrow {
-  visibility: hidden;
-}
-.tablinks:nth-last-child(2) table > thead > tr > th .right-arrow {
-  visibility: hidden;
-}
-.tablinks:nth-last-child(2):first-child table > thead > tr > th .left-arrow,
-.tablinks:nth-last-child(2):first-child table > thead > tr > th .right-arrow {
-  visibility: hidden;
-}
-
 .ck.ck-widget__type-around__button.ck-widget__type-around__button_before,
 .ck.ck-widget__type-around__button.ck-widget__type-around__button_after {
   z-index: 1001;
 }
 
-.ck-editor__editable.ck-read-only .tab-edit-bar,
-.ck-editor__editable.ck-read-only .move-buttons-wrapper,
 .ck-editor__editable.ck-read-only .left-arrow,
 .ck-editor__editable.ck-read-only .right-arrow,
 .ck-editor__editable.ck-read-only .dropicon,
@@ -264,13 +259,11 @@
   background-color: #fff;
   border: 1px solid #266de2;
   color: #266de2;
-  transition: all 200ms ease-in-out;
 }
 .confirm-delete-modal .confirm-delete-no-btn:hover {
   background-color: rgba(38, 109, 226, 0.16);
   border-color: #1957bc;
   color: #1957bc;
-  transition: all 200ms ease-in-out;
 }
 .confirm-delete-modal button + button {
   margin-left: 0.5rem;

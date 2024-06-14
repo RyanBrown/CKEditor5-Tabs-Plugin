@@ -80,11 +80,35 @@ $font-family: 'FSThriveElliotWeb-Regular', sans-serif;
                 width: 100%;
                 z-index: 3;
             }
+            table {
+                height: 100%;
+                margin: 0 $tab-x-margin 1rem;
+
+                // Hide the tabs arrow and delete button
+                thead tr th {
+                    opacity: 0;
+                    transition: opacity $transition-speed;
+                }
+                // Set tab icons position on table cell
+                thead tr th {
+                    &:nth-child(2) {
+                        width: 100%;
+                    }
+                    .right-arrow {
+                        float: right;
+                    }
+                }
+            }
             &:hover {
                 background-color: $tab-bg-hover;
 
                 &::after {
                     background-color: $tab-bg-hover;
+                }
+                // Show the tabs arrow and delete button on hover
+                table thead tr th {
+                    opacity: 1;
+                    transition: opacity $transition-speed;
                 }
             }
             &.active,
@@ -97,6 +121,21 @@ $font-family: 'FSThriveElliotWeb-Regular', sans-serif;
                     background-color: $tab-bg-active;
                     bottom: -#{calc($tab-border-width * 2)};
                     height: calc($tab-border-width * 2);
+                }
+            }
+            // Align the 'move-right-button' left and hide the 'move-left-button' for the first tab
+            &:first-child table > thead > tr > th .left-arrow {
+                visibility: hidden;
+            }
+            // Align the 'move-left-button' left and hide the 'move-right-button' for the last tab
+            &:nth-last-child(2) table > thead > tr > th .right-arrow {
+                visibility: hidden;
+            }
+            // Hide the 'left and right arrow' if only one tab is visible
+            &:nth-last-child(2):first-child table > thead > tr > th {
+                .left-arrow,
+                .right-arrow {
+                    visibility: hidden;
                 }
             }
             // Title of the tab
@@ -124,14 +163,9 @@ $font-family: 'FSThriveElliotWeb-Regular', sans-serif;
                 padding: 1.5rem;
                 transition: background-image $transition-speed;
 
-                &::before {
-                    background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#333333'/%3E%3C/svg%3E");
-                }
-                &:hover::before {
-                    background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#1957bc'/%3E%3C/svg%3E");
-                }
                 &::before,
                 &:hover::before {
+                    background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#333333'/%3E%3C/svg%3E");
                     background-position: center;
                     background-repeat: no-repeat;
                     background-size: 1.5rem;
@@ -140,6 +174,9 @@ $font-family: 'FSThriveElliotWeb-Regular', sans-serif;
                     height: 1.5rem;
                     transition: background-image $transition-speed;
                     width: 1.5rem;
+                }
+                &:hover::before {
+                    background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#1957bc'/%3E%3C/svg%3E");
                 }
                 .addtabicon {
                     margin: 0;
@@ -227,49 +264,6 @@ $font-family: 'FSThriveElliotWeb-Regular', sans-serif;
         display: none;
     }
 }
-.tablinks {
-    table {
-        height: 100%;
-        margin: 0 $tab-x-margin 1rem;
-
-        // Hide the tabs arrow and delete button
-        thead tr th {
-            opacity: 0;
-            transition: opacity $transition-speed;
-        }
-
-        thead tr th {
-            &:nth-child(2) {
-                width: 100%;
-            }
-            .right-arrow {
-                float: right;
-            }
-        }
-    }
-    &:hover {
-        // Show the tabs arrow and delete button on hover
-        table thead tr th {
-            opacity: 1;
-            transition: opacity $transition-speed;
-        }
-    }
-    // Align the 'move-right-button' left and hide the 'move-left-button' for the first tab
-    &:first-child table > thead > tr > th .left-arrow {
-        visibility: hidden;
-    }
-    // Align the 'move-left-button' left and hide the 'move-right-button' for the last tab
-    &:nth-last-child(2) table > thead > tr > th .right-arrow {
-        visibility: hidden;
-    }
-    // Hide the 'left and right arrow' if only one tab is visible
-    &:nth-last-child(2):first-child table > thead > tr > th {
-        .left-arrow,
-        .right-arrow {
-            visibility: hidden;
-        }
-    }
-}
 // Set the z-index higher than the tabs for type-around buttons
 .ck.ck-widget__type-around__button.ck-widget__type-around__button_before,
 .ck.ck-widget__type-around__button.ck-widget__type-around__button_after {
@@ -277,8 +271,6 @@ $font-family: 'FSThriveElliotWeb-Regular', sans-serif;
 }
 // Hide elements in read-only view
 .ck-editor__editable.ck-read-only {
-    .tab-edit-bar,
-    .move-buttons-wrapper,
     .left-arrow,
     .right-arrow,
     .dropicon,
@@ -347,13 +339,11 @@ $font-family: 'FSThriveElliotWeb-Regular', sans-serif;
         background-color: $white;
         border: $btn-border-width solid $btn-color;
         color: $btn-color;
-        transition: all $transition-speed;
 
         &:hover {
             background-color: $btn-background-color-hover;
             border-color: $btn-color-hover;
             color: $btn-color-hover;
-            transition: all $transition-speed;
         }
     }
     button + button {
