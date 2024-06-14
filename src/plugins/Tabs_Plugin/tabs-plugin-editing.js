@@ -341,7 +341,6 @@ export default class TabsPluginEditing extends Plugin {
                 return writer.createContainerElement('li', {
                     class: classes ? `${classes} yui3-tab tablinks` : 'yui3-tab tablinks',
                     'data-target': dataTarget,
-                    onclick: 'parent.setActiveTab(event);',
                 });
             },
             converterPriority: 'high',
@@ -420,7 +419,6 @@ export default class TabsPluginEditing extends Plugin {
                 return writer.createContainerElement('div', {
                     class: 'left-arrow arrowtabicon',
                     title: 'Move Tab',
-                    onclick: "parent.moveTabPosition(event, 'left');",
                 });
             },
             converterPriority: 'high',
@@ -449,7 +447,6 @@ export default class TabsPluginEditing extends Plugin {
                 return writer.createContainerElement('div', {
                     class: 'right-arrow arrowtabicon',
                     title: 'Move Tab',
-                    onclick: "parent.moveTabPosition(event, 'right');",
                 });
             },
             converterPriority: 'high',
@@ -493,7 +490,6 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 return writer.createContainerElement('p', {
                     class: 'droptab droptabicon',
-                    onclick: 'parent.dropActiveTab(event);',
                 });
             },
             converterPriority: 'high',
@@ -563,7 +559,6 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 return writer.createContainerElement('p', {
                     class: 'addtabicon',
-                    onclick: 'parent.addTab(event);',
                 });
             },
             converterPriority: 'high',
