@@ -646,64 +646,28 @@ export default class TabsPluginEditing extends Plugin {
             converterPriority: 'high',
         });
 
-        // Conversion for 'thead' element
-        conversion.for('upcast').elementToElement({
-            model: 'tabListTable_thead',
-            view: 'thead',
-            converterPriority: 'high',
-        });
-        conversion.for('downcast').elementToElement({
-            model: 'tabListTable_thead',
-            view: 'thead',
-            converterPriority: 'high',
-        });
+        // Combined conversion for 'thead', 'tr', 'th', 'tbody', and 'td' elements
+        const viewElements = ['thead', 'tr', 'th', 'tbody', 'td'];
+        const modelElements = [
+            'tabListTable_thead',
+            'tabListTable_tr',
+            'tabListTable_th',
+            'tabListTable_tbody',
+            'tabListTable_td',
+        ];
 
-        // Conversion for 'tr' element
-        conversion.for('upcast').elementToElement({
-            model: 'tabListTable_tr',
-            view: 'tr',
-            converterPriority: 'high',
-        });
-        conversion.for('downcast').elementToElement({
-            model: 'tabListTable_tr',
-            view: 'tr',
-            converterPriority: 'high',
-        });
-
-        // Conversion for 'th' element
-        conversion.for('upcast').elementToElement({
-            model: 'tabListTable_th',
-            view: 'th',
-            converterPriority: 'high',
-        });
-        conversion.for('downcast').elementToElement({
-            model: 'tabListTable_th',
-            view: 'th',
-            converterPriority: 'high',
-        });
-
-        // Conversion for 'tbody' element
-        conversion.for('upcast').elementToElement({
-            model: 'tabListTable_tbody',
-            view: 'tbody',
-            converterPriority: 'high',
-        });
-        conversion.for('downcast').elementToElement({
-            model: 'tabListTable_tbody',
-            view: 'tbody',
-            converterPriority: 'high',
-        });
-
-        // Conversion for 'td' element
-        conversion.for('upcast').elementToElement({
-            model: 'tabListTable_td',
-            view: 'td',
-            converterPriority: 'high',
-        });
-        conversion.for('downcast').elementToElement({
-            model: 'tabListTable_td',
-            view: 'td',
-            converterPriority: 'high',
+        viewElements.forEach((viewElement, index) => {
+            const modelElement = modelElements[index];
+            conversion.for('upcast').elementToElement({
+                model: modelElement,
+                view: viewElement,
+                converterPriority: 'high',
+            });
+            conversion.for('downcast').elementToElement({
+                model: modelElement,
+                view: viewElement,
+                converterPriority: 'high',
+            });
         });
     }
 }
