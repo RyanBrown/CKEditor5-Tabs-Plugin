@@ -2,7 +2,6 @@
   background-color: #fff;
 }
 .tabcontainer .yui3-tabview-list {
-  align-items: stretch;
   display: flex;
   flex-wrap: wrap;
   list-style: none;

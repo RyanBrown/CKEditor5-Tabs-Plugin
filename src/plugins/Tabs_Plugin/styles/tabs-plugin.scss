@@ -45,7 +45,6 @@ $font-family: 'FSThriveElliotWeb-Regular', sans-serif;
 
     // Tab list container
     .yui3-tabview-list {
-        align-items: stretch;
         display: flex;
         flex-wrap: wrap;
         list-style: none;
@@ -88,9 +87,6 @@ $font-family: 'FSThriveElliotWeb-Regular', sans-serif;
                 thead tr th {
                     opacity: 0;
                     transition: opacity $transition-speed;
-                }
-                // Set tab icons position on table cell
-                thead tr th {
                     &:nth-child(2) {
                         width: 100%;
                     }
