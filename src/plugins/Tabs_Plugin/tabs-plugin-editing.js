@@ -109,7 +109,7 @@ export default class TabsPluginEditing extends Plugin {
             isLimit: true,
         });
         schema.register('tabListItem', {
-            allowAttributes: ['class', 'data-target'],
+            allowAttributes: ['class', 'data-target', 'onclick'],
             allowIn: 'tabList',
             isLimit: true,
         });
@@ -141,12 +141,12 @@ export default class TabsPluginEditing extends Plugin {
             isLimit: true,
         });
         schema.register('moveLeftButton', {
-            allowAttributes: ['class', 'title'],
+            allowAttributes: ['class', 'title', 'onclick'],
             allowIn: 'tabListTable_th',
             isLimit: true,
         });
         schema.register('moveRightButton', {
-            allowAttributes: ['class', 'title'],
+            allowAttributes: ['class', 'title', 'onclick'],
             allowIn: 'tabListTable_th',
             isLimit: true,
         });
@@ -156,7 +156,7 @@ export default class TabsPluginEditing extends Plugin {
             isLimit: true,
         });
         schema.register('deleteTabButtonParagraph', {
-            allowAttributes: ['class'],
+            allowAttributes: ['class', 'onclick'],
             allowIn: 'deleteTabButton',
             isLimit: true,
         });
@@ -171,7 +171,7 @@ export default class TabsPluginEditing extends Plugin {
             isLimit: true,
         });
         schema.register('addTabIcon', {
-            allowAttributes: ['class'],
+            allowAttributes: ['class', 'onclick'],
             allowIn: 'addTabButton',
             isLimit: true,
         });
