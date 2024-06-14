@@ -94,8 +94,61 @@ $font-family: 'FSThriveElliotWeb-Regular', sans-serif;
                     &:nth-child(2) {
                         width: 100%;
                     }
+                    // Individual buttons (delete, move-left, move-right)
+                    .dropicon,
+                    .left-arrow,
+                    .right-arrow {
+                        background-color: transparent;
+                        border: 0;
+                        cursor: pointer;
+                        display: block;
+                        height: 1.5rem;
+                        transition: background-image $transition-speed;
+                        width: 1.5rem;
+
+                        &::before,
+                        &:hover::before {
+                            background-position: center;
+                            background-repeat: no-repeat;
+                            background-size: 1.25rem;
+                            content: '';
+                            display: block;
+                            height: 1.5rem;
+                            transition: background-image $transition-speed;
+                            width: 1.5rem;
+                        }
+                    }
+                    // Move left button
+                    .left-arrow {
+                        &::before {
+                            background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='#333333'/%3E%3C/svg%3E");
+                        }
+                        &:hover::before {
+                            background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='#1957bc'/%3E%3C/svg%3E");
+                        }
+                    }
+                    // Move right button
                     .right-arrow {
                         float: right;
+                        &::before {
+                            background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='#333333'/%3E%3C/svg%3E");
+                        }
+                        &:hover::before {
+                            background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='#1957bc'/%3E%3C/svg%3E");
+                        }
+                    }
+                    // Delete tab button
+                    .dropicon {
+                        &::before {
+                            background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='#333333'/%3E%3C/svg%3E");
+                        }
+                        &:hover::before {
+                            background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='#ff0000'/%3E%3C/svg%3E");
+                        }
+                        // Hide nested content from CKEditor
+                        .droptab {
+                            display: none;
+                        }
                     }
                 }
             }
@@ -207,61 +260,6 @@ $font-family: 'FSThriveElliotWeb-Regular', sans-serif;
                 padding: 1rem;
             }
         }
-    }
-}
-// Individual buttons (delete, move-left, move-right)
-.dropicon,
-.left-arrow,
-.right-arrow {
-    background-color: transparent;
-    border: 0;
-    cursor: pointer;
-    display: block;
-    height: 1.5rem;
-    transition: background-image $transition-speed;
-    width: 1.5rem;
-
-    &::before,
-    &:hover::before {
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: 1.25rem;
-        content: '';
-        display: block;
-        height: 1.5rem;
-        transition: background-image $transition-speed;
-        width: 1.5rem;
-    }
-}
-// Move left button
-.left-arrow {
-    &::before {
-        background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='#333333'/%3E%3C/svg%3E");
-    }
-    &:hover::before {
-        background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='#1957bc'/%3E%3C/svg%3E");
-    }
-}
-// Move right button
-.right-arrow {
-    &::before {
-        background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='#333333'/%3E%3C/svg%3E");
-    }
-    &:hover::before {
-        background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='#1957bc'/%3E%3C/svg%3E");
-    }
-}
-// Delete tab button
-.dropicon {
-    &::before {
-        background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='#333333'/%3E%3C/svg%3E");
-    }
-    &:hover::before {
-        background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='#ff0000'/%3E%3C/svg%3E");
-    }
-    // Hide nested content from CKEditor
-    .droptab {
-        display: none;
     }
 }
 // Set the z-index higher than the tabs for type-around buttons
