@@ -14,7 +14,7 @@ export default class TabsPluginUI extends Plugin {
         this._createConfirmationModal();
     }
 
-    // Inserts the tabs plugin button into the editor's UI.
+    // Inserts the tabs plugin button into the editor's UI
     _insertTabsPlugin(editor) {
         editor.ui.componentFactory.add('tabsPlugin', (locale) => {
             const button = new ButtonView(locale);
@@ -24,46 +24,33 @@ export default class TabsPluginUI extends Plugin {
                 tooltip: true,
                 withText: false,
             });
-            // Disable the button if the tabs plugin already exists
-            this._updateButtonState(button);
 
+            // Define what happens when the button is clicked
             button.on('execute', () => {
                 editor.model.change((writer) => {
-                    // Get the root element of the document
-                    const root = editor.model.document.getRoot();
-                    // Check if the tabs plugin element already exists
-                    const existingTabsPlugin = Array.from(root.getChildren()).find((child) =>
-                        child.is('element', 'tabsPlugin')
-                    );
-                    // If the tabs plugin does not exist, create and insert it
-                    if (!existingTabsPlugin) {
-                        const tabsPluginElement = createTabsPluginElement(writer);
-                        editor.model.insertContent(
-                            tabsPluginElement,
-                            editor.model.document.selection.getFirstPosition()
-                        );
-                        // Update the button state after insertion
-                        this._updateButtonState(button);
-                    } else {
-                        console.warn('Tabs Plugin can only be inserted once.');
+                    const selection = editor.model.document.selection; // Get the current selection
+                    const firstPosition = selection.getFirstPosition(); // Get the first position of the selection
+                    let parentElement = firstPosition.parent; // Start with the parent element of the selection
+
+                    // Traverse up the hierarchy to check if the parent is tabTitle or tabNestedContent
+                    while (parentElement && !parentElement.is('rootElement')) {
+                        if (
+                            parentElement.is('element', 'tabTitle') ||
+                            parentElement.is('element', 'tabNestedContent')
+                        ) {
+                            console.warn('Cannot insert tabs plugin inside tabTitle or tabNestedContent.');
+                            return; // Abort if the parent is tabTitle or tabNestedContent
+                        }
+                        parentElement = parentElement.parent; // Move to the next parent
                     }
+
+                    // Insert the tabs plugin at the current selection
+                    const tabsPluginElement = createTabsPluginElement(writer);
+                    editor.model.insertContent(tabsPluginElement, firstPosition);
                 });
-            });
-            // Listen for changes in the model to update the button state
-            editor.model.document.on('change:data', () => {
-                this._updateButtonState(button);
             });
             return button;
         });
-    }
-
-    // Updates the state of the tabs plugin button (enabled/disabled)
-    _updateButtonState(button) {
-        const editor = this.editor;
-        const root = editor.model.document.getRoot();
-        const existingTabsPlugin = Array.from(root.getChildren()).find((child) => child.is('element', 'tabsPlugin'));
-
-        button.isEnabled = !existingTabsPlugin;
     }
 
     // Registers event handlers for the tabs plugin.
@@ -121,6 +108,19 @@ export default class TabsPluginUI extends Plugin {
                     button.on('execute', (evt) => this._preventButtonClick(evt, button), { priority: 'high' });
                 }
             });
+        });
+
+        // Log the position of the tab list item when clicked
+        editor.editing.view.document.on('click', (evt, data) => {
+            const target = data.target;
+            const tabListItem = target.findAncestor('li');
+            if (tabListItem && tabListItem.hasClass('tablinks')) {
+                const tabList = tabListItem.parent;
+                if (tabList) {
+                    const position = Array.from(tabList.getChildren()).indexOf(tabListItem);
+                    console.log(`Tab list item position on click: ${position}`);
+                }
+            }
         });
     }
 

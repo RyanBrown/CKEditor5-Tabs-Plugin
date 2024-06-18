@@ -106,6 +106,13 @@ export function createTabListItem(writer, tabId) {
     writer.append(tabListTable, tabListItemLabel);
     writer.append(tabListItemLabel, tabListItem);
 
+    // Log the position of the tab list item in the list
+    const tabList = tabListItem.parent;
+    if (tabList) {
+        const position = Array.from(tabList.getChildren()).indexOf(tabListItem);
+        console.log(`Tab list item position: ${position}`);
+    }
+
     return tabListItem;
 }
 
