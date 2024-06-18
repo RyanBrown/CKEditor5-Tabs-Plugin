@@ -594,7 +594,7 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 return writer.createContainerElement('div', {
                     class: 'yui3-tabview-panel',
-                    draggable: false, // Assuming draggable is always false
+                    draggable: false,
                 });
             },
             converterPriority: 'high',

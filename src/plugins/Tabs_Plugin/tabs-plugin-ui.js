@@ -137,31 +137,6 @@ export default class TabsPluginUI extends Plugin {
         }
     }
 
-    // Updates empty tab titles with a default value.
-    _updateEmptyTabTitles(editor) {
-        const viewRoot = editor.editing.view.document.getRoot();
-        const tabList = Array.from(viewRoot.getChildren()).find(
-            (child) => child.is('element', 'ul') && child.hasClass('yui3-tabview-list')
-        );
-
-        if (tabList) {
-            const tabTitleElements = Array.from(tabList.getChildren()).filter(
-                (child) => child.is('element', 'li') && child.hasClass('tablinks')
-            );
-
-            for (const tabTitleElement of tabTitleElements) {
-                const inputElement = tabTitleElement.getChild(1).getChild(0);
-                if (inputElement && inputElement.is('element', 'input') && inputElement.hasClass('tabTitle')) {
-                    const text = inputElement.getAttribute('value').trim();
-                    if (text === '') {
-                        inputElement.setAttribute('value', 'Tab Name');
-                    }
-                }
-            }
-        }
-    }
-
-    // Handles the tab click event.
     _handleTabClick(editor, target, evt) {
         let tabListItem = target.findAncestor('li');
 
