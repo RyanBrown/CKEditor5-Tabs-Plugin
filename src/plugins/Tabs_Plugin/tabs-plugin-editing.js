@@ -89,7 +89,7 @@ export default class TabsPluginEditing extends Plugin {
 
         // Define schema for the tabs plugin and its child elements
         schema.register('tabsPlugin', {
-            allowAttributes: ['class'],
+            allowAttributes: ['class', 'id'],
             allowIn: '$root',
             isLimit: true,
         });
@@ -207,20 +207,39 @@ export default class TabsPluginEditing extends Plugin {
 
         // Conversion for 'tabsPlugin' element
         conversion.for('upcast').elementToElement({
-            model: 'tabsPlugin',
+            // Convert the view element to the model element and assign a unique ID
+            model: (viewElement, { writer }) => {
+                const uniqueId = generateTabId();
+                const tabsPluginElement = writer.createElement('tabsPlugin', {
+                    id: uniqueId,
+                    class: viewElement.getAttribute('class'),
+                });
+                return tabsPluginElement;
+            },
             view: { name: 'div', classes: ['tabcontainer', 'yui3-widget'] },
             converterPriority: 'high',
         });
+
         conversion.for('dataDowncast').elementToElement({
-            model: 'tabsPlugin',
-            view: (modelElement, { writer }) =>
-                writer.createContainerElement('div', { class: 'tabcontainer yui3-widget' }),
-            converterPriority: 'high',
-        });
-        conversion.for('editingDowncast').elementToElement({
+            // Convert the model element to the view element for data downcast
             model: 'tabsPlugin',
             view: (modelElement, { writer }) => {
-                const div = writer.createContainerElement('div', { class: 'tabcontainer yui3-widget' });
+                return writer.createContainerElement('div', {
+                    id: modelElement.getAttribute('id'),
+                    class: 'tabcontainer yui3-widget',
+                });
+            },
+            converterPriority: 'high',
+        });
+
+        conversion.for('editingDowncast').elementToElement({
+            // Convert the model element to the view element for editing downcast
+            model: 'tabsPlugin',
+            view: (modelElement, { writer }) => {
+                const div = writer.createContainerElement('div', {
+                    id: modelElement.getAttribute('id'),
+                    class: 'tabcontainer yui3-widget ck-widget ck-widget_selected',
+                });
                 return toWidget(div, writer, { label: 'tabs plugin' });
             },
             converterPriority: 'high',
