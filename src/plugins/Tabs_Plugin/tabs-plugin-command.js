@@ -3,13 +3,13 @@ import { createTabElement, findAllDescendants } from './tabs-plugin-utils';
 
 // Generates a unique tab ID based on the current timestamp.
 export function generateTabId() {
-    return `id_${Date.now()}`;
+    return `tab-id_${Date.now()}`;
 }
 
 // Generates a unique Plugin ID.
 let pluginCounter = 0;
 export function generatePluginId() {
-    return `Tab-Plugin_${pluginCounter++}`;
+    return `plugin-id_${Date.now()}_${pluginCounter++}`;
 }
 
 // Command to insert a new tab in the editor.
