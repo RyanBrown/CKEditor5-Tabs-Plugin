@@ -200,17 +200,13 @@ export default class TabsPluginEditing extends Plugin {
 
     // Defines the converters for the tabs plugin elements.
     _defineConverters() {
-        // Generate a unique tab ID and assign it to 'newTabId'
-        const newTabId = generateTabId();
-        // Generate the unique ID once
-        const uniqueId = generatePluginId();
-
         const conversion = this.editor.conversion;
 
         // Conversion for 'tabsPlugin' element
         conversion.for('upcast').elementToElement({
-            // Convert the view element to the model element and assign the unique ID
+            // Convert the view element to the model element and assign a unique ID
             model: (viewElement, { writer }) => {
+                const uniqueId = generatePluginId();
                 const tabsPluginElement = writer.createElement('tabsPlugin', {
                     id: uniqueId,
                     class: viewElement.getAttribute('class'),
@@ -225,7 +221,7 @@ export default class TabsPluginEditing extends Plugin {
             model: 'tabsPlugin',
             view: (modelElement, { writer }) => {
                 return writer.createContainerElement('div', {
-                    id: uniqueId,
+                    id: modelElement.getAttribute('id'),
                     class: 'tabcontainer yui3-widget',
                 });
             },
@@ -236,7 +232,7 @@ export default class TabsPluginEditing extends Plugin {
             model: 'tabsPlugin',
             view: (modelElement, { writer }) => {
                 const div = writer.createContainerElement('div', {
-                    id: uniqueId,
+                    id: modelElement.getAttribute('id'),
                     class: 'tabcontainer yui3-widget ck-widget ck-widget_selected',
                 });
                 return toWidget(div, writer, { label: 'tabs plugin' });
@@ -308,37 +304,13 @@ export default class TabsPluginEditing extends Plugin {
                 classes: ['yui3-tab', 'tablinks'],
             },
             converterPriority: 'high',
-            // Converter function to handle the upcast conversion from view to model
-            converter: (viewElement, { writer }) => {
-                const dataTarget = viewElement.getAttribute('data-target');
-                // If the 'data-target' attribute is missing, generate a new one using 'newTabId'
-                if (!dataTarget) {
-                    writer.setAttribute('data-target', `#${newTabId}`, viewElement);
-                }
-                console.log('Upcast tabListItem data-target:', viewElement.getAttribute('data-target'));
-                const classes = viewElement.getAttribute('class');
-                // Create a model 'li' element with the class 'tablinks' and the 'data-target' attribute
-                return writer.createContainerElement('li', {
-                    class: classes ? `${classes} yui3-tab tablinks` : 'yui3-tab tablinks',
-                    'data-target': viewElement.getAttribute('data-target'),
-                });
-            },
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabListItem',
             view: (modelElement, { writer }) => {
-                let dataTarget = modelElement.getAttribute('data-target');
-                // If the 'data-target' attribute is missing, generate a new one using 'newTabId'
-                if (!dataTarget) {
-                    dataTarget = `#${newTabId}`;
-                    writer.setAttribute('data-target', dataTarget, modelElement);
-                }
-                console.log('Data downcast tabListItem data-target:', dataTarget);
-                const classes = modelElement.getAttribute('class');
-                // Create a view 'li' element with the class 'tablinks' and the 'data-target' attribute
                 return writer.createContainerElement('li', {
-                    class: classes ? `${classes} yui3-tab tablinks` : 'yui3-tab tablinks',
-                    'data-target': dataTarget,
+                    class: 'yui3-tab tablinks',
+                    'data-target': modelElement.getAttribute('data-target'),
                     onclick: 'parent.setActiveTab(event);',
                 });
             },
@@ -347,19 +319,11 @@ export default class TabsPluginEditing extends Plugin {
         conversion.for('editingDowncast').elementToElement({
             model: 'tabListItem',
             view: (modelElement, { writer }) => {
-                let dataTarget = modelElement.getAttribute('data-target');
-                // If the 'data-target' attribute is missing, generate a new one using 'newTabId'
-                if (!dataTarget) {
-                    dataTarget = `#${newTabId}`;
-                    writer.setAttribute('data-target', dataTarget, modelElement);
-                }
-                console.log('Editing downcast tabListItem data-target:', dataTarget);
-                const classes = modelElement.getAttribute('class');
-                // Create a view 'li' element with the class 'tablinks' and the 'data-target' attribute
-                return writer.createContainerElement('li', {
-                    class: classes ? `${classes} yui3-tab tablinks` : 'yui3-tab tablinks',
-                    'data-target': dataTarget,
+                const li = writer.createContainerElement('li', {
+                    class: 'yui3-tab tablinks',
+                    'data-target': modelElement.getAttribute('data-target'),
                 });
+                return toWidget(li, writer);
             },
             converterPriority: 'high',
         });
@@ -383,6 +347,7 @@ export default class TabsPluginEditing extends Plugin {
         conversion.for('upcast').elementToElement({
             model: 'tabListTable',
             view: { name: 'table' },
+            converterPriority: 'high',
         });
         conversion.for('downcast').elementToElement({
             model: 'tabListTable',
@@ -607,37 +572,13 @@ export default class TabsPluginEditing extends Plugin {
                 classes: ['yui3-tab-panel', 'tabcontent'],
             },
             converterPriority: 'high',
-            // Converter function to handle the upcast conversion from view to model
-            converter: (viewElement, { writer }) => {
-                const id = viewElement.getAttribute('id');
-                // If the 'id' attribute is missing, generate a new one using 'newTabId'
-                if (!id) {
-                    writer.setAttribute('id', newTabId, viewElement);
-                }
-                console.log('Upcast tabNestedContent id:', viewElement.getAttribute('id'));
-                const classes = viewElement.getAttribute('class');
-                // Create a model 'div' element with the class 'tabcontent' and the 'id' attribute
-                return writer.createEditableElement('div', {
-                    class: classes ? `${classes} yui3-tab-panel tabcontent` : 'yui3-tab-panel tabcontent',
-                    id: viewElement.getAttribute('id'),
-                });
-            },
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabNestedContent',
             view: (modelElement, { writer }) => {
-                let id = modelElement.getAttribute('id');
-                // If the 'id' attribute is missing, generate a new one using 'newTabId'
-                if (!id) {
-                    id = newTabId;
-                    writer.setAttribute('id', id, modelElement);
-                }
-                console.log('Data downcast tabNestedContent id:', id);
-                const classes = modelElement.getAttribute('class');
-                // Create a view 'div' element with the class 'tabcontent' and the 'id' attribute
                 return writer.createEditableElement('div', {
-                    class: classes ? `${classes} yui3-tab-panel tabcontent` : 'yui3-tab-panel tabcontent',
-                    id: id,
+                    id: modelElement.getAttribute('id'),
+                    class: 'yui3-tab-panel tabcontent',
                 });
             },
             converterPriority: 'high',
@@ -645,20 +586,10 @@ export default class TabsPluginEditing extends Plugin {
         conversion.for('editingDowncast').elementToElement({
             model: 'tabNestedContent',
             view: (modelElement, { writer }) => {
-                let id = modelElement.getAttribute('id');
-                // If the 'id' attribute is missing, generate a new one using 'newTabId'
-                if (!id) {
-                    id = newTabId;
-                    writer.setAttribute('id', id, modelElement);
-                }
-                console.log('Editing downcast tabNestedContent id:', id);
-                const classes = modelElement.getAttribute('class');
-                // Create a view 'div' element with the class 'tabcontent' and the 'id' attribute
                 const div = writer.createEditableElement('div', {
-                    class: classes ? `${classes} yui3-tab-panel tabcontent` : 'yui3-tab-panel tabcontent',
-                    id: id,
+                    id: modelElement.getAttribute('id'),
+                    class: 'yui3-tab-panel tabcontent',
                 });
-                // Make the 'div' element editable
                 return toWidgetEditable(div, writer);
             },
             converterPriority: 'high',

@@ -6,9 +6,14 @@ export function generateTabId() {
     return `id_${Date.now()}`;
 }
 
+let pluginCounter = 0;
+
+// Generates a unique Plugin ID based on the current timestamp.
 export function generatePluginId() {
-    return `Tab-Plugin_${Date.now()}`;
+    return `Tab-Plugin_${pluginCounter++}`;
 }
+
+// The rest of the file remains unchanged
 
 // Command to insert a new tab in the editor.
 export class TabsPluginCommand extends Command {
