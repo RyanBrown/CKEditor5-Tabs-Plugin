@@ -1,4 +1,5 @@
 export function generateTabId(): string;
+export function generatePluginId(): string;
 export class TabsPluginCommand extends Command {
     execute(): void;
 }

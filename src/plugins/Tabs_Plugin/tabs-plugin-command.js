@@ -6,6 +6,10 @@ export function generateTabId() {
     return `id_${Date.now()}`;
 }
 
+export function generatePluginId() {
+    return `Tab-Plugin_${Date.now()}`;
+}
+
 // Command to insert a new tab in the editor.
 export class TabsPluginCommand extends Command {
     execute() {

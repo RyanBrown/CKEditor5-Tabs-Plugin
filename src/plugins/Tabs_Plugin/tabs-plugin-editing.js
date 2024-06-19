@@ -2,7 +2,7 @@ import { Plugin } from '@ckeditor/ckeditor5-core';
 import { toWidget, toWidgetEditable } from '@ckeditor/ckeditor5-widget';
 import { Widget } from '@ckeditor/ckeditor5-widget';
 import { TabsPluginCommand, DeleteTabCommand, MoveTabCommand } from './tabs-plugin-command';
-import { generateTabId } from './tabs-plugin-command';
+import { generateTabId, generatePluginId } from './tabs-plugin-command';
 
 export default class TabsPluginEditing extends Plugin {
     static get requires() {
@@ -202,14 +202,15 @@ export default class TabsPluginEditing extends Plugin {
     _defineConverters() {
         // Generate a unique tab ID and assign it to 'newTabId'
         const newTabId = generateTabId();
+        // Generate the unique ID once
+        const uniqueId = generatePluginId();
 
         const conversion = this.editor.conversion;
 
         // Conversion for 'tabsPlugin' element
         conversion.for('upcast').elementToElement({
-            // Convert the view element to the model element and assign a unique ID
+            // Convert the view element to the model element and assign the unique ID
             model: (viewElement, { writer }) => {
-                const uniqueId = generateTabId();
                 const tabsPluginElement = writer.createElement('tabsPlugin', {
                     id: uniqueId,
                     class: viewElement.getAttribute('class'),
@@ -219,25 +220,23 @@ export default class TabsPluginEditing extends Plugin {
             view: { name: 'div', classes: ['tabcontainer', 'yui3-widget'] },
             converterPriority: 'high',
         });
-
         conversion.for('dataDowncast').elementToElement({
             // Convert the model element to the view element for data downcast
             model: 'tabsPlugin',
             view: (modelElement, { writer }) => {
                 return writer.createContainerElement('div', {
-                    id: modelElement.getAttribute('id'),
+                    id: uniqueId,
                     class: 'tabcontainer yui3-widget',
                 });
             },
             converterPriority: 'high',
         });
-
         conversion.for('editingDowncast').elementToElement({
             // Convert the model element to the view element for editing downcast
             model: 'tabsPlugin',
             view: (modelElement, { writer }) => {
                 const div = writer.createContainerElement('div', {
-                    id: modelElement.getAttribute('id'),
+                    id: uniqueId,
                     class: 'tabcontainer yui3-widget ck-widget ck-widget_selected',
                 });
                 return toWidget(div, writer, { label: 'tabs plugin' });
