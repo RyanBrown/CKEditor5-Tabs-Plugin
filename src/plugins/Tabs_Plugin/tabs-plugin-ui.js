@@ -1,7 +1,7 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { ButtonView } from '@ckeditor/ckeditor5-ui';
 import { createTabsPluginElement, createTabElement, findAllDescendants } from './tabs-plugin-utils';
-import { generateTabId } from './tabs-plugin-command';
+import { generateTabId, generatePluginId } from './tabs-plugin-command';
 import './styles/tabs-plugin.css';
 
 // Plugin to handle the UI for the tabs plugin.
@@ -44,8 +44,12 @@ export default class TabsPluginUI extends Plugin {
                         parentElement = parentElement.parent; // Move to the next parent
                     }
 
+                    // Generate a unique ID for the new tabs plugin instance
+                    const uniqueId = generatePluginId();
                     // Insert the tabs plugin at the current selection
-                    const tabsPluginElement = createTabsPluginElement(writer);
+                    const tabsPluginElement = writer.createElement('tabsPlugin', { id: uniqueId });
+                    const containerDiv = createTabsPluginElement(writer, uniqueId);
+                    writer.append(containerDiv, tabsPluginElement);
                     editor.model.insertContent(tabsPluginElement, firstPosition);
                 });
             });

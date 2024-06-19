@@ -1,4 +1,4 @@
-export function createTabsPluginElement(writer: any): any;
+export function createTabsPluginElement(writer: any, uniqueId: any): any;
 export function findAllDescendants(node: any, predicate: any): any;
 export function createTabElement(writer: any, tabId: any): {
     tabListItem: any;

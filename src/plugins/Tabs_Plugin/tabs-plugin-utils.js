@@ -1,8 +1,8 @@
 import { generateTabId } from './tabs-plugin-command';
 
 // Create tabs plugin element with two initial tabs
-export function createTabsPluginElement(writer) {
-    const tabsPlugin = writer.createElement('tabsPlugin');
+export function createTabsPluginElement(writer, uniqueId) {
+    const tabsPlugin = writer.createElement('tabsPlugin', { id: uniqueId }); // Add uniqueId to each plugin instance
     const containerDiv = writer.createElement('containerDiv');
     const tabHeader = writer.createElement('tabHeader');
     const tabList = writer.createElement('tabList');
