@@ -301,6 +301,7 @@ export default class TabsPluginEditing extends Plugin {
 
         let tabCounter = 0; // Initialize a counter for unique IDs
         const tabIdMap = new Map(); // Map to store the relationship between tab list items and their nested content
+        // const dataTargetList = []; // Array to store the data-target attributes
 
         // Helper function to create a 'li' element with appropriate attributes
         function createTabListItemElement(writer, element) {
@@ -310,6 +311,7 @@ export default class TabsPluginEditing extends Plugin {
                 dataTarget = `#${uniqueId}`;
                 writer.setAttribute('data-target', dataTarget, element);
                 tabIdMap.set(uniqueId, element); // Store the mapping
+                // dataTargetList.push(dataTarget); // Store the data-target
             }
             console.log('TabListItem data-target:', dataTarget);
             const classes = element.getAttribute('class');
@@ -318,6 +320,13 @@ export default class TabsPluginEditing extends Plugin {
                 'data-target': dataTarget,
             });
         }
+
+        // // Export the array of all generated data-targets
+        // function getDataTargets() {
+        //     return dataTargetList;
+        // }
+        // // Example usage: Log the array of all generated data-targets
+        // console.log('All generated data-targets:', getDataTargets());
 
         // Helper function to create a 'div' element with appropriate attributes
         function createTabNestedContentElement(writer, element, isEditable = false) {
