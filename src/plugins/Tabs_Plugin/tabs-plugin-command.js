@@ -2,8 +2,9 @@ import { Command } from '@ckeditor/ckeditor5-core';
 import { createTabElement, findAllDescendants } from './tabs-plugin-utils';
 
 // Generates a unique tab ID based on the current timestamp.
+let tabCounter = 0;
 export function generateTabId() {
-    return `tab-id_${Date.now()}`;
+    return `tab-id_${Date.now()}_${tabCounter++}`;
 }
 
 // Generates a unique Plugin ID.

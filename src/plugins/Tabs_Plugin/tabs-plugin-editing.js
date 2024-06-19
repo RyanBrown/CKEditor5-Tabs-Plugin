@@ -200,6 +200,9 @@ export default class TabsPluginEditing extends Plugin {
 
     // Defines the converters for the tabs plugin elements.
     _defineConverters() {
+        // Generate a unique tab ID and assign it to 'newTabId'
+        const newTabId = generateTabId();
+
         const conversion = this.editor.conversion;
 
         // Conversion for 'tabsPlugin' element
@@ -296,6 +299,20 @@ export default class TabsPluginEditing extends Plugin {
             converterPriority: 'high',
         });
 
+        // Helper function to create a 'li' element with appropriate attributes
+        function createTabListItemElement(writer, element, newTabId) {
+            let dataTarget = element.getAttribute('data-target');
+            if (!dataTarget) {
+                dataTarget = `#${newTabId}`;
+                writer.setAttribute('data-target', dataTarget, element);
+            }
+            console.log('TabListItem data-target:', dataTarget);
+            const classes = element.getAttribute('class');
+            return writer.createContainerElement('li', {
+                class: classes ? `${classes} yui3-tab tablinks` : 'yui3-tab tablinks',
+                'data-target': dataTarget,
+            });
+        }
         // Conversion for 'tabListItem' element
         conversion.for('upcast').elementToElement({
             model: 'tabListItem',
@@ -304,26 +321,25 @@ export default class TabsPluginEditing extends Plugin {
                 classes: ['yui3-tab', 'tablinks'],
             },
             converterPriority: 'high',
+            // Converter function to handle the upcast conversion from view to model
+            converter: (viewElement, { writer }) => {
+                return createTabListItemElement(writer, viewElement, newTabId);
+            },
         });
+
         conversion.for('dataDowncast').elementToElement({
             model: 'tabListItem',
             view: (modelElement, { writer }) => {
-                return writer.createContainerElement('li', {
-                    class: 'yui3-tab tablinks',
-                    'data-target': modelElement.getAttribute('data-target'),
-                    onclick: 'parent.setActiveTab(event);',
-                });
+                const liElement = createTabListItemElement(writer, modelElement, newTabId);
+                writer.setAttribute('onclick', 'parent.setActiveTab(event);', liElement);
+                return liElement;
             },
             converterPriority: 'high',
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabListItem',
             view: (modelElement, { writer }) => {
-                const li = writer.createContainerElement('li', {
-                    class: 'yui3-tab tablinks',
-                    'data-target': modelElement.getAttribute('data-target'),
-                });
-                return toWidget(li, writer);
+                return createTabListItemElement(writer, modelElement, newTabId);
             },
             converterPriority: 'high',
         });
@@ -564,6 +580,25 @@ export default class TabsPluginEditing extends Plugin {
             converterPriority: 'high',
         });
 
+        // Helper function to create a 'div' element with appropriate attributes
+        function createTabNestedContentElement(writer, element, newTabId, isEditable = false) {
+            let id = element.getAttribute('id');
+            if (!id) {
+                id = newTabId;
+                writer.setAttribute('id', id, element);
+            }
+            console.log('TabNestedContent id:', id);
+            const classes = element.getAttribute('class');
+            const attributes = {
+                class: classes ? `${classes} yui3-tab-panel tabcontent` : 'yui3-tab-panel tabcontent',
+                id: id,
+            };
+            if (isEditable) {
+                return toWidgetEditable(writer.createEditableElement('div', attributes), writer);
+            }
+            return writer.createEditableElement('div', attributes);
+        }
+
         // Conversion for 'tabNestedContent' element
         conversion.for('upcast').elementToElement({
             model: 'tabNestedContent',
@@ -572,25 +607,22 @@ export default class TabsPluginEditing extends Plugin {
                 classes: ['yui3-tab-panel', 'tabcontent'],
             },
             converterPriority: 'high',
+            // Converter function to handle the upcast conversion from view to model
+            converter: (viewElement, { writer }) => {
+                return createTabNestedContentElement(writer, viewElement, newTabId);
+            },
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabNestedContent',
             view: (modelElement, { writer }) => {
-                return writer.createEditableElement('div', {
-                    id: modelElement.getAttribute('id'),
-                    class: 'yui3-tab-panel tabcontent',
-                });
+                return createTabNestedContentElement(writer, modelElement, newTabId);
             },
             converterPriority: 'high',
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabNestedContent',
             view: (modelElement, { writer }) => {
-                const div = writer.createEditableElement('div', {
-                    id: modelElement.getAttribute('id'),
-                    class: 'yui3-tab-panel tabcontent',
-                });
-                return toWidgetEditable(div, writer);
+                return createTabNestedContentElement(writer, modelElement, newTabId, true);
             },
             converterPriority: 'high',
         });
