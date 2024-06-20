@@ -302,7 +302,6 @@ export default class TabsPluginEditing extends Plugin {
         let tabCounter = 0; // Initialize a counter for unique IDs
         let tabContentCounter = 0; // Initialize a counter for unique IDs
         const tabIdMap = new Map(); // Map to store the relationship between tab list items and their nested content
-        // const dataTargetList = []; // Array to store the data-target attributes
 
         // Helper function to create a 'li' element with appropriate attributes
         function createTabListItemElement(writer, element) {
@@ -322,13 +321,6 @@ export default class TabsPluginEditing extends Plugin {
             });
         }
 
-        // // Export the array of all generated data-targets
-        // function getDataTargets() {
-        //     return dataTargetList;
-        // }
-        // // Example usage: Log the array of all generated data-targets
-        // console.log('All generated data-targets:', getDataTargets());
-
         // Helper function to create a 'div' element with appropriate attributes
         function createTabNestedContentElement(writer, element, isEditable = false) {
             let id = element.getAttribute('id');
@@ -338,21 +330,6 @@ export default class TabsPluginEditing extends Plugin {
                 writer.setAttribute('id', id, element);
             }
 
-            // if (!id) {
-            //     // Find the element in the map that has the same data-target as this element's ID
-            //     const relatedElementId = Array.from(tabIdMap.entries()).find(([key, val]) => {
-            //         return val.getAttribute('data-target') === `#${element.getAttribute('data-target')}`;
-            //     });
-
-            //     if (relatedElementId) {
-            //         id = relatedElementId[0];
-            //         writer.setAttribute('id', id, element);
-            //     } else {
-            //         // Generate a new ID if no related element is found
-            //         id = `tab-${tabCounter++}`;
-            //         writer.setAttribute('id', id, element);
-            //     }
-            // }
             console.log('TabNestedContent id:', id);
             const classes = element.getAttribute('class');
             const attributes = {
