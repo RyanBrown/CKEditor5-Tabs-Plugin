@@ -1,6 +1,5 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
-import { toWidget, toWidgetEditable } from '@ckeditor/ckeditor5-widget';
-import { Widget } from '@ckeditor/ckeditor5-widget';
+import { toWidget, toWidgetEditable, Widget } from '@ckeditor/ckeditor5-widget';
 import { TabsPluginCommand, DeleteTabCommand, MoveTabCommand } from './tabs-plugin-command';
 import { generateId } from './tabs-plugin-command';
 
@@ -231,7 +230,7 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const div = writer.createContainerElement('div', {
                     id: modelElement.getAttribute('id'),
-                    class: 'tabcontainer yui3-widget ck-widget ck-widget_selected',
+                    class: 'tabcontainer yui3-widget',
                 });
                 return toWidget(div, writer, { label: 'tabs plugin' });
             },
