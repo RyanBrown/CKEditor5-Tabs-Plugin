@@ -2,7 +2,7 @@ import { Plugin } from '@ckeditor/ckeditor5-core';
 import { toWidget, toWidgetEditable } from '@ckeditor/ckeditor5-widget';
 import { Widget } from '@ckeditor/ckeditor5-widget';
 import { TabsPluginCommand, DeleteTabCommand, MoveTabCommand } from './tabs-plugin-command';
-import { generateTabId, generatePluginId } from './tabs-plugin-command';
+import { generateId } from './tabs-plugin-command';
 
 export default class TabsPluginEditing extends Plugin {
     static get requires() {
@@ -200,22 +200,17 @@ export default class TabsPluginEditing extends Plugin {
 
     // Defines the converters for the tabs plugin elements.
     _defineConverters() {
-        // Generate a unique tab ID and assign it to 'newTabId'
-        const newTabId = generateTabId();
-
         const conversion = this.editor.conversion;
 
         // Conversion for 'tabsPlugin' element
         conversion.for('upcast').elementToElement({
             // Convert the view element to the model element and assign a unique ID
             model: (viewElement, { writer }) => {
-                const uniqueId = generatePluginId();
+                const uniqueId = generateId('plugin-id');
                 const tabsPluginElement = writer.createElement('tabsPlugin', {
                     id: uniqueId,
                     class: viewElement.getAttribute('class'),
                 });
-                // Store the uniqueId in the tabIdMap to be used later
-                tabIdMap.set(uniqueId, tabsPluginElement);
                 return tabsPluginElement;
             },
             view: { name: 'div', classes: ['tabcontainer', 'yui3-widget'] },
@@ -269,7 +264,7 @@ export default class TabsPluginEditing extends Plugin {
             converterPriority: 'high',
         });
 
-        // Conversion for 'containerDiv' element
+        // Conversion for 'tabHeader' element
         conversion.for('upcast').elementToElement({
             model: 'tabHeader',
             view: { name: 'div', classes: ['tabheader', 'ah-tabs-horizontal'] },

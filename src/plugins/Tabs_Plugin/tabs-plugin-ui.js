@@ -1,7 +1,7 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { ButtonView } from '@ckeditor/ckeditor5-ui';
 import { createTabsPluginElement, createTabElement, findAllDescendants } from './tabs-plugin-utils';
-import { generateTabId, generatePluginId } from './tabs-plugin-command';
+import { generateId } from './tabs-plugin-command';
 import './styles/tabs-plugin.css';
 
 // Plugin to handle the UI for the tabs plugin.
@@ -45,7 +45,7 @@ export default class TabsPluginUI extends Plugin {
                     }
 
                     // Generate a unique ID for the new tabs plugin instance
-                    const uniqueId = generatePluginId();
+                    const uniqueId = generateId('plugin-id');
                     // Insert the tabs plugin at the current selection
                     const tabsPluginElement = writer.createElement('tabsPlugin', { id: uniqueId });
                     const containerDiv = createTabsPluginElement(writer, uniqueId);
@@ -319,7 +319,7 @@ export default class TabsPluginUI extends Plugin {
             }
 
             // Generate a unique tabId for the new tab using centralized method
-            const newTabId = generateTabId();
+            const newTabId = generateId('tab-id');
             // Use the utility function to create a new tab list item and content
             const { tabListItem, tabNestedContent } = createTabElement(writer, newTabId);
             // Find the "Add Tab" button in the tabList

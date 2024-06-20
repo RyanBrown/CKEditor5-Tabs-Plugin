@@ -1,16 +1,10 @@
 import { Command } from '@ckeditor/ckeditor5-core';
 import { createTabElement, findAllDescendants } from './tabs-plugin-utils';
 
-// Generates a unique tab ID based on the current timestamp.
-let tabCounter = 0;
-export function generateTabId() {
-    return `tab-id_${Date.now()}_${tabCounter++}`;
-}
-
-// Generates a unique Plugin ID.
-let pluginCounter = 0;
-export function generatePluginId() {
-    return `plugin-id_${Date.now()}_${pluginCounter++}`;
+// Generates a unique ID
+let counter = 0;
+export function generateId(prefix) {
+    return `${prefix}_${Date.now()}_${counter++}`;
 }
 
 // Command to insert a new tab in the editor.
@@ -21,7 +15,7 @@ export class TabsPluginCommand extends Command {
 
         // Change the model to insert a new tab
         model.change((writer) => {
-            const tabId = generateTabId();
+            const tabId = generateId('tab-id');
             const { tabListItem, tabNestedContent } = createTabElement(writer, tabId);
             const tabsRoot = model.document.getRoot();
             const tabList = tabsRoot.getChild(0).getChild(1).getChild(0);

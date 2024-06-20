@@ -1,4 +1,4 @@
-import { generateTabId } from './tabs-plugin-command';
+import { generateId } from './tabs-plugin-command';
 
 // Create tabs plugin element with two initial tabs
 export function createTabsPluginElement(writer, uniqueId) {
@@ -9,7 +9,7 @@ export function createTabsPluginElement(writer, uniqueId) {
     const tabContent = writer.createElement('tabContent');
 
     // Create the first tab using centralized tabId generation
-    const firstTabId = generateTabId();
+    const firstTabId = generateId('tab-id');
     const { tabListItem: firstTabListItem, tabNestedContent: firstTabNestedContent } = createTabElement(
         writer,
         firstTabId
@@ -21,7 +21,7 @@ export function createTabsPluginElement(writer, uniqueId) {
     writer.append(firstTabNestedContent, tabContent);
 
     // Create the second tab using centralized tabId generation
-    const secondTabId = generateTabId();
+    const secondTabId = generateId('tab-id');
     const { tabListItem: secondTabListItem, tabNestedContent: secondTabNestedContent } = createTabElement(
         writer,
         secondTabId
@@ -105,13 +105,6 @@ export function createTabListItem(writer, tabId) {
     writer.append(tabListTable_tbody, tabListTable);
     writer.append(tabListTable, tabListItemLabel);
     writer.append(tabListItemLabel, tabListItem);
-
-    // Log the position of the tab list item in the list
-    const tabList = tabListItem.parent;
-    if (tabList) {
-        const position = Array.from(tabList.getChildren()).indexOf(tabListItem);
-        console.log(`Tab list item position: ${position}`);
-    }
 
     return tabListItem;
 }
