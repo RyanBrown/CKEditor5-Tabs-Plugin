@@ -300,6 +300,7 @@ export default class TabsPluginEditing extends Plugin {
         });
 
         let tabCounter = 0; // Initialize a counter for unique IDs
+        let tabContentCounter = 0; // Initialize a counter for unique IDs
         const tabIdMap = new Map(); // Map to store the relationship between tab list items and their nested content
         // const dataTargetList = []; // Array to store the data-target attributes
 
@@ -332,20 +333,26 @@ export default class TabsPluginEditing extends Plugin {
         function createTabNestedContentElement(writer, element, isEditable = false) {
             let id = element.getAttribute('id');
             if (!id) {
-                // Find the element in the map that has the same data-target as this element's ID
-                const relatedElementId = Array.from(tabIdMap.entries()).find(([key, val]) => {
-                    return val.getAttribute('data-target') === `#${element.getAttribute('data-target')}`;
-                });
-
-                if (relatedElementId) {
-                    id = relatedElementId[0];
-                    writer.setAttribute('id', id, element);
-                } else {
-                    // Generate a new ID if no related element is found
-                    id = `tab-${tabCounter++}`;
-                    writer.setAttribute('id', id, element);
-                }
+                const uniqueTabContentId = `tab-${tabContentCounter++}`;
+                id = `${uniqueTabContentId}`;
+                writer.setAttribute('id', id, element);
             }
+
+            // if (!id) {
+            //     // Find the element in the map that has the same data-target as this element's ID
+            //     const relatedElementId = Array.from(tabIdMap.entries()).find(([key, val]) => {
+            //         return val.getAttribute('data-target') === `#${element.getAttribute('data-target')}`;
+            //     });
+
+            //     if (relatedElementId) {
+            //         id = relatedElementId[0];
+            //         writer.setAttribute('id', id, element);
+            //     } else {
+            //         // Generate a new ID if no related element is found
+            //         id = `tab-${tabCounter++}`;
+            //         writer.setAttribute('id', id, element);
+            //     }
+            // }
             console.log('TabNestedContent id:', id);
             const classes = element.getAttribute('class');
             const attributes = {
