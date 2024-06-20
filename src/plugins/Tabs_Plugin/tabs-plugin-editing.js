@@ -214,6 +214,8 @@ export default class TabsPluginEditing extends Plugin {
                     id: uniqueId,
                     class: viewElement.getAttribute('class'),
                 });
+                // Store the uniqueId in the tabIdMap to be used later
+                tabIdMap.set(uniqueId, tabsPluginElement);
                 return tabsPluginElement;
             },
             view: { name: 'div', classes: ['tabcontainer', 'yui3-widget'] },
@@ -304,14 +306,13 @@ export default class TabsPluginEditing extends Plugin {
         const tabIdMap = new Map(); // Map to store the relationship between tab list items and their nested content
 
         // Helper function to create a 'li' element with appropriate attributes
-        function createTabListItemElement(writer, element) {
+        function createTabListItemElement(writer, element, tabContainerId) {
             let dataTarget = element.getAttribute('data-target');
             if (!dataTarget) {
-                const uniqueId = `tab-${tabCounter++}`;
+                const uniqueId = `${tabContainerId}-tab-${tabCounter++}`;
                 dataTarget = `#${uniqueId}`;
                 writer.setAttribute('data-target', dataTarget, element);
                 tabIdMap.set(uniqueId, element); // Store the mapping
-                // dataTargetList.push(dataTarget); // Store the data-target
             }
             console.log('TabListItem data-target:', dataTarget);
             const classes = element.getAttribute('class');
@@ -322,10 +323,10 @@ export default class TabsPluginEditing extends Plugin {
         }
 
         // Helper function to create a 'div' element with appropriate attributes
-        function createTabNestedContentElement(writer, element, isEditable = false) {
+        function createTabNestedContentElement(writer, element, tabContainerId, isEditable = false) {
             let id = element.getAttribute('id');
             if (!id) {
-                const uniqueTabContentId = `tab-${tabContentCounter++}`;
+                const uniqueTabContentId = `${tabContainerId}-tab-${tabContentCounter++}`;
                 id = `${uniqueTabContentId}`;
                 writer.setAttribute('id', id, element);
             }
@@ -352,13 +353,17 @@ export default class TabsPluginEditing extends Plugin {
             converterPriority: 'high',
             // Converter function to handle the upcast conversion from view to model
             converter: (viewElement, { writer }) => {
-                return createTabListItemElement(writer, viewElement);
+                // Get the tabContainerId from the parent 'tabsPlugin' element
+                const tabContainerElement = viewElement.findAncestor('div');
+                const tabContainerId = tabContainerElement ? tabContainerElement.getAttribute('id') : 'default';
+                return createTabListItemElement(writer, viewElement, tabContainerId);
             },
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabListItem',
             view: (modelElement, { writer }) => {
-                const liElement = createTabListItemElement(writer, modelElement);
+                const tabContainerId = modelElement.findAncestor('tabsPlugin').getAttribute('id');
+                const liElement = createTabListItemElement(writer, modelElement, tabContainerId);
                 writer.setAttribute('onclick', 'parent.setActiveTab(event);', liElement);
                 return liElement;
             },
@@ -367,7 +372,8 @@ export default class TabsPluginEditing extends Plugin {
         conversion.for('editingDowncast').elementToElement({
             model: 'tabListItem',
             view: (modelElement, { writer }) => {
-                return createTabListItemElement(writer, modelElement);
+                const tabContainerId = modelElement.findAncestor('tabsPlugin').getAttribute('id');
+                return createTabListItemElement(writer, modelElement, tabContainerId);
             },
             converterPriority: 'high',
         });
@@ -382,20 +388,25 @@ export default class TabsPluginEditing extends Plugin {
             converterPriority: 'high',
             // Converter function to handle the upcast conversion from view to model
             converter: (viewElement, { writer }) => {
-                return createTabNestedContentElement(writer, viewElement);
+                // Get the tabContainerId from the parent 'tabsPlugin' element
+                const tabContainerElement = viewElement.findAncestor('div');
+                const tabContainerId = tabContainerElement ? tabContainerElement.getAttribute('id') : 'default';
+                return createTabNestedContentElement(writer, viewElement, tabContainerId);
             },
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabNestedContent',
             view: (modelElement, { writer }) => {
-                return createTabNestedContentElement(writer, modelElement);
+                const tabContainerId = modelElement.findAncestor('tabsPlugin').getAttribute('id');
+                return createTabNestedContentElement(writer, modelElement, tabContainerId);
             },
             converterPriority: 'high',
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabNestedContent',
             view: (modelElement, { writer }) => {
-                return createTabNestedContentElement(writer, modelElement, true);
+                const tabContainerId = modelElement.findAncestor('tabsPlugin').getAttribute('id');
+                return createTabNestedContentElement(writer, modelElement, tabContainerId, true);
             },
             converterPriority: 'high',
         });
