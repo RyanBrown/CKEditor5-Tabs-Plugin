@@ -316,8 +316,11 @@ export default class TabsPluginEditing extends Plugin {
             }
             console.log('TabListItem data-target:', dataTarget);
             const classes = element.getAttribute('class');
+            // Add 'active' class to the first tabListItem
+            const className = classes ? `${classes} yui3-tab tablinks` : 'yui3-tab tablinks';
+            const finalClassName = tabCounter === 1 ? `${className} active` : className;
             return writer.createContainerElement('li', {
-                class: classes ? `${classes} yui3-tab tablinks` : 'yui3-tab tablinks',
+                class: finalClassName,
                 'data-target': dataTarget,
             });
         }
@@ -333,8 +336,11 @@ export default class TabsPluginEditing extends Plugin {
 
             console.log('TabNestedContent id:', id);
             const classes = element.getAttribute('class');
+            // Add 'active' class to the first tabNestedContent
+            const className = classes ? `${classes} yui3-tab-panel tabcontent` : 'yui3-tab-panel tabcontent';
+            const finalClassName = tabContentCounter === 1 ? `${className} active` : className;
             const attributes = {
-                class: classes ? `${classes} yui3-tab-panel tabcontent` : 'yui3-tab-panel tabcontent',
+                class: finalClassName,
                 id: id,
             };
             if (isEditable) {
