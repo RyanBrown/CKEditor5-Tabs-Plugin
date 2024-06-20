@@ -2,36 +2,26 @@ import { generateId } from './tabs-plugin-command';
 
 // Create tabs plugin element with two initial tabs
 export function createTabsPluginElement(writer, uniqueId) {
-    const tabsPlugin = writer.createElement('tabsPlugin', { id: uniqueId }); // Add uniqueId to each plugin instance
+    const tabsPlugin = writer.createElement('tabsPlugin', { id: uniqueId });
     const containerDiv = writer.createElement('containerDiv');
     const tabHeader = writer.createElement('tabHeader');
     const tabList = writer.createElement('tabList');
     const tabContent = writer.createElement('tabContent');
 
-    // Create the first tab using centralized tabId generation
-    const firstTabId = generateId('tab-id');
-    const { tabListItem: firstTabListItem, tabNestedContent: firstTabNestedContent } = createTabElement(
-        writer,
-        firstTabId
-    );
-    // Add active class to the first tab and content
-    writer.setAttribute('class', `${firstTabListItem.getAttribute('class')} active`, firstTabListItem);
-    writer.setAttribute('class', `${firstTabNestedContent.getAttribute('class')} active`, firstTabNestedContent);
-    writer.append(firstTabListItem, tabList);
-    writer.append(firstTabNestedContent, tabContent);
-
-    // Create the second tab using centralized tabId generation
-    const secondTabId = generateId('tab-id');
-    const { tabListItem: secondTabListItem, tabNestedContent: secondTabNestedContent } = createTabElement(
-        writer,
-        secondTabId
-    );
-    writer.append(secondTabListItem, tabList);
-    writer.append(secondTabNestedContent, tabContent);
+    // Create two initial tabs
+    for (let i = 0; i < 2; i++) {
+        const tabId = generateId('tab-id');
+        const { tabListItem, tabNestedContent } = createTabElement(writer, tabId);
+        if (i === 0) {
+            writer.setAttribute('class', `${tabListItem.getAttribute('class')} active`, tabListItem);
+            writer.setAttribute('class', `${tabNestedContent.getAttribute('class')} active`, tabNestedContent);
+        }
+        writer.append(tabListItem, tabList);
+        writer.append(tabNestedContent, tabContent);
+    }
 
     // Add the 'Add Tab' button to the tabList as the last item
-    const addTabButton = createAddTabButton(writer);
-    writer.append(addTabButton, tabList);
+    writer.append(createAddTabButton(writer), tabList);
 
     // Append tabList and tabContent in the correct order
     writer.append(tabList, tabHeader);
@@ -59,9 +49,10 @@ export function findAllDescendants(node, predicate) {
 
 // Create tab element
 export function createTabElement(writer, tabId) {
-    const tabListItem = createTabListItem(writer, tabId);
-    const tabNestedContent = createTabContent(writer, tabId);
-    return { tabListItem, tabNestedContent };
+    return {
+        tabListItem: createTabListItem(writer, tabId),
+        tabNestedContent: createTabContent(writer, tabId),
+    };
 }
 
 // Create tab list item
@@ -129,8 +120,8 @@ export function createAddTabButton(writer) {
 }
 
 // Append control element
-export function appendControlElement(writer, parent, type, title) {
-    const element = writer.createElement(type, { class: type, title });
+export function appendControlElement(writer, parent, type) {
+    const element = writer.createElement(type, { class: type });
     writer.append(element, parent);
     return element;
 }

@@ -87,7 +87,6 @@ export default class TabsPluginEditing extends Plugin {
     _defineSchema() {
         const schema = this.editor.model.schema;
 
-        // Define schema for the tabs plugin and its child elements
         schema.register('tabsPlugin', {
             allowAttributes: ['class', 'id'],
             allowIn: '$root',
@@ -136,7 +135,7 @@ export default class TabsPluginEditing extends Plugin {
         });
         schema.register('tabNestedContent', {
             allowAttributes: ['id', 'class'],
-            allowContentOf: '$root', // Allow all root-level content, including block elements
+            allowContentOf: '$root',
             allowIn: 'tabContent',
             isLimit: true,
         });
@@ -207,11 +206,10 @@ export default class TabsPluginEditing extends Plugin {
             // Convert the view element to the model element and assign a unique ID
             model: (viewElement, { writer }) => {
                 const uniqueId = generateId('plugin-id');
-                const tabsPluginElement = writer.createElement('tabsPlugin', {
+                return writer.createElement('tabsPlugin', {
                     id: uniqueId,
                     class: viewElement.getAttribute('class'),
                 });
-                return tabsPluginElement;
             },
             view: { name: 'div', classes: ['tabcontainer', 'yui3-widget'] },
             converterPriority: 'high',

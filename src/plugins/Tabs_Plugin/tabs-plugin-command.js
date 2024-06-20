@@ -98,9 +98,8 @@ export class DeleteTabCommand extends Command {
             }
 
             // If only one tab remains, set it to active
-            const remainingTabListItems = findAllDescendants(tabsRoot, (node) => node.is('element', 'tabListItem'));
-            if (remainingTabListItems.length === 1) {
-                const remainingTab = remainingTabListItems[0];
+            if (tabListItems.length === 1) {
+                const remainingTab = tabListItems[0];
                 const remainingTabId = remainingTab.getAttribute('data-target').slice(1);
                 const remainingTabContent = findAllDescendants(
                     tabsRoot,
