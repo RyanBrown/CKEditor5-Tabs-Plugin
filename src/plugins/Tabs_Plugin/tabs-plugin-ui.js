@@ -1,6 +1,6 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { ButtonView } from '@ckeditor/ckeditor5-ui';
-import { createTabsPluginElement, generateId, _activateTab } from './tabs-plugin-utils';
+import { createTabsPluginElement, createTabElement, generateId, _activateTab } from './tabs-plugin-utils';
 import './styles/tabs-plugin.css';
 
 // Plugin to handle the UI for the tabs plugin.
@@ -193,32 +193,7 @@ export default class TabsPluginUI extends Plugin {
 
     // Handles the add tab button click event.
     _handleAddTab(editor, evt, data) {
-        // console.log('Handling add tab');
-
-        const target = data.target;
-
-        if (!target) {
-            console.error('No target found for the click event.');
-            return;
-        }
-
-        const tabsContainer = target.findAncestor((element) => {
-            return element.is('element') && element.hasClass('tabcontainer');
-        });
-
-        if (tabsContainer) {
-            const pluginId = tabsContainer.getAttribute('id');
-            console.log('Found tabs plugin with id:', pluginId);
-
-            editor.model.change((writer) => {
-                console.log('Executing addTab command with pluginId:', pluginId);
-                const result = editor.execute('addTab', { pluginId });
-                console.log('addTab command execution result:', result);
-            });
-        } else {
-            console.error('No tabs plugin found for the clicked add button.');
-        }
-
+        this._addNewTab(editor);
         evt.stop();
     }
 
@@ -263,5 +238,78 @@ export default class TabsPluginUI extends Plugin {
         const modalContainer = document.createElement('div');
         modalContainer.innerHTML = modalHtml;
         document.body.appendChild(modalContainer);
+    }
+
+    // Adds a new tab to the tabs plugin.
+    _addNewTab(editor) {
+        editor.model.change((writer) => {
+            // Get the root element of the document
+            const root = editor.model.document.getRoot();
+
+            // Find tabsPlugin, tabList, and tabContent by querying for them directly
+            let tabsPlugin = null;
+            let tabList = null;
+            let tabContent = null;
+
+            // Search for the tabsPlugin element
+            for (const node of root.getChildren()) {
+                if (node.is('element', 'tabsPlugin')) {
+                    tabsPlugin = node;
+                    break;
+                }
+            }
+
+            // If tabsPlugin is not found, create it and append to the root
+            if (!tabsPlugin) {
+                tabsPlugin = writer.createElement('tabsPlugin');
+                writer.append(tabsPlugin, root);
+            }
+
+            // Within tabsPlugin, find or create tabList and tabContent
+            for (const node of tabsPlugin.getChildren()) {
+                if (node.is('element', 'containerDiv')) {
+                    const containerDiv = node;
+                    for (const childNode of containerDiv.getChildren()) {
+                        if (childNode.is('element', 'tabHeader')) {
+                            tabList = childNode.getChild(0);
+                        } else if (childNode.is('element', 'tabContent')) {
+                            tabContent = childNode;
+                        }
+                    }
+                }
+            }
+
+            if (!tabList) {
+                const tabHeader = writer.createElement('tabHeader');
+                tabList = writer.createElement('tabList');
+                writer.append(tabList, tabHeader);
+                writer.append(tabHeader, tabsPlugin.getChild(0));
+            }
+            if (!tabContent) {
+                tabContent = writer.createElement('tabContent');
+                writer.append(tabContent, tabsPlugin.getChild(0));
+            }
+
+            // Generate a unique tabId for the new tab using centralized method
+            const newTabId = generateId('tab-id');
+            // Use the utility function to create a new tab list item and content
+            const { tabListItem, tabNestedContent } = createTabElement(writer, tabsPlugin.getAttribute('id'), newTabId);
+            // Find the "Add Tab" button in the tabList
+            const addTabButton = Array.from(tabList.getChildren()).find((child) =>
+                child.is('element', 'addTabListItem')
+            );
+            if (addTabButton) {
+                // Insert the new tab list item before the "Add Tab" button
+                writer.insert(tabListItem, writer.createPositionBefore(addTabButton));
+            } else {
+                // Append the new tab list item to the end of the tabList
+                writer.append(tabListItem, tabList);
+            }
+            // Append the new tab content to the tabContent
+            writer.append(tabNestedContent, tabContent);
+
+            // Activate the newly added tab
+            _activateTab(editor, tabListItem);
+        });
     }
 }
