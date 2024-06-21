@@ -3,7 +3,9 @@ import { Command } from '@ckeditor/ckeditor5-core';
 export default class TabsPluginCommand extends Command {
     execute() {
         this.editor.model.change((writer) => {
-            this.editor.model.insertContent(createTabsPlugin(writer));
+            const tabsPlugin = createTabsPlugin(writer);
+            this.editor.model.insertContent(tabsPlugin);
+            console.log('TabsPlugin inserted:', tabsPlugin);
         });
     }
 
@@ -17,14 +19,16 @@ export default class TabsPluginCommand extends Command {
 }
 
 function createTabsPlugin(writer) {
-    const tabsContainer = writer.createElement('tabsContainer');
-    const tabTitle = writer.createElement('tabTitle');
-    const tabContent = writer.createElement('tabContent');
+    const tabsPlugin = writer.createElement('tabsPlugin');
+    const containerDiv = writer.createElement('containerDiv');
 
-    writer.append(tabTitle, tabsContainer);
-    writer.append(tabContent, tabsContainer);
+    writer.append(containerDiv, tabsPlugin);
 
     // You may want to add some default content here
+    // For example:
+    const paragraph = writer.createElement('paragraph');
+    writer.append(paragraph, containerDiv);
+    writer.appendText('Tab content goes here', paragraph);
 
-    return tabsContainer;
+    return tabsPlugin;
 }

@@ -26,6 +26,7 @@ export default class TabsPluginEditing extends Plugin {
         schema.register('containerDiv', {
             allowAttributes: ['class'],
             allowIn: 'tabsPlugin',
+            allowContentOf: '$root', // This allows any content that's allowed in the root
         });
     }
 
