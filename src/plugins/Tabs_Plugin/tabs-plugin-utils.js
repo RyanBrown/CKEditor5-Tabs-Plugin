@@ -2,7 +2,6 @@ import { generateId } from './tabs-plugin-command';
 
 // Create tabs plugin element with two initial tabs
 export function createTabsPluginElement(writer, uniqueId) {
-    const tabsPlugin = writer.createElement('tabsPlugin', { id: uniqueId });
     const containerDiv = writer.createElement('containerDiv');
     const tabHeader = writer.createElement('tabHeader');
     const tabList = writer.createElement('tabList');
@@ -27,9 +26,8 @@ export function createTabsPluginElement(writer, uniqueId) {
     writer.append(tabList, tabHeader);
     writer.append(tabHeader, containerDiv);
     writer.append(tabContent, containerDiv);
-    writer.append(containerDiv, tabsPlugin);
 
-    return tabsPlugin;
+    return containerDiv;
 }
 
 // Find all descendants that match a condition
