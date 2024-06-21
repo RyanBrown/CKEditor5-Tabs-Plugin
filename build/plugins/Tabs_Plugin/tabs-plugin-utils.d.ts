@@ -9,4 +9,3 @@ export function createTabListItem(writer: any, pluginId: any, tabId: any): any;
 export function createTabContent(writer: any, tabId: any): any;
 export function createAddTabButton(writer: any): any;
 export function appendControlElement(writer: any, parent: any, type: any): any;
-export function _activateTab(editor: any, tabListItem: any): void;

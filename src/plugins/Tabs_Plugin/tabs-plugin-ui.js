@@ -47,6 +47,7 @@ export default class TabsPluginUI extends Plugin {
         });
     }
 
+    // Registers event handlers for the tabs plugin
     _registerEventHandlers(editor) {
         const commandsToDisable = ['link', 'bold', 'italic', 'underline', 'strikethrough', 'subscript', 'superscript'];
 
@@ -59,7 +60,7 @@ export default class TabsPluginUI extends Plugin {
                 } else if (target.hasClass('dropicon')) {
                     this._handleDeleteTab(editor, target, evt);
                 } else if (target.hasClass('addicon')) {
-                    this._handleAddTab(editor, evt, data);
+                    this._handleAddTab(editor, evt, data); // Pass both evt and data
                 } else if (target.hasClass('left-arrow')) {
                     this._handleMoveTab(editor, target, evt, -1);
                 } else if (target.hasClass('right-arrow')) {
@@ -130,14 +131,64 @@ export default class TabsPluginUI extends Plugin {
         }
     }
 
+    // Handles the tab click event
     _handleTabClick(editor, target, evt) {
-        const tabListItem = target.findAncestor('li');
+        let tabListItem = target.findAncestor('li');
+
         if (tabListItem && tabListItem.hasClass('tablinks')) {
-            _activateTab(editor, tabListItem);
+            this._activateTab(editor, tabListItem);
         }
+
         evt.stop();
     }
 
+    // Activates the specified tab.
+    _activateTab(editor, tabListItem) {
+        const tabId = tabListItem.getAttribute('data-target').slice(1);
+        const pluginId = tabListItem.getAttribute('data-plugin-id');
+        const viewRoot = editor.editing.view.document.getRoot();
+
+        // Find the specific tab container using the plugin-id
+        const tabsRootElement = Array.from(viewRoot.getChildren()).find(
+            (child) => child.is('element', 'div') && child.getAttribute('id') === pluginId
+        );
+
+        console.log('tabsRootElement:', tabsRootElement); // Log the tabsRootElement
+
+        if (!tabsRootElement) {
+            console.error('Tabs root element not found');
+            return;
+        }
+
+        const tabListElement = tabsRootElement.getChild(0).getChild(0).getChild(0);
+        const tabContentElement = tabsRootElement.getChild(0).getChild(1);
+
+        if (!tabListElement || !tabContentElement) {
+            console.error('Tab list or content element not found');
+            return;
+        }
+
+        editor.editing.view.change((writer) => {
+            for (const item of tabListElement.getChildren()) {
+                writer.removeClass('active', item);
+            }
+            for (const content of tabContentElement.getChildren()) {
+                writer.removeClass('active', content);
+            }
+
+            writer.addClass('active', tabListItem);
+            const selectedTabContent = Array.from(tabContentElement.getChildren()).find(
+                (child) => child.getAttribute('id') === tabId
+            );
+            if (selectedTabContent) {
+                writer.addClass('active', selectedTabContent);
+            } else {
+                console.error('Selected tab content not found');
+            }
+        });
+    }
+
+    // Handles the delete tab button click event.
     _handleDeleteTab(editor, target, evt) {
         const tabListItem = target.findAncestor('li');
         if (!tabListItem) {
@@ -176,7 +227,7 @@ export default class TabsPluginUI extends Plugin {
                     const nextTab = tabListItems[index - 1] || tabListItems[index + 1];
                     if (nextTab) {
                         console.log('Activating the next tab:', nextTab);
-                        _activateTab(editor, nextTab);
+                        this._activateTab(editor, nextTab);
                     } else {
                         console.error('Next tab to activate not found.');
                     }
@@ -193,6 +244,8 @@ export default class TabsPluginUI extends Plugin {
 
     // Handles the add tab button click event.
     _handleAddTab(editor, evt, data) {
+        // console.log('Handling add tab');
+
         const target = data.target;
 
         if (!target) {
@@ -208,7 +261,11 @@ export default class TabsPluginUI extends Plugin {
             const pluginId = tabsContainer.getAttribute('id');
             console.log('Found tabs plugin with id:', pluginId);
 
-            this._addNewTab(editor, pluginId);
+            editor.model.change((writer) => {
+                console.log('Executing addTab command with pluginId:', pluginId);
+                const result = editor.execute('addTab', { pluginId });
+                console.log('addTab command execution result:', result);
+            });
         } else {
             console.error('No tabs plugin found for the clicked add button.');
         }
@@ -233,7 +290,7 @@ export default class TabsPluginUI extends Plugin {
                 const movedTabListItem = tabListItems.find((item) => item.getAttribute('data-target') === `#${tabId}`);
 
                 if (movedTabListItem) {
-                    _activateTab(editor, movedTabListItem);
+                    this._activateTab(editor, movedTabListItem);
                 }
             }
         });
@@ -241,6 +298,7 @@ export default class TabsPluginUI extends Plugin {
         evt.stop();
     }
 
+    // Create delete tab confirmation modal
     _createConfirmationModal() {
         const modalHtml = `
             <div class="confirm-delete-modal" style="display:none;">
@@ -256,72 +314,5 @@ export default class TabsPluginUI extends Plugin {
         const modalContainer = document.createElement('div');
         modalContainer.innerHTML = modalHtml;
         document.body.appendChild(modalContainer);
-    }
-
-    // Adds a new tab to the tabs plugin based on the plugin-id
-    _addNewTab(editor, pluginId) {
-        editor.model.change((writer) => {
-            // Get the root element of the document
-            const root = editor.model.document.getRoot();
-
-            // Find the tabsPlugin element by pluginId
-            const pluginElement = Array.from(root.getChildren()).find(
-                (node) => node.is('element', 'tabsPlugin') && node.getAttribute('id') === pluginId
-            );
-
-            if (!pluginElement) {
-                console.error(`No tabs plugin found with id="${pluginId}".`);
-                return;
-            }
-
-            // Within tabsPlugin, find or create tabList and tabContent
-            let tabList = null;
-            let tabContent = null;
-
-            for (const node of pluginElement.getChildren()) {
-                if (node.is('element', 'containerDiv')) {
-                    const containerDiv = node;
-                    for (const childNode of containerDiv.getChildren()) {
-                        if (childNode.is('element', 'tabHeader')) {
-                            tabList = childNode.getChild(0);
-                        } else if (childNode.is('element', 'tabContent')) {
-                            tabContent = childNode;
-                        }
-                    }
-                }
-            }
-
-            if (!tabList) {
-                const tabHeader = writer.createElement('tabHeader');
-                tabList = writer.createElement('tabList');
-                writer.append(tabList, tabHeader);
-                writer.append(tabHeader, pluginElement.getChild(0));
-            }
-            if (!tabContent) {
-                tabContent = writer.createElement('tabContent');
-                writer.append(tabContent, pluginElement.getChild(0));
-            }
-
-            // Generate a unique tabId for the new tab using centralized method
-            const newTabId = generateId('tab-id');
-            // Use the utility function to create a new tab list item and content
-            const { tabListItem, tabNestedContent } = createTabElement(writer, pluginId, newTabId);
-            // Find the "Add Tab" button in the tabList
-            const addTabButton = Array.from(tabList.getChildren()).find((child) =>
-                child.is('element', 'addTabListItem')
-            );
-            if (addTabButton) {
-                // Insert the new tab list item before the "Add Tab" button
-                writer.insert(tabListItem, writer.createPositionBefore(addTabButton));
-            } else {
-                // Append the new tab list item to the end of the tabList
-                writer.append(tabListItem, tabList);
-            }
-            // Append the new tab content to the tabContent
-            writer.append(tabNestedContent, tabContent);
-
-            // Activate the newly added tab
-            _activateTab(editor, tabListItem);
-        });
     }
 }
