@@ -1,11 +1,6 @@
 export class TabsPluginCommand extends Command {
     execute(): void;
 }
-export class AddTabCommand extends Command {
-    execute({ pluginId }: {
-        pluginId: any;
-    }): void;
-}
 export class MoveTabCommand extends Command {
     execute({ tabId, direction }: {
         tabId: any;

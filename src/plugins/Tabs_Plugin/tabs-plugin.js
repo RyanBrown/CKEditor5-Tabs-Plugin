@@ -1,6 +1,6 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { Widget } from '@ckeditor/ckeditor5-widget';
-import { TabsPluginCommand, AddTabCommand } from './tabs-plugin-command';
+import { TabsPluginCommand } from './tabs-plugin-command';
 import TabsPluginEditing from './tabs-plugin-editing';
 import TabsPluginUI from './tabs-plugin-ui';
 
@@ -18,6 +18,5 @@ export default class TabsPlugin extends Plugin {
     init() {
         const editor = this.editor;
         editor.commands.add('tabsPlugin', new TabsPluginCommand(editor));
-        editor.commands.add('addTab', new AddTabCommand(editor));
     }
 }

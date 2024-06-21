@@ -193,7 +193,26 @@ export default class TabsPluginUI extends Plugin {
 
     // Handles the add tab button click event.
     _handleAddTab(editor, evt, data) {
-        this._addNewTab(editor);
+        const target = data.target;
+
+        if (!target) {
+            console.error('No target found for the click event.');
+            return;
+        }
+
+        const tabsContainer = target.findAncestor((element) => {
+            return element.is('element') && element.hasClass('tabcontainer');
+        });
+
+        if (tabsContainer) {
+            const pluginId = tabsContainer.getAttribute('id');
+            console.log('Found tabs plugin with id:', pluginId);
+
+            this._addNewTab(editor, pluginId);
+        } else {
+            console.error('No tabs plugin found for the clicked add button.');
+        }
+
         evt.stop();
     }
 
@@ -222,7 +241,6 @@ export default class TabsPluginUI extends Plugin {
         evt.stop();
     }
 
-    // Create delete tab confirmation modal
     _createConfirmationModal() {
         const modalHtml = `
             <div class="confirm-delete-modal" style="display:none;">
@@ -240,33 +258,27 @@ export default class TabsPluginUI extends Plugin {
         document.body.appendChild(modalContainer);
     }
 
-    // Adds a new tab to the tabs plugin.
-    _addNewTab(editor) {
+    // Adds a new tab to the tabs plugin based on the plugin-id
+    _addNewTab(editor, pluginId) {
         editor.model.change((writer) => {
             // Get the root element of the document
             const root = editor.model.document.getRoot();
 
-            // Find tabsPlugin, tabList, and tabContent by querying for them directly
-            let tabsPlugin = null;
-            let tabList = null;
-            let tabContent = null;
+            // Find the tabsPlugin element by pluginId
+            const pluginElement = Array.from(root.getChildren()).find(
+                (node) => node.is('element', 'tabsPlugin') && node.getAttribute('id') === pluginId
+            );
 
-            // Search for the tabsPlugin element
-            for (const node of root.getChildren()) {
-                if (node.is('element', 'tabsPlugin')) {
-                    tabsPlugin = node;
-                    break;
-                }
-            }
-
-            // If tabsPlugin is not found, create it and append to the root
-            if (!tabsPlugin) {
-                tabsPlugin = writer.createElement('tabsPlugin');
-                writer.append(tabsPlugin, root);
+            if (!pluginElement) {
+                console.error(`No tabs plugin found with id="${pluginId}".`);
+                return;
             }
 
             // Within tabsPlugin, find or create tabList and tabContent
-            for (const node of tabsPlugin.getChildren()) {
+            let tabList = null;
+            let tabContent = null;
+
+            for (const node of pluginElement.getChildren()) {
                 if (node.is('element', 'containerDiv')) {
                     const containerDiv = node;
                     for (const childNode of containerDiv.getChildren()) {
@@ -283,17 +295,17 @@ export default class TabsPluginUI extends Plugin {
                 const tabHeader = writer.createElement('tabHeader');
                 tabList = writer.createElement('tabList');
                 writer.append(tabList, tabHeader);
-                writer.append(tabHeader, tabsPlugin.getChild(0));
+                writer.append(tabHeader, pluginElement.getChild(0));
             }
             if (!tabContent) {
                 tabContent = writer.createElement('tabContent');
-                writer.append(tabContent, tabsPlugin.getChild(0));
+                writer.append(tabContent, pluginElement.getChild(0));
             }
 
             // Generate a unique tabId for the new tab using centralized method
             const newTabId = generateId('tab-id');
             // Use the utility function to create a new tab list item and content
-            const { tabListItem, tabNestedContent } = createTabElement(writer, tabsPlugin.getAttribute('id'), newTabId);
+            const { tabListItem, tabNestedContent } = createTabElement(writer, pluginId, newTabId);
             // Find the "Add Tab" button in the tabList
             const addTabButton = Array.from(tabList.getChildren()).find((child) =>
                 child.is('element', 'addTabListItem')

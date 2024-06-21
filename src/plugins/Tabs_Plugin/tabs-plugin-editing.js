@@ -1,6 +1,6 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { toWidget, toWidgetEditable, Widget } from '@ckeditor/ckeditor5-widget';
-import { TabsPluginCommand, AddTabCommand, DeleteTabCommand, MoveTabCommand } from './tabs-plugin-command';
+import { TabsPluginCommand, DeleteTabCommand, MoveTabCommand } from './tabs-plugin-command';
 import { generateId } from './tabs-plugin-utils';
 
 export default class TabsPluginEditing extends Plugin {
@@ -11,7 +11,6 @@ export default class TabsPluginEditing extends Plugin {
     init() {
         const editor = this.editor;
         editor.commands.add('insertTab', new TabsPluginCommand(editor));
-        editor.commands.add('addTab', new AddTabCommand(editor)); // Add this line
         editor.commands.add('deleteTab', new DeleteTabCommand(editor));
         editor.commands.add('moveTab', new MoveTabCommand(editor));
 

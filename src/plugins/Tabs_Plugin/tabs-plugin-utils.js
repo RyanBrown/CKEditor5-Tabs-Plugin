@@ -162,12 +162,12 @@ export function _activateTab(editor, tabListItem) {
             writer.removeClass('active', content);
         }
 
-        writer.addClass('active', tabListItem);
+        writer.addClass(tabListItem, 'active');
         const selectedTabContent = Array.from(tabContentElement.getChildren()).find(
             (child) => child.getAttribute('id') === tabId
         );
         if (selectedTabContent) {
-            writer.addClass('active', selectedTabContent);
+            writer.addClass(selectedTabContent, 'active');
         } else {
             console.error('Selected tab content not found');
         }
