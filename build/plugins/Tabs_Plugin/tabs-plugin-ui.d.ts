@@ -6,9 +6,8 @@ export default class TabsPluginUI extends Plugin {
     _handleTabClick(editor: any, target: any, evt: any): void;
     _activateTab(editor: any, tabListItem: any): void;
     _handleDeleteTab(editor: any, target: any, evt: any): void;
-    _handleAddTab(editor: any, evt: any): void;
+    _handleAddTab(editor: any, evt: any, data: any): void;
     _handleMoveTab(editor: any, target: any, evt: any, direction: any): void;
-    _addNewTab(editor: any): void;
     _createConfirmationModal(): void;
 }
 import { Plugin } from '@ckeditor/ckeditor5-core';

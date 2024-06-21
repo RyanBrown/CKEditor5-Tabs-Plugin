@@ -1,7 +1,7 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { toWidget, toWidgetEditable, Widget } from '@ckeditor/ckeditor5-widget';
-import { TabsPluginCommand, DeleteTabCommand, MoveTabCommand } from './tabs-plugin-command';
-import { generateId } from './tabs-plugin-command';
+import { TabsPluginCommand, AddTabCommand, DeleteTabCommand, MoveTabCommand } from './tabs-plugin-command';
+import { generateId } from './tabs-plugin-utils';
 
 export default class TabsPluginEditing extends Plugin {
     static get requires() {
@@ -11,6 +11,7 @@ export default class TabsPluginEditing extends Plugin {
     init() {
         const editor = this.editor;
         editor.commands.add('insertTab', new TabsPluginCommand(editor));
+        editor.commands.add('addTab', new AddTabCommand(editor)); // Add this line
         editor.commands.add('deleteTab', new DeleteTabCommand(editor));
         editor.commands.add('moveTab', new MoveTabCommand(editor));
 
@@ -107,7 +108,7 @@ export default class TabsPluginEditing extends Plugin {
             isLimit: true,
         });
         schema.register('tabListItem', {
-            allowAttributes: ['class', 'data-target', 'onclick'],
+            allowAttributes: ['class', 'data-target', 'onclick', 'data-plugin-id'],
             allowIn: 'tabList',
             isLimit: true,
         });
@@ -133,7 +134,7 @@ export default class TabsPluginEditing extends Plugin {
             isLimit: true,
         });
         schema.register('tabNestedContent', {
-            allowAttributes: ['id', 'class'],
+            allowAttributes: ['id', 'class', 'data-plugin-id'],
             allowContentOf: '$root',
             allowIn: 'tabContent',
             isLimit: true,
@@ -314,6 +315,7 @@ export default class TabsPluginEditing extends Plugin {
             return writer.createContainerElement('li', {
                 class: finalClassName,
                 'data-target': dataTarget,
+                'data-plugin-id': tabContainerId,
             });
         }
 
@@ -334,6 +336,7 @@ export default class TabsPluginEditing extends Plugin {
             const attributes = {
                 class: finalClassName,
                 id: id,
+                'data-plugin-id': tabContainerId,
             };
             if (isEditable) {
                 return toWidgetEditable(writer.createEditableElement('div', attributes), writer);

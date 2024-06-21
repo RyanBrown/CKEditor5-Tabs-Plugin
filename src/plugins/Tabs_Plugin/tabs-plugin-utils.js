@@ -1,7 +1,11 @@
-import { generateId } from './tabs-plugin-command';
+// Generates a unique ID
+let counter = 0;
+export function generateId(prefix) {
+    return `${prefix}_${Date.now()}_${counter++}`;
+}
 
 // Create tabs plugin element with two initial tabs
-export function createTabsPluginElement(writer, uniqueId) {
+export function createTabsPluginElement(writer, pluginId) {
     const containerDiv = writer.createElement('containerDiv');
     const tabHeader = writer.createElement('tabHeader');
     const tabList = writer.createElement('tabList');
@@ -10,7 +14,7 @@ export function createTabsPluginElement(writer, uniqueId) {
     // Create two initial tabs
     for (let i = 0; i < 2; i++) {
         const tabId = generateId('tab-id');
-        const { tabListItem, tabNestedContent } = createTabElement(writer, tabId);
+        const { tabListItem, tabNestedContent } = createTabElement(writer, pluginId, tabId);
         if (i === 0) {
             writer.setAttribute('class', `${tabListItem.getAttribute('class')} active`, tabListItem);
             writer.setAttribute('class', `${tabNestedContent.getAttribute('class')} active`, tabNestedContent);
@@ -39,23 +43,27 @@ export function findAllDescendants(node, predicate) {
     for (const child of children) {
         if (predicate(child)) results.push(child);
 
-        // Recursively find further, ensuring that 'findAllDescendants' is called correctly
         results = results.concat(findAllDescendants(child, predicate));
     }
     return results;
 }
 
 // Create tab element
-export function createTabElement(writer, tabId) {
-    return {
-        tabListItem: createTabListItem(writer, tabId),
-        tabNestedContent: createTabContent(writer, tabId),
-    };
+export function createTabElement(writer, pluginId, tabId) {
+    console.log('Creating new tab element with pluginId:', pluginId, 'and tabId:', tabId);
+
+    const tabListItem = createTabListItem(writer, pluginId, tabId);
+    const tabNestedContent = createTabContent(writer, tabId);
+
+    console.log('Created tabListItem:', tabListItem);
+    console.log('Created tabNestedContent:', tabNestedContent);
+
+    return { tabListItem, tabNestedContent };
 }
 
 // Create tab list item
-export function createTabListItem(writer, tabId) {
-    const tabListItem = writer.createElement('tabListItem', { 'data-target': `#${tabId}` });
+export function createTabListItem(writer, pluginId, tabId) {
+    const tabListItem = writer.createElement('tabListItem', { 'data-plugin-id': pluginId, 'data-target': `#${tabId}` });
     const tabListItemLabel = writer.createElement('tabListItemLabelDiv');
     const tabListTable = writer.createElement('tabListTable');
     const tabListTable_thead = writer.createElement('tabListTable_thead');
@@ -69,7 +77,6 @@ export function createTabListItem(writer, tabId) {
     appendControlElement(writer, tabListTable_th_moveLeft, 'moveLeftButton');
     appendControlElement(writer, tabListTable_th_moveRight, 'moveRightButton');
 
-    // Create the delete tab button with the correct structure
     const deleteTabButton = writer.createElement('deleteTabButton');
     const deleteTabButtonParagraph = writer.createElement('deleteTabButtonParagraph');
     writer.append(deleteTabButtonParagraph, deleteTabButton);
@@ -100,7 +107,7 @@ export function createTabListItem(writer, tabId) {
 
 // Create tab content
 export function createTabContent(writer, tabId) {
-    const tabContentElement = writer.createElement('tabNestedContent', { id: tabId });
+    const tabContentElement = writer.createElement('tabNestedContent', { 'data-target': `#${tabId}` });
     const paragraphElement = writer.createElement('paragraph');
     writer.insertText('Tab Content', paragraphElement);
     writer.append(paragraphElement, tabContentElement);
