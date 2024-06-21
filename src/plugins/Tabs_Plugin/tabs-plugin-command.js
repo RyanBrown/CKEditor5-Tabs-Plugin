@@ -82,7 +82,7 @@ export class AddTabCommand extends Command {
             // Generate a unique tabId for the new tab using centralized method
             const newTabId = generateId('tab-id');
             // Use the utility function to create a new tab list item and content
-            const { tabListItem, tabNestedContent } = createTabElement(writer, pluginId);
+            const { tabListItem, tabNestedContent } = createTabElement(writer, pluginId, newTabId);
 
             // Set necessary attributes for activation
             writer.setAttribute('data-target', `#${newTabId}`, tabListItem);
@@ -103,7 +103,7 @@ export class AddTabCommand extends Command {
             writer.append(tabNestedContent, tabContent);
 
             // Activate the newly added tab
-            this._activateTab(editor, tabListItem);
+            _activateTab(editor, tabListItem);
         });
     }
 
@@ -112,48 +112,6 @@ export class AddTabCommand extends Command {
         const selection = model.document.selection;
         const pluginElement = selection.getFirstPosition().findAncestor('tabsPlugin');
         this.isEnabled = !!pluginElement;
-    }
-
-    _activateTab(editor, tabListItem) {
-        const tabId = tabListItem.getAttribute('data-target').slice(1);
-        const pluginId = tabListItem.getAttribute('data-plugin-id');
-        const viewRoot = editor.editing.view.document.getRoot();
-
-        const tabsRootElement = Array.from(viewRoot.getChildren()).find(
-            (child) => child.is('element', 'div') && child.getAttribute('id') === pluginId
-        );
-
-        if (!tabsRootElement) {
-            console.error('Tabs root element not found');
-            return;
-        }
-
-        const tabListElement = tabsRootElement.getChild(0).getChild(0).getChild(0);
-        const tabContentElement = tabsRootElement.getChild(0).getChild(1);
-
-        if (!tabListElement || !tabContentElement) {
-            console.error('Tab list or content element not found');
-            return;
-        }
-
-        editor.editing.view.change((writer) => {
-            for (const item of tabListElement.getChildren()) {
-                writer.removeClass('active', item);
-            }
-            for (const content of tabContentElement.getChildren()) {
-                writer.removeClass('active', content);
-            }
-
-            writer.addClass('active', tabListItem);
-            const selectedTabContent = Array.from(tabContentElement.getChildren()).find(
-                (child) => child.getAttribute('id') === tabId
-            );
-            if (selectedTabContent) {
-                writer.addClass('active', selectedTabContent);
-            } else {
-                console.error('Selected tab content not found');
-            }
-        });
     }
 }
 

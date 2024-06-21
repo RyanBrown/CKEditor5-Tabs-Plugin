@@ -1,6 +1,6 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { ButtonView } from '@ckeditor/ckeditor5-ui';
-import { createTabsPluginElement, generateId } from './tabs-plugin-utils';
+import { createTabsPluginElement, generateId, _activateTab } from './tabs-plugin-utils';
 import './styles/tabs-plugin.css';
 
 // Plugin to handle the UI for the tabs plugin.
@@ -47,7 +47,6 @@ export default class TabsPluginUI extends Plugin {
         });
     }
 
-    // Registers event handlers for the tabs plugin.
     _registerEventHandlers(editor) {
         const commandsToDisable = ['link', 'bold', 'italic', 'underline', 'strikethrough', 'subscript', 'superscript'];
 
@@ -60,7 +59,7 @@ export default class TabsPluginUI extends Plugin {
                 } else if (target.hasClass('dropicon')) {
                     this._handleDeleteTab(editor, target, evt);
                 } else if (target.hasClass('addicon')) {
-                    this._handleAddTab(editor, evt, data); // Pass both evt and data
+                    this._handleAddTab(editor, evt, data);
                 } else if (target.hasClass('left-arrow')) {
                     this._handleMoveTab(editor, target, evt, -1);
                 } else if (target.hasClass('right-arrow')) {
@@ -132,62 +131,13 @@ export default class TabsPluginUI extends Plugin {
     }
 
     _handleTabClick(editor, target, evt) {
-        let tabListItem = target.findAncestor('li');
-
+        const tabListItem = target.findAncestor('li');
         if (tabListItem && tabListItem.hasClass('tablinks')) {
-            this._activateTab(editor, tabListItem);
+            _activateTab(editor, tabListItem);
         }
-
         evt.stop();
     }
 
-    // Activates the specified tab.
-    _activateTab(editor, tabListItem) {
-        const tabId = tabListItem.getAttribute('data-target').slice(1);
-        const pluginId = tabListItem.getAttribute('data-plugin-id');
-        const viewRoot = editor.editing.view.document.getRoot();
-
-        // Find the specific tab container using the plugin-id
-        const tabsRootElement = Array.from(viewRoot.getChildren()).find(
-            (child) => child.is('element', 'div') && child.getAttribute('id') === pluginId
-        );
-
-        console.log('tabsRootElement:', tabsRootElement); // Log the tabsRootElement
-
-        if (!tabsRootElement) {
-            console.error('Tabs root element not found');
-            return;
-        }
-
-        const tabListElement = tabsRootElement.getChild(0).getChild(0).getChild(0);
-        const tabContentElement = tabsRootElement.getChild(0).getChild(1);
-
-        if (!tabListElement || !tabContentElement) {
-            console.error('Tab list or content element not found');
-            return;
-        }
-
-        editor.editing.view.change((writer) => {
-            for (const item of tabListElement.getChildren()) {
-                writer.removeClass('active', item);
-            }
-            for (const content of tabContentElement.getChildren()) {
-                writer.removeClass('active', content);
-            }
-
-            writer.addClass('active', tabListItem);
-            const selectedTabContent = Array.from(tabContentElement.getChildren()).find(
-                (child) => child.getAttribute('id') === tabId
-            );
-            if (selectedTabContent) {
-                writer.addClass('active', selectedTabContent);
-            } else {
-                console.error('Selected tab content not found');
-            }
-        });
-    }
-
-    // Handles the delete tab button click event.
     _handleDeleteTab(editor, target, evt) {
         const tabListItem = target.findAncestor('li');
         if (!tabListItem) {
@@ -226,7 +176,7 @@ export default class TabsPluginUI extends Plugin {
                     const nextTab = tabListItems[index - 1] || tabListItems[index + 1];
                     if (nextTab) {
                         console.log('Activating the next tab:', nextTab);
-                        this._activateTab(editor, nextTab);
+                        _activateTab(editor, nextTab);
                     } else {
                         console.error('Next tab to activate not found.');
                     }
@@ -289,7 +239,7 @@ export default class TabsPluginUI extends Plugin {
                 const movedTabListItem = tabListItems.find((item) => item.getAttribute('data-target') === `#${tabId}`);
 
                 if (movedTabListItem) {
-                    this._activateTab(editor, movedTabListItem);
+                    _activateTab(editor, movedTabListItem);
                 }
             }
         });

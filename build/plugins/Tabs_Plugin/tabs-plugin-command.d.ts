@@ -5,7 +5,6 @@ export class AddTabCommand extends Command {
     execute({ pluginId }: {
         pluginId: any;
     }): void;
-    _activateTab(editor: any, tabListItem: any): void;
 }
 export class MoveTabCommand extends Command {
     execute({ tabId, direction }: {
