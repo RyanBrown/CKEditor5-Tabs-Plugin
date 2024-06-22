@@ -1,100 +1,38 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
-import { toWidget, toWidgetEditable, Widget } from '@ckeditor/ckeditor5-widget';
-import { TabsPluginCommand, DeleteTabCommand, MoveTabCommand } from './tabs-plugin-command';
+import { toWidget, toWidgetEditable } from '@ckeditor/ckeditor5-widget';
+import TabsPluginCommand from './tabs-plugin-command';
 import { generateId } from './tabs-plugin-utils';
 
 export default class TabsPluginEditing extends Plugin {
-    static get requires() {
-        return [Widget];
+    static get pluginName() {
+        return 'TabsPluginEditing';
     }
 
     init() {
-        const editor = this.editor;
-        editor.commands.add('insertTab', new TabsPluginCommand(editor));
-        editor.commands.add('deleteTab', new DeleteTabCommand(editor));
-        editor.commands.add('moveTab', new MoveTabCommand(editor));
-
         this._defineSchema();
         this._defineConverters();
 
-        const commandsToDisable = ['link', 'bold', 'italic', 'underline', 'strikethrough', 'subscript', 'superscript'];
-
-        // Add focus event listener for tabTitle
-        editor.editing.view.document.on('focus', (evt, data) => {
-            if (data.domTarget.closest('.ck-widget__editing') && data.domTarget.closest('.tabTitle')) {
-                console.log('tabTitle focused');
-                // Disable the specified commands and toolbar buttons
-                this._disableCommandsAndButtons(commandsToDisable, true);
-            }
-        });
-
-        // Add blur event listener for tabTitle to re-enable the specified buttons
-        editor.editing.view.document.on('blur', (evt, data) => {
-            if (data.domTarget.closest('.ck-widget__editing') && data.domTarget.closest('.tabTitle')) {
-                // Re-enable the specified commands and toolbar buttons
-                this._disableCommandsAndButtons(commandsToDisable, false);
-            }
-        });
-
-        // Prevent command execution if a tabTitle is focused
-        editor.ui.on('ready', () => {
-            commandsToDisable.forEach((commandName) => {
-                const command = editor.commands.get(commandName);
-                if (command) {
-                    command.on(
-                        'execute',
-                        (evt, data) => {
-                            const focusedElement = editor.editing.view.document.selection.editableElement;
-                            if (focusedElement && focusedElement.hasClass('tabTitle')) {
-                                if (typeof evt.stop === 'function') {
-                                    evt.stop();
-                                }
-                                if (typeof evt.preventDefault === 'function') {
-                                    evt.preventDefault();
-                                }
-                            }
-                        },
-                        { priority: 'high' }
-                    );
-                }
-            });
-        });
+        this.editor.commands.add('tabsPlugin', new TabsPluginCommand(this.editor));
     }
 
-    // Disables or enables the specified commands and their corresponding toolbar buttons.
-    _disableCommandsAndButtons(commandsToDisable, disable) {
-        const editor = this.editor;
-        commandsToDisable.forEach((commandName) => {
-            const command = editor.commands.get(commandName);
-            if (command) {
-                if (disable) {
-                    command.forceDisabled('tabTitle');
-                } else {
-                    command.clearForceDisabled('tabTitle');
-                }
-            }
-            const button = editor.ui.view.toolbar.items.find(
-                (item) => item.buttonView && item.buttonView.commandName === commandName
-            );
-            if (button) {
-                button.isEnabled = !disable;
-            }
-        });
-    }
-
-    // Defines the schema for the tabs plugin elements.
     _defineSchema() {
         const schema = this.editor.model.schema;
 
         schema.register('tabsPlugin', {
             allowAttributes: ['class', 'id'],
-            allowIn: '$root',
-            isLimit: true,
+            isObject: true,
+            allowWhere: '$block',
+        });
+        // Prevent nesting of tabsPlugin
+        schema.addChildCheck((context, childDefinition) => {
+            if (childDefinition.name === 'tabsPlugin' && context.endsWith('tabsPlugin')) {
+                return false;
+            }
         });
         schema.register('containerDiv', {
             allowAttributes: ['class'],
             allowIn: 'tabsPlugin',
-            isLimit: true,
+            // allowContentOf: '$root', // This allows any content that's allowed in the root
         });
         schema.register('tabHeader', {
             allowAttributes: ['class'],
@@ -137,6 +75,12 @@ export default class TabsPluginEditing extends Plugin {
             allowContentOf: '$root',
             allowIn: 'tabContent',
             isLimit: true,
+        });
+        // Add this line to prevent tabsPlugin inside tabNestedContent
+        schema.addChildCheck((context, childDefinition) => {
+            if (context.endsWith('tabNestedContent') && childDefinition.name === 'tabsPlugin') {
+                return false;
+            }
         });
         schema.register('moveLeftButton', {
             allowAttributes: ['class', 'title', 'onclick'],
@@ -196,7 +140,6 @@ export default class TabsPluginEditing extends Plugin {
         });
     }
 
-    // Defines the converters for the tabs plugin elements.
     _defineConverters() {
         const conversion = this.editor.conversion;
 
@@ -296,6 +239,8 @@ export default class TabsPluginEditing extends Plugin {
         let tabCounter = 0; // Initialize a counter for unique IDs
         let tabContentCounter = 0; // Initialize a counter for unique IDs
         const tabIdMap = new Map(); // Map to store the relationship between tab list items and their nested content
+        let firstTabActive = false; // Flag to track if any tab is active
+        let firstContentActive = false; // Flag to track if any content is active
 
         // Helper function to create a 'li' element with appropriate attributes
         function createTabListItemElement(writer, element, tabContainerId) {
@@ -307,12 +252,23 @@ export default class TabsPluginEditing extends Plugin {
                 tabIdMap.set(uniqueId, element); // Store the mapping
             }
             console.log('TabListItem data-target:', dataTarget);
-            const classes = element.getAttribute('class');
-            // Add 'active' class to the first tabListItem
-            const className = classes ? `${classes} yui3-tab tablinks` : 'yui3-tab tablinks';
-            const finalClassName = tabCounter === 1 ? `${className} active` : className;
+
+            const classes = element.getAttribute('class') || '';
+            let className = `${classes} yui3-tab tablinks`.trim();
+
+            // Check if this tab has 'active' class
+            if (className.includes('active')) {
+                firstTabActive = true;
+            }
+
+            // If it's the first tab and no tab is active yet, add 'active' class
+            if (tabCounter === 1 && !firstTabActive) {
+                className += ' active';
+                firstTabActive = true;
+            }
+
             return writer.createContainerElement('li', {
-                class: finalClassName,
+                class: className,
                 'data-target': dataTarget,
                 'data-plugin-id': tabContainerId,
             });
@@ -328,15 +284,27 @@ export default class TabsPluginEditing extends Plugin {
             }
 
             console.log('TabNestedContent id:', id);
-            const classes = element.getAttribute('class');
-            // Add 'active' class to the first tabNestedContent
-            const className = classes ? `${classes} yui3-tab-panel tabcontent` : 'yui3-tab-panel tabcontent';
-            const finalClassName = tabContentCounter === 1 ? `${className} active` : className;
+
+            const classes = element.getAttribute('class') || '';
+            let className = `${classes} yui3-tab-panel tabcontent`.trim();
+
+            // Check if this content has 'active' class
+            if (className.includes('active')) {
+                firstContentActive = true;
+            }
+
+            // If it's the first tab content and no content is active yet, add 'active' class
+            if (tabContentCounter === 1 && !firstContentActive) {
+                className += ' active';
+                firstContentActive = true;
+            }
+
             const attributes = {
-                class: finalClassName,
+                class: className,
                 id: id,
                 'data-plugin-id': tabContainerId,
             };
+
             if (isEditable) {
                 return toWidgetEditable(writer.createEditableElement('div', attributes), writer);
             }

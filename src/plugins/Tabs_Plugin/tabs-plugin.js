@@ -1,6 +1,4 @@
-import { Plugin } from '@ckeditor/ckeditor5-core';
-import { Widget } from '@ckeditor/ckeditor5-widget';
-import { TabsPluginCommand } from './tabs-plugin-command';
+import { Plugin } from 'ckeditor5/src/core';
 import TabsPluginEditing from './tabs-plugin-editing';
 import TabsPluginUI from './tabs-plugin-ui';
 
@@ -8,15 +6,10 @@ import TabsPluginUI from './tabs-plugin-ui';
 export default class TabsPlugin extends Plugin {
     // Plugin dependencies
     static get requires() {
-        return [Widget, TabsPluginEditing, TabsPluginUI];
+        return [TabsPluginEditing, TabsPluginUI];
     }
 
     static get pluginName() {
         return 'TabsPlugin';
-    }
-
-    init() {
-        const editor = this.editor;
-        editor.commands.add('tabsPlugin', new TabsPluginCommand(editor));
     }
 }

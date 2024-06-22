@@ -43,6 +43,10 @@ $font-family: 'FSThriveElliotWeb-Regular', sans-serif;
 .tabcontainer {
     background-color: $tab-bg-active;
 
+    width: 100%;
+    min-height: 100px;
+    background-color: orange;
+
     // Tab list container
     .yui3-tabview-list {
         display: flex;

@@ -40,8 +40,7 @@ import { EditorWatchdog } from '@ckeditor/ckeditor5-watchdog';
 
 // Custom Plugins
 import AccordionPlugin from './plugins/accordion_plugin/accordion';
-// import TabsPlugin from './plugins/Tabs_Plugin/tabs-plugin';
-import TabsPlugin from './plugins/Tabs_Plugin2/tabs-plugin';
+import TabsPlugin from './plugins/Tabs_Plugin/tabs-plugin';
 
 // You can read more about extending the build with additional plugins in the "Installing plugins" guide.
 // See https://ckeditor.com/docs/ckeditor5/latest/installation/plugins/installing-plugins.html for details.
