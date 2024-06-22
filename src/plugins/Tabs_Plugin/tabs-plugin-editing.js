@@ -143,15 +143,20 @@ export default class TabsPluginEditing extends Plugin {
     _defineConverters() {
         const conversion = this.editor.conversion;
 
+        // Maintain a map of tabsPlugin elements to their first tabListItem and tabNestedContent
+        const firstItemMap = new Map();
+
         // Conversion for 'tabsPlugin' element
         conversion.for('upcast').elementToElement({
             // Convert the view element to the model element and assign a unique ID
             model: (viewElement, { writer }) => {
                 const uniqueId = generateId('plugin-id');
-                return writer.createElement('tabsPlugin', {
+                const tabsPlugin = writer.createElement('tabsPlugin', {
                     id: uniqueId,
                     class: viewElement.getAttribute('class'),
                 });
+                firstItemMap.set(uniqueId, { tabListItem: null, tabNestedContent: null });
+                return tabsPlugin;
             },
             view: { name: 'div', classes: ['tabcontainer', 'yui3-widget'] },
             converterPriority: 'high',
@@ -312,8 +317,25 @@ export default class TabsPluginEditing extends Plugin {
         }
 
         // Conversion for 'tabListItem' element
+        // Conversion for 'tabListItem' element
         conversion.for('upcast').elementToElement({
-            model: 'tabListItem',
+            model: (viewElement, { writer }) => {
+                const tabContainerElement = viewElement.findAncestor('div');
+                const tabContainerId = tabContainerElement ? tabContainerElement.getAttribute('id') : 'default';
+                const tabListItem = writer.createElement('tabListItem');
+
+                if (!firstItemMap.has(tabContainerId)) {
+                    firstItemMap.set(tabContainerId, { tabListItem: null, tabNestedContent: null });
+                }
+
+                if (!firstItemMap.get(tabContainerId).tabListItem) {
+                    firstItemMap.get(tabContainerId).tabListItem = tabListItem;
+                    writer.setAttribute('class', 'yui3-tab tablinks active', tabListItem);
+                } else {
+                    writer.setAttribute('class', 'yui3-tab tablinks', tabListItem);
+                }
+                return tabListItem;
+            },
             view: {
                 name: 'li',
                 classes: ['yui3-tab', 'tablinks'],
@@ -327,11 +349,12 @@ export default class TabsPluginEditing extends Plugin {
                 return createTabListItemElement(writer, viewElement, tabContainerId);
             },
         });
-        conversion.for('dataDowncast').elementToElement({
+        conversion.for('downcast').elementToElement({
             model: 'tabListItem',
             view: (modelElement, { writer }) => {
                 const tabContainerId = modelElement.findAncestor('tabsPlugin').getAttribute('id');
-                const liElement = createTabListItemElement(writer, modelElement, tabContainerId);
+                const isFirst = modelElement === modelElement.parent.getChild(0);
+                const liElement = createTabListItemElement(writer, modelElement, tabContainerId, isFirst);
                 writer.setAttribute('onclick', 'parent.setActiveTab(event);', liElement);
                 return liElement;
             },
@@ -339,16 +362,42 @@ export default class TabsPluginEditing extends Plugin {
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabListItem',
-            view: (modelElement, { writer }) => {
+            view: (modelElement, { writer, consumable }) => {
                 const tabContainerId = modelElement.findAncestor('tabsPlugin').getAttribute('id');
-                return createTabListItemElement(writer, modelElement, tabContainerId);
+                const isFirst = modelElement === modelElement.parent.getChild(0);
+                const liElement = createTabListItemElement(writer, modelElement, tabContainerId, isFirst);
+
+                if (isFirst && !consumable.consume(modelElement, 'active')) {
+                    writer.addClass('active', liElement);
+                }
+
+                return liElement;
             },
             converterPriority: 'high',
         });
 
         // Conversion for 'tabNestedContent' element
+        // Conversion for 'tabNestedContent' element
         conversion.for('upcast').elementToElement({
-            model: 'tabNestedContent',
+            model: (viewElement, { writer }) => {
+                const tabContainerElement = viewElement.findAncestor('div');
+                const tabContainerId = tabContainerElement ? tabContainerElement.getAttribute('id') : 'default';
+                const tabNestedContent = writer.createElement('tabNestedContent');
+
+                if (!firstItemMap.has(tabContainerId)) {
+                    firstItemMap.set(tabContainerId, { tabListItem: null, tabNestedContent: null });
+                }
+
+                if (!firstItemMap.get(tabContainerId).tabNestedContent) {
+                    firstItemMap.get(tabContainerId).tabNestedContent = tabNestedContent;
+                    writer.setAttribute('class', 'yui3-tab-panel tabcontent active', tabNestedContent);
+                } else {
+                    writer.setAttribute('class', 'yui3-tab-panel tabcontent', tabNestedContent);
+                }
+
+                // Set other attributes...
+                return tabNestedContent;
+            },
             view: {
                 name: 'div',
                 classes: ['yui3-tab-panel', 'tabcontent'],

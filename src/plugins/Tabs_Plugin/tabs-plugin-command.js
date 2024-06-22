@@ -34,27 +34,32 @@ function createTabsPlugin(writer) {
     const tabList = writer.createElement('tabList');
     writer.append(tabList, tabHeader);
 
-    // Create initial tabListItem
-    const tabListItem = createTabListItem(writer, uniqueId);
+    // Create initial tabListItem (explicitly set as active)
+    const tabListItem = createTabListItem(writer, uniqueId, true);
     writer.append(tabListItem, tabList);
 
     // Create tabContent
     const tabContent = writer.createElement('tabContent');
     writer.append(tabContent, containerDiv);
 
-    // Create initial tabNestedContent
-    const tabNestedContent = createTabNestedContent(writer, uniqueId);
+    // Create initial tabNestedContent (explicitly set as active)
+    const tabNestedContent = createTabNestedContent(writer, uniqueId, true);
     writer.append(tabNestedContent, tabContent);
 
     return tabsPlugin;
 }
 
-function createTabListItem(writer, tabContainerId) {
+function createTabListItem(writer, tabContainerId, isActive = false) {
     const tabListItem = writer.createElement('tabListItem');
     const dataTarget = `#${tabContainerId}-tab-0`;
     writer.setAttribute('data-target', dataTarget, tabListItem);
     writer.setAttribute('data-plugin-id', tabContainerId, tabListItem);
-    writer.setAttribute('class', 'yui3-tab tablinks active', tabListItem);
+
+    const classNames = ['yui3-tab', 'tablinks'];
+    if (isActive) {
+        classNames.push('active');
+    }
+    writer.setAttribute('class', classNames.join(' '), tabListItem);
 
     const tabListItemLabelDiv = writer.createElement('tabListItemLabelDiv');
     writer.append(tabListItemLabelDiv, tabListItem);
@@ -71,11 +76,16 @@ function createTabListItem(writer, tabContainerId) {
     return tabListItem;
 }
 
-function createTabNestedContent(writer, tabContainerId) {
+function createTabNestedContent(writer, tabContainerId, isActive = false) {
     const tabNestedContent = writer.createElement('tabNestedContent');
     writer.setAttribute('id', `${tabContainerId}-tab-0`, tabNestedContent);
     writer.setAttribute('data-plugin-id', tabContainerId, tabNestedContent);
-    writer.setAttribute('class', 'yui3-tab-panel tabcontent active', tabNestedContent);
+
+    const classNames = ['yui3-tab-panel', 'tabcontent'];
+    if (isActive) {
+        classNames.push('active');
+    }
+    writer.setAttribute('class', classNames.join(' '), tabNestedContent);
 
     const paragraph = writer.createElement('paragraph');
     writer.appendText('Tab content goes here', paragraph);
