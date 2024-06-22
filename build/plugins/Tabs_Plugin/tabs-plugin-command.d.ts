@@ -1,4 +1,4 @@
-export class TabsPluginCommand extends Command {
+export default class TabsPluginCommand extends Command {
     execute(): void;
 }
 export class MoveTabCommand extends Command {

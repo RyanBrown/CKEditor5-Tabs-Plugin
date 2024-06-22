@@ -23,6 +23,12 @@ export default class TabsPluginEditing extends Plugin {
             isObject: true,
             allowWhere: '$block',
         });
+        // Prevent nesting of tabsPlugin
+        schema.addChildCheck((context, childDefinition) => {
+            if (childDefinition.name === 'tabsPlugin' && context.endsWith('tabsPlugin')) {
+                return false;
+            }
+        });
         schema.register('containerDiv', {
             allowAttributes: ['class'],
             allowIn: 'tabsPlugin',
@@ -69,6 +75,12 @@ export default class TabsPluginEditing extends Plugin {
             allowContentOf: '$root',
             allowIn: 'tabContent',
             isLimit: true,
+        });
+        // Add this line to prevent tabsPlugin inside tabNestedContent
+        schema.addChildCheck((context, childDefinition) => {
+            if (context.endsWith('tabNestedContent') && childDefinition.name === 'tabsPlugin') {
+                return false;
+            }
         });
         schema.register('moveLeftButton', {
             allowAttributes: ['class', 'title', 'onclick'],

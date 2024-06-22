@@ -7,35 +7,47 @@ import {
     _activateTab,
 } from './tabs-plugin-utils';
 
-export class TabsPluginCommand extends Command {
+export default class TabsPluginCommand extends Command {
     execute() {
-        const editor = this.editor;
-        const model = editor.model;
+        const model = this.editor.model;
+        const selection = model.document.selection;
 
-        model.change((writer) => {
-            const selection = model.document.selection;
-            const pluginElement = selection.getFirstPosition().findAncestor('tabsPlugin');
+        // Check if the current selection is inside a tabsPlugin
+        const isInsideTabsPlugin = selection.getFirstPosition().findAncestor('tabsPlugin');
 
-            if (pluginElement) {
-                console.error('Cannot insert a tabs plugin inside another tabs plugin.');
-                return;
-            }
+        if (!isInsideTabsPlugin) {
+            model.change((writer) => {
+                const tabsPlugin = createTabsPlugin(writer);
+                model.insertContent(tabsPlugin);
+                console.log('TabsPlugin inserted:', tabsPlugin);
+            });
+        } else {
+            console.log('Cannot insert TabsPlugin inside another TabsPlugin');
+        }
 
-            const uniqueId = generateId('plugin-id');
-            const tabsPluginElement = writer.createElement('tabsPlugin', { id: uniqueId });
-            const containerDiv = createTabsPluginElement(writer, uniqueId);
-            writer.append(containerDiv, tabsPluginElement);
-            model.insertContent(tabsPluginElement, model.document.selection);
+        const pluginElement = selection.getFirstPosition().findAncestor('tabsPlugin');
 
-            writer.setSelection(tabsPluginElement, 'on');
-        });
+        if (pluginElement) {
+            console.error('Cannot insert a tabs plugin inside another tabs plugin.');
+            return;
+        }
+
+        const uniqueId = generateId('plugin-id');
+        const tabsPluginElement = writer.createElement('tabsPlugin', { id: uniqueId });
+        const containerDiv = createTabsPluginElement(writer, uniqueId);
+        writer.append(containerDiv, tabsPluginElement);
+        model.insertContent(tabsPluginElement, model.document.selection);
+
+        writer.setSelection(tabsPluginElement, 'on');
     }
 
     refresh() {
         const model = this.editor.model;
         const selection = model.document.selection;
-        const pluginElement = selection.getFirstPosition().findAncestor('tabsPlugin');
-        this.isEnabled = !pluginElement && model.schema.checkChild(selection.getFirstPosition(), 'tabsPlugin');
+        const allowedIn = model.schema.findAllowedParent(selection.getFirstPosition(), 'tabsPlugin');
+        const isInsideTabsPlugin = selection.getFirstPosition().findAncestor('tabsPlugin');
+
+        this.isEnabled = allowedIn !== null && !isInsideTabsPlugin;
     }
 }
 
