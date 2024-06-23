@@ -8,3 +8,4 @@ export function createTabListItem(writer: any, tabId: any): any;
 export function createTabNestedContent(writer: any, tabContainerId: any, tabId: any, isActive?: boolean): any;
 export function createAddTabButton(writer: any): any;
 export function appendControlElement(writer: any, parent: any, type: any, title: any): any;
+export function ensureActiveTab(writer: any, model: any): void;

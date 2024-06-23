@@ -131,3 +131,43 @@ export function appendControlElement(writer, parent, type, title) {
     writer.append(element, parent);
     return element;
 }
+
+// Set first tab active active by default
+export function ensureActiveTab(writer, model) {
+    if (!model || !model.document) {
+        console.error('Model or model document is not defined');
+        return;
+    }
+
+    const root = model.document.getRoot();
+
+    model.change(() => {
+        for (const element of root.getChildren()) {
+            if (element.is('element', 'tabsPlugin')) {
+                const containerDiv = element.getChild(0);
+                const tabHeader = containerDiv.getChild(0);
+                const tabList = tabHeader.getChild(0);
+                const tabContent = containerDiv.getChild(1);
+
+                const firstTabListItem = tabList.getChild(0);
+                const firstTabNestedContent = tabContent.getChild(0);
+
+                if (firstTabListItem && !(firstTabListItem.getAttribute('class') || '').includes('active')) {
+                    writer.setAttribute(
+                        'class',
+                        (firstTabListItem.getAttribute('class') || '') + ' active',
+                        firstTabListItem
+                    );
+                }
+
+                if (firstTabNestedContent && !(firstTabNestedContent.getAttribute('class') || '').includes('active')) {
+                    writer.setAttribute(
+                        'class',
+                        (firstTabNestedContent.getAttribute('class') || '') + ' active',
+                        firstTabNestedContent
+                    );
+                }
+            }
+        }
+    });
+}

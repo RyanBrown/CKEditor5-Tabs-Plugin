@@ -1,7 +1,7 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { toWidget, toWidgetEditable } from '@ckeditor/ckeditor5-widget';
 import TabsPluginCommand from './tabs-plugin-command';
-import { generateId } from './tabs-plugin-utils';
+import { generateId, ensureActiveTab } from './tabs-plugin-utils';
 
 export default class TabsPluginEditing extends Plugin {
     static get pluginName() {
@@ -16,7 +16,8 @@ export default class TabsPluginEditing extends Plugin {
 
         // Listen for changes in the model to ensure active class is set if needed
         this.editor.model.document.on('change', () => {
-            this._ensureActiveTab();
+            const writer = this.editor.model.change((writer) => writer);
+            ensureActiveTab(writer, this.editor.model);
         });
     }
 
@@ -615,41 +616,6 @@ export default class TabsPluginEditing extends Plugin {
                 view: viewElement,
                 converterPriority: 'high',
             });
-        });
-    }
-
-    _ensureActiveTab() {
-        const model = this.editor.model;
-        const root = model.document.getRoot();
-
-        model.change((writer) => {
-            for (const element of root.getChildren()) {
-                if (element.is('element', 'tabsPlugin')) {
-                    const containerDiv = element.getChild(0);
-                    const tabHeader = containerDiv.getChild(0);
-                    const tabList = tabHeader.getChild(0);
-                    const tabContent = containerDiv.getChild(1);
-
-                    const firstTabListItem = tabList.getChild(0);
-                    const firstTabNestedContent = tabContent.getChild(0);
-
-                    if (firstTabListItem && !firstTabListItem.hasAttribute('class', 'active')) {
-                        writer.setAttribute(
-                            'class',
-                            (firstTabListItem.getAttribute('class') || '') + ' active',
-                            firstTabListItem
-                        );
-                    }
-
-                    if (firstTabNestedContent && !firstTabNestedContent.hasAttribute('class', 'active')) {
-                        writer.setAttribute(
-                            'class',
-                            (firstTabNestedContent.getAttribute('class') || '') + ' active',
-                            firstTabNestedContent
-                        );
-                    }
-                }
-            }
         });
     }
 }
