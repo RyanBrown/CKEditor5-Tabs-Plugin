@@ -244,7 +244,7 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const tabContainerId = modelElement.findAncestor('tabsPlugin').getAttribute('id');
                 const liElement = writer.createContainerElement('li', {
-                    class: modelElement.getAttribute('class'),
+                    class: ['yui3-tab', 'tablinks'].join(' '),
                     'data-target': modelElement.getAttribute('data-target'),
                     'data-plugin-id': tabContainerId,
                     onclick: 'parent.setActiveTab(event);',
@@ -258,7 +258,7 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer, consumable }) => {
                 const tabContainerId = modelElement.findAncestor('tabsPlugin').getAttribute('id');
                 const liElement = writer.createContainerElement('li', {
-                    class: modelElement.getAttribute('class'),
+                    class: ['yui3-tab', 'tablinks'].join(' '),
                     'data-target': modelElement.getAttribute('data-target'),
                     'data-plugin-id': tabContainerId,
                     onclick: 'parent.setActiveTab(event);',
@@ -267,7 +267,6 @@ export default class TabsPluginEditing extends Plugin {
                 if (!consumable.consume(modelElement, 'active')) {
                     writer.addClass('active', liElement);
                 }
-
                 return liElement;
             },
             converterPriority: 'high',

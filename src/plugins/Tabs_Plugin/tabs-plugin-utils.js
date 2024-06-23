@@ -1,4 +1,3 @@
-// Generates a unique ID
 let counter = 0;
 export function generateId(prefix) {
     return `${prefix}_${Date.now()}_${counter++}`;
@@ -11,8 +10,6 @@ export function createTabsPlugin(writer, pluginId) {
     const containerDiv = writer.createElement('containerDiv');
     const tabHeader = writer.createElement('tabHeader');
     const tabList = writer.createElement('tabList');
-    const tabListItem = writer.createElement('tabListItem');
-
     const tabContent = writer.createElement('tabContent');
 
     // Create two initial tabs
@@ -31,7 +28,6 @@ export function createTabsPlugin(writer, pluginId) {
     writer.append(createAddTabButton(writer), tabList);
 
     // Append tabList and tabContent in the correct order
-    writer.append(tabListItem, tabList);
     writer.append(tabList, tabHeader);
     writer.append(tabHeader, containerDiv);
     writer.append(tabContent, containerDiv);
@@ -105,6 +101,7 @@ export function createTabListItem(writer, tabId) {
 export function createTabNestedContent(writer, tabContainerId, tabId, isActive = false) {
     const tabNestedContent = writer.createElement('tabNestedContent');
     writer.setAttribute('id', tabId, tabNestedContent);
+    writer.setAttribute('data-plugin-id', tabContainerId, tabNestedContent);
 
     const classNames = ['yui3-tab-panel', 'tabcontent'];
     if (isActive) {
