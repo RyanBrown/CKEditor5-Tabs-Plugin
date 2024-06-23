@@ -1,4 +1,4 @@
-import { Plugin } from 'ckeditor5/src/core';
+import { Plugin } from '@ckeditor/ckeditor5-core';
 import TabsPluginEditing from './tabs-plugin-editing';
 import TabsPluginUI from './tabs-plugin-ui';
 
