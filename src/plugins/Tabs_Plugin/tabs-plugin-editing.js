@@ -286,7 +286,7 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const tabContainerId = modelElement.findAncestor('tabsPlugin').getAttribute('id');
                 return writer.createContainerElement('div', {
-                    class: modelElement.getAttribute('class'),
+                    class: ['yui3-tab-panel', 'tabcontent'].join(' '),
                     id: modelElement.getAttribute('id'),
                     'data-plugin-id': tabContainerId,
                 });
@@ -298,7 +298,7 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const tabContainerId = modelElement.findAncestor('tabsPlugin').getAttribute('id');
                 const div = writer.createEditableElement('div', {
-                    class: modelElement.getAttribute('class'),
+                    class: ['yui3-tab-panel', 'tabcontent'].join(' '),
                     id: modelElement.getAttribute('id'),
                     'data-plugin-id': tabContainerId,
                 });
