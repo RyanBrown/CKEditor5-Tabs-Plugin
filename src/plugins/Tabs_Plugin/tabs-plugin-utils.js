@@ -5,8 +5,7 @@ export function generateId(prefix) {
 
 // Create tabs plugin element with two initial tabs
 export function createTabsPlugin(writer, pluginId) {
-    const uniqueId = generateId('plugin-id');
-    const tabsPlugin = writer.createElement('tabsPlugin', { id: uniqueId });
+    const tabsPlugin = writer.createElement('tabsPlugin', { id: pluginId });
     const containerDiv = writer.createElement('containerDiv');
     const tabHeader = writer.createElement('tabHeader');
     const tabList = writer.createElement('tabList');

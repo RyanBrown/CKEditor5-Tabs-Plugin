@@ -1,10 +1,11 @@
 import { Command } from '@ckeditor/ckeditor5-core';
-import { createTabsPlugin } from './tabs-plugin-utils';
+import { generateId, createTabsPlugin } from './tabs-plugin-utils';
 
 export default class TabsPluginCommand extends Command {
     execute() {
         this.editor.model.change((writer) => {
-            const tabsPlugin = createTabsPlugin(writer);
+            const uniqueId = generateId('plugin-id');
+            const tabsPlugin = createTabsPlugin(writer, uniqueId);
             this.editor.model.insertContent(tabsPlugin);
             console.log('TabsPlugin inserted:', tabsPlugin);
             this._ensureActiveTab(writer);

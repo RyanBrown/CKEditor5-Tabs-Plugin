@@ -148,11 +148,19 @@ export default class TabsPluginEditing extends Plugin {
 
         // Conversion for 'tabsPlugin' element
         conversion.for('upcast').elementToElement({
-            model: 'tabsPlugin',
+            // Convert the view element to the model element and assign a unique ID
+            model: (viewElement, { writer }) => {
+                const uniqueId = generateId('plugin-id');
+                return writer.createElement('tabsPlugin', {
+                    id: uniqueId,
+                    class: viewElement.getAttribute('class'),
+                });
+            },
             view: { name: 'div', classes: ['tabcontainer', 'yui3-widget'] },
             converterPriority: 'high',
         });
         conversion.for('dataDowncast').elementToElement({
+            // Convert the model element to the view element for data downcast
             model: 'tabsPlugin',
             view: (modelElement, { writer }) => {
                 return writer.createContainerElement('div', {
@@ -163,6 +171,7 @@ export default class TabsPluginEditing extends Plugin {
             converterPriority: 'high',
         });
         conversion.for('editingDowncast').elementToElement({
+            // Convert the model element to the view element for editing downcast
             model: 'tabsPlugin',
             view: (modelElement, { writer }) => {
                 const div = writer.createContainerElement('div', {
