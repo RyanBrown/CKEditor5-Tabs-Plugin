@@ -3,15 +3,19 @@ import { toWidget, toWidgetEditable } from '@ckeditor/ckeditor5-widget';
 import TabsPluginCommand from './tabs-plugin-command';
 import { generateId, ensureActiveTab } from './tabs-plugin-utils';
 
+// Plugin to handle the editing aspects of the tabs plugin
 export default class TabsPluginEditing extends Plugin {
+    // Define the plugin name
     static get pluginName() {
         return 'TabsPluginEditing';
     }
 
+    // Initialize the plugin
     init() {
         this._defineSchema();
         this._defineConverters();
 
+        // Add the tabsPlugin command to the editor
         this.editor.commands.add('tabsPlugin', new TabsPluginCommand(this.editor));
 
         // Listen for changes in the model to ensure active class is set if needed
@@ -21,122 +25,146 @@ export default class TabsPluginEditing extends Plugin {
         });
     }
 
+    // Define the schema for the tabs plugin elements
     _defineSchema() {
         const schema = this.editor.model.schema;
 
+        // Define the schema for the tabsPlugin element
         schema.register('tabsPlugin', {
             allowAttributes: ['class', 'id'],
             isObject: true,
             allowWhere: '$block',
         });
-        // Prevent nesting of tabsPlugin
+        // Prevent nesting of tabsPlugin elements
         schema.addChildCheck((context, childDefinition) => {
             if (childDefinition.name === 'tabsPlugin' && context.endsWith('tabsPlugin')) {
                 return false;
             }
         });
+        // Define the schema for the containerDiv element
         schema.register('containerDiv', {
             allowAttributes: ['class'],
             allowIn: 'tabsPlugin',
         });
+        // Define the schema for the tabHeader element
         schema.register('tabHeader', {
             allowAttributes: ['class'],
             allowIn: 'containerDiv',
             isLimit: true,
         });
+        // Define the schema for the tabList element
         schema.register('tabList', {
             allowAttributes: ['class'],
             allowIn: 'tabHeader',
             isLimit: true,
         });
+        // Define the schema for the tabListItem element
         schema.register('tabListItem', {
             allowAttributes: ['class', 'data-target', 'onclick', 'data-plugin-id'],
             allowIn: 'tabList',
             isLimit: true,
         });
+        // Define the schema for the tabListItemLabelDiv element
         schema.register('tabListItemLabelDiv', {
             allowAttributes: ['class'],
             allowIn: 'tabListItem',
             isLimit: true,
         });
+        // Define the schema for the tabListTable element
         schema.register('tabListTable', {
             allowAttributes: ['class'],
             allowIn: 'tabListItemLabelDiv',
             isLimit: true,
         });
+        // Define the schema for the tabTitle element
         schema.register('tabTitle', {
             allowAttributes: ['class'],
             allowContentOf: '$block',
             allowIn: 'tabListTable_td',
             isLimit: true,
         });
+        // Define the schema for the tabContent element
         schema.register('tabContent', {
             allowAttributes: ['class'],
             allowIn: 'containerDiv',
             isLimit: true,
         });
+        // Define the schema for the tabNestedContent element
         schema.register('tabNestedContent', {
             allowAttributes: ['id', 'class', 'data-plugin-id'],
             allowContentOf: '$root',
             allowIn: 'tabContent',
             isLimit: true,
         });
+        // Prevent nesting of tabsPlugin elements inside tabNestedContent
         schema.addChildCheck((context, childDefinition) => {
             if (context.endsWith('tabNestedContent') && childDefinition.name === 'tabsPlugin') {
                 return false;
             }
         });
+        // Define the schema for the moveLeftButton element
         schema.register('moveLeftButton', {
             allowAttributes: ['class', 'title', 'onclick'],
             allowIn: 'tabListTable_th',
             isLimit: true,
         });
+        // Define the schema for the moveRightButton element
         schema.register('moveRightButton', {
             allowAttributes: ['class', 'title', 'onclick'],
             allowIn: 'tabListTable_th',
             isLimit: true,
         });
+        // Define the schema for the deleteTabButton element
         schema.register('deleteTabButton', {
             allowAttributes: ['class', 'title'],
             allowIn: 'tabListTable_th',
             isLimit: true,
         });
+        // Define the schema for the deleteTabButtonParagraph element
         schema.register('deleteTabButtonParagraph', {
             allowAttributes: ['class', 'onclick'],
             allowIn: 'deleteTabButton',
             isLimit: true,
         });
+        // Define the schema for the addTabListItem element
         schema.register('addTabListItem', {
             allowAttributes: ['class'],
             allowIn: 'tabList',
             isLimit: true,
         });
+        // Define the schema for the addTabButton element
         schema.register('addTabButton', {
             allowAttributes: ['class', 'title'],
             allowIn: 'addTabListItem',
             isLimit: true,
         });
+        // Define the schema for the addTabIcon element
         schema.register('addTabIcon', {
             allowAttributes: ['class', 'onclick'],
             allowIn: 'addTabButton',
             isLimit: true,
         });
+        // Define the schema for the tabListTable_thead element
         schema.register('tabListTable_thead', {
             allowIn: 'tabListTable',
             isLimit: true,
         });
+        // Define the schema for the tabListTable_tr element
         schema.register('tabListTable_tr', {
             allowIn: ['tabListTable_thead', 'tabListTable_tbody'],
             isLimit: true,
         });
+        // Define the schema for the tabListTable_th element
         schema.register('tabListTable_th', {
             allowIn: 'tabListTable_tr',
             isLimit: true,
         });
+        // Define the schema for the tabListTable_tbody element
         schema.register('tabListTable_tbody', {
             allowIn: 'tabListTable',
             isLimit: true,
         });
+        // Define the schema for the tabListTable_td element
         schema.register('tabListTable_td', {
             allowIn: 'tabListTable_tr',
             allowAttributes: ['colspan'],
@@ -144,6 +172,7 @@ export default class TabsPluginEditing extends Plugin {
         });
     }
 
+    // Define the converters for the tabs plugin elements
     _defineConverters() {
         const conversion = this.editor.conversion;
 

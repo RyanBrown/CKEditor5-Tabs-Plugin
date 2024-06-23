@@ -2,13 +2,14 @@ import { Plugin } from '@ckeditor/ckeditor5-core';
 import { ButtonView } from '@ckeditor/ckeditor5-ui';
 import './styles/tabs-plugin.css';
 
-// Plugin to handle the UI for the tabs plugin.
+// Plugin to handle the UI for the tabs plugin
 export default class TabsPluginUI extends Plugin {
-    // Initializes the plugin.
+    // Initialize the plugin
     init() {
         const editor = this.editor;
         const t = editor.t;
 
+        // Add a button to the editor UI component factory
         editor.ui.componentFactory.add('tabsPlugin', (locale) => {
             const command = editor.commands.get('tabsPlugin');
             const buttonView = new ButtonView(locale);
@@ -20,13 +21,14 @@ export default class TabsPluginUI extends Plugin {
                 withText: false,
             });
 
+            // Bind the button's state to the command's state
             buttonView.bind('isOn', 'isEnabled').to(command, 'value', 'isEnabled');
 
+            // Execute the command when the button is clicked
             this.listenTo(buttonView, 'execute', () => {
                 editor.execute('tabsPlugin');
                 editor.editing.view.focus();
             });
-
             return buttonView;
         });
     }

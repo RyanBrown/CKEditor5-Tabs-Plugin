@@ -1,4 +1,6 @@
 let counter = 0;
+
+// Generate a unique ID with a given prefix
 export function generateId(prefix) {
     return `${prefix}_${Date.now()}_${counter++}`;
 }
@@ -15,6 +17,7 @@ export function createTabsPlugin(writer, pluginId) {
     for (let i = 0; i < 2; i++) {
         const tabId = generateId('tab-id');
         const { tabListItem, tabNestedContent } = createTabElement(writer, pluginId, tabId);
+        // Set the first tab as active by default
         if (i === 0) {
             writer.setAttribute('class', `${tabListItem.getAttribute('class')} active`, tabListItem);
             writer.setAttribute('class', `${tabNestedContent.getAttribute('class')} active`, tabNestedContent);
@@ -132,7 +135,7 @@ export function appendControlElement(writer, parent, type, title) {
     return element;
 }
 
-// Set first tab active active by default
+// Ensure the first tab is active by default
 export function ensureActiveTab(writer, model) {
     if (!model || !model.document) {
         console.error('Model or model document is not defined');

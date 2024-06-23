@@ -9,6 +9,7 @@ export default class TabsPlugin extends Plugin {
         return [TabsPluginEditing, TabsPluginUI];
     }
 
+    // Plugin name
     static get pluginName() {
         return 'TabsPlugin';
     }
