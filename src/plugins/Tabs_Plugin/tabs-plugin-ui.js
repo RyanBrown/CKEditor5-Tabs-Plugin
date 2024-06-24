@@ -170,39 +170,25 @@ export default class TabsPluginUI extends Plugin {
         editor.editing.view.change((writer) => {
             // Remove 'active' class from all tab list items and tab content elements within this tabs instance
             for (const item of tabList.getChildren()) {
-                const classes = (item.getAttribute('class') || '')
-                    .split(' ')
-                    .filter((c) => c !== 'active')
-                    .join(' ');
-                writer.setAttribute('class', classes, item);
+                writer.setAttribute('class', (item.getAttribute('class') || '').replace(' active', ''), item);
             }
             for (const content of tabContent.getChildren()) {
-                const classes = (content.getAttribute('class') || '')
-                    .split(' ')
-                    .filter((c) => c !== 'active')
-                    .join(' ');
-                writer.setAttribute('class', classes, content);
+                writer.setAttribute('class', (content.getAttribute('class') || '').replace(' active', ''), content);
             }
 
-            // Add 'active' class to the clicked tab list item
-            const tabListItemClasses = (tabListItem.getAttribute('class') || '').split(' ');
-            if (!tabListItemClasses.includes('active')) {
-                tabListItemClasses.push('active');
-            }
-            writer.setAttribute('class', tabListItemClasses.join(' '), tabListItem);
+            writer.setAttribute('class', (tabListItem.getAttribute('class') || '') + ' active', tabListItem);
 
-            // Find and activate the corresponding tab content
             const selectedTabContent = Array.from(tabContent.getChildren()).find(
                 (child) => child.getAttribute('id') === tabId
             );
             if (selectedTabContent) {
-                const contentClasses = (selectedTabContent.getAttribute('class') || '').split(' ');
-                if (!contentClasses.includes('active')) {
-                    contentClasses.push('active');
-                }
-                writer.setAttribute('class', contentClasses.join(' '), selectedTabContent);
+                writer.setAttribute(
+                    'class',
+                    (selectedTabContent.getAttribute('class') || '') + ' active',
+                    selectedTabContent
+                );
             } else {
-                console.error('Selected tab content not found', tabId);
+                // console.error('Selected tab content not found', tabId);
                 console.log('TabListItem:', {
                     'data-target': tabListItem.getAttribute('data-target'),
                     class: tabListItem.getAttribute('class'),
@@ -354,20 +340,12 @@ export default class TabsPluginUI extends Plugin {
             // Remove 'active' class from all existing tabs and content
             for (const item of tabList.getChildren()) {
                 if (item.is('element', 'tabListItem')) {
-                    const classes = (item.getAttribute('class') || '')
-                        .split(' ')
-                        .filter((c) => c !== 'active')
-                        .join(' ');
-                    writer.setAttribute('class', classes, item);
+                    writer.setAttribute('class', (item.getAttribute('class') || '').replace(' active', ''), item);
                 }
             }
             for (const content of tabContent.getChildren()) {
                 if (content.is('element', 'tabNestedContent')) {
-                    const classes = (content.getAttribute('class') || '')
-                        .split(' ')
-                        .filter((c) => c !== 'active')
-                        .join(' ');
-                    writer.setAttribute('class', classes, content);
+                    writer.setAttribute('class', (content.getAttribute('class') || '').replace(' active', ''), content);
                 }
             }
 
