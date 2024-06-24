@@ -37,7 +37,7 @@ export default class TabsPluginUI extends Plugin {
         });
     }
 
-    // Registers event handlers for the tabs plugin.
+    // Registers event handlers for the tabs plugin
     _registerEventHandlers(editor) {
         const commandsToDisable = ['link', 'bold', 'italic', 'underline', 'strikethrough', 'subscript', 'superscript'];
 
@@ -211,7 +211,7 @@ export default class TabsPluginUI extends Plugin {
         });
     }
 
-    // Handles the delete tab button click event.
+    // Handles the delete tab button click event
     _handleDeleteTab(editor, target, evt) {
         const tabListItem = target.findAncestor('li');
         const tabId = tabListItem.getAttribute('data-target').slice(1);
@@ -258,7 +258,7 @@ export default class TabsPluginUI extends Plugin {
         evt.stop();
     }
 
-    // Handles the add tab button click event.
+    // Handles the add tab button click event
     _handleAddTab(editor, evt) {
         try {
             this._addNewTab(editor);
@@ -268,7 +268,7 @@ export default class TabsPluginUI extends Plugin {
         evt.stop();
     }
 
-    // Handles the move tab button click event.
+    // Handles the move tab button click event
     _handleMoveTab(editor, target, evt, direction) {
         const tabListItem = target.findAncestor('li');
         const tabId = tabListItem.getAttribute('data-target').slice(1);
@@ -292,7 +292,7 @@ export default class TabsPluginUI extends Plugin {
         evt.stop();
     }
 
-    // Adds a new tab to the tabs plugin.
+    // Adds a new tab to the tabs plugin
     _addNewTab(editor) {
         editor.model.change((writer) => {
             // Get the selected element in the editor
@@ -336,6 +336,30 @@ export default class TabsPluginUI extends Plugin {
             // Use the utility function to create a new tab list item and content
             const { tabListItem, tabNestedContent } = createTabElement(writer, pluginId, newTabId);
 
+            // Set the new tab and its content as active
+            writer.setAttribute('class', 'yui3-tab tablinks active', tabListItem);
+            writer.setAttribute('class', 'yui3-tab-panel tabcontent active', tabNestedContent);
+
+            // Remove 'active' class from all other tabs and content
+            for (const item of tabList.getChildren()) {
+                if (item !== tabListItem && item.is('element', 'tabListItem')) {
+                    const classes = (item.getAttribute('class') || '')
+                        .split(' ')
+                        .filter((c) => c !== 'active')
+                        .join(' ');
+                    writer.setAttribute('class', classes, item);
+                }
+            }
+            for (const content of tabContent.getChildren()) {
+                if (content !== tabNestedContent && content.is('element', 'tabNestedContent')) {
+                    const classes = (content.getAttribute('class') || '')
+                        .split(' ')
+                        .filter((c) => c !== 'active')
+                        .join(' ');
+                    writer.setAttribute('class', classes, content);
+                }
+            }
+
             // Find the "Add Tab" button in the tabList
             const addTabButton = Array.from(tabList.getChildren()).find((child) =>
                 child.is('element', 'addTabListItem')
@@ -349,6 +373,11 @@ export default class TabsPluginUI extends Plugin {
             }
             // Append the new tab content to the tabContent
             writer.append(tabNestedContent, tabContent);
+
+            // Log the IDs for debugging
+            console.log('New tab ID:', newTabId);
+            console.log('Tab list item data-target:', tabListItem.getAttribute('data-target'));
+            console.log('Tab nested content ID:', tabNestedContent.getAttribute('id'));
 
             // Activate the new tab
             this._activateTab(editor, tabListItem, pluginId);

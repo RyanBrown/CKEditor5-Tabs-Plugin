@@ -61,7 +61,7 @@ export default class TabsPluginEditing extends Plugin {
         });
     }
 
-    // Disables or enables the specified commands and their corresponding toolbar buttons.
+    // Disables or enables the specified commands and their corresponding toolbar buttons
     _disableCommandsAndButtons(commandsToDisable, disable) {
         const editor = this.editor;
         commandsToDisable.forEach((commandName) => {
@@ -82,7 +82,7 @@ export default class TabsPluginEditing extends Plugin {
         });
     }
 
-    // Defines the schema for the tabs plugin elements.
+    // Defines the schema for the tabs plugin elements
     _defineSchema() {
         const schema = this.editor.model.schema;
 
@@ -196,7 +196,7 @@ export default class TabsPluginEditing extends Plugin {
         });
     }
 
-    // Defines the converters for the tabs plugin elements.
+    // Defines the converters for the tabs plugin elements
     _defineConverters() {
         const conversion = this.editor.conversion;
 

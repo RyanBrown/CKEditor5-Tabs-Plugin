@@ -3,9 +3,9 @@ import { ButtonView } from '@ckeditor/ckeditor5-ui';
 import { createTabsPluginElement, createTabElement, generateId, _activateTab } from './tabs-plugin-utils';
 import './styles/tabs-plugin.css';
 
-// Plugin to handle the UI for the tabs plugin.
+// Plugin to handle the UI for the tabs plugin
 export default class TabsPluginUI extends Plugin {
-    // Initializes the plugin.
+    // Initializes the plugin
     init() {
         const editor = this.editor;
         this._insertTabsPlugin(editor);
@@ -142,7 +142,7 @@ export default class TabsPluginUI extends Plugin {
         evt.stop();
     }
 
-    // Activates the specified tab.
+    // Activates the specified tab
     _activateTab(editor, tabListItem) {
         const tabId = tabListItem.getAttribute('data-target').slice(1);
         const pluginId = tabListItem.getAttribute('data-plugin-id');
@@ -188,7 +188,7 @@ export default class TabsPluginUI extends Plugin {
         });
     }
 
-    // Handles the delete tab button click event.
+    // Handles the delete tab button click event
     _handleDeleteTab(editor, target, evt) {
         const tabListItem = target.findAncestor('li');
         if (!tabListItem) {
@@ -242,7 +242,7 @@ export default class TabsPluginUI extends Plugin {
         evt.stop();
     }
 
-    // Handles the add tab button click event.
+    // Handles the add tab button click event
     _handleAddTab(editor, evt, data) {
         // console.log('Handling add tab');
 
@@ -273,7 +273,7 @@ export default class TabsPluginUI extends Plugin {
         evt.stop();
     }
 
-    // Handles the move tab button click event.
+    // Handles the move tab button click event
     _handleMoveTab(editor, target, evt, direction) {
         const tabListItem = target.findAncestor('li');
         const tabId = tabListItem.getAttribute('data-target').slice(1);
