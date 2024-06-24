@@ -102,23 +102,6 @@ export class DeleteTabCommand extends Command {
             } else {
                 console.error(`Tab or content not found for ID: ${tabId}`);
             }
-
-            // If only one tab remains, set it to active
-            if (tabListItems.length === 2) {
-                const remainingTab = tabListItems.find((item) => item !== itemToDelete);
-                const remainingTabId = remainingTab.getAttribute('data-target').slice(1);
-                const remainingTabContent = tabContents.find(
-                    (content) => content.getAttribute('id') === remainingTabId
-                );
-
-                if (remainingTab && remainingTabContent) {
-                    const remainingTabClass = remainingTab.getAttribute('class') || '';
-                    const remainingContentClass = remainingTabContent.getAttribute('class') || '';
-
-                    writer.setAttribute('class', remainingTabClass + ' active', remainingTab);
-                    writer.setAttribute('class', remainingContentClass + ' active', remainingTabContent);
-                }
-            }
         });
     }
 }

@@ -213,6 +213,7 @@ export default class TabsPluginUI extends Plugin {
     _handleDeleteTab(editor, target, evt) {
         const tabListItem = target.findAncestor('li');
         const tabId = tabListItem.getAttribute('data-target').slice(1);
+        const tabContainerId = tabListItem.getAttribute('data-container-id');
         const wasActive = tabListItem.hasClass('active');
 
         // Show the custom confirmation dialog
@@ -224,20 +225,29 @@ export default class TabsPluginUI extends Plugin {
 
         confirmYes.onclick = () => {
             modal.style.display = 'none';
+
+            const tabList = tabListItem.parent;
+            const tabListItems = Array.from(tabList.getChildren()).filter(
+                (child) => child.is('element', 'li') && child.hasClass('tablinks')
+            );
+            const index = tabListItems.indexOf(tabListItem);
+
             editor.execute('deleteTab', tabId);
 
-            // Activate the next tab if the deleted tab was active
+            // If the deleted tab was active, activate the next tab
             if (wasActive) {
-                const tabList = tabListItem.parent;
-                const tabListItems = Array.from(tabList.getChildren()).filter(
-                    (child) => child.is('element', 'li') && child.hasClass('tablinks')
-                );
-                const index = tabListItems.indexOf(tabListItem);
+                editor.editing.view.change((writer) => {
+                    let nextTab;
+                    if (index < tabListItems.length - 1) {
+                        nextTab = tabListItems[index + 1];
+                    } else if (index > 0) {
+                        nextTab = tabListItems[index - 1];
+                    }
 
-                const nextTab = tabListItems[index - 1] || tabListItems[index + 1];
-                if (nextTab) {
-                    this._activateTab(editor, nextTab);
-                }
+                    if (nextTab) {
+                        this._activateTab(editor, nextTab, tabContainerId);
+                    }
+                });
             }
         };
         confirmNo.onclick = () => {
