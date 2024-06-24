@@ -29,7 +29,26 @@ export default class TabsPluginEditing extends Plugin {
             ensureActiveTab(writer, this.editor.model);
         });
 
-        const commandsToDisable = ['link', 'bold', 'italic', 'underline', 'strikethrough', 'subscript', 'superscript'];
+        const commandsToDisable = [
+            'link',
+            'bold',
+            'italic',
+            'underline',
+            'strikethrough',
+            'subscript',
+            'superscript',
+            'fontSize',
+            'fontColor',
+            'fontFamily',
+            'fontBackgroundColor',
+            'highlight',
+            'alignment',
+            'insertImage',
+            'insertTable',
+            'insertBlockQuote',
+            'insertHorizontalLine',
+            'insertMedia',
+        ];
 
         // Add focus event listener for tabTitle
         editor.editing.view.document.on('focus', (evt, data) => {

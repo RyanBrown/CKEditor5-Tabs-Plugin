@@ -39,7 +39,25 @@ export default class TabsPluginUI extends Plugin {
 
     // Registers event handlers for the tabs plugin
     _registerEventHandlers(editor) {
-        const commandsToDisable = ['link', 'bold', 'italic', 'underline', 'strikethrough', 'subscript', 'superscript'];
+        const commandsToDisable = [
+            'link',
+            'bold',
+            'italic',
+            'underline',
+            'strikethrough',
+            'subscript',
+            'superscript',
+            'fontSize',
+            'fontColor',
+            'fontBackgroundColor',
+            'highlight',
+            'alignment',
+            'insertImage',
+            'insertTable',
+            'insertBlockQuote',
+            'insertHorizontalLine',
+            'insertMedia',
+        ];
 
         editor.editing.view.document.on(
             'click',
