@@ -341,6 +341,7 @@ export default class TabsPluginEditing extends Plugin {
         let tabCounter = 0; // Initialize a counter for unique IDs
         let tabContentCounter = 0; // Initialize a counter for unique IDs
         const tabIdMap = new Map(); // Map to store the relationship between tab list items and their nested content
+        const tabsInstanceMap = new Map();
 
         // Helper function to create a 'li' element with appropriate attributes
         function createTabListItemElement(writer, element, tabContainerId) {
@@ -349,16 +350,28 @@ export default class TabsPluginEditing extends Plugin {
                 const uniqueId = `${tabContainerId}-tab-${tabCounter++}`;
                 dataTarget = `#${uniqueId}`;
                 writer.setAttribute('data-target', dataTarget, element);
-                tabIdMap.set(uniqueId, element); // Store the mapping
+                tabIdMap.set(uniqueId, element);
             }
-            console.log('TabListItem data-target:', dataTarget);
+
             const classes = element.getAttribute('class');
-            // Add 'active' class to the first tabListItem
-            const className = classes ? `${classes} yui3-tab tablinks` : 'yui3-tab tablinks';
-            const finalClassName = tabCounter === 1 ? `${className} active` : className;
+            let className = classes ? `${classes} yui3-tab tablinks` : 'yui3-tab tablinks';
+
+            // Check if this is the first tab in this tabs instance
+            if (!tabsInstanceMap.has(tabContainerId) || tabsInstanceMap.get(tabContainerId).tabCount === 0) {
+                className += ' active';
+                if (!tabsInstanceMap.has(tabContainerId)) {
+                    tabsInstanceMap.set(tabContainerId, { tabCount: 1, activeSet: true });
+                } else {
+                    tabsInstanceMap.get(tabContainerId).activeSet = true;
+                }
+            } else {
+                tabsInstanceMap.get(tabContainerId).tabCount++;
+            }
+
             return writer.createContainerElement('li', {
-                class: finalClassName,
+                class: className,
                 'data-target': dataTarget,
+                'data-container-id': tabContainerId,
             });
         }
 
@@ -367,19 +380,24 @@ export default class TabsPluginEditing extends Plugin {
             let id = element.getAttribute('id');
             if (!id) {
                 const uniqueTabContentId = `${tabContainerId}-tab-${tabContentCounter++}`;
-                id = `${uniqueTabContentId}`;
+                id = uniqueTabContentId;
                 writer.setAttribute('id', id, element);
             }
 
-            console.log('TabNestedContent id:', id);
             const classes = element.getAttribute('class');
-            // Add 'active' class to the first tabNestedContent
-            const className = classes ? `${classes} yui3-tab-panel tabcontent` : 'yui3-tab-panel tabcontent';
-            const finalClassName = tabContentCounter === 1 ? `${className} active` : className;
+            let className = classes ? `${classes} yui3-tab-panel tabcontent` : 'yui3-tab-panel tabcontent';
+
+            // Check if this is the first content in this tabs instance
+            if (tabsInstanceMap.has(tabContainerId) && tabsInstanceMap.get(tabContainerId).tabCount === 1) {
+                className += ' active';
+            }
+
             const attributes = {
-                class: finalClassName,
+                class: className,
                 id: id,
+                'data-container-id': tabContainerId,
             };
+
             if (isEditable) {
                 return toWidgetEditable(writer.createEditableElement('div', attributes), writer);
             }

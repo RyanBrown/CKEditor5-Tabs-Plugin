@@ -56,22 +56,33 @@ export class DeleteTabCommand extends Command {
         const model = this.editor.model;
         model.change((writer) => {
             const tabsRoot = model.document.getRoot();
-            const tabListItems = findAllDescendants(tabsRoot, (node) => node.is('element', 'tabListItem'));
+            const tabsPlugin = findAllDescendants(
+                tabsRoot,
+                (node) => node.is('element', 'div') && node.hasClass('tabcontainer')
+            )[0];
+
+            if (!tabsPlugin) {
+                console.error('TabsPlugin not found');
+                return;
+            }
+
+            const tabListItems = findAllDescendants(
+                tabsPlugin,
+                (node) => node.is('element', 'li') && node.hasClass('yui3-tab')
+            );
+            const tabContents = findAllDescendants(
+                tabsPlugin,
+                (node) => node.is('element', 'div') && node.hasClass('yui3-tab-panel')
+            );
 
             // If only one tab is remaining, remove the entire tabsPlugin component
             if (tabListItems.length <= 1) {
-                const tabsPlugin = findAllDescendants(tabsRoot, (node) => node.is('element', 'tabsPlugin'))[0];
-                if (tabsPlugin) {
-                    writer.remove(tabsPlugin);
-                }
+                writer.remove(tabsPlugin);
                 return;
             }
 
             const itemToDelete = tabListItems.find((item) => item.getAttribute('data-target') === `#${tabId}`);
-            const contentToDelete = findAllDescendants(
-                tabsRoot,
-                (node) => node.is('element', 'tabNestedContent') && node.getAttribute('id') === tabId
-            )[0];
+            const contentToDelete = tabContents.find((content) => content.getAttribute('id') === tabId);
 
             // Remove the tab and its content if found
             if (itemToDelete && contentToDelete) {
@@ -82,17 +93,16 @@ export class DeleteTabCommand extends Command {
             }
 
             // If only one tab remains, set it to active
-            if (tabListItems.length === 1) {
-                const remainingTab = tabListItems[0];
+            if (tabListItems.length === 2) {
+                const remainingTab = tabListItems.find((item) => item !== itemToDelete);
                 const remainingTabId = remainingTab.getAttribute('data-target').slice(1);
-                const remainingTabContent = findAllDescendants(
-                    tabsRoot,
-                    (node) => node.is('element', 'tabNestedContent') && node.getAttribute('id') === remainingTabId
-                )[0];
+                const remainingTabContent = tabContents.find(
+                    (content) => content.getAttribute('id') === remainingTabId
+                );
 
                 if (remainingTab && remainingTabContent) {
-                    writer.setAttribute('class', 'active', remainingTab);
-                    writer.setAttribute('class', 'active', remainingTabContent);
+                    writer.addClass('active', remainingTab);
+                    writer.addClass('active', remainingTabContent);
                 }
             }
         });

@@ -17,11 +17,6 @@ export function createTabsPlugin(writer, pluginId) {
     for (let i = 0; i < 2; i++) {
         const tabId = generateId('tab-id');
         const { tabListItem, tabNestedContent } = createTabElement(writer, pluginId, tabId);
-        // Set the first tab as active by default
-        if (i === 0) {
-            writer.setAttribute('class', `${tabListItem.getAttribute('class')} active`, tabListItem);
-            writer.setAttribute('class', `${tabNestedContent.getAttribute('class')} active`, tabNestedContent);
-        }
         writer.append(tabListItem, tabList);
         writer.append(tabNestedContent, tabContent);
     }
@@ -54,11 +49,10 @@ export function findAllDescendants(node, predicate) {
 }
 
 // Create tab element (both list item and nested content)
-export function createTabElement(writer, tabId) {
-    return {
-        tabListItem: createTabListItem(writer, tabId),
-        tabNestedContent: createTabNestedContent(writer, tabId),
-    };
+export function createTabElement(writer, pluginId, tabId) {
+    const tabListItem = createTabListItem(writer, tabId, pluginId);
+    const tabNestedContent = createTabNestedContent(writer, tabId, pluginId);
+    return { tabListItem, tabNestedContent };
 }
 
 // Create tab list item
@@ -107,8 +101,12 @@ export function createTabListItem(writer, tabId) {
 }
 
 // Create tab nested content
-export function createTabNestedContent(writer, tabId) {
-    const tabNestedContent = writer.createElement('tabNestedContent', { id: tabId });
+export function createTabNestedContent(writer, tabId, pluginId) {
+    const tabNestedContent = writer.createElement('tabNestedContent', {
+        id: tabId,
+        'data-target': `#${tabId}`,
+        'data-container-id': pluginId,
+    });
     const paragraph = writer.createElement('paragraph');
     writer.insertText('Tab Content', paragraph);
     writer.append(paragraph, tabNestedContent);

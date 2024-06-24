@@ -124,47 +124,73 @@ export default class TabsPluginUI extends Plugin {
     _handleTabClick(editor, target, evt) {
         let tabListItem = target.findAncestor('li');
 
-        if (tabListItem && tabListItem.hasClass('tablinks')) {
-            this._activateTab(editor, tabListItem);
+        if (tabListItem && tabListItem.hasClass('yui3-tab')) {
+            const tabsPlugin = tabListItem.findAncestor(
+                (element) => element.name === 'div' && element.hasClass('tabcontainer')
+            );
+            if (tabsPlugin) {
+                const tabContainerId = tabsPlugin.getAttribute('id');
+                this._activateTab(editor, tabListItem, tabContainerId);
+            } else {
+                console.error('TabsPlugin container not found');
+            }
         }
         evt.stop();
     }
 
-    // Activates the specified tab.
-    _activateTab(editor, tabListItem) {
-        const tabId = tabListItem.getAttribute('data-target');
+    // Activates the specified tab
+    _activateTab(editor, tabListItem, tabContainerId) {
+        const tabId = tabListItem.getAttribute('data-target').slice(1); // Remove the '#' from the start
         const viewRoot = editor.editing.view.document.getRoot();
-        const tabsRootElement = Array.from(viewRoot.getChildren()).find(
-            (child) => child.is('element', 'div') && child.hasClass('tabcontainer')
+
+        // Find the tabsPlugin element
+        const tabsPlugin = Array.from(viewRoot.getChildren()).find(
+            (child) =>
+                child.is('element', 'div') &&
+                child.hasClass('tabcontainer') &&
+                child.getAttribute('id') === tabContainerId
         );
 
-        if (!tabsRootElement) {
-            console.error('Tabs root element not found');
+        if (!tabsPlugin) {
+            console.error('Tabs plugin element not found');
             return;
         }
 
-        const tabListElement = tabsRootElement.getChild(0).getChild(0).getChild(0);
-        const tabContentElement = tabsRootElement.getChild(0).getChild(1);
+        const containerDiv = tabsPlugin.getChild(0);
+        const tabHeader = containerDiv.getChild(0);
+        const tabList = tabHeader.getChild(0);
+        const tabContent = containerDiv.getChild(1);
 
-        if (!tabListElement || !tabContentElement) {
+        if (!tabList || !tabContent) {
             console.error('Tab list or content element not found');
             return;
         }
+
         editor.editing.view.change((writer) => {
-            for (const item of tabListElement.getChildren()) {
+            // Remove 'active' class from all tab list items and tab content elements within this tabs instance
+            for (const item of tabList.getChildren()) {
                 writer.removeClass('active', item);
             }
-            for (const content of tabContentElement.getChildren()) {
+            for (const content of tabContent.getChildren()) {
                 writer.removeClass('active', content);
             }
+
+            // Add 'active' class to the clicked tab list item
             writer.addClass('active', tabListItem);
-            const selectedTabContent = Array.from(tabContentElement.getChildren()).find(
-                (child) => child.getAttribute('id') === tabId.slice(1)
+
+            // Find and activate the corresponding tab content
+            const selectedTabContent = Array.from(tabContent.getChildren()).find(
+                (child) => child.getAttribute('id') === tabId || child.getAttribute('data-target') === `#${tabId}`
             );
             if (selectedTabContent) {
                 writer.addClass('active', selectedTabContent);
             } else {
-                console.error('Selected tab content not found');
+                console.error('Selected tab content not found', tabId);
+                // Log all tabNestedContent ids for debugging
+                console.log(
+                    'Available tab content IDs:',
+                    Array.from(tabContent.getChildren()).map((child) => child.getAttribute('id'))
+                );
             }
         });
     }
