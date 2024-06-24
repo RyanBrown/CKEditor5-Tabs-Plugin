@@ -50,29 +50,27 @@ export class MoveTabCommand extends Command {
     }
 }
 
-// Command to delete a tab.
+// Command to delete a tab
 export class DeleteTabCommand extends Command {
     execute(tabId) {
         const model = this.editor.model;
         model.change((writer) => {
             const tabsRoot = model.document.getRoot();
-            const tabsPlugin = findAllDescendants(
-                tabsRoot,
-                (node) => node.is('element', 'div') && node.hasClass('tabcontainer')
-            )[0];
+            const tabsPlugin = findAllDescendants(tabsRoot, (node) => node.is('element', 'tabsPlugin'))[0];
 
             if (!tabsPlugin) {
                 console.error('TabsPlugin not found');
                 return;
             }
 
-            const tabListItems = findAllDescendants(
-                tabsPlugin,
-                (node) => node.is('element', 'li') && node.hasClass('yui3-tab')
-            );
-            const tabContents = findAllDescendants(
-                tabsPlugin,
-                (node) => node.is('element', 'div') && node.hasClass('yui3-tab-panel')
+            const containerDiv = tabsPlugin.getChild(0);
+            const tabHeader = containerDiv.getChild(0);
+            const tabList = tabHeader.getChild(0);
+            const tabContent = containerDiv.getChild(1);
+
+            const tabListItems = Array.from(tabList.getChildren()).filter((node) => node.is('element', 'tabListItem'));
+            const tabContents = Array.from(tabContent.getChildren()).filter((node) =>
+                node.is('element', 'tabNestedContent')
             );
 
             // If only one tab is remaining, remove the entire tabsPlugin component
@@ -101,8 +99,11 @@ export class DeleteTabCommand extends Command {
                 );
 
                 if (remainingTab && remainingTabContent) {
-                    writer.addClass('active', remainingTab);
-                    writer.addClass('active', remainingTabContent);
+                    const remainingTabClass = remainingTab.getAttribute('class') || '';
+                    const remainingContentClass = remainingTabContent.getAttribute('class') || '';
+
+                    writer.setAttribute('class', remainingTabClass + ' active', remainingTab);
+                    writer.setAttribute('class', remainingContentClass + ' active', remainingTabContent);
                 }
             }
         });
