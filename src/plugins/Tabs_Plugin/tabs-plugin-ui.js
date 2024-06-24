@@ -153,7 +153,7 @@ export default class TabsPluginUI extends Plugin {
         );
 
         if (!tabsPlugin) {
-            console.error('Tabs plugin element not found');
+            // console.error('Tabs plugin element not found');
             return;
         }
 

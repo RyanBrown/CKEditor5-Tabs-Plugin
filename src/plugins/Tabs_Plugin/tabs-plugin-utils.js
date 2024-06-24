@@ -147,9 +147,16 @@ export function ensureActiveTab(writer, model) {
         for (const element of root.getChildren()) {
             if (element.is('element', 'tabsPlugin')) {
                 const containerDiv = element.getChild(0);
+                if (!containerDiv) continue;
+
                 const tabHeader = containerDiv.getChild(0);
+                if (!tabHeader) continue;
+
                 const tabList = tabHeader.getChild(0);
+                if (!tabList) continue;
+
                 const tabContent = containerDiv.getChild(1);
+                if (!tabContent) continue;
 
                 const firstTabListItem = tabList.getChild(0);
                 const firstTabNestedContent = tabContent.getChild(0);
