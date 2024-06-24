@@ -191,10 +191,12 @@
 
 .ck-editor__editable.ck-read-only .left-arrow,
 .ck-editor__editable.ck-read-only .right-arrow,
-.ck-editor__editable.ck-read-only .dropicon,
+.ck-editor__editable.ck-read-only .dropicon {
+  visibility: hidden !important;
+}
 .ck-editor__editable.ck-read-only .addtab,
 .ck-editor__editable.ck-read-only .addicon {
-  visibility: hidden !important;
+  display: none !important;
 }
 .ck-editor__editable.ck-read-only .tabTitle {
   background-color: transparent !important;

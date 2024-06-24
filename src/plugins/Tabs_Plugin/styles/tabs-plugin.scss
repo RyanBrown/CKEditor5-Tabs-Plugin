@@ -268,10 +268,12 @@ $font-family: 'FSThriveElliotWeb-Regular', sans-serif;
 .ck-editor__editable.ck-read-only {
     .left-arrow,
     .right-arrow,
-    .dropicon,
+    .dropicon {
+        visibility: hidden !important;
+    }
     .addtab,
     .addicon {
-        visibility: hidden !important;
+        display: none !important;
     }
     .tabTitle {
         background-color: transparent !important;
