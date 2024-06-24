@@ -56,10 +56,23 @@ export class DeleteTabCommand extends Command {
         const model = this.editor.model;
         model.change((writer) => {
             const tabsRoot = model.document.getRoot();
-            const tabsPlugin = findAllDescendants(tabsRoot, (node) => node.is('element', 'tabsPlugin'))[0];
+
+            // Find the specific tabsPlugin instance containing the tab to delete
+            const tabsPlugin = findAllDescendants(tabsRoot, (node) => {
+                if (node.is('element', 'tabsPlugin')) {
+                    const containerDiv = node.getChild(0);
+                    const tabHeader = containerDiv.getChild(0);
+                    const tabList = tabHeader.getChild(0);
+                    const tabListItems = Array.from(tabList.getChildren()).filter((child) =>
+                        child.is('element', 'tabListItem')
+                    );
+                    return tabListItems.some((item) => item.getAttribute('data-target') === `#${tabId}`);
+                }
+                return false;
+            })[0];
 
             if (!tabsPlugin) {
-                console.error('TabsPlugin not found');
+                console.error('TabsPlugin containing the tab not found');
                 return;
             }
 

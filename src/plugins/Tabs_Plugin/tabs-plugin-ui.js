@@ -210,23 +210,21 @@ export default class TabsPluginUI extends Plugin {
 
         confirmYes.onclick = () => {
             modal.style.display = 'none';
-            editor.model.change((writer) => {
-                editor.execute('deleteTab', tabId);
+            editor.execute('deleteTab', tabId);
 
-                // Activate the next tab if the deleted tab was active
-                if (wasActive) {
-                    const tabList = tabListItem.parent;
-                    const tabListItems = Array.from(tabList.getChildren()).filter(
-                        (child) => child.is('element', 'li') && child.hasClass('tablinks')
-                    );
-                    const index = tabListItems.indexOf(tabListItem);
+            // Activate the next tab if the deleted tab was active
+            if (wasActive) {
+                const tabList = tabListItem.parent;
+                const tabListItems = Array.from(tabList.getChildren()).filter(
+                    (child) => child.is('element', 'li') && child.hasClass('tablinks')
+                );
+                const index = tabListItems.indexOf(tabListItem);
 
-                    const nextTab = tabListItems[index - 1] || tabListItems[index + 1];
-                    if (nextTab) {
-                        this._activateTab(editor, nextTab);
-                    }
+                const nextTab = tabListItems[index - 1] || tabListItems[index + 1];
+                if (nextTab) {
+                    this._activateTab(editor, nextTab);
                 }
-            });
+            }
         };
         confirmNo.onclick = () => {
             modal.style.display = 'none';
