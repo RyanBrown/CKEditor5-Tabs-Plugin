@@ -1,8 +1,6 @@
 .tabcontainer {
   background-color: #fff;
   width: 100%;
-  min-height: 100px;
-  background-color: orange;
 }
 .tabcontainer .yui3-tabview-list {
   display: flex;
