@@ -38,18 +38,32 @@ export function createTabsPlugin(writer, pluginId) {
     return tabsPlugin;
 }
 
+// Find all descendants that match a condition
+export function findAllDescendants(node, predicate) {
+    let results = [];
+    if (!node || !node.getChildren) return results;
+
+    const children = node.getChildren();
+    for (const child of children) {
+        if (predicate(child)) results.push(child);
+
+        // Recursively find further, ensuring that 'findAllDescendants' is called correctly
+        results = results.concat(findAllDescendants(child, predicate));
+    }
+    return results;
+}
+
 // Create tab element (both list item and nested content)
-export function createTabElement(writer, pluginId, tabId) {
-    const tabListItem = createTabListItem(writer, tabId);
-    const tabNestedContent = createTabNestedContent(writer, pluginId, tabId);
-    return { tabListItem, tabNestedContent };
+export function createTabElement(writer, tabId) {
+    return {
+        tabListItem: createTabListItem(writer, tabId),
+        tabNestedContent: createTabNestedContent(writer, tabId),
+    };
 }
 
 // Create tab list item
 export function createTabListItem(writer, tabId) {
     const tabListItem = writer.createElement('tabListItem', { 'data-target': `#${tabId}` });
-    writer.setAttribute('id', tabId, tabListItem);
-
     const tabListItemLabel = writer.createElement('tabListItemLabelDiv');
     const tabListTable = writer.createElement('tabListTable');
     const tabListTable_thead = writer.createElement('tabListTable_thead');
@@ -60,8 +74,8 @@ export function createTabListItem(writer, tabId) {
     const tabListTable_th_moveRight = writer.createElement('tabListTable_th');
     const tabListTable_th_delete = writer.createElement('tabListTable_th');
 
-    appendControlElement(writer, tabListTable_th_moveLeft, 'moveLeftButton', 'Move Left');
-    appendControlElement(writer, tabListTable_th_moveRight, 'moveRightButton', 'Move Right');
+    appendControlElement(writer, tabListTable_th_moveLeft, 'moveLeftButton');
+    appendControlElement(writer, tabListTable_th_moveRight, 'moveRightButton');
 
     // Create the delete tab button with the correct structure
     const deleteTabButton = writer.createElement('deleteTabButton');
@@ -89,30 +103,14 @@ export function createTabListItem(writer, tabId) {
     writer.append(tabListTable, tabListItemLabel);
     writer.append(tabListItemLabel, tabListItem);
 
-    // Log the position of the tab list item in the list
-    const tabList = tabListItem.parent;
-    if (tabList) {
-        const position = Array.from(tabList.getChildren()).indexOf(tabListItem);
-        console.log(`Tab list item position: ${position}`);
-    }
-
     return tabListItem;
 }
 
 // Create tab nested content
-export function createTabNestedContent(writer, tabContainerId, tabId, isActive = false) {
-    const tabNestedContent = writer.createElement('tabNestedContent');
-    writer.setAttribute('id', tabId, tabNestedContent);
-    writer.setAttribute('data-plugin-id', tabContainerId, tabNestedContent);
-
-    const classNames = ['yui3-tab-panel', 'tabcontent'];
-    if (isActive) {
-        classNames.push('active');
-    }
-    writer.setAttribute('class', classNames.join(' '), tabNestedContent);
-
+export function createTabNestedContent(writer, tabId) {
+    const tabNestedContent = writer.createElement('tabNestedContent', { id: tabId });
     const paragraph = writer.createElement('paragraph');
-    writer.appendText('Tab content goes here', paragraph);
+    writer.insertText('Tab Content', paragraph);
     writer.append(paragraph, tabNestedContent);
 
     return tabNestedContent;

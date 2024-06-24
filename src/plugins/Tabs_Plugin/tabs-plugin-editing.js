@@ -1,6 +1,7 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { toWidget, toWidgetEditable } from '@ckeditor/ckeditor5-widget';
 import TabsPluginCommand from './tabs-plugin-command';
+import { DeleteTabCommand, MoveTabCommand } from './tabs-plugin-command';
 import { generateId, ensureActiveTab } from './tabs-plugin-utils';
 
 // Plugin to handle the editing aspects of the tabs plugin
@@ -12,6 +13,10 @@ export default class TabsPluginEditing extends Plugin {
 
     // Initialize the plugin
     init() {
+        const editor = this.editor;
+        editor.commands.add('deleteTab', new DeleteTabCommand(editor));
+        editor.commands.add('moveTab', new MoveTabCommand(editor));
+
         this._defineSchema();
         this._defineConverters();
 
@@ -22,6 +27,70 @@ export default class TabsPluginEditing extends Plugin {
         this.editor.model.document.on('change', () => {
             const writer = this.editor.model.change((writer) => writer);
             ensureActiveTab(writer, this.editor.model);
+        });
+
+        const commandsToDisable = ['link', 'bold', 'italic', 'underline', 'strikethrough', 'subscript', 'superscript'];
+
+        // Add focus event listener for tabTitle
+        editor.editing.view.document.on('focus', (evt, data) => {
+            if (data.domTarget.closest('.ck-widget__editing') && data.domTarget.closest('.tabTitle')) {
+                console.log('tabTitle focused');
+                // Disable the specified commands and toolbar buttons
+                this._disableCommandsAndButtons(commandsToDisable, true);
+            }
+        });
+
+        // Add blur event listener for tabTitle to re-enable the specified buttons
+        editor.editing.view.document.on('blur', (evt, data) => {
+            if (data.domTarget.closest('.ck-widget__editing') && data.domTarget.closest('.tabTitle')) {
+                // Re-enable the specified commands and toolbar buttons
+                this._disableCommandsAndButtons(commandsToDisable, false);
+            }
+        });
+
+        // Prevent command execution if a tabTitle is focused
+        editor.ui.on('ready', () => {
+            commandsToDisable.forEach((commandName) => {
+                const command = editor.commands.get(commandName);
+                if (command) {
+                    command.on(
+                        'execute',
+                        (evt, data) => {
+                            const focusedElement = editor.editing.view.document.selection.editableElement;
+                            if (focusedElement && focusedElement.hasClass('tabTitle')) {
+                                if (typeof evt.stop === 'function') {
+                                    evt.stop();
+                                }
+                                if (typeof evt.preventDefault === 'function') {
+                                    evt.preventDefault();
+                                }
+                            }
+                        },
+                        { priority: 'high' }
+                    );
+                }
+            });
+        });
+    }
+
+    // Disables or enables the specified commands and their corresponding toolbar buttons.
+    _disableCommandsAndButtons(commandsToDisable, disable) {
+        const editor = this.editor;
+        commandsToDisable.forEach((commandName) => {
+            const command = editor.commands.get(commandName);
+            if (command) {
+                if (disable) {
+                    command.forceDisabled('tabTitle');
+                } else {
+                    command.clearForceDisabled('tabTitle');
+                }
+            }
+            const button = editor.ui.view.toolbar.items.find(
+                (item) => item.buttonView && item.buttonView.commandName === commandName
+            );
+            if (button) {
+                button.isEnabled = !disable;
+            }
         });
     }
 
@@ -60,7 +129,7 @@ export default class TabsPluginEditing extends Plugin {
         });
         // Define the schema for the tabListItem element
         schema.register('tabListItem', {
-            allowAttributes: ['class', 'data-target', 'onclick', 'data-plugin-id'],
+            allowAttributes: ['class', 'data-target', 'onclick'],
             allowIn: 'tabList',
             isLimit: true,
         });
@@ -91,7 +160,7 @@ export default class TabsPluginEditing extends Plugin {
         });
         // Define the schema for the tabNestedContent element
         schema.register('tabNestedContent', {
-            allowAttributes: ['id', 'class', 'data-plugin-id'],
+            allowAttributes: ['id', 'class'],
             allowContentOf: '$root',
             allowIn: 'tabContent',
             isLimit: true,
@@ -290,7 +359,6 @@ export default class TabsPluginEditing extends Plugin {
             return writer.createContainerElement('li', {
                 class: finalClassName,
                 'data-target': dataTarget,
-                'data-plugin-id': tabContainerId,
             });
         }
 
@@ -311,7 +379,6 @@ export default class TabsPluginEditing extends Plugin {
             const attributes = {
                 class: finalClassName,
                 id: id,
-                'data-plugin-id': tabContainerId,
             };
             if (isEditable) {
                 return toWidgetEditable(writer.createEditableElement('div', attributes), writer);
