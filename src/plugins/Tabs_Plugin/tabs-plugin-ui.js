@@ -138,7 +138,6 @@ export default class TabsPluginUI extends Plugin {
         evt.stop();
     }
 
-    // Activates the specified tab
     _activateTab(editor, tabListItem, tabContainerId) {
         const tabId = tabListItem.getAttribute('data-target').slice(1); // Remove the '#' from the start
         const viewRoot = editor.editing.view.document.getRoot();
@@ -169,24 +168,39 @@ export default class TabsPluginUI extends Plugin {
         editor.editing.view.change((writer) => {
             // Remove 'active' class from all tab list items and tab content elements within this tabs instance
             for (const item of tabList.getChildren()) {
-                writer.removeClass('active', item);
+                const classes = (item.getAttribute('class') || '')
+                    .split(' ')
+                    .filter((c) => c !== 'active')
+                    .join(' ');
+                writer.setAttribute('class', classes, item);
             }
             for (const content of tabContent.getChildren()) {
-                writer.removeClass('active', content);
+                const classes = (content.getAttribute('class') || '')
+                    .split(' ')
+                    .filter((c) => c !== 'active')
+                    .join(' ');
+                writer.setAttribute('class', classes, content);
             }
 
             // Add 'active' class to the clicked tab list item
-            writer.addClass('active', tabListItem);
+            const tabListItemClasses = (tabListItem.getAttribute('class') || '').split(' ');
+            if (!tabListItemClasses.includes('active')) {
+                tabListItemClasses.push('active');
+            }
+            writer.setAttribute('class', tabListItemClasses.join(' '), tabListItem);
 
             // Find and activate the corresponding tab content
             const selectedTabContent = Array.from(tabContent.getChildren()).find(
                 (child) => child.getAttribute('id') === tabId || child.getAttribute('data-target') === `#${tabId}`
             );
             if (selectedTabContent) {
-                writer.addClass('active', selectedTabContent);
+                const contentClasses = (selectedTabContent.getAttribute('class') || '').split(' ');
+                if (!contentClasses.includes('active')) {
+                    contentClasses.push('active');
+                }
+                writer.setAttribute('class', contentClasses.join(' '), selectedTabContent);
             } else {
                 console.error('Selected tab content not found', tabId);
-                // Log all tabNestedContent ids for debugging
                 console.log(
                     'Available tab content IDs:',
                     Array.from(tabContent.getChildren()).map((child) => child.getAttribute('id'))
@@ -280,39 +294,36 @@ export default class TabsPluginUI extends Plugin {
 
             // If no tabsPlugin parent is found, create a new one
             if (!tabsPlugin) {
-                tabsPlugin = writer.createElement('tabsPlugin');
+                const pluginId = generateId('plugin-id');
+                tabsPlugin = createTabsPlugin(writer, pluginId);
                 writer.append(tabsPlugin, editor.model.document.getRoot());
             }
 
-            // Find or create tabList and tabContent within the tabsPlugin
-            let tabList = null;
-            let tabContent = null;
-            for (const node of tabsPlugin.getChildren()) {
-                if (node.is('element', 'containerDiv')) {
-                    const containerDiv = node;
-                    for (const childNode of containerDiv.getChildren()) {
-                        if (childNode.is('element', 'tabHeader')) {
-                            tabList = childNode.getChild(0);
-                        } else if (childNode.is('element', 'tabContent')) {
-                            tabContent = childNode;
-                        }
-                    }
-                }
+            const containerDiv = tabsPlugin.getChild(0) || writer.createElement('containerDiv');
+            const tabHeader = containerDiv.getChild(0) || writer.createElement('tabHeader');
+            const tabList = tabHeader.getChild(0) || writer.createElement('tabList');
+            const tabContent = containerDiv.getChild(1) || writer.createElement('tabContent');
+
+            if (!tabsPlugin.getChild(0)) {
+                writer.append(containerDiv, tabsPlugin);
             }
-            if (!tabList) {
-                const tabHeader = writer.createElement('tabHeader');
-                tabList = writer.createElement('tabList');
+            if (!containerDiv.getChild(0)) {
+                writer.append(tabHeader, containerDiv);
+            }
+            if (!tabHeader.getChild(0)) {
                 writer.append(tabList, tabHeader);
-                writer.append(tabHeader, tabsPlugin.getChild(0));
             }
-            if (!tabContent) {
-                tabContent = writer.createElement('tabContent');
-                writer.append(tabContent, tabsPlugin.getChild(0));
+            if (!containerDiv.getChild(1)) {
+                writer.append(tabContent, containerDiv);
             }
+
             // Generate a unique tabId for the new tab using centralized method
             const newTabId = generateId('tab-id');
+            const pluginId = tabsPlugin.getAttribute('id');
+
             // Use the utility function to create a new tab list item and content
-            const { tabListItem, tabNestedContent } = createTabElement(writer, newTabId);
+            const { tabListItem, tabNestedContent } = createTabElement(writer, pluginId, newTabId);
+
             // Find the "Add Tab" button in the tabList
             const addTabButton = Array.from(tabList.getChildren()).find((child) =>
                 child.is('element', 'addTabListItem')
@@ -326,6 +337,9 @@ export default class TabsPluginUI extends Plugin {
             }
             // Append the new tab content to the tabContent
             writer.append(tabNestedContent, tabContent);
+
+            // Activate the new tab
+            this._activateTab(editor, tabListItem, pluginId);
         });
     }
 
