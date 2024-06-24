@@ -29,7 +29,7 @@ export default class TabsPluginCommand extends Command {
     }
 }
 
-// Command to move a tab left or right.
+// Command to move a tab left or right
 export class MoveTabCommand extends Command {
     execute({ tabId, direction }) {
         const model = this.editor.model;

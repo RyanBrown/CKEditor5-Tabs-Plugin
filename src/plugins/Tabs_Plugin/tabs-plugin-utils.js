@@ -1,4 +1,4 @@
-let counter = 0;
+let counter = 0; // Initialize a counter for generating unique IDs
 
 // Generate a unique ID with a given prefix
 export function generateId(prefix) {

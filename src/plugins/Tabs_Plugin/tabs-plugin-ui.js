@@ -121,6 +121,7 @@ export default class TabsPluginUI extends Plugin {
         }
     }
 
+    // Handle the tab click events
     _handleTabClick(editor, target, evt) {
         let tabListItem = target.findAncestor('li');
 
@@ -138,6 +139,7 @@ export default class TabsPluginUI extends Plugin {
         evt.stop();
     }
 
+    // Set the Active tab logic
     _activateTab(editor, tabListItem, tabContainerId) {
         const tabId = tabListItem.getAttribute('data-target').slice(1); // Remove the '#' from the start
         const viewRoot = editor.editing.view.document.getRoot();
