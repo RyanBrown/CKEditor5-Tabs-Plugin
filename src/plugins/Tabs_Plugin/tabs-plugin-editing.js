@@ -456,6 +456,10 @@ export default class TabsPluginEditing extends Plugin {
                 return createTabListItemElement(writer, modelElement, tabContainerId);
             },
             converterPriority: 'high',
+            converter: (modelElement, viewElement, { writer }) => {
+                ensureActiveTab(writer, editor.model);
+                return viewElement;
+            },
         });
 
         // Conversion for 'tabNestedContent' element
