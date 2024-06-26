@@ -2,7 +2,7 @@ import { Plugin } from '@ckeditor/ckeditor5-core';
 import { toWidget, toWidgetEditable } from '@ckeditor/ckeditor5-widget';
 import TabsPluginCommand from './tabs-plugin-command';
 import { DeleteTabCommand, MoveTabCommand } from './tabs-plugin-command';
-import { generateId, ensureActiveTab } from './tabs-plugin-utils';
+import { generateId, findAllDescendants, ensureActiveTab } from './tabs-plugin-utils';
 
 // Plugin to handle the editing aspects of the tabs plugin
 export default class TabsPluginEditing extends Plugin {
@@ -17,6 +17,7 @@ export default class TabsPluginEditing extends Plugin {
         editor.commands.add('deleteTab', new DeleteTabCommand(editor));
         editor.commands.add('moveTab', new MoveTabCommand(editor));
 
+        this._ensureTabIds();
         this._defineSchema();
         this._defineConverters();
 
@@ -27,6 +28,10 @@ export default class TabsPluginEditing extends Plugin {
         this.editor.model.document.on('change', () => {
             const writer = this.editor.model.change((writer) => writer);
             ensureActiveTab(writer, this.editor.model);
+        });
+
+        this.editor.model.document.on('change:data', () => {
+            this._ensureTabIds();
         });
 
         const commandsToDisable = [
@@ -110,6 +115,50 @@ export default class TabsPluginEditing extends Plugin {
             if (button) {
                 button.isEnabled = !disable;
             }
+        });
+    }
+
+    // Make sure tab ids are always set
+    _ensureTabIds() {
+        const editor = this.editor;
+        const model = editor.model;
+
+        model.change((writer) => {
+            const root = model.document.getRoot();
+            const tabsPlugins = findAllDescendants(root, (node) => node.is('element', 'tabsPlugin'));
+
+            tabsPlugins.forEach((tabsPlugin) => {
+                const containerDiv = tabsPlugin.getChild(0);
+                if (!containerDiv) return;
+
+                const tabHeader = containerDiv.getChild(0);
+                const tabContent = containerDiv.getChild(1);
+                if (!tabHeader || !tabContent) return;
+
+                const tabList = tabHeader.getChild(0);
+                if (!tabList) return;
+
+                const tabListItems = Array.from(tabList.getChildren()).filter((child) =>
+                    child.is('element', 'tabListItem')
+                );
+                const tabNestedContents = Array.from(tabContent.getChildren()).filter((child) =>
+                    child.is('element', 'tabNestedContent')
+                );
+
+                tabListItems.forEach((tabListItem, index) => {
+                    const tabNestedContent = tabNestedContents[index];
+                    if (!tabListItem || !tabNestedContent) return;
+
+                    const dataTarget = tabListItem.getAttribute('data-target');
+                    const contentId = tabNestedContent.getAttribute('id');
+
+                    if (!dataTarget || !contentId || dataTarget !== `#${contentId}`) {
+                        const newId = generateId('tab-id');
+                        writer.setAttribute('data-target', `#${newId}`, tabListItem);
+                        writer.setAttribute('id', newId, tabNestedContent);
+                    }
+                });
+            });
         });
     }
 
