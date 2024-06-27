@@ -1,6 +1,6 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { ButtonView } from '@ckeditor/ckeditor5-ui';
-import { createTabElement, generateId } from './tabs-plugin-utils';
+import { createTabElement, generateId, setupTabClickHandlers, initializeTabsOnLoad } from './tabs-plugin-utils';
 import './styles/tabs-plugin.css';
 
 // Plugin to handle the UI for the tabs plugin
@@ -9,6 +9,11 @@ export default class TabsPluginUI extends Plugin {
     init() {
         const editor = this.editor;
         const t = editor.t;
+
+        // Initialize tabs on load
+        initializeTabsOnLoad(editor);
+        // Register the tab click handlers
+        setupTabClickHandlers(editor);
 
         this._registerEventHandlers(editor);
         this._createConfirmationModal();

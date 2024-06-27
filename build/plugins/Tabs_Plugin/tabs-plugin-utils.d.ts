@@ -10,3 +10,5 @@ export function createTabNestedContent(writer: any, tabId: any, pluginId: any): 
 export function createAddTabButton(writer: any): any;
 export function appendControlElement(writer: any, parent: any, type: any, title: any): any;
 export function ensureActiveTab(writer: any, model: any): void;
+export function setupTabClickHandlers(editor: any): void;
+export function initializeTabsOnLoad(editor: any): void;

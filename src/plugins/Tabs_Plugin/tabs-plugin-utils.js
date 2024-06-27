@@ -180,3 +180,123 @@ export function ensureActiveTab(writer, model) {
         }
     });
 }
+
+// Ensures that any newly added tabs can be clicked and will set the `tabListItem` and `tabNestedContent`
+export function setupTabClickHandlers(editor) {
+    const viewDocument = editor.editing.view.document;
+
+    // Helper function to activate the tab
+    function activateTab(tabListItem, tabContainerId) {
+        const tabId = tabListItem.getAttribute('data-target').slice(1); // Remove the '#' from the start
+        const viewRoot = editor.editing.view.document.getRoot();
+
+        const tabsPlugin = Array.from(viewRoot.getChildren()).find(
+            (child) =>
+                child.is('element', 'div') &&
+                child.hasClass('tabcontainer') &&
+                child.getAttribute('id') === tabContainerId
+        );
+
+        if (!tabsPlugin) {
+            console.error('Tabs plugin element not found');
+            return;
+        }
+
+        const containerDiv = tabsPlugin.getChild(0);
+        const tabHeader = containerDiv.getChild(0);
+        const tabList = tabHeader.getChild(0);
+        const tabContent = containerDiv.getChild(1);
+
+        if (!tabList || !tabContent) {
+            console.error('Tab list or content element not found');
+            return;
+        }
+
+        editor.editing.view.change((writer) => {
+            // Remove 'active' class from all tab list items and tab content elements within this tabs instance
+            for (const item of tabList.getChildren()) {
+                writer.setAttribute('class', (item.getAttribute('class') || '').replace(' active', ''), item);
+            }
+            for (const content of tabContent.getChildren()) {
+                writer.setAttribute('class', (content.getAttribute('class') || '').replace(' active', ''), content);
+            }
+
+            writer.setAttribute('class', (tabListItem.getAttribute('class') || '') + ' active', tabListItem);
+
+            const selectedTabContent = Array.from(tabContent.getChildren()).find(
+                (child) => child.getAttribute('id') === tabId
+            );
+            if (selectedTabContent) {
+                writer.setAttribute(
+                    'class',
+                    (selectedTabContent.getAttribute('class') || '') + ' active',
+                    selectedTabContent
+                );
+            } else {
+                console.error('Selected tab content not found', tabId);
+            }
+        });
+    }
+
+    // Attach event listener to the document for handling clicks on tab links
+    viewDocument.on(
+        'click',
+        (evt, data) => {
+            const target = data.target;
+            let tabListItem = target.findAncestor('li');
+
+            if (tabListItem && tabListItem.hasClass('tablinks')) {
+                const tabsPlugin = tabListItem.findAncestor(
+                    (element) => element.name === 'div' && element.hasClass('tabcontainer')
+                );
+                if (tabsPlugin) {
+                    const tabContainerId = tabsPlugin.getAttribute('id');
+                    activateTab(tabListItem, tabContainerId);
+                } else {
+                    console.error('TabsPlugin container not found');
+                }
+                evt.stop();
+            }
+        },
+        { priority: 'high' }
+    );
+}
+
+// Initializes tabs to ensure they are set up correctly when the editor is loaded
+export function initializeTabsOnLoad(editor) {
+    const viewRoot = editor.editing.view.document.getRoot();
+
+    // Ensure active tab is set for all existing tabs on load
+    editor.model.change((writer) => {
+        for (const element of viewRoot.getChildren()) {
+            if (element.is('element', 'tabsPlugin')) {
+                const containerDiv = element.getChild(0);
+                if (!containerDiv) continue;
+
+                const tabHeader = containerDiv.getChild(0);
+                if (!tabHeader) continue;
+
+                const tabList = tabHeader.getChild(0);
+                const tabContent = containerDiv.getChild(1);
+
+                if (!tabList || !tabContent) continue;
+
+                for (const tabListItem of tabList.getChildren()) {
+                    if (tabListItem.hasClass('active')) {
+                        const tabId = tabListItem.getAttribute('data-target').slice(1);
+                        const tabNestedContent = Array.from(tabContent.getChildren()).find(
+                            (child) => child.getAttribute('id') === tabId
+                        );
+                        if (tabNestedContent) {
+                            writer.setAttribute(
+                                'class',
+                                (tabNestedContent.getAttribute('class') || '') + ' active',
+                                tabNestedContent
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
