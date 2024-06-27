@@ -42,6 +42,7 @@ $font-family: 'FSThriveElliotWeb-Regular', sans-serif;
 // Main tabs plugin container
 .tabcontainer {
     background-color: $tab-bg-active;
+    clear: both;
     width: 100%;
 
     // Tab list container

@@ -1,5 +1,6 @@
 .tabcontainer {
   background-color: #fff;
+  clear: both;
   width: 100%;
 }
 .tabcontainer .yui3-tabview-list {
