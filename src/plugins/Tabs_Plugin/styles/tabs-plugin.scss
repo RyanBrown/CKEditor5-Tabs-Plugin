@@ -101,6 +101,7 @@ $font-family: 'FSThriveElliotWeb-Regular', sans-serif;
                         cursor: pointer;
                         display: block;
                         height: 1.5rem;
+                        pointer-events: all;
                         transition: background-image $transition-speed;
                         width: 1.5rem;
 

@@ -246,16 +246,19 @@ export function setupTabClickHandlers(editor) {
             let tabListItem = target.findAncestor('li');
 
             if (tabListItem && tabListItem.hasClass('tablinks')) {
-                const tabsPlugin = tabListItem.findAncestor(
-                    (element) => element.name === 'div' && element.hasClass('tabcontainer')
-                );
-                if (tabsPlugin) {
-                    const tabContainerId = tabsPlugin.getAttribute('id');
-                    activateTab(tabListItem, tabContainerId);
-                } else {
-                    console.error('TabsPlugin container not found');
+                // Check if the click target is not a move or delete button
+                if (!target.hasClass('left-arrow') && !target.hasClass('right-arrow') && !target.hasClass('dropicon')) {
+                    const tabsPlugin = tabListItem.findAncestor(
+                        (element) => element.name === 'div' && element.hasClass('tabcontainer')
+                    );
+                    if (tabsPlugin) {
+                        const tabContainerId = tabsPlugin.getAttribute('id');
+                        activateTab(tabListItem, tabContainerId);
+                    } else {
+                        console.error('TabsPlugin container not found');
+                    }
+                    evt.stop();
                 }
-                evt.stop();
             }
         },
         { priority: 'high' }

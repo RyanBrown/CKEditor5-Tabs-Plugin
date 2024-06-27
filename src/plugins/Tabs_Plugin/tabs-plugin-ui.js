@@ -237,6 +237,7 @@ export default class TabsPluginUI extends Plugin {
 
     // Handles the delete tab button click event
     _handleDeleteTab(editor, target, evt) {
+        console.log('Delete button clicked');
         const tabListItem = target.findAncestor('li');
         const tabId = tabListItem.getAttribute('data-target').slice(1);
         const tabContainerId = tabListItem.getAttribute('data-container-id');
@@ -250,6 +251,7 @@ export default class TabsPluginUI extends Plugin {
         modal.style.display = 'block';
 
         confirmYes.onclick = () => {
+            console.log('Delete Confirmed');
             modal.style.display = 'none';
 
             const tabList = tabListItem.parent;
@@ -277,6 +279,7 @@ export default class TabsPluginUI extends Plugin {
             }
         };
         confirmNo.onclick = () => {
+            console.log('Delete Canceled');
             modal.style.display = 'none';
         };
         evt.stop();
