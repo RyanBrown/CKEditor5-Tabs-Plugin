@@ -8,6 +8,8 @@ export class MoveTabCommand extends Command {
     }): void;
 }
 export class DeleteTabCommand extends Command {
-    execute(tabId: any): void;
+    execute({ tabId }: {
+        tabId: any;
+    }): void;
 }
 import { Command } from '@ckeditor/ckeditor5-core';

@@ -52,7 +52,7 @@ export class MoveTabCommand extends Command {
 
 // Command to delete a tab
 export class DeleteTabCommand extends Command {
-    execute(tabId) {
+    execute({ tabId }) {
         const model = this.editor.model;
         model.change((writer) => {
             const tabsRoot = model.document.getRoot();
@@ -99,6 +99,7 @@ export class DeleteTabCommand extends Command {
             if (itemToDelete && contentToDelete) {
                 writer.remove(itemToDelete);
                 writer.remove(contentToDelete);
+                console.log(`Tab and content removed for ID: ${tabId}`);
             } else {
                 console.error(`Tab or content not found for ID: ${tabId}`);
             }

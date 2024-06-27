@@ -251,7 +251,7 @@ export default class TabsPluginUI extends Plugin {
         modal.style.display = 'block';
 
         confirmYes.onclick = () => {
-            console.log('Delete Confirmed');
+            console.log('Delete Confirmed for tabId:', tabId);
             modal.style.display = 'none';
 
             const tabList = tabListItem.parent;
@@ -260,7 +260,8 @@ export default class TabsPluginUI extends Plugin {
             );
             const index = tabListItems.indexOf(tabListItem);
 
-            editor.execute('deleteTab', tabId);
+            // Execute delete command
+            editor.execute('deleteTab', { tabId });
 
             // If the deleted tab was active, activate the next tab
             if (wasActive) {
