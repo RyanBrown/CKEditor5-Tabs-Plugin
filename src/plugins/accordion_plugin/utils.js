@@ -6,6 +6,7 @@ export function insertAccordionElement(writer) {
     const panel = writer.createElement('accordionPanel');
 
     // Build the nested structure
+    writer.insertElement('paragraph', panel);
     writer.append(button, accordion);
     writer.append(title, accordion);
     writer.append(panel, accordion);

@@ -1,113 +1,90 @@
-// import { Command } from "ckeditor5/src/core";
-// import { type Writer } from "ckeditor5/src/engine";
+import Command from '@ckeditor/ckeditor5-core/src/command';
 
-// export default class RemoveAccordionCommand extends Command {
-//   getAccordionPosition: any;
-//   titleElement: any;
-//   contentElement: any;
-//   buttonAccordionElement: any;
-//   selection: any;
-//   public override execute(): void {
-//     this.editor.model.change((writer) => {
-//       this.editor.model.insertContent(this.removeAccordion(writer));
-//     });
-//   }
-//   // this function stop to insertion int0 accordion
-//   // public override refresh(): void {
-//   //  const model = this.editor.model;
-//   //  const selection = model.document.selection;
-//   //  const allowedIn = model.schema.findAllowedParent( selection.getFirstPosition()!, 'accordion' );
-//   //  this.isEnabled = allowedIn !== null;
-//   // }
+export default class RemoveAccordionCommand extends Command {
+    private existingPopulationStartUce: any;
+    private existingPopulationEndUce: any;
+    private titleElement: any;
+    private contentElement: any;
 
-//   private removeAccordion(writer: Writer) {
-//     const selection = this.editor.model.document.selection;
-//     this.selection = selection.getFirstPosition();
-//     const currentElementForSelection = selection.getFirstPosition()?.parent;
-//     const findCurrentAccordion = this.hasParentWithClass(
-//       currentElementForSelection,
-//       "accordion"
-//     );
-//     // remove the current accordion
-//     if (findCurrentAccordion !== "false") {
-//       // reading the element for title and content from accordion
-//       this.titleElement = this.getChildElementOfTag(
-//         findCurrentAccordion,
-//         "accordionTitle"
-//       );
-//       this.contentElement = this.getChildElementOfTag(
-//         findCurrentAccordion,
-//         "accordionPanel"
-//       );
-//       // removing the existing
-//       this.editor.model.change((writer) => {
-//         writer.remove(findCurrentAccordion);
-//       });
-//     }
+    override execute() {
+        this.editor.model.change((writer: any) => {
+            this.removeAccordion(writer);
+        });
+    }
 
-//     const modelFragment = this.generateFragmentData(
-//       this.titleElement,
-//       this.contentElement
-//     );
-//     this.editor.model.insertContent(
-//       modelFragment,
-//       this.editor.model.document.selection.getFirstPosition()
-//     );
-//     return modelFragment;
-//   }
+    removeAccordion(writer: any) {
+        const selection = this.editor.model.document.selection;
+        const currentElement = selection.getFirstPosition()?.parent;
+        const accordionElement = this.hasParentAccordion(currentElement, 'accordion');
+        const populationAccordionElement = this.hasParentWithClass(
+            accordionElement !== false ? accordionElement : currentElement,
+            'custom-populationSection'
+        );
 
-//   hasParentWithClass(element: any, elementName: any) {
-//     // console.log("element ", element, " ==> element name ", elementName)
-//     if (element !== null) {
-//       let parent = element.parent;
-//       while (parent) {
-//         if (
-//           parent !== null &&
-//           parent !== undefined &&
-//           parent.name === elementName
-//         ) {
-//           return parent;
-//         }
-//         parent = parent.parent;
-//         // console.log("parent ", parent)
-//         this.hasParentWithClass(parent, elementName);
-//       }
-//       return "false";
-//     } else {
-//       return "false";
-//     }
-//   }
+        if (populationAccordionElement !== 'false' && populationAccordionElement !== 'uce') {
+            const titleElement = this.getChildElementOfTag(populationAccordionElement, 'accordionTitle');
+            const contentElement = this.getChildElementOfTag(populationAccordionElement, 'accordionPanel');
+            writer.remove(populationAccordionElement);
+        } else if (populationAccordionElement === 'uce') {
+            writer.remove(this.existingPopulationStartUce);
+            writer.remove(this.existingPopulationEndUce);
+        }
 
-//   getChildElementOfTag(element: any, elementName: any) {
-//     if (element !== null && element !== undefined) {
-//       // console.log(element)
-//       let ElementsData = element._children._nodes;
-//       if (ElementsData !== undefined && ElementsData.length > 0) {
-//         for (let item of ElementsData) {
-//           if (item.name === elementName) {
-//             return item;
-//           }
-//         }
-//       }
-//     }
-//   }
+        if (populationAccordionElement !== 'uce' && populationAccordionElement !== 'false') {
+            const accordion = this.insertAccordionElement(writer);
+            this.editor.model.insertContent(accordion, this.editor.model.document.selection.getFirstPosition());
+        }
+    }
 
-//   generateFragmentData(contentTitle: any, contentElement: any) {
-//     const titleFragment = this.editor.data.toView(contentTitle);
-//     const HtmlTitle = this.editor.data.processor.toData(titleFragment);
+    hasParentWithClass(element: any, className: string): any {
+        while (element) {
+            if (element.name === className) {
+                return element;
+            }
+            element = element.parent;
+        }
+        return 'false';
+    }
 
-//     const ContentFragment = this.editor.data.toView(contentElement);
-//     const HtmlContent = this.editor.data.processor.toData(ContentFragment);
+    getChildElementOfTag(element: any, tagName: string): any {
+        if (!element || !element._children) return;
 
-//     let accordionHtml;
-//     if (this.selection.path[0] === 0) {
-//       accordionHtml = "<p>" + HtmlTitle + "</p>" + HtmlContent;
-//     } else {
-//       accordionHtml = "<br><p>" + HtmlTitle + "</p>" + HtmlContent;
-//     }
+        for (const child of element._children._nodes) {
+            if (child.name === tagName) {
+                return child;
+            }
+        }
+    }
 
-//     const accordionFragment = this.editor.data.processor.toView(accordionHtml);
-//     let modelFragment = this.editor.data.toModel(accordionFragment);
-//     return modelFragment;
-//   }
-// }
+    insertAccordionElement(writer: any): any {
+        const accordion = writer.createElement('accordion');
+        const button = writer.createElement('accordionButton');
+        const title = writer.createElement('accordionTitle');
+        const panel = writer.createElement('accordionPanel');
+
+        writer.append(button, accordion);
+        writer.append(title, accordion);
+        writer.append(panel, accordion);
+
+        writer.insert(this.convertElementToModel(writer, this.titleElement), title);
+        writer.insert(this.convertElementToModel(writer, this.contentElement), panel);
+
+        return accordion;
+    }
+
+    convertElementToModel(writer: any, element: any): any {
+        const html = this.editor.data.stringify(element);
+        const viewElement = this.editor.data.processor.toView(html);
+        return this.editor.data.toModel(viewElement);
+    }
+
+    hasParentAccordion(element: any, elementName: string): any {
+        while (element) {
+            if (element.name === elementName) {
+                return element;
+            }
+            element = element.parent;
+        }
+        return false;
+    }
+}
