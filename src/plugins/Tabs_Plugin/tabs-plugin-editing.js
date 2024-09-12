@@ -14,18 +14,18 @@ export default class TabsPluginEditing extends Plugin {
     // Initialize the plugin
     init() {
         const editor = this.editor;
+
+        // Initialize commands
         editor.commands.add('deleteTab', new DeleteTabCommand(editor));
         editor.commands.add('moveTab', new MoveTabCommand(editor));
+        editor.commands.add('tabsPlugin', new TabsPluginCommand(editor));
 
         this._ensureTabIds();
         this._defineSchema();
         this._defineConverters();
 
-        // Add the tabsPlugin command to the editor
-        this.editor.commands.add('tabsPlugin', new TabsPluginCommand(this.editor));
-
-        // Listen for changes in the model to ensure active class is set if needed
-        this.editor.model.document.on('change', () => {
+        // Handle changes and updates in tabs
+        this.editor.model.document.on('change', async () => {
             const writer = this.editor.model.change((writer) => writer);
             ensureActiveTab(writer, this.editor.model);
         });
@@ -33,128 +33,57 @@ export default class TabsPluginEditing extends Plugin {
         this.editor.model.document.on('change:data', () => {
             this._ensureTabIds();
         });
-
-        const commandsToDisable = [
-            'link',
-            'bold',
-            'italic',
-            'underline',
-            'strikethrough',
-            'subscript',
-            'superscript',
-            'fontSize',
-            'fontColor',
-            'fontFamily',
-            'fontBackgroundColor',
-            'highlight',
-            'alignment',
-            'insertImage',
-            'insertTable',
-            'insertBlockQuote',
-            'insertHorizontalLine',
-            'insertMedia',
-        ];
-
-        // Add focus event listener for tabTitle
-        editor.editing.view.document.on('focus', (evt, data) => {
-            if (data.domTarget.closest('.ck-widget__editing') && data.domTarget.closest('.tabTitle')) {
-                console.log('tabTitle focused');
-                // Disable the specified commands and toolbar buttons
-                this._disableCommandsAndButtons(commandsToDisable, true);
-            }
-        });
-
-        // Add blur event listener for tabTitle to re-enable the specified buttons
-        editor.editing.view.document.on('blur', (evt, data) => {
-            if (data.domTarget.closest('.ck-widget__editing') && data.domTarget.closest('.tabTitle')) {
-                // Re-enable the specified commands and toolbar buttons
-                this._disableCommandsAndButtons(commandsToDisable, false);
-            }
-        });
-
-        // Prevent command execution if a tabTitle is focused
-        editor.ui.on('ready', () => {
-            commandsToDisable.forEach((commandName) => {
-                const command = editor.commands.get(commandName);
-                if (command) {
-                    command.on(
-                        'execute',
-                        (evt, data) => {
-                            const focusedElement = editor.editing.view.document.selection.editableElement;
-                            if (focusedElement && focusedElement.hasClass('tabTitle')) {
-                                if (typeof evt.stop === 'function') {
-                                    evt.stop();
-                                }
-                                if (typeof evt.preventDefault === 'function') {
-                                    evt.preventDefault();
-                                }
-                            }
-                        },
-                        { priority: 'high' }
-                    );
-                }
-            });
-        });
+        // Add paste handler for tabTitle to strip formatting
+        this._addPasteHandlerForTabTitle();
     }
 
-    // Disables or enables the specified commands and their corresponding toolbar buttons.
-    _disableCommandsAndButtons(commandsToDisable, disable) {
-        const editor = this.editor;
-        commandsToDisable.forEach((commandName) => {
-            const command = editor.commands.get(commandName);
-            if (command) {
-                if (disable) {
-                    command.forceDisabled('tabTitle');
-                } else {
-                    command.clearForceDisabled('tabTitle');
-                }
-            }
-            const button = editor.ui.view.toolbar.items.find(
-                (item) => item.buttonView && item.buttonView.commandName === commandName
-            );
-            if (button) {
-                button.isEnabled = !disable;
-            }
-        });
-    }
-
-    // Make sure tab ids are always set
+    // Ensure that each tab has a unique ID and the associated tab content has a corresponding 'data-target' attribute
     _ensureTabIds() {
-        const editor = this.editor;
-        const model = editor.model;
+        const editor = this.editor; // Get reference to the editor instance
+        const model = editor.model; // Get the model of the editor
 
         model.change((writer) => {
-            const root = model.document.getRoot();
+            const root = model.document.getRoot(); // Get the root of the document
+            // Find all 'tabsPlugin' elements in the document to ensure their structure
             const tabsPlugins = findAllDescendants(root, (node) => node.is('element', 'tabsPlugin'));
 
+            // Iterate through each found 'tabsPlugin' element
             tabsPlugins.forEach((tabsPlugin) => {
-                const containerDiv = tabsPlugin.getChild(0);
-                if (!containerDiv) return;
+                const containerDiv = tabsPlugin.getChild(0); // Get the first child (container div) of the 'tabsPlugin'
+                if (!containerDiv) return; // If containerDiv is not found, exit
 
-                const tabHeader = containerDiv.getChild(0);
-                const tabContent = containerDiv.getChild(1);
-                if (!tabHeader || !tabContent) return;
+                const tabHeader = containerDiv.getChild(0); // Get the tab header which contains the tab list
+                const tabContent = containerDiv.getChild(1); // Get the tab content that holds the content of each tab
+                if (!tabHeader || !tabContent) return; // Exit if either tab header or tab content is not found
 
-                const tabList = tabHeader.getChild(0);
-                if (!tabList) return;
+                const tabList = tabHeader.getChild(0); // Get the first child of tabHeader which is the list of tabs
+                if (!tabList) return; // Exit if tabList is not found
 
+                // Get all 'tabListItem' elements from the tab list
                 const tabListItems = Array.from(tabList.getChildren()).filter((child) =>
                     child.is('element', 'tabListItem')
                 );
+                // Get all 'tabNestedContent' elements from the tab content container
                 const tabNestedContents = Array.from(tabContent.getChildren()).filter((child) =>
                     child.is('element', 'tabNestedContent')
                 );
 
+                // Iterate through each tabListItem and its corresponding tabNestedContent
                 tabListItems.forEach((tabListItem, index) => {
-                    const tabNestedContent = tabNestedContents[index];
-                    if (!tabListItem || !tabNestedContent) return;
+                    const tabNestedContent = tabNestedContents[index]; // Match the tab content with its respective tab
+                    if (!tabListItem || !tabNestedContent) return; // If either is missing, skip this iteration
 
+                    // Get the 'data-target' attribute from the tab list item and 'id' from the tab content
                     const dataTarget = tabListItem.getAttribute('data-target');
                     const contentId = tabNestedContent.getAttribute('id');
 
+                    // Check if either 'data-target' or 'id' is missing, or if they do not match
                     if (!dataTarget || !contentId || dataTarget !== `#${contentId}`) {
+                        // Generate a new unique ID for the tab
                         const newId = generateId('tab-id');
+                        // Set 'data-target' on the tab list item to reference the newly generated ID
                         writer.setAttribute('data-target', `#${newId}`, tabListItem);
+                        // Set 'id' on the tab content to match the new ID
                         writer.setAttribute('id', newId, tabNestedContent);
                     }
                 });
@@ -215,8 +144,8 @@ export default class TabsPluginEditing extends Plugin {
         });
         // Define the schema for the tabTitle element
         schema.register('tabTitle', {
-            allowAttributes: ['class'],
-            allowContentOf: '$block',
+            allowAttributes: ['class', 'style'],
+            allowChildren: '$text',
             allowIn: 'tabListTable_td',
             isLimit: true,
         });
@@ -412,10 +341,10 @@ export default class TabsPluginEditing extends Plugin {
         const tabsInstanceMap = new Map();
 
         // Helper function to create a 'li' element with appropriate attributes
-        function createTabListItemElement(writer, element, tabContainerId) {
+        function createTabListItemElement(writer, element, tabPluginId) {
             let dataTarget = element.getAttribute('data-target');
             if (!dataTarget) {
-                const uniqueId = `${tabContainerId}-tab-${tabCounter++}`;
+                const uniqueId = `${tabPluginId}-tab-${tabCounter++}`;
                 dataTarget = `#${uniqueId}`;
                 writer.setAttribute('data-target', dataTarget, element);
                 tabIdMap.set(uniqueId, element);
@@ -425,29 +354,29 @@ export default class TabsPluginEditing extends Plugin {
             let className = classes ? `${classes} yui3-tab tablinks` : 'yui3-tab tablinks';
 
             // Check if this is the first tab in this tabs instance
-            if (!tabsInstanceMap.has(tabContainerId) || tabsInstanceMap.get(tabContainerId).tabCount === 0) {
+            if (!tabsInstanceMap.has(tabPluginId) || tabsInstanceMap.get(tabPluginId).tabCount === 0) {
                 className += ' active';
-                if (!tabsInstanceMap.has(tabContainerId)) {
-                    tabsInstanceMap.set(tabContainerId, { tabCount: 1, activeSet: true });
+                if (!tabsInstanceMap.has(tabPluginId)) {
+                    tabsInstanceMap.set(tabPluginId, { tabCount: 1, activeSet: true });
                 } else {
-                    tabsInstanceMap.get(tabContainerId).activeSet = true;
+                    tabsInstanceMap.get(tabPluginId).activeSet = true;
                 }
             } else {
-                tabsInstanceMap.get(tabContainerId).tabCount++;
+                tabsInstanceMap.get(tabPluginId).tabCount++;
             }
 
             return writer.createContainerElement('li', {
                 class: className,
                 'data-target': dataTarget,
-                'data-container-id': tabContainerId,
+                'data-plugin-id': tabPluginId,
             });
         }
 
         // Helper function to create a 'div' element with appropriate attributes
-        function createTabNestedContentElement(writer, element, tabContainerId, isEditable = false) {
+        function createTabNestedContentElement(writer, element, tabPluginId, isEditable = false) {
             let id = element.getAttribute('id');
             if (!id) {
-                const uniqueTabContentId = `${tabContainerId}-tab-${tabContentCounter++}`;
+                const uniqueTabContentId = `${tabPluginId}-tab-${tabContentCounter++}`;
                 id = uniqueTabContentId;
                 writer.setAttribute('id', id, element);
             }
@@ -456,14 +385,14 @@ export default class TabsPluginEditing extends Plugin {
             let className = classes ? `${classes} yui3-tab-panel tabcontent` : 'yui3-tab-panel tabcontent';
 
             // Check if this is the first content in this tabs instance
-            if (tabsInstanceMap.has(tabContainerId) && tabsInstanceMap.get(tabContainerId).tabCount === 1) {
+            if (tabsInstanceMap.has(tabPluginId) && tabsInstanceMap.get(tabPluginId).tabCount === 1) {
                 className += ' active';
             }
 
             const attributes = {
                 class: className,
                 id: id,
-                'data-container-id': tabContainerId,
+                'data-plugin-id': tabPluginId,
             };
 
             if (isEditable) {
@@ -482,17 +411,17 @@ export default class TabsPluginEditing extends Plugin {
             converterPriority: 'high',
             // Converter function to handle the upcast conversion from view to model
             converter: (viewElement, { writer }) => {
-                // Get the tabContainerId from the parent 'tabsPlugin' element
+                // Get the tabPluginId from the parent 'tabsPlugin' element
                 const tabContainerElement = viewElement.findAncestor('div');
-                const tabContainerId = tabContainerElement ? tabContainerElement.getAttribute('id') : 'default';
-                return createTabListItemElement(writer, viewElement, tabContainerId);
+                const tabPluginId = tabContainerElement ? tabContainerElement.getAttribute('id') : 'default';
+                return createTabListItemElement(writer, viewElement, tabPluginId);
             },
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabListItem',
             view: (modelElement, { writer }) => {
-                const tabContainerId = modelElement.findAncestor('tabsPlugin').getAttribute('id');
-                const liElement = createTabListItemElement(writer, modelElement, tabContainerId);
+                const tabPluginId = modelElement.findAncestor('tabsPlugin').getAttribute('id');
+                const liElement = createTabListItemElement(writer, modelElement, tabPluginId);
                 writer.setAttribute('onclick', 'parent.setActiveTab(event);', liElement);
                 return liElement;
             },
@@ -501,8 +430,8 @@ export default class TabsPluginEditing extends Plugin {
         conversion.for('editingDowncast').elementToElement({
             model: 'tabListItem',
             view: (modelElement, { writer }) => {
-                const tabContainerId = modelElement.findAncestor('tabsPlugin').getAttribute('id');
-                return createTabListItemElement(writer, modelElement, tabContainerId);
+                const tabPluginId = modelElement.findAncestor('tabsPlugin').getAttribute('id');
+                return createTabListItemElement(writer, modelElement, tabPluginId);
             },
             converterPriority: 'high',
             converter: (modelElement, viewElement, { writer }) => {
@@ -521,25 +450,25 @@ export default class TabsPluginEditing extends Plugin {
             converterPriority: 'high',
             // Converter function to handle the upcast conversion from view to model
             converter: (viewElement, { writer }) => {
-                // Get the tabContainerId from the parent 'tabsPlugin' element
+                // Get the tabPluginId from the parent 'tabsPlugin' element
                 const tabContainerElement = viewElement.findAncestor('div');
-                const tabContainerId = tabContainerElement ? tabContainerElement.getAttribute('id') : 'default';
-                return createTabNestedContentElement(writer, viewElement, tabContainerId);
+                const tabPluginId = tabContainerElement ? tabContainerElement.getAttribute('id') : 'default';
+                return createTabNestedContentElement(writer, viewElement, tabPluginId);
             },
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabNestedContent',
             view: (modelElement, { writer }) => {
-                const tabContainerId = modelElement.findAncestor('tabsPlugin').getAttribute('id');
-                return createTabNestedContentElement(writer, modelElement, tabContainerId);
+                const tabPluginId = modelElement.findAncestor('tabsPlugin').getAttribute('id');
+                return createTabNestedContentElement(writer, modelElement, tabPluginId);
             },
             converterPriority: 'high',
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabNestedContent',
             view: (modelElement, { writer }) => {
-                const tabContainerId = modelElement.findAncestor('tabsPlugin').getAttribute('id');
-                return createTabNestedContentElement(writer, modelElement, tabContainerId, true);
+                const tabPluginId = modelElement.findAncestor('tabsPlugin').getAttribute('id');
+                return createTabNestedContentElement(writer, modelElement, tabPluginId, true);
             },
             converterPriority: 'high',
         });
@@ -578,18 +507,27 @@ export default class TabsPluginEditing extends Plugin {
             model: 'tabTitle',
             view: { name: 'div', classes: 'tabTitle' },
             converterPriority: 'high',
+            converter: (viewElement, { writer }) => {
+                // Ensure that the model element is created with the display:flex style
+                const style = viewElement.getStyle('display') || 'flex';
+                return writer.createElement('tabTitle', { style: `display:${style}` });
+            },
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabTitle',
             view: (modelElement, { writer }) => {
-                return writer.createEditableElement('div', { class: 'tabTitle' });
+                // Ensure that the view element is rendered with the display:flex style
+                const style = modelElement.getAttribute('style') || 'display:flex';
+                return writer.createEditableElement('div', { class: 'tabTitle', style: style });
             },
             converterPriority: 'high',
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabTitle',
             view: (modelElement, { writer }) => {
-                const div = writer.createEditableElement('div', { class: 'tabTitle' });
+                // Ensure that the view element is rendered with the display:flex style for editing
+                const style = modelElement.getAttribute('style') || 'display:flex';
+                const div = writer.createEditableElement('div', { class: 'tabTitle', style: style });
                 return toWidgetEditable(div, writer);
             },
             converterPriority: 'high',
@@ -802,6 +740,45 @@ export default class TabsPluginEditing extends Plugin {
                 view: viewElement,
                 converterPriority: 'high',
             });
+        });
+    }
+
+    // Adds a paste handler for the tabTitle element to strip all formatting when pasting text
+    _addPasteHandlerForTabTitle() {
+        const editor = this.editor;
+
+        // Listen for clipboard input events (pasting) on the view document
+        editor.editing.view.document.on('clipboardInput', (evt, data) => {
+            const target = data.target;
+
+            // Check if the paste target is a tabTitle element
+            if (target && target.hasClass && target.hasClass('tabTitle')) {
+                const dataTransfer = data.dataTransfer;
+
+                // Retrieve the plain text from the clipboard data
+                const plainText = dataTransfer.getData('text/plain');
+
+                // Prevent the default paste action to avoid inserting formatted content
+                if (typeof evt.stop === 'function') {
+                    evt.stop();
+                }
+                if (typeof data.preventDefault === 'function') {
+                    data.preventDefault();
+                }
+
+                // Insert the plain text into the tabTitle element
+                editor.model.change((writer) => {
+                    // Get the current selection in the model.
+                    const selection = editor.model.document.selection;
+
+                    // Remove any existing content in the selection range
+                    const range = selection.getFirstRange();
+                    writer.remove(range);
+
+                    // Insert the plain text at the current selection range
+                    writer.insertText(plainText, range.start);
+                });
+            }
         });
     }
 }

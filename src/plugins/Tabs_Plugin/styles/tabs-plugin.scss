@@ -41,9 +41,25 @@ $font-family: 'FSThriveElliotWeb-Regular', sans-serif;
 
 // Main tabs plugin container
 .tabcontainer {
-    background-color: $tab-bg-active;
+    background-color: transparent;
     clear: both;
+    display: block;
     width: 100%;
+
+    // reinforce the block for tabs
+    &::before,
+    &::after {
+        content: '';
+        clear: both;
+        display: table;
+        width: 100%;
+    }
+
+    // If another tab or accordion immediately follows add 'margin-top: 1rem' to second accordion
+    & + .tabcontainer,
+    & + .panelSection {
+        margin-top: 1rem;
+    }
 
     // Tab list container
     .yui3-tabview-list {
@@ -120,7 +136,7 @@ $font-family: 'FSThriveElliotWeb-Regular', sans-serif;
                     // Move left button
                     .left-arrow {
                         &::before {
-                            background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='#333333'/%3E%3C/svg%3E");
+                            background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='#010101'/%3E%3C/svg%3E");
                         }
                         &:hover::before {
                             background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='#1957bc'/%3E%3C/svg%3E");
@@ -130,7 +146,7 @@ $font-family: 'FSThriveElliotWeb-Regular', sans-serif;
                     .right-arrow {
                         float: right;
                         &::before {
-                            background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='#333333'/%3E%3C/svg%3E");
+                            background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='#010101'/%3E%3C/svg%3E");
                         }
                         &:hover::before {
                             background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='#1957bc'/%3E%3C/svg%3E");
@@ -139,7 +155,7 @@ $font-family: 'FSThriveElliotWeb-Regular', sans-serif;
                     // Delete tab button
                     .dropicon {
                         &::before {
-                            background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='#333333'/%3E%3C/svg%3E");
+                            background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='#010101'/%3E%3C/svg%3E");
                         }
                         &:hover::before {
                             background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='#ff0000'/%3E%3C/svg%3E");
@@ -217,7 +233,7 @@ $font-family: 'FSThriveElliotWeb-Regular', sans-serif;
 
                 &::before,
                 &:hover::before {
-                    background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#333333'/%3E%3C/svg%3E");
+                    background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#010101'/%3E%3C/svg%3E");
                     background-position: center;
                     background-repeat: no-repeat;
                     background-size: 1.5rem;
@@ -246,6 +262,7 @@ $font-family: 'FSThriveElliotWeb-Regular', sans-serif;
     .yui3-tabview-panel {
         background-color: $tab-bg-active;
         border: $tab-border-width solid $tab-border-color-active;
+        overflow: auto; // set the yui3-tabview-panel to handle overflow
         position: relative;
 
         .tabcontent {
@@ -257,6 +274,18 @@ $font-family: 'FSThriveElliotWeb-Regular', sans-serif;
             &.active {
                 display: inline-block;
                 padding: 1rem;
+                position: relative;
+                z-index: 5;
+            }
+            // Override UCE stylesheets to set bold in the lists
+            ul,
+            ol {
+                li {
+                    b,
+                    strong {
+                        font-weight: bold;
+                    }
+                }
             }
         }
     }
