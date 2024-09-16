@@ -25,9 +25,10 @@ export default class TabsPluginEditing extends Plugin {
         this._defineConverters();
 
         // Handle changes and updates in tabs
-        this.editor.model.document.on('change', async () => {
-            const writer = this.editor.model.change((writer) => writer);
-            ensureActiveTab(writer, this.editor.model);
+        this.editor.model.document.on('change', () => {
+            this.editor.model.change((writer) => {
+                ensureActiveTab(writer, this.editor.model);
+            });
         });
 
         this.editor.model.document.on('change:data', () => {
@@ -126,7 +127,7 @@ export default class TabsPluginEditing extends Plugin {
         });
         // Define the schema for the tabListItem element
         schema.register('tabListItem', {
-            allowAttributes: ['class', 'data-target', 'onclick'],
+            allowAttributes: ['class', 'data-target'],
             allowIn: 'tabList',
             isLimit: true,
         });
@@ -170,13 +171,13 @@ export default class TabsPluginEditing extends Plugin {
         });
         // Define the schema for the moveLeftButton element
         schema.register('moveLeftButton', {
-            allowAttributes: ['class', 'title', 'onclick'],
+            allowAttributes: ['class', 'title'],
             allowIn: 'tabListTable_th',
             isLimit: true,
         });
         // Define the schema for the moveRightButton element
         schema.register('moveRightButton', {
-            allowAttributes: ['class', 'title', 'onclick'],
+            allowAttributes: ['class', 'title'],
             allowIn: 'tabListTable_th',
             isLimit: true,
         });
@@ -188,7 +189,7 @@ export default class TabsPluginEditing extends Plugin {
         });
         // Define the schema for the deleteTabButtonParagraph element
         schema.register('deleteTabButtonParagraph', {
-            allowAttributes: ['class', 'onclick'],
+            allowAttributes: ['class'],
             allowIn: 'deleteTabButton',
             isLimit: true,
         });
@@ -206,7 +207,7 @@ export default class TabsPluginEditing extends Plugin {
         });
         // Define the schema for the addTabIcon element
         schema.register('addTabIcon', {
-            allowAttributes: ['class', 'onclick'],
+            allowAttributes: ['class'],
             allowIn: 'addTabButton',
             isLimit: true,
         });
@@ -422,7 +423,6 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 const tabPluginId = modelElement.findAncestor('tabsPlugin').getAttribute('id');
                 const liElement = createTabListItemElement(writer, modelElement, tabPluginId);
-                writer.setAttribute('onclick', 'parent.setActiveTab(event);', liElement);
                 return liElement;
             },
             converterPriority: 'high',
@@ -435,7 +435,6 @@ export default class TabsPluginEditing extends Plugin {
             },
             converterPriority: 'high',
             converter: (modelElement, viewElement, { writer }) => {
-                ensureActiveTab(writer, editor.model);
                 return viewElement;
             },
         });
@@ -545,7 +544,6 @@ export default class TabsPluginEditing extends Plugin {
                 return writer.createContainerElement('div', {
                     class: 'left-arrow arrowtabicon',
                     title: 'Move Tab',
-                    onclick: "parent.moveTabPosition(event, 'left');",
                 });
             },
             converterPriority: 'high',
@@ -573,7 +571,6 @@ export default class TabsPluginEditing extends Plugin {
                 return writer.createContainerElement('div', {
                     class: 'right-arrow arrowtabicon',
                     title: 'Move Tab',
-                    onclick: "parent.moveTabPosition(event, 'right');",
                 });
             },
             converterPriority: 'high',
@@ -617,7 +614,6 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 return writer.createContainerElement('p', {
                     class: 'droptab droptabicon',
-                    onclick: 'parent.dropActiveTab(event);',
                 });
             },
             converterPriority: 'high',
@@ -686,7 +682,6 @@ export default class TabsPluginEditing extends Plugin {
             view: (modelElement, { writer }) => {
                 return writer.createContainerElement('p', {
                     class: 'addtabicon',
-                    onclick: 'parent.addTab(event);',
                 });
             },
             converterPriority: 'high',
@@ -754,7 +749,6 @@ export default class TabsPluginEditing extends Plugin {
             // Check if the paste target is a tabTitle element
             if (target && target.hasClass && target.hasClass('tabTitle')) {
                 const dataTransfer = data.dataTransfer;
-
                 // Retrieve the plain text from the clipboard data
                 const plainText = dataTransfer.getData('text/plain');
 
@@ -765,12 +759,10 @@ export default class TabsPluginEditing extends Plugin {
                 if (typeof data.preventDefault === 'function') {
                     data.preventDefault();
                 }
-
                 // Insert the plain text into the tabTitle element
                 editor.model.change((writer) => {
                     // Get the current selection in the model.
                     const selection = editor.model.document.selection;
-
                     // Remove any existing content in the selection range
                     const range = selection.getFirstRange();
                     writer.remove(range);

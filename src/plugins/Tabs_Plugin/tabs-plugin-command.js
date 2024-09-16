@@ -99,6 +99,7 @@ export class DeleteTabCommand extends Command {
             // If the tabsPlugin containing the tab is not found, log an error and exit
             if (!tabsPlugin) {
                 console.error(`DeleteTabCommand: TabsPlugin containing tab ${tabId} not found`);
+                return;
             }
             // Retrieve the container div, tab list, and tab content for the selected tabsPlugin
             const containerDiv = tabsPlugin.getChild(0);
@@ -113,6 +114,7 @@ export class DeleteTabCommand extends Command {
             // If only one tab is remaining, remove the entire tabsPlugin component
             if (tabListItems.length <= 1) {
                 writer.remove(tabsPlugin);
+                return;
             }
 
             // Find the specific tab list item and tab content to delete

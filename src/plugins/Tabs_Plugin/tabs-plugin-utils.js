@@ -20,7 +20,7 @@ export function createTabsPlugin(writer, pluginId) {
     // Create two initial tabs
     for (let i = 0; i < 2; i++) {
         const tabId = generateId('tab-id');
-        // console.log(`createTabsPlugin: Creating tab with ID: ${tabId}`);
+        console.log(`createTabsPlugin: Creating individual tab with ID: ${tabId}`);
         // Create a tab list item and the corresponding content for the tab
         const { tabListItem, tabNestedContent } = createTabElement(writer, pluginId, tabId);
 
@@ -68,7 +68,7 @@ export function createTabElement(writer, pluginId, tabId) {
 
 // Create a single tab list item element for the tab with controls like move left, right, and delete
 export function createTabListItem(writer, tabId, pluginId) {
-    // console.log(`Creating tabListItem for tabId: ${tabId} and pluginId: ${pluginId}`);
+    console.log(`createTabListItem: Creating single tabListItem for tabId: ${tabId} and pluginId: ${pluginId}`);
 
     // Create the main tab list item
     const tabListItem = writer.createElement('tabListItem', {
@@ -220,6 +220,58 @@ export function ensureActiveTab(writer, model) {
     });
 }
 
+// Set the clicked tab as active and deactivate all others
+export function activateTab(editor, tabListItem, tabPluginId) {
+    const tabId = tabListItem.getAttribute('data-target').slice(1); // Remove '#' from ID
+    const viewRoot = editor.editing.view.document.getRoot();
+
+    // Find the correct tabsPlugin element
+    const tabsPlugin = Array.from(viewRoot.getChildren()).find(
+        (child) =>
+            child.is('element', 'div') && child.hasClass('tabcontainer') && child.getAttribute('id') === tabPluginId
+    );
+    if (!tabsPlugin) return; // Exit if tabsPlugin not found
+
+    const containerDiv = tabsPlugin.getChild(0);
+    const tabHeader = containerDiv.getChild(0);
+    const tabList = tabHeader.getChild(0);
+    const tabContent = containerDiv.getChild(1);
+
+    // Remove 'active' class from all tabs and content before activating the selected one
+    editor.editing.view.change((writer) => {
+        const selectedTabContent = Array.from(tabContent.getChildren()).find(
+            (child) => child.getAttribute('id') === tabId
+        );
+        // Iterate through all tab items and tab content at the same time
+        const tabListItems = Array.from(tabList.getChildren());
+        const tabContents = Array.from(tabContent.getChildren());
+
+        tabListItems.forEach((tabItem, index) => {
+            // Deactivate the current tab item
+            removeActiveClass(writer, tabItem);
+
+            // If this is the tab to activate, activate it
+            if (tabItem === tabListItem) {
+                setActiveClass(writer, tabItem);
+            }
+            // Deactivate the corresponding tab content (if it exists)
+            const tabContentItem = tabContents[index];
+            if (tabContentItem) {
+                removeActiveClass(writer, tabContentItem);
+
+                // If this is the content to activate, activate it
+                if (tabContentItem === selectedTabContent) {
+                    setActiveClass(writer, tabContentItem);
+                }
+            }
+        });
+        // Handle edge case if the selectedTabContent wasn't found in the loop
+        if (selectedTabContent && !tabContents.includes(selectedTabContent)) {
+            setActiveClass(writer, selectedTabContent);
+        }
+    });
+}
+
 // Ensure active tab is set for all existing tabs on load
 export function initializeTabsOnLoad(editor) {
     const viewRoot = editor.editing.view.document.getRoot(); // Get the view root of the editor
@@ -260,90 +312,4 @@ export function initializeTabsOnLoad(editor) {
             }
         }
     });
-}
-
-// Ensure that any newly added tabs can be clicked and will set the `tabListItem` and `tabNestedContent`
-export function setupTabClickHandlers(editor) {
-    const viewDocument = editor.editing.view.document; // Get the document view
-
-    // Helper function to activate the tab when clicked
-    function activateTab(tabListItem, tabPluginId) {
-        const tabId = tabListItem.getAttribute('data-target').slice(1); // Get the tab ID (without '#')
-        const viewRoot = editor.editing.view.document.getRoot(); // Get the view root
-
-        // Find the corresponding tabs plugin element
-        const tabsPlugin = Array.from(viewRoot.getChildren()).find(
-            (child) =>
-                child.is('element', 'div') && child.hasClass('tabcontainer') && child.getAttribute('id') === tabPluginId
-        );
-
-        if (!tabsPlugin) {
-            console.error(`activateTab: Tabs plugin element not found for ID: ${tabPluginId}`);
-            return;
-        }
-
-        const containerDiv = tabsPlugin.getChild(0);
-        const tabList = containerDiv?.getChild(0)?.getChild(0);
-        const tabContent = containerDiv?.getChild(1);
-
-        if (!tabList || !tabContent) {
-            console.error('activateTab: Tab list or content element not found');
-            return;
-        }
-
-        editor.editing.view.change((writer) => {
-            // Remove the 'active' class from all tab list items and tab content elements
-            const itemsToDeactivate = [...tabList.getChildren(), ...tabContent.getChildren()];
-            // Loop through the combined array to remove the 'active' class from all tabs and content
-            for (const item of itemsToDeactivate) {
-                removeActiveClass(writer, item); // ACTIVE_CLASS_REMOVED: Removing 'active' class from all tabs and content
-            }
-
-            // Activate the clicked tab and its corresponding content
-            setActiveClass(writer, tabListItem); // Set the 'active' class for the tab
-
-            // Find the corresponding tab content based on the tab ID
-            const selectedTabContent = Array.from(tabContent.getChildren()).find(
-                (child) => child.getAttribute('id') === tabId
-            );
-            if (selectedTabContent) {
-                setActiveClass(writer, selectedTabContent); // Set the 'active' class for the content
-            } else {
-                // If the tab content is missing, create a new content element
-                const newTabContent = writer.createElement('tabNestedContent', {
-                    id: tabId,
-                    class: 'yui3-tab-panel tabcontent', // Initial class for the new content
-                });
-                // Use setActiveClass function to set the 'active' class
-                setActiveClass(writer, newTabContent); // ACTIVE_CLASS_ADDED: Applying 'active' class to the newly created content
-                writer.append(newTabContent, tabContent);
-            }
-        });
-    }
-
-    // Attach event listener to handle clicks on tab links
-    viewDocument.on(
-        'click',
-        (evt, data) => {
-            const target = data.target;
-            const tabListItem = target.findAncestor('li'); // Get the clicked tab's list item
-
-            if (tabListItem?.hasClass('tablinks')) {
-                // Avoid activating the tab if clicked on move or delete buttons
-                if (!['left-arrow', 'right-arrow', 'dropicon'].some((cls) => target.hasClass(cls))) {
-                    const tabsPlugin = tabListItem.findAncestor(
-                        (el) => el.is('element', 'div') && el.hasClass('tabcontainer')
-                    );
-                    const tabPluginId = tabsPlugin?.getAttribute('id');
-
-                    if (tabsPlugin) {
-                        activateTab(tabListItem, tabPluginId); // Activate the clicked tab
-                    } else {
-                        console.error('TabsPlugin container not found');
-                    }
-                }
-            }
-        },
-        { priority: 'high' } // Ensure the event handler has high priority
-    );
 }
