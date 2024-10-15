@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orderable Tab Component</title>
+  <link rel="stylesheet" href="./../styles/tabs-plugin.css">
+  <style>
+    /* Styling for missing SVG icons */
+    .left-arrow::before {
+      background-color: lightskyblue;
+    }
+
+    .right-arrow::before {
+      background-color: orange;
+    }
+
+    .dropicon::before {
+      background-color: red;
+    }
+
+    .addicon::before {
+      background-color: green;
+    }
+  </style>
+</head>
+<body>
+  <!-- Container for dynamically added plugin instances -->
+  <div id="plugins-container"></div>
+
+  <script>
+    let counter = 0; // Counter to ensure unique ID generation
+
+    // Function to generate a unique ID with a given prefix
+    function generateId(prefix) {
+      return `${prefix}_${Date.now()}_${counter++}`;
+    }
+
+    // Function to create each tab element with buttons and label
+    function createTabElement(tab, index, tabData, pluginId, activeTabIndex, tabCount) {
+      const tabLinks = document.createElement('li');
+      tabLinks.classList.add('yui3-tab', 'tablinks');
+      tabLinks.setAttribute('data-index', index);
+
+      // Create tab label structure
+      const tabLabel = document.createElement('div');
+      tabLabel.classList.add('yui3-tab-label');
+
+      const tabListTable = document.createElement('table');
+      const tabListTable_thead = document.createElement('thead');
+      const tabListTable_tbody = document.createElement('tbody');
+
+      const tabListTable_thead_tr = document.createElement('tr');
+      const tabListTable_th_moveLeft = document.createElement('th');
+      const tabListTable_th_moveRight = document.createElement('th');
+      const tabListTable_th_delete = document.createElement('th');
+
+      // Create left arrow button to move tabs left
+      const moveLeftButton = document.createElement('div');
+      moveLeftButton.classList.add('left-arrow', 'arrowtabicon');
+      moveLeftButton.setAttribute('title', 'Move Tab');
+      if (index === 0) {
+        moveLeftButton.classList.add('disabled'); // Disable if it's the first tab
+      }
+      tabListTable_th_moveLeft.appendChild(moveLeftButton);
+
+      // Create right arrow button to move tabs right
+      const moveRightButton = document.createElement('div');
+      moveRightButton.classList.add('right-arrow', 'arrowtabicon');
+      moveRightButton.setAttribute('title', 'Move Tab');
+      if (index === tabData.length - 1) {
+        moveRightButton.classList.add('disabled'); // Disable if it's the last tab
+      }
+      tabListTable_th_moveRight.appendChild(moveRightButton);
+
+      // Create delete button for each tab
+      const deleteTabButton = document.createElement('div');
+      deleteTabButton.classList.add('dropicon');
+      deleteTabButton.setAttribute('title', 'Delete Tab');
+
+      const deleteTabButtonParagraph = document.createElement('p');
+      deleteTabButtonParagraph.classList.add('droptab', 'droptabicon');
+      deleteTabButtonParagraph.appendChild(document.createElement('br'));
+      deleteTabButton.appendChild(deleteTabButtonParagraph);
+      tabListTable_th_delete.appendChild(deleteTabButton);
+
+      // Append buttons to the table
+      tabListTable_thead_tr.appendChild(tabListTable_th_moveLeft);
+      tabListTable_thead_tr.appendChild(tabListTable_th_moveRight);
+      tabListTable_thead_tr.appendChild(tabListTable_th_delete);
+      tabListTable_thead.appendChild(tabListTable_thead_tr);
+
+      // Create tab title
+      const tabListTable_tbody_tr = document.createElement('tr');
+      const tabListTable_td = document.createElement('td');
+      tabListTable_td.setAttribute('colspan', '5');
+      const tabTitle = document.createElement('div');
+      tabTitle.classList.add('tabTitle');
+      tabTitle.textContent = tab.title; // Set tab title
+      tabListTable_td.appendChild(tabTitle);
+      tabListTable_tbody_tr.appendChild(tabListTable_td);
+      tabListTable_tbody.appendChild(tabListTable_tbody_tr);
+
+      // Append table to tab label
+      tabListTable.appendChild(tabListTable_thead);
+      tabListTable.appendChild(tabListTable_tbody);
+      tabLabel.appendChild(tabListTable);
+      tabLinks.appendChild(tabLabel);
+
+      return tabLinks;
+    }
+
+    // Function to create content element for each tab
+    function createTabNestedContent(content) {
+      const tabNestedContent = document.createElement('div');
+      tabNestedContent.classList.add('yui3-tab-panel', 'tabcontent');
+      const tabContentP = document.createElement('p');
+      tabContentP.textContent = content; // Set tab content
+      tabNestedContent.appendChild(tabContentP);
+      return tabNestedContent;
+    }
+
+    // Function to create the "Add Tab" button
+    function createAddTabButton(addNewTab) {
+      const addTabListItem = document.createElement('li');
+      addTabListItem.classList.add('yui3-tab', 'addtab');
+
+      const addTabButton = document.createElement('div');
+      addTabButton.classList.add('addicon');
+      addTabButton.setAttribute('title', 'Add Tab');
+
+      const addTabIcon = document.createElement('p');
+      addTabIcon.classList.add('addtabicon');
+      addTabIcon.textContent = "";
+
+      addTabButton.appendChild(addTabIcon);
+      addTabListItem.appendChild(addTabButton);
+
+      // Event listener to add new tabs when the "Add Tab" button is clicked
+      addTabListItem.addEventListener("click", addNewTab);
+
+      return addTabListItem;
+    }
+
+    // Main function to create the tab component for a given plugin ID
+    function createTabComponent(pluginId) {
+      const tabContainer = document.getElementById(pluginId);
+      if (!tabContainer) {
+        console.error(`Element with ID ${pluginId} not found.`);
+        return;
+      }
+
+      tabContainer.classList.add('tabcontainer', 'yui3-widget');
+
+      _createConfirmationModal(); // Create the confirmation modal
+      const deleteModal = document.querySelector('.confirm-delete-modal');
+      let confirmDeleteCallback = null;
+
+      // Function to show the delete confirmation modal
+      function showDeleteModal(callback) {
+        confirmDeleteCallback = callback;
+        deleteModal.style.display = 'flex'; // Show modal
+      }
+
+      // Function to hide the delete confirmation modal
+      function hideDeleteModal() {
+        deleteModal.style.display = 'none'; // Hide modal
+        confirmDeleteCallback = null;
+      }
+
+      // Add event listener for "Yes" and "No" buttons in the modal
+      document.querySelector('.confirm-delete-yes-btn').addEventListener('click', () => {
+        if (confirmDeleteCallback) {
+          confirmDeleteCallback(); // Proceed with the deletion
+        }
+        hideDeleteModal(); // Hide modal after confirmation
+      });
+
+      document.querySelector('.confirm-delete-no-btn').addEventListener('click', hideDeleteModal);
+
+      // Function to generate initial tab data
+      function generateTabs(count) {
+        const tabs = [];
+        for (let i = 1; i <= count; i++) {
+          tabs.push({ title: `Tab Name ${i}`, content: `Tab Content ${i}` });
+        }
+        return tabs;
+      }
+
+      let tabCount = 4; // Initial number of tabs
+      let activeTabIndex = 0; // Index of the active tab
+      let tabData = generateTabs(tabCount); // Initial tab data
+
+      const containerDiv = document.createElement('div');
+      containerDiv.classList.add('ah-tabs-horizontal', 'ah-responsiveselecttabs', 'ah-content-space-v', 'yui3-ah-responsiveselecttabs-content', 'yui3-tabview-content');
+
+      const tabHeader = document.createElement('div');
+      tabHeader.classList.add('tabheader', 'ah-tabs-horizontal');
+
+      const tabList = document.createElement('ul');
+      tabList.id = `${pluginId}-tabList`;
+      tabList.classList.add('tab', 'yui3-tabview-list');
+      tabHeader.appendChild(tabList);
+
+      const tabContent = document.createElement('div');
+      tabContent.id = `${pluginId}-tabContent`;
+      tabContent.classList.add('yui3-tabview-panel');
+
+      containerDiv.appendChild(tabHeader);
+      tabContainer.appendChild(containerDiv);
+      tabContainer.appendChild(tabContent);
+
+      let tabs, tabNestedContent;
+
+      // Function to create tabs and content dynamically
+      function createTabs() {
+        tabList.innerHTML = ''; // Clear existing tabs
+        tabContent.innerHTML = ''; // Clear existing content
+
+        tabData.forEach((tab, index) => {
+          const tabLinks = createTabElement(tab, index, tabData, pluginId, activeTabIndex, tabCount);
+          const tabNestedContent = createTabNestedContent(tab.content);
+
+          tabList.appendChild(tabLinks);
+          tabContent.appendChild(tabNestedContent);
+        });
+
+        const addTabListItem = createAddTabButton(addNewTab);
+        tabList.appendChild(addTabListItem); // Add "Add Tab" button at the end
+
+        // Select all non-add-tab tabs and tab panes
+        tabs = document.querySelectorAll(`#${pluginId}-tabList .yui3-tab:not(.addtab)`);
+        tabNestedContent = document.querySelectorAll(`#${pluginId}-tabContent .yui3-tab-panel.tabcontent`);
+
+        bindTabEvents();
+        bindMoveButtons();
+        bindDeleteButtons();
+        ensureActiveTab();
+      }
+
+      // Function to ensure there is an active tab and highlight it
+      function ensureActiveTab() {
+        if (activeTabIndex < 0 || activeTabIndex >= tabs.length) {
+          activeTabIndex = 0;
+        }
+        activateTab(activeTabIndex);
+      }
+
+      // Bind events for clicking on tabs to activate them
+      function bindTabEvents() {
+        tabs.forEach((tab, index) => {
+          tab.addEventListener("click", (event) => {
+            if (!event.target.classList.contains("left-arrow") && !event.target.classList.contains("right-arrow") && !event.target.classList.contains("dropicon")) {
+              activateTab(index);
+            }
+          });
+        });
+      }
+
+      // Bind events for moving tabs left or right
+      function bindMoveButtons() {
+        document.querySelectorAll(`#${pluginId}-tabList .left-arrow`).forEach((button, index) => {
+          button.addEventListener("click", (event) => {
+            event.stopPropagation();
+            moveTab(index, -1); // Move tab left
+          });
+        });
+        document.querySelectorAll(`#${pluginId}-tabList .right-arrow`).forEach((button, index) => {
+          button.addEventListener("click", (event) => {
+            event.stopPropagation();
+            moveTab(index, 1); // Move tab right
+          });
+        });
+      }
+
+      // Bind events for deleting tabs
+      function bindDeleteButtons() {
+        document.querySelectorAll(`#${pluginId}-tabList .dropicon`).forEach((deleteTabButton, index) => {
+          deleteTabButton.addEventListener("click", (event) => {
+            event.stopPropagation();
+            showDeleteModal(() => deleteTab(index)); // Show modal before deletion
+          });
+        });
+      }
+
+      // Function to activate the clicked tab
+      function activateTab(index) {
+        activeTabIndex = index;
+        tabs.forEach((tab, idx) => {
+          tab.classList.toggle("active", idx === index);
+          tabNestedContent[idx].classList.toggle("active", idx === index);
+        });
+      }
+
+      // Function to move a tab left or right
+      function moveTab(index, direction) {
+        const newIndex = index + direction;
+        if (newIndex < 0 || newIndex >= tabData.length) return;
+
+        // Swap the tabs in the data array
+        const tempTab = tabData[index];
+        tabData[index] = tabData[newIndex];
+        tabData[newIndex] = tempTab;
+
+        if (index === activeTabIndex) {
+          activeTabIndex = newIndex;
+        } else if (newIndex === activeTabIndex) {
+          activeTabIndex = index;
+        }
+        createTabs(); // Recreate the tabs after moving
+      }
+
+      // Function to delete a tab
+      function deleteTab(index) {
+        if (index < 0 || index >= tabData.length) return;
+        const wasLastTabActive = activeTabIndex === tabData.length - 1; // Check if the last tab is active
+
+        tabData.splice(index, 1); // Remove tab from the array
+
+        if (tabData.length === 0) {
+          tabContainer.remove(); // Remove the container if no tabs are left
+          return;
+        }
+        // Ensure an active tab is selected after deletion
+        if (index === activeTabIndex) {
+          // If the active tab was deleted, adjust the active index
+          activeTabIndex = index === tabData.length ? tabData.length - 1 : index;
+        }
+        // If the last tab was active and the previous tab was deleted, set the last tab as active
+        if (wasLastTabActive && activeTabIndex >= tabData.length) {
+          activeTabIndex = tabData.length - 1;
+        }
+        createTabs(); // Recreate the tabs after deletion
+        activateTab(activeTabIndex); // Activate the determined tab
+      }
+
+      // Function to add a new tab
+      function addNewTab() {
+        tabCount++;
+        const newTab = { title: `Tab ${tabCount}`, content: `Content for Tab ${tabCount}` };
+        tabData.push(newTab);
+        createTabs(); // Recreate tabs after adding a new tab
+        activateTab(tabData.length - 1); // Activate the new tab
+      }
+
+      // Initialize the tab component by creating the initial tabs
+      createTabs();
+    }
+
+    // Function to create the confirmation modal for deleting a tab
+    function _createConfirmationModal() {
+      // Create the modal HTML structure and append it to the body
+      const modalHtml = `
+        <div class="confirm-delete-modal" style="display:none;">
+          <div class="confirm-delete-modal-content">
+            <p>Are you sure you want to delete this tab?</p>
+            <footer>
+              <button class="confirm-delete-yes-btn">Yes</button>
+              <button class="confirm-delete-no-btn">No</button>
+            </footer>
+          </div>
+        </div>
+      `;
+      const modalContainer = document.createElement('div');
+      modalContainer.innerHTML = modalHtml;
+      document.body.appendChild(modalContainer); // Append modal to the document body
+    }
+
+    // Function to create independent instances of the tab component with unique plugin IDs
+    function createPluginInstance() {
+      const pluginsContainer = document.getElementById('plugins-container');
+      const pluginId = generateId("plugin");
+      const pluginDiv = document.createElement('div');
+      pluginDiv.id = pluginId;
+      pluginsContainer.appendChild(pluginDiv);
+
+      createTabComponent(pluginId);
+    }
+
+    // Create multiple plugin instances dynamically
+    createPluginInstance();
+    createPluginInstance();
+    // createPluginInstance();
+  </script>
+</body>
+</html>

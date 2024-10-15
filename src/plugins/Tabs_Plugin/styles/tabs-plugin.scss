@@ -41,340 +41,338 @@ $font-family: 'FSThriveElliotWeb-Regular', sans-serif;
 
 // Main tabs plugin container
 .tabcontainer {
-    background-color: transparent;
-    clear: both;
-    display: block;
-    width: 100%;
+  background-color: transparent;
+  clear: both;
+  display: block;
+  width: 100%;
 
-    // reinforce the block for tabs
-    &::before,
-    &::after {
-        content: '';
-        clear: both;
-        display: table;
-        width: 100%;
-    }
+  // reinforce the block for tabs
+  &::before,
+  &::after {
+    content: "";
+    clear: both;
+    display: table;
+    width: 100%;
+  }
 
     // If another tab or accordion immediately follows add 'margin-top: 1rem' to second accordion
     & + .tabcontainer,
     & + .panelSection {
-        margin-top: 1rem;
-    }
+    margin-top: 1rem;
+  }
 
-    // Tab list container
-    .yui3-tabview-list {
-        display: flex;
-        flex-wrap: wrap;
-        list-style: none;
-        margin: 0;
-        padding: 0;
+  // Tab list container
+  .yui3-tabview-list {
+    display: flex;
+    flex-wrap: wrap;
+    list-style: none;
+    margin: 0;
+    padding: 0;
 
-        // Individual tab list item
-        .tablinks {
-            background-color: $tab-bg;
-            border-radius: $tab-border-radius $tab-border-radius 0 0;
-            border: $tab-border-width solid $tab-border-color;
+    // Individual tab list item
+    .tablinks {
+      background-color: $tab-bg;
+      border-radius: $tab-border-radius $tab-border-radius 0 0;
+      border: $tab-border-width solid $tab-border-color;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      max-width: 20rem;
+      min-width: 10rem;
+      padding: 0;
+      position: relative;
+      transition: background-color $transition-speed, border-color $transition-speed;
+      z-index: 5;
+
+      &::after {
+        background-color: $tab-bg;
+        bottom: -#{$tab-border-width};
+        content: '';
+        display: block;
+        height: $tab-border-width;
+        left: 0;
+        position: absolute;
+        transition: background-color $transition-speed;
+        width: 100%;
+        z-index: 3;
+      }
+      table {
+        height: 100%;
+        margin: 0 $tab-x-margin 1rem;
+
+        // Hide the tabs arrow and delete button
+        thead tr th {
+          opacity: 0;
+          transition: opacity $transition-speed;
+          &:nth-child(2) {
+            width: 100%;
+          }
+          // Individual buttons (delete, move-left, move-right)
+          .dropicon,
+          .left-arrow,
+          .right-arrow {
+            background-color: transparent;
+            border: 0;
             cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            max-width: 20rem;
-            min-width: 10rem;
-            padding: 0;
-            position: relative;
-            transition: background-color $transition-speed, border-color $transition-speed;
-            z-index: 5;
+            display: block;
+            height: 1.5rem;
+            pointer-events: all;
+            transition: background-image $transition-speed;
+            width: 1.5rem;
 
-            &::after {
-                background-color: $tab-bg;
-                bottom: -#{$tab-border-width};
-                content: '';
-                display: block;
-                height: $tab-border-width;
-                left: 0;
-                position: absolute;
-                transition: background-color $transition-speed;
-                width: 100%;
-                z-index: 3;
+            &::before,
+            &:hover::before {
+              background-position: center;
+              background-repeat: no-repeat;
+              background-size: 1.25rem;
+              content: '';
+              display: block;
+              height: 1.5rem;
+              transition: background-image $transition-speed;
+              width: 1.5rem;
             }
-            table {
-                height: 100%;
-                margin: 0 $tab-x-margin 1rem;
-
-                // Hide the tabs arrow and delete button
-                thead tr th {
-                    opacity: 0;
-                    transition: opacity $transition-speed;
-                    &:nth-child(2) {
-                        width: 100%;
-                    }
-                    // Individual buttons (delete, move-left, move-right)
-                    .dropicon,
-                    .left-arrow,
-                    .right-arrow {
-                        background-color: transparent;
-                        border: 0;
-                        cursor: pointer;
-                        display: block;
-                        height: 1.5rem;
-                        pointer-events: all;
-                        transition: background-image $transition-speed;
-                        width: 1.5rem;
-
-                        &::before,
-                        &:hover::before {
-                            background-position: center;
-                            background-repeat: no-repeat;
-                            background-size: 1.25rem;
-                            content: '';
-                            display: block;
-                            height: 1.5rem;
-                            transition: background-image $transition-speed;
-                            width: 1.5rem;
-                        }
-                    }
-                    // Move left button
-                    .left-arrow {
-                        &::before {
-                            background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='#010101'/%3E%3C/svg%3E");
-                        }
-                        &:hover::before {
-                            background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='#1957bc'/%3E%3C/svg%3E");
-                        }
-                    }
-                    // Move right button
-                    .right-arrow {
-                        float: right;
-                        &::before {
-                            background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='#010101'/%3E%3C/svg%3E");
-                        }
-                        &:hover::before {
-                            background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='#1957bc'/%3E%3C/svg%3E");
-                        }
-                    }
-                    // Delete tab button
-                    .dropicon {
-                        &::before {
-                            background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='#010101'/%3E%3C/svg%3E");
-                        }
-                        &:hover::before {
-                            background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='#ff0000'/%3E%3C/svg%3E");
-                        }
-                        // Hide nested content from CKEditor
-                        .droptab {
-                            display: none;
-                        }
-                    }
-                }
+          }
+          // Move left button
+          .left-arrow {
+            &::before {
+              background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='#010101'/%3E%3C/svg%3E");
             }
-            &:hover {
-                background-color: $tab-bg-hover;
-
-                &::after {
-                    background-color: $tab-bg-hover;
-                }
-                // Show the tabs arrow and delete button on hover
-                table thead tr th {
-                    opacity: 1;
-                    transition: opacity $transition-speed;
-                }
+            &:hover::before {
+              background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 13.6h-16l5.5 5.5-2.2 2.2-9.3-9.3 9.3-9.3 2.2 2.2-5.5 5.5h16z' fill='#1957bc'/%3E%3C/svg%3E");
             }
-            &.active,
-            &.active:hover {
-                background-color: $tab-bg-active;
-                border: $tab-border-width solid $tab-border-color-active;
-                position: relative;
-
-                &::after {
-                    background-color: $tab-bg-active;
-                    bottom: -#{calc($tab-border-width * 2)};
-                    height: calc($tab-border-width * 2);
-                }
+          }
+          // Move right button
+          .right-arrow {
+            float: right;
+            &::before {
+              background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='#010101'/%3E%3C/svg%3E");
             }
-            // Align the 'move-right-button' left and hide the 'move-left-button' for the first tab
-            &:first-child table > thead > tr > th .left-arrow {
-                visibility: hidden;
+            &:hover::before {
+              background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 13.6h16l-5.5 5.5 2.2 2.2 9.3-9.3-9.3-9.3-2.2 2.2 5.5 5.5h-16z' fill='#1957bc'/%3E%3C/svg%3E");
             }
-            // Align the 'move-left-button' left and hide the 'move-right-button' for the last tab
-            &:nth-last-child(2) table > thead > tr > th .right-arrow {
-                visibility: hidden;
+          }
+          // Delete tab button
+          .dropicon {
+            &::before {
+              background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='#010101'/%3E%3C/svg%3E");
             }
-            // Hide the 'left and right arrow' if only one tab is visible
-            &:nth-last-child(2):first-child table > thead > tr > th {
-                .left-arrow,
-                .right-arrow {
-                    visibility: hidden;
-                }
+            &:hover::before {
+              background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 1c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zm4.4 13.8-1.6 1.6-2.8-2.8-2.8 2.8-1.6-1.6 2.8-2.8-2.8-2.8 1.6-1.6 2.8 2.8 2.8-2.8 1.6 1.6-2.8 2.8z' fill='#ff0000'/%3E%3C/svg%3E");
             }
-            // Title of the tab
-            .tabTitle {
-                align-items: center;
-                display: flex;
-                font-weight: $font-weight-bold;
-                height: 100%;
-                justify-content: center;
-                min-width: 7rem;
-                padding: 0 0.375rem;
-                position: relative;
-                text-align: center;
-                word-break: break-word;
+            // Hide nested content from CKEditor
+            .droptab {
+              display: none;
             }
+          }
         }
-        // Container for the add tab button
-        .addtab {
-            align-self: flex-end;
+      }
+      &:hover {
+        background-color: $tab-bg-hover;
 
-            // Add tab button styles
-            .addicon {
-                cursor: pointer;
-                display: block;
-                padding: 1.5rem;
-                transition: background-image $transition-speed;
-
-                &::before,
-                &:hover::before {
-                    background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#010101'/%3E%3C/svg%3E");
-                    background-position: center;
-                    background-repeat: no-repeat;
-                    background-size: 1.5rem;
-                    content: '';
-                    display: block;
-                    height: 1.5rem;
-                    transition: background-image $transition-speed;
-                    width: 1.5rem;
-                }
-                &:hover::before {
-                    background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#1957bc'/%3E%3C/svg%3E");
-                }
-                .addtabicon {
-                    margin: 0;
-                    visibility: hidden;
-
-                    // Hide nested content from CKEditor
-                    br {
-                        display: none;
-                    }
-                }
-            }
+        &::after {
+          background-color: $tab-bg-hover;
         }
-    }
-    // Content of the tabs
-    .yui3-tabview-panel {
+        // Show the tabs arrow and delete button on hover
+        table thead tr th {
+          opacity: 1;
+          transition: opacity $transition-speed;
+        }
+      }
+      &.active,
+      &.active:hover {
         background-color: $tab-bg-active;
         border: $tab-border-width solid $tab-border-color-active;
-        overflow: auto; // set the yui3-tabview-panel to handle overflow
         position: relative;
 
-        .tabcontent {
-            display: none;
-            height: 100%;
-            min-height: 5.75rem;
-            width: 100%;
-
-            &.active {
-                display: inline-block;
-                padding: 1rem;
-                position: relative;
-                z-index: 5;
-            }
-            // Override UCE stylesheets to set bold in the lists
-            ul,
-            ol {
-                li {
-                    b,
-                    strong {
-                        font-weight: bold;
-                    }
-                }
-            }
+        &::after {
+          background-color: $tab-bg-active;
+          bottom: -#{calc($tab-border-width * 2)};
+          height: calc($tab-border-width * 2);
         }
+      }
+      // Align the 'move-right-button' left and hide the 'move-left-button' for the first tab
+      &:first-child table > thead > tr > th .left-arrow {
+        visibility: hidden;
+      }
+      // Align the 'move-left-button' left and hide the 'move-right-button' for the last tab
+      &:nth-last-child(2) table > thead > tr > th .right-arrow {
+        visibility: hidden;
+      }
+      // Hide the 'left and right arrow' if only one tab is visible
+      &:nth-last-child(2):first-child table > thead > tr > th {
+        .left-arrow,
+        .right-arrow {
+          visibility: hidden;
+        }
+      }
+      // Title of the tab
+      .tabTitle {
+        align-items: center;
+        display: flex;
+        font-weight: $font-weight-bold;
+        height: 100%;
+        justify-content: center;
+        min-width: 7rem;
+        padding: 0 0.375rem;
+        position: relative;
+        text-align: center;
+        word-break: break-word;
+      }
     }
+    // Container for the add tab button
+    .addtab {
+      align-self: flex-end;
+
+      // Add tab button styles
+      .addicon {
+        cursor: pointer;
+        display: block;
+        padding: 1.5rem;
+        transition: background-image $transition-speed;
+
+        &::before,
+        &:hover::before {
+          background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#010101'/%3E%3C/svg%3E");
+          background-position: center;
+          background-repeat: no-repeat;
+          background-size: 1.5rem;
+          content: '';
+          display: block;
+          height: 1.5rem;
+          transition: background-image $transition-speed;
+          width: 1.5rem;
+        }
+        &:hover::before {
+          background-image: url("data:image/svg+xml,%3Csvg enable-background='new 0 0 24 24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m23 9h-8v-8h-6v8h-8v6h8v8h6v-8h8z' fill='#1957bc'/%3E%3C/svg%3E");
+        }
+        .addtabicon {
+          margin: 0;
+          visibility: hidden;
+
+          // Hide nested content from CKEditor
+          br {
+            display: none;
+          }
+        }
+      }
+    }
+  }
+  // Content of the tabs
+  .yui3-tabview-panel {
+    background-color: $tab-bg-active;
+    border: $tab-border-width solid $tab-border-color-active;
+    overflow: auto; // set the yui3-tabview-panel to handle overflow
+    position: relative;
+
+    .tabcontent {
+      display: none;
+      height: 100%;
+      min-height: 5.75rem;
+      width: 100%;
+
+      &.active {
+        display: inline-block;
+        padding: 1rem;
+        position: relative;
+        z-index: 5;
+      }
+      // Override UCE stylesheets to set bold in the lists
+      ul, ol {
+        li {
+          b, strong {
+            font-weight: bold;
+          }
+        }
+      }
+    }
+  }
 }
 // Set the z-index higher than the tabs for type-around buttons
 .ck.ck-widget__type-around__button.ck-widget__type-around__button_before,
 .ck.ck-widget__type-around__button.ck-widget__type-around__button_after {
-    z-index: 1001;
+  z-index: 1001;
 }
 // Hide elements in read-only view
 .ck-editor__editable.ck-read-only {
-    .left-arrow,
-    .right-arrow,
-    .dropicon {
-        visibility: hidden !important;
-    }
-    .addtab,
-    .addicon {
-        display: none !important;
-    }
-    .tabTitle {
-        background-color: transparent !important;
-        border: none !important;
-        box-shadow: none !important;
-        outline: none !important;
-    }
+  .left-arrow,
+  .right-arrow,
+  .dropicon {
+    visibility: hidden !important;
+  }
+  .addtab,
+  .addicon {
+    display: none !important;
+  }
+  .tabTitle {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+  }
 }
 // Custom delete confirmation modal styles
 .confirm-delete-modal {
-    background-color: $modal-mask;
-    height: 100%;
-    left: 0;
-    overflow: auto;
-    position: fixed;
-    top: 0;
-    width: 100%;
-    z-index: 9999;
+  background-color: $modal-mask;
+  height: 100%;
+  left: 0;
+  overflow: auto;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 9999;
 
-    .confirm-delete-modal-content {
-        background-color: $white;
-        border-radius: $modal-border-radius;
-        box-shadow: $modal-box-shadow;
-        font-family: $font-family;
-        left: 50%;
-        padding: $modal-padding;
-        position: absolute;
-        text-align: center;
-        top: 50%;
-        transform: translate(-50%, -50%);
+  .confirm-delete-modal-content {
+    background-color: $white;
+    border-radius: $modal-border-radius;
+    box-shadow: $modal-box-shadow;
+    font-family: $font-family;
+    left: 50%;
+    padding: $modal-padding;
+    position: absolute;
+    text-align: center;
+    top: 50%;
+    transform: translate(-50%, -50%);
 
-        footer {
-            display: flex;
-            justify-content: flex-end;
-            margin: 1.5rem 0 0 0;
-            padding: 0;
-        }
+    footer {
+      display: flex;
+      justify-content: flex-end;
+      margin: 1.5rem 0 0 0;
+      padding: 0;
     }
-    .confirm-delete-yes-btn,
-    .confirm-delete-no-btn {
-        align-items: center;
-        background-color: $btn-color;
-        border-radius: $btn-border-radius;
-        border: $btn-border-width solid $btn-color;
-        color: $white;
-        cursor: pointer;
-        display: flex;
-        font-weight: $font-weight-bold;
-        justify-content: center;
-        padding: $btn-padding;
-        transition: all $transition-speed;
+  }
+  .confirm-delete-yes-btn,
+  .confirm-delete-no-btn {
+    align-items: center;
+    background-color: $btn-color;
+    border-radius: $btn-border-radius;
+    border: $btn-border-width solid $btn-color;
+    color: $white;
+    cursor: pointer;
+    display: flex;
+    font-weight: $font-weight-bold;
+    justify-content: center;
+    padding: $btn-padding;
+    transition: all $transition-speed;
 
-        &:hover {
-            background-color: $btn-color-hover;
-            border-color: $btn-color-hover;
-            transition: all $transition-speed;
-        }
+    &:hover {
+      background-color: $btn-color-hover;
+      border-color: $btn-color-hover;
+      transition: all $transition-speed;
     }
-    .confirm-delete-no-btn {
-        background-color: $white;
-        border: $btn-border-width solid $btn-color;
-        color: $btn-color;
+  }
+  .confirm-delete-no-btn {
+    background-color: $white;
+    border: $btn-border-width solid $btn-color;
+    color: $btn-color;
 
-        &:hover {
-            background-color: $btn-background-color-hover;
-            border-color: $btn-color-hover;
-            color: $btn-color-hover;
-        }
+    &:hover {
+      background-color: $btn-background-color-hover;
+      border-color: $btn-color-hover;
+      color: $btn-color-hover;
     }
-    button + button {
-        margin-left: 0.5rem;
-    }
+  }
+  button + button {
+    margin-left: 0.5rem;
+  }
 }
