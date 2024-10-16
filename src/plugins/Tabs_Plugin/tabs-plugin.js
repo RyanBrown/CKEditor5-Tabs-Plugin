@@ -7,6 +7,11 @@ import tabToolbarIcon from './assets/icon-tab.svg';
 import './styles/tabs-plugin.css';
 
 export default class TabsPlugin extends Plugin {
+    constructor(editor) {
+        super(editor);
+        this.showTabCountPrompt = false; // New boolean variable to toggle tab count prompt
+    }
+
     static get requires() {
         return [Widget];
     }
@@ -406,14 +411,26 @@ export default class TabsPlugin extends Plugin {
             });
 
             button.on('execute', () => {
-                const tabCount = prompt('Enter the number of tabs:', '2');
-                if (tabCount !== null) {
-                    editor.execute('tabsPlugin', { tabCount: parseInt(tabCount, 10) });
+                let tabCount = 2; // Default tab count
+
+                if (this.showTabCountPrompt) {
+                    const userInput = prompt('Enter the number of tabs:', '2');
+                    if (userInput !== null) {
+                        tabCount = parseInt(userInput, 10);
+                    } else {
+                        return; // Exit if user cancels the prompt
+                    }
                 }
+
+                editor.execute('tabsPlugin', { tabCount: tabCount });
             });
 
             return button;
         });
+    }
+    // New method to toggle the prompt
+    togglePrompt() {
+        this.showTabCountPrompt = !this.showTabCountPrompt;
     }
 }
 
