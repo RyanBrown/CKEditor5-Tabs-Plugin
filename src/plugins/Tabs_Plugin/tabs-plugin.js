@@ -32,19 +32,19 @@ export default class TabsPlugin extends Plugin {
     _defineSchema() {
         const schema = this.editor.model.schema;
 
-        schema.register('tabsContainer', {
+        schema.register('tabsPlugin', {
             isObject: true,
             allowWhere: '$block',
         });
 
-        schema.register('tabsInnerContainer', {
+        schema.register('tabsContainerDiv', {
             isObject: true,
-            allowIn: 'tabsContainer',
+            allowIn: 'tabsPlugin',
         });
 
         schema.register('tabHeader', {
             isObject: true,
-            allowIn: 'tabsInnerContainer',
+            allowIn: 'tabsContainerDiv',
         });
 
         schema.register('tabList', {
@@ -54,7 +54,7 @@ export default class TabsPlugin extends Plugin {
 
         schema.register('tabContent', {
             isObject: true,
-            allowIn: 'tabsContainer',
+            allowIn: 'tabsPlugin',
         });
 
         schema.register('tabItem', {
@@ -80,7 +80,7 @@ export default class TabsPlugin extends Plugin {
 
         // Tabs container
         conversion.for('upcast').elementToElement({
-            model: 'tabsContainer',
+            model: 'tabsPlugin',
             view: {
                 name: 'div',
                 classes: 'tabcontainer',
@@ -88,7 +88,7 @@ export default class TabsPlugin extends Plugin {
         });
 
         conversion.for('dataDowncast').elementToElement({
-            model: 'tabsContainer',
+            model: 'tabsPlugin',
             view: (modelElement, { writer: viewWriter }) => {
                 const div = viewWriter.createContainerElement('div', {
                     class: 'tabcontainer yui3-widget',
@@ -100,7 +100,7 @@ export default class TabsPlugin extends Plugin {
         });
 
         conversion.for('editingDowncast').elementToElement({
-            model: 'tabsContainer',
+            model: 'tabsPlugin',
             view: (modelElement, { writer: viewWriter }) => {
                 const div = viewWriter.createContainerElement('div', {
                     class: 'tabcontainer yui3-widget',
@@ -113,7 +113,7 @@ export default class TabsPlugin extends Plugin {
 
         // Tabs inner container
         conversion.for('upcast').elementToElement({
-            model: 'tabsInnerContainer',
+            model: 'tabsContainerDiv',
             view: {
                 name: 'div',
                 classes: [
@@ -127,7 +127,7 @@ export default class TabsPlugin extends Plugin {
         });
 
         conversion.for('dataDowncast').elementToElement({
-            model: 'tabsInnerContainer',
+            model: 'tabsContainerDiv',
             view: (modelElement, { writer: viewWriter }) => {
                 return viewWriter.createContainerElement('div', {
                     class: 'ah-tabs-horizontal ah-responsiveselecttabs ah-content-space-v yui3-ah-responsiveselecttabs-content yui3-tabview-content',
@@ -137,7 +137,7 @@ export default class TabsPlugin extends Plugin {
         });
 
         conversion.for('editingDowncast').elementToElement({
-            model: 'tabsInnerContainer',
+            model: 'tabsContainerDiv',
             view: (modelElement, { writer: viewWriter }) => {
                 const div = viewWriter.createContainerElement('div', {
                     class: 'ah-tabs-horizontal ah-responsiveselecttabs ah-content-space-v yui3-ah-responsiveselecttabs-content yui3-tabview-content',
@@ -487,16 +487,16 @@ class InsertTabsCommand extends Command {
         const tabCount = options.tabCount || 2;
 
         editor.model.change((writer) => {
-            const tabsContainer = writer.createElement('tabsContainer');
-            const tabsInnerContainer = writer.createElement('tabsInnerContainer');
+            const tabsPlugin = writer.createElement('tabsPlugin');
+            const tabsContainerDiv = writer.createElement('tabsContainerDiv');
             const tabHeader = writer.createElement('tabHeader');
             const tabList = writer.createElement('tabList');
             const tabContent = writer.createElement('tabContent');
 
-            writer.append(tabsInnerContainer, tabsContainer);
-            writer.append(tabHeader, tabsInnerContainer);
+            writer.append(tabsContainerDiv, tabsPlugin);
+            writer.append(tabHeader, tabsContainerDiv);
             writer.append(tabList, tabHeader);
-            writer.append(tabContent, tabsContainer);
+            writer.append(tabContent, tabsPlugin);
 
             for (let i = 1; i <= tabCount; i++) {
                 const tabItem = writer.createElement('tabItem', {
@@ -516,7 +516,7 @@ class InsertTabsCommand extends Command {
             const addTabButton = writer.createElement('addTabButton');
             writer.append(addTabButton, tabList);
 
-            editor.model.insertContent(tabsContainer);
+            editor.model.insertContent(tabsPlugin);
         });
     }
 }
@@ -527,11 +527,11 @@ class AddTabCommand extends Command {
         const selection = editor.model.document.selection;
 
         editor.model.change((writer) => {
-            const tabsContainer = selection.getFirstPosition().findAncestor('tabsContainer');
+            const tabsPlugin = selection.getFirstPosition().findAncestor('tabsPlugin');
 
-            if (tabsContainer) {
-                const tabList = tabsContainer.getChild(0)?.getChild(0)?.getChild(0);
-                const tabContent = tabsContainer.getChild(1);
+            if (tabsPlugin) {
+                const tabList = tabsPlugin.getChild(0)?.getChild(0)?.getChild(0);
+                const tabContent = tabsPlugin.getChild(1);
 
                 if (tabList && tabContent) {
                     const newIndex = tabList.childCount - 1;
@@ -612,10 +612,10 @@ class DeleteTabCommand extends Command {
             const tabList = tabItem.parent;
             if (!tabList) return;
 
-            const tabsContainer = tabList.parent?.parent?.parent;
-            if (!tabsContainer) return;
+            const tabsPlugin = tabList.parent?.parent?.parent;
+            if (!tabsPlugin) return;
 
-            const tabContent = tabsContainer.getChild(1);
+            const tabContent = tabsPlugin.getChild(1);
             if (!tabContent) return;
 
             const index = tabList.getChildIndex(tabItem);
