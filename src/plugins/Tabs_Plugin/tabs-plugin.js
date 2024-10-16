@@ -26,21 +26,38 @@ export default class TabsPlugin extends Plugin {
     _defineSchema() {
         const schema = this.editor.model.schema;
 
-        schema.register('tabsPlugin', {
+        schema.register('tabsContainer', {
             isObject: true,
             allowWhere: '$block',
         });
 
-        schema.register('tab', {
+        schema.register('tabHeader', {
             isObject: true,
-            allowIn: 'tabs',
-            allowAttributes: ['title'],
+            allowIn: 'tabsContainer',
+            allowContentOf: '$block',
         });
 
         schema.register('tabContent', {
-            isLimit: true,
-            allowIn: 'tab',
+            isObject: true,
+            allowIn: 'tabsContainer',
             allowContentOf: '$block',
+        });
+
+        schema.register('tabItem', {
+            isObject: true,
+            allowIn: 'tabHeader',
+            allowAttributes: ['title', 'index', 'isActive'],
+        });
+
+        schema.register('tabPanel', {
+            isLimit: true,
+            allowIn: 'tabContent',
+            allowContentOf: '$block',
+        });
+
+        schema.register('addTabButton', {
+            isObject: true,
+            allowIn: 'tabHeader',
         });
     }
 
@@ -49,60 +66,124 @@ export default class TabsPlugin extends Plugin {
 
         // Tabs container
         conversion.for('upcast').elementToElement({
-            model: 'tabsPlugin',
+            model: 'tabsContainer',
             view: {
                 name: 'div',
-                classes: ['tabcontainer', 'yui3-widget'],
+                classes: 'tabcontainer',
             },
         });
 
         conversion.for('dataDowncast').elementToElement({
-            model: 'tabsPlugin',
-            view: {
-                name: 'div',
-                classes: ['tabcontainer', 'yui3-widget'],
-            },
-        });
-
-        conversion.for('editingDowncast').elementToElement({
-            model: 'tabsPlugin',
-            view: (modelElement, { writer: viewWriter }) => {
-                const div = viewWriter.createContainerElement('div', { class: 'tabcontainer yui3-widget' });
-                return toWidget(div, viewWriter, { label: 'tabs widget' });
-            },
-        });
-
-        // Individual tab
-        conversion.for('upcast').elementToElement({
-            model: (viewElement, { writer }) => {
-                return writer.createElement('tab', {
-                    title: viewElement.getAttribute('data-title') || 'Tab',
-                });
-            },
-            view: {
-                name: 'div',
-                classes: 'tab',
-            },
-        });
-
-        conversion.for('dataDowncast').elementToElement({
-            model: 'tab',
-            view: (modelElement, { writer: viewWriter }) => {
-                return viewWriter.createContainerElement('div', {
-                    class: 'tab',
-                    'data-title': modelElement.getAttribute('title'),
-                });
-            },
-        });
-
-        conversion.for('editingDowncast').elementToElement({
-            model: 'tab',
+            model: 'tabsContainer',
             view: (modelElement, { writer: viewWriter }) => {
                 const div = viewWriter.createContainerElement('div', {
-                    class: 'tab',
-                    'data-title': modelElement.getAttribute('title'),
+                    class: 'tabcontainer yui3-widget',
+                    id: 'plugin_' + Date.now() + '_0',
                 });
-                return toWidget(div, viewWriter, { label: 'tab' });
+                return div;
+            },
+        });
+
+        conversion.for('editingDowncast').elementToElement({
+            model: 'tabsContainer',
+            view: (modelElement, { writer: viewWriter }) => {
+                const div = viewWriter.createContainerElement('div', {
+                    class: 'tabcontainer yui3-widget',
+                    id: 'plugin_' + Date.now() + '_0',
+                });
+                return toWidget(div, viewWriter);
+            },
+        });
+
+        // Tab header
+        conversion.for('upcast').elementToElement({
+            model: 'tabHeader',
+            view: {
+                name: 'div',
+                classes: 'tabheader',
+            },
+        });
+
+        conversion.for('dataDowncast').elementToElement({
+            model: 'tabHeader',
+            view: (modelElement, { writer: viewWriter }) => {
+                const div = viewWriter.createContainerElement('div', {
+                    class: 'tabheader ah-tabs-horizontal',
+                });
+                const ul = viewWriter.createContainerElement('ul', {
+                    class: 'tab yui3-tabview-list',
+                    id: modelElement.parent.getAttribute('id') + '-tabList',
+                });
+                viewWriter.insert(viewWriter.createPositionAt(div, 0), ul);
+                return div;
+            },
+        });
+
+        conversion.for('editingDowncast').elementToElement({
+            model: 'tabHeader',
+            view: (modelElement, { writer: viewWriter }) => {
+                const div = viewWriter.createContainerElement('div', {
+                    class: 'tabheader ah-tabs-horizontal',
+                });
+                const ul = viewWriter.createContainerElement('ul', {
+                    class: 'tab yui3-tabview-list',
+                    id: modelElement.parent.getAttribute('id') + '-tabList',
+                });
+                viewWriter.insert(viewWriter.createPositionAt(div, 0), ul);
+                return toWidget(div, viewWriter);
+            },
+        });
+
+        // Tab item
+        conversion.for('upcast').elementToElement({
+            model: (viewElement, { writer }) => {
+                return writer.createElement('tabItem', {
+                    title: viewElement.getAttribute('data-title'),
+                    index: viewElement.getAttribute('data-index'),
+                    isActive: viewElement.hasClass('active'),
+                });
+            },
+            view: {
+                name: 'li',
+                classes: 'yui3-tab',
+            },
+        });
+
+        conversion.for('dataDowncast').elementToElement({
+            model: 'tabItem',
+            view: (modelElement, { writer: viewWriter }) => {
+                const li = viewWriter.createContainerElement('li', {
+                    class: 'yui3-tab tablinks' + (modelElement.getAttribute('isActive') ? ' active' : ''),
+                    'data-index': modelElement.getAttribute('index'),
+                });
+
+                // Create the complex inner structure
+                const innerStructure = this._createTabItemInnerStructure(
+                    viewWriter,
+                    modelElement.getAttribute('title')
+                );
+                viewWriter.insert(viewWriter.createPositionAt(li, 0), innerStructure);
+
+                return li;
+            },
+        });
+
+        conversion.for('editingDowncast').elementToElement({
+            model: 'tabItem',
+            view: (modelElement, { writer: viewWriter }) => {
+                const li = viewWriter.createContainerElement('li', {
+                    class: 'yui3-tab tablinks' + (modelElement.getAttribute('isActive') ? ' active' : ''),
+                    'data-index': modelElement.getAttribute('index'),
+                });
+
+                // Create the complex inner structure
+                const innerStructure = this._createTabItemInnerStructure(
+                    viewWriter,
+                    modelElement.getAttribute('title')
+                );
+                viewWriter.insert(viewWriter.createPositionAt(li, 0), innerStructure);
+
+                return toWidget(li, viewWriter);
             },
         });
 
@@ -111,25 +192,144 @@ export default class TabsPlugin extends Plugin {
             model: 'tabContent',
             view: {
                 name: 'div',
-                classes: 'tabcontent',
+                classes: 'yui3-tabview-panel',
             },
         });
 
         conversion.for('dataDowncast').elementToElement({
             model: 'tabContent',
-            view: {
-                name: 'div',
-                classes: 'tabcontent',
+            view: (modelElement, { writer: viewWriter }) => {
+                return viewWriter.createContainerElement('div', {
+                    class: 'yui3-tabview-panel',
+                    id: modelElement.parent.getAttribute('id') + '-tabContent',
+                });
             },
         });
 
         conversion.for('editingDowncast').elementToElement({
             model: 'tabContent',
             view: (modelElement, { writer: viewWriter }) => {
-                const div = viewWriter.createEditableElement('div', { class: 'tabcontent' });
+                const div = viewWriter.createContainerElement('div', {
+                    class: 'yui3-tabview-panel',
+                    id: modelElement.parent.getAttribute('id') + '-tabContent',
+                });
+                return toWidget(div, viewWriter);
+            },
+        });
+
+        // Tab panel
+        conversion.for('upcast').elementToElement({
+            model: 'tabPanel',
+            view: {
+                name: 'div',
+                classes: 'yui3-tab-panel',
+            },
+        });
+
+        conversion.for('dataDowncast').elementToElement({
+            model: 'tabPanel',
+            view: (modelElement, { writer: viewWriter }) => {
+                return viewWriter.createContainerElement('div', {
+                    class:
+                        'yui3-tab-panel tabcontent' +
+                        (modelElement.parent.index === modelElement.index ? ' active' : ''),
+                });
+            },
+        });
+
+        conversion.for('editingDowncast').elementToElement({
+            model: 'tabPanel',
+            view: (modelElement, { writer: viewWriter }) => {
+                const div = viewWriter.createContainerElement('div', {
+                    class:
+                        'yui3-tab-panel tabcontent' +
+                        (modelElement.parent.index === modelElement.index ? ' active' : ''),
+                });
                 return toWidgetEditable(div, viewWriter);
             },
         });
+
+        // Add Tab Button
+        conversion.for('upcast').elementToElement({
+            model: 'addTabButton',
+            view: {
+                name: 'li',
+                classes: 'yui3-tab addtab',
+            },
+        });
+
+        conversion.for('dataDowncast').elementToElement({
+            model: 'addTabButton',
+            view: (modelElement, { writer: viewWriter }) => {
+                const li = viewWriter.createContainerElement('li', { class: 'yui3-tab addtab' });
+                const div = viewWriter.createContainerElement('div', { class: 'addicon', title: 'Add Tab' });
+                const p = viewWriter.createContainerElement('p', { class: 'addtabicon' });
+                viewWriter.insert(viewWriter.createPositionAt(div, 0), p);
+                viewWriter.insert(viewWriter.createPositionAt(li, 0), div);
+                return li;
+            },
+        });
+
+        conversion.for('editingDowncast').elementToElement({
+            model: 'addTabButton',
+            view: (modelElement, { writer: viewWriter }) => {
+                const li = viewWriter.createContainerElement('li', { class: 'yui3-tab addtab' });
+                const div = viewWriter.createContainerElement('div', { class: 'addicon', title: 'Add Tab' });
+                const p = viewWriter.createContainerElement('p', { class: 'addtabicon' });
+                viewWriter.insert(viewWriter.createPositionAt(div, 0), p);
+                viewWriter.insert(viewWriter.createPositionAt(li, 0), div);
+                return toWidget(li, viewWriter);
+            },
+        });
+    }
+
+    _createTabItemInnerStructure(viewWriter, title) {
+        const div = viewWriter.createContainerElement('div', { class: 'yui3-tab-label' });
+        const table = viewWriter.createContainerElement('table');
+        const thead = viewWriter.createContainerElement('thead');
+        const tbody = viewWriter.createContainerElement('tbody');
+
+        const theadTr = viewWriter.createContainerElement('tr');
+        const thLeft = viewWriter.createContainerElement('th');
+        const thRight = viewWriter.createContainerElement('th');
+        const thDelete = viewWriter.createContainerElement('th');
+
+        const leftArrow = viewWriter.createContainerElement('div', {
+            class: 'left-arrow arrowtabicon',
+            title: 'Move Tab',
+        });
+        const rightArrow = viewWriter.createContainerElement('div', {
+            class: 'right-arrow arrowtabicon',
+            title: 'Move Tab',
+        });
+        const deleteIcon = viewWriter.createContainerElement('div', { class: 'dropicon', title: 'Delete Tab' });
+        const deleteP = viewWriter.createContainerElement('p', { class: 'droptab droptabicon' });
+        viewWriter.insert(viewWriter.createPositionAt(deleteP, 0), viewWriter.createEmptyElement('br'));
+
+        viewWriter.insert(viewWriter.createPositionAt(thLeft, 0), leftArrow);
+        viewWriter.insert(viewWriter.createPositionAt(thRight, 0), rightArrow);
+        viewWriter.insert(viewWriter.createPositionAt(deleteIcon, 0), deleteP);
+        viewWriter.insert(viewWriter.createPositionAt(thDelete, 0), deleteIcon);
+
+        viewWriter.insert(viewWriter.createPositionAt(theadTr, 0), thLeft);
+        viewWriter.insert(viewWriter.createPositionAt(theadTr, 1), thRight);
+        viewWriter.insert(viewWriter.createPositionAt(theadTr, 2), thDelete);
+
+        const tbodyTr = viewWriter.createContainerElement('tr');
+        const tbodyTd = viewWriter.createContainerElement('td', { colspan: '5' });
+        const titleDiv = viewWriter.createContainerElement('div', { class: 'tabTitle' });
+        viewWriter.insert(viewWriter.createPositionAt(titleDiv, 0), viewWriter.createText(title));
+
+        viewWriter.insert(viewWriter.createPositionAt(tbodyTd, 0), titleDiv);
+        viewWriter.insert(viewWriter.createPositionAt(tbodyTr, 0), tbodyTd);
+
+        viewWriter.insert(viewWriter.createPositionAt(thead, 0), theadTr);
+        viewWriter.insert(viewWriter.createPositionAt(tbody, 0), tbodyTr);
+        viewWriter.insert(viewWriter.createPositionAt(table, 0), thead);
+        viewWriter.insert(viewWriter.createPositionAt(table, 1), tbody);
+        viewWriter.insert(viewWriter.createPositionAt(div, 0), table);
+
+        return div;
     }
 
     _addToolbarButton() {
@@ -158,29 +358,32 @@ export default class TabsPlugin extends Plugin {
 class InsertTabsCommand extends Command {
     execute() {
         const editor = this.editor;
-        const selection = editor.model.document.selection;
-
         editor.model.change((writer) => {
-            const tabs = writer.createElement('tabs');
+            const tabsContainer = writer.createElement('tabsContainer');
+            const tabHeader = writer.createElement('tabHeader');
+            const tabContent = writer.createElement('tabContent');
 
-            // Create initial tabs
+            writer.append(tabHeader, tabsContainer);
+            writer.append(tabContent, tabsContainer);
+
             for (let i = 1; i <= 4; i++) {
-                const tab = writer.createElement('tab', { title: `Tab ${i}` });
-                const tabContent = writer.createElement('tabContent');
-                writer.append(tabContent, tab);
-                writer.append(tab, tabs);
+                const tabItem = writer.createElement('tabItem', {
+                    title: `Tab Name ${i}`,
+                    index: i - 1,
+                    isActive: i === 1,
+                });
+                const tabPanel = writer.createElement('tabPanel');
+                writer.append(writer.createText(`Tab Content ${i}`), tabPanel);
+
+                writer.append(tabItem, tabHeader);
+                writer.append(tabPanel, tabContent);
             }
 
-            editor.model.insertContent(tabs, selection);
+            const addTabButton = writer.createElement('addTabButton');
+            writer.append(addTabButton, tabHeader);
+
+            editor.model.insertContent(tabsContainer);
         });
-    }
-
-    refresh() {
-        const model = this.editor.model;
-        const selection = model.document.selection;
-        const allowedIn = model.schema.findAllowedParent(selection.getFirstPosition(), 'tabs');
-
-        this.isEnabled = allowedIn !== null;
     }
 }
 
