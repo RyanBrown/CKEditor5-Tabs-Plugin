@@ -26,6 +26,7 @@ export default class TabsPlugin extends Plugin {
         this.editor.commands.add('deleteTab', new DeleteTabCommand(this.editor));
 
         this._addToolbarButton();
+        this._setupEventListeners();
     }
 
     _defineSchema() {
@@ -360,11 +361,11 @@ export default class TabsPlugin extends Plugin {
 
         const leftArrow = viewWriter.createContainerElement('div', {
             class: 'left-arrow arrowtabicon' + (index === '0' ? ' disabled' : ''),
-            title: 'Move Tab',
+            title: 'Move Tab Left',
         });
         const rightArrow = viewWriter.createContainerElement('div', {
             class: 'right-arrow arrowtabicon' + (index === (totalTabs - 2).toString() ? ' disabled' : ''),
-            title: 'Move Tab',
+            title: 'Move Tab Right',
         });
         const deleteIcon = viewWriter.createContainerElement('div', { class: 'dropicon', title: 'Delete Tab' });
         const deleteP = viewWriter.createContainerElement('p', { class: 'droptab droptabicon' });
@@ -428,7 +429,25 @@ export default class TabsPlugin extends Plugin {
             return button;
         });
     }
-    // New method to toggle the prompt
+
+    _setupEventListeners() {
+        this.editor.editing.view.document.on('click', (evt, data) => {
+            if (data.domEvent.target.classList.contains('addtabicon')) {
+                this.editor.execute('addTab');
+                evt.stop();
+            } else if (data.domEvent.target.classList.contains('left-arrow')) {
+                this.editor.execute('moveTab', { direction: 'left' });
+                evt.stop();
+            } else if (data.domEvent.target.classList.contains('right-arrow')) {
+                this.editor.execute('moveTab', { direction: 'right' });
+                evt.stop();
+            } else if (data.domEvent.target.classList.contains('droptabicon')) {
+                this.editor.execute('deleteTab');
+                evt.stop();
+            }
+        });
+    }
+
     togglePrompt() {
         this.showTabCountPrompt = !this.showTabCountPrompt;
     }
@@ -437,7 +456,7 @@ export default class TabsPlugin extends Plugin {
 class InsertTabsCommand extends Command {
     execute(options = {}) {
         const editor = this.editor;
-        const tabCount = options.tabCount || 2; // Default to 2 tabs if not specified
+        const tabCount = options.tabCount || 2;
 
         editor.model.change((writer) => {
             const tabsContainer = writer.createElement('tabsContainer');
@@ -480,22 +499,39 @@ class AddTabCommand extends Command {
         const selection = editor.model.document.selection;
 
         editor.model.change((writer) => {
-            const tabsElement = selection.getFirstPosition().findAncestor('tabs');
+            const tabsContainer = selection.getFirstPosition().findAncestor('tabsContainer');
 
-            if (tabsElement) {
-                const newTab = writer.createElement('tab', { title: `New Tab` });
-                const tabContent = writer.createElement('tabContent');
-                writer.append(tabContent, newTab);
-                writer.append(newTab, tabsElement);
+            if (tabsContainer) {
+                const tabList = tabsContainer.getChild(0).getChild(0).getChild(0);
+                const tabContent = tabsContainer.getChild(1);
+                const newIndex = tabList.childCount - 1;
+
+                const tabItem = writer.createElement('tabItem', {
+                    title: `New Tab`,
+                    index: newIndex,
+                    isActive: false,
+                });
+                const tabPanel = writer.createElement('tabPanel', {
+                    isActive: false,
+                });
+                writer.append(writer.createText(`New Tab Content`), tabPanel);
+
+                writer.insert(tabItem, tabList, newIndex);
+                writer.append(tabPanel, tabContent);
+
+                this._updateTabIndices(writer, tabList);
             }
         });
     }
 
-    refresh() {
-        const selection = this.editor.model.document.selection;
-        const tabsElement = selection.getFirstPosition().findAncestor('tabs');
-
-        this.isEnabled = !!tabsElement;
+    _updateTabIndices(writer, tabList) {
+        let index = 0;
+        for (const tabItem of tabList.getChildren()) {
+            if (tabItem.name === 'tabItem') {
+                writer.setAttribute('index', index, tabItem);
+                index++;
+            }
+        }
     }
 }
 
@@ -506,25 +542,29 @@ class MoveTabCommand extends Command {
         const selection = editor.model.document.selection;
 
         editor.model.change((writer) => {
-            const tabElement = selection.getFirstPosition().findAncestor('tab');
-            const tabsElement = tabElement.parent;
+            const tabItem = selection.getFirstPosition().findAncestor('tabItem');
+            const tabList = tabItem.parent;
 
-            if (tabElement && tabsElement) {
-                const index = tabsElement.getChildIndex(tabElement);
+            if (tabItem && tabList) {
+                const index = tabList.getChildIndex(tabItem);
                 const newIndex = direction === 'left' ? index - 1 : index + 1;
 
-                if (newIndex >= 0 && newIndex < tabsElement.childCount) {
-                    writer.move(writer.createRangeOn(tabElement), tabsElement, newIndex);
+                if (newIndex >= 0 && newIndex < tabList.childCount - 1) {
+                    writer.move(writer.createRangeOn(tabItem), tabList, newIndex);
+                    this._updateTabIndices(writer, tabList);
                 }
             }
         });
     }
 
-    refresh() {
-        const selection = this.editor.model.document.selection;
-        const tabElement = selection.getFirstPosition().findAncestor('tab');
-
-        this.isEnabled = !!tabElement;
+    _updateTabIndices(writer, tabList) {
+        let index = 0;
+        for (const tabItem of tabList.getChildren()) {
+            if (tabItem.name === 'tabItem') {
+                writer.setAttribute('index', index, tabItem);
+                index++;
+            }
+        }
     }
 }
 
@@ -534,18 +574,36 @@ class DeleteTabCommand extends Command {
         const selection = editor.model.document.selection;
 
         editor.model.change((writer) => {
-            const tabElement = selection.getFirstPosition().findAncestor('tab');
+            const tabItem = selection.getFirstPosition().findAncestor('tabItem');
+            const tabList = tabItem.parent;
+            const tabsContainer = tabList.parent.parent.parent;
+            const tabContent = tabsContainer.getChild(1);
 
-            if (tabElement) {
-                writer.remove(tabElement);
+            if (tabItem && tabList) {
+                const index = tabList.getChildIndex(tabItem);
+                writer.remove(tabItem);
+                writer.remove(tabContent.getChild(index));
+                this._updateTabIndices(writer, tabList);
+
+                // Activate the previous tab or the first tab if the deleted tab was the first one
+                if (index > 0) {
+                    writer.setAttribute('isActive', true, tabList.getChild(index - 1));
+                    writer.setAttribute('isActive', true, tabContent.getChild(index - 1));
+                } else if (tabList.childCount > 1) {
+                    writer.setAttribute('isActive', true, tabList.getChild(0));
+                    writer.setAttribute('isActive', true, tabContent.getChild(0));
+                }
             }
         });
     }
 
-    refresh() {
-        const selection = this.editor.model.document.selection;
-        const tabElement = selection.getFirstPosition().findAncestor('tab');
-
-        this.isEnabled = !!tabElement;
+    _updateTabIndices(writer, tabList) {
+        let index = 0;
+        for (const tabItem of tabList.getChildren()) {
+            if (tabItem.name === 'tabItem') {
+                writer.setAttribute('index', index, tabItem);
+                index++;
+            }
+        }
     }
 }
