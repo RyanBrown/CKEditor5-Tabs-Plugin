@@ -213,8 +213,9 @@ export default class TabsPlugin extends Plugin {
         conversion.for('dataDowncast').elementToElement({
             model: 'tabItem',
             view: (modelElement, { writer: viewWriter }) => {
+                const isActive = modelElement.getAttribute('isActive');
                 const li = viewWriter.createContainerElement('li', {
-                    class: 'yui3-tab tablinks' + (modelElement.getAttribute('isActive') ? ' active' : ''),
+                    class: `yui3-tab tablinks${isActive ? ' active' : ''}`,
                     'data-index': modelElement.getAttribute('index'),
                     draggable: 'false',
                 });
@@ -223,7 +224,8 @@ export default class TabsPlugin extends Plugin {
                     viewWriter,
                     modelElement.getAttribute('title'),
                     modelElement.getAttribute('index'),
-                    modelElement.parent.childCount
+                    modelElement.parent.childCount,
+                    isActive
                 );
                 viewWriter.insert(viewWriter.createPositionAt(li, 0), innerStructure);
 
@@ -233,8 +235,9 @@ export default class TabsPlugin extends Plugin {
         conversion.for('editingDowncast').elementToElement({
             model: 'tabItem',
             view: (modelElement, { writer: viewWriter }) => {
+                const isActive = modelElement.getAttribute('isActive');
                 const li = viewWriter.createContainerElement('li', {
-                    class: 'yui3-tab tablinks' + (modelElement.getAttribute('isActive') ? ' active' : ''),
+                    class: `yui3-tab tablinks${isActive ? ' active' : ''}`,
                     'data-index': modelElement.getAttribute('index'),
                     draggable: 'false',
                 });
@@ -243,7 +246,8 @@ export default class TabsPlugin extends Plugin {
                     viewWriter,
                     modelElement.getAttribute('title'),
                     modelElement.getAttribute('index'),
-                    modelElement.parent.childCount
+                    modelElement.parent.childCount,
+                    isActive
                 );
                 viewWriter.insert(viewWriter.createPositionAt(li, 0), innerStructure);
 
@@ -293,7 +297,7 @@ export default class TabsPlugin extends Plugin {
             model: 'tabPanel',
             view: (modelElement, { writer: viewWriter }) => {
                 return viewWriter.createContainerElement('div', {
-                    class: 'yui3-tab-panel tabcontent' + (modelElement.getAttribute('isActive') ? ' active' : ''),
+                    class: `yui3-tab-panel tabcontent${modelElement.getAttribute('isActive') ? ' active' : ''}`,
                     draggable: 'false',
                 });
             },
@@ -302,7 +306,7 @@ export default class TabsPlugin extends Plugin {
             model: 'tabPanel',
             view: (modelElement, { writer: viewWriter }) => {
                 const div = viewWriter.createContainerElement('div', {
-                    class: 'yui3-tab-panel tabcontent' + (modelElement.getAttribute('isActive') ? ' active' : ''),
+                    class: `yui3-tab-panel tabcontent${modelElement.getAttribute('isActive') ? ' active' : ''}`,
                     draggable: 'false',
                 });
                 return toWidgetEditable(div, viewWriter);
@@ -349,8 +353,11 @@ export default class TabsPlugin extends Plugin {
         });
     }
 
-    _createTabItemInnerStructure(viewWriter, title, index, totalTabs) {
-        const div = viewWriter.createContainerElement('div', { class: 'yui3-tab-label', draggable: 'false' });
+    _createTabItemInnerStructure(viewWriter, title, index, totalTabs, isActive) {
+        const div = viewWriter.createContainerElement('div', {
+            class: `yui3-tab-label${isActive ? ' active' : ''}`,
+            draggable: 'false',
+        });
         const table = viewWriter.createContainerElement('table', { draggable: 'false' });
         const thead = viewWriter.createContainerElement('thead', { draggable: 'false' });
         const tbody = viewWriter.createContainerElement('tbody', { draggable: 'false' });
@@ -515,13 +522,23 @@ class AddTabCommand extends Command {
                 if (tabList && tabContent) {
                     const newIndex = tabList.childCount - 1;
 
+                    // Set all existing tabs to inactive
+                    for (const tabItem of tabList.getChildren()) {
+                        if (tabItem.name === 'tabItem') {
+                            writer.setAttribute('isActive', false, tabItem);
+                        }
+                    }
+                    for (const tabPanel of tabContent.getChildren()) {
+                        writer.setAttribute('isActive', false, tabPanel);
+                    }
+
                     const tabItem = writer.createElement('tabItem', {
                         title: `New Tab`,
                         index: newIndex,
-                        isActive: false,
+                        isActive: true,
                     });
                     const tabPanel = writer.createElement('tabPanel', {
-                        isActive: false,
+                        isActive: true,
                     });
                     writer.append(writer.createText(`New Tab Content`), tabPanel);
 
@@ -611,12 +628,18 @@ class DeleteTabCommand extends Command {
             if (index > 0) {
                 const prevTab = tabList.getChild(index - 1);
                 const prevContent = tabContent.getChild(index - 1);
-                if (prevTab) writer.setAttribute('isActive', true, prevTab);
+                if (prevTab) {
+                    writer.setAttribute('isActive', true, prevTab);
+                    this._setAllOtherTabsInactive(writer, tabList, prevTab);
+                }
                 if (prevContent) writer.setAttribute('isActive', true, prevContent);
             } else if (tabList.childCount > 1) {
                 const firstTab = tabList.getChild(0);
                 const firstContent = tabContent.getChild(0);
-                if (firstTab) writer.setAttribute('isActive', true, firstTab);
+                if (firstTab) {
+                    writer.setAttribute('isActive', true, firstTab);
+                    this._setAllOtherTabsInactive(writer, tabList, firstTab);
+                }
                 if (firstContent) writer.setAttribute('isActive', true, firstContent);
             }
         });
@@ -628,6 +651,14 @@ class DeleteTabCommand extends Command {
             if (tabItem.name === 'tabItem') {
                 writer.setAttribute('index', index, tabItem);
                 index++;
+            }
+        }
+    }
+
+    _setAllOtherTabsInactive(writer, tabList, activeTab) {
+        for (const tabItem of tabList.getChildren()) {
+            if (tabItem.name === 'tabItem' && tabItem !== activeTab) {
+                writer.setAttribute('isActive', false, tabItem);
             }
         }
     }
