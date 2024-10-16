@@ -663,3 +663,37 @@ class DeleteTabCommand extends Command {
         }
     }
 }
+
+class ActivateTabCommand extends Command {
+    execute(options) {
+        const { index } = options;
+        const editor = this.editor;
+
+        editor.model.change((writer) => {
+            const tabsPlugin = editor.model.document.getRoot().getChild(0);
+            const tabList = tabsPlugin.getChild(0).getChild(0).getChild(0);
+            const tabContent = tabsPlugin.getChild(1);
+
+            for (const tabItem of tabList.getChildren()) {
+                if (tabItem.name === 'tabItem') {
+                    writer.setAttribute('isActive', false, tabItem);
+                }
+            }
+
+            for (const tabPanel of tabContent.getChildren()) {
+                writer.setAttribute('isActive', false, tabPanel);
+            }
+
+            const tabToActivate = tabList.getChild(index);
+            const contentToActivate = tabContent.getChild(index);
+
+            if (tabToActivate) {
+                writer.setAttribute('isActive', true, tabToActivate);
+            }
+
+            if (contentToActivate) {
+                writer.setAttribute('isActive', true, contentToActivate);
+            }
+        });
+    }
+}
