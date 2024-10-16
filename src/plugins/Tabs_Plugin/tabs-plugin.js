@@ -306,18 +306,20 @@ export default class TabsPlugin extends Plugin {
         conversion.for('dataDowncast').elementToElement({
             model: 'tabPanel',
             view: (modelElement, { writer: viewWriter }) => {
-                return viewWriter.createContainerElement('div', {
+                const div = viewWriter.createContainerElement('div', {
                     class: `yui3-tab-panel tabcontent${modelElement.getAttribute('isActive') ? ' active' : ''}`,
                 });
+                return div;
             },
             converterPriority: 'high',
         });
         conversion.for('editingDowncast').elementToElement({
             model: 'tabPanel',
             view: (modelElement, { writer: viewWriter }) => {
-                return viewWriter.createContainerElement('div', {
+                const div = viewWriter.createContainerElement('div', {
                     class: `yui3-tab-panel tabcontent${modelElement.getAttribute('isActive') ? ' active' : ''}`,
                 });
+                return toWidgetEditable(div, viewWriter);
             },
             converterPriority: 'high',
         });
