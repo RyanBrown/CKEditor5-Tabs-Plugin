@@ -41,6 +41,11 @@ export default class TabsPlugin extends Plugin {
             allowIn: 'tabsInnerContainer',
         });
 
+        schema.register('tabList', {
+            isObject: true,
+            allowIn: 'tabHeader',
+        });
+
         schema.register('tabContent', {
             isObject: true,
             allowIn: 'tabsContainer',
@@ -48,7 +53,7 @@ export default class TabsPlugin extends Plugin {
 
         schema.register('tabItem', {
             isObject: true,
-            allowIn: 'tabHeader',
+            allowIn: 'tabList',
             allowAttributes: ['title', 'index', 'isActive'],
         });
 
@@ -60,7 +65,7 @@ export default class TabsPlugin extends Plugin {
 
         schema.register('addTabButton', {
             isObject: true,
-            allowIn: 'tabHeader',
+            allowIn: 'tabList',
         });
     }
 
@@ -144,15 +149,9 @@ export default class TabsPlugin extends Plugin {
         conversion.for('dataDowncast').elementToElement({
             model: 'tabHeader',
             view: (modelElement, { writer: viewWriter }) => {
-                const div = viewWriter.createContainerElement('div', {
+                return viewWriter.createContainerElement('div', {
                     class: 'tabheader ah-tabs-horizontal',
                 });
-                const ul = viewWriter.createContainerElement('ul', {
-                    class: 'tab yui3-tabview-list',
-                    id: modelElement.parent.parent.getAttribute('id') + '-tabList',
-                });
-                viewWriter.insert(viewWriter.createPositionAt(div, 0), ul);
-                return div;
             },
         });
 
@@ -162,12 +161,37 @@ export default class TabsPlugin extends Plugin {
                 const div = viewWriter.createContainerElement('div', {
                     class: 'tabheader ah-tabs-horizontal',
                 });
+                return toWidget(div, viewWriter);
+            },
+        });
+
+        // Tab list
+        conversion.for('upcast').elementToElement({
+            model: 'tabList',
+            view: {
+                name: 'ul',
+                classes: ['tab', 'yui3-tabview-list'],
+            },
+        });
+
+        conversion.for('dataDowncast').elementToElement({
+            model: 'tabList',
+            view: (modelElement, { writer: viewWriter }) => {
+                return viewWriter.createContainerElement('ul', {
+                    class: 'tab yui3-tabview-list',
+                    id: modelElement.parent.parent.parent.getAttribute('id') + '-tabList',
+                });
+            },
+        });
+
+        conversion.for('editingDowncast').elementToElement({
+            model: 'tabList',
+            view: (modelElement, { writer: viewWriter }) => {
                 const ul = viewWriter.createContainerElement('ul', {
                     class: 'tab yui3-tabview-list',
-                    id: modelElement.parent.parent.getAttribute('id') + '-tabList',
+                    id: modelElement.parent.parent.parent.getAttribute('id') + '-tabList',
                 });
-                viewWriter.insert(viewWriter.createPositionAt(div, 0), ul);
-                return toWidget(div, viewWriter);
+                return toWidget(ul, viewWriter);
             },
         });
 
@@ -395,10 +419,14 @@ class InsertTabsCommand extends Command {
         const editor = this.editor;
         editor.model.change((writer) => {
             const tabsContainer = writer.createElement('tabsContainer');
+            const tabsInnerContainer = writer.createElement('tabsInnerContainer');
             const tabHeader = writer.createElement('tabHeader');
+            const tabList = writer.createElement('tabList');
             const tabContent = writer.createElement('tabContent');
 
-            writer.append(tabHeader, tabsContainer);
+            writer.append(tabsInnerContainer, tabsContainer);
+            writer.append(tabHeader, tabsInnerContainer);
+            writer.append(tabList, tabHeader);
             writer.append(tabContent, tabsContainer);
 
             for (let i = 1; i <= 4; i++) {
@@ -407,15 +435,17 @@ class InsertTabsCommand extends Command {
                     index: i - 1,
                     isActive: i === 1,
                 });
-                const tabPanel = writer.createElement('tabPanel');
+                const tabPanel = writer.createElement('tabPanel', {
+                    isActive: i === 1,
+                });
                 writer.append(writer.createText(`Tab Content ${i}`), tabPanel);
 
-                writer.append(tabItem, tabHeader);
+                writer.append(tabItem, tabList);
                 writer.append(tabPanel, tabContent);
             }
 
             const addTabButton = writer.createElement('addTabButton');
-            writer.append(addTabButton, tabHeader);
+            writer.append(addTabButton, tabList);
 
             editor.model.insertContent(tabsContainer);
         });
