@@ -406,7 +406,10 @@ export default class TabsPlugin extends Plugin {
             });
 
             button.on('execute', () => {
-                editor.execute('tabsPlugin');
+                const tabCount = prompt('Enter the number of tabs:', '2');
+                if (tabCount !== null) {
+                    editor.execute('tabsPlugin', { tabCount: parseInt(tabCount, 10) });
+                }
             });
 
             return button;
@@ -415,8 +418,10 @@ export default class TabsPlugin extends Plugin {
 }
 
 class InsertTabsCommand extends Command {
-    execute() {
+    execute(options = {}) {
         const editor = this.editor;
+        const tabCount = options.tabCount || 2; // Default to 2 tabs if not specified
+
         editor.model.change((writer) => {
             const tabsContainer = writer.createElement('tabsContainer');
             const tabsInnerContainer = writer.createElement('tabsInnerContainer');
@@ -429,7 +434,7 @@ class InsertTabsCommand extends Command {
             writer.append(tabList, tabHeader);
             writer.append(tabContent, tabsContainer);
 
-            for (let i = 1; i <= 4; i++) {
+            for (let i = 1; i <= tabCount; i++) {
                 const tabItem = writer.createElement('tabItem', {
                     title: `Tab Name ${i}`,
                     index: i - 1,
