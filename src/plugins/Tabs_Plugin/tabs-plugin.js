@@ -86,7 +86,6 @@ export default class TabsPlugin extends Plugin {
                 classes: 'tabcontainer',
             },
         });
-
         conversion.for('dataDowncast').elementToElement({
             model: 'tabsPlugin',
             view: (modelElement, { writer: viewWriter }) => {
@@ -98,7 +97,6 @@ export default class TabsPlugin extends Plugin {
                 return div;
             },
         });
-
         conversion.for('editingDowncast').elementToElement({
             model: 'tabsPlugin',
             view: (modelElement, { writer: viewWriter }) => {
@@ -125,7 +123,6 @@ export default class TabsPlugin extends Plugin {
                 ],
             },
         });
-
         conversion.for('dataDowncast').elementToElement({
             model: 'tabsContainerDiv',
             view: (modelElement, { writer: viewWriter }) => {
@@ -135,7 +132,6 @@ export default class TabsPlugin extends Plugin {
                 });
             },
         });
-
         conversion.for('editingDowncast').elementToElement({
             model: 'tabsContainerDiv',
             view: (modelElement, { writer: viewWriter }) => {
@@ -155,7 +151,6 @@ export default class TabsPlugin extends Plugin {
                 classes: 'tabheader',
             },
         });
-
         conversion.for('dataDowncast').elementToElement({
             model: 'tabHeader',
             view: (modelElement, { writer: viewWriter }) => {
@@ -165,7 +160,6 @@ export default class TabsPlugin extends Plugin {
                 });
             },
         });
-
         conversion.for('editingDowncast').elementToElement({
             model: 'tabHeader',
             view: (modelElement, { writer: viewWriter }) => {
@@ -185,7 +179,6 @@ export default class TabsPlugin extends Plugin {
                 classes: ['tab', 'yui3-tabview-list'],
             },
         });
-
         conversion.for('dataDowncast').elementToElement({
             model: 'tabList',
             view: (modelElement, { writer: viewWriter }) => {
@@ -196,7 +189,6 @@ export default class TabsPlugin extends Plugin {
                 });
             },
         });
-
         conversion.for('editingDowncast').elementToElement({
             model: 'tabList',
             view: (modelElement, { writer: viewWriter }) => {
@@ -223,7 +215,6 @@ export default class TabsPlugin extends Plugin {
                 classes: 'yui3-tab',
             },
         });
-
         conversion.for('dataDowncast').elementToElement({
             model: 'tabItem',
             view: (modelElement, { writer: viewWriter }) => {
@@ -244,7 +235,6 @@ export default class TabsPlugin extends Plugin {
                 return li;
             },
         });
-
         conversion.for('editingDowncast').elementToElement({
             model: 'tabItem',
             view: (modelElement, { writer: viewWriter }) => {
@@ -274,7 +264,6 @@ export default class TabsPlugin extends Plugin {
                 classes: 'yui3-tabview-panel',
             },
         });
-
         conversion.for('dataDowncast').elementToElement({
             model: 'tabContent',
             view: (modelElement, { writer: viewWriter }) => {
@@ -285,7 +274,6 @@ export default class TabsPlugin extends Plugin {
                 });
             },
         });
-
         conversion.for('editingDowncast').elementToElement({
             model: 'tabContent',
             view: (modelElement, { writer: viewWriter }) => {
@@ -306,7 +294,6 @@ export default class TabsPlugin extends Plugin {
                 classes: 'yui3-tab-panel',
             },
         });
-
         conversion.for('dataDowncast').elementToElement({
             model: 'tabPanel',
             view: (modelElement, { writer: viewWriter }) => {
@@ -316,7 +303,6 @@ export default class TabsPlugin extends Plugin {
                 });
             },
         });
-
         conversion.for('editingDowncast').elementToElement({
             model: 'tabPanel',
             view: (modelElement, { writer: viewWriter }) => {
@@ -336,7 +322,6 @@ export default class TabsPlugin extends Plugin {
                 classes: 'yui3-tab addtab',
             },
         });
-
         conversion.for('dataDowncast').elementToElement({
             model: 'addTabButton',
             view: (modelElement, { writer: viewWriter }) => {
@@ -352,7 +337,6 @@ export default class TabsPlugin extends Plugin {
                 return li;
             },
         });
-
         conversion.for('editingDowncast').elementToElement({
             model: 'addTabButton',
             view: (modelElement, { writer: viewWriter }) => {
