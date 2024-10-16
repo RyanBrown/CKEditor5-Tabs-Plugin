@@ -38,24 +38,19 @@ export default class TabsPlugin extends Plugin {
             allowWhere: '$block',
         });
 
-        schema.register('tabsContainerDiv', {
+        schema.register('tabContainerDiv', {
             isObject: true,
             allowIn: 'tabsPlugin',
         });
 
         schema.register('tabHeader', {
             isObject: true,
-            allowIn: 'tabsContainerDiv',
+            allowIn: 'tabContainerDiv',
         });
 
         schema.register('tabList', {
             isObject: true,
             allowIn: 'tabHeader',
-        });
-
-        schema.register('tabContent', {
-            isObject: true,
-            allowIn: 'tabsContainerDiv',
         });
 
         schema.register('tabItem', {
@@ -64,15 +59,20 @@ export default class TabsPlugin extends Plugin {
             allowAttributes: ['title', 'index', 'isActive'],
         });
 
-        schema.register('tabPanel', {
-            isLimit: true,
-            allowIn: 'tabContent',
-            allowContentOf: '$block',
-        });
-
         schema.register('addTabButton', {
             isObject: true,
             allowIn: 'tabList',
+        });
+
+        schema.register('tabContent', {
+            isLimit: true,
+            allowIn: 'tabContainerDiv',
+            allowContentOf: '$block',
+        });
+
+        schema.register('tabNestedContent', {
+            isObject: true,
+            allowIn: 'tabNestedContent',
         });
     }
 
@@ -110,7 +110,7 @@ export default class TabsPlugin extends Plugin {
 
         // Tabs inner container
         conversion.for('upcast').elementToElement({
-            model: 'tabsContainerDiv',
+            model: 'tabContainerDiv',
             view: {
                 name: 'div',
                 classes: [
@@ -124,7 +124,7 @@ export default class TabsPlugin extends Plugin {
             converterPriority: 'high',
         });
         conversion.for('dataDowncast').elementToElement({
-            model: 'tabsContainerDiv',
+            model: 'tabContainerDiv',
             view: (modelElement, { writer: viewWriter }) => {
                 return viewWriter.createContainerElement('div', {
                     class: 'ah-tabs-horizontal ah-responsiveselecttabs ah-content-space-v yui3-ah-responsiveselecttabs-content yui3-tabview-content',
@@ -133,7 +133,7 @@ export default class TabsPlugin extends Plugin {
             converterPriority: 'high',
         });
         conversion.for('editingDowncast').elementToElement({
-            model: 'tabsContainerDiv',
+            model: 'tabContainerDiv',
             view: (modelElement, { writer: viewWriter }) => {
                 return viewWriter.createContainerElement('div', {
                     class: 'ah-tabs-horizontal ah-responsiveselecttabs ah-content-space-v yui3-ah-responsiveselecttabs-content yui3-tabview-content',
@@ -260,9 +260,43 @@ export default class TabsPlugin extends Plugin {
             converterPriority: 'high',
         });
 
+        // Tab panel
+        conversion.for('upcast').elementToElement({
+            model: (viewElement, { writer }) => {
+                return writer.createElement('tabContent', {
+                    isActive: viewElement.hasClass('active'),
+                });
+            },
+            view: {
+                name: 'div',
+                classes: ['yui3-tab-panel', 'tabNestedContent'],
+            },
+            converterPriority: 'high',
+        });
+        conversion.for('dataDowncast').elementToElement({
+            model: 'tabContent',
+            view: (modelElement, { writer: viewWriter }) => {
+                const div = viewWriter.createContainerElement('div', {
+                    class: `yui3-tab-panel tabNestedContent${modelElement.getAttribute('isActive') ? ' active' : ''}`,
+                });
+                return div;
+            },
+            converterPriority: 'high',
+        });
+        conversion.for('editingDowncast').elementToElement({
+            model: 'tabContent',
+            view: (modelElement, { writer: viewWriter }) => {
+                const div = viewWriter.createContainerElement('div', {
+                    class: `yui3-tab-panel tabNestedContent${modelElement.getAttribute('isActive') ? ' active' : ''}`,
+                });
+                return toWidgetEditable(div, viewWriter);
+            },
+            converterPriority: 'high',
+        });
+
         // Tab content
         conversion.for('upcast').elementToElement({
-            model: 'tabContent',
+            model: 'tabNestedContent',
             view: {
                 name: 'div',
                 classes: 'yui3-tabview-panel',
@@ -270,56 +304,22 @@ export default class TabsPlugin extends Plugin {
             converterPriority: 'high',
         });
         conversion.for('dataDowncast').elementToElement({
-            model: 'tabContent',
+            model: 'tabNestedContent',
             view: (modelElement, { writer: viewWriter }) => {
                 return viewWriter.createContainerElement('div', {
                     class: 'yui3-tabview-panel',
-                    id: modelElement.parent.getAttribute('id') + '-tabContent',
+                    id: modelElement.parent.getAttribute('id') + '-tabNestedContent',
                 });
             },
             converterPriority: 'high',
         });
         conversion.for('editingDowncast').elementToElement({
-            model: 'tabContent',
+            model: 'tabNestedContent',
             view: (modelElement, { writer: viewWriter }) => {
                 return viewWriter.createContainerElement('div', {
                     class: 'yui3-tabview-panel',
-                    id: modelElement.parent.getAttribute('id') + '-tabContent',
+                    id: modelElement.parent.getAttribute('id') + '-tabNestedContent',
                 });
-            },
-            converterPriority: 'high',
-        });
-
-        // Tab panel
-        conversion.for('upcast').elementToElement({
-            model: (viewElement, { writer }) => {
-                return writer.createElement('tabPanel', {
-                    isActive: viewElement.hasClass('active'),
-                });
-            },
-            view: {
-                name: 'div',
-                classes: ['yui3-tab-panel', 'tabcontent'],
-            },
-            converterPriority: 'high',
-        });
-        conversion.for('dataDowncast').elementToElement({
-            model: 'tabPanel',
-            view: (modelElement, { writer: viewWriter }) => {
-                const div = viewWriter.createContainerElement('div', {
-                    class: `yui3-tab-panel tabcontent${modelElement.getAttribute('isActive') ? ' active' : ''}`,
-                });
-                return div;
-            },
-            converterPriority: 'high',
-        });
-        conversion.for('editingDowncast').elementToElement({
-            model: 'tabPanel',
-            view: (modelElement, { writer: viewWriter }) => {
-                const div = viewWriter.createContainerElement('div', {
-                    class: `yui3-tab-panel tabcontent${modelElement.getAttribute('isActive') ? ' active' : ''}`,
-                });
-                return toWidgetEditable(div, viewWriter);
             },
             converterPriority: 'high',
         });
@@ -493,15 +493,15 @@ class InsertTabsCommand extends Command {
 
         editor.model.change((writer) => {
             const tabsPlugin = writer.createElement('tabsPlugin');
-            const tabsContainerDiv = writer.createElement('tabsContainerDiv');
+            const tabContainerDiv = writer.createElement('tabContainerDiv');
             const tabHeader = writer.createElement('tabHeader');
             const tabList = writer.createElement('tabList');
-            const tabContent = writer.createElement('tabContent');
+            const tabNestedContent = writer.createElement('tabNestedContent');
 
-            writer.append(tabsContainerDiv, tabsPlugin);
-            writer.append(tabHeader, tabsContainerDiv);
+            writer.append(tabContainerDiv, tabsPlugin);
+            writer.append(tabHeader, tabContainerDiv);
             writer.append(tabList, tabHeader);
-            writer.append(tabContent, tabsPlugin);
+            writer.append(tabNestedContent, tabsPlugin);
 
             for (let i = 1; i <= tabCount; i++) {
                 const tabItem = writer.createElement('tabItem', {
@@ -509,13 +509,13 @@ class InsertTabsCommand extends Command {
                     index: i - 1,
                     isActive: i === 1,
                 });
-                const tabPanel = writer.createElement('tabPanel', {
+                const tabContent = writer.createElement('tabContent', {
                     isActive: i === 1,
                 });
-                writer.append(writer.createText(`Tab Content ${i}`), tabPanel);
+                writer.append(writer.createText(`Tab Content ${i}`), tabContent);
 
                 writer.append(tabItem, tabList);
-                writer.append(tabPanel, tabContent);
+                writer.append(tabContent, tabNestedContent);
             }
 
             const addTabButton = writer.createElement('addTabButton');
@@ -536,9 +536,9 @@ class AddTabCommand extends Command {
 
             if (tabsPlugin) {
                 const tabList = tabsPlugin.getChild(0)?.getChild(0)?.getChild(0);
-                const tabContent = tabsPlugin.getChild(1);
+                const tabNestedContent = tabsPlugin.getChild(1);
 
-                if (tabList && tabContent) {
+                if (tabList && tabNestedContent) {
                     const newIndex = tabList.childCount - 1;
 
                     // Set all existing tabs to inactive
@@ -547,8 +547,8 @@ class AddTabCommand extends Command {
                             writer.setAttribute('isActive', false, tabItem);
                         }
                     }
-                    for (const tabPanel of tabContent.getChildren()) {
-                        writer.setAttribute('isActive', false, tabPanel);
+                    for (const tabContent of tabNestedContent.getChildren()) {
+                        writer.setAttribute('isActive', false, tabContent);
                     }
 
                     const tabItem = writer.createElement('tabItem', {
@@ -556,13 +556,13 @@ class AddTabCommand extends Command {
                         index: newIndex,
                         isActive: true,
                     });
-                    const tabPanel = writer.createElement('tabPanel', {
+                    const tabContent = writer.createElement('tabContent', {
                         isActive: true,
                     });
-                    writer.append(writer.createText(`New Tab Content`), tabPanel);
+                    writer.append(writer.createText(`New Tab Content`), tabContent);
 
                     writer.insert(tabItem, tabList, newIndex);
-                    writer.append(tabPanel, tabContent);
+                    writer.append(tabContent, tabNestedContent);
 
                     this._updateTabIndices(writer, tabList);
                 }
@@ -589,17 +589,17 @@ class MoveTabCommand extends Command {
         editor.model.change((writer) => {
             const tabsPlugin = editor.model.document.getRoot().getChild(0);
             const tabList = tabsPlugin.getChild(0).getChild(0).getChild(0);
-            const tabContent = tabsPlugin.getChild(1);
+            const tabNestedContent = tabsPlugin.getChild(1);
 
             const currentIndex = index;
             const newIndex = direction === 'left' ? currentIndex - 1 : currentIndex + 1;
 
             if (newIndex >= 0 && newIndex < tabList.childCount - 1) {
                 const tabToMove = tabList.getChild(currentIndex);
-                const contentToMove = tabContent.getChild(currentIndex);
+                const contentToMove = tabNestedContent.getChild(currentIndex);
 
                 writer.move(writer.createRangeOn(tabToMove), tabList, newIndex);
-                writer.move(writer.createRangeOn(contentToMove), tabContent, newIndex);
+                writer.move(writer.createRangeOn(contentToMove), tabNestedContent, newIndex);
 
                 this._updateTabIndices(writer, tabList);
             }
@@ -625,10 +625,10 @@ class DeleteTabCommand extends Command {
         editor.model.change((writer) => {
             const tabsPlugin = editor.model.document.getRoot().getChild(0);
             const tabList = tabsPlugin.getChild(0).getChild(0).getChild(0);
-            const tabContent = tabsPlugin.getChild(1);
+            const tabNestedContent = tabsPlugin.getChild(1);
 
             const tabToRemove = tabList.getChild(index);
-            const contentToRemove = tabContent.getChild(index);
+            const contentToRemove = tabNestedContent.getChild(index);
 
             writer.remove(tabToRemove);
             writer.remove(contentToRemove);
@@ -638,7 +638,7 @@ class DeleteTabCommand extends Command {
             // Activate the previous tab or the first tab if the deleted tab was the first one
             if (index > 0) {
                 const prevTab = tabList.getChild(index - 1);
-                const prevContent = tabContent.getChild(index - 1);
+                const prevContent = tabNestedContent.getChild(index - 1);
                 if (prevTab) {
                     writer.setAttribute('isActive', true, prevTab);
                     this._setAllOtherTabsInactive(writer, tabList, prevTab);
@@ -646,7 +646,7 @@ class DeleteTabCommand extends Command {
                 if (prevContent) writer.setAttribute('isActive', true, prevContent);
             } else if (tabList.childCount > 0) {
                 const firstTab = tabList.getChild(0);
-                const firstContent = tabContent.getChild(0);
+                const firstContent = tabNestedContent.getChild(0);
                 if (firstTab) {
                     writer.setAttribute('isActive', true, firstTab);
                     this._setAllOtherTabsInactive(writer, tabList, firstTab);
@@ -683,7 +683,7 @@ class ActivateTabCommand extends Command {
         editor.model.change((writer) => {
             const tabsPlugin = editor.model.document.getRoot().getChild(0);
             const tabList = tabsPlugin.getChild(0).getChild(0).getChild(0);
-            const tabContent = tabsPlugin.getChild(1);
+            const tabNestedContent = tabsPlugin.getChild(1);
 
             for (const tabItem of tabList.getChildren()) {
                 if (tabItem.name === 'tabItem') {
@@ -691,12 +691,12 @@ class ActivateTabCommand extends Command {
                 }
             }
 
-            for (const tabPanel of tabContent.getChildren()) {
-                writer.setAttribute('isActive', false, tabPanel);
+            for (const tabContent of tabNestedContent.getChildren()) {
+                writer.setAttribute('isActive', false, tabContent);
             }
 
             const tabToActivate = tabList.getChild(index);
-            const contentToActivate = tabContent.getChild(index);
+            const contentToActivate = tabNestedContent.getChild(index);
 
             if (tabToActivate) {
                 writer.setAttribute('isActive', true, tabToActivate);
