@@ -24,6 +24,7 @@ export default class TabsPlugin extends Plugin {
         this.editor.commands.add('addTab', new AddTabCommand(this.editor));
         this.editor.commands.add('moveTab', new MoveTabCommand(this.editor));
         this.editor.commands.add('deleteTab', new DeleteTabCommand(this.editor));
+        this.editor.commands.add('activateTab', new ActivateTabCommand(this.editor));
 
         this._addToolbarButton();
         this._setupEventListeners();
@@ -356,33 +357,29 @@ export default class TabsPlugin extends Plugin {
     _createTabItemInnerStructure(viewWriter, title, index, totalTabs, isActive) {
         const div = viewWriter.createContainerElement('div', {
             class: `yui3-tab-label${isActive ? ' active' : ''}`,
-            draggable: 'false',
         });
-        const table = viewWriter.createContainerElement('table', { draggable: 'false' });
-        const thead = viewWriter.createContainerElement('thead', { draggable: 'false' });
-        const tbody = viewWriter.createContainerElement('tbody', { draggable: 'false' });
+        const table = viewWriter.createContainerElement('table');
+        const thead = viewWriter.createContainerElement('thead');
+        const tbody = viewWriter.createContainerElement('tbody');
 
-        const theadTr = viewWriter.createContainerElement('tr', { draggable: 'false' });
-        const thLeft = viewWriter.createContainerElement('th', { draggable: 'false' });
-        const thRight = viewWriter.createContainerElement('th', { draggable: 'false' });
-        const thDelete = viewWriter.createContainerElement('th', { draggable: 'false' });
+        const theadTr = viewWriter.createContainerElement('tr');
+        const thLeft = viewWriter.createContainerElement('th');
+        const thRight = viewWriter.createContainerElement('th');
+        const thDelete = viewWriter.createContainerElement('th');
 
         const leftArrow = viewWriter.createContainerElement('div', {
-            class: 'left-arrow arrowtabicon' + (index === '0' ? ' disabled' : ''),
+            class: `left-arrow arrowtabicon${index === 0 ? ' disabled' : ''}`,
             title: 'Move Tab Left',
-            draggable: 'false',
         });
         const rightArrow = viewWriter.createContainerElement('div', {
-            class: 'right-arrow arrowtabicon' + (index === (totalTabs - 2).toString() ? ' disabled' : ''),
+            class: `right-arrow arrowtabicon${index === totalTabs - 2 ? ' disabled' : ''}`,
             title: 'Move Tab Right',
-            draggable: 'false',
         });
         const deleteIcon = viewWriter.createContainerElement('div', {
             class: 'dropicon',
             title: 'Delete Tab',
-            draggable: 'false',
         });
-        const deleteP = viewWriter.createContainerElement('p', { class: 'droptab droptabicon', draggable: 'false' });
+        const deleteP = viewWriter.createContainerElement('p', { class: 'droptab droptabicon' });
         viewWriter.insert(viewWriter.createPositionAt(deleteP, 0), viewWriter.createEmptyElement('br'));
 
         viewWriter.insert(viewWriter.createPositionAt(thLeft, 0), leftArrow);
@@ -394,9 +391,9 @@ export default class TabsPlugin extends Plugin {
         viewWriter.insert(viewWriter.createPositionAt(theadTr, 1), thRight);
         viewWriter.insert(viewWriter.createPositionAt(theadTr, 2), thDelete);
 
-        const tbodyTr = viewWriter.createContainerElement('tr', { draggable: 'false' });
-        const tbodyTd = viewWriter.createContainerElement('td', { colspan: '5', draggable: 'false' });
-        const titleDiv = viewWriter.createContainerElement('div', { class: 'tabTitle', draggable: 'false' });
+        const tbodyTr = viewWriter.createContainerElement('tr');
+        const tbodyTd = viewWriter.createContainerElement('td', { colspan: '5' });
+        const titleDiv = viewWriter.createContainerElement('div', { class: 'tabTitle' });
         viewWriter.insert(viewWriter.createPositionAt(titleDiv, 0), viewWriter.createText(title));
 
         viewWriter.insert(viewWriter.createPositionAt(tbodyTd, 0), titleDiv);
@@ -450,13 +447,24 @@ export default class TabsPlugin extends Plugin {
                 this.editor.execute('addTab');
                 evt.stop();
             } else if (data.domEvent.target.classList.contains('left-arrow')) {
-                this.editor.execute('moveTab', { direction: 'left' });
+                const tabItem = data.domEvent.target.closest('.yui3-tab');
+                const index = parseInt(tabItem.getAttribute('data-index'), 10);
+                this.editor.execute('moveTab', { direction: 'left', index });
                 evt.stop();
             } else if (data.domEvent.target.classList.contains('right-arrow')) {
-                this.editor.execute('moveTab', { direction: 'right' });
+                const tabItem = data.domEvent.target.closest('.yui3-tab');
+                const index = parseInt(tabItem.getAttribute('data-index'), 10);
+                this.editor.execute('moveTab', { direction: 'right', index });
                 evt.stop();
             } else if (data.domEvent.target.classList.contains('droptabicon')) {
-                this.editor.execute('deleteTab');
+                const tabItem = data.domEvent.target.closest('.yui3-tab');
+                const index = parseInt(tabItem.getAttribute('data-index'), 10);
+                this.editor.execute('deleteTab', { index });
+                evt.stop();
+            } else if (data.domEvent.target.closest('.yui3-tab')) {
+                const tabItem = data.domEvent.target.closest('.yui3-tab');
+                const index = parseInt(tabItem.getAttribute('data-index'), 10);
+                this.editor.execute('activateTab', { index });
                 evt.stop();
             }
         });
@@ -564,22 +572,24 @@ class AddTabCommand extends Command {
 
 class MoveTabCommand extends Command {
     execute(options) {
-        const { direction } = options;
+        const { direction, index } = options;
         const editor = this.editor;
-        const selection = editor.model.document.selection;
 
         editor.model.change((writer) => {
-            const tabItem = selection.getFirstPosition().findAncestor('tabItem');
-            if (!tabItem) return;
+            const tabsPlugin = editor.model.document.getRoot().getChild(0);
+            const tabList = tabsPlugin.getChild(0).getChild(0).getChild(0);
+            const tabContent = tabsPlugin.getChild(1);
 
-            const tabList = tabItem.parent;
-            if (!tabList) return;
-
-            const index = tabList.getChildIndex(tabItem);
-            const newIndex = direction === 'left' ? index - 1 : index + 1;
+            const currentIndex = index;
+            const newIndex = direction === 'left' ? currentIndex - 1 : currentIndex + 1;
 
             if (newIndex >= 0 && newIndex < tabList.childCount - 1) {
-                writer.move(writer.createRangeOn(tabItem), tabList, newIndex);
+                const tabToMove = tabList.getChild(currentIndex);
+                const contentToMove = tabContent.getChild(currentIndex);
+
+                writer.move(writer.createRangeOn(tabToMove), tabList, newIndex);
+                writer.move(writer.createRangeOn(contentToMove), tabContent, newIndex);
+
                 this._updateTabIndices(writer, tabList);
             }
         });
@@ -597,30 +607,20 @@ class MoveTabCommand extends Command {
 }
 
 class DeleteTabCommand extends Command {
-    execute() {
+    execute(options) {
+        const { index } = options;
         const editor = this.editor;
-        const selection = editor.model.document.selection;
 
         editor.model.change((writer) => {
-            const tabItem = selection.getFirstPosition().findAncestor('tabItem');
-            if (!tabItem) return;
-
-            const tabList = tabItem.parent;
-            if (!tabList) return;
-
-            const tabsPlugin = tabList.parent?.parent?.parent;
-            if (!tabsPlugin) return;
-
+            const tabsPlugin = editor.model.document.getRoot().getChild(0);
+            const tabList = tabsPlugin.getChild(0).getChild(0).getChild(0);
             const tabContent = tabsPlugin.getChild(1);
-            if (!tabContent) return;
 
-            const index = tabList.getChildIndex(tabItem);
-            writer.remove(tabItem);
+            const tabToRemove = tabList.getChild(index);
+            const contentToRemove = tabContent.getChild(index);
 
-            const tabPanelToRemove = tabContent.getChild(index);
-            if (tabPanelToRemove) {
-                writer.remove(tabPanelToRemove);
-            }
+            writer.remove(tabToRemove);
+            writer.remove(contentToRemove);
 
             this._updateTabIndices(writer, tabList);
 
@@ -633,7 +633,7 @@ class DeleteTabCommand extends Command {
                     this._setAllOtherTabsInactive(writer, tabList, prevTab);
                 }
                 if (prevContent) writer.setAttribute('isActive', true, prevContent);
-            } else if (tabList.childCount > 1) {
+            } else if (tabList.childCount > 0) {
                 const firstTab = tabList.getChild(0);
                 const firstContent = tabContent.getChild(0);
                 if (firstTab) {
