@@ -124,7 +124,6 @@ export default class TabsPlugin extends Plugin {
             view: (modelElement, { writer: viewWriter }) => {
                 return viewWriter.createContainerElement('div', {
                     class: 'ah-tabs-horizontal ah-responsiveselecttabs ah-content-space-v yui3-ah-responsiveselecttabs-content yui3-tabview-content',
-                    draggable: 'false',
                 });
             },
         });
@@ -133,7 +132,6 @@ export default class TabsPlugin extends Plugin {
             view: (modelElement, { writer: viewWriter }) => {
                 return viewWriter.createContainerElement('div', {
                     class: 'ah-tabs-horizontal ah-responsiveselecttabs ah-content-space-v yui3-ah-responsiveselecttabs-content yui3-tabview-content',
-                    draggable: 'false',
                 });
             },
         });
@@ -143,7 +141,7 @@ export default class TabsPlugin extends Plugin {
             model: 'tabHeader',
             view: {
                 name: 'div',
-                classes: 'tabheader',
+                classes: ['tabheader', 'ah-tabs-horizontal'],
             },
         });
         conversion.for('dataDowncast').elementToElement({
@@ -151,7 +149,6 @@ export default class TabsPlugin extends Plugin {
             view: (modelElement, { writer: viewWriter }) => {
                 return viewWriter.createContainerElement('div', {
                     class: 'tabheader ah-tabs-horizontal',
-                    draggable: 'false',
                 });
             },
         });
@@ -160,7 +157,6 @@ export default class TabsPlugin extends Plugin {
             view: (modelElement, { writer: viewWriter }) => {
                 return viewWriter.createContainerElement('div', {
                     class: 'tabheader ah-tabs-horizontal',
-                    draggable: 'false',
                 });
             },
         });
@@ -179,7 +175,6 @@ export default class TabsPlugin extends Plugin {
                 return viewWriter.createContainerElement('ul', {
                     class: 'tab yui3-tabview-list',
                     id: modelElement.parent.parent.parent.getAttribute('id') + '-tabList',
-                    draggable: 'false',
                 });
             },
         });
@@ -189,7 +184,6 @@ export default class TabsPlugin extends Plugin {
                 return viewWriter.createContainerElement('ul', {
                     class: 'tab yui3-tabview-list',
                     id: modelElement.parent.parent.parent.getAttribute('id') + '-tabList',
-                    draggable: 'false',
                 });
             },
         });
@@ -215,7 +209,6 @@ export default class TabsPlugin extends Plugin {
                 const li = viewWriter.createContainerElement('li', {
                     class: `yui3-tab tablinks${isActive ? ' active' : ''}`,
                     'data-index': modelElement.getAttribute('index'),
-                    draggable: 'false',
                 });
 
                 const innerStructure = this._createTabItemInnerStructure(
@@ -237,7 +230,6 @@ export default class TabsPlugin extends Plugin {
                 const li = viewWriter.createContainerElement('li', {
                     class: `yui3-tab tablinks${isActive ? ' active' : ''}`,
                     'data-index': modelElement.getAttribute('index'),
-                    draggable: 'false',
                 });
 
                 const innerStructure = this._createTabItemInnerStructure(
@@ -267,7 +259,6 @@ export default class TabsPlugin extends Plugin {
                 return viewWriter.createContainerElement('div', {
                     class: 'yui3-tabview-panel',
                     id: modelElement.parent.getAttribute('id') + '-tabContent',
-                    draggable: 'false',
                 });
             },
         });
@@ -277,17 +268,20 @@ export default class TabsPlugin extends Plugin {
                 return viewWriter.createContainerElement('div', {
                     class: 'yui3-tabview-panel',
                     id: modelElement.parent.getAttribute('id') + '-tabContent',
-                    draggable: 'false',
                 });
             },
         });
 
         // Tab panel
         conversion.for('upcast').elementToElement({
-            model: 'tabPanel',
+            model: (viewElement, { writer }) => {
+                return writer.createElement('tabPanel', {
+                    isActive: viewElement.hasClass('active'),
+                });
+            },
             view: {
                 name: 'div',
-                classes: 'yui3-tab-panel',
+                classes: ['yui3-tab-panel', 'tabcontent'],
             },
         });
         conversion.for('dataDowncast').elementToElement({
@@ -295,7 +289,6 @@ export default class TabsPlugin extends Plugin {
             view: (modelElement, { writer: viewWriter }) => {
                 return viewWriter.createContainerElement('div', {
                     class: `yui3-tab-panel tabcontent${modelElement.getAttribute('isActive') ? ' active' : ''}`,
-                    draggable: 'false',
                 });
             },
         });
@@ -304,7 +297,6 @@ export default class TabsPlugin extends Plugin {
             view: (modelElement, { writer: viewWriter }) => {
                 return viewWriter.createContainerElement('div', {
                     class: `yui3-tab-panel tabcontent${modelElement.getAttribute('isActive') ? ' active' : ''}`,
-                    draggable: 'false',
                 });
             },
         });
@@ -314,19 +306,18 @@ export default class TabsPlugin extends Plugin {
             model: 'addTabButton',
             view: {
                 name: 'li',
-                classes: 'yui3-tab addtab',
+                classes: ['yui3-tab', 'addtab'],
             },
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'addTabButton',
             view: (modelElement, { writer: viewWriter }) => {
-                const li = viewWriter.createContainerElement('li', { class: 'yui3-tab addtab', draggable: 'false' });
+                const li = viewWriter.createContainerElement('li', { class: 'yui3-tab addtab' });
                 const div = viewWriter.createContainerElement('div', {
                     class: 'addicon',
                     title: 'Add Tab',
-                    draggable: 'false',
                 });
-                const p = viewWriter.createContainerElement('p', { class: 'addtabicon', draggable: 'false' });
+                const p = viewWriter.createContainerElement('p', { class: 'addtabicon' });
                 viewWriter.insert(viewWriter.createPositionAt(div, 0), p);
                 viewWriter.insert(viewWriter.createPositionAt(li, 0), div);
                 return li;
@@ -335,13 +326,12 @@ export default class TabsPlugin extends Plugin {
         conversion.for('editingDowncast').elementToElement({
             model: 'addTabButton',
             view: (modelElement, { writer: viewWriter }) => {
-                const li = viewWriter.createContainerElement('li', { class: 'yui3-tab addtab', draggable: 'false' });
+                const li = viewWriter.createContainerElement('li', { class: 'yui3-tab addtab' });
                 const div = viewWriter.createContainerElement('div', {
                     class: 'addicon',
                     title: 'Add Tab',
-                    draggable: 'false',
                 });
-                const p = viewWriter.createContainerElement('p', { class: 'addtabicon', draggable: 'false' });
+                const p = viewWriter.createContainerElement('p', { class: 'addtabicon' });
                 viewWriter.insert(viewWriter.createPositionAt(div, 0), p);
                 viewWriter.insert(viewWriter.createPositionAt(li, 0), div);
                 return li;
