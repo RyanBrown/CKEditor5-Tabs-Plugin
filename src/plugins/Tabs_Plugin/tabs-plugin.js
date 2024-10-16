@@ -54,7 +54,7 @@ export default class TabsPlugin extends Plugin {
 
         schema.register('tabContent', {
             isObject: true,
-            allowIn: 'tabsPlugin',
+            allowIn: 'tabsContainerDiv',
         });
 
         schema.register('tabItem', {
@@ -81,10 +81,7 @@ export default class TabsPlugin extends Plugin {
         // Tabs container
         conversion.for('upcast').elementToElement({
             model: 'tabsPlugin',
-            view: {
-                name: 'div',
-                classes: 'tabcontainer',
-            },
+            view: { name: 'div', classes: ['tabcontainer', 'yui3-widget'] },
         });
         conversion.for('dataDowncast').elementToElement({
             model: 'tabsPlugin',
@@ -92,7 +89,6 @@ export default class TabsPlugin extends Plugin {
                 const div = viewWriter.createContainerElement('div', {
                     class: 'tabcontainer yui3-widget',
                     id: 'plugin_' + Date.now() + '_0',
-                    draggable: 'false',
                 });
                 return div;
             },
@@ -103,7 +99,6 @@ export default class TabsPlugin extends Plugin {
                 const div = viewWriter.createContainerElement('div', {
                     class: 'tabcontainer yui3-widget',
                     id: 'plugin_' + Date.now() + '_0',
-                    draggable: 'false',
                 });
                 return toWidget(div, viewWriter);
             },
