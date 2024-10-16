@@ -31,16 +31,19 @@ export default class TabsPlugin extends Plugin {
             allowWhere: '$block',
         });
 
-        schema.register('tabHeader', {
+        schema.register('tabsInnerContainer', {
             isObject: true,
             allowIn: 'tabsContainer',
-            allowContentOf: '$block',
+        });
+
+        schema.register('tabHeader', {
+            isObject: true,
+            allowIn: 'tabsInnerContainer',
         });
 
         schema.register('tabContent', {
             isObject: true,
             allowIn: 'tabsContainer',
-            allowContentOf: '$block',
         });
 
         schema.register('tabItem', {
@@ -95,6 +98,40 @@ export default class TabsPlugin extends Plugin {
             },
         });
 
+        // Tabs inner container
+        conversion.for('upcast').elementToElement({
+            model: 'tabsInnerContainer',
+            view: {
+                name: 'div',
+                classes: [
+                    'ah-tabs-horizontal',
+                    'ah-responsiveselecttabs',
+                    'ah-content-space-v',
+                    'yui3-ah-responsiveselecttabs-content',
+                    'yui3-tabview-content',
+                ],
+            },
+        });
+
+        conversion.for('dataDowncast').elementToElement({
+            model: 'tabsInnerContainer',
+            view: (modelElement, { writer: viewWriter }) => {
+                return viewWriter.createContainerElement('div', {
+                    class: 'ah-tabs-horizontal ah-responsiveselecttabs ah-content-space-v yui3-ah-responsiveselecttabs-content yui3-tabview-content',
+                });
+            },
+        });
+
+        conversion.for('editingDowncast').elementToElement({
+            model: 'tabsInnerContainer',
+            view: (modelElement, { writer: viewWriter }) => {
+                const div = viewWriter.createContainerElement('div', {
+                    class: 'ah-tabs-horizontal ah-responsiveselecttabs ah-content-space-v yui3-ah-responsiveselecttabs-content yui3-tabview-content',
+                });
+                return toWidget(div, viewWriter);
+            },
+        });
+
         // Tab header
         conversion.for('upcast').elementToElement({
             model: 'tabHeader',
@@ -112,7 +149,7 @@ export default class TabsPlugin extends Plugin {
                 });
                 const ul = viewWriter.createContainerElement('ul', {
                     class: 'tab yui3-tabview-list',
-                    id: modelElement.parent.getAttribute('id') + '-tabList',
+                    id: modelElement.parent.parent.getAttribute('id') + '-tabList',
                 });
                 viewWriter.insert(viewWriter.createPositionAt(div, 0), ul);
                 return div;
@@ -127,7 +164,7 @@ export default class TabsPlugin extends Plugin {
                 });
                 const ul = viewWriter.createContainerElement('ul', {
                     class: 'tab yui3-tabview-list',
-                    id: modelElement.parent.getAttribute('id') + '-tabList',
+                    id: modelElement.parent.parent.getAttribute('id') + '-tabList',
                 });
                 viewWriter.insert(viewWriter.createPositionAt(div, 0), ul);
                 return toWidget(div, viewWriter);
@@ -157,10 +194,11 @@ export default class TabsPlugin extends Plugin {
                     'data-index': modelElement.getAttribute('index'),
                 });
 
-                // Create the complex inner structure
                 const innerStructure = this._createTabItemInnerStructure(
                     viewWriter,
-                    modelElement.getAttribute('title')
+                    modelElement.getAttribute('title'),
+                    modelElement.getAttribute('index'),
+                    modelElement.parent.childCount
                 );
                 viewWriter.insert(viewWriter.createPositionAt(li, 0), innerStructure);
 
@@ -176,10 +214,11 @@ export default class TabsPlugin extends Plugin {
                     'data-index': modelElement.getAttribute('index'),
                 });
 
-                // Create the complex inner structure
                 const innerStructure = this._createTabItemInnerStructure(
                     viewWriter,
-                    modelElement.getAttribute('title')
+                    modelElement.getAttribute('title'),
+                    modelElement.getAttribute('index'),
+                    modelElement.parent.childCount
                 );
                 viewWriter.insert(viewWriter.createPositionAt(li, 0), innerStructure);
 
@@ -230,9 +269,7 @@ export default class TabsPlugin extends Plugin {
             model: 'tabPanel',
             view: (modelElement, { writer: viewWriter }) => {
                 return viewWriter.createContainerElement('div', {
-                    class:
-                        'yui3-tab-panel tabcontent' +
-                        (modelElement.parent.index === modelElement.index ? ' active' : ''),
+                    class: 'yui3-tab-panel tabcontent' + (modelElement.getAttribute('isActive') ? ' active' : ''),
                 });
             },
         });
@@ -241,9 +278,7 @@ export default class TabsPlugin extends Plugin {
             model: 'tabPanel',
             view: (modelElement, { writer: viewWriter }) => {
                 const div = viewWriter.createContainerElement('div', {
-                    class:
-                        'yui3-tab-panel tabcontent' +
-                        (modelElement.parent.index === modelElement.index ? ' active' : ''),
+                    class: 'yui3-tab-panel tabcontent' + (modelElement.getAttribute('isActive') ? ' active' : ''),
                 });
                 return toWidgetEditable(div, viewWriter);
             },
@@ -283,7 +318,7 @@ export default class TabsPlugin extends Plugin {
         });
     }
 
-    _createTabItemInnerStructure(viewWriter, title) {
+    _createTabItemInnerStructure(viewWriter, title, index, totalTabs) {
         const div = viewWriter.createContainerElement('div', { class: 'yui3-tab-label' });
         const table = viewWriter.createContainerElement('table');
         const thead = viewWriter.createContainerElement('thead');
@@ -295,11 +330,11 @@ export default class TabsPlugin extends Plugin {
         const thDelete = viewWriter.createContainerElement('th');
 
         const leftArrow = viewWriter.createContainerElement('div', {
-            class: 'left-arrow arrowtabicon',
+            class: 'left-arrow arrowtabicon' + (index === '0' ? ' disabled' : ''),
             title: 'Move Tab',
         });
         const rightArrow = viewWriter.createContainerElement('div', {
-            class: 'right-arrow arrowtabicon',
+            class: 'right-arrow arrowtabicon' + (index === (totalTabs - 2).toString() ? ' disabled' : ''),
             title: 'Move Tab',
         });
         const deleteIcon = viewWriter.createContainerElement('div', { class: 'dropicon', title: 'Delete Tab' });
