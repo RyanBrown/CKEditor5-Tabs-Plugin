@@ -9,7 +9,7 @@ import './styles/tabs-plugin.css';
 export default class TabsPlugin extends Plugin {
     constructor(editor) {
         super(editor);
-        this.showTabCountPrompt = false; // New boolean variable to toggle tab count prompt
+        this.showTabCountPrompt = true; // New boolean variable to toggle tab count prompt
     }
 
     static get requires() {
@@ -93,6 +93,7 @@ export default class TabsPlugin extends Plugin {
                 const div = viewWriter.createContainerElement('div', {
                     class: 'tabcontainer yui3-widget',
                     id: 'plugin_' + Date.now() + '_0',
+                    draggable: 'false',
                 });
                 return div;
             },
@@ -104,6 +105,7 @@ export default class TabsPlugin extends Plugin {
                 const div = viewWriter.createContainerElement('div', {
                     class: 'tabcontainer yui3-widget',
                     id: 'plugin_' + Date.now() + '_0',
+                    draggable: 'false',
                 });
                 return toWidget(div, viewWriter);
             },
@@ -129,6 +131,7 @@ export default class TabsPlugin extends Plugin {
             view: (modelElement, { writer: viewWriter }) => {
                 return viewWriter.createContainerElement('div', {
                     class: 'ah-tabs-horizontal ah-responsiveselecttabs ah-content-space-v yui3-ah-responsiveselecttabs-content yui3-tabview-content',
+                    draggable: 'false',
                 });
             },
         });
@@ -138,6 +141,7 @@ export default class TabsPlugin extends Plugin {
             view: (modelElement, { writer: viewWriter }) => {
                 const div = viewWriter.createContainerElement('div', {
                     class: 'ah-tabs-horizontal ah-responsiveselecttabs ah-content-space-v yui3-ah-responsiveselecttabs-content yui3-tabview-content',
+                    draggable: 'false',
                 });
                 return toWidget(div, viewWriter);
             },
@@ -157,6 +161,7 @@ export default class TabsPlugin extends Plugin {
             view: (modelElement, { writer: viewWriter }) => {
                 return viewWriter.createContainerElement('div', {
                     class: 'tabheader ah-tabs-horizontal',
+                    draggable: 'false',
                 });
             },
         });
@@ -166,6 +171,7 @@ export default class TabsPlugin extends Plugin {
             view: (modelElement, { writer: viewWriter }) => {
                 const div = viewWriter.createContainerElement('div', {
                     class: 'tabheader ah-tabs-horizontal',
+                    draggable: 'false',
                 });
                 return toWidget(div, viewWriter);
             },
@@ -186,6 +192,7 @@ export default class TabsPlugin extends Plugin {
                 return viewWriter.createContainerElement('ul', {
                     class: 'tab yui3-tabview-list',
                     id: modelElement.parent.parent.parent.getAttribute('id') + '-tabList',
+                    draggable: 'false',
                 });
             },
         });
@@ -196,6 +203,7 @@ export default class TabsPlugin extends Plugin {
                 const ul = viewWriter.createContainerElement('ul', {
                     class: 'tab yui3-tabview-list',
                     id: modelElement.parent.parent.parent.getAttribute('id') + '-tabList',
+                    draggable: 'false',
                 });
                 return toWidget(ul, viewWriter);
             },
@@ -222,6 +230,7 @@ export default class TabsPlugin extends Plugin {
                 const li = viewWriter.createContainerElement('li', {
                     class: 'yui3-tab tablinks' + (modelElement.getAttribute('isActive') ? ' active' : ''),
                     'data-index': modelElement.getAttribute('index'),
+                    draggable: 'false',
                 });
 
                 const innerStructure = this._createTabItemInnerStructure(
@@ -242,6 +251,7 @@ export default class TabsPlugin extends Plugin {
                 const li = viewWriter.createContainerElement('li', {
                     class: 'yui3-tab tablinks' + (modelElement.getAttribute('isActive') ? ' active' : ''),
                     'data-index': modelElement.getAttribute('index'),
+                    draggable: 'false',
                 });
 
                 const innerStructure = this._createTabItemInnerStructure(
@@ -271,6 +281,7 @@ export default class TabsPlugin extends Plugin {
                 return viewWriter.createContainerElement('div', {
                     class: 'yui3-tabview-panel',
                     id: modelElement.parent.getAttribute('id') + '-tabContent',
+                    draggable: 'false',
                 });
             },
         });
@@ -281,6 +292,7 @@ export default class TabsPlugin extends Plugin {
                 const div = viewWriter.createContainerElement('div', {
                     class: 'yui3-tabview-panel',
                     id: modelElement.parent.getAttribute('id') + '-tabContent',
+                    draggable: 'false',
                 });
                 return toWidget(div, viewWriter);
             },
@@ -300,6 +312,7 @@ export default class TabsPlugin extends Plugin {
             view: (modelElement, { writer: viewWriter }) => {
                 return viewWriter.createContainerElement('div', {
                     class: 'yui3-tab-panel tabcontent' + (modelElement.getAttribute('isActive') ? ' active' : ''),
+                    draggable: 'false',
                 });
             },
         });
@@ -309,6 +322,7 @@ export default class TabsPlugin extends Plugin {
             view: (modelElement, { writer: viewWriter }) => {
                 const div = viewWriter.createContainerElement('div', {
                     class: 'yui3-tab-panel tabcontent' + (modelElement.getAttribute('isActive') ? ' active' : ''),
+                    draggable: 'false',
                 });
                 return toWidgetEditable(div, viewWriter);
             },
@@ -326,9 +340,13 @@ export default class TabsPlugin extends Plugin {
         conversion.for('dataDowncast').elementToElement({
             model: 'addTabButton',
             view: (modelElement, { writer: viewWriter }) => {
-                const li = viewWriter.createContainerElement('li', { class: 'yui3-tab addtab' });
-                const div = viewWriter.createContainerElement('div', { class: 'addicon', title: 'Add Tab' });
-                const p = viewWriter.createContainerElement('p', { class: 'addtabicon' });
+                const li = viewWriter.createContainerElement('li', { class: 'yui3-tab addtab', draggable: 'false' });
+                const div = viewWriter.createContainerElement('div', {
+                    class: 'addicon',
+                    title: 'Add Tab',
+                    draggable: 'false',
+                });
+                const p = viewWriter.createContainerElement('p', { class: 'addtabicon', draggable: 'false' });
                 viewWriter.insert(viewWriter.createPositionAt(div, 0), p);
                 viewWriter.insert(viewWriter.createPositionAt(li, 0), div);
                 return li;
@@ -338,9 +356,13 @@ export default class TabsPlugin extends Plugin {
         conversion.for('editingDowncast').elementToElement({
             model: 'addTabButton',
             view: (modelElement, { writer: viewWriter }) => {
-                const li = viewWriter.createContainerElement('li', { class: 'yui3-tab addtab' });
-                const div = viewWriter.createContainerElement('div', { class: 'addicon', title: 'Add Tab' });
-                const p = viewWriter.createContainerElement('p', { class: 'addtabicon' });
+                const li = viewWriter.createContainerElement('li', { class: 'yui3-tab addtab', draggable: 'false' });
+                const div = viewWriter.createContainerElement('div', {
+                    class: 'addicon',
+                    title: 'Add Tab',
+                    draggable: 'false',
+                });
+                const p = viewWriter.createContainerElement('p', { class: 'addtabicon', draggable: 'false' });
                 viewWriter.insert(viewWriter.createPositionAt(div, 0), p);
                 viewWriter.insert(viewWriter.createPositionAt(li, 0), div);
                 return toWidget(li, viewWriter);
@@ -349,26 +371,32 @@ export default class TabsPlugin extends Plugin {
     }
 
     _createTabItemInnerStructure(viewWriter, title, index, totalTabs) {
-        const div = viewWriter.createContainerElement('div', { class: 'yui3-tab-label' });
-        const table = viewWriter.createContainerElement('table');
-        const thead = viewWriter.createContainerElement('thead');
-        const tbody = viewWriter.createContainerElement('tbody');
+        const div = viewWriter.createContainerElement('div', { class: 'yui3-tab-label', draggable: 'false' });
+        const table = viewWriter.createContainerElement('table', { draggable: 'false' });
+        const thead = viewWriter.createContainerElement('thead', { draggable: 'false' });
+        const tbody = viewWriter.createContainerElement('tbody', { draggable: 'false' });
 
-        const theadTr = viewWriter.createContainerElement('tr');
-        const thLeft = viewWriter.createContainerElement('th');
-        const thRight = viewWriter.createContainerElement('th');
-        const thDelete = viewWriter.createContainerElement('th');
+        const theadTr = viewWriter.createContainerElement('tr', { draggable: 'false' });
+        const thLeft = viewWriter.createContainerElement('th', { draggable: 'false' });
+        const thRight = viewWriter.createContainerElement('th', { draggable: 'false' });
+        const thDelete = viewWriter.createContainerElement('th', { draggable: 'false' });
 
         const leftArrow = viewWriter.createContainerElement('div', {
             class: 'left-arrow arrowtabicon' + (index === '0' ? ' disabled' : ''),
             title: 'Move Tab Left',
+            draggable: 'false',
         });
         const rightArrow = viewWriter.createContainerElement('div', {
             class: 'right-arrow arrowtabicon' + (index === (totalTabs - 2).toString() ? ' disabled' : ''),
             title: 'Move Tab Right',
+            draggable: 'false',
         });
-        const deleteIcon = viewWriter.createContainerElement('div', { class: 'dropicon', title: 'Delete Tab' });
-        const deleteP = viewWriter.createContainerElement('p', { class: 'droptab droptabicon' });
+        const deleteIcon = viewWriter.createContainerElement('div', {
+            class: 'dropicon',
+            title: 'Delete Tab',
+            draggable: 'false',
+        });
+        const deleteP = viewWriter.createContainerElement('p', { class: 'droptab droptabicon', draggable: 'false' });
         viewWriter.insert(viewWriter.createPositionAt(deleteP, 0), viewWriter.createEmptyElement('br'));
 
         viewWriter.insert(viewWriter.createPositionAt(thLeft, 0), leftArrow);
@@ -380,9 +408,9 @@ export default class TabsPlugin extends Plugin {
         viewWriter.insert(viewWriter.createPositionAt(theadTr, 1), thRight);
         viewWriter.insert(viewWriter.createPositionAt(theadTr, 2), thDelete);
 
-        const tbodyTr = viewWriter.createContainerElement('tr');
-        const tbodyTd = viewWriter.createContainerElement('td', { colspan: '5' });
-        const titleDiv = viewWriter.createContainerElement('div', { class: 'tabTitle' });
+        const tbodyTr = viewWriter.createContainerElement('tr', { draggable: 'false' });
+        const tbodyTd = viewWriter.createContainerElement('td', { colspan: '5', draggable: 'false' });
+        const titleDiv = viewWriter.createContainerElement('div', { class: 'tabTitle', draggable: 'false' });
         viewWriter.insert(viewWriter.createPositionAt(titleDiv, 0), viewWriter.createText(title));
 
         viewWriter.insert(viewWriter.createPositionAt(tbodyTd, 0), titleDiv);
@@ -502,24 +530,27 @@ class AddTabCommand extends Command {
             const tabsContainer = selection.getFirstPosition().findAncestor('tabsContainer');
 
             if (tabsContainer) {
-                const tabList = tabsContainer.getChild(0).getChild(0).getChild(0);
+                const tabList = tabsContainer.getChild(0)?.getChild(0)?.getChild(0);
                 const tabContent = tabsContainer.getChild(1);
-                const newIndex = tabList.childCount - 1;
 
-                const tabItem = writer.createElement('tabItem', {
-                    title: `New Tab`,
-                    index: newIndex,
-                    isActive: false,
-                });
-                const tabPanel = writer.createElement('tabPanel', {
-                    isActive: false,
-                });
-                writer.append(writer.createText(`New Tab Content`), tabPanel);
+                if (tabList && tabContent) {
+                    const newIndex = tabList.childCount - 1;
 
-                writer.insert(tabItem, tabList, newIndex);
-                writer.append(tabPanel, tabContent);
+                    const tabItem = writer.createElement('tabItem', {
+                        title: `New Tab`,
+                        index: newIndex,
+                        isActive: false,
+                    });
+                    const tabPanel = writer.createElement('tabPanel', {
+                        isActive: false,
+                    });
+                    writer.append(writer.createText(`New Tab Content`), tabPanel);
 
-                this._updateTabIndices(writer, tabList);
+                    writer.insert(tabItem, tabList, newIndex);
+                    writer.append(tabPanel, tabContent);
+
+                    this._updateTabIndices(writer, tabList);
+                }
             }
         });
     }
@@ -543,16 +574,17 @@ class MoveTabCommand extends Command {
 
         editor.model.change((writer) => {
             const tabItem = selection.getFirstPosition().findAncestor('tabItem');
+            if (!tabItem) return;
+
             const tabList = tabItem.parent;
+            if (!tabList) return;
 
-            if (tabItem && tabList) {
-                const index = tabList.getChildIndex(tabItem);
-                const newIndex = direction === 'left' ? index - 1 : index + 1;
+            const index = tabList.getChildIndex(tabItem);
+            const newIndex = direction === 'left' ? index - 1 : index + 1;
 
-                if (newIndex >= 0 && newIndex < tabList.childCount - 1) {
-                    writer.move(writer.createRangeOn(tabItem), tabList, newIndex);
-                    this._updateTabIndices(writer, tabList);
-                }
+            if (newIndex >= 0 && newIndex < tabList.childCount - 1) {
+                writer.move(writer.createRangeOn(tabItem), tabList, newIndex);
+                this._updateTabIndices(writer, tabList);
             }
         });
     }
@@ -575,24 +607,38 @@ class DeleteTabCommand extends Command {
 
         editor.model.change((writer) => {
             const tabItem = selection.getFirstPosition().findAncestor('tabItem');
+            if (!tabItem) return;
+
             const tabList = tabItem.parent;
-            const tabsContainer = tabList.parent.parent.parent;
+            if (!tabList) return;
+
+            const tabsContainer = tabList.parent?.parent?.parent;
+            if (!tabsContainer) return;
+
             const tabContent = tabsContainer.getChild(1);
+            if (!tabContent) return;
 
-            if (tabItem && tabList) {
-                const index = tabList.getChildIndex(tabItem);
-                writer.remove(tabItem);
-                writer.remove(tabContent.getChild(index));
-                this._updateTabIndices(writer, tabList);
+            const index = tabList.getChildIndex(tabItem);
+            writer.remove(tabItem);
 
-                // Activate the previous tab or the first tab if the deleted tab was the first one
-                if (index > 0) {
-                    writer.setAttribute('isActive', true, tabList.getChild(index - 1));
-                    writer.setAttribute('isActive', true, tabContent.getChild(index - 1));
-                } else if (tabList.childCount > 1) {
-                    writer.setAttribute('isActive', true, tabList.getChild(0));
-                    writer.setAttribute('isActive', true, tabContent.getChild(0));
-                }
+            const tabPanelToRemove = tabContent.getChild(index);
+            if (tabPanelToRemove) {
+                writer.remove(tabPanelToRemove);
+            }
+
+            this._updateTabIndices(writer, tabList);
+
+            // Activate the previous tab or the first tab if the deleted tab was the first one
+            if (index > 0) {
+                const prevTab = tabList.getChild(index - 1);
+                const prevContent = tabContent.getChild(index - 1);
+                if (prevTab) writer.setAttribute('isActive', true, prevTab);
+                if (prevContent) writer.setAttribute('isActive', true, prevContent);
+            } else if (tabList.childCount > 1) {
+                const firstTab = tabList.getChild(0);
+                const firstContent = tabContent.getChild(0);
+                if (firstTab) writer.setAttribute('isActive', true, firstTab);
+                if (firstContent) writer.setAttribute('isActive', true, firstContent);
             }
         });
     }
