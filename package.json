@@ -48,12 +48,14 @@
     "@ckeditor/ckeditor5-ui": "^44.1.0",
     "@ckeditor/ckeditor5-undo": "^44.1.0",
     "@ckeditor/ckeditor5-watchdog": "^44.1.0",
-    "@ckeditor/ckeditor5-word-count": "^44.1.0"
+    "@ckeditor/ckeditor5-word-count": "^44.1.0",
+    "npm-watch": "0.13.0"
   },
   "devDependencies": {
     "@ckeditor/ckeditor5-core": "^44.1.0",
     "@ckeditor/ckeditor5-dev-translations": "^43.0.1",
     "@ckeditor/ckeditor5-dev-utils": "^43.0.1",
+    "@ckeditor/ckeditor5-inspector": "4.1.0",
     "@ckeditor/ckeditor5-theme-lark": "^44.1.0",
     "css-loader": "^5.2.7",
     "postcss": "^8.4.38",

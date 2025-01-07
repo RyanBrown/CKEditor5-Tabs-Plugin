@@ -40,6 +40,7 @@ import { EditorWatchdog } from '@ckeditor/ckeditor5-watchdog';
 
 // Custom Plugins
 import TabsPlugin from './plugins/Tabs_Plugin/tabs-plugin';
+import AlightLinkPlugin from './plugins/alight-link_plugin/alight-link-plugin';
 
 // You can read more about extending the build with additional plugins in the "Installing plugins" guide.
 // See https://ckeditor.com/docs/ckeditor5/latest/installation/plugins/installing-plugins.html for details.
@@ -102,6 +103,7 @@ class Editor extends ClassicEditor {
         Undo,
         // Custom Plugins
         TabsPlugin,
+        AlightLinkPlugin,
     ];
 
     public static override defaultConfig: EditorConfig = {
@@ -152,6 +154,7 @@ class Editor extends ClassicEditor {
                 'removeFormat',
                 '|',
                 'tabsPlugin',
+                'alightLinkPlugin',
             ],
             shouldNotGroupWhenFull: true,
         },
