@@ -44,6 +44,13 @@ import TabsPlugin from './plugins/Tabs_Plugin/tabs-plugin';
 // You can read more about extending the build with additional plugins in the "Installing plugins" guide.
 // See https://ckeditor.com/docs/ckeditor5/latest/installation/plugins/installing-plugins.html for details.
 
+const awldsColorPalette = [
+    // primary colors
+    { label: 'Core Water Leaf', color: '#96e8e2' },
+    { label: 'Core Tropical Blue', color: '#c2d9fe' },
+    { label: 'Core Pale Lavender', color: '#e5cdfd' },
+];
+
 class Editor extends ClassicEditor {
     public static override builtinPlugins = [
         Alignment,
@@ -128,8 +135,8 @@ class Editor extends ClassicEditor {
                 'heading',
                 '|',
                 'textPartLanguage',
-                '|',
-                'pageBreak',
+                // '|',
+                // 'pageBreak',
                 '|',
                 'fontColor',
                 'fontBackgroundColor',
@@ -159,11 +166,53 @@ class Editor extends ClassicEditor {
                 'linkImage',
             ],
         },
+        mediaEmbed: {
+            toolbar: ['mediaEmbed'],
+        },
         table: {
-            contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells', 'tableCellProperties', 'tableProperties'],
+            contentToolbar: [
+                'tableColumn',
+                'tableRow',
+                'mergeTableCells',
+                '|',
+                'tableCellProperties',
+                'tableProperties',
+            ],
+            tableProperties: {
+                // The default styles for tables in the editor.
+                // They should be synchronized with the content styles.
+                defaultProperties: {
+                    borderColor: 'black',
+                    borderStyle: 'solid',
+                    borderWidth: '2px',
+                    height: '100%',
+                    width: '100%',
+                },
+                // Keep the colors defined by AWLDS - removed color picker
+                borderColors: awldsColorPalette,
+                backgroundColors: awldsColorPalette,
+                colorPicker: false,
+            },
+            // The default styles for tables in the editor.
+            // They should be synchronized with the content styles.
+            tableCellProperties: {
+                defaultProperties: {
+                    borderColor: 'black',
+                    borderStyle: 'solid',
+                    borderWidth: '1px',
+                    padding: '10px',
+                },
+            },
+        },
+        indentBlock: {
+            offset: 1,
+            unit: 'em',
         },
         title: { placeholder: '' },
         placeholder: '',
+        // Add the license key here:
+        licenseKey:
+            'eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3Njc4MzAzOTksImp0aSI6IjNhMjUzZGQ5LTUwNWMtNDliZC04YjFhLTVmMTQ5N2Y5NjRjMSIsInVzYWdlRW5kcG9pbnQiOiJodHRwczovL3Byb3h5LWV2ZW50LmNrZWRpdG9yLmNvbSIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsiY2xvdWQiLCJkcnVwYWwiXSwiZmVhdHVyZXMiOlsiRFJVUCJdLCJ2YyI6IjZmMzUzMGY2In0.ZgMLAbXDi8MssSZBdpsDsgdLXmCr8-k_QHVbagbGEXvDam3izwah59TwfcTKLenvd1PFJrkrvqCYalvU--WB_A',
     };
 }
 
