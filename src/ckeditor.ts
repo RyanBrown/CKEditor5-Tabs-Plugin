@@ -41,12 +41,13 @@ import { EditorWatchdog } from '@ckeditor/ckeditor5-watchdog';
 // Custom Plugins
 import TabsPlugin from './plugins/Tabs_Plugin/tabs-plugin';
 import AlightLinkPlugin from './plugins/alight-link_plugin/alight-link-plugin';
+import ModalTriggerPlugin from './plugins/modal-trigger_plugin/modal-trigger-plugin';
 
 // You can read more about extending the build with additional plugins in the "Installing plugins" guide.
 // See https://ckeditor.com/docs/ckeditor5/latest/installation/plugins/installing-plugins.html for details.
 
 const awldsColorPalette = [
-    // primary colors
+    // Primary colors
     { label: 'Core Water Leaf', color: '#96e8e2' },
     { label: 'Core Tropical Blue', color: '#c2d9fe' },
     { label: 'Core Pale Lavender', color: '#e5cdfd' },
@@ -104,6 +105,7 @@ class Editor extends ClassicEditor {
         // Custom Plugins
         TabsPlugin,
         AlightLinkPlugin,
+        ModalTriggerPlugin,
     ];
 
     public static override defaultConfig: EditorConfig = {
@@ -155,6 +157,7 @@ class Editor extends ClassicEditor {
                 '|',
                 'tabsPlugin',
                 'alightLinkPlugin',
+                'modalTrigger',
             ],
             shouldNotGroupWhenFull: true,
         },
@@ -182,8 +185,6 @@ class Editor extends ClassicEditor {
                 'tableProperties',
             ],
             tableProperties: {
-                // The default styles for tables in the editor.
-                // They should be synchronized with the content styles.
                 defaultProperties: {
                     borderColor: 'black',
                     borderStyle: 'solid',
@@ -191,13 +192,10 @@ class Editor extends ClassicEditor {
                     height: '100%',
                     width: '100%',
                 },
-                // Keep the colors defined by AWLDS - removed color picker
                 borderColors: awldsColorPalette,
                 backgroundColors: awldsColorPalette,
                 colorPicker: false,
             },
-            // The default styles for tables in the editor.
-            // They should be synchronized with the content styles.
             tableCellProperties: {
                 defaultProperties: {
                     borderColor: 'black',
