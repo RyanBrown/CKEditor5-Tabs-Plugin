@@ -1,14 +1,26 @@
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin'; // Import the base Plugin class from CKEditor
 import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview'; // Import ButtonView for creating custom toolbar buttons
-import ToolBarIcon from './assets/icon-modal.svg';
+import ToolBarIcon from './assets/icon-modal.svg'; // Import a custom icon for the toolbar button
 
 // A CKEditor plugin to trigger a modal when the button is clicked.
 export default class ModalTriggerPlugin extends Plugin {
+    private hasModalListener = false; // Flag to track if a listener is registered for the modal event
+
     // Initializes the plugin. This method is called automatically by CKEditor.
     init() {
         const editor = this.editor;
 
         console.log('ModalTriggerPlugin initialized.'); // Log when the plugin is initialized
+
+        // Override the 'on' method of the editor to detect event listener registration
+        const originalOn = editor.on.bind(editor);
+        editor.on = (eventName, callback, options) => {
+            if (eventName === 'modalTrigger:openModal') {
+                this.hasModalListener = true; // Set the flag when a listener is registered for the modal event
+                console.log('Listener registered for "modalTrigger:openModal".');
+            }
+            originalOn(eventName, callback, options);
+        };
 
         // Add a custom button to the CKEditor toolbar
         editor.ui.componentFactory.add('modalTrigger', (locale) => {
@@ -19,7 +31,7 @@ export default class ModalTriggerPlugin extends Plugin {
 
             // Set the button's properties
             view.set({
-                icon: ToolBarIcon,
+                icon: ToolBarIcon, // Custom icon for the button
                 label: 'Open Modal', // Button label text
                 withText: true, // Display the label next to the button
                 tooltip: true, // Enable tooltip on hover
@@ -29,12 +41,8 @@ export default class ModalTriggerPlugin extends Plugin {
             view.on('execute', () => {
                 console.log('ModalTrigger button clicked.'); // Log when the button is clicked
 
-                // Check how many listeners are attached to the 'modalTrigger:openModal' event
-                const listenersCount = editor.listenerCount('modalTrigger:openModal');
-                console.log(`Listeners for 'modalTrigger:openModal': ${listenersCount}`); // Log the number of connected listeners
-
-                // If no listeners are attached, display a warning and an alert
-                if (listenersCount === 0) {
+                // Check if any listeners are registered for the 'modalTrigger:openModal' event
+                if (!this.hasModalListener) {
                     console.warn('No listeners connected to "modalTrigger:openModal" event.'); // Log a warning in the console
                     alert('No modal is connected to the modal event. Please ensure the event is handled.'); // Alert the user
                 }
@@ -71,13 +79,12 @@ export default class ModalTriggerPlugin extends Plugin {
 //     public Editor = ClassicEditor;
 //     public displayModal: boolean = false; // State to control the PrimeNG modal
 
-//     onEditorReady(editor: any) {
-//         // Listen for the custom plugin event
-//         editor.on('modalTrigger:openModal', () => {
-//             console.log('Modal trigger event received!');
-//             this.displayModal = true; // Show the modal
-//         });
-//     }
+// onEditorReady(editor: any) {
+//   editor.on('modalTrigger:openModal', () => {
+//       console.log('ModalTriggerPlugin event received: opening modal...');
+//       this.displayModal = true; // Trigger the PrimeNG modal
+//   });
+// }
 // }
 
 // app.component.html
