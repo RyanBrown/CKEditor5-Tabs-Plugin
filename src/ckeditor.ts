@@ -213,7 +213,7 @@ class Editor extends ClassicEditor {
         placeholder: '',
         // Add the license key here:
         licenseKey:
-            'eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3Njc4MzAzOTksImp0aSI6IjNhMjUzZGQ5LTUwNWMtNDliZC04YjFhLTVmMTQ5N2Y5NjRjMSIsInVzYWdlRW5kcG9pbnQiOiJodHRwczovL3Byb3h5LWV2ZW50LmNrZWRpdG9yLmNvbSIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsiY2xvdWQiLCJkcnVwYWwiXSwiZmVhdHVyZXMiOlsiRFJVUCJdLCJ2YyI6IjZmMzUzMGY2In0.ZgMLAbXDi8MssSZBdpsDsgdLXmCr8-k_QHVbagbGEXvDam3izwah59TwfcTKLenvd1PFJrkrvqCYalvU--WB_A',
+            'eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3Mzc1MDM5OTksImp0aSI6IjdlYjAxOGZhLTJkNWYtNDdkYS1hNjI1LWFmZmJhMjY2ODk2ZSIsInVzYWdlRW5kcG9pbnQiOiJodHRwczovL3Byb3h5LWV2ZW50LmNrZWRpdG9yLmNvbSIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsiY2xvdWQiLCJkcnVwYWwiLCJzaCJdLCJ3aGl0ZUxhYmVsIjp0cnVlLCJsaWNlbnNlVHlwZSI6InRyaWFsIiwiZmVhdHVyZXMiOlsiKiJdLCJ2YyI6ImM3NDFjZTQ3In0.IXuphGLHOZU1I6T_L0QR2Ufd7lWIHEbjWPpD41b8olt3IACjAd8TxMaj6ClJmqx3XD6nWFqw49ctczRzornvCA',
     };
 }
 
