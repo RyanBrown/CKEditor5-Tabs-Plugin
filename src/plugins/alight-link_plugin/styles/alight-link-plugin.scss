@@ -1,0 +1,74 @@
+/* =========================================
+ * File: alight-link-plugin-ui.css
+ * Description: Contains styles for the custom modal in AlightLinkPluginUI.
+ * ========================================= */
+
+$modal-box-shadow: 0 0.1875rem 0.5rem rgba(0, 0, 0, 0.15);
+$modal-border-radius: 0;
+$modal-mask: rgba(239, 239, 239, 0.8);
+$modal-padding: 1.5rem 2rem;
+$modal-bg: #fff;
+
+/* The semi-transparent overlay behind the modal */
+.ck-custom-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: $modal-mask;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+/* The main modal container */
+.ck-custom-modal {
+    background-color: $modal-bg;
+    padding: 1rem;
+    border-radius: $modal-border-radius;
+    min-width: 300px;
+    box-shadow: $modal-box-shadow;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* Modal Title */
+.ck-custom-modal h2 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+}
+
+/* Label and input styling */
+.ck-custom-modal label {
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.ck-custom-modal label input {
+    display: block;
+    margin-top: 0.25rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Container for modal buttons */
+.ck-custom-modal .buttons-container {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.ck-custom-modal button {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    background: #fafafa;
+}
+
+.ck-custom-modal button:hover {
+    background: #eee;
+}
