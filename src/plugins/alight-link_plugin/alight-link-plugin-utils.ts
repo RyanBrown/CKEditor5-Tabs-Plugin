@@ -8,7 +8,9 @@ export function createLinkFormView(locale: Locale, editor: Editor): ButtonView {
     return new ButtonView(locale);
 }
 
-// Exported link attributes, could be used if you want to refer to 'linkHref' in multiple places.
+// Exported link attributes, could be used if you want to refer to them in multiple places.
 export const linkAttributes = {
     href: 'linkHref',
+    target: 'linkTarget',
+    rel: 'linkRel',
 };
