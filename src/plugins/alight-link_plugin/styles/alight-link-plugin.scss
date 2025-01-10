@@ -9,6 +9,12 @@ $modal-mask: rgba(239, 239, 239, 0.8);
 $modal-padding: 1.5rem 2rem;
 $modal-bg: #fff;
 
+$modal-btn-color: #266de2;
+$modal-btn-color-hover: #1957bc;
+$modal-btn-bg-color-hover: rgba($modal-btn-color, 0.16);
+$modal-btn-border-radius: 1.875rem;
+$white: #fff;
+
 /* The semi-transparent overlay behind the modal */
 .ck-custom-modal-overlay {
     position: fixed;
@@ -62,13 +68,63 @@ $modal-bg: #fff;
     margin-top: 1rem;
 }
 
-.ck-custom-modal button {
-    padding: 0.5rem 1rem;
-    cursor: pointer;
-    border: 1px solid #ccc;
-    background: #fafafa;
-}
+// .ck-custom-modal button {
+//     padding: 0.5rem 1rem;
+//     cursor: pointer;
+//     color: $white;
+//     border: 2px solid $modal-btn-color;
+//     background-color: $modal-btn-color;
+//     border-radius: $modal-btn-border-radius;
+// }
 
-.ck-custom-modal button:hover {
-    background: #eee;
+// .ck-custom-modal button:hover {
+//     background: $modal-btn-bg-color-hover;
+// }
+
+.ck-custom-modal {
+    header {
+        align-items: center;
+        border-bottom: 1px solid #dedede;
+        display: flex;
+        justify-content: space-between;
+        padding: 1.5rem;
+
+        modal-title {
+            color: #282828;
+            font-size: 22px;
+        }
+        button.header-close {
+        }
+    }
+    main {
+    }
+    & > footer {
+        align-items: center;
+        display: flex;
+        justify-content: flex-start;
+        margin: 0;
+
+        button + button {
+            margin-left: 1rem;
+        }
+    }
+    button.primary {
+        background-color: $modal-btn-color;
+        border-radius: $modal-btn-border-radius;
+        border: 2px solid $modal-btn-color;
+        color: $white;
+        cursor: pointer;
+        padding: 0.5rem 1rem;
+    }
+    button.secondary {
+        border-radius: $modal-btn-border-radius;
+        border: 2px solid $modal-btn-color;
+        color: $modal-btn-color;
+        cursor: pointer;
+        padding: 0.5rem 1rem;
+
+        &:hover {
+            background: $modal-btn-bg-color-hover;
+        }
+    }
 }

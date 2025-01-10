@@ -6,6 +6,9 @@
  *      gather link properties.
  *   3) Executes the command with the user's
  *      chosen link data.
+ *   4) Closes the modal on Esc key.
+ *   5) Renders the modal in the specified
+ *      HTML structure (header/main/footer).
  * ========================================= */
 
 import { Plugin } from '@ckeditor/ckeditor5-core';
@@ -14,10 +17,7 @@ import { Locale } from '@ckeditor/ckeditor5-utils';
 import { createLinkFormView } from './alight-link-plugin-utils';
 import ToolBarIcon from './assets/icon-link.svg';
 
-/*
- * IMPORTANT: If you are using a bundler (Webpack, Vite, etc.)
- * and want this CSS automatically included, import it here:
- */
+// If your bundler supports direct CSS imports, uncomment below:
 import './styles/alight-link-plugin.css';
 
 export default class AlightLinkPluginUI extends Plugin {
@@ -46,7 +46,7 @@ export default class AlightLinkPluginUI extends Plugin {
             this.listenTo(buttonView, 'execute', () => {
                 const command = editor.commands.get('alightLinkPlugin');
 
-                // Open our custom modal (vanilla TypeScript, no PrimeNG).
+                // Open our custom modal (vanilla TypeScript)
                 this.openCustomModal().then((linkData: LinkData | null) => {
                     if (linkData) {
                         const { href, target, rel } = linkData;
@@ -83,35 +83,65 @@ interface LinkData {
  * creates a modal in the DOM to collect
  * link properties (href, target, rel).
  *
- * All styling is handled in the .css file.
+ * The rendered HTML structure is:
+     <div class="ck-custom-modal">
+       <header>
+         <span class="modal-title"></span>
+         <div>
+           <button class="header-close">&times;</button>
+         </div>
+       </header>
+       <main></main>
+       <footer>
+         <button class="primary">Cancel</button>
+         <button class="secondary">Continue</button>
+       </footer>
+     </div>
  * ========================================= */
 class CustomModal {
     private overlay: HTMLDivElement | null;
     private modal: HTMLDivElement | null;
 
+    // We'll store references to remove them later
+    private keyDownHandler: ((e: KeyboardEvent) => void) | null;
+
     constructor() {
         this.overlay = null;
         this.modal = null;
+        this.keyDownHandler = null;
     }
 
     public openModal(): Promise<LinkData | null> {
         return new Promise((resolve) => {
-            // Create overlay (with a CSS class instead of inline styles)
+            // Create overlay
             this.overlay = document.createElement('div');
             this.overlay.classList.add('ck-custom-modal-overlay');
 
-            // Create modal container
+            // Create the main modal container
             this.modal = document.createElement('div');
             this.modal.classList.add('ck-custom-modal');
 
-            // Title
-            const title = document.createElement('h2');
-            title.innerText = 'Insert Link';
-            this.modal.appendChild(title);
+            // Build the header
+            const headerEl = document.createElement('header');
+            const titleSpan = document.createElement('span');
+            titleSpan.classList.add('modal-title');
+            titleSpan.innerText = 'Insert Link';
 
-            // HREF field
+            const headerRightDiv = document.createElement('div');
+            const closeBtn = document.createElement('button');
+            closeBtn.classList.add('header-close');
+            closeBtn.innerText = '×';
+
+            headerRightDiv.appendChild(closeBtn);
+            headerEl.appendChild(titleSpan);
+            headerEl.appendChild(headerRightDiv);
+
+            // Build the main section
+            const mainEl = document.createElement('main');
+
+            // URL field
             const hrefLabel = document.createElement('label');
-            hrefLabel.innerText = 'Link HREF:';
+            hrefLabel.innerText = 'URL';
             const hrefInput = document.createElement('input');
             hrefInput.type = 'text';
             hrefInput.placeholder = 'https://example.com';
@@ -133,32 +163,58 @@ class CustomModal {
             relInput.placeholder = 'nofollow';
             relLabel.appendChild(relInput);
 
-            // Buttons container
-            const buttonsContainer = document.createElement('div');
-            buttonsContainer.classList.add('buttons-container');
+            mainEl.appendChild(hrefLabel);
+            mainEl.appendChild(targetLabel);
+            mainEl.appendChild(relLabel);
 
-            // Save button
-            const saveBtn = document.createElement('button');
-            saveBtn.innerText = 'Save';
+            // Build the footer
+            const footerEl = document.createElement('footer');
 
             // Cancel button
             const cancelBtn = document.createElement('button');
+            cancelBtn.classList.add('primary');
             cancelBtn.innerText = 'Cancel';
 
-            // Append elements
-            buttonsContainer.appendChild(saveBtn);
-            buttonsContainer.appendChild(cancelBtn);
+            // Continue (save) button
+            const continueBtn = document.createElement('button');
+            continueBtn.classList.add('secondary'); // spelled as requested
+            continueBtn.innerText = 'Continue';
 
-            this.modal.appendChild(hrefLabel);
-            this.modal.appendChild(targetLabel);
-            this.modal.appendChild(relLabel);
-            this.modal.appendChild(buttonsContainer);
+            footerEl.appendChild(cancelBtn);
+            footerEl.appendChild(continueBtn);
 
+            // Append header, main, footer to modal
+            this.modal.appendChild(headerEl);
+            this.modal.appendChild(mainEl);
+            this.modal.appendChild(footerEl);
+
+            // Append modal to overlay
             this.overlay.appendChild(this.modal);
             document.body.appendChild(this.overlay);
 
-            // Save button event
-            saveBtn.addEventListener('click', () => {
+            // Listen for ESC key
+            this.keyDownHandler = (event: KeyboardEvent) => {
+                if (event.key === 'Escape') {
+                    this.closeModal();
+                    resolve(null);
+                }
+            };
+            window.addEventListener('keydown', this.keyDownHandler);
+
+            // Handle the "header-close" (the "×" button)
+            closeBtn.addEventListener('click', () => {
+                this.closeModal();
+                resolve(null);
+            });
+
+            // Handle the "Cancel" button
+            cancelBtn.addEventListener('click', () => {
+                this.closeModal();
+                resolve(null);
+            });
+
+            // Handle the "Continue" button
+            continueBtn.addEventListener('click', () => {
                 const data: LinkData = {
                     href: hrefInput.value.trim(),
                     target: targetInput.value.trim(),
@@ -166,28 +222,28 @@ class CustomModal {
                 };
                 this.closeModal();
 
-                // If the user didn't provide any HREF, treat it as null
+                // If the user didn't provide any HREF, treat that as null
                 if (!data.href) {
                     resolve(null);
                 } else {
                     resolve(data);
                 }
             });
-
-            // Cancel button event
-            cancelBtn.addEventListener('click', () => {
-                this.closeModal();
-                resolve(null);
-            });
         });
     }
 
-    // Removes the modal from the DOM.
     private closeModal(): void {
+        // Remove overlay from the DOM
         if (this.overlay) {
             document.body.removeChild(this.overlay);
         }
+        // Remove the keydown event listener
+        if (this.keyDownHandler) {
+            window.removeEventListener('keydown', this.keyDownHandler);
+        }
+
         this.overlay = null;
         this.modal = null;
+        this.keyDownHandler = null;
     }
 }

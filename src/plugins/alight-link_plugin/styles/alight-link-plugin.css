@@ -55,13 +55,41 @@
   margin-top: 1rem;
 }
 
-.ck-custom-modal button {
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  border: 1px solid #ccc;
-  background: #fafafa;
+.ck-custom-modal header {
+  align-items: center;
+  border-bottom: 1px solid #dedede;
+  display: flex;
+  justify-content: space-between;
+  padding: 1.5rem;
 }
-
-.ck-custom-modal button:hover {
-  background: #eee;
+.ck-custom-modal header modal-title {
+  color: #282828;
+  font-size: 22px;
+}
+.ck-custom-modal > footer {
+  align-items: center;
+  display: flex;
+  justify-content: flex-start;
+  margin: 0;
+}
+.ck-custom-modal > footer button + button {
+  margin-left: 1rem;
+}
+.ck-custom-modal button.primary {
+  background-color: #266de2;
+  border-radius: 1.875rem;
+  border: 2px solid #266de2;
+  color: #fff;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+}
+.ck-custom-modal button.secondary {
+  border-radius: 1.875rem;
+  border: 2px solid #266de2;
+  color: #266de2;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+}
+.ck-custom-modal button.secondary:hover {
+  background: rgba(38, 109, 226, 0.16);
 }
