@@ -172,12 +172,12 @@ class CustomModal {
 
             // Cancel button
             const cancelBtn = document.createElement('button');
-            cancelBtn.classList.add('primary');
+            cancelBtn.classList.add('secondary');
             cancelBtn.innerText = 'Cancel';
 
             // Continue (save) button
             const continueBtn = document.createElement('button');
-            continueBtn.classList.add('secondary'); // spelled as requested
+            continueBtn.classList.add('primary'); // spelled as requested
             continueBtn.innerText = 'Continue';
 
             footerEl.appendChild(cancelBtn);
