@@ -14,12 +14,10 @@ export default class AlightLinkPluginEditing extends Plugin {
         return 'AlightLinkPluginEditing';
     }
 
-    /**
-     * Initializes the plugin:
-     * - Extends the schema to allow multiple link attributes on text.
-     * - Sets up upcast/downcast converters.
-     * - Registers the 'alightLinkPlugin' command.
-     */
+    // Initializes the plugin:
+    // - Extends the schema to allow multiple link attributes on text.
+    // - Sets up upcast/downcast converters.
+    // - Registers the 'alightLinkPlugin' command.
     init() {
         const editor = this.editor;
 
@@ -28,12 +26,9 @@ export default class AlightLinkPluginEditing extends Plugin {
             allowAttributes: ['linkHref', 'linkTarget', 'linkRel'],
         });
 
-        /**
-         * Downcast Converters
-         *
-         * If the text has linkHref, we create an <a> element with href.
-         * Then we conditionally add target/rel if they exist.
-         */
+        // Downcast Converters
+        // If the text has linkHref, we create an <a> element with href.
+        // Then we conditionally add target/rel if they exist.
         editor.conversion.for('downcast').attributeToElement({
             model: {
                 name: '$text',
@@ -51,10 +46,8 @@ export default class AlightLinkPluginEditing extends Plugin {
                 name: '$text',
                 key: 'linkTarget',
             },
-            /**
-             * When a "value" (targetValue) is present in the model, we return a function that
-             * receives (viewElement, conversionApi). We must type them explicitly to avoid TS7006.
-             */
+            // When a "value" (targetValue) is present in the model, we return a function that
+            // receives (viewElement, conversionApi). We must type them explicitly to avoid TS7006.
             view: (targetValue: string, { writer }) => {
                 if (!targetValue) return;
                 return (viewElement: ViewElement, conversionApi: DowncastConversionApi) => {
@@ -80,12 +73,9 @@ export default class AlightLinkPluginEditing extends Plugin {
             },
         });
 
-        /**
-         * Upcast Converters
-         *
-         * If we see an <a> element in the HTML, grab href, target, rel
-         * and set them in the model as linkHref, linkTarget, linkRel.
-         */
+        // Upcast Converters
+        // If we see an <a> element in the HTML, grab href, target, rel
+        // and set them in the model as linkHref, linkTarget, linkRel.
         editor.conversion.for('upcast').elementToAttribute({
             view: 'a',
             model: {

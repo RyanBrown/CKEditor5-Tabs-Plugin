@@ -8,11 +8,9 @@ interface LinkCommandOptions {
 }
 
 export default class AlightLinkCommand extends Command {
-    /**
-     * Executes the command.
-     * If an href is provided, the command sets the link attributes in the model range.
-     * If no href is provided, the command removes the link attributes.
-     */
+    // Executes the command.
+    // If an href is provided, the command sets the link attributes in the model range.
+    // If no href is provided, the command removes the link attributes.
     public override execute(options: LinkCommandOptions): void {
         const { href, target, rel } = options;
         const editor = this.editor;
@@ -38,11 +36,9 @@ export default class AlightLinkCommand extends Command {
         });
     }
 
-    /**
-     * Refreshes the command state.
-     * - isEnabled: checks if there is a non-collapsed selection.
-     * - value: stores the current link URL if the selection has a 'linkHref' attribute.
-     */
+    // Refreshes the command state.
+    // - isEnabled: checks if there is a non-collapsed selection.
+    // - value: stores the current link URL if the selection has a 'linkHref' attribute.
     public override refresh(): void {
         const editor = this.editor;
         const model = editor.model;

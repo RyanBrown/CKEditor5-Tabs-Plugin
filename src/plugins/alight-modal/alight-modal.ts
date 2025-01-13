@@ -20,10 +20,8 @@ export interface LinkData {
     rel?: string;
 }
 
-/**
- * A basic custom modal class that creates a modal in the DOM to collect
- * link properties (href, target, rel) OR display custom content based on passed props.
- */
+// A basic custom modal class that creates a modal in the DOM to collect
+// link properties (href, target, rel) OR display custom content based on passed props.
 export class CustomModal {
     private overlay: HTMLDivElement | null;
     private modal: HTMLDivElement | null;
@@ -35,10 +33,8 @@ export class CustomModal {
         this.keyDownHandler = null;
     }
 
-    /**
-     * Opens the modal, returning a Promise<LinkData | null>.
-     * You can pass optional props to customize the modal's title, main content, and button labels.
-     */
+    // Opens the modal, returning a Promise<LinkData | null>.
+    // You can pass optional props to customize the modal's title, main content, and button labels.
     public openModal(props?: ModalProps): Promise<LinkData | null> {
         // Destructure and provide default values
         const {

@@ -1,8 +1,3 @@
-/* ===================================
- * File: alight-link-plugin.ts
- * Description: Bundles the Editing and UI sub-plugins.
- * =================================== */
-
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import AlightLinkPluginEditing from './alight-link-plugin-editing';
 import AlightLinkPluginUI from './alight-link-plugin-ui';
