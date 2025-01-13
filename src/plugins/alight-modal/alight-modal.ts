@@ -2,10 +2,11 @@ import './styles/alight-modal.css';
 
 // Interface describing optional configuration for opening the modal.
 export interface ModalProps {
-    // Modal title text (header).  Defaults to "Insert Link" if not provided.
+    // Modal title text (header). Defaults to "Modal Title" if not provided.
     title?: string;
-    // If provided, this content will be placed into the <main> element.
-    // If left empty, we'll show the default link fields (href, target, rel).
+    // If provided, this content (string or HTMLElement)
+    // will be placed into the <main> element.
+    // If left empty, we'll show an empty <main>.
     mainContent?: string | HTMLElement;
     // Text label for the primary (right) button. Defaults to "Continue".
     primaryBtnLabel?: string;
@@ -13,15 +14,8 @@ export interface ModalProps {
     secondaryBtnLabel?: string;
 }
 
-// An interface describing the shape of data returned by the modal.
-export interface LinkData {
-    href?: string;
-    target?: string;
-    rel?: string;
-}
-
-// A basic custom modal class that creates a modal in the DOM to collect
-// link properties (href, target, rel) OR display custom content based on passed props.
+// A basic custom modal class that creates a modal in the DOM,
+// displaying whatever content is provided via props.
 export class CustomModal {
     private overlay: HTMLDivElement | null;
     private modal: HTMLDivElement | null;
@@ -33,12 +27,13 @@ export class CustomModal {
         this.keyDownHandler = null;
     }
 
-    // Opens the modal, returning a Promise<LinkData | null>.
-    // You can pass optional props to customize the modal's title, main content, and button labels.
-    public openModal(props?: ModalProps): Promise<LinkData | null> {
+    // Opens the modal, returning a Promise<unknown> (or void).
+    // You can pass optional props to customize the modal's
+    // title, main content, and button labels.
+    public openModal(props?: ModalProps): Promise<unknown> {
         // Destructure and provide default values
         const {
-            title = 'Insert Link',
+            title = 'Modal Title',
             mainContent,
             primaryBtnLabel = 'Continue',
             secondaryBtnLabel = 'Cancel',
@@ -72,40 +67,17 @@ export class CustomModal {
             const mainEl = document.createElement('main');
 
             if (mainContent) {
-                // If the caller provided custom content, insert it directly
+                // If the caller provided custom content, insert it
                 if (typeof mainContent === 'string') {
-                    // Insert HTML string as the inner HTML
+                    // Insert HTML string as inner HTML
                     mainEl.innerHTML = mainContent;
                 } else {
                     // Or append an actual DOM element if given
                     mainEl.appendChild(mainContent);
                 }
             } else {
-                // FALLBACK: Build the default link fields if no mainContent is provided.
-                const hrefLabel = document.createElement('label');
-                hrefLabel.innerText = 'URL';
-                const hrefInput = document.createElement('input');
-                hrefInput.type = 'text';
-                hrefInput.placeholder = 'https://example.com';
-                hrefLabel.appendChild(hrefInput);
-
-                const targetLabel = document.createElement('label');
-                targetLabel.innerText = 'Link Target:';
-                const targetInput = document.createElement('input');
-                targetInput.type = 'text';
-                targetInput.placeholder = '_blank';
-                targetLabel.appendChild(targetInput);
-
-                const relLabel = document.createElement('label');
-                relLabel.innerText = 'Link Rel:';
-                const relInput = document.createElement('input');
-                relInput.type = 'text';
-                relInput.placeholder = 'nofollow';
-                relLabel.appendChild(relInput);
-
-                mainEl.appendChild(hrefLabel);
-                mainEl.appendChild(targetLabel);
-                mainEl.appendChild(relLabel);
+                // If no content is provided, leave it empty
+                mainEl.innerHTML = '';
             }
 
             // 5) Build the footer
@@ -156,35 +128,10 @@ export class CustomModal {
 
             // 11) "Continue" (primary) button
             continueBtn.addEventListener('click', () => {
-                // If the user provided custom main content, we
-                // don’t have the default link fields. We’ll just resolve
-                // with null or an empty object. Adjust as you see fit.
-                if (mainContent) {
-                    this.closeModal();
-                    resolve(null);
-                    return;
-                }
-
-                // If no mainContent was set, we assume the default link fields exist
-                const inputs = mainEl.querySelectorAll('input');
-                const hrefValue = (inputs[0] as HTMLInputElement)?.value.trim();
-                const targetValue = (inputs[1] as HTMLInputElement)?.value.trim();
-                const relValue = (inputs[2] as HTMLInputElement)?.value.trim();
-
-                const data: LinkData = {
-                    href: hrefValue,
-                    target: targetValue,
-                    rel: relValue,
-                };
-
+                // In a purely generic modal, we don’t know about link fields.
+                // We simply resolve with null (or any custom data if you want).
                 this.closeModal();
-
-                if (!data.href) {
-                    // If the user didn't provide any HREF, treat that as null
-                    resolve(null);
-                } else {
-                    resolve(data);
-                }
+                resolve(null);
             });
         });
     }

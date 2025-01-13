@@ -4,11 +4,17 @@ import { Locale } from '@ckeditor/ckeditor5-utils';
 import { createLinkFormView } from './alight-link-plugin-utils';
 import ToolBarIcon from './assets/icon-link.svg';
 
-// If your bundler supports direct CSS imports, uncomment below:
-// import './styles/alight-link-plugin.css';
+import './styles/alight-link-plugin.css';
 
-// Import your modal, LinkData, and the new ModalProps interface
-import { CustomModal, LinkData, ModalProps } from '../alight-modal/alight-modal';
+// Import your generic modal + props interface
+import { CustomModal, ModalProps } from '../alight-modal/alight-modal';
+
+// Simple interface describing link data for CKEditor commands.
+export interface LinkData {
+    href?: string;
+    target?: string;
+    rel?: string;
+}
 
 export default class AlightLinkPluginUI extends Plugin {
     static get pluginName() {
@@ -34,73 +40,147 @@ export default class AlightLinkPluginUI extends Plugin {
 
             // Handle button click
             this.listenTo(buttonView, 'execute', () => {
-                // Grab the link command (if you need to execute after collecting data)
+                // Grab the editor command for inserting/updating links
                 const command = editor.commands.get('alightLinkPlugin');
 
-                // ------------------------------------------
+                // ---------------------------------------------------------------------
                 // EXAMPLE #1: Use the default link fields (no props)
-                // ------------------------------------------
-                this.openCustomModal().then((linkData: LinkData | null) => {
-                    if (linkData) {
+                // ---------------------------------------------------------------------
+                /*
+                const linkFieldsEl = createLinkFieldsElement();
+                this.openCustomModal().then(() => {
+                    // Since our generic modal always resolves with null (by default),
+                    // read the link data from linkFieldsEl:
+                    const linkData: LinkData = extractLinkData(linkFieldsEl);
+
+                    // If user gave us a URL, execute the command
+                    if (linkData.href) {
                         const { href, target, rel } = linkData;
-                        // Execute the command with the retrieved properties
                         editor.execute('alightLinkPlugin', { href, target, rel });
                     }
                 });
+                */
 
-                // ------------------------------------------
+                // ---------------------------------------------------------------------
                 // EXAMPLE #2: Pass custom title & button labels (still uses default link fields)
-                // ------------------------------------------
-                // this.openCustomModal({
-                //     title: 'My Custom Title',
-                //     primaryBtnLabel: 'OK',
-                //     secondaryBtnLabel: 'Close',
-                // }).then((linkData: LinkData | null) => {
-                //     if (linkData) {
-                //         const { href, target, rel } = linkData;
-                //         editor.execute('alightLinkPlugin', { href, target, rel });
-                //     }
-                // });
+                // ---------------------------------------------------------------------
+                /*
+                const linkFieldsEl = createLinkFieldsElement();
+                this.openCustomModal({
+                    title: 'My Custom Link Title',
+                    primaryBtnLabel: 'Insert',
+                    secondaryBtnLabel: 'Abort'
+                }).then(() => {
+                    const linkData: LinkData = extractLinkData(linkFieldsEl);
+                    if (linkData.href) {
+                        const { href, target, rel } = linkData;
+                        editor.execute('alightLinkPlugin', { href, target, rel });
+                    }
+                });
+                */
 
-                // ------------------------------------------
+                // ---------------------------------------------------------------------
                 // EXAMPLE #3: Provide a completely custom main content (no link fields)
-                // ------------------------------------------
+                // ---------------------------------------------------------------------
 
-                // // 1) Create a custom div or element to insert into the <main> of the modal
-                // const customDiv = document.createElement('div');
-                // customDiv.innerHTML = `
-                //     <p>Hello, world!</p>
-                //     <p>This is a fully custom main section.</p>
-                // `;
+                // 1) Create a custom div or element to insert into the <main> of the modal
+                const customDiv = document.createElement('div');
+                customDiv.innerHTML = `
+                    <ul class="choose-link-list">
+                        <li>Alight Worklife Pages</li>
+                        <li><a>Predefined Pages</a></li>
+                    </ul>
 
-                // // 2) Pass custom props, including mainContent
-                // this.openCustomModal({
-                //     title: 'Custom Content',
-                //     mainContent: customDiv,
-                //     primaryBtnLabel: 'Got it',
-                //     secondaryBtnLabel: 'Dismiss',
-                // }).then((linkData: LinkData | null) => {
-                //     // In this scenario, the default code resolves with null
-                //     // unless you add logic to read from customDiv in the modal’s "Continue" handler.
-                //     if (linkData) {
-                //         // Typically will be null with the default "custom content" logic
-                //         console.log('Closed with data:', linkData);
-                //     } else {
-                //         console.log('Modal canceled or custom content returned null.');
-                //     }
-                // });
+                    <ul class="choose-link-list">
+                        <li>External Sites</li>
+                        <li><a>Public Website</a></li>
+                        <li><a>Intranet</a></li>
+                    </ul>
+
+                    <ul class="choose-link-list">
+                        <li>Documents</a></li>
+                        <li><a>Existing Document</a></li>
+                        <li><a>New Document</a></li>
+                    </ul>
+                `;
+
+                // 2) Pass custom props, including mainContent
+                this.openCustomModal({
+                    title: 'Choose a Link',
+                    mainContent: customDiv,
+                    primaryBtnLabel: 'OK',
+                    secondaryBtnLabel: 'Close',
+                }).then(() => {
+                    // In this scenario, the default code in the modal resolves with null.
+                    // If you need to gather data from customDiv, you'd do it here.
+                    console.log('Modal closed. No link fields were present.');
+                });
             });
 
             return buttonView;
         });
     }
 
-    /**
-     * Opens the custom modal, returning a Promise<LinkData | null>.
-     * Accepts optional props to customize title, main content, and button labels.
-     */
-    private openCustomModal(props?: ModalProps): Promise<LinkData | null> {
+    // Opens the custom modal, returning a Promise<unknown>.
+    // Accepts optional props to customize title, main content, and button labels.
+    private openCustomModal(props?: ModalProps): Promise<unknown> {
         const modal = new CustomModal();
         return modal.openModal(props);
     }
+}
+
+// Creates an HTMLElement containing our "link fields":
+// - URL (href)
+// - Target
+// - Rel
+function createLinkFieldsElement(): HTMLElement {
+    const wrapper = document.createElement('div');
+
+    // HREF field
+    const hrefLabel = document.createElement('label');
+    hrefLabel.innerText = 'URL';
+    const hrefInput = document.createElement('input');
+    hrefInput.type = 'text';
+    hrefInput.placeholder = 'https://example.com';
+    hrefInput.className = 'link-href-input'; // For easy querying
+    hrefLabel.appendChild(hrefInput);
+
+    // TARGET field
+    const targetLabel = document.createElement('label');
+    targetLabel.innerText = 'Link Target:';
+    const targetInput = document.createElement('input');
+    targetInput.type = 'text';
+    targetInput.placeholder = '_blank';
+    targetInput.className = 'link-target-input';
+    targetLabel.appendChild(targetInput);
+
+    // REL field
+    const relLabel = document.createElement('label');
+    relLabel.innerText = 'Link Rel:';
+    const relInput = document.createElement('input');
+    relInput.type = 'text';
+    relInput.placeholder = 'nofollow';
+    relInput.className = 'link-rel-input';
+    relLabel.appendChild(relInput);
+
+    // Append all labels to the wrapper
+    wrapper.appendChild(hrefLabel);
+    wrapper.appendChild(targetLabel);
+    wrapper.appendChild(relLabel);
+
+    return wrapper;
+}
+
+// Extracts the link data from the given HTMLElement,
+// assuming it contains .link-href-input, .link-target-input, and .link-rel-input.
+function extractLinkData(container: HTMLElement): LinkData {
+    const hrefInput = container.querySelector('.link-href-input') as HTMLInputElement;
+    const targetInput = container.querySelector('.link-target-input') as HTMLInputElement;
+    const relInput = container.querySelector('.link-rel-input') as HTMLInputElement;
+
+    const href = hrefInput?.value.trim() || '';
+    const target = targetInput?.value.trim() || '';
+    const rel = relInput?.value.trim() || '';
+
+    return { href, target, rel };
 }
