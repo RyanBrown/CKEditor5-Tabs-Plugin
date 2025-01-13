@@ -11,7 +11,7 @@ $modal-btn-border-radius: 1.875rem;
 $white: #fff;
 
 // The semi-transparent overlay behind the modal
-.ck-custom-modal-overlay {
+.ck-alight-modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -25,7 +25,7 @@ $white: #fff;
 }
 
 // The main modal container
-.ck-custom-modal {
+.ck-alight-modal {
     background-color: $modal-bg;
     border-radius: $modal-border-radius;
     box-shadow: $modal-box-shadow;
@@ -37,18 +37,18 @@ $white: #fff;
 }
 
 // Modal Title
-.ck-custom-modal h2 {
+.ck-alight-modal h2 {
     margin-top: 0;
     margin-bottom: 0.5rem;
 }
 
 // Label and input styling
-.ck-custom-modal label {
+.ck-alight-modal label {
     display: block;
     margin-bottom: 0.5rem;
 }
 
-.ck-custom-modal label input {
+.ck-alight-modal label input {
     display: block;
     margin-top: 0.25rem;
     width: 100%;
@@ -56,14 +56,14 @@ $white: #fff;
 }
 
 // Container for modal buttons
-.ck-custom-modal .buttons-container {
+.ck-alight-modal .buttons-container {
     display: flex;
     justify-content: flex-end;
     gap: 0.5rem;
     margin-top: 1rem;
 }
 
-// .ck-custom-modal button {
+// .ck-alight-modal button {
 //     padding: 0.5rem 1rem;
 //     cursor: pointer;
 //     color: $white;
@@ -72,11 +72,11 @@ $white: #fff;
 //     border-radius: $modal-btn-border-radius;
 // }
 
-// .ck-custom-modal button:hover {
+// .ck-alight-modal button:hover {
 //     background: $modal-btn-bg-color-hover;
 // }
 
-.ck-custom-modal {
+.ck-alight-modal {
     header {
         align-items: center;
         border-bottom: 0.0625rem solid #dedede;

@@ -1,4 +1,4 @@
-.ck-custom-modal-overlay {
+.ck-alight-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -11,7 +11,7 @@
   z-index: 9999;
 }
 
-.ck-custom-modal {
+.ck-alight-modal {
   background-color: #fff;
   border-radius: 0;
   box-shadow: 0 0.1875rem 0.5rem rgba(0, 0, 0, 0.15);
@@ -22,31 +22,31 @@
   min-width: 500px;
 }
 
-.ck-custom-modal h2 {
+.ck-alight-modal h2 {
   margin-top: 0;
   margin-bottom: 0.5rem;
 }
 
-.ck-custom-modal label {
+.ck-alight-modal label {
   display: block;
   margin-bottom: 0.5rem;
 }
 
-.ck-custom-modal label input {
+.ck-alight-modal label input {
   display: block;
   margin-top: 0.25rem;
   width: 100%;
   box-sizing: border-box;
 }
 
-.ck-custom-modal .buttons-container {
+.ck-alight-modal .buttons-container {
   display: flex;
   justify-content: flex-end;
   gap: 0.5rem;
   margin-top: 1rem;
 }
 
-.ck-custom-modal header {
+.ck-alight-modal header {
   align-items: center;
   border-bottom: 0.0625rem solid #dedede;
   display: flex;
@@ -56,11 +56,11 @@
   justify-content: space-between;
   padding: 1.5rem;
 }
-.ck-custom-modal header modal-title {
+.ck-alight-modal header modal-title {
   color: #282828;
   font-size: 22px;
 }
-.ck-custom-modal header button.header-close {
+.ck-alight-modal header button.header-close {
   background-color: transparent;
   background-image: url("https://raw.githubusercontent.com/ckeditor/ckeditor5/master/packages/ckeditor5-core/theme/icons/cancel.svg");
   background-position: center center;
@@ -72,23 +72,23 @@
   padding: 0;
   width: 32px;
 }
-.ck-custom-modal header button.header-close:hover {
+.ck-alight-modal header button.header-close:hover {
   opacity: 0.8;
 }
-.ck-custom-modal main {
+.ck-alight-modal main {
   padding: 1.5rem;
 }
-.ck-custom-modal > footer {
+.ck-alight-modal > footer {
   align-items: center;
   display: flex;
   justify-content: flex-start;
   margin: 0;
   padding: 1.5rem;
 }
-.ck-custom-modal > footer button + button {
+.ck-alight-modal > footer button + button {
   margin-left: 1rem;
 }
-.ck-custom-modal button.primary {
+.ck-alight-modal button.primary {
   background-color: #266de2;
   border-radius: 1.875rem;
   border: 2px solid #266de2;
@@ -96,7 +96,7 @@
   cursor: pointer;
   padding: 0.5rem 1rem;
 }
-.ck-custom-modal button.secondary {
+.ck-alight-modal button.secondary {
   background-color: transparent;
   border-radius: 1.875rem;
   border: 2px solid #266de2;
@@ -104,10 +104,10 @@
   cursor: pointer;
   padding: 0.5rem 1rem;
 }
-.ck-custom-modal button.secondary:hover {
+.ck-alight-modal button.secondary:hover {
   background: rgba(38, 109, 226, 0.16);
 }
-.ck-custom-modal input {
+.ck-alight-modal input {
   border-radius: 0;
   border: 0.0625rem solid #767676;
   font-size: 1rem;
