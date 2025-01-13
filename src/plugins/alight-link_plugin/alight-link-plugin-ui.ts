@@ -110,6 +110,8 @@ export default class AlightLinkPluginUI extends Plugin {
                     mainContent: customDiv,
                     primaryBtnLabel: 'OK',
                     secondaryBtnLabel: 'Close',
+                    showHeader: true,
+                    showFooter: false,
                 }).then(() => {
                     // In this scenario, the default code in the modal resolves with null.
                     // If you need to gather data from customDiv, you'd do it here.
