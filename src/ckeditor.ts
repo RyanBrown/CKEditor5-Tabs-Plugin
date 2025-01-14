@@ -42,6 +42,7 @@ import { EditorWatchdog } from '@ckeditor/ckeditor5-watchdog';
 import TabsPlugin from './plugins/Tabs_Plugin/tabs-plugin';
 import AlightLinkPlugin from './plugins/alight-link_plugin/alight-link-plugin';
 import ModalTriggerPlugin from './plugins/modal-trigger_plugin/modal-trigger-plugin';
+import AlightPopulationPlugin from './plugins/alight-population_plugin/alight-population-plugin';
 
 // You can read more about extending the build with additional plugins in the "Installing plugins" guide.
 // See https://ckeditor.com/docs/ckeditor5/latest/installation/plugins/installing-plugins.html for details.
@@ -106,6 +107,7 @@ class Editor extends ClassicEditor {
         TabsPlugin,
         AlightLinkPlugin,
         ModalTriggerPlugin,
+        AlightPopulationPlugin,
     ];
 
     public static override defaultConfig: EditorConfig = {
@@ -158,6 +160,7 @@ class Editor extends ClassicEditor {
                 'tabsPlugin',
                 'alightLinkPlugin',
                 'modalTrigger',
+                'alightPopulationPlugin',
             ],
             shouldNotGroupWhenFull: true,
         },
