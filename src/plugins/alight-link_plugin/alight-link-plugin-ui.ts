@@ -98,24 +98,36 @@ export default class AlightLinkPluginUI extends Plugin {
                     </ul>
 
                     <ul class="choose-link-list">
-                        <li>Documents</a></li>
+                        <li>Documents</li>
                         <li><a>Existing Document</a></li>
                         <li><a>New Document</a></li>
                     </ul>
                 `;
 
-                // 2) Pass custom props, including mainContent
+                // 2) Open the "choose a link" modal with no footer (just an example)
+                //    (So user can ONLY select from these links or press Esc/× to close)
                 this.openCustomModal({
                     title: 'Choose a Link',
                     mainContent: customDiv,
                     primaryBtnLabel: 'OK',
                     secondaryBtnLabel: 'Close',
                     showHeader: true,
-                    showFooter: false,
+                    showFooter: false, // no footer buttons
                 }).then(() => {
                     // In this scenario, the default code in the modal resolves with null.
                     // If you need to gather data from customDiv, you'd do it here.
                     console.log('Modal closed. No link fields were present.');
+                });
+
+                // 3) Add click listeners for each <a> link inside customDiv
+                //    When clicked, open a *new* modal with unique content
+                customDiv.querySelectorAll('a').forEach((link) => {
+                    link.addEventListener('click', (event) => {
+                        event.preventDefault(); // Prevent any default <a> navigation
+
+                        const linkText = link.textContent?.trim() || '';
+                        this.handleLinkClick(linkText);
+                    });
                 });
             });
 
@@ -124,17 +136,93 @@ export default class AlightLinkPluginUI extends Plugin {
     }
 
     // Opens the custom modal, returning a Promise<unknown>.
-    // Accepts optional props to customize title, main content, and button labels.
+    // Accepts optional props to customize title, main content, and button labels,
+    // as well as showHeader/showFooter booleans.
     private openCustomModal(props?: ModalProps): Promise<unknown> {
         const modal = new CustomModal();
         return modal.openModal(props);
     }
+
+    // Handles clicks on any of the <a> links (Predefined Pages, Public Website, etc.).
+    // We close the original "Choose a Link" modal by simply opening a new modal,
+    // or you can modify code to close the first modal if needed.
+    private handleLinkClick(linkText: string): void {
+        let modalTitle = linkText; // default title is the link text
+        let mainContentHtml: string | HTMLElement = `<p>You clicked on "${linkText}".</p>`;
+
+        switch (linkText) {
+            case 'Predefined Pages':
+                modalTitle = 'Predefined Pages';
+                mainContentHtml = `
+                    <h2>Predefined Pages</h2>
+                    <p>Here is some content about predefined pages...</p>
+                `;
+                break;
+
+            case 'Public Website':
+                modalTitle = 'Public Website';
+
+                // Create the link fields instead of static text
+                const linkFieldsEl = createLinkFieldsElement();
+
+                // We'll store the DOM element as our main content
+                mainContentHtml = linkFieldsEl;
+                break;
+
+            case 'Intranet':
+                modalTitle = 'Intranet';
+                mainContentHtml = `
+                    <h2>Intranet</h2>
+                    <p>Here is content about linking to your company's intranet pages...</p>
+                `;
+                break;
+
+            case 'Existing Document':
+                modalTitle = 'Existing Document';
+                mainContentHtml = `
+                    <h2>Existing Document</h2>
+                    <p>Here is content about selecting an existing document...</p>
+                `;
+                break;
+
+            case 'New Document':
+                modalTitle = 'New Document';
+                mainContentHtml = `
+                    <h2>New Document</h2>
+                    <p>Here is content about creating a new document to link to...</p>
+                `;
+                break;
+
+            default:
+                modalTitle = 'Unknown Link';
+                mainContentHtml = `<p>No specific content found for "${linkText}".</p>`;
+                break;
+        }
+
+        this.openCustomModal({
+            title: modalTitle,
+            mainContent: mainContentHtml, // This can be a string or HTMLElement
+            primaryBtnLabel: 'OK',
+            secondaryBtnLabel: 'Cancel',
+            showHeader: true,
+            showFooter: true,
+        }).then(() => {
+            // If you want to read the link fields after user clicks OK,
+            // you'd do something like:
+            if (mainContentHtml instanceof HTMLElement) {
+                const linkData: LinkData = extractLinkData(mainContentHtml);
+                if (linkData.href) {
+                    console.log('Public Website link data:', linkData);
+                    // e.g., editor.execute('alightLinkPlugin', { href: linkData.href, ... });
+                }
+            }
+            console.log(`Modal for "${linkText}" closed.`);
+        });
+    }
 }
 
-// Creates an HTMLElement containing our "link fields":
-// - URL (href)
-// - Target
-// - Rel
+// (The rest below remains unchanged.)
+// If you want to do Example #1 or #2 with link fields, uncomment and adapt as needed.
 function createLinkFieldsElement(): HTMLElement {
     const wrapper = document.createElement('div');
 

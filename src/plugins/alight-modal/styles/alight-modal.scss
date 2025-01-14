@@ -1,12 +1,21 @@
+$primary: #266de2;
+$secondary: #6c757d;
+$warning: #fbcf35;
+$error: #c61a1a;
+$success: #107500;
+$info: #32c1ff;
+$help: #bb6bd9;
+$plain: #495057;
+
 $modal-box-shadow: 0 0.1875rem 0.5rem rgba(0, 0, 0, 0.15);
 $modal-border-radius: 0;
 $modal-mask: rgba(239, 239, 239, 0.8);
 $modal-padding: 1.5rem 2rem;
 $modal-bg: #fff;
 
-$modal-btn-color: #266de2;
+$modal-btn-color: $primary;
 $modal-btn-color-hover: #1957bc;
-$modal-btn-bg-color-hover: rgba($modal-btn-color, 0.16);
+$modal-btn-bg-color-hover: rgba($primary, 0.16);
 $modal-btn-border-radius: 1.875rem;
 $white: #fff;
 
@@ -148,5 +157,14 @@ $white: #fff;
         border: 0.0625rem solid #767676;
         font-size: 1rem;
         padding: 0.5625rem 1rem;
+    }
+
+    a {
+        color: $primary;
+        cursor: pointer;
+
+        &:hover {
+            color: #1957bc;
+        }
     }
 }

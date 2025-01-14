@@ -113,3 +113,10 @@
   font-size: 1rem;
   padding: 0.5625rem 1rem;
 }
+.ck-alight-modal a {
+  color: #266de2;
+  cursor: pointer;
+}
+.ck-alight-modal a:hover {
+  color: #1957bc;
+}
