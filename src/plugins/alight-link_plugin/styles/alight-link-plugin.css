@@ -1,5 +1,5 @@
-.choose-link-list {
+ul.choose-link-list {
   list-style: none;
-  margin-bottom: 1rem;
+  margin-bottom: 0 0 1rem;
   padding: 0;
 }
