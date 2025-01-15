@@ -1,20 +1,20 @@
 import { Command } from '@ckeditor/ckeditor5-core';
 import { Writer } from '@ckeditor/ckeditor5-engine';
 
-interface LinkCommandOptions {
+// Options for the AlightLinkCommand.
+export interface LinkCommandOptions {
     href?: string;
     target?: string;
     rel?: string;
 }
 
+// The AlightLinkCommand class allows applying or removing link attributes in the model.
 export default class AlightLinkCommand extends Command {
-    // Executes the command.
-    // If an href is provided, the command sets the link attributes in the model range.
-    // If no href is provided, the command removes the link attributes.
+    // Executes the command to add or remove link attributes.
+    // @param {LinkCommandOptions} options - The link attributes to apply or null to remove.
     public override execute(options: LinkCommandOptions): void {
         const { href, target, rel } = options;
-        const editor = this.editor;
-        const model = editor.model;
+        const model = this.editor.model;
 
         model.change((writer: Writer) => {
             const selection = model.document.selection;
@@ -22,36 +22,32 @@ export default class AlightLinkCommand extends Command {
 
             if (range) {
                 if (href) {
-                    // Set or update the link attributes
+                    // Apply the link attributes.
                     writer.setAttribute('linkHref', href, range);
-                    writer.setAttribute('linkTarget', target || '', range);
-                    writer.setAttribute('linkRel', rel || '', range);
+                    if (target) writer.setAttribute('linkTarget', target, range);
+                    if (rel) writer.setAttribute('linkRel', rel, range);
                 } else {
-                    // If 'href' is not present, remove all link attributes
-                    writer.removeAttribute('linkHref', range);
-                    writer.removeAttribute('linkTarget', range);
-                    writer.removeAttribute('linkRel', range);
+                    // Remove the link attributes.
+                    ['linkHref', 'linkTarget', 'linkRel'].forEach((attr) => {
+                        writer.removeAttribute(attr, range);
+                    });
                 }
             }
         });
     }
 
-    // Refreshes the command state.
-    // - isEnabled: checks if there is a non-collapsed selection.
-    // - value: stores the current link URL if the selection has a 'linkHref' attribute.
+    // Refreshes the command state based on the current selection.
     public override refresh(): void {
-        const editor = this.editor;
-        const model = editor.model;
+        const model = this.editor.model;
         const selection = model.document.selection;
 
         this.isEnabled = !!selection.rangeCount && !selection.isCollapsed;
 
-        // Optionally store additional attributes if desired:
         const href = selection.getAttribute('linkHref');
         const target = selection.getAttribute('linkTarget');
         const rel = selection.getAttribute('linkRel');
 
-        // `value` can be an object with the current attributes
+        // Set the command's value to reflect the current link attributes.
         this.value = href ? { href, target, rel } : null;
     }
 }

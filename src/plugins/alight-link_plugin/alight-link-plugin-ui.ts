@@ -47,11 +47,11 @@ export default class AlightLinkPluginUI extends Plugin {
                 // EXAMPLE #1: Use the default link fields (no props)
                 // ---------------------------------------------------------------------
                 /*
-                const linkFieldsEl = createLinkFieldsElement();
+                const modalContent_PublicLink = createPublicWebsiteLink();
                 this.openCustomModal().then(() => {
                     // Since our generic modal always resolves with null (by default),
-                    // read the link data from linkFieldsEl:
-                    const linkData: LinkData = extractLinkData(linkFieldsEl);
+                    // read the link data from modalContent_PublicLink:
+                    const linkData: LinkData = extractLinkData(modalContent_PublicLink);
 
                     // If user gave us a URL, execute the command
                     if (linkData.href) {
@@ -65,13 +65,13 @@ export default class AlightLinkPluginUI extends Plugin {
                 // EXAMPLE #2: Pass custom title & button labels (still uses default link fields)
                 // ---------------------------------------------------------------------
                 /*
-                const linkFieldsEl = createLinkFieldsElement();
+                const modalContent_PublicLink = createPublicWebsiteLink();
                 this.openCustomModal({
                     title: 'My Custom Link Title',
                     primaryBtnLabel: 'Insert',
                     secondaryBtnLabel: 'Abort'
                 }).then(() => {
-                    const linkData: LinkData = extractLinkData(linkFieldsEl);
+                    const linkData: LinkData = extractLinkData(modalContent_PublicLink);
                     if (linkData.href) {
                         const { href, target, rel } = linkData;
                         editor.execute('alightLinkPlugin', { href, target, rel });
@@ -152,50 +152,30 @@ export default class AlightLinkPluginUI extends Plugin {
 
         switch (linkText) {
             case 'Predefined Pages':
-                modalTitle = 'Predefined Pages';
-                mainContentHtml = `
-                    <h2>Predefined Pages</h2>
-                    <p>Here is some content about predefined pages...</p>
-                `;
+                modalTitle = 'Choose a Predefined Link';
+                mainContentHtml = `<p>predefined link content goes here...</p>`;
                 break;
-
             case 'Public Website':
                 modalTitle = 'Public Website';
-
-                // Create the link fields instead of static text
-                const linkFieldsEl = createLinkFieldsElement();
-
-                // We'll store the DOM element as our main content
-                mainContentHtml = linkFieldsEl;
+                const modalContent_PublicLink = createPublicWebsiteLink();
+                mainContentHtml = modalContent_PublicLink;
                 break;
-
             case 'Intranet':
                 modalTitle = 'Intranet';
-                mainContentHtml = `
-                    <h2>Intranet</h2>
-                    <p>Here is content about linking to your company's intranet pages...</p>
-                `;
+                const modalContent_IntranetLink = createIntranetLink();
+                mainContentHtml = modalContent_IntranetLink;
                 break;
-
             case 'Existing Document':
                 modalTitle = 'Existing Document';
-                mainContentHtml = `
-                    <h2>Existing Document</h2>
-                    <p>Here is content about selecting an existing document...</p>
-                `;
+                mainContentHtml = `<p>existing document content goes here...</p>`;
                 break;
-
             case 'New Document':
                 modalTitle = 'New Document';
-                mainContentHtml = `
-                    <h2>New Document</h2>
-                    <p>Here is content about creating a new document to link to...</p>
-                `;
+                mainContentHtml = `<p>new document to link to content goes here...</p>`;
                 break;
-
             default:
                 modalTitle = 'Unknown Link';
-                mainContentHtml = `<p>No specific content found for "${linkText}".</p>`;
+                mainContentHtml = `<p>No content found for "${linkText}".</p>`;
                 break;
         }
 
@@ -223,7 +203,7 @@ export default class AlightLinkPluginUI extends Plugin {
 
 // (The rest below remains unchanged.)
 // If you want to do Example #1 or #2 with link fields, uncomment and adapt as needed.
-function createLinkFieldsElement(): HTMLElement {
+function createPublicWebsiteLink(): HTMLElement {
     const wrapper = document.createElement('div');
 
     // HREF field
@@ -257,6 +237,34 @@ function createLinkFieldsElement(): HTMLElement {
     wrapper.appendChild(hrefLabel);
     wrapper.appendChild(targetLabel);
     wrapper.appendChild(relLabel);
+
+    return wrapper;
+}
+
+function createIntranetLink(): HTMLElement {
+    const wrapper = document.createElement('div');
+
+    // HREF field
+    const hrefLabel = document.createElement('label');
+    hrefLabel.innerText = 'URL';
+    const hrefInput = document.createElement('input');
+    hrefInput.type = 'text';
+    hrefInput.placeholder = 'https://example.com';
+    hrefInput.className = 'link-href-input'; // For easy querying
+    hrefLabel.appendChild(hrefInput);
+
+    // TARGET field
+    const targetLabel = document.createElement('label');
+    targetLabel.innerText = 'Link Target:';
+    const targetInput = document.createElement('input');
+    targetInput.type = 'text';
+    targetInput.placeholder = '_blank';
+    targetInput.className = 'link-target-input';
+    targetLabel.appendChild(targetInput);
+
+    // Append all labels to the wrapper
+    wrapper.appendChild(hrefLabel);
+    wrapper.appendChild(targetLabel);
 
     return wrapper;
 }
