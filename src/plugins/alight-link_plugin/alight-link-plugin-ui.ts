@@ -1,15 +1,10 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { ButtonView } from '@ckeditor/ckeditor5-ui';
 import { Locale } from '@ckeditor/ckeditor5-utils';
-import {
-    createLinkFormView,
-    createPublicWebsiteLink,
-    createIntranetLink,
-    extractLinkData,
-} from './alight-link-plugin-utils';
+import { createLinkFormView, createPublicWebsiteLink, createIntranetLink } from './alight-link-plugin-utils';
 import ToolBarIcon from './assets/icon-link.svg';
 import './styles/alight-link-plugin.css';
-import { CustomModal, ModalProps } from '../alight-modal/alight-modal';
+import { AlightModal, ModalProps } from '../alight-modal/alight-modal';
 
 export default class AlightLinkPluginUI extends Plugin {
     static get pluginName() {
@@ -37,13 +32,11 @@ export default class AlightLinkPluginUI extends Plugin {
                         <li>Alight Worklife Pages</li>
                         <li><a>Predefined Pages</a></li>
                     </ul>
-
                     <ul class="choose-link-list">
                         <li>External Sites</li>
                         <li><a>Public Website</a></li>
                         <li><a>Intranet</a></li>
                     </ul>
-
                     <ul class="choose-link-list">
                         <li>Documents</li>
                         <li><a>Existing Document</a></li>
@@ -51,7 +44,7 @@ export default class AlightLinkPluginUI extends Plugin {
                     </ul>
                 `;
 
-                this.openCustomModal({
+                this.openAlightModal({
                     title: 'Choose a Link',
                     mainContent: customDiv,
                     primaryBtnLabel: 'OK',
@@ -73,49 +66,60 @@ export default class AlightLinkPluginUI extends Plugin {
         });
     }
 
-    private openCustomModal(props?: ModalProps): Promise<unknown> {
-        const modal = new CustomModal();
+    private openAlightModal(props?: ModalProps): Promise<unknown> {
+        const modal = new AlightModal();
         return modal.openModal(props);
     }
 
     private handleLinkClick(linkText: string): void {
-        let modalTitle = linkText;
-        let mainContentHtml: string | HTMLElement;
+        let modalProps: ModalProps;
 
         switch (linkText) {
             case 'Predefined Pages':
-                modalTitle = 'Choose a Predefined Link';
-                mainContentHtml = `<p>predefined link content goes here...</p>`;
+                modalProps = {
+                    title: 'Choose a Predefined Link',
+                    mainContent: `<p>predefined link content goes here...</p>`,
+                    // width: '500px',
+                    // className: 'predefined-modal',
+                    // primaryBtnLabel: 'Select',
+                    // tertiaryBtnLabel: 'Close',
+                    // showHeader: true,
+                    // showFooter: true,
+                };
                 break;
             case 'Public Website':
-                modalTitle = 'Public Website';
-                mainContentHtml = createPublicWebsiteLink();
+                modalProps = {
+                    title: 'Public Website',
+                    mainContent: createPublicWebsiteLink(),
+                };
                 break;
             case 'Intranet':
-                modalTitle = 'Intranet';
-                mainContentHtml = createIntranetLink();
+                modalProps = {
+                    title: 'Intranet',
+                    mainContent: createIntranetLink(),
+                };
                 break;
             case 'Existing Document':
-                modalTitle = 'Existing Document';
-                mainContentHtml = `<p>existing document content goes here...</p>`;
+                modalProps = {
+                    title: 'Existing Document',
+                    mainContent: `<p>existing document content goes here...</p>`,
+                    width: '80rem',
+                };
                 break;
             case 'New Document':
-                modalTitle = 'New Document';
-                mainContentHtml = `<p>new document to link to content goes here...</p>`;
+                modalProps = {
+                    title: 'New Document',
+                    mainContent: `<p>new document to link to content goes here...</p>`,
+                };
                 break;
             default:
-                modalTitle = 'Unknown Link';
-                mainContentHtml = `<p>No content found for "${linkText}".</p>`;
+                modalProps = {
+                    title: 'Unknown Link',
+                    mainContent: `<p>No content found for "${linkText}".</p>`,
+                };
                 break;
         }
 
-        this.openCustomModal({
-            title: modalTitle,
-            mainContent: mainContentHtml,
-            primaryBtnLabel: 'OK',
-            tertiaryBtnLabel: 'Cancel',
-            showHeader: true,
-            showFooter: true,
-        });
+        this.openAlightModal(modalProps);
     }
 }
