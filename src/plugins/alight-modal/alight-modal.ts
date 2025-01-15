@@ -117,7 +117,13 @@ export class AlightModal {
         });
     }
 
-    // Closes the modal and cleans up event listeners
+    // Public method to allow external code to close the modal.
+    // This simply calls our private `closeModal()` method.
+    public close(): void {
+        this.closeModal();
+    }
+
+    // Closes the modal and cleans up event listeners and DOM nodes.
     private closeModal(): void {
         if (this.overlay) {
             document.body.removeChild(this.overlay);

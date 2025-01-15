@@ -11,7 +11,9 @@ export default class AlightLinkPluginUI extends Plugin {
         return 'AlightLinkPluginUI';
     }
 
-    init(): void {
+    private static activeModal: AlightModal | null = null;
+
+    public init(): void {
         const editor = this.editor;
         const t = editor.t;
 
@@ -43,7 +45,6 @@ export default class AlightLinkPluginUI extends Plugin {
                         <li><a>New Document</a></li>
                     </ul>
                 `;
-
                 this.openAlightModal({
                     title: 'Choose a Link',
                     mainContent: customDiv,
@@ -67,10 +68,28 @@ export default class AlightLinkPluginUI extends Plugin {
     }
 
     private openAlightModal(props?: ModalProps): Promise<unknown> {
+        // Close the previously open modal (if any)
+        if (AlightLinkPluginUI.activeModal) {
+            AlightLinkPluginUI.activeModal.close();
+        }
+
+        // Create a new modal and store it as the active modal
         const modal = new AlightModal();
-        return modal.openModal(props);
+        AlightLinkPluginUI.activeModal = modal;
+
+        // When this modal closes (resolve or reject), clear the active modal reference
+        return modal.openModal(props).finally(() => {
+            AlightLinkPluginUI.activeModal = null;
+        });
     }
 
+    /**
+     * Handles clicks from the link selection list in the "Choose a Link" modal.
+     * Based on which link type the user chooses, it displays another modal
+     * with relevant content.
+     *
+     * @param linkText - The text associated with the clicked link
+     */
     private handleLinkClick(linkText: string): void {
         let modalProps: ModalProps;
 
