@@ -16,37 +16,53 @@ export const linkAttributes = {
 };
 
 // Utility functions for modal content and link data extraction.
-
 export function createPublicWebsiteLink(): HTMLElement {
     const wrapper = document.createElement('div');
 
-    const hrefLabel = document.createElement('label');
-    hrefLabel.innerText = 'URL';
-    const hrefInput = document.createElement('input');
-    hrefInput.type = 'text';
-    hrefInput.placeholder = 'https://example.com';
-    hrefInput.className = 'link-href-input';
-    hrefLabel.appendChild(hrefInput);
+    // Helper function to create a label and input pair
+    function createLabeledInput(labelText: string, inputId: string, inputType: string): HTMLElement[] {
+        const label = document.createElement('label');
+        label.setAttribute('for', inputId);
+        label.textContent = labelText;
 
-    const targetLabel = document.createElement('label');
-    targetLabel.innerText = 'Link Target:';
-    const targetInput = document.createElement('input');
-    targetInput.type = 'text';
-    targetInput.placeholder = '_blank';
-    targetInput.className = 'link-target-input';
-    targetLabel.appendChild(targetInput);
+        const input = document.createElement('input');
+        input.id = inputId;
+        input.type = inputType;
 
-    const relLabel = document.createElement('label');
-    relLabel.innerText = 'Link Rel:';
-    const relInput = document.createElement('input');
-    relInput.type = 'text';
-    relInput.placeholder = 'nofollow';
-    relInput.className = 'link-rel-input';
-    relLabel.appendChild(relInput);
+        return [label, input];
+    }
 
-    wrapper.appendChild(hrefLabel);
-    wrapper.appendChild(targetLabel);
-    wrapper.appendChild(relLabel);
+    // Helper function to create a paragraph with optional emphasis
+    function createParagraph(text: string, emphasize: boolean = false): HTMLElement {
+        const paragraph = document.createElement('p');
+        if (emphasize) {
+            const span = document.createElement('span');
+            span.className = 'asterisk';
+            span.textContent = '*';
+            paragraph.appendChild(span);
+        }
+        paragraph.appendChild(document.createTextNode(text));
+        return paragraph;
+    }
+
+    // Add the URL label and input
+    const [urlLabel, urlInput] = createLabeledInput('URL', 'url', 'url');
+    wrapper.appendChild(urlLabel);
+    wrapper.appendChild(urlInput);
+
+    // Add the Organization Name label and input
+    const [orgNameLabel, orgNameInput] = createLabeledInput('Organization Name (Optional)', 'org-name', 'text');
+    const asteriskSpan = document.createElement('span');
+    asteriskSpan.className = 'asterisk';
+    asteriskSpan.textContent = '*';
+    orgNameLabel.appendChild(asteriskSpan);
+    wrapper.appendChild(orgNameLabel);
+    wrapper.appendChild(orgNameInput);
+
+    // Add the explanatory paragraph for the organization name
+    wrapper.appendChild(
+        createParagraph('Enter the third-party organization to inform users the destination of the link.', true)
+    );
 
     return wrapper;
 }
@@ -54,24 +70,46 @@ export function createPublicWebsiteLink(): HTMLElement {
 export function createIntranetLink(): HTMLElement {
     const wrapper = document.createElement('div');
 
-    const hrefLabel = document.createElement('label');
-    hrefLabel.innerText = 'URL';
-    const hrefInput = document.createElement('input');
-    hrefInput.type = 'text';
-    hrefInput.placeholder = 'https://example.com';
-    hrefInput.className = 'link-href-input';
-    hrefLabel.appendChild(hrefInput);
+    // Add the informational paragraph
+    const infoParagraph = document.createElement('p');
+    infoParagraph.textContent =
+        'Note: When an employee clicks on an intranet link, a message will let them know they need to be connected to that network to successfully continue.';
+    wrapper.appendChild(infoParagraph);
 
-    const targetLabel = document.createElement('label');
-    targetLabel.innerText = 'Link Target:';
-    const targetInput = document.createElement('input');
-    targetInput.type = 'text';
-    targetInput.placeholder = '_blank';
-    targetInput.className = 'link-target-input';
-    targetLabel.appendChild(targetInput);
+    // Add the URL label and input
+    const urlLabel = document.createElement('label');
+    urlLabel.setAttribute('for', 'url');
+    urlLabel.textContent = 'URL';
+    const urlInput = document.createElement('input');
+    urlInput.id = 'url';
+    urlInput.type = 'url';
+    wrapper.appendChild(urlLabel);
+    wrapper.appendChild(urlInput);
 
-    wrapper.appendChild(hrefLabel);
-    wrapper.appendChild(targetLabel);
+    // Add the Organization Name label and input
+    const orgNameLabel = document.createElement('label');
+    orgNameLabel.setAttribute('for', 'org-name');
+    orgNameLabel.textContent = 'Organization Name (Optional)';
+    const asteriskSpan = document.createElement('span');
+    asteriskSpan.className = 'asterisk';
+    asteriskSpan.textContent = '*';
+    orgNameLabel.appendChild(asteriskSpan);
+    const orgNameInput = document.createElement('input');
+    orgNameInput.id = 'org-name';
+    orgNameInput.type = 'text';
+    wrapper.appendChild(orgNameLabel);
+    wrapper.appendChild(orgNameInput);
+
+    // Add the explanatory paragraph for the organization name
+    const orgNameParagraph = document.createElement('p');
+    const asterisk = document.createElement('span');
+    asterisk.className = 'asterisk';
+    asterisk.textContent = '*';
+    orgNameParagraph.appendChild(asterisk);
+    orgNameParagraph.appendChild(
+        document.createTextNode('Enter the third-party organization to inform users the destination of the link.')
+    );
+    wrapper.appendChild(orgNameParagraph);
 
     return wrapper;
 }
