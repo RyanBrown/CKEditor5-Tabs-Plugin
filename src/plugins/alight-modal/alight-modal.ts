@@ -2,20 +2,13 @@ import './styles/alight-modal.css';
 
 // Interface describing optional configuration for opening the modal.
 export interface ModalProps {
-    // Modal title text (header). Defaults to "Modal Title" if not provided.
-    title?: string;
-    // If provided, this content (string or HTMLElement)
-    // will be placed into the <main> element.
-    // If left empty, we'll show an empty <main>.
-    mainContent?: string | HTMLElement;
-    // Text label for the primary (right) button. Defaults to "Continue".
-    primaryBtnLabel?: string;
-    // Text label for the secondary (left) button. Defaults to "Cancel".
-    secondaryBtnLabel?: string;
-    // Whether to show the header (title & close button). Defaults to true.
-    showHeader?: boolean;
-    // Whether to show the footer (Cancel/Continue buttons). Defaults to true.
-    showFooter?: boolean;
+    title?: string; // Modal title text (header). Defaults to "Modal Title" if not provided.
+    mainContent?: string | HTMLElement; // If provided, this content (string or HTMLElement) will be placed into the <main> element. If left empty, we'll show an empty <main>.
+    primaryBtnLabel?: string; // Text label for the primary (right) button. Defaults to "Continue".
+    tertiaryBtnLabel?: string; // Text label for the secondary (left) button. Defaults to "Cancel".
+    showHeader?: boolean; // Whether to show the header (title & close button). Defaults to true.
+    showFooter?: boolean; // Whether to show the footer (Cancel/Continue buttons). Defaults to true.
+    width?: string; // Optional width for the modal (e.g., "400px", "50%", "auto"). Defaults to "600px".
 }
 
 // A basic custom modal class that creates a modal in the DOM,
@@ -40,9 +33,10 @@ export class CustomModal {
             title = 'Modal Title',
             mainContent,
             primaryBtnLabel = 'Continue',
-            secondaryBtnLabel = 'Cancel',
+            tertiaryBtnLabel = 'Cancel',
             showHeader = true,
             showFooter = true,
+            width = '600px', // Default width
         } = props || {};
 
         return new Promise((resolve) => {
@@ -53,6 +47,9 @@ export class CustomModal {
             // 2) Create the main modal container
             this.modal = document.createElement('div');
             this.modal.classList.add('ck-alight-modal');
+
+            // Apply the custom width via inline styles
+            this.modal.style.width = width;
 
             // 3) (Optional) Build the header if showHeader is true
             let headerEl: HTMLElement | null = null;
@@ -88,14 +85,11 @@ export class CustomModal {
             if (mainContent) {
                 // If the caller provided custom content, insert it
                 if (typeof mainContent === 'string') {
-                    // Insert HTML string as inner HTML
                     mainEl.innerHTML = mainContent;
                 } else {
-                    // Or append an actual DOM element if given
                     mainEl.appendChild(mainContent);
                 }
             } else {
-                // If no content is provided, leave it empty
                 mainEl.innerHTML = '';
             }
 
@@ -109,7 +103,7 @@ export class CustomModal {
                 // Secondary (left) button
                 const cancelBtn = document.createElement('button');
                 cancelBtn.classList.add('secondary');
-                cancelBtn.innerText = secondaryBtnLabel;
+                cancelBtn.innerText = tertiaryBtnLabel;
 
                 // Primary (right) button
                 const continueBtn = document.createElement('button');
@@ -128,8 +122,6 @@ export class CustomModal {
 
                 // Continue button click
                 continueBtn.addEventListener('click', () => {
-                    // In a purely generic modal, we don’t know about link fields.
-                    // We simply resolve with null (or any custom data if you want).
                     this.closeModal();
                     resolve(null);
                 });
@@ -147,9 +139,6 @@ export class CustomModal {
                 }
             };
             window.addEventListener('keydown', this.keyDownHandler);
-
-            // If we have a header, we can do close button logic there (see above).
-            // If there's no header, the user can only close via the Esc key or the footer buttons.
         });
     }
 

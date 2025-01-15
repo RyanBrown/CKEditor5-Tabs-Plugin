@@ -55,7 +55,7 @@ export default class AlightLinkPluginUI extends Plugin {
                     title: 'Choose a Link',
                     mainContent: customDiv,
                     primaryBtnLabel: 'OK',
-                    secondaryBtnLabel: 'Close',
+                    tertiaryBtnLabel: 'Close',
                     showHeader: true,
                     showFooter: false,
                 });
@@ -113,7 +113,7 @@ export default class AlightLinkPluginUI extends Plugin {
             title: modalTitle,
             mainContent: mainContentHtml,
             primaryBtnLabel: 'OK',
-            secondaryBtnLabel: 'Cancel',
+            tertiaryBtnLabel: 'Cancel',
             showHeader: true,
             showFooter: true,
         });
