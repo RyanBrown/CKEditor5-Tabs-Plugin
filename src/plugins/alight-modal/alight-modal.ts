@@ -7,7 +7,7 @@ export interface ModalProps {
     tertiaryBtnLabel?: string; // Label for the cancel button. Defaults to "Cancel".
     showHeader?: boolean; // Show the modal header. Defaults to true.
     showFooter?: boolean; // Show the modal footer. Defaults to true.
-    width?: string; // Modal width. Defaults to "600px".
+    width?: string | null; // Modal width. If null, no inline width is applied.
 }
 
 export class CustomModal {
@@ -24,7 +24,7 @@ export class CustomModal {
             tertiaryBtnLabel = 'Cancel',
             showHeader = true,
             showFooter = true,
-            width = '600px',
+            width = null, // Default to null
         } = props || {};
 
         return new Promise((resolve) => {
@@ -35,7 +35,11 @@ export class CustomModal {
             // Create modal container
             this.modal = document.createElement('div');
             this.modal.classList.add('ck-alight-modal');
-            this.modal.style.width = width;
+
+            // Apply width only if provided
+            if (width) {
+                this.modal.style.width = width;
+            }
 
             // Add header if enabled
             if (showHeader) {
