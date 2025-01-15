@@ -71,7 +71,8 @@ export class AlightModal {
             const mainEl = document.createElement('main');
             if (mainContent) {
                 if (typeof mainContent === 'string') {
-                    mainEl.textContent = mainContent;
+                    // Render string as HTML
+                    mainEl.innerHTML = mainContent;
                 } else {
                     mainEl.appendChild(mainContent);
                 }
