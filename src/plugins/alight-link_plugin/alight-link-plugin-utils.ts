@@ -16,7 +16,13 @@ export const linkAttributes = {
 };
 
 // Utility functions for modal content and link data extraction.
-export function createPublicWebsiteLink(): HTMLElement {
+export function createLinkView(
+    options: {
+        includeInfoParagraph?: string; // Optional informational paragraph
+        includeURLInput?: boolean; // Whether to include URL input
+        includeOrgNameInput?: boolean; // Whether to include Organization Name input
+    } = {}
+): HTMLElement {
     const wrapper = document.createElement('div');
 
     // Helper function to create a label and input pair
@@ -45,73 +51,51 @@ export function createPublicWebsiteLink(): HTMLElement {
         return paragraph;
     }
 
-    // Add the URL label and input
-    const [urlLabel, urlInput] = createLabeledInput('URL', 'url', 'url');
-    wrapper.appendChild(urlLabel);
-    wrapper.appendChild(urlInput);
+    // Add optional informational paragraph
+    if (options.includeInfoParagraph) {
+        wrapper.appendChild(createParagraph(options.includeInfoParagraph));
+    }
 
-    // Add the Organization Name label and input
-    const [orgNameLabel, orgNameInput] = createLabeledInput('Organization Name (Optional)', 'org-name', 'text');
-    const asteriskSpan = document.createElement('span');
-    asteriskSpan.className = 'asterisk';
-    asteriskSpan.textContent = '*';
-    orgNameLabel.appendChild(asteriskSpan);
-    wrapper.appendChild(orgNameLabel);
-    wrapper.appendChild(orgNameInput);
+    // Add URL label and input if specified
+    if (options.includeURLInput) {
+        const [urlLabel, urlInput] = createLabeledInput('URL', 'url', 'url');
+        wrapper.appendChild(urlLabel);
+        wrapper.appendChild(urlInput);
+    }
 
-    // Add the explanatory paragraph for the organization name
-    wrapper.appendChild(
-        createParagraph('Enter the third-party organization to inform users the destination of the link.', true)
-    );
+    // Add Organization Name label and input if specified
+    if (options.includeOrgNameInput) {
+        const [orgNameLabel, orgNameInput] = createLabeledInput('Organization Name (Optional)', 'org-name', 'text');
+        const asteriskSpan = document.createElement('span');
+        asteriskSpan.className = 'asterisk';
+        asteriskSpan.textContent = '*';
+        orgNameLabel.appendChild(asteriskSpan);
+        wrapper.appendChild(orgNameLabel);
+        wrapper.appendChild(orgNameInput);
+
+        // Add explanatory paragraph for the organization name
+        wrapper.appendChild(
+            createParagraph('Enter the third-party organization to inform users the destination of the link.', true)
+        );
+    }
 
     return wrapper;
 }
+export function createPublicWebsiteLink(): HTMLElement {
+    return createLinkView({
+        includeURLInput: true,
+        includeOrgNameInput: true,
+    });
+}
 
 export function createIntranetLink(): HTMLElement {
-    const wrapper = document.createElement('div');
-
-    // Add the informational paragraph
-    const infoParagraph = document.createElement('p');
-    infoParagraph.textContent =
-        'Note: When an employee clicks on an intranet link, a message will let them know they need to be connected to that network to successfully continue.';
-    wrapper.appendChild(infoParagraph);
-
-    // Add the URL label and input
-    const urlLabel = document.createElement('label');
-    urlLabel.setAttribute('for', 'url');
-    urlLabel.textContent = 'URL';
-    const urlInput = document.createElement('input');
-    urlInput.id = 'url';
-    urlInput.type = 'url';
-    wrapper.appendChild(urlLabel);
-    wrapper.appendChild(urlInput);
-
-    // Add the Organization Name label and input
-    const orgNameLabel = document.createElement('label');
-    orgNameLabel.setAttribute('for', 'org-name');
-    orgNameLabel.textContent = 'Organization Name (Optional)';
-    const asteriskSpan = document.createElement('span');
-    asteriskSpan.className = 'asterisk';
-    asteriskSpan.textContent = '*';
-    orgNameLabel.appendChild(asteriskSpan);
-    const orgNameInput = document.createElement('input');
-    orgNameInput.id = 'org-name';
-    orgNameInput.type = 'text';
-    wrapper.appendChild(orgNameLabel);
-    wrapper.appendChild(orgNameInput);
-
-    // Add the explanatory paragraph for the organization name
-    const orgNameParagraph = document.createElement('p');
-    const asterisk = document.createElement('span');
-    asterisk.className = 'asterisk';
-    asterisk.textContent = '*';
-    orgNameParagraph.appendChild(asterisk);
-    orgNameParagraph.appendChild(
-        document.createTextNode('Enter the third-party organization to inform users the destination of the link.')
-    );
-    wrapper.appendChild(orgNameParagraph);
-
-    return wrapper;
+    return createLinkView({
+        includeInfoParagraph: `Note: When an employee clicks on an intranet link, 
+                               a message will let them know they need to be connected 
+                               to that network to successfully continue.`,
+        includeURLInput: true,
+        includeOrgNameInput: true,
+    });
 }
 
 export interface LinkData {
