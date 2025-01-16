@@ -12,7 +12,7 @@
     }
 }
 
-// Set
+// END ============================================================================================================
 
 // Alight anchor styles
 a {
@@ -87,6 +87,7 @@ a:hover {
     font-weight: var(--font-weight-bold);
 }
 
+// Alight text input styles
 .ck-alight-input-text {
     appearance: none;
     background: var(--neutral-white);
@@ -102,6 +103,7 @@ a:hover {
         &:hover {
             border-color: var(--neutral-black);
         }
+
         &:focus {
             border-color: var(--primary);
             box-shadow: var(--focus-state);
