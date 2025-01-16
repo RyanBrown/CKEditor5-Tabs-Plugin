@@ -1,6 +1,6 @@
 @import './../styles/mixins.scss';
 
-// Set the minimum height od the ckeditor
+// Set the minimum height of the ckeditor
 .ck-editor__editable_inline {
     min-height: 250px;
 }
@@ -48,7 +48,7 @@
         background-color: #f7f7f9;
         border: 1px solid #e1e1e8;
         color: #d14;
-        padding: 3px 4px;
+        padding: 2px 4px;
         white-space: nowrap;
     }
 
@@ -71,9 +71,32 @@
     ins.inserted-text {
         text-decoration: underline;
     }
-}
 
-// END ==========================================================================================================
+    cite.cited-work {
+        font-style: italic;
+    }
+
+    q.inline-quotation::before {
+        content: open-quote;
+    }
+
+    q.inline-quotation::after {
+        content: close-quote;
+    }
+
+    span.language-rtl {
+        direction: rtl;
+        unicode-bidi: isolate;
+    }
+
+    span.language-ltr {
+        direction: ltr;
+        unicode-bidi: isolate;
+    }
+}
+// End default text properties
+
+// END ==============================================================================================
 
 // Alight anchor styles
 a {

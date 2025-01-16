@@ -177,7 +177,7 @@
   background-color: #f7f7f9;
   border: 1px solid #e1e1e8;
   color: #d14;
-  padding: 3px 4px;
+  padding: 2px 4px;
   white-space: nowrap;
 }
 .ck-content kbd.keyboard-phrase {
@@ -194,6 +194,23 @@
 }
 .ck-content ins.inserted-text {
   text-decoration: underline;
+}
+.ck-content cite.cited-work {
+  font-style: italic;
+}
+.ck-content q.inline-quotation::before {
+  content: open-quote;
+}
+.ck-content q.inline-quotation::after {
+  content: close-quote;
+}
+.ck-content span.language-rtl {
+  direction: rtl;
+  unicode-bidi: isolate;
+}
+.ck-content span.language-ltr {
+  direction: ltr;
+  unicode-bidi: isolate;
 }
 
 a {
