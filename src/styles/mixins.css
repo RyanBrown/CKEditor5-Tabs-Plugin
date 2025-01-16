@@ -139,3 +139,20 @@
   --plain-outline-hover: rgba(73, 80, 87, 0.16);
   --plain-outline-active: rgba(73, 80, 87, 0.1);
 }
+
+@keyframes p-component-overlay-enter-animation {
+  from {
+    background-color: transparent;
+  }
+  to {
+    background-color: var(--maskbg);
+  }
+}
+@keyframes p-component-overlay-leave-animation {
+  from {
+    background-color: var(--maskbg);
+  }
+  to {
+    background-color: transparent;
+  }
+}

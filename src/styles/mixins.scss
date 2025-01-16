@@ -195,7 +195,7 @@ $plain: #495057;
 }
 
 // Mixins
-// ====================================================================================
+// ==============================================================================================
 
 @function toRem($value) {
     $remValue: calc($value / 16) + rem;
@@ -207,4 +207,22 @@ $plain: #495057;
 }
 
 // Animations
-// ====================================================================================
+// ==============================================================================================
+
+@keyframes p-component-overlay-enter-animation {
+    from {
+        background-color: transparent;
+    }
+    to {
+        background-color: var(--maskbg);
+    }
+}
+
+@keyframes p-component-overlay-leave-animation {
+    from {
+        background-color: var(--maskbg);
+    }
+    to {
+        background-color: transparent;
+    }
+}
