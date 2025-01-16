@@ -51,12 +51,14 @@ export class AlightModal {
             // Add header if enabled
             if (showHeader) {
                 const headerEl = document.createElement('header');
+                headerEl.classList.add('ck-alight-modal-header'); // Add class to header
+
                 const titleSpan = document.createElement('span');
-                titleSpan.classList.add('modal-title');
+                titleSpan.classList.add('ck-alight-modal-title'); // Add class to title
                 titleSpan.textContent = title;
 
                 const closeBtn = document.createElement('button');
-                closeBtn.classList.add('header-close');
+                closeBtn.classList.add('ck-alight-modal-header-icon');
                 closeBtn.textContent = '×';
                 closeBtn.addEventListener('click', () => {
                     this.closeModal();
@@ -69,6 +71,8 @@ export class AlightModal {
 
             // Add main content
             const mainEl = document.createElement('main');
+            mainEl.classList.add('ck-alight-modal-content');
+
             if (mainContent) {
                 if (typeof mainContent === 'string') {
                     // Render string as HTML
@@ -82,8 +86,10 @@ export class AlightModal {
             // Add footer if enabled
             if (showFooter) {
                 const footerEl = document.createElement('footer');
+                footerEl.classList.add('ck-alight-modal-footer');
+
                 const cancelBtn = document.createElement('button');
-                cancelBtn.classList.add('secondary');
+                cancelBtn.classList.add('ck-alight-button', 'ck-alight-button-outlined');
                 cancelBtn.textContent = tertiaryBtnLabel;
                 cancelBtn.addEventListener('click', () => {
                     this.closeModal();
@@ -91,7 +97,7 @@ export class AlightModal {
                 });
 
                 const continueBtn = document.createElement('button');
-                continueBtn.classList.add('primary');
+                continueBtn.classList.add('ck-alight-button');
                 continueBtn.textContent = primaryBtnLabel;
                 continueBtn.addEventListener('click', () => {
                     this.closeModal();

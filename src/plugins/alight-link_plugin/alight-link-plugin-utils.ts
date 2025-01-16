@@ -30,10 +30,12 @@ export function createLinkView(
         const label = document.createElement('label');
         label.setAttribute('for', inputId);
         label.textContent = labelText;
+        label.classList.add('ck-alight-input-label');
 
         const input = document.createElement('input');
         input.id = inputId;
         input.type = inputType;
+        input.classList.add('ck-alight-input-text');
 
         return [label, input];
     }
