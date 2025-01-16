@@ -1,6 +1,6 @@
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
-import ToolBarIcon from './assets/icon-copy.svg';
+import ToolBarIcon from './assets/icon-copy-3.svg';
 
 export default class AlightCopyPlugin extends Plugin {
     init() {

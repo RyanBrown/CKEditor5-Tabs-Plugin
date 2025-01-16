@@ -1,6 +1,6 @@
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
-import ToolBarIcon from './assets/icon-link.svg';
+import ToolBarIcon from './assets/icon-paste-3.svg';
 
 export default class AlightPastePlugin extends Plugin {
     init() {
