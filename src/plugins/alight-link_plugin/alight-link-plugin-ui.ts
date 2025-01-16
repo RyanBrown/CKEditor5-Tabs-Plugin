@@ -22,9 +22,9 @@ export default class AlightLinkPluginUI extends Plugin {
 
             buttonView.set({
                 icon: ToolBarIcon,
-                label: t('Insert Link'),
+                label: t('Insert Alight Link'),
                 tooltip: true,
-                withText: true,
+                withText: false,
             });
 
             this.listenTo(buttonView, 'execute', () => {

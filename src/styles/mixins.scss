@@ -1,0 +1,213 @@
+$primary: #266de2;
+$secondary: #6c757d;
+$warning: #fbcf35;
+$error: #c61a1a;
+$success: #107500;
+$info: #32c1ff;
+$help: #bb6bd9;
+$plain: #495057;
+
+:root {
+    --primary: #266de2;
+    --secondary: #6c757d;
+    --warning: #fbcf35;
+    --error: #c61a1a;
+    --success: #107500;
+    --info: #32c1ff;
+    --help: #bb6bd9;
+    --plain: #495057;
+
+    // ZeroHeight Variables
+    --core-water-leaf: #97e8e2;
+    --core-tropical-blue: #c2d9fe;
+    --core-lavender: #e5cefd;
+    --accent-apricot: #ffcbb1;
+    --accent-canary-yellow: #fff200`;
+    --accent-denim: #165bcf;
+    --accent-grenadier: #cd4400;
+    --accent-hawks-blue: #dce9ff;
+    --accent-jordy-blue: #639dfe;
+    --accent-navy-blue: #266de2;
+    --accent-pink-orange: #ff9966;
+    --accent-zircon: #f6f9ff;
+    --tertiary-cornflower-blue: #639dfe;
+    --tertiary-orchid: #d382e0;
+    --tertiary-rich-lilac: #bb6bd9;
+    --tertiary-viking: #64d9d2;
+    --neutral-black: #282828;
+    --neutral-dove-gray: #767676;
+    --neutral-steel: #666666;
+    --neutral-mountain-mist: #959595;
+    --neutral-athens-gray: #dedede;
+    --neutral-gallery: #efefef;
+    --neutral-white: #ffffff;
+    --error: #c61a1a;
+    --error-shadow: #ed3f3f;
+    --error-background: #fdebec;
+    --warning: #fbcf35;
+    --warning-background: #ffefd2;
+    --success: #107500;
+    --success-shadow: #0fab01;
+    --success-background: #e6f6e1;
+    --info: #165dd0;
+    --info-background: #dbe8ff;
+
+    --background-body: var(--neutral-white);
+    --border-general: var(--neutral-dove-gray);
+    --font-color-base: var(--neutral-black);
+
+    --font-family-base: 'FSThriveElliotWeb-Regular', sans-serif;
+    --font-family-bold: 'FSThriveElliotWeb-Bold', sans-serif;
+    --font-family-heavy: 'FSThriveElliotWeb-Heavy', sans-serif;
+    --font-family-light: 'FSThriveElliotWeb-Light', sans-serif;
+    --font-family-mono: 'Courier New', Courier, sans-serif;
+
+    --font-size-x-sm: 0.75rem; // 12px
+    --font-size-sm: 0.875rem; // 14px
+    --font-size-base: 1rem; // 16px
+    --font-size-lg: 1.125rem; // 18px
+    --font-size-xl: 1.25rem; // 20px
+    --font-size-xxl: 2rem; // 32px
+
+    --anchor-color: var(--accent-denim);
+    --spacing-xs: 0.125rem;
+    --spacing-s: 0.25rem;
+    --spacing-m: 0.5rem;
+    --spacing-l: 1rem;
+    --spacing-xl: 1.5rem;
+    --spacing-xxl: 2rem;
+    --spacing-xxxl: 2.5rem;
+    --spacing-xxxxl: 5rem;
+    --container-max-width: 100rem;
+    --paragraph-margin-bottom: var(--spacing-m);
+    --paragraph-max-width: 37.5rem;
+
+    --focus-state: none;
+
+    --font-weight-light: 100;
+    --font-weight-normal: 400;
+    --font-weight-bold: 700;
+
+    --border-radius-base: 4px;
+    --border-radius-lg: 10px;
+
+    --maskbg: rgba(239, 239, 239, 0.8);
+    --font-awesome: 'Font Awesome 6 Free';
+    --button-outlined-border: 2px solid
+
+    --toggle-button-default: #1c1e20;
+
+    // Media Query Sizes = 992px / 768px / 576px
+    --media-query-992: 62rem;
+    --media-query-768: 48rem;
+    --media-query-576: 36rem;
+
+    // Colors generated https://colors.eva.design/
+    // Needed to fill in missing colors from ZeroHeight
+    --gray-50: #f9fafb;
+    --gray-100: #f0f0f0;
+    --gray-150: #f6f9ff;
+    --gray-200: #e9ecef;
+    --gray-300: #dedede;
+    --gray-400: #ced4da;
+    --gray-500: #adb5bd;
+    --gray-600: #6c757d;
+    --gray-700: #495057;
+    --gray-800: #343a40;
+    --gray-900: #292929;
+
+    @function hover-color($color) {
+      $darken: darken($color, 10%);
+      @return #{$darken};
+    }
+
+    @function active-color($color) {
+      $darken: darken($color, 15%);
+      @return #{$darken};
+    }
+    @function focus-color($color) {
+      $rgba: rgba($color, 40%);
+      @return #{$rgba};
+    }
+
+    @function outline-hover-color($color) {
+      $rgba: rgba($color, 16%);
+      @return #{$rgba};
+    }
+
+    @function outline-hover-active-color($color) {
+      $rgba: rgba($color, 10%);
+      @return #{$rgba};
+    }
+
+    --primary: #{$primary};
+    --primary-hover: #{hover-color($primary)};
+    --primary-active: #{active-color($primary)};
+    --primary-focus: #{focus-color($primary)};
+    --primary-outline-hover: #{outline-hover-color($primary)};
+    --primary-outline-active: #{outline-hover-active-color($primary)};
+
+    --secondary: #{$secondary};
+    --secondary-hover: #{hover-color($secondary)};
+    --secondary-active: #{active-color($secondary)};
+    --secondary-focus: #{focus-color($secondary)};
+    --secondary-outline-hover: #{outline-hover-color($secondary)};
+    --secondary-outline-active: #{outline-hover-active-color($secondary)};
+
+    --warning: #{$warning};
+    --warning-hover: #{hover-color($warning)};
+    --warning-active: #{active-color($warning)};
+    --warning-focus: #{focus-color($warning)};
+    --warning-outline-hover: #{outline-hover-color($warning)};
+    --warning-outline-active: #{outline-hover-active-color($warning)};
+
+    --error: #{$error};
+    --error-hover: #{hover-color($error)};
+    --error-active: #{active-color($error)};
+    --error-focus: #{focus-color($error)};
+    --error-outline-hover: #{outline-hover-color($error)};
+    --error-outline-active: #{outline-hover-active-color($error)};
+
+    --success: #{$success};
+    --success-hover: #{hover-color($success)};
+    --success-active: #{active-color($success)};
+    --success-focus: #{focus-color($success)};
+    --success-outline-hover: #{outline-hover-color($success)};
+    --success-outline-active: #{outline-hover-active-color($success)};
+
+    --info: #{$info};
+    --info-hover: #{hover-color($info)};
+    --info-active: #{active-color($info)};
+    --info-focus: #{focus-color($info)};
+    --info-outline-hover: #{outline-hover-color($info)};
+    --info-outline-active: #{outline-hover-active-color($info)};
+
+    --help: #{$help};
+    --help-hover: #{hover-color($help)};
+    --help-active: #{active-color($help)};
+    --help-focus: #{focus-color($help)};
+    --help-outline-hover: #{outline-hover-color($help)};
+    --help-outline-active: #{outline-hover-active-color($help)};
+
+    --plain: #{$plain};
+    --plain-hover: #{hover-color($plain)};
+    --plain-active: #{active-color($plain)};
+    --plain-focus: #{focus-color($plain)};
+    --plain-outline-hover: #{outline-hover-color($plain)};
+    --plain-outline-active: #{outline-hover-active-color($plain)};
+}
+
+// Mixins
+// ====================================================================================
+
+@function toRem($value) {
+  $remValue: calc($value / 16) + rem;
+  @return $remValue;
+}
+
+@mixin component-box-shadow {
+  box-shadow: 0 0.1875rem 0.5rem rgba(0, 0, 0, 0.15);
+}
+
+// Animations
+// ====================================================================================

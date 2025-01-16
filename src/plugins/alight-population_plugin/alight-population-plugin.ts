@@ -1,6 +1,6 @@
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
-import ToolBarIcon from './assets/icon-link.svg';
+import ToolBarIcon from './assets/icon-populations.svg';
 
 export default class AlightPopulationPlugin extends Plugin {
     init() {
@@ -14,12 +14,12 @@ export default class AlightPopulationPlugin extends Plugin {
                 icon: ToolBarIcon,
                 label: 'Insert Population',
                 tooltip: true,
-                withText: true,
+                withText: false,
             });
 
             // Add the click event listener.
             buttonView.on('execute', () => {
-                alert('Hello! This is your "Population" plugin.');
+                alert('Hello! This is the  "Population" plugin.');
             });
 
             return buttonView;

@@ -1,0 +1,33 @@
+@import './../styles/mixins.scss';
+
+// Alight anchor styles
+a {
+    color: var(--primary);
+
+    &:hover {
+        color: var(--primary--hover);
+    }
+}
+
+a,
+a:hover {
+    cursor: pointer;
+    text-decoration: none;
+}
+
+// Alight button styles
+.ck-alight-button {
+    align-items: center;
+    background: var(--primary);
+    border-radius: toRem(30);
+    border: 2px solid var(--primary);
+    color: var(--neutral-white);
+    display: inline-flex;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-bold);
+    justify-content: center;
+    line-height: toRem(21);
+    min-width: toRem(40);
+    padding: toRem(10) toRem(16);
+    transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
+}

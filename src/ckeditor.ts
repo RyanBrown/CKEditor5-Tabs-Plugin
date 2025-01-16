@@ -39,10 +39,13 @@ import { Undo } from '@ckeditor/ckeditor5-undo';
 import { EditorWatchdog } from '@ckeditor/ckeditor5-watchdog';
 
 // Custom Plugins
-import TabsPlugin from './plugins/Tabs_Plugin/tabs-plugin';
+import AlightCopyPlugin from './plugins/alight-copy_plugin/alight-copy-plugin';
+import AlightImagePlugin from './plugins/alight-image_plugin/alight-image-plugin';
 import AlightLinkPlugin from './plugins/alight-link_plugin/alight-link-plugin';
-import ModalTriggerPlugin from './plugins/modal-trigger_plugin/modal-trigger-plugin';
+import AlightPastePlugin from './plugins/alight-paste_plugin/alight-paste-plugin';
 import AlightPopulationPlugin from './plugins/alight-population_plugin/alight-population-plugin';
+import ModalTriggerPlugin from './plugins/modal-trigger_plugin/modal-trigger-plugin';
+import TabsPlugin from './plugins/Tabs_Plugin/tabs-plugin';
 
 // You can read more about extending the build with additional plugins in the "Installing plugins" guide.
 // See https://ckeditor.com/docs/ckeditor5/latest/installation/plugins/installing-plugins.html for details.
@@ -104,10 +107,13 @@ class Editor extends ClassicEditor {
         Underline,
         Undo,
         // Custom Plugins
-        TabsPlugin,
+        AlightCopyPlugin,
+        AlightImagePlugin,
         AlightLinkPlugin,
-        ModalTriggerPlugin,
+        AlightPastePlugin,
         AlightPopulationPlugin,
+        ModalTriggerPlugin,
+        TabsPlugin,
     ];
 
     public static override defaultConfig: EditorConfig = {
@@ -156,11 +162,14 @@ class Editor extends ClassicEditor {
                 'selectAll',
                 '|',
                 'removeFormat',
-                '|',
+                '-',
                 'tabsPlugin',
-                'alightLinkPlugin',
-                'modalTrigger',
+                'alightCopyPlugin',
+                'alightPastePlugin',
+                'alightImagePlugin',
                 'alightPopulationPlugin',
+                'alightLinkPlugin',
+                // 'modalTrigger',
             ],
             shouldNotGroupWhenFull: true,
         },
