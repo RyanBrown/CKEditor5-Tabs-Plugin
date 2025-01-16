@@ -112,6 +112,16 @@ $plain: #495057;
     --gray-800: #343a40;
     --gray-900: #292929;
 
+    // https://mdigi.tools/
+    // https://mdigi.tools/darken-color
+    // https://mdigi.tools/lighten-color
+
+    // Hover state colors = 10% darker than default color
+    // Active state colors = 15% darker than default color
+    // Focus state colors = 40% rgba of default color
+    // Outline hover = 16% rgba of default color
+    // Outline active = 10% rgba of default color
+
     @function hover-color($color) {
         $darken: darken($color, 10%);
         @return #{$darken};
@@ -195,7 +205,7 @@ $plain: #495057;
 }
 
 // Mixins
-// ==============================================================================================
+// ================================================================================================
 
 @function toRem($value) {
     $remValue: calc($value / 16) + rem;
@@ -207,12 +217,13 @@ $plain: #495057;
 }
 
 // Animations
-// ==============================================================================================
+// ================================================================================================
 
 @keyframes p-component-overlay-enter-animation {
     from {
         background-color: transparent;
     }
+
     to {
         background-color: var(--maskbg);
     }
@@ -222,6 +233,7 @@ $plain: #495057;
     from {
         background-color: var(--maskbg);
     }
+
     to {
         background-color: transparent;
     }
