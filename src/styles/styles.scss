@@ -96,6 +96,34 @@
 }
 // End default text properties
 
+// Set table defaults
+// These must be identical to the classes
+// set in ckeditor.ts table properties
+.ck-content {
+    .table {
+        height: 100%;
+        width: 100%;
+
+        table {
+            border-color: rgb(0, 0, 0);
+            border-style: solid;
+            border-width: 2px;
+
+            td {
+                border-color: rgb(0, 0, 0);
+                border-style: solid;
+                border-width: 1px;
+                padding: 10px;
+            }
+        }
+    }
+}
+
+// Update the bullet list indent to match UCE
+.ck-content ul {
+    padding-left: 1.25rem;
+}
+
 // END ============================================================================================
 
 // Alight anchor styles
@@ -119,6 +147,7 @@ a:hover {
     border-radius: toRem(30);
     border: 2px solid var(--primary);
     color: var(--neutral-white);
+    cursor: pointer;
     display: inline-flex;
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-bold);

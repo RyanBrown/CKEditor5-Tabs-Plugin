@@ -140,6 +140,22 @@
   --plain-outline-active: rgba(73, 80, 87, 0.1);
 }
 
+@keyframes p-component-overlay-enter-animation {
+  from {
+    background-color: transparent;
+  }
+  to {
+    background-color: var(--maskbg);
+  }
+}
+@keyframes p-component-overlay-leave-animation {
+  from {
+    background-color: var(--maskbg);
+  }
+  to {
+    background-color: transparent;
+  }
+}
 .ck-editor__editable_inline {
   min-height: 250px;
 }
@@ -213,6 +229,26 @@
   unicode-bidi: isolate;
 }
 
+.ck-content .table {
+  height: 100%;
+  width: 100%;
+}
+.ck-content .table table {
+  border-color: rgb(0, 0, 0);
+  border-style: solid;
+  border-width: 2px;
+}
+.ck-content .table table td {
+  border-color: rgb(0, 0, 0);
+  border-style: solid;
+  border-width: 1px;
+  padding: 10px;
+}
+
+.ck-content ul {
+  padding-left: 1.25rem;
+}
+
 a {
   color: var(--primary);
 }
@@ -232,6 +268,7 @@ a:hover {
   border-radius: 1.875rem;
   border: 2px solid var(--primary);
   color: var(--neutral-white);
+  cursor: pointer;
   display: inline-flex;
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-bold);
