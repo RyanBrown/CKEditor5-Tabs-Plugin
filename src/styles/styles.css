@@ -140,11 +140,21 @@
   --plain-outline-active: rgba(73, 80, 87, 0.1);
 }
 
+.ck-editor__editable_inline {
+  min-height: 250px;
+}
+
+.ckeditor pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  tab-size: 4;
+}
+
 a {
   color: var(--primary);
 }
 a:hover {
-  color: var(--primary--hover);
+  color: var(--primary-hover);
 }
 
 a,
@@ -171,12 +181,12 @@ a:hover {
 .ck-alight-button:enabled:hover {
   background: var(--primary-hover);
   border-color: var(--primary-hover);
-  color: var(--primary-hover);
+  color: var(--neutral-white);
 }
 .ck-alight-button:enabled:active {
   background: var(--primary-active);
   border-color: var(--primary-active);
-  color: var(--primary-active);
+  color: var(--neutral-white);
 }
 .ck-alight-button.ck-alight-button-outlined {
   background-color: transparent;

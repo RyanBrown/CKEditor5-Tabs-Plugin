@@ -1,11 +1,25 @@
 @import './../styles/mixins.scss';
 
+// Set the minimum height od the ckeditor
+.ck-editor__editable_inline {
+    min-height: 250px;
+}
+.ckeditor {
+    pre {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        tab-size: 4;
+    }
+}
+
+// Set
+
 // Alight anchor styles
 a {
     color: var(--primary);
 
     &:hover {
-        color: var(--primary--hover);
+        color: var(--primary-hover);
     }
 }
 a,
@@ -34,12 +48,12 @@ a:hover {
         &:hover {
             background: var(--primary-hover);
             border-color: var(--primary-hover);
-            color: var(--primary-hover);
+            color: var(--neutral-white);
         }
         &:active {
             background: var(--primary-active);
             border-color: var(--primary-active);
-            color: var(--primary-active);
+            color: var(--neutral-white);
         }
     }
     &.ck-alight-button-outlined {

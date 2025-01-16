@@ -9,13 +9,13 @@
   --plain: #495057;
   --core-water-leaf: #97e8e2;
   --core-tropical-blue: #c2d9fe;
-  --core-lavender: #e5cefd;
+  --core-pale-lavender: #e5cefd;
   --accent-apricot: #ffcbb1;
-  --accent-canary-yellow: #fff200`;
+  --accent-canary-yellow: #fff200;
   --accent-denim: #165bcf;
   --accent-grenadier: #cd4400;
   --accent-hawks-blue: #dce9ff;
-  --accent-jordy-blue: #639dfe;
+  --accent-jordy-blue: #7da7ed;
   --accent-navy-blue: #266de2;
   --accent-pink-orange: #ff9966;
   --accent-zircon: #f6f9ff;
@@ -35,7 +35,7 @@
   --error-background: #fdebec;
   --warning: #fbcf35;
   --warning-background: #ffefd2;
-  --success: #107500;
+  --success: #107400;
   --success-shadow: #0fab01;
   --success-background: #e6f6e1;
   --info: #165dd0;
@@ -47,7 +47,7 @@
   --font-family-bold: "FSThriveElliotWeb-Bold", sans-serif;
   --font-family-heavy: "FSThriveElliotWeb-Heavy", sans-serif;
   --font-family-light: "FSThriveElliotWeb-Light", sans-serif;
-  --font-family-mono: "Courier New", Courier, sans-serif;
+  --font-family-mono: "Courier New", Courier, monospace;
   --font-size-x-sm: 0.75rem;
   --font-size-sm: 0.875rem;
   --font-size-base: 1rem;
@@ -74,7 +74,7 @@
   --border-radius-lg: 10px;
   --maskbg: rgba(239, 239, 239, 0.8);
   --font-awesome: "Font Awesome 6 Free";
-  --button-outlined-border: 2px solid
+  --button-outlined-border: 2px solid;
   --toggle-button-default: #1c1e20;
   --media-query-992: 62rem;
   --media-query-768: 48rem;
