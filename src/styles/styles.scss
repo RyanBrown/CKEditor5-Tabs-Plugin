@@ -4,15 +4,76 @@
 .ck-editor__editable_inline {
     min-height: 250px;
 }
-.ckeditor {
+
+.ck-editor {
     pre {
         white-space: pre-wrap;
         word-wrap: break-word;
+        -moz-tab-size: 4;
+        -o-tab-size: 4;
         tab-size: 4;
     }
 }
 
-// END ============================================================================================================
+// Set default text properties
+.ck-content {
+    h2.italic-title {
+        font-style: italic;
+    }
+
+    .subtitle {
+        color: #aaa;
+        font-style: italic;
+    }
+
+    p.special-container {
+        background: #eee;
+        border: 1px solid #ccc;
+        padding: 5px 10px;
+    }
+
+    big.big {
+        font-size: larger;
+    }
+
+    small.small {
+        font-size: smaller;
+    }
+
+    tt.typewriter {
+        font-family: monospace;
+    }
+
+    code.computer-code {
+        background-color: #f7f7f9;
+        border: 1px solid #e1e1e8;
+        color: #d14;
+        padding: 3px 4px;
+        white-space: nowrap;
+    }
+
+    kbd.keyboard-phrase {
+        font-family: monospace;
+    }
+
+    samp.sample-text {
+        font-family: monospace;
+    }
+
+    var.variable {
+        font-style: italic;
+    }
+
+    del.deleted-text {
+        text-decoration: line-through;
+    }
+
+    ins.inserted-text {
+        text-decoration: underline;
+    }
+}
+
+// END ==========================================================================================================
 
 // Alight anchor styles
 a {

@@ -144,10 +144,56 @@
   min-height: 250px;
 }
 
-.ckeditor pre {
+.ck-editor pre {
   white-space: pre-wrap;
   word-wrap: break-word;
+  -moz-tab-size: 4;
+  -o-tab-size: 4;
   tab-size: 4;
+}
+
+.ck-content h2.italic-title {
+  font-style: italic;
+}
+.ck-content .subtitle {
+  color: #aaa;
+  font-style: italic;
+}
+.ck-content p.special-container {
+  background: #eee;
+  border: 1px solid #ccc;
+  padding: 5px 10px;
+}
+.ck-content big.big {
+  font-size: larger;
+}
+.ck-content small.small {
+  font-size: smaller;
+}
+.ck-content tt.typewriter {
+  font-family: monospace;
+}
+.ck-content code.computer-code {
+  background-color: #f7f7f9;
+  border: 1px solid #e1e1e8;
+  color: #d14;
+  padding: 3px 4px;
+  white-space: nowrap;
+}
+.ck-content kbd.keyboard-phrase {
+  font-family: monospace;
+}
+.ck-content samp.sample-text {
+  font-family: monospace;
+}
+.ck-content var.variable {
+  font-style: italic;
+}
+.ck-content del.deleted-text {
+  text-decoration: line-through;
+}
+.ck-content ins.inserted-text {
+  text-decoration: underline;
 }
 
 a {
