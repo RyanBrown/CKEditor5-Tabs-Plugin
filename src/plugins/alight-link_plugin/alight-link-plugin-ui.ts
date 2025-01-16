@@ -5,6 +5,7 @@ import { createLinkFormView, createPublicWebsiteLink, createIntranetLink } from 
 import ToolBarIcon from './assets/icon-link.svg';
 import './styles/alight-link-plugin.css';
 import { AlightModal, ModalProps } from '../alight-modal/alight-modal';
+import { getPredefinedLinksContent } from './modal-content/predefined-links';
 
 export default class AlightLinkPluginUI extends Plugin {
     static get pluginName() {
@@ -68,28 +69,17 @@ export default class AlightLinkPluginUI extends Plugin {
     }
 
     private openAlightModal(props?: ModalProps): Promise<unknown> {
-        // Close the previously open modal (if any)
         if (AlightLinkPluginUI.activeModal) {
             AlightLinkPluginUI.activeModal.close();
         }
-
-        // Create a new modal and store it as the active modal
         const modal = new AlightModal();
         AlightLinkPluginUI.activeModal = modal;
 
-        // When this modal closes (resolve or reject), clear the active modal reference
         return modal.openModal(props).finally(() => {
             AlightLinkPluginUI.activeModal = null;
         });
     }
 
-    /**
-     * Handles clicks from the link selection list in the "Choose a Link" modal.
-     * Based on which link type the user chooses, it displays another modal
-     * with relevant content.
-     *
-     * @param linkText - The text associated with the clicked link
-     */
     private handleLinkClick(linkText: string): void {
         let modalProps: ModalProps;
 
@@ -97,9 +87,10 @@ export default class AlightLinkPluginUI extends Plugin {
             case 'Predefined Pages':
                 modalProps = {
                     title: 'Choose a Predefined Link',
-                    mainContent: `<p>predefined link content goes here...</p>`,
+                    mainContent: getPredefinedLinksContent(), // Use imported content generator
                     // width: '500px',
                     // className: 'predefined-modal',
+                    mainClassName: 'predefined-links-container',
                     // primaryBtnLabel: 'Select',
                     // tertiaryBtnLabel: 'Close',
                     // showHeader: true,

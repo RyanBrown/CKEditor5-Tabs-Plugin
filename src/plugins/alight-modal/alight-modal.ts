@@ -9,6 +9,7 @@ export interface ModalProps {
     showFooter?: boolean; // Show the modal footer. Defaults to true.
     width?: string | null; // Modal width. If null, no inline width is applied.
     className?: string; // Optional CSS class to apply to the modal container.
+    mainClassName?: string; // Optional CSS class to apply to the <main> section.
 }
 
 export class AlightModal {
@@ -27,6 +28,7 @@ export class AlightModal {
             showFooter = true,
             width = null, // Default to null for no inline width
             className = '', // Default to no additional class
+            mainClassName = '', // Default to no additional class for <main>
         } = props || {};
 
         return new Promise((resolve) => {
@@ -72,6 +74,11 @@ export class AlightModal {
             // Add main content
             const mainEl = document.createElement('main');
             mainEl.classList.add('ck-alight-modal-content');
+
+            // Apply optional class to the <main> section
+            if (mainClassName) {
+                mainEl.classList.add(mainClassName);
+            }
 
             if (mainContent) {
                 if (typeof mainContent === 'string') {

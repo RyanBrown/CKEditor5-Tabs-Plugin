@@ -69,6 +69,8 @@
     .ck-alight-modal-content {
         background: var(--neutral-white);
         color: var(--neutral-black);
+        max-height: 70vh;
+        overflow: auto;
         padding: var(--spacing-xl);
     }
     .ck-alight-modal-footer {
