@@ -183,12 +183,12 @@ a:hover {
   border: var(--button-outlined-border);
   color: var(--primary);
 }
-.ck-alight-button:enabled:hover {
+.ck-alight-button.ck-alight-button-outlined:enabled:hover {
   background: var(--primary-outline-hover);
   border: var(--button-outlined-border);
   color: var(--primary);
 }
-.ck-alight-button:enabled:active {
+.ck-alight-button.ck-alight-button-outlined:enabled:active {
   background: var(--primary-outline-active);
   border: var(--button-outlined-border);
   color: var(--primary);

@@ -8,7 +8,6 @@ a {
         color: var(--primary--hover);
     }
 }
-
 a,
 a:hover {
     cursor: pointer;
@@ -47,17 +46,18 @@ a:hover {
         background-color: transparent;
         border: var(--button-outlined-border);
         color: var(--primary);
-    }
-    &:enabled {
-        &:hover {
-            background: var(--primary-outline-hover);
-            border: var(--button-outlined-border);
-            color: var(--primary);
-        }
-        &:active {
-            background: var(--primary-outline-active);
-            border: var(--button-outlined-border);
-            color: var(--primary);
+
+        &:enabled {
+            &:hover {
+                background: var(--primary-outline-hover);
+                border: var(--button-outlined-border);
+                color: var(--primary);
+            }
+            &:active {
+                background: var(--primary-outline-active);
+                border: var(--button-outlined-border);
+                color: var(--primary);
+            }
         }
     }
     &:focus {
