@@ -26,11 +26,16 @@ export function createLinkView(
     const wrapper = document.createElement('div');
 
     // Helper function to create a label and input pair
-    function createLabeledInput(labelText: string, inputId: string, inputType: string): HTMLElement[] {
+    function createLabeledInput(
+        labelText: string,
+        inputId: string,
+        inputType: string,
+        additionalClasses: string[] = []
+    ): HTMLElement[] {
         const label = document.createElement('label');
         label.setAttribute('for', inputId);
         label.textContent = labelText;
-        label.classList.add('ck-alight-input-label');
+        label.classList.add('ck-alight-input-label', ...additionalClasses);
 
         const input = document.createElement('input');
         input.id = inputId;
@@ -67,7 +72,10 @@ export function createLinkView(
 
     // Add Organization Name label and input if specified
     if (options.includeOrgNameInput) {
-        const [orgNameLabel, orgNameInput] = createLabeledInput('Organization Name (Optional)', 'org-name', 'text');
+        // Add `mt-2` class to the Organization Name label
+        const [orgNameLabel, orgNameInput] = createLabeledInput('Organization Name (Optional)', 'org-name', 'text', [
+            'mt-2',
+        ]);
         const asteriskSpan = document.createElement('span');
         asteriskSpan.className = 'asterisk';
         asteriskSpan.textContent = '*';

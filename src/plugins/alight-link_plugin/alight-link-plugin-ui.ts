@@ -113,7 +113,7 @@ export default class AlightLinkPluginUI extends Plugin {
                 modalProps = {
                     title: 'Existing Document',
                     mainContent: `<p>existing document content goes here...</p>`,
-                    width: '60rem',
+                    // width: '60rem',
                 };
                 break;
             case 'New Document':

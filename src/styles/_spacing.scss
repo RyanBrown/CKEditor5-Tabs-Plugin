@@ -14,10 +14,10 @@
             #{$class-name} {
                 @if type-of($props) == 'list' {
                     @each $prop in $props {
-                        #{$prop}: math.div(#{$scale}, 1) rem#{if($important, ' !important', '')};
+                        #{$prop}: math.div($scale, 1) * 1rem#{if($important, ' !important', '')};
                     }
                 } @else {
-                    #{$props}: math.div(#{$scale}, 1) rem#{if($important, ' !important', '')};
+                    #{$props}: math.div($scale, 1) * 1rem#{if($important, ' !important', '')};
                 }
             }
         }
