@@ -1,4 +1,4 @@
-@import './../../../styles/_mixins.scss';
+@use './../../../styles/mixins' as mixins;
 
 // The semi-transparent overlay behind the modal
 .ck-alight-modal-overlay {
@@ -16,10 +16,10 @@
 
 // The main modal container
 .ck-alight-modal {
-    @include component-box-shadow;
+    @include mixins.component-box-shadow;
     background-color: var(--neutral-white);
     border-radius: 0;
-    min-width: toRem(400);
+    min-width: mixins.toRem(400);
     padding: 0;
 
     .ck-alight-modal-header {
@@ -36,7 +36,7 @@
     }
 
     .ck-alight-modal-title {
-        font-size: toRem(22);
+        font-size: mixins.toRem(22);
         font-weight: var(--font-weight-normal);
     }
 
@@ -87,5 +87,12 @@
         }
     }
     .ck-alight-modal-dialog {
+        .ck-alight-modal-dialog-icon {
+            font-size: var(--font-size-xxxl);
+        }
+
+        .ck-alight-modal-dialog-message {
+            margin-left: var(--spacing-l);
+        }
     }
 }

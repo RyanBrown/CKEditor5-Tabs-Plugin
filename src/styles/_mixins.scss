@@ -1,3 +1,7 @@
+@use 'sass:color';
+@use 'sass:math';
+@use 'sass:meta';
+
 $primary: #266de2;
 $secondary: #6c757d;
 $warning: #fbcf35;
@@ -123,28 +127,28 @@ $plain: #495057;
     // Outline active = 10% rgba of default color
 
     @function hover-color($color) {
-        $darken: darken($color, 10%);
-        @return #{$darken};
+        $darken: color.adjust($color, $lightness: -10%);
+        @return $darken; // Return the adjusted color directly
     }
 
     @function active-color($color) {
-        $darken: darken($color, 15%);
-        @return #{$darken};
+        $darken: color.adjust($color, $lightness: -15%);
+        @return $darken;
     }
 
     @function focus-color($color) {
-        $rgba: rgba($color, 40%);
-        @return #{$rgba};
+        $rgba: color.scale($color, $alpha: -60%); // Reduce alpha by 60%
+        @return $rgba;
     }
 
     @function outline-hover-color($color) {
-        $rgba: rgba($color, 16%);
-        @return #{$rgba};
+        $rgba: color.scale($color, $alpha: -84%); // Reduce alpha by 84%
+        @return $rgba;
     }
 
     @function outline-hover-active-color($color) {
-        $rgba: rgba($color, 10%);
-        @return #{$rgba};
+        $rgba: color.scale($color, $alpha: -90%); // Reduce alpha by 90%
+        @return $rgba;
     }
 
     --primary: #{$primary};
@@ -207,11 +211,17 @@ $plain: #495057;
 // Mixins
 // ================================================================================================
 
+// Convert pixels to rems
 @function toRem($value) {
-    $remValue: calc($value / 16) + rem;
-    @return $remValue;
+    // Ensure the value is numeric or in pixels
+    @if math.is-unitless($value) or math.unit($value) == 'px' {
+        @return math.div($value, 16) * 1rem;
+    }
+    // Throw an error for unsupported units
+    @error "The value must be unitless or in 'px'. Given: '#{math.unit($value)}'";
 }
 
+// Mixin for component box shadow
 @mixin component-box-shadow {
     box-shadow: 0 0.1875rem 0.5rem rgba(0, 0, 0, 0.15);
 }

@@ -1,10 +1,10 @@
-@import './_mixins';
+@use './_mixins' as mixins;
 
 // Alight button styles
 .ck-alight-button {
     align-items: center;
     background: var(--primary);
-    border-radius: toRem(30);
+    border-radius: mixins.toRem(30);
     border: 2px solid var(--primary);
     color: var(--neutral-white);
     cursor: pointer;
@@ -12,9 +12,9 @@
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-bold);
     justify-content: center;
-    line-height: toRem(21);
-    min-width: toRem(40);
-    padding: toRem(10) toRem(16);
+    line-height: mixins.toRem(21);
+    min-width: mixins.toRem(40);
+    padding: mixins.toRem(10) mixins.toRem(16);
     transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
 
     &:enabled {

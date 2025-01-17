@@ -48,7 +48,7 @@ import ModalTriggerPlugin from './plugins/modal-trigger_plugin/modal-trigger-plu
 import TabsPlugin from './plugins/Tabs_Plugin/tabs-plugin';
 
 // Import custom styles for headings, style definitions and custom plugins
-import './styles/styles.css';
+import './styles/styles.scss';
 
 const awldsColorPalette = [
     // Primary colors

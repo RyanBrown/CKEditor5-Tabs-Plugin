@@ -1,4 +1,4 @@
-@import './../../../styles/_mixins.scss';
+@use './../../../styles/_mixins.scss' as mixins;
 
 // Flex Layout for Search Bar
 .search-wrapper {
@@ -40,7 +40,7 @@
     flex-grow: 1;
     justify-content: space-between;
     margin-right: 0.5rem !important;
-    padding: toRem(9) toRem(16);
+    padding: mixins.toRem(9) mixins.toRem(16);
 }
 
 .search-main {
@@ -64,7 +64,7 @@
         }
     }
     button.advanced-search-btn {
-        min-width: toRem(160);
+        min-width: mixins.toRem(160);
     }
 }
 
@@ -80,7 +80,7 @@
         display: block;
 
         &:not(:empty):first-of-type {
-            margin-top: toRem(10);
+            margin-top: mixins.toRem(10);
         }
     }
 }

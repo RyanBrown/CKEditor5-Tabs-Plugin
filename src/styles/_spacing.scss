@@ -1,4 +1,4 @@
-@import './_mixins';
+@use 'sass:math'; // Import math module for division
 
 // Define the spacing-class mixin
 @mixin spacing-class($prefix, $properties, $scales, $important: false) {
@@ -14,10 +14,10 @@
             #{$class-name} {
                 @if type-of($props) == 'list' {
                     @each $prop in $props {
-                        #{$prop}: #{$scale}rem#{if($important, ' !important', '')};
+                        #{$prop}: math.div(#{$scale}, 1) rem#{if($important, ' !important', '')};
                     }
                 } @else {
-                    #{$props}: #{$scale}rem#{if($important, ' !important', '')};
+                    #{$props}: math.div(#{$scale}, 1) rem#{if($important, ' !important', '')};
                 }
             }
         }

@@ -1,4 +1,7 @@
-@import './_mixins';
+@use './_mixins';
+@use './_buttons';
+@use './_inputs';
+// @use './_spacing';
 
 // Set the minimum height of the ckeditor
 .ck-editor__editable_inline {
@@ -139,7 +142,3 @@ a:hover {
     cursor: pointer;
     text-decoration: none;
 }
-
-@import './buttons';
-@import './inputs';
-@import '_spacing';

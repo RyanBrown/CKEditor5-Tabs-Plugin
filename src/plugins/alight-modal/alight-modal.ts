@@ -1,4 +1,4 @@
-import './styles/alight-modal.css';
+import './styles/alight-modal.scss';
 
 export interface ModalProps {
     title?: string; // Modal title. Defaults to "Modal Title".

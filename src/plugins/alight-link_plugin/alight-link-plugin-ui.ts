@@ -3,9 +3,9 @@ import { ButtonView } from '@ckeditor/ckeditor5-ui';
 import { Locale } from '@ckeditor/ckeditor5-utils';
 import { createLinkFormView, createPublicWebsiteLink, createIntranetLink } from './alight-link-plugin-utils';
 import ToolBarIcon from './assets/icon-link.svg';
-import './styles/alight-link-plugin.css';
 import { AlightModal, ModalProps } from '../alight-modal/alight-modal';
 import { getPredefinedLinksContent } from './modal-content/predefined-links';
+import './styles/alight-link-plugin.scss';
 
 export default class AlightLinkPluginUI extends Plugin {
     static get pluginName() {

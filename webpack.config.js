@@ -52,7 +52,7 @@ module.exports = {
     ],
 
     resolve: {
-        extensions: ['.ts', '.js', '.json'],
+        extensions: ['.ts', '.js', '.json', '.scss'],
     },
 
     module: {
@@ -91,6 +91,22 @@ module.exports = {
                             }),
                         },
                     },
+                ],
+            },
+            {
+                test: /\.scss$/,
+                use: [
+                    {
+                        loader: 'style-loader',
+                        options: {
+                            injectType: 'singletonStyleTag',
+                            attributes: {
+                                'data-cke': true,
+                            },
+                        },
+                    },
+                    'css-loader',
+                    'sass-loader', // Compiles SCSS to CSS
                 ],
             },
         ],
