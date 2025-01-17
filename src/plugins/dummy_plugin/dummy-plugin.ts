@@ -6,6 +6,7 @@ import Command from '@ckeditor/ckeditor5-core/src/command';
 import ToolBarIcon from './assets/icon-link.svg';
 import type { Editor } from '@ckeditor/ckeditor5-core';
 import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
+import View from '@ckeditor/ckeditor5-ui/src/view';
 
 export default class DummyPlugin extends Plugin {
     static get pluginName(): string {
@@ -30,6 +31,24 @@ export default class DummyPlugin extends Plugin {
 
             // Create a ListView for the dropdown's panel
             const listView = new ListView(locale);
+
+            // Add a non-clickable header
+            const headerView = new View(locale);
+            headerView.setTemplate({
+                tag: 'div',
+                attributes: {
+                    class: 'dropdown-header',
+                    style: 'padding: 2px 16px 4px; border-bottom: 1px solid #ccced1;',
+                },
+                children: [
+                    {
+                        text: 'Choose a Link Type',
+                    },
+                ],
+            });
+
+            // Add the header to the dropdown
+            listView.items.add(headerView);
 
             const itemDefinitions = [
                 { label: 'Predefined Pages', command: 'dummyOption1' },
