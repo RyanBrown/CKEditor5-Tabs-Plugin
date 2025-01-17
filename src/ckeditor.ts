@@ -49,6 +49,7 @@ import TabsPlugin from './plugins/Tabs_Plugin/tabs-plugin';
 
 // Import custom styles for headings, style definitions and custom plugins
 import './styles/styles.scss';
+import DummyPlugin from './plugins/dummy_plugin/dummy-plugin';
 
 const awldsColorPalette = [
     // Primary colors
@@ -114,6 +115,7 @@ class Editor extends ClassicEditor {
         AlightPopulationPlugin,
         ModalTriggerPlugin,
         TabsPlugin,
+        DummyPlugin,
     ];
 
     public static override defaultConfig: EditorConfig = {
@@ -169,6 +171,7 @@ class Editor extends ClassicEditor {
                 'alightImagePlugin',
                 'alightPopulationPlugin',
                 'alightLinkPlugin',
+                'dummyPlugin',
                 // 'modalTrigger',
             ],
             shouldNotGroupWhenFull: true,
