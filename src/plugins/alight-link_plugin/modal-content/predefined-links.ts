@@ -1,5 +1,6 @@
 import predefinedLinksData from './json/predefined-test-data.json';
 import './predefined-links.css';
+import './search.css';
 
 let filteredLinksData = [...predefinedLinksData]; // A copy of the data to handle filtered results.
 let currentSearchQuery = ''; // To retain the search query across renders.
@@ -19,7 +20,7 @@ export function getPredefinedLinksContent(page: number = 1, pageSize: number = 1
                 </div>
 
                 <ul>
-                    <li>${link.LinkTitleDisplayName}</li>
+                    <li><strong>${link.LinkTitleDisplayName}</strong></li>
                     <li><strong>Item Name:</strong> ${link.LinkItemName}</li>
                     <li><strong>Type:</strong> ${link.BaseOrClientSpecific}</li>
                     <li><strong>Page Type:</strong> ${link.PageType}</li>

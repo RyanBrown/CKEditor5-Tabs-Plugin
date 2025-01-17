@@ -19,6 +19,7 @@
 }
 .predefined-links-container .link-item ul li {
   font-size: 14px;
+  line-height: 1.3;
 }
 .predefined-links-container .search-container {
   align-items: center;
@@ -37,7 +38,7 @@
   align-items: center;
   background-color: #fff;
   border-top: 1px solid #dedede;
-  bottom: 0;
+  bottom: -1px;
   display: flex;
   justify-content: center;
   padding: 20px;

@@ -1,0 +1,146 @@
+@import './../../../styles/mixins.scss';
+
+// Flex Layout for Search Bar
+.search-wrapper {
+    align-items: center;
+    display: flex;
+    margin-bottom: 1rem;
+    justify-content: space-between;
+
+    .search-left-col {
+        margin-right: 0.5rem;
+    }
+
+    .search-center-col {
+        flex-grow: 1;
+        margin-right: 0.5rem;
+    }
+}
+
+@media screen and (max-width: var(--media-query-768)) {
+    .search-wrapper {
+        flex-wrap: wrap;
+    }
+}
+
+.search-main {
+    display: flex;
+
+    @media screen and (max-width: var(--media-query-576)) {
+        flex-wrap: wrap;
+    }
+}
+
+.search-input {
+    align-items: center;
+    background-color: var(--neutral-white);
+    border-radius: 5rem;
+    border: 1px solid var(--neutral-dove-gray);
+    display: flex;
+    flex-grow: 1;
+    justify-content: space-between;
+    margin-right: 0.5rem !important;
+    padding: toRem(9) toRem(16);
+}
+
+.search-main {
+    .p-input-icon-left,
+    .p-input-icon-right {
+        display: inline-flex;
+        flex-grow: 1;
+    }
+
+    input {
+        border: none !important;
+        background-color: transparent !important;
+        border-top-left-radius: 5rem !important;
+        border-bottom-right-radius: 5rem !important;
+        display: inline-flex;
+        flex-grow: 1;
+        width: 100% !important;
+
+        &:placeholder-shown {
+            text-overflow: ellipsis;
+        }
+    }
+    button.advanced-search-btn {
+        min-width: toRem(160);
+    }
+}
+
+.search-btn {
+    background-color: var(--neutral-white);
+}
+
+.search-field-display {
+    color: var(--primary);
+    font-weight: var(--font-weight-light);
+
+    span {
+        display: block;
+
+        &:not(:empty):first-of-type {
+            margin-top: toRem(10);
+        }
+    }
+}
+
+.search-field-note {
+    color: var(--neutral-black);
+    font-size: var(--font-size-x-sm);
+    font-style: italic;
+}
+
+.clear-input {
+    max-width: 0 0.75rem;
+
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+.radio-list-inline,
+.checkbox-list-inline {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    li {
+        align-items: center;
+        display: inline-flex;
+        padding: 0 1rem 0 0;
+    }
+}
+
+.advanced-search-panel {
+    padding: 0.5rem 1rem 1rem;
+
+    header {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+        margin: 0 0 1rem;
+
+        h3 {
+            font-size: var(--font-size-lg);
+            margin: 0;
+        }
+    }
+
+    .filter-panel-title {
+        display: block;
+        font-size: var(--font-size-base);
+        font-weight: var(--font-weight-normal);
+        line-height: 150%;
+        margin: 0 0 0.75rem;
+    }
+
+    footer {
+        margin-top: 2rem;
+
+        p-button + p-button,
+        button + button {
+            margin-left: 1rem;
+        }
+    }
+}
