@@ -50,6 +50,6 @@
     &:focus {
         box-shadow: var(--focus-state);
         outline-offset: 0;
-        outline: 0 none;
+        outline: none;
     }
 }
