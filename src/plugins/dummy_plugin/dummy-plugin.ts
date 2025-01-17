@@ -17,7 +17,6 @@ export default class DummyPlugin extends Plugin {
     init(): void {
         const editor = this.editor;
 
-        // Add the dropdown button to the editor toolbar
         editor.ui.componentFactory.add('dummyPlugin', (locale) => {
             const dropdown = createDropdown(locale);
 
@@ -32,6 +31,11 @@ export default class DummyPlugin extends Plugin {
 
             // Create a ListView for the dropdown's panel
             const listView = new ListView(locale);
+
+            // Override focus to prevent auto-focus on any buttons
+            listView.focus = () => {
+                // Do nothing to prevent focusing on items
+            };
 
             // Add a non-clickable header
             const headerView = new View(locale);
