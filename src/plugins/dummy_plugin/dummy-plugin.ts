@@ -1,12 +1,11 @@
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 import { createDropdown } from '@ckeditor/ckeditor5-ui/src/dropdown/utils';
-import Model from '@ckeditor/ckeditor5-ui/src/model';
+import ListView from '@ckeditor/ckeditor5-ui/src/list/listview';
+import ListItemView from '@ckeditor/ckeditor5-ui/src/list/listitemview';
 import Command from '@ckeditor/ckeditor5-core/src/command';
-import icon from '@ckeditor/ckeditor5-core/theme/icons/three-vertical-dots.svg';
-import ViewCollection from '@ckeditor/ckeditor5-ui/src/viewcollection';
-import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
-import type { Editor } from '@ckeditor/ckeditor5-core';
 import ToolBarIcon from './assets/icon-link.svg';
+import type { Editor } from '@ckeditor/ckeditor5-core';
+import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
 
 export default class DummyPlugin extends Plugin {
     static get pluginName(): string {
@@ -29,15 +28,8 @@ export default class DummyPlugin extends Plugin {
                 withText: false,
             });
 
-            // Add custom CSS class for vertical layout
-            dropdown.panelView.extendTemplate({
-                attributes: {
-                    class: 'dummy-dropdown-panel',
-                },
-            });
-
-            // Initialize the dropdown panel with a ViewCollection
-            const panelItems = new ViewCollection();
+            // Create a ListView for the dropdown's panel
+            const listView = new ListView(locale);
 
             const itemDefinitions = [
                 { label: 'Predefined Pages', command: 'dummyOption1' },
@@ -47,7 +39,11 @@ export default class DummyPlugin extends Plugin {
                 { label: 'New Document', command: 'dummyOption5' },
             ];
 
+            // Populate the list view with ListItemView instances
             itemDefinitions.forEach((item) => {
+                const listItem = new ListItemView(locale);
+
+                // Create a ButtonView for each list item
                 const button = new ButtonView(locale);
                 button.set({
                     label: item.label,
@@ -55,15 +51,21 @@ export default class DummyPlugin extends Plugin {
                     tooltip: true,
                 });
 
+                // Handle the execute event for the button
                 button.on('execute', () => {
                     editor.execute(item.command);
                     editor.editing.view.focus();
                 });
 
-                panelItems.add(button);
+                // Add the ButtonView to the ListItemView's children
+                listItem.children.add(button);
+
+                // Add the ListItemView to the ListView
+                listView.items.add(listItem);
             });
 
-            panelItems.forEach((item) => dropdown.panelView.children.add(item));
+            // Add the ListView to the dropdown's panel
+            dropdown.panelView.children.add(listView);
 
             return dropdown;
         });
