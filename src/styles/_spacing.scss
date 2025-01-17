@@ -1,0 +1,79 @@
+@import './_mixins';
+
+// Define the spacing-class mixin
+@mixin spacing-class($prefix, $properties, $scales, $important: false) {
+    @each $short, $props in $properties {
+        @each $scale in $scales {
+            // Replace "." in scale values with "-" for valid CSS class names
+            $scale-name: str-replace(#{$scale}, '.', '-');
+
+            // Generate class name without an extra hyphen
+            $class-name: '#{$prefix}#{$short}-#{$scale-name}';
+
+            // Generate property styles
+            #{$class-name} {
+                @if type-of($props) == 'list' {
+                    @each $prop in $props {
+                        #{$prop}: #{$scale}rem#{if($important, ' !important', '')};
+                    }
+                } @else {
+                    #{$props}: #{$scale}rem#{if($important, ' !important', '')};
+                }
+            }
+        }
+    }
+}
+
+// Utility function to replace "." with "-" in strings
+@function str-replace($string, $search, $replace) {
+    $index: str-index($string, $search);
+
+    @if $index {
+        @return str-slice($string, 1, $index - 1) + $replace +
+            str-replace(str-slice($string, $index + str-length($search)), $search, $replace);
+    }
+
+    @return $string;
+}
+
+// Define the padding and margin properties
+$padding-properties: (
+    't': 'padding-top',
+    'r': 'padding-right',
+    'b': 'padding-bottom',
+    'l': 'padding-left',
+    'x': (
+        'padding-left',
+        'padding-right',
+    ),
+    'y': (
+        'padding-top',
+        'padding-bottom',
+    ),
+    '': 'padding',
+) !default;
+
+$margin-properties: (
+    't': 'margin-top',
+    'r': 'margin-right',
+    'b': 'margin-bottom',
+    'l': 'margin-left',
+    'x': (
+        'margin-left',
+        'margin-right',
+    ),
+    'y': (
+        'margin-top',
+        'margin-bottom',
+    ),
+    '': 'margin',
+) !default;
+
+// Spacing scales
+$space-scales: 0, 0.25, 0.5, 1, 1.5, 2, 3, 4, 5;
+
+// Generate padding classes
+@include spacing-class('p', $padding-properties, $space-scales);
+
+// Generate margin classes
+@include spacing-class('m', $margin-properties, $space-scales);

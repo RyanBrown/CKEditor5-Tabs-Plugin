@@ -1,4 +1,4 @@
-@import './../styles/mixins.scss';
+@import './_mixins';
 
 // Set the minimum height of the ckeditor
 .ck-editor__editable_inline {
@@ -140,99 +140,6 @@ a:hover {
     text-decoration: none;
 }
 
-// Alight button styles
-.ck-alight-button {
-    align-items: center;
-    background: var(--primary);
-    border-radius: toRem(30);
-    border: 2px solid var(--primary);
-    color: var(--neutral-white);
-    cursor: pointer;
-    display: inline-flex;
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-bold);
-    justify-content: center;
-    line-height: toRem(21);
-    min-width: toRem(40);
-    padding: toRem(10) toRem(16);
-    transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
-
-    &:enabled {
-        &:hover {
-            background: var(--primary-hover);
-            border-color: var(--primary-hover);
-            color: var(--neutral-white);
-        }
-        &:active {
-            background: var(--primary-active);
-            border-color: var(--primary-active);
-            color: var(--neutral-white);
-        }
-    }
-    &.ck-alight-button-outlined {
-        background-color: transparent;
-        border: var(--button-outlined-border);
-        color: var(--primary);
-
-        &:enabled {
-            &:hover {
-                background: var(--primary-outline-hover);
-                border: var(--button-outlined-border);
-                color: var(--primary);
-            }
-            &:active {
-                background: var(--primary-outline-active);
-                border: var(--button-outlined-border);
-                color: var(--primary);
-            }
-        }
-    }
-    &:focus {
-        box-shadow: var(--focus-state);
-        outline-offset: 0;
-        outline: 0 none;
-    }
-}
-
-// Alight input label styles
-.ck-alight-input-label {
-    display: block;
-    font-weight: var(--font-weight-bold);
-}
-
-// Alight text input styles
-.ck-alight-input-text {
-    appearance: none;
-    background: var(--neutral-white);
-    border-radius: 0;
-    border: 1px solid var(--neutral-dove-gray);
-    color: var(--gray-700);
-    font-family: var(--font-family-base);
-    font-size: var(--font-size-base);
-    padding: toRem(9) toRem(16);
-    transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
-
-    &:enabled {
-        &:hover {
-            border-color: var(--neutral-black);
-        }
-
-        &:focus {
-            border-color: var(--primary);
-            box-shadow: var(--focus-state);
-            outline-offset: 0;
-            outline: 0 none;
-        }
-    }
-    &.ng-dirty.ng-invalid {
-        border-color: var(--error);
-    }
-    &.ck-alight-input-text-sm {
-        font-size: var(--font-size-sm);
-        padding: toRem(12) toRem(12) !important;
-    }
-    &.ck-alight-input-text-lg {
-        font-size: var(--font-size-xl);
-        padding: toRem(20) toRem(20);
-    }
-}
+@import './buttons';
+@import './inputs';
+@import '_spacing';
