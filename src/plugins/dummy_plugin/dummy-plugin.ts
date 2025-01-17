@@ -2,6 +2,7 @@ import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 import { createDropdown } from '@ckeditor/ckeditor5-ui/src/dropdown/utils';
 import ListView from '@ckeditor/ckeditor5-ui/src/list/listview';
 import ListItemView from '@ckeditor/ckeditor5-ui/src/list/listitemview';
+import ListSeparatorView from '@ckeditor/ckeditor5-ui/src/list/listseparatorview';
 import Command from '@ckeditor/ckeditor5-core/src/command';
 import ToolBarIcon from './assets/icon-link.svg';
 import type { Editor } from '@ckeditor/ckeditor5-core';
@@ -38,17 +39,21 @@ export default class DummyPlugin extends Plugin {
                 tag: 'div',
                 attributes: {
                     class: 'dropdown-header',
-                    style: 'padding: 2px 16px 4px; border-bottom: 1px solid #ccced1;',
+                    style: 'padding: 2px 16px 4px; font-weight: 700',
                 },
                 children: [
                     {
-                        text: 'Choose a Link Type',
+                        text: 'Choose Link Type',
                     },
                 ],
             });
 
             // Add the header to the dropdown
             listView.items.add(headerView);
+
+            // Add a separator after the header
+            const separator = new ListSeparatorView(locale);
+            listView.items.add(separator);
 
             const itemDefinitions = [
                 { label: 'Predefined Pages', command: 'dummyOption1' },
