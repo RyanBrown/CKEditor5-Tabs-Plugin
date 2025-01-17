@@ -4,16 +4,12 @@ import ListView from '@ckeditor/ckeditor5-ui/src/list/listview';
 import ListItemView from '@ckeditor/ckeditor5-ui/src/list/listitemview';
 import ListSeparatorView from '@ckeditor/ckeditor5-ui/src/list/listseparatorview';
 import Command from '@ckeditor/ckeditor5-core/src/command';
-import ToolBarIcon from './assets/icon-link.svg';
 import type { Editor } from '@ckeditor/ckeditor5-core';
 import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
 import View from '@ckeditor/ckeditor5-ui/src/view';
+import ToolBarIcon from './assets/icon-link.svg';
 
 export default class DummyPlugin extends Plugin {
-    static get pluginName(): string {
-        return 'DummyPlugin';
-    }
-
     init(): void {
         const editor = this.editor;
 
@@ -60,11 +56,11 @@ export default class DummyPlugin extends Plugin {
             listView.items.add(separator);
 
             const itemDefinitions = [
-                { label: 'Predefined Pages', command: 'dummyOption1' },
-                { label: 'Public Website', command: 'dummyOption2' },
-                { label: 'Intranet', command: 'dummyOption3' },
-                { label: 'Existing Document', command: 'dummyOption4' },
-                { label: 'New Document', command: 'dummyOption5' },
+                { label: 'Predefined Pages', command: 'linkOption1' },
+                { label: 'Public Website', command: 'linkOption2' },
+                { label: 'Intranet', command: 'linkOption3' },
+                { label: 'Existing Document', command: 'linkOption4' },
+                { label: 'New Document', command: 'linkOption5' },
             ];
 
             // Populate the list view with ListItemView instances
@@ -76,7 +72,7 @@ export default class DummyPlugin extends Plugin {
                 button.set({
                     label: item.label,
                     withText: true,
-                    tooltip: true,
+                    tooltip: false,
                 });
 
                 // Handle the execute event for the button
@@ -105,11 +101,11 @@ export default class DummyPlugin extends Plugin {
     private _defineCommands(): void {
         const editor = this.editor;
 
-        editor.commands.add('dummyOption1', new DummyCommand(editor, 'Option 1 executed'));
-        editor.commands.add('dummyOption2', new DummyCommand(editor, 'Option 2 executed'));
-        editor.commands.add('dummyOption3', new DummyCommand(editor, 'Option 3 executed'));
-        editor.commands.add('dummyOption4', new DummyCommand(editor, 'Option 4 executed'));
-        editor.commands.add('dummyOption5', new DummyCommand(editor, 'Option 5 executed'));
+        editor.commands.add('linkOption1', new DummyCommand(editor, 'Option 1 executed'));
+        editor.commands.add('linkOption2', new DummyCommand(editor, 'Option 2 executed'));
+        editor.commands.add('linkOption3', new DummyCommand(editor, 'Option 3 executed'));
+        editor.commands.add('linkOption4', new DummyCommand(editor, 'Option 4 executed'));
+        editor.commands.add('linkOption5', new DummyCommand(editor, 'Option 5 executed'));
     }
 }
 
