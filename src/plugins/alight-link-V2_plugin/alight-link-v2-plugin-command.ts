@@ -1,24 +1,29 @@
 import Command from '@ckeditor/ckeditor5-core/src/command';
-import type { Editor } from '@ckeditor/ckeditor5-core';
-import View from '@ckeditor/ckeditor5-ui/src/view';
-import InputView from '@ckeditor/ckeditor5-ui/src/input/inputview';
-import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
+import type Editor from '@ckeditor/ckeditor5-core/src/editor/editor';
+
+interface LinkOptionData {
+    title: string;
+    content: string;
+    acceptButton?: string;
+}
 
 export default class AlightLinkv2PluginCommand extends Command {
-    private readonly optionId: string;
+    private readonly data: LinkOptionData;
 
-    constructor(editor: Editor, optionId: string) {
+    constructor(editor: Editor, data: LinkOptionData) {
         super(editor);
-        this.optionId = optionId;
+        this.data = data;
     }
 
     override execute(): void {
-        this._showModal(this.optionId);
+        const { title, content, acceptButton } = this.data;
+        this._showModal(title, content, acceptButton);
+
+        console.log('Executing command with:', { title, content, acceptButton });
     }
 
-    private _showModal(optionId: string): void {
+    private _showModal(title: string, contentHtml: string, acceptButtonLabel?: string): void {
         const editor = this.editor;
-        const { t } = editor;
 
         // Create the overlay container
         const overlay = document.createElement('div');
@@ -29,7 +34,7 @@ export default class AlightLinkv2PluginCommand extends Command {
         const modal = document.createElement('div');
         modal.className = 'ck ck-dialog ck-dialog_modal';
         modal.setAttribute('role', 'dialog');
-        modal.setAttribute('aria-label', t('Insert media'));
+        modal.setAttribute('aria-label', title);
         modal.style.top = '50%';
         modal.style.left = '50%';
         modal.style.transform = 'translate(-50%, -50%)';
@@ -38,19 +43,19 @@ export default class AlightLinkv2PluginCommand extends Command {
         const header = document.createElement('div');
         header.className = 'ck ck-form__header';
 
-        const title = document.createElement('h2');
-        title.className = 'ck ck-form__header__label';
-        title.textContent = t('Insert media');
+        const titleElement = document.createElement('h2');
+        titleElement.className = 'ck ck-form__header__label';
+        titleElement.textContent = title;
 
         const closeButton = document.createElement('button');
         closeButton.className = 'ck ck-button ck-off';
         closeButton.type = 'button';
-        closeButton.setAttribute('aria-label', t('Close'));
+        closeButton.setAttribute('aria-label', 'Close');
         closeButton.innerHTML = `
             <svg class="ck ck-icon ck-reset_all-excluded ck-icon_inherit-color ck-button__icon" viewBox="0 0 20 20" aria-hidden="true">
                 <path d="m11.591 10.177 4.243 4.242a1 1 0 0 1-1.415 1.415l-4.242-4.243-4.243 4.243a1 1 0 0 1-1.414-1.415l4.243-4.242L4.52 5.934A1 1 0 0 1 5.934 4.52l4.243 4.243 4.242-4.243a1 1 0 1 1 1.415 1.414l-4.243 4.243z"></path>
             </svg>
-            <span>${t('Close')}</span>
+            <span>Close</span>
         `;
 
         const dismissModal = () => {
@@ -60,44 +65,13 @@ export default class AlightLinkv2PluginCommand extends Command {
 
         closeButton.onclick = dismissModal;
 
-        header.appendChild(title);
+        header.appendChild(titleElement);
         header.appendChild(closeButton);
 
         // Modal content
-        const content = document.createElement('div');
-        content.className = 'ck ck-dialog__content';
-
-        const form = document.createElement('form');
-        form.className = 'ck ck-media-form ck-responsive-form';
-
-        const fieldWrapper = document.createElement('div');
-        fieldWrapper.className = 'ck ck-labeled-field-view ck-labeled-field-view_empty';
-
-        const inputWrapper = document.createElement('div');
-        inputWrapper.className = 'ck ck-labeled-field-view__input-wrapper';
-
-        const input = document.createElement('input');
-        input.className = 'ck ck-input ck-input-text_empty ck-input-text';
-        input.type = 'text';
-        input.placeholder = t('Enter the media URL');
-
-        const label = document.createElement('label');
-        label.className = 'ck ck-label';
-        label.textContent = t('Media URL');
-
-        inputWrapper.appendChild(input);
-        inputWrapper.appendChild(label);
-
-        const status = document.createElement('div');
-        status.className = 'ck ck-labeled-field-view__status';
-        status.textContent = t('Paste the media URL in the input.');
-
-        fieldWrapper.appendChild(inputWrapper);
-        fieldWrapper.appendChild(status);
-
-        form.appendChild(fieldWrapper);
-
-        content.appendChild(form);
+        const contentContainer = document.createElement('div');
+        contentContainer.className = 'ck ck-dialog__content';
+        contentContainer.innerHTML = contentHtml; // Use the dynamic content HTML
 
         // Modal actions
         const actions = document.createElement('div');
@@ -106,15 +80,16 @@ export default class AlightLinkv2PluginCommand extends Command {
         const cancelButton = document.createElement('button');
         cancelButton.className = 'ck ck-button ck-off ck-button_with-text';
         cancelButton.type = 'button';
-        cancelButton.textContent = t('Cancel');
+        cancelButton.textContent = 'Cancel';
         cancelButton.onclick = dismissModal;
 
         const acceptButton = document.createElement('button');
         acceptButton.className = 'ck ck-button ck-button-action ck-off ck-button_with-text';
         acceptButton.type = 'button';
-        acceptButton.textContent = t('Accept');
+        acceptButton.textContent = acceptButtonLabel || 'Accept'; // Fallback to 'Accept'
         acceptButton.onclick = () => {
-            const url = input.value.trim();
+            const input = contentContainer.querySelector('input') as HTMLInputElement;
+            const url = input?.value.trim();
 
             if (url) {
                 editor.model.change((writer) => {
@@ -133,7 +108,7 @@ export default class AlightLinkv2PluginCommand extends Command {
 
         // Assemble the modal
         modal.appendChild(header);
-        modal.appendChild(content);
+        modal.appendChild(contentContainer);
         modal.appendChild(actions);
 
         // Add modal to overlay
@@ -142,8 +117,9 @@ export default class AlightLinkv2PluginCommand extends Command {
         // Append overlay to body
         document.body.appendChild(overlay);
 
-        // Focus the input field
-        input.focus();
+        // Focus the input field if present
+        const input = contentContainer.querySelector('input') as HTMLInputElement;
+        input?.focus();
 
         // Add event listener for the Esc key
         const handleKeydown = (event: KeyboardEvent) => {
