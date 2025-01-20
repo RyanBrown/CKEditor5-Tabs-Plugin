@@ -3,24 +3,27 @@ import { createDropdown } from '@ckeditor/ckeditor5-ui/src/dropdown/utils';
 import ListView from '@ckeditor/ckeditor5-ui/src/list/listview';
 import ListItemView from '@ckeditor/ckeditor5-ui/src/list/listitemview';
 import ListSeparatorView from '@ckeditor/ckeditor5-ui/src/list/listseparatorview';
+import { Locale } from '@ckeditor/ckeditor5-utils';
 import Command from '@ckeditor/ckeditor5-core/src/command';
 import type { Editor } from '@ckeditor/ckeditor5-core';
 import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
 import View from '@ckeditor/ckeditor5-ui/src/view';
 import ToolBarIcon from './assets/icon-image.svg';
+import './styles/alight-image-plugin.scss';
 
 export default class AlightImagePlugin extends Plugin {
     init(): void {
         const editor = this.editor;
+        const t = editor.t;
 
-        editor.ui.componentFactory.add('alightImagePlugin', (locale) => {
+        editor.ui.componentFactory.add('alightImagePlugin', (locale: Locale) => {
             const dropdown = createDropdown(locale);
 
             // Configure the dropdown button
             const buttonView = dropdown.buttonView;
             buttonView.set({
                 icon: ToolBarIcon,
-                label: 'Insert Alight Image',
+                label: t('Insert Alight Image'),
                 tooltip: true,
                 withText: false,
             });
@@ -43,7 +46,7 @@ export default class AlightImagePlugin extends Plugin {
                 },
                 children: [
                     {
-                        text: 'Choose Image Type',
+                        text: t('Choose Image Type'),
                     },
                 ],
             });
@@ -56,8 +59,8 @@ export default class AlightImagePlugin extends Plugin {
             listView.items.add(separator);
 
             const itemDefinitions = [
-                { label: 'Existing Image', command: 'imageOption1' },
-                { label: 'Upload Image', command: 'imageOption2' },
+                { label: t('Existing Image'), command: 'imageOption1' },
+                { label: t('Upload Image'), command: 'imageOption2' },
             ];
 
             // Populate the list view with ListItemView instances
@@ -98,12 +101,12 @@ export default class AlightImagePlugin extends Plugin {
     private _defineCommands(): void {
         const editor = this.editor;
 
-        editor.commands.add('imageOption1', new DummyCommand(editor, 'Option 1 executed'));
-        editor.commands.add('imageOption2', new DummyCommand(editor, 'Option 2 executed'));
+        editor.commands.add('imageOption1', new ImageCommand(editor, 'Option 1 executed'));
+        editor.commands.add('imageOption2', new ImageCommand(editor, 'Option 2 executed'));
     }
 }
 
-class DummyCommand extends Command {
+class ImageCommand extends Command {
     private readonly message: string;
 
     constructor(editor: Editor, message: string) {
