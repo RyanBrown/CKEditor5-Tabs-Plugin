@@ -11,7 +11,6 @@ export default class AlightLinkv2PluginEditing extends Plugin {
                 title: 'Choose a Predefined Link',
                 content:
                     '<label>Link to Predefined Pages</label><input id="link-url-input" type="text" class="ck-input ck-input-text" placeholder="Enter a predefined page URL" />',
-                acceptButton: 'TEST button',
             },
             linkOption2: {
                 title: 'Public Website',

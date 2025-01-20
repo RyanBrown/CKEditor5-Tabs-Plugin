@@ -1,10 +1,10 @@
 export interface ModalProps {
     title?: string; // Optional modal title with a default value
-    cancelButton?: {
+    tertiaryButton?: {
         label?: string; // Optional label with a default value
         onClick?: () => void; // Optional function for cancel button click
     };
-    acceptButton?: {
+    primaryButton?: {
         label?: string; // Optional label with a default value
         onClick?: () => void; // Optional function for accept button click
     };
@@ -20,8 +20,8 @@ export class ReusableModal {
 
     constructor({
         title = 'Modal Title',
-        cancelButton = { label: 'Cancel' },
-        acceptButton = { label: 'Accept', onClick: () => {} },
+        tertiaryButton = { label: 'Cancel' },
+        primaryButton = { label: 'Continue', onClick: () => {} },
         content = 'Placeholder content',
         onClose = () => {},
         showHeader = true,
@@ -57,7 +57,6 @@ export class ReusableModal {
               <svg class="ck ck-icon ck-reset_all-excluded ck-icon_inherit-color ck-button__icon" viewBox="0 0 20 20" aria-hidden="true">
                   <path d="m11.591 10.177 4.243 4.242a1 1 0 0 1-1.415 1.415l-4.242-4.243-4.243 4.243a1 1 0 0 1-1.414-1.415l4.243-4.242L4.52 5.934A1 1 0 0 1 5.934 4.52l4.243 4.243 4.242-4.243a1 1 0 1 1 1.415 1.414l-4.243 4.243z"></path>
               </svg>
-              <span>Close</span>
           `;
             closeButton.onclick = () => this.closeModal(onClose);
 
@@ -83,21 +82,21 @@ export class ReusableModal {
             actions.className = 'ck ck-dialog__actions';
 
             // Cancel button
-            const cancelButtonElement = document.createElement('button');
-            cancelButtonElement.className = 'ck ck-button ck-button_with-text';
-            cancelButtonElement.type = 'button';
-            cancelButtonElement.textContent = cancelButton.label!;
-            cancelButtonElement.onclick = cancelButton.onClick || null; // Fix: Provide fallback
+            const tertiaryButtonElement = document.createElement('button');
+            tertiaryButtonElement.className = 'ck ck-button ck-button_with-text';
+            tertiaryButtonElement.type = 'button';
+            tertiaryButtonElement.textContent = tertiaryButton.label!;
+            tertiaryButtonElement.onclick = tertiaryButton.onClick || null; // Fix: Provide fallback
 
             // Accept button
-            const acceptButtonElement = document.createElement('button');
-            acceptButtonElement.className = 'ck ck-button ck-button_action ck-button_with-text';
-            acceptButtonElement.type = 'button';
-            acceptButtonElement.textContent = acceptButton.label!;
-            acceptButtonElement.onclick = acceptButton.onClick || null; // Fix: Provide fallback
+            const primaryButtonElement = document.createElement('button');
+            primaryButtonElement.className = 'ck ck-button ck-button_action ck-button_with-text';
+            primaryButtonElement.type = 'button';
+            primaryButtonElement.textContent = primaryButton.label!;
+            primaryButtonElement.onclick = primaryButton.onClick || null; // Fix: Provide fallback
 
-            actions.appendChild(cancelButtonElement);
-            actions.appendChild(acceptButtonElement);
+            actions.appendChild(tertiaryButtonElement);
+            actions.appendChild(primaryButtonElement);
 
             this.modal.appendChild(actions);
         }
