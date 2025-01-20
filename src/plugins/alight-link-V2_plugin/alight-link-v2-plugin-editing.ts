@@ -5,10 +5,10 @@ export default class AlightLinkv2PluginEditing extends Plugin {
     init() {
         const editor = this.editor;
 
-        editor.commands.add('linkOption1', new AlightLinkv2PluginCommand(editor, 'Option 1 executed'));
-        editor.commands.add('linkOption2', new AlightLinkv2PluginCommand(editor, 'Option 2 executed'));
-        editor.commands.add('linkOption3', new AlightLinkv2PluginCommand(editor, 'Option 3 executed'));
-        editor.commands.add('linkOption4', new AlightLinkv2PluginCommand(editor, 'Option 4 executed'));
-        editor.commands.add('linkOption5', new AlightLinkv2PluginCommand(editor, 'Option 5 executed'));
+        editor.commands.add('linkOption1', new AlightLinkv2PluginCommand(editor, 'linkOption1'));
+        editor.commands.add('linkOption2', new AlightLinkv2PluginCommand(editor, 'linkOption2'));
+        editor.commands.add('linkOption3', new AlightLinkv2PluginCommand(editor, 'linkOption3'));
+        editor.commands.add('linkOption4', new AlightLinkv2PluginCommand(editor, 'linkOption4'));
+        editor.commands.add('linkOption5', new AlightLinkv2PluginCommand(editor, 'linkOption5'));
     }
 }
