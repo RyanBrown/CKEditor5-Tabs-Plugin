@@ -1,5 +1,8 @@
 import Command from '@ckeditor/ckeditor5-core/src/command';
 import type { Editor } from '@ckeditor/ckeditor5-core';
+import View from '@ckeditor/ckeditor5-ui/src/view';
+import InputView from '@ckeditor/ckeditor5-ui/src/input/inputview';
+import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
 
 export default class AlightLinkv2PluginCommand extends Command {
     private readonly optionId: string;
@@ -10,66 +13,122 @@ export default class AlightLinkv2PluginCommand extends Command {
     }
 
     override execute(): void {
-        this._showDialog(this.optionId);
+        this._showModal(this.optionId);
     }
 
-    private _showDialog(optionId: string): void {
-        const { t } = this.editor;
+    private _showModal(optionId: string): void {
+        const editor = this.editor;
+        const { t } = editor;
+        const locale = editor.locale;
 
-        // Dialog content for each option
-        const dialogContent =
-            {
-                linkOption1: t('Content for Predefined Pages'),
-                linkOption2: t('Content for Public Website'),
-                linkOption3: t('Content for Intranet'),
-                linkOption4: t('Content for Existing Document'),
-                linkOption5: t('Content for New Document'),
-            }[optionId] || t('Default Content');
+        // Get ContextualBalloon plugin
+        const balloon = editor.plugins.get('ContextualBalloon');
 
-        // Create the overlay
-        const overlay = document.createElement('div');
-        overlay.style.position = 'fixed';
-        overlay.style.top = '0';
-        overlay.style.left = '0';
-        overlay.style.width = '100%';
-        overlay.style.height = '100%';
-        overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-        overlay.style.zIndex = '9998';
+        // Remove any existing balloon
+        if (balloon.visibleView) {
+            balloon.remove(balloon.visibleView);
+        }
 
-        // Create the modal dialog
-        const dialogWrapper = document.createElement('div');
-        dialogWrapper.style.position = 'fixed';
-        dialogWrapper.style.top = '50%';
-        dialogWrapper.style.left = '50%';
-        dialogWrapper.style.transform = 'translate(-50%, -50%)';
-        dialogWrapper.style.padding = '16px';
-        dialogWrapper.style.border = '1px solid #ccc';
-        dialogWrapper.style.borderRadius = '8px';
-        dialogWrapper.style.backgroundColor = '#fff';
-        dialogWrapper.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.2)';
-        dialogWrapper.style.zIndex = '9999';
+        // Input field for media URL
+        const inputView = new InputView(locale);
+        inputView.set({
+            placeholder: t('Enter the URL for the media'),
+            id: 'media-url-input',
+        });
 
-        const dialogContentWrapper = document.createElement('div');
-        dialogContentWrapper.innerHTML = `
-            <h2>${t('Link Option Dialog')}</h2>
-            <p>${dialogContent}</p>
-            <button id="closeDialog" style="margin-top: 8px; padding: 4px 8px;">${t('Close')}</button>
-        `;
-        dialogWrapper.appendChild(dialogContentWrapper);
+        // Action buttons
+        const acceptButtonView = new ButtonView(locale);
+        acceptButtonView.set({
+            label: t('Accept'),
+            withText: true,
+            class: 'ck-button-action',
+        });
 
-        // Append the overlay and dialog to the body
-        document.body.appendChild(overlay);
-        document.body.appendChild(dialogWrapper);
+        const cancelButtonView = new ButtonView(locale);
+        cancelButtonView.set({
+            label: t('Cancel'),
+            withText: true,
+        });
 
-        // Close the dialog and overlay on button click
-        const closeDialog = () => {
-            document.body.removeChild(dialogWrapper);
-            document.body.removeChild(overlay);
-        };
+        // Modal header
+        const headerView = new View(locale);
+        headerView.setTemplate({
+            tag: 'div',
+            attributes: { class: 'ck ck-form__header' },
+            children: [
+                {
+                    tag: 'h2',
+                    attributes: { class: 'ck ck-form__header__label' },
+                    children: [{ text: t('Insert media') }],
+                },
+                {
+                    tag: 'button',
+                    attributes: {
+                        class: 'ck ck-button',
+                        type: 'button',
+                    },
+                    children: [{ text: t('Close') }],
+                },
+            ],
+        });
 
-        dialogContentWrapper.querySelector('#closeDialog')?.addEventListener('click', closeDialog);
+        // Form content
+        const formContent = new View(locale);
+        formContent.setTemplate({
+            tag: 'form',
+            attributes: { class: 'ck ck-media-form ck-responsive-form' },
+            children: [
+                {
+                    tag: 'div',
+                    attributes: { class: 'ck ck-labeled-field-view' },
+                    children: [inputView],
+                },
+            ],
+        });
 
-        // Close the dialog and overlay when clicking on the overlay
-        overlay.addEventListener('click', closeDialog);
+        // Dialog actions
+        const actionsView = new View(locale);
+        actionsView.setTemplate({
+            tag: 'div',
+            attributes: { class: 'ck ck-dialog__actions' },
+            children: [cancelButtonView, acceptButtonView],
+        });
+
+        // Complete modal
+        const modalView = new View(locale);
+        modalView.setTemplate({
+            tag: 'div',
+            attributes: { class: 'ck ck-dialog ck-dialog_modal' },
+            children: [headerView, formContent, actionsView],
+        });
+
+        // Accept button functionality
+        acceptButtonView.on('execute', () => {
+            const url = inputView.element?.value.trim();
+
+            if (url) {
+                editor.model.change((writer) => {
+                    const selection = editor.model.document.selection;
+                    const linkRange = selection.getFirstRange();
+
+                    writer.setAttribute('linkHref', url, linkRange!);
+                });
+
+                balloon.remove(modalView);
+            }
+        });
+
+        // Cancel button functionality
+        cancelButtonView.on('execute', () => {
+            balloon.remove(modalView);
+        });
+
+        // Show modal in balloon
+        balloon.add({
+            view: modalView,
+            position: {
+                target: editor.ui.getEditableElement(),
+            },
+        });
     }
 }

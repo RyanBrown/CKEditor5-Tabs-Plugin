@@ -5,18 +5,30 @@
 
 import { ClassicEditor } from '@ckeditor/ckeditor5-editor-classic';
 
+import { AccessibilityHelp } from '@ckeditor/ckeditor5-ui';
 import { Alignment } from '@ckeditor/ckeditor5-alignment';
 import { Autoformat } from '@ckeditor/ckeditor5-autoformat';
 import { Autosave } from '@ckeditor/ckeditor5-autosave';
-import { Bold, Italic, Strikethrough, Subscript, Superscript, Underline } from '@ckeditor/ckeditor5-basic-styles';
 import { BlockQuote } from '@ckeditor/ckeditor5-block-quote';
+import { Bold, Italic, Strikethrough, Subscript, Superscript, Underline } from '@ckeditor/ckeditor5-basic-styles';
+import { Clipboard } from '@ckeditor/ckeditor5-clipboard';
+import { DataSchema } from '@ckeditor/ckeditor5-html-support';
 import type { EditorConfig } from '@ckeditor/ckeditor5-core';
 import { Essentials } from '@ckeditor/ckeditor5-essentials';
 import { FontBackgroundColor, FontColor, FontFamily, FontSize } from '@ckeditor/ckeditor5-font';
 import { Heading, Title } from '@ckeditor/ckeditor5-heading';
 import { Highlight } from '@ckeditor/ckeditor5-highlight';
 import { HorizontalLine } from '@ckeditor/ckeditor5-horizontal-line';
-import { Image, ImageCaption, ImageResize, ImageStyle, ImageToolbar, ImageUpload } from '@ckeditor/ckeditor5-image';
+import {
+    AutoImage,
+    Image,
+    ImageCaption,
+    ImageInsert,
+    ImageResize,
+    ImageStyle,
+    ImageToolbar,
+    ImageUpload,
+} from '@ckeditor/ckeditor5-image';
 import { Indent, IndentBlock } from '@ckeditor/ckeditor5-indent';
 import { TextPartLanguage } from '@ckeditor/ckeditor5-language';
 import { Link, LinkImage } from '@ckeditor/ckeditor5-link';
@@ -36,6 +48,7 @@ import {
 } from '@ckeditor/ckeditor5-table';
 import { TextTransformation } from '@ckeditor/ckeditor5-typing';
 import { Undo } from '@ckeditor/ckeditor5-undo';
+import { WordCount } from '@ckeditor/ckeditor5-word-count';
 import { EditorWatchdog } from '@ckeditor/ckeditor5-watchdog';
 
 // Custom Plugins
@@ -46,25 +59,68 @@ import AlightPastePlugin from './plugins/alight-paste_plugin/alight-paste-plugin
 import AlightPopulationPlugin from './plugins/alight-population_plugin/alight-population-plugin';
 import ModalTriggerPlugin from './plugins/modal-trigger_plugin/modal-trigger-plugin';
 import TabsPlugin from './plugins/Tabs_Plugin/tabs-plugin';
+import AlightLinkv2Plugin from './plugins/alight-link-v2_plugin/alight-link-v2-plugin';
 
 // Import custom styles for headings, style definitions and custom plugins
 import './styles/styles.scss';
-import AlightLinkv2Plugin from './plugins/alight-link-v2_plugin/alight-link-v2-plugin';
 
+// Use default colors from AWLDS
 const awldsColorPalette = [
-    // Primary colors
-    { label: 'Core Water Leaf', color: '#96e8e2' },
+    // primary colors
+    { label: 'Core Water Leaf', color: '#97e8e2' },
     { label: 'Core Tropical Blue', color: '#c2d9fe' },
-    { label: 'Core Pale Lavender', color: '#e5cdfd' },
+    { label: 'Core Pale Lavender', color: '#e5cefd' },
+
+    // secondary colors
+    { label: 'Accent Apricot', color: '#ffcbb1' },
+    { label: 'Accent Canary Yellow', color: '#fff200' },
+    { label: 'Accent Denim', color: '#165bcf' },
+    { label: 'Accent Grenadier', color: '#cd4400' },
+    { label: 'Accent Hawks Blue', color: '#dce9ff' },
+    { label: 'Accent Jordy Blue', color: '#7da7ed' },
+    { label: 'Accent Navy Blue', color: '#266de2' },
+    { label: 'Accent Pink Orange', color: '#ff9966' },
+    { label: 'Accent Zircon', color: '#f6f9ff' },
+
+    // tertiary colors
+    { label: 'Tertiary Cornflower Blue', color: '#639dfe' },
+    { label: 'Tertiary Orchid', color: '#d382e0' },
+    { label: 'Tertiary Rich Lilac', color: '#bb6bd9' },
+    { label: 'Tertiary Viking', color: '#64d9d2' },
+
+    // neutral colors
+    { label: 'Neutral Black', color: '#282828' },
+    { label: 'Neutral Dove Gray', color: '#767676' },
+    { label: 'Neutral Steel', color: '#666666' },
+    { label: 'Neutral Mountain Mist', color: '#959595' },
+    { label: 'Neutral Athens Gray', color: '#dedede' },
+    { label: 'Neutral Gallery', color: '#efefef' },
+    { label: 'Neutral White', color: '#ffffff' },
+
+    // semantic colors
+    { label: 'Error Background', color: '#fdebec' },
+    { label: 'Error Shadow', color: '#ed3f3f' },
+    { label: 'Error', color: '#c61a1a' },
+    { label: 'Warning Background', color: '#ffefd2' },
+    { label: 'Warning', color: '#fbcf35' },
+    { label: 'Success Background', color: '#e6f6e1' },
+    { label: 'Success Shadow', color: '#0fab01' },
+    { label: 'Success', color: '#107400' },
+    { label: 'Info', color: '#165dd0' },
+    { label: 'Info Background', color: '#dbe8ff' },
 ];
 
 class Editor extends ClassicEditor {
     public static override builtinPlugins = [
+        AccessibilityHelp,
         Alignment,
         Autoformat,
         Autosave,
+        AutoImage,
         BlockQuote,
         Bold,
+        Clipboard,
+        DataSchema,
         Essentials,
         FontBackgroundColor,
         FontColor,
@@ -79,6 +135,7 @@ class Editor extends ClassicEditor {
         ImageStyle,
         ImageToolbar,
         ImageUpload,
+        ImageInsert,
         Indent,
         IndentBlock,
         Italic,
@@ -107,6 +164,8 @@ class Editor extends ClassicEditor {
         TodoList,
         Underline,
         Undo,
+        WordCount,
+
         // Custom Plugins
         AlightCopyPlugin,
         AlightImagePlugin,
