@@ -20,6 +20,11 @@ export default class AlightLinkv2PluginCommand extends Command {
         const editor = this.editor;
         const { t } = editor;
 
+        // Create the overlay container
+        const overlay = document.createElement('div');
+        overlay.className = 'ck ck-dialog-overlay';
+        overlay.tabIndex = -1;
+
         // Create the modal container
         const modal = document.createElement('div');
         modal.className = 'ck ck-dialog ck-dialog_modal';
@@ -49,7 +54,7 @@ export default class AlightLinkv2PluginCommand extends Command {
         `;
 
         closeButton.onclick = () => {
-            document.body.removeChild(modal);
+            document.body.removeChild(overlay);
         };
 
         header.appendChild(title);
@@ -100,7 +105,7 @@ export default class AlightLinkv2PluginCommand extends Command {
         cancelButton.type = 'button';
         cancelButton.textContent = t('Cancel');
         cancelButton.onclick = () => {
-            document.body.removeChild(modal);
+            document.body.removeChild(overlay);
         };
 
         const acceptButton = document.createElement('button');
@@ -118,7 +123,7 @@ export default class AlightLinkv2PluginCommand extends Command {
                     writer.setAttribute('linkHref', url, range!);
                 });
 
-                document.body.removeChild(modal);
+                document.body.removeChild(overlay);
             }
         };
 
@@ -130,8 +135,11 @@ export default class AlightLinkv2PluginCommand extends Command {
         modal.appendChild(content);
         modal.appendChild(actions);
 
-        // Append modal to body
-        document.body.appendChild(modal);
+        // Add modal to overlay
+        overlay.appendChild(modal);
+
+        // Append overlay to body
+        document.body.appendChild(overlay);
 
         // Focus the input field
         input.focus();
