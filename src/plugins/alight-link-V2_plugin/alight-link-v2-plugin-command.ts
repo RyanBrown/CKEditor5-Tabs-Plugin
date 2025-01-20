@@ -19,116 +19,121 @@ export default class AlightLinkv2PluginCommand extends Command {
     private _showModal(optionId: string): void {
         const editor = this.editor;
         const { t } = editor;
-        const locale = editor.locale;
 
-        // Get ContextualBalloon plugin
-        const balloon = editor.plugins.get('ContextualBalloon');
-
-        // Remove any existing balloon
-        if (balloon.visibleView) {
-            balloon.remove(balloon.visibleView);
-        }
-
-        // Input field for media URL
-        const inputView = new InputView(locale);
-        inputView.set({
-            placeholder: t('Enter the URL for the media'),
-            id: 'media-url-input',
-        });
-
-        // Action buttons
-        const acceptButtonView = new ButtonView(locale);
-        acceptButtonView.set({
-            label: t('Accept'),
-            withText: true,
-            class: 'ck-button-action',
-        });
-
-        const cancelButtonView = new ButtonView(locale);
-        cancelButtonView.set({
-            label: t('Cancel'),
-            withText: true,
-        });
+        // Create the modal container
+        const modal = document.createElement('div');
+        modal.className = 'ck ck-dialog ck-dialog_modal';
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-label', t('Insert media'));
+        modal.style.top = '50%';
+        modal.style.left = '50%';
+        modal.style.transform = 'translate(-50%, -50%)';
 
         // Modal header
-        const headerView = new View(locale);
-        headerView.setTemplate({
-            tag: 'div',
-            attributes: { class: 'ck ck-form__header' },
-            children: [
-                {
-                    tag: 'h2',
-                    attributes: { class: 'ck ck-form__header__label' },
-                    children: [{ text: t('Insert media') }],
-                },
-                {
-                    tag: 'button',
-                    attributes: {
-                        class: 'ck ck-button',
-                        type: 'button',
-                    },
-                    children: [{ text: t('Close') }],
-                },
-            ],
-        });
+        const header = document.createElement('div');
+        header.className = 'ck ck-form__header';
 
-        // Form content
-        const formContent = new View(locale);
-        formContent.setTemplate({
-            tag: 'form',
-            attributes: { class: 'ck ck-media-form ck-responsive-form' },
-            children: [
-                {
-                    tag: 'div',
-                    attributes: { class: 'ck ck-labeled-field-view' },
-                    children: [inputView],
-                },
-            ],
-        });
+        const title = document.createElement('h2');
+        title.className = 'ck ck-form__header__label';
+        title.textContent = t('Insert media');
 
-        // Dialog actions
-        const actionsView = new View(locale);
-        actionsView.setTemplate({
-            tag: 'div',
-            attributes: { class: 'ck ck-dialog__actions' },
-            children: [cancelButtonView, acceptButtonView],
-        });
+        const closeButton = document.createElement('button');
+        closeButton.className = 'ck ck-button ck-off';
+        closeButton.type = 'button';
+        closeButton.setAttribute('aria-label', t('Close'));
+        closeButton.innerHTML = `
+            <svg class="ck ck-icon ck-reset_all-excluded ck-icon_inherit-color ck-button__icon" viewBox="0 0 20 20" aria-hidden="true">
+                <path d="m11.591 10.177 4.243 4.242a1 1 0 0 1-1.415 1.415l-4.242-4.243-4.243 4.243a1 1 0 0 1-1.414-1.415l4.243-4.242L4.52 5.934A1 1 0 0 1 5.934 4.52l4.243 4.243 4.242-4.243a1 1 0 1 1 1.415 1.414l-4.243 4.243z"></path>
+            </svg>
+            <span>${t('Close')}</span>
+        `;
 
-        // Complete modal
-        const modalView = new View(locale);
-        modalView.setTemplate({
-            tag: 'div',
-            attributes: { class: 'ck ck-dialog ck-dialog_modal' },
-            children: [headerView, formContent, actionsView],
-        });
+        closeButton.onclick = () => {
+            document.body.removeChild(modal);
+        };
 
-        // Accept button functionality
-        acceptButtonView.on('execute', () => {
-            const url = inputView.element?.value.trim();
+        header.appendChild(title);
+        header.appendChild(closeButton);
+
+        // Modal content
+        const content = document.createElement('div');
+        content.className = 'ck ck-dialog__content';
+
+        const form = document.createElement('form');
+        form.className = 'ck ck-media-form ck-responsive-form';
+
+        const fieldWrapper = document.createElement('div');
+        fieldWrapper.className = 'ck ck-labeled-field-view ck-labeled-field-view_empty';
+
+        const inputWrapper = document.createElement('div');
+        inputWrapper.className = 'ck ck-labeled-field-view__input-wrapper';
+
+        const input = document.createElement('input');
+        input.className = 'ck ck-input ck-input-text_empty ck-input-text';
+        input.type = 'text';
+        input.placeholder = t('Enter the media URL');
+
+        const label = document.createElement('label');
+        label.className = 'ck ck-label';
+        label.textContent = t('Media URL');
+
+        inputWrapper.appendChild(input);
+        inputWrapper.appendChild(label);
+
+        const status = document.createElement('div');
+        status.className = 'ck ck-labeled-field-view__status';
+        status.textContent = t('Paste the media URL in the input.');
+
+        fieldWrapper.appendChild(inputWrapper);
+        fieldWrapper.appendChild(status);
+
+        form.appendChild(fieldWrapper);
+
+        content.appendChild(form);
+
+        // Modal actions
+        const actions = document.createElement('div');
+        actions.className = 'ck ck-dialog__actions';
+
+        const cancelButton = document.createElement('button');
+        cancelButton.className = 'ck ck-button ck-off ck-button_with-text';
+        cancelButton.type = 'button';
+        cancelButton.textContent = t('Cancel');
+        cancelButton.onclick = () => {
+            document.body.removeChild(modal);
+        };
+
+        const acceptButton = document.createElement('button');
+        acceptButton.className = 'ck ck-button ck-button-action ck-off ck-button_with-text';
+        acceptButton.type = 'button';
+        acceptButton.textContent = t('Accept');
+        acceptButton.onclick = () => {
+            const url = input.value.trim();
 
             if (url) {
                 editor.model.change((writer) => {
                     const selection = editor.model.document.selection;
-                    const linkRange = selection.getFirstRange();
+                    const range = selection.getFirstRange();
 
-                    writer.setAttribute('linkHref', url, linkRange!);
+                    writer.setAttribute('linkHref', url, range!);
                 });
 
-                balloon.remove(modalView);
+                document.body.removeChild(modal);
             }
-        });
+        };
 
-        // Cancel button functionality
-        cancelButtonView.on('execute', () => {
-            balloon.remove(modalView);
-        });
+        actions.appendChild(cancelButton);
+        actions.appendChild(acceptButton);
 
-        // Show modal in balloon
-        balloon.add({
-            view: modalView,
-            position: {
-                target: editor.ui.getEditableElement(),
-            },
-        });
+        // Assemble the modal
+        modal.appendChild(header);
+        modal.appendChild(content);
+        modal.appendChild(actions);
+
+        // Append modal to body
+        document.body.appendChild(modal);
+
+        // Focus the input field
+        input.focus();
     }
 }
