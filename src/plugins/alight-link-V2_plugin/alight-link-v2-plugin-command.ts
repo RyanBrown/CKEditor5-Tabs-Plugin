@@ -53,9 +53,12 @@ export default class AlightLinkv2PluginCommand extends Command {
             <span>${t('Close')}</span>
         `;
 
-        closeButton.onclick = () => {
+        const dismissModal = () => {
             document.body.removeChild(overlay);
+            document.removeEventListener('keydown', handleKeydown);
         };
+
+        closeButton.onclick = dismissModal;
 
         header.appendChild(title);
         header.appendChild(closeButton);
@@ -104,9 +107,7 @@ export default class AlightLinkv2PluginCommand extends Command {
         cancelButton.className = 'ck ck-button ck-off ck-button_with-text';
         cancelButton.type = 'button';
         cancelButton.textContent = t('Cancel');
-        cancelButton.onclick = () => {
-            document.body.removeChild(overlay);
-        };
+        cancelButton.onclick = dismissModal;
 
         const acceptButton = document.createElement('button');
         acceptButton.className = 'ck ck-button ck-button-action ck-off ck-button_with-text';
@@ -123,7 +124,7 @@ export default class AlightLinkv2PluginCommand extends Command {
                     writer.setAttribute('linkHref', url, range!);
                 });
 
-                document.body.removeChild(overlay);
+                dismissModal();
             }
         };
 
@@ -143,5 +144,14 @@ export default class AlightLinkv2PluginCommand extends Command {
 
         // Focus the input field
         input.focus();
+
+        // Add event listener for the Esc key
+        const handleKeydown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                dismissModal();
+            }
+        };
+
+        document.addEventListener('keydown', handleKeydown);
     }
 }
