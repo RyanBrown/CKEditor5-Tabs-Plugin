@@ -3,24 +3,27 @@ import { createDropdown } from '@ckeditor/ckeditor5-ui/src/dropdown/utils';
 import ListView from '@ckeditor/ckeditor5-ui/src/list/listview';
 import ListItemView from '@ckeditor/ckeditor5-ui/src/list/listitemview';
 import ListSeparatorView from '@ckeditor/ckeditor5-ui/src/list/listseparatorview';
+import { Locale } from '@ckeditor/ckeditor5-utils';
 import Command from '@ckeditor/ckeditor5-core/src/command';
 import type { Editor } from '@ckeditor/ckeditor5-core';
 import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
 import View from '@ckeditor/ckeditor5-ui/src/view';
 import ToolBarIcon from './assets/icon-link.svg';
+import './styles/dummy-plugin.scss';
 
 export default class DummyPlugin extends Plugin {
     init(): void {
         const editor = this.editor;
+        const t = editor.t;
 
-        editor.ui.componentFactory.add('dummyPlugin', (locale) => {
+        editor.ui.componentFactory.add('dummyPlugin', (locale: Locale) => {
             const dropdown = createDropdown(locale);
 
             // Configure the dropdown button
             const buttonView = dropdown.buttonView;
             buttonView.set({
                 icon: ToolBarIcon,
-                label: 'Insert Alight Link',
+                label: t('Insert Alight Link'),
                 tooltip: true,
                 withText: false,
             });
@@ -43,7 +46,7 @@ export default class DummyPlugin extends Plugin {
                 },
                 children: [
                     {
-                        text: 'Choose Link Type',
+                        text: t('Choose Link Type'),
                     },
                 ],
             });
@@ -56,11 +59,11 @@ export default class DummyPlugin extends Plugin {
             listView.items.add(separator);
 
             const itemDefinitions = [
-                { label: 'Predefined Pages', command: 'linkOption1' },
-                { label: 'Public Website', command: 'linkOption2' },
-                { label: 'Intranet', command: 'linkOption3' },
-                { label: 'Existing Document', command: 'linkOption4' },
-                { label: 'New Document', command: 'linkOption5' },
+                { label: t('Predefined Pages'), command: 'linkOption1' },
+                { label: t('Public Website'), command: 'linkOption2' },
+                { label: t('Intranet'), command: 'linkOption3' },
+                { label: t('Existing Document'), command: 'linkOption4' },
+                { label: t('New Document'), command: 'linkOption5' },
             ];
 
             // Populate the list view with ListItemView instances

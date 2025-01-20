@@ -1,3 +1,4 @@
+import { Locale } from '@ckeditor/ckeditor5-utils';
 import './styles/alight-modal.scss';
 
 export interface ModalProps {
@@ -18,12 +19,14 @@ export class AlightModal {
     private keyDownHandler: ((e: KeyboardEvent) => void) | null = null;
 
     // Opens the modal and returns a Promise that resolves on user action.
-    public openModal(props?: ModalProps): Promise<unknown> {
+    public openModal(props?: ModalProps, locale?: Locale): Promise<unknown> {
+        const t = locale ? locale.t : (str: string) => str;
+
         const {
-            title = 'Modal Title',
+            title = t('Modal Title'),
             mainContent,
-            primaryBtnLabel = 'Continue',
-            tertiaryBtnLabel = 'Cancel',
+            primaryBtnLabel = t('Continue'),
+            tertiaryBtnLabel = t('Cancel'),
             showHeader = true,
             showFooter = true,
             width = null, // Default to null for no inline width
