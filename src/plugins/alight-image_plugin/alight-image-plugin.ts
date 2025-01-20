@@ -94,7 +94,7 @@ export default class AlightImagePlugin extends Plugin {
             return dropdown;
         });
 
-        // Add dummy commands
+        // Add image commands
         this._defineCommands();
     }
 

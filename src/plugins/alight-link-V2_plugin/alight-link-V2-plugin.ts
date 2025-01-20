@@ -9,14 +9,14 @@ import type { Editor } from '@ckeditor/ckeditor5-core';
 import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
 import View from '@ckeditor/ckeditor5-ui/src/view';
 import ToolBarIcon from './assets/icon-link.svg';
-import './styles/dummy-plugin.scss';
+import './styles/alight-link-V2-plugin.scss';
 
-export default class DummyPlugin extends Plugin {
+export default class AlightLinkV2Plugin extends Plugin {
     init(): void {
         const editor = this.editor;
         const t = editor.t;
 
-        editor.ui.componentFactory.add('dummyPlugin', (locale: Locale) => {
+        editor.ui.componentFactory.add('alightLinkV2Plugin', (locale: Locale) => {
             const dropdown = createDropdown(locale);
 
             // Configure the dropdown button
@@ -97,22 +97,22 @@ export default class DummyPlugin extends Plugin {
             return dropdown;
         });
 
-        // Add dummy commands
+        // Add link commands
         this._defineCommands();
     }
 
     private _defineCommands(): void {
         const editor = this.editor;
 
-        editor.commands.add('linkOption1', new DummyCommand(editor, 'Option 1 executed'));
-        editor.commands.add('linkOption2', new DummyCommand(editor, 'Option 2 executed'));
-        editor.commands.add('linkOption3', new DummyCommand(editor, 'Option 3 executed'));
-        editor.commands.add('linkOption4', new DummyCommand(editor, 'Option 4 executed'));
-        editor.commands.add('linkOption5', new DummyCommand(editor, 'Option 5 executed'));
+        editor.commands.add('linkOption1', new LinkCommand(editor, 'Option 1 executed'));
+        editor.commands.add('linkOption2', new LinkCommand(editor, 'Option 2 executed'));
+        editor.commands.add('linkOption3', new LinkCommand(editor, 'Option 3 executed'));
+        editor.commands.add('linkOption4', new LinkCommand(editor, 'Option 4 executed'));
+        editor.commands.add('linkOption5', new LinkCommand(editor, 'Option 5 executed'));
     }
 }
 
-class DummyCommand extends Command {
+class LinkCommand extends Command {
     private readonly message: string;
 
     constructor(editor: Editor, message: string) {
