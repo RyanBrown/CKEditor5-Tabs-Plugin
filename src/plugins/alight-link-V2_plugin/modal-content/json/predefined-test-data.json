@@ -1,0 +1,902 @@
+[
+    {
+        "LinkItemName": "SAMPLE_LINK_001",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "Intranet",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_001",
+        "Domain": "Sample Domain 1",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Pathfinder - Intranet Hub SAMPLE_LINK_001"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_002",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "Public Website",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_002",
+        "Domain": "Sample Domain 2",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Explore Public Website Journeys - SAMPLE_LINK_002"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_003",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "App Screen",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_003",
+        "Domain": "Sample Domain 3",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "App Screen Explorer - SAMPLE_LINK_003"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_004",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "SSO",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_004",
+        "Domain": "Sample Domain 4",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Your Gateway to SSO - SAMPLE_LINK_004"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_005",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "UPoint",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_005",
+        "Domain": "Sample Domain 5",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Explore UPoint Journeys - SAMPLE_LINK_005"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_006",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "Intranet",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_006",
+        "Domain": "Sample Domain 6",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Explore Intranet Journeys - SAMPLE_LINK_006"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_007",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "Public Website",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_007",
+        "Domain": "Sample Domain 7",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Public Website Explorer - SAMPLE_LINK_007"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_008",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "App Screen",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_008",
+        "Domain": "Sample Domain 8",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Pathfinder - App Screen Hub SAMPLE_LINK_008"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_009",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "SSO",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_009",
+        "Domain": "Sample Domain 9",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Explore SSO Journeys - SAMPLE_LINK_009"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_010",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "UPoint",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_010",
+        "Domain": "Sample Domain 10",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Explore UPoint Journeys - SAMPLE_LINK_010"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_011",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "Intranet",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_011",
+        "Domain": "Sample Domain 11",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Pathfinder - Intranet Hub SAMPLE_LINK_011"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_012",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "Public Website",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_012",
+        "Domain": "Sample Domain 12",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Public Website Spotlight - SAMPLE_LINK_012"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_013",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "App Screen",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_013",
+        "Domain": "Sample Domain 13",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Explore App Screen Journeys - SAMPLE_LINK_013"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_014",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "SSO",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_014",
+        "Domain": "Sample Domain 14",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Destination Discovery - SAMPLE_LINK_014"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_015",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "UPoint",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_015",
+        "Domain": "Sample Domain 15",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Explore UPoint Journeys - SAMPLE_LINK_015"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_016",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "Intranet",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_016",
+        "Domain": "Sample Domain 16",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Explore Intranet Journeys - SAMPLE_LINK_016"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_017",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "Public Website",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_017",
+        "Domain": "Sample Domain 17",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Pathfinder - Public Website Hub SAMPLE_LINK_017"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_018",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "App Screen",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_018",
+        "Domain": "Sample Domain 18",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Client Navigation Spotlight - SAMPLE_LINK_018"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_019",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "SSO",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_019",
+        "Domain": "Sample Domain 19",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Destination Discovery - SAMPLE_LINK_019"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_020",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "UPoint",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_020",
+        "Domain": "Sample Domain 20",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Client Navigation Spotlight - SAMPLE_LINK_020"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_021",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "Intranet",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_021",
+        "Domain": "Sample Domain 21",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Intranet Explorer - SAMPLE_LINK_021"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_022",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "Public Website",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_022",
+        "Domain": "Sample Domain 22",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Client Navigation Spotlight - SAMPLE_LINK_022"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_023",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "App Screen",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_023",
+        "Domain": "Sample Domain 23",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Your Gateway to App Screen - SAMPLE_LINK_023"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_024",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "SSO",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_024",
+        "Domain": "Sample Domain 24",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Your Gateway to SSO - SAMPLE_LINK_024"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_025",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "UPoint",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_025",
+        "Domain": "Sample Domain 25",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Destination Discovery - SAMPLE_LINK_025"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_026",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "Intranet",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_026",
+        "Domain": "Sample Domain 26",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Explore Intranet Journeys - SAMPLE_LINK_026"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_027",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "Public Website",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_027",
+        "Domain": "Sample Domain 27",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Explore Public Website Journeys - SAMPLE_LINK_027"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_028",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "App Screen",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_028",
+        "Domain": "Sample Domain 28",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Your Gateway to App Screen - SAMPLE_LINK_028"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_029",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "SSO",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_029",
+        "Domain": "Sample Domain 29",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "SSO Spotlight - SAMPLE_LINK_029"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_030",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "UPoint",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_030",
+        "Domain": "Sample Domain 30",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Destination Discovery - SAMPLE_LINK_030"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_031",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "Intranet",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_031",
+        "Domain": "Sample Domain 31",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Destination Discovery - SAMPLE_LINK_031"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_032",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "Public Website",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_032",
+        "Domain": "Sample Domain 32",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Pathfinder - Public Website Hub SAMPLE_LINK_032"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_033",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "App Screen",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_033",
+        "Domain": "Sample Domain 33",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Pathfinder - App Screen Hub SAMPLE_LINK_033"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_034",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "SSO",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_034",
+        "Domain": "Sample Domain 34",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Explore SSO Journeys - SAMPLE_LINK_034"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_035",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "UPoint",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_035",
+        "Domain": "Sample Domain 35",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Pathfinder - UPoint Hub SAMPLE_LINK_035"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_036",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "Intranet",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_036",
+        "Domain": "Sample Domain 36",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Intranet Spotlight - SAMPLE_LINK_036"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_037",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "Public Website",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_037",
+        "Domain": "Sample Domain 37",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Explore Public Website Journeys - SAMPLE_LINK_037"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_038",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "App Screen",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_038",
+        "Domain": "Sample Domain 38",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Explore App Screen Journeys - SAMPLE_LINK_038"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_039",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "SSO",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_039",
+        "Domain": "Sample Domain 39",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Client Navigation Spotlight - SAMPLE_LINK_039"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_040",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "UPoint",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_040",
+        "Domain": "Sample Domain 40",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Client Navigation Spotlight - SAMPLE_LINK_040"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_041",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "Intranet",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_041",
+        "Domain": "Sample Domain 41",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Your Gateway to Intranet - SAMPLE_LINK_041"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_042",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "Public Website",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_042",
+        "Domain": "Sample Domain 42",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Client Navigation Spotlight - SAMPLE_LINK_042"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_043",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "App Screen",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_043",
+        "Domain": "Sample Domain 43",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Pathfinder - App Screen Hub SAMPLE_LINK_043"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_044",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "SSO",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_044",
+        "Domain": "Sample Domain 44",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Explore SSO Journeys - SAMPLE_LINK_044"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_045",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "UPoint",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_045",
+        "Domain": "Sample Domain 45",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Explore UPoint Journeys - SAMPLE_LINK_045"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_046",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "Intranet",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_046",
+        "Domain": "Sample Domain 46",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Intranet Explorer - SAMPLE_LINK_046"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_047",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "Public Website",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_047",
+        "Domain": "Sample Domain 47",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Public Website Explorer - SAMPLE_LINK_047"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_048",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "App Screen",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_048",
+        "Domain": "Sample Domain 48",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "App Screen Explorer - SAMPLE_LINK_048"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_049",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "SSO",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_049",
+        "Domain": "Sample Domain 49",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Explore SSO Journeys - SAMPLE_LINK_049"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_050",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "UPoint",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_050",
+        "Domain": "Sample Domain 50",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Pathfinder - UPoint Hub SAMPLE_LINK_050"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_051",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "Intranet",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_051",
+        "Domain": "Sample Domain 51",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Destination Discovery - SAMPLE_LINK_051"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_052",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "Public Website",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_052",
+        "Domain": "Sample Domain 52",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Pathfinder - Public Website Hub SAMPLE_LINK_052"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_053",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "App Screen",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_053",
+        "Domain": "Sample Domain 53",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "App Screen Explorer - SAMPLE_LINK_053"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_054",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "SSO",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_054",
+        "Domain": "Sample Domain 54",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "SSO Spotlight - SAMPLE_LINK_054"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_055",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "UPoint",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_055",
+        "Domain": "Sample Domain 55",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Destination Discovery - SAMPLE_LINK_055"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_056",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "Intranet",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_056",
+        "Domain": "Sample Domain 56",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Intranet Spotlight - SAMPLE_LINK_056"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_057",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "Public Website",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_057",
+        "Domain": "Sample Domain 57",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Public Website Spotlight - SAMPLE_LINK_057"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_058",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "App Screen",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_058",
+        "Domain": "Sample Domain 58",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "App Screen Spotlight - SAMPLE_LINK_058"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_059",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "SSO",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_059",
+        "Domain": "Sample Domain 59",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Pathfinder - SSO Hub SAMPLE_LINK_059"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_060",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "UPoint",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_060",
+        "Domain": "Sample Domain 60",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Client Navigation Spotlight - SAMPLE_LINK_060"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_061",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "Intranet",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_061",
+        "Domain": "Sample Domain 61",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Your Gateway to Intranet - SAMPLE_LINK_061"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_062",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "Public Website",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_062",
+        "Domain": "Sample Domain 62",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Pathfinder - Public Website Hub SAMPLE_LINK_062"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_063",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "App Screen",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_063",
+        "Domain": "Sample Domain 63",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Explore App Screen Journeys - SAMPLE_LINK_063"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_064",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "SSO",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_064",
+        "Domain": "Sample Domain 64",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "SSO Explorer - SAMPLE_LINK_064"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_065",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "UPoint",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_065",
+        "Domain": "Sample Domain 65",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Destination Discovery - SAMPLE_LINK_065"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_066",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "Intranet",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_066",
+        "Domain": "Sample Domain 66",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Explore Intranet Journeys - SAMPLE_LINK_066"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_067",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "Public Website",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_067",
+        "Domain": "Sample Domain 67",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Your Gateway to Public Website - SAMPLE_LINK_067"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_068",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "App Screen",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_068",
+        "Domain": "Sample Domain 68",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Pathfinder - App Screen Hub SAMPLE_LINK_068"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_069",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "SSO",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_069",
+        "Domain": "Sample Domain 69",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Client Navigation Spotlight - SAMPLE_LINK_069"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_070",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "UPoint",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_070",
+        "Domain": "Sample Domain 70",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Explore UPoint Journeys - SAMPLE_LINK_070"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_071",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "Intranet",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_071",
+        "Domain": "Sample Domain 71",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Intranet Explorer - SAMPLE_LINK_071"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_072",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "Public Website",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_072",
+        "Domain": "Sample Domain 72",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Destination Discovery - SAMPLE_LINK_072"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_073",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "App Screen",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_073",
+        "Domain": "Sample Domain 73",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "App Screen Spotlight - SAMPLE_LINK_073"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_074",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "SSO",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_074",
+        "Domain": "Sample Domain 74",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Pathfinder - SSO Hub SAMPLE_LINK_074"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_075",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "UPoint",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_075",
+        "Domain": "Sample Domain 75",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Destination Discovery - SAMPLE_LINK_075"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_076",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "Intranet",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_076",
+        "Domain": "Sample Domain 76",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Intranet Explorer - SAMPLE_LINK_076"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_077",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "Public Website",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_077",
+        "Domain": "Sample Domain 77",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Your Gateway to Public Website - SAMPLE_LINK_077"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_078",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "App Screen",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_078",
+        "Domain": "Sample Domain 78",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Explore App Screen Journeys - SAMPLE_LINK_078"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_079",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "SSO",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_079",
+        "Domain": "Sample Domain 79",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "SSO Spotlight - SAMPLE_LINK_079"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_080",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "UPoint",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_080",
+        "Domain": "Sample Domain 80",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Client Navigation Spotlight - SAMPLE_LINK_080"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_081",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "Intranet",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_081",
+        "Domain": "Sample Domain 81",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Intranet Explorer - SAMPLE_LINK_081"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_082",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "Public Website",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_082",
+        "Domain": "Sample Domain 82",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Your Gateway to Public Website - SAMPLE_LINK_082"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_083",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "App Screen",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_083",
+        "Domain": "Sample Domain 83",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Pathfinder - App Screen Hub SAMPLE_LINK_083"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_084",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "SSO",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_084",
+        "Domain": "Sample Domain 84",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Your Gateway to SSO - SAMPLE_LINK_084"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_085",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "UPoint",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_085",
+        "Domain": "Sample Domain 85",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Client Navigation Spotlight - SAMPLE_LINK_085"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_086",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "Intranet",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_086",
+        "Domain": "Sample Domain 86",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Your Gateway to Intranet - SAMPLE_LINK_086"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_087",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "Public Website",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_087",
+        "Domain": "Sample Domain 87",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Public Website Spotlight - SAMPLE_LINK_087"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_088",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "App Screen",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_088",
+        "Domain": "Sample Domain 88",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "App Screen Spotlight - SAMPLE_LINK_088"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_089",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "SSO",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_089",
+        "Domain": "Sample Domain 89",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "SSO Spotlight - SAMPLE_LINK_089"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_090",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "UPoint",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_090",
+        "Domain": "Sample Domain 90",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Pathfinder - UPoint Hub SAMPLE_LINK_090"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_091",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "Intranet",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_091",
+        "Domain": "Sample Domain 91",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Client Navigation Spotlight - SAMPLE_LINK_091"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_092",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "Public Website",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_092",
+        "Domain": "Sample Domain 92",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Destination Discovery - SAMPLE_LINK_092"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_093",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "App Screen",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_093",
+        "Domain": "Sample Domain 93",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Your Gateway to App Screen - SAMPLE_LINK_093"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_094",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "SSO",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_094",
+        "Domain": "Sample Domain 94",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Explore SSO Journeys - SAMPLE_LINK_094"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_095",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "UPoint",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_095",
+        "Domain": "Sample Domain 95",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Client Navigation Spotlight - SAMPLE_LINK_095"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_096",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "Intranet",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_096",
+        "Domain": "Sample Domain 96",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Explore Intranet Journeys - SAMPLE_LINK_096"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_097",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "Public Website",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_097",
+        "Domain": "Sample Domain 97",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Explore Public Website Journeys - SAMPLE_LINK_097"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_098",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "App Screen",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_098",
+        "Domain": "Sample Domain 98",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Destination Discovery - SAMPLE_LINK_098"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_099",
+        "BaseOrClientSpecific": "Base",
+        "PageType": "SSO",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_099",
+        "Domain": "Sample Domain 99",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "Your Gateway to SSO - SAMPLE_LINK_099"
+    },
+    {
+        "LinkItemName": "SAMPLE_LINK_100",
+        "BaseOrClientSpecific": "Client Specific",
+        "PageType": "UPoint",
+        "Destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_100",
+        "Domain": "Sample Domain 100",
+        "Page Code": "N/A",
+        "LinkTitleDisplayName": "UPoint Spotlight - SAMPLE_LINK_100"
+    }
+]

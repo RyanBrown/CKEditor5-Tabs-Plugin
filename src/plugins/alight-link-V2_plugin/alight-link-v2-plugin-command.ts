@@ -1,10 +1,11 @@
 import Command from '@ckeditor/ckeditor5-core/src/command';
 import type Editor from '@ckeditor/ckeditor5-core/src/editor/editor';
-import { ReusableModal, ModalProps } from './reusable-modal';
+import { ReusableModal, ModalProps } from './../reusable-modal/reusable-modal';
 
 interface LinkOptionData {
     title: string;
     content: string;
+    loadContent?: () => Promise<string>; // Optional loader for dynamic content
     primaryButton?: string;
 }
 
@@ -16,16 +17,18 @@ export default class AlightLinkv2PluginCommand extends Command {
         this.data = data;
     }
 
-    override execute(): void {
-        const { title, content, primaryButton } = this.data;
+    override async execute(): Promise<void> {
+        const { title, content, loadContent, primaryButton } = this.data;
 
-        // Use ReusableModal to display the modal
+        // Load dynamic content if `loadContent` is provided
+        const resolvedContent = loadContent ? await loadContent() : content;
+
         const modal = new ReusableModal({
             title,
-            content,
+            content: resolvedContent,
             primaryButton: {
-                label: primaryButton || 'Accept',
-                onClick: () => this.handlePrimaryAction(content),
+                label: primaryButton || 'Insert',
+                onClick: () => console.log('Primary action clicked'),
             },
             tertiaryButton: {
                 label: 'Cancel',
@@ -34,23 +37,7 @@ export default class AlightLinkv2PluginCommand extends Command {
             onClose: () => console.log('Modal closed'),
         });
 
-        modal.show(); // Assuming `ReusableModal` has a `show()` method
-        console.log('Executing command with:', { title, content, primaryButton });
-    }
-
-    private handlePrimaryAction(content: string): void {
-        const editor = this.editor;
-        const input = document.querySelector('#link-url-input') as HTMLInputElement;
-        const url = input?.value.trim();
-
-        if (url) {
-            editor.model.change((writer) => {
-                const selection = editor.model.document.selection;
-                const range = selection.getFirstRange();
-
-                writer.setAttribute('linkHref', url, range!);
-            });
-            console.log('URL applied:', url);
-        }
+        modal.show();
+        console.log('Executing command with dynamic content:', { title, resolvedContent, primaryButton });
     }
 }

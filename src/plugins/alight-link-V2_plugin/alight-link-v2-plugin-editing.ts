@@ -1,5 +1,6 @@
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 import AlightLinkv2PluginCommand from './alight-link-v2-plugin-command';
+import { getPredefinedLinksContent } from './modal-content/predefined-links';
 
 export default class AlightLinkv2PluginEditing extends Plugin {
     init() {
@@ -9,8 +10,11 @@ export default class AlightLinkv2PluginEditing extends Plugin {
         const linkOptionsContent = {
             linkOption1: {
                 title: 'Choose a Predefined Link',
-                content:
-                    '<label>Link to Predefined Pages</label><input id="link-url-input" type="text" class="ck-input ck-input-text" placeholder="Enter a predefined page URL" />',
+                content: '<div class="predefined-links-container"></div>', // Placeholder container for dynamic content
+                loadContent: async () => {
+                    // Dynamically load and return the content
+                    return getPredefinedLinksContent(1, 10);
+                },
             },
             linkOption2: {
                 title: 'Public Website',
