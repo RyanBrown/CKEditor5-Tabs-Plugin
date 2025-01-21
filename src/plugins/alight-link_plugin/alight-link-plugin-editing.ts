@@ -5,8 +5,6 @@ import { getPublicWebsiteLinkContent } from './modal-content/public-website-link
 import { getIntranetLinkContent } from './modal-content/intranet-link';
 import { getExistingDocumentLinkContent } from './modal-content/existing-document-link';
 import { getNewDocumentsLinkContent } from './modal-content/new-document-link';
-import './styles/predefined-links.scss';
-import './styles/search.scss';
 
 export default class AlightLinkPluginEditing extends Plugin {
     init() {

@@ -1,5 +1,5 @@
 import predefinedLinksData from './json/predefined-test-data.json';
-import './../styles/predefined-links.scss';
+import './../styles/predefined-link.scss';
 import './../styles/search.scss';
 
 let filteredLinksData = [...predefinedLinksData]; // A copy of the data to handle filtered results.
