@@ -51,60 +51,63 @@
         text-align: left;
 
         button {
-            margin: 0 ver(--spacing-m) 0 0;
+            margin: 0 var(--spacing-m) 0 0;
             width: auto;
         }
-    }
-    .ck.ck-button {
-        align-items: center;
-        background-color: transparent;
-        border-radius: mixins.toRem(30);
-        border: 2px solid var(--primary);
-        color: var(--primary);
-        display: inline-flex;
-        font-size: var(--font-size-base);
-        font-weight: var(--font-weight-bold);
-        justify-content: center;
-        line-height: mixins.toRem(21);
-        min-width: mixins.toRem(40);
-        padding: mixins.toRem(10) mixins.toRem(16);
-        transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
 
-        &:enabled {
-            &:hover {
-                background-color: var(--primary-outline-hover);
-                border: var(--primary-outline-border);
-                color: var(--primary);
-            }
-            &:active {
-                background-color: var(--primary-outline-active);
-                border: var(--primary-outline-border);
-                color: var(--primary);
-            }
-        }
-
-        &.ck-button-action {
-            background-color: var(--primary);
-            border-color: var(--primary);
-            color: var(--neutral-white);
+        // Override CKEditor5 button styles
+        .ck.ck-button {
+            align-items: center;
+            background-color: transparent;
+            border-radius: mixins.toRem(30);
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            cursor: pointer;
+            display: inline-flex;
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-bold);
+            justify-content: center;
+            line-height: mixins.toRem(21);
+            min-width: mixins.toRem(40);
+            padding: mixins.toRem(10) mixins.toRem(16);
+            transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
 
             &:enabled {
                 &:hover {
-                    background-color: var(--primary-hover);
-                    border-color: var(--primary-hover);
-                    color: var(--neutral-white);
+                    background: var(--primary-outline-hover);
+                    border: var(--button-outline-border);
+                    color: var(--primary);
                 }
                 &:active {
-                    background-color: var(--primary-active);
-                    border-color: var(--primary-active);
-                    color: var(--neutral-white);
+                    background: var(--primary-outline-active);
+                    border: var(--button-outline-border);
+                    color: var(--primary);
+                }
+            }
+
+            &.ck-button-action {
+                background-color: var(--primary);
+                border-color: var(--primary);
+                color: var(--neutral-white);
+
+                &:enabled {
+                    &:hover {
+                        background: var(--primary-hover);
+                        border-color: var(--primary-hover);
+                        color: var(--neutral-white);
+                    }
+                    &:active {
+                        background: var(--primary-active);
+                        border-color: var(--primary-active);
+                        color: var(--neutral-white);
+                    }
                 }
             }
         }
-    }
 
-    .ck.ck-button .ck-button__label,
-    a.ck.ck-button .ck-button__label {
-        line-height: inherit;
+        .ck.ck-button .ck-button__label,
+        a.ck.ck-button .ck-button__label {
+            line-height: inherit;
+        }
     }
 }

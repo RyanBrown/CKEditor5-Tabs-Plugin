@@ -1,10 +1,10 @@
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 import AlightLinkPluginCommand from './alight-link-plugin-command';
-import { getPredefinedLinksContent } from './modal-content/predefined-links';
-import { getPublicWebsiteLinksContent } from './modal-content/public-website-links';
-import { getIntranetLinksContent } from './modal-content/intranet-links';
-import { getExistingDocumentLinksContent } from './modal-content/existing-documents-links';
-import { getNewDocumentsLinksContent } from './modal-content/new-documents-links';
+import { getPredefinedLinkContent } from './modal-content/predefined-link';
+import { getPublicWebsiteLinkContent } from './modal-content/public-website-link';
+import { getIntranetLinkContent } from './modal-content/intranet-link';
+import { getExistingDocumentLinkContent } from './modal-content/existing-document-link';
+import { getNewDocumentsLinkContent } from './modal-content/new-document-link';
 import './styles/predefined-links.scss';
 import './styles/search.scss';
 
@@ -19,7 +19,7 @@ export default class AlightLinkPluginEditing extends Plugin {
                 content: '<div class="predefined-links-container"></div>', // Placeholder container for dynamic content
                 loadContent: async () => {
                     // Dynamically load and return the content
-                    return getPredefinedLinksContent(1, 10);
+                    return getPredefinedLinkContent(1, 10);
                 },
             },
             linkOption2: {
@@ -27,7 +27,7 @@ export default class AlightLinkPluginEditing extends Plugin {
                 content: '<div class="public-website-links-container"></div>', // Placeholder container for dynamic content
                 loadContent: async () => {
                     // Dynamically load and return the content
-                    return getPublicWebsiteLinksContent();
+                    return getPublicWebsiteLinkContent();
                 },
             },
             linkOption3: {
@@ -35,7 +35,7 @@ export default class AlightLinkPluginEditing extends Plugin {
                 content: '<div class="intranet-links-container"></div>', // Placeholder container for dynamic content
                 loadContent: async () => {
                     // Dynamically load and return the content
-                    return getIntranetLinksContent();
+                    return getIntranetLinkContent();
                 },
             },
             linkOption4: {
@@ -43,7 +43,7 @@ export default class AlightLinkPluginEditing extends Plugin {
                 content: '<div class="existing-documents-links-container"></div>', // Placeholder container for dynamic content
                 loadContent: async () => {
                     // Dynamically load and return the content
-                    return getExistingDocumentLinksContent();
+                    return getExistingDocumentLinkContent();
                 },
             },
             linkOption5: {
@@ -51,7 +51,7 @@ export default class AlightLinkPluginEditing extends Plugin {
                 content: '<div class="new-documents-links-container"></div>', // Placeholder container for dynamic content
                 loadContent: async () => {
                     // Dynamically load and return the content
-                    return getNewDocumentsLinksContent();
+                    return getNewDocumentsLinkContent();
                 },
             },
         };

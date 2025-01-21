@@ -5,7 +5,7 @@ import './../styles/search.scss';
 let filteredLinksData = [...predefinedLinksData]; // A copy of the data to handle filtered results.
 let currentSearchQuery = ''; // To retain the search query across renders.
 
-export function getPredefinedLinksContent(page: number = 1, pageSize: number = 10): string {
+export function getPredefinedLinkContent(page: number = 1, pageSize: number = 10): string {
     const totalItems = filteredLinksData.length;
     const totalPages = Math.ceil(totalItems / pageSize);
     const startIndex = (page - 1) * pageSize;
@@ -85,7 +85,7 @@ function handleSearch(query: string, pageSize: number = 10): void {
     // Reset to the first page of filtered results
     const contentDiv = document.querySelector('.predefined-links-container');
     if (contentDiv) {
-        contentDiv.innerHTML = getPredefinedLinksContent(1, pageSize);
+        contentDiv.innerHTML = getPredefinedLinkContent(1, pageSize);
         const searchInput = document.querySelector('.search-input') as HTMLInputElement;
         if (searchInput) {
             searchInput.focus(); // Retain focus on the input
@@ -101,7 +101,7 @@ function resetSearch(pageSize: number = 10): void {
     const contentDiv = document.querySelector('.predefined-links-container');
 
     if (contentDiv) {
-        contentDiv.innerHTML = getPredefinedLinksContent(1, pageSize);
+        contentDiv.innerHTML = getPredefinedLinkContent(1, pageSize);
     }
 }
 
@@ -122,7 +122,7 @@ document.addEventListener('click', (event) => {
         const pageSize = 10; // Set your desired page size
         const contentDiv = document.querySelector('.predefined-links-container');
         if (contentDiv) {
-            contentDiv.innerHTML = getPredefinedLinksContent(page, pageSize);
+            contentDiv.innerHTML = getPredefinedLinkContent(page, pageSize);
         }
     }
 
@@ -139,7 +139,7 @@ document.addEventListener('change', (event) => {
         const pageSize = 10; // Set your desired page size
         const contentDiv = document.querySelector('.predefined-links-container');
         if (contentDiv) {
-            contentDiv.innerHTML = getPredefinedLinksContent(page, pageSize);
+            contentDiv.innerHTML = getPredefinedLinkContent(page, pageSize);
         }
     }
 });

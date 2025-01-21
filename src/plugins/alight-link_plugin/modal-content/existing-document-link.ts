@@ -1,4 +1,4 @@
-export async function getExistingDocumentLinksContent(): Promise<string> {
+export async function getExistingDocumentLinkContent(): Promise<string> {
     // Placeholder content for public website links
     return `
     <div class="existing-document-links-content">

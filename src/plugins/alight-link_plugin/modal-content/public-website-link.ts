@@ -1,4 +1,4 @@
-export async function getPublicWebsiteLinksContent(): Promise<string> {
+export async function getPublicWebsiteLinkContent(): Promise<string> {
     // Placeholder content for public website links
     return `
     <div class="public-website-links-content">

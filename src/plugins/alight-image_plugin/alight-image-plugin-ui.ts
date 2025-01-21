@@ -41,8 +41,8 @@ export default class AlightImagePluginUI extends Plugin {
             listView.items.add(new ListSeparatorView(locale));
 
             const itemDefinitions = [
-                { label: t('Predefined Pages'), command: 'imageOption1' },
-                { label: t('Public Website'), command: 'imageOption2' },
+                { label: t('Existing Image'), command: 'imageOption1' },
+                { label: t('Upload Image'), command: 'imageOption2' },
             ];
 
             itemDefinitions.forEach((item) => {

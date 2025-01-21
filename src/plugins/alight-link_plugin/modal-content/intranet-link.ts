@@ -1,4 +1,4 @@
-export async function getIntranetLinksContent(): Promise<string> {
+export async function getIntranetLinkContent(): Promise<string> {
     // Placeholder content for public website links
     return `
   <div class="intranet-links-content">
