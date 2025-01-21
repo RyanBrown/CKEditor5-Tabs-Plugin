@@ -38,7 +38,7 @@ export default class AlightLinkPluginEditing extends Plugin {
             },
             linkOption4: {
                 title: 'Existing Document',
-                content: '<div class="existing-documents-link-container"></div>', // Placeholder container for dynamic content
+                content: '<div class="existing-document-link-container"></div>', // Placeholder container for dynamic content
                 loadContent: async () => {
                     // Dynamically load and return the content
                     return getExistingDocumentLinkContent();
@@ -46,7 +46,7 @@ export default class AlightLinkPluginEditing extends Plugin {
             },
             linkOption5: {
                 title: 'New Document',
-                content: '<div class="new-documents-link-container"></div>', // Placeholder container for dynamic content
+                content: '<div class="new-document-link-container"></div>', // Placeholder container for dynamic content
                 loadContent: async () => {
                     // Dynamically load and return the content
                     return getNewDocumentsLinkContent();
