@@ -1,6 +1,6 @@
 import predefinedLinksData from './json/predefined-test-data.json';
-import './predefined-links.scss';
-import './search.scss';
+import './../styles/predefined-links.scss';
+import './../styles/search.scss';
 
 let filteredLinksData = [...predefinedLinksData]; // A copy of the data to handle filtered results.
 let currentSearchQuery = ''; // To retain the search query across renders.

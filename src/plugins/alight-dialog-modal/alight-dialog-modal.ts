@@ -1,4 +1,4 @@
-export interface ModalProps {
+export interface AlightDialogModalProps {
     title?: string; // Optional modal title with a default value
     tertiaryButton?: {
         label?: string; // Optional label with a default value
@@ -14,7 +14,7 @@ export interface ModalProps {
     showFooter?: boolean; // Show or hide the footer (default: true)
 }
 
-export class ReusableModal {
+export class AlightDialogModal {
     private overlay: HTMLElement;
     private modal: HTMLElement;
 
@@ -26,7 +26,7 @@ export class ReusableModal {
         onClose = () => {},
         showHeader = true,
         showFooter = true,
-    }: ModalProps) {
+    }: AlightDialogModalProps) {
         // Create the overlay container
         this.overlay = document.createElement('div');
         this.overlay.className = 'ck ck-dialog-overlay';

@@ -1,13 +1,7 @@
-ul.choose-link-list {
-    list-style: none;
-    margin: 0 0 1rem;
-    padding: 0;
-
-    &:last-of-type {
-        margin-bottom: 0;
-    }
-}
-
-.mt-2 {
-    margin-top: 1.5rem;
+.ck-dialog_modal {
+    position: fixed;
+    z-index: 9999;
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }

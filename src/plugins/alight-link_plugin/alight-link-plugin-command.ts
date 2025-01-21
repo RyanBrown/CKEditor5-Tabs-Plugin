@@ -1,53 +1,43 @@
-import { Command } from '@ckeditor/ckeditor5-core';
-import { Writer } from '@ckeditor/ckeditor5-engine';
+import Command from '@ckeditor/ckeditor5-core/src/command';
+import type Editor from '@ckeditor/ckeditor5-core/src/editor/editor';
+import { AlightDialogModal, AlightDialogModalProps } from '../alight-dialog-modal/alight-dialog-modal';
 
-// Options for the AlightLinkCommand.
-export interface LinkCommandOptions {
-    href?: string;
-    target?: string;
-    rel?: string;
+interface LinkOptionData {
+    title: string;
+    content: string;
+    loadContent?: () => Promise<string>; // Optional loader for dynamic content
+    primaryButton?: string;
 }
 
-// The AlightLinkCommand class allows applying or removing link attributes in the model.
-export default class AlightLinkCommand extends Command {
-    // Executes the command to add or remove link attributes.
-    // @param {LinkCommandOptions} options - The link attributes to apply or null to remove.
-    public override execute(options: LinkCommandOptions): void {
-        const { href, target, rel } = options;
-        const model = this.editor.model;
+export default class AlightLinkPluginCommand extends Command {
+    private readonly data: LinkOptionData;
 
-        model.change((writer: Writer) => {
-            const selection = model.document.selection;
-            const range = selection.getFirstRange();
-
-            if (range) {
-                if (href) {
-                    // Apply the link attributes.
-                    writer.setAttribute('linkHref', href, range);
-                    if (target) writer.setAttribute('linkTarget', target, range);
-                    if (rel) writer.setAttribute('linkRel', rel, range);
-                } else {
-                    // Remove the link attributes.
-                    ['linkHref', 'linkTarget', 'linkRel'].forEach((attr) => {
-                        writer.removeAttribute(attr, range);
-                    });
-                }
-            }
-        });
+    constructor(editor: Editor, data: LinkOptionData) {
+        super(editor);
+        this.data = data;
     }
 
-    // Refreshes the command state based on the current selection.
-    public override refresh(): void {
-        const model = this.editor.model;
-        const selection = model.document.selection;
+    override async execute(): Promise<void> {
+        const { title, content, loadContent, primaryButton } = this.data;
 
-        this.isEnabled = !!selection.rangeCount && !selection.isCollapsed;
+        // Load dynamic content if `loadContent` is provided
+        const resolvedContent = loadContent ? await loadContent() : content;
 
-        const href = selection.getAttribute('linkHref');
-        const target = selection.getAttribute('linkTarget');
-        const rel = selection.getAttribute('linkRel');
+        const modal = new AlightDialogModal({
+            title,
+            content: resolvedContent,
+            primaryButton: {
+                label: primaryButton || 'Insert',
+                onClick: () => console.log('Primary action clicked'),
+            },
+            tertiaryButton: {
+                label: 'Cancel',
+                onClick: () => console.log('Modal dismissed'),
+            },
+            onClose: () => console.log('Modal closed'),
+        });
 
-        // Set the command's value to reflect the current link attributes.
-        this.value = href ? { href, target, rel } : null;
+        modal.show();
+        console.log('Executing command with dynamic content:', { title, resolvedContent, primaryButton });
     }
 }
