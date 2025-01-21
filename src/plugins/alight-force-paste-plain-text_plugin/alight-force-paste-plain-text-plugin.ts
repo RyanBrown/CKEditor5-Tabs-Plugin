@@ -1,4 +1,4 @@
-import { Plugin, Editor } from '@ckeditor/ckeditor5-core';
+import { Plugin } from '@ckeditor/ckeditor5-core';
 
 export default class AlightForcePastePlainText extends Plugin {
     init() {

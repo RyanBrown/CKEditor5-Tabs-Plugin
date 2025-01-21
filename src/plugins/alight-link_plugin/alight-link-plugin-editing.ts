@@ -1,3 +1,4 @@
+// alight-link-plugin-editing.ts
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 import AlightLinkPluginCommand from './alight-link-plugin-command';
 import { getPredefinedLinkContent } from './modal-content/predefined-link';

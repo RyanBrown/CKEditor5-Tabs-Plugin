@@ -1,3 +1,4 @@
+// new-document-link.ts
 export async function getNewDocumentsLinkContent(): Promise<string> {
     // Placeholder content for public website links
     return `

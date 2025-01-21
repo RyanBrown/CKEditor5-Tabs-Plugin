@@ -1,3 +1,4 @@
+// predefined-link.ts
 import predefinedLinksData from './json/predefined-test-data.json';
 import './../styles/predefined-link.scss';
 import './../styles/search.scss';

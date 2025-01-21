@@ -1,3 +1,4 @@
+// intranet-link.ts
 export async function getIntranetLinkContent(): Promise<string> {
     // Placeholder content for public website links
     return `

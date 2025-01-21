@@ -1,3 +1,4 @@
+// alight-link-plugin-command.ts
 import Command from '@ckeditor/ckeditor5-core/src/command';
 import type Editor from '@ckeditor/ckeditor5-core/src/editor/editor';
 import { AlightDialogModal, AlightDialogModalProps } from '../alight-dialog-modal/alight-dialog-modal';

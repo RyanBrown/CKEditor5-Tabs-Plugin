@@ -1,3 +1,4 @@
+// existing-document-link.ts
 export async function getExistingDocumentLinkContent(): Promise<string> {
     // Placeholder content for public website links
     return `
