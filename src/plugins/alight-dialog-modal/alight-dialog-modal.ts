@@ -1,3 +1,4 @@
+import './styles/alight-dialog-modal.scss';
 export interface AlightDialogModalProps {
     title?: string; // Optional modal title with a default value
     tertiaryButton?: {
@@ -12,6 +13,9 @@ export interface AlightDialogModalProps {
     onClose?: () => void; // Callback for closing the modal
     showHeader?: boolean; // Show or hide the header (default: true)
     showFooter?: boolean; // Show or hide the footer (default: true)
+    maxWidth?: string | null; // Optional max-width with a default value of null.
+    minWidth?: string | null; // Optional min-width with a default value of null.
+    width?: string | null; // Optional width with a default value of null.
 }
 
 export class AlightDialogModal {
@@ -21,11 +25,14 @@ export class AlightDialogModal {
     constructor({
         title = 'Modal Title',
         tertiaryButton = { label: 'Cancel' },
-        primaryButton = { label: 'Continue', onClick: () => {} },
+        primaryButton = { label: 'Continue', onClick: () => this.closeModal },
         content = 'Placeholder content',
         onClose = () => {},
         showHeader = true,
         showFooter = true,
+        maxWidth = null,
+        minWidth = null,
+        width = null,
     }: AlightDialogModalProps) {
         // Create the overlay container
         this.overlay = document.createElement('div');
@@ -40,6 +47,10 @@ export class AlightDialogModal {
         this.modal.style.top = '50%';
         this.modal.style.left = '50%';
         this.modal.style.transform = 'translate(-50%, -50%)';
+
+        if (maxWidth) this.modal.style.maxWidth = maxWidth;
+        if (minWidth) this.modal.style.minWidth = minWidth;
+        if (width) this.modal.style.width = width;
 
         // Modal header
         if (showHeader) {
@@ -86,11 +97,11 @@ export class AlightDialogModal {
             tertiaryButtonElement.className = 'ck ck-button ck-button_with-text';
             tertiaryButtonElement.type = 'button';
             tertiaryButtonElement.textContent = tertiaryButton.label!;
-            tertiaryButtonElement.onclick = tertiaryButton.onClick || null; // Fix: Provide fallback
+            tertiaryButtonElement.onclick = () => this.closeModal(onClose);
 
             // Accept button
             const primaryButtonElement = document.createElement('button');
-            primaryButtonElement.className = 'ck ck-button ck-button_action ck-button_with-text';
+            primaryButtonElement.className = 'ck ck-button ck-button-action ck-off ck-button_with-text';
             primaryButtonElement.type = 'button';
             primaryButtonElement.textContent = primaryButton.label!;
             primaryButtonElement.onclick = primaryButton.onClick || null; // Fix: Provide fallback
