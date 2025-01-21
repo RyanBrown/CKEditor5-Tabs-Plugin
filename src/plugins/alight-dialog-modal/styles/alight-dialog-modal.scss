@@ -75,7 +75,7 @@
             &:enabled {
                 &:hover {
                     background: var(--primary-outline-hover);
-                    border: var(--button-outline-border);
+                    border: var(--button-outlined-border);
                     color: var(--primary);
                 }
                 &:active {
