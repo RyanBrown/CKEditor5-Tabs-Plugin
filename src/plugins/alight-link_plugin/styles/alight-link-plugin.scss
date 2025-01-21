@@ -1,7 +1,7 @@
-.ck-dialog_modal {
-    position: fixed;
-    z-index: 9999;
-    background: #fff;
-    border-radius: 4px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+@use './../../../styles/mixins' as mixins;
+
+ul.choose-link-list {
+    list-style: none;
+    margin-bottom: 0 0 1rem;
+    padding: 0;
 }

@@ -1,6 +1,12 @@
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 import AlightLinkPluginCommand from './alight-link-plugin-command';
 import { getPredefinedLinksContent } from './modal-content/predefined-links';
+import { getPublicWebsiteLinksContent } from './modal-content/public-website-links';
+import { getIntranetLinksContent } from './modal-content/intranet-links';
+import { getExistingDocumentLinksContent } from './modal-content/existing-documents-links';
+import { getNewDocumentsLinksContent } from './modal-content/new-documents-links';
+import './styles/predefined-links.scss';
+import './styles/search.scss';
 
 export default class AlightLinkPluginEditing extends Plugin {
     init() {
@@ -18,23 +24,35 @@ export default class AlightLinkPluginEditing extends Plugin {
             },
             linkOption2: {
                 title: 'Public Website',
-                content:
-                    '<label>Public Website</label><input id="link-url-input" type="text" class="ck-input ck-input-text" placeholder="Enter a public website URL" />',
+                content: '<div class="public-website-links-container"></div>', // Placeholder container for dynamic content
+                loadContent: async () => {
+                    // Dynamically load and return the content
+                    return getPublicWebsiteLinksContent();
+                },
             },
             linkOption3: {
                 title: 'Intranet',
-                content:
-                    '<label>Intranet</label><input id="link-url-input" type="text" class="ck-input ck-input-text" placeholder="Enter an intranet URL" />',
+                content: '<div class="intranet-links-container"></div>', // Placeholder container for dynamic content
+                loadContent: async () => {
+                    // Dynamically load and return the content
+                    return getIntranetLinksContent();
+                },
             },
             linkOption4: {
                 title: 'Existing Document',
-                content:
-                    '<label>Existing Document</label><input id="link-url-input" type="text" class="ck-input ck-input-text" placeholder="Enter an existing document URL" />',
+                content: '<div class="existing-documents-links-container"></div>', // Placeholder container for dynamic content
+                loadContent: async () => {
+                    // Dynamically load and return the content
+                    return getExistingDocumentLinksContent();
+                },
             },
             linkOption5: {
                 title: 'New Document',
-                content:
-                    '<label>New Document</label><input id="link-url-input" type="text" class="ck-input ck-input-text" placeholder="Enter a new document URL" />',
+                content: '<div class="new-documents-links-container"></div>', // Placeholder container for dynamic content
+                loadContent: async () => {
+                    // Dynamically load and return the content
+                    return getNewDocumentsLinksContent();
+                },
             },
         };
 

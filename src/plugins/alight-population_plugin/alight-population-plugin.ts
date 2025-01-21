@@ -1,7 +1,7 @@
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
 import { Locale } from '@ckeditor/ckeditor5-utils';
-import ToolBarIcon from './assets/icon-populations.svg';
+import ToolBarIcon from './assets/icon-population.svg';
 import './styles/alight-population-plugin.scss';
 
 export default class AlightPopulationPlugin extends Plugin {
@@ -15,7 +15,7 @@ export default class AlightPopulationPlugin extends Plugin {
 
             buttonView.set({
                 icon: ToolBarIcon,
-                label: t('Alight Population'),
+                label: t('Insert Alight Population'),
                 tooltip: true,
                 withText: false,
             });

@@ -32,7 +32,7 @@ export function getPredefinedLinksContent(page: number = 1, pageSize: number = 1
     });
 
     return `
-        <div class="predefined-links">
+        <div class="predefined-links-content">
             <div class="search-container">
                 <input 
                     type="text" 

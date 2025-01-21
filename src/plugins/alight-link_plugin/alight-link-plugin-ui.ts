@@ -13,7 +13,7 @@ export default class AlightLinkPluginUI extends Plugin {
         const editor = this.editor;
         const t = editor.t;
 
-        editor.ui.componentFactory.add('AlightLinkPlugin', (locale) => {
+        editor.ui.componentFactory.add('alightLinkPlugin', (locale) => {
             const dropdown = createDropdown(locale);
 
             // Configure the dropdown button

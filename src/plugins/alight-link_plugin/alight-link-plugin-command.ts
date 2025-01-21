@@ -27,7 +27,7 @@ export default class AlightLinkPluginCommand extends Command {
             title,
             content: resolvedContent,
             primaryButton: {
-                label: primaryButton || 'Insert',
+                label: primaryButton || 'Continue',
                 onClick: () => console.log('Primary action clicked'),
             },
             tertiaryButton: {
