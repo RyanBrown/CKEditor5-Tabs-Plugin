@@ -32,7 +32,7 @@ export function getPredefinedLinkContent(page: number = 1, pageSize: number = 10
     });
 
     return `
-        <div class="predefined-links-content">
+        <div class="predefined-link-content">
             <div class="search-container">
                 <input 
                     type="text" 
@@ -83,7 +83,7 @@ function handleSearch(query: string, pageSize: number = 10): void {
     }
 
     // Reset to the first page of filtered results
-    const contentDiv = document.querySelector('.predefined-links-container');
+    const contentDiv = document.querySelector('.predefined-link-container');
     if (contentDiv) {
         contentDiv.innerHTML = getPredefinedLinkContent(1, pageSize);
         const searchInput = document.querySelector('.search-input') as HTMLInputElement;
@@ -98,7 +98,7 @@ function handleSearch(query: string, pageSize: number = 10): void {
 function resetSearch(pageSize: number = 10): void {
     filteredLinksData = [...predefinedLinksData]; // Reset to full data
     currentSearchQuery = ''; // Clear the search query
-    const contentDiv = document.querySelector('.predefined-links-container');
+    const contentDiv = document.querySelector('.predefined-link-container');
 
     if (contentDiv) {
         contentDiv.innerHTML = getPredefinedLinkContent(1, pageSize);
@@ -120,7 +120,7 @@ document.addEventListener('click', (event) => {
     if (target.classList.contains('page-btn')) {
         const page = Number(target.dataset.page);
         const pageSize = 10; // Set your desired page size
-        const contentDiv = document.querySelector('.predefined-links-container');
+        const contentDiv = document.querySelector('.predefined-link-container');
         if (contentDiv) {
             contentDiv.innerHTML = getPredefinedLinkContent(page, pageSize);
         }
@@ -137,7 +137,7 @@ document.addEventListener('change', (event) => {
     if (target.classList.contains('page-select')) {
         const page = Number(target.value);
         const pageSize = 10; // Set your desired page size
-        const contentDiv = document.querySelector('.predefined-links-container');
+        const contentDiv = document.querySelector('.predefined-link-container');
         if (contentDiv) {
             contentDiv.innerHTML = getPredefinedLinkContent(page, pageSize);
         }
