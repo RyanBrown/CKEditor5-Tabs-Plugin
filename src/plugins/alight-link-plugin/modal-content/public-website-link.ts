@@ -1,7 +1,7 @@
 // public-website-link.ts
 export async function getPublicWebsiteLinkContent(): Promise<string> {
-    // Placeholder content for public website links
-    return `
+  // Placeholder content for public website links
+  return `
     <div class="public-website-link-content">
       <label for="url" class="ck-alight-input-label">URL</label>
       <input id="url" type="url" class="ck-alight-input-text">

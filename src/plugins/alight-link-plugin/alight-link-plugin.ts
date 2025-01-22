@@ -4,11 +4,11 @@ import AlightLinkPluginUI from './alight-link-plugin-ui';
 import AlightLinkPluginEditing from './alight-link-plugin-editing';
 
 export default class AlightLinkPlugin extends Plugin {
-    static get requires() {
-        return [AlightLinkPluginUI, AlightLinkPluginEditing];
-    }
+  static get requires() {
+    return [AlightLinkPluginUI, AlightLinkPluginEditing];
+  }
 
-    static get pluginName() {
-        return 'AlightLinkPlugin';
-    }
+  static get pluginName() {
+    return 'AlightLinkPlugin';
+  }
 }

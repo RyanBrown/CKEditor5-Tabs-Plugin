@@ -1,7 +1,7 @@
 // intranet-link.ts
 export async function getIntranetLinkContent(): Promise<string> {
-    // Placeholder content for public website links
-    return `
+  // Placeholder content for public website links
+  return `
   <div class="intranet-link-content">
     <p>
       <strong>Note:</strong> When an employee clicks on an intranet link, 

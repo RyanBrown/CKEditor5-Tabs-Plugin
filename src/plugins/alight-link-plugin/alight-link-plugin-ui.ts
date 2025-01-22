@@ -10,61 +10,61 @@ import ToolBarIcon from './assets/icon-link.svg';
 import './styles/alight-link-plugin.scss';
 
 export default class AlightLinkPluginUI extends Plugin {
-    init() {
-        const editor = this.editor;
-        const t = editor.t;
+  init() {
+    const editor = this.editor;
+    const t = editor.t;
 
-        editor.ui.componentFactory.add('alightLinkPlugin', (locale) => {
-            const dropdown = createDropdown(locale);
+    editor.ui.componentFactory.add('alightLinkPlugin', (locale) => {
+      const dropdown = createDropdown(locale);
 
-            // Configure the dropdown button
-            const buttonView = dropdown.buttonView;
-            buttonView.set({
-                icon: ToolBarIcon,
-                label: t('Insert Alight Link'),
-                tooltip: true,
-                withText: false,
-            });
+      // Configure the dropdown button
+      const buttonView = dropdown.buttonView;
+      buttonView.set({
+        icon: ToolBarIcon,
+        label: t('Insert Alight Link'),
+        tooltip: true,
+        withText: false,
+      });
 
-            // Create a ListView for the dropdown's panel
-            const listView = new ListView(locale);
+      // Create a ListView for the dropdown's panel
+      const listView = new ListView(locale);
 
-            listView.focus = () => {}; // Prevent focusing on items
+      listView.focus = () => { }; // Prevent focusing on items
 
-            const headerView = new View(locale);
-            headerView.setTemplate({
-                tag: 'div',
-                attributes: { class: 'dropdown-header', style: 'padding: 2px 16px 4px; font-weight: 700' },
-                children: [{ text: t('Choose Link Type') }],
-            });
+      const headerView = new View(locale);
+      headerView.setTemplate({
+        tag: 'div',
+        attributes: { class: 'dropdown-header', style: 'padding: 2px 16px 4px; font-weight: 700' },
+        children: [{ text: t('Choose Link Type') }],
+      });
 
-            listView.items.add(headerView);
-            listView.items.add(new ListSeparatorView(locale));
+      listView.items.add(headerView);
+      listView.items.add(new ListSeparatorView(locale));
 
-            const itemDefinitions = [
-                { label: t('Predefined Pages'), command: 'linkOption1' },
-                { label: t('Public Website'), command: 'linkOption2' },
-                { label: t('Intranet'), command: 'linkOption3' },
-                { label: t('Existing Document'), command: 'linkOption4' },
-                { label: t('New Document'), command: 'linkOption5' },
-            ];
+      const itemDefinitions = [
+        { label: t('Predefined Pages'), command: 'linkOption1' },
+        { label: t('Public Website'), command: 'linkOption2' },
+        { label: t('Intranet'), command: 'linkOption3' },
+        { label: t('Existing Document'), command: 'linkOption4' },
+        { label: t('New Document'), command: 'linkOption5' },
+      ];
 
-            itemDefinitions.forEach((item) => {
-                const listItem = new ListItemView(locale);
-                const button = new ButtonView(locale);
-                button.set({ label: item.label, withText: true, tooltip: false });
+      itemDefinitions.forEach((item) => {
+        const listItem = new ListItemView(locale);
+        const button = new ButtonView(locale);
+        button.set({ label: item.label, withText: true, tooltip: false });
 
-                button.on('execute', () => {
-                    editor.execute(item.command);
-                    editor.editing.view.focus();
-                });
-
-                listItem.children.add(button);
-                listView.items.add(listItem);
-            });
-
-            dropdown.panelView.children.add(listView);
-            return dropdown;
+        button.on('execute', () => {
+          editor.execute(item.command);
+          editor.editing.view.focus();
         });
-    }
+
+        listItem.children.add(button);
+        listView.items.add(listItem);
+      });
+
+      dropdown.panelView.children.add(listView);
+      return dropdown;
+    });
+  }
 }

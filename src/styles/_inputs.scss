@@ -2,46 +2,46 @@
 
 // Alight input label styles
 .ck-alight-input-label {
-    display: block;
-    font-weight: var(--font-weight-bold);
+  display: block;
+  font-weight: var(--font-weight-bold);
 }
 
 // Alight text input styles
 .ck-alight-input-text {
-    appearance: none;
-    background: var(--neutral-white);
-    border-radius: 0;
-    border: 1px solid var(--neutral-dove-gray);
-    color: var(--gray-700);
-    font-family: var(--font-family-base);
-    font-size: var(--font-size-base);
-    padding: mixins.toRem(9) mixins.toRem(16);
-    transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
+  appearance: none;
+  background: var(--neutral-white);
+  border-radius: 0;
+  border: 1px solid var(--neutral-dove-gray);
+  color: var(--gray-700);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  padding: mixins.toRem(9) mixins.toRem(16);
+  transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
 
-    &:enabled {
-        &:hover {
-            border-color: var(--neutral-black);
-        }
-
-        &:focus {
-            border-color: var(--primary);
-            box-shadow: var(--focus-state);
-            outline-offset: 0;
-            outline: none;
-        }
+  &:enabled {
+    &:hover {
+      border-color: var(--neutral-black);
     }
 
-    &.ng-dirty.ng-invalid {
-        border-color: var(--error);
+    &:focus {
+      border-color: var(--primary);
+      box-shadow: var(--focus-state);
+      outline-offset: 0;
+      outline: none;
     }
+  }
 
-    &.ck-alight-input-text-sm {
-        font-size: var(--font-size-sm);
-        padding: mixins.toRem(12) mixins.toRem(12) !important;
-    }
+  &.ng-dirty.ng-invalid {
+    border-color: var(--error);
+  }
 
-    &.ck-alight-input-text-lg {
-        font-size: var(--font-size-xl);
-        padding: mixins.toRem(20) mixins.toRem(20);
-    }
+  &.ck-alight-input-text-sm {
+    font-size: var(--font-size-sm);
+    padding: mixins.toRem(12) mixins.toRem(12) !important;
+  }
+
+  &.ck-alight-input-text-lg {
+    font-size: var(--font-size-xl);
+    padding: mixins.toRem(20) mixins.toRem(20);
+  }
 }

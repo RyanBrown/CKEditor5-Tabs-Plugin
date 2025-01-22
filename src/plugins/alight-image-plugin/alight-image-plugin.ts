@@ -3,11 +3,11 @@ import AlightImagePluginUI from './alight-image-plugin-ui';
 import AlightImagePluginEditing from './alight-image-plugin-editing';
 
 export default class AlightImagePlugin extends Plugin {
-    static get requires() {
-        return [AlightImagePluginUI, AlightImagePluginEditing];
-    }
+  static get requires() {
+    return [AlightImagePluginUI, AlightImagePluginEditing];
+  }
 
-    static get pluginName() {
-        return 'AlightImagePlugin';
-    }
+  static get pluginName() {
+    return 'AlightImagePlugin';
+  }
 }
