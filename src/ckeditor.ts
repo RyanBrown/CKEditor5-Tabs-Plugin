@@ -52,7 +52,7 @@ import { WordCount } from '@ckeditor/ckeditor5-word-count';
 import { EditorWatchdog } from '@ckeditor/ckeditor5-watchdog';
 
 // Custom Plugins
-import AlightCopyPlugin from './plugins/alight-copy_plugin/alight-copy-plugin';
+import AlightCopyPlugin from './plugins/alight-copy-plugin/alight-copy-plugin';
 import AlightImagePlugin from './plugins/alight-image_plugin/alight-image-plugin';
 import AlightLinkPlugin from './plugins/alight-link_plugin/alight-link-plugin';
 import AlightPastePlugin from './plugins/alight-paste_plugin/alight-paste-plugin';
@@ -282,7 +282,7 @@ class Editor extends ClassicEditor {
         placeholder: '',
         // Add the license key here:
         licenseKey:
-            'eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3Mzc1MDM5OTksImp0aSI6IjdlYjAxOGZhLTJkNWYtNDdkYS1hNjI1LWFmZmJhMjY2ODk2ZSIsInVzYWdlRW5kcG9pbnQiOiJodHRwczovL3Byb3h5LWV2ZW50LmNrZWRpdG9yLmNvbSIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsiY2xvdWQiLCJkcnVwYWwiLCJzaCJdLCJ3aGl0ZUxhYmVsIjp0cnVlLCJsaWNlbnNlVHlwZSI6InRyaWFsIiwiZmVhdHVyZXMiOlsiKiJdLCJ2YyI6ImM3NDFjZTQ3In0.IXuphGLHOZU1I6T_L0QR2Ufd7lWIHEbjWPpD41b8olt3IACjAd8TxMaj6ClJmqx3XD6nWFqw49ctczRzornvCA',
+            'eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3Njc4MzAzOTksImp0aSI6ImE5MWE5MzFiLWE0MjEtNDZhZC1iZGFlLTVhODNlNzQ3NTFmMyIsImxpY2Vuc2VkSG9zdHMiOlsiMTI3LjAuMC4xIiwibG9jYWxob3N0IiwiMTkyLjE2OC4qLioiLCIxMC4qLiouKiIsIjE3Mi4qLiouKiIsIioudGVzdCIsIioubG9jYWxob3N0IiwiKi5sb2NhbCJdLCJ1c2FnZUVuZHBvaW50IjoiaHR0cHM6Ly9wcm94eS1ldmVudC5ja2VkaXRvci5jb20iLCJkaXN0cmlidXRpb25DaGFubmVsIjpbImNsb3VkIiwiZHJ1cGFsIl0sImxpY2Vuc2VUeXBlIjoiZGV2ZWxvcG1lbnQiLCJmZWF0dXJlcyI6WyJEUlVQIl0sInZjIjoiNjQzMjMwNWYifQ.5HWZI0xLz4KSfFCBXpw3mGuak6Fsh4jATft31D1s9I6mOS61v6E3b9ibS3FhHv3ZMKPMODJQlyhRsM5k0NcFkQ',
     };
 }
 
