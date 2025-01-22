@@ -1,7 +1,7 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { toWidget, toWidgetEditable } from '@ckeditor/ckeditor5-widget';
 import { Widget } from '@ckeditor/ckeditor5-widget';
-import { TabsPluginCommand, DeleteTabCommand, MoveTabCommand } from './tabs-plugin-command';
+import { TabsPluginCommand, DeleteTabCommand, MoveTabCommand } from './alight-tabs-plugin-command';
 
 export default class TabsPluginEditing extends Plugin {
     static get requires() {

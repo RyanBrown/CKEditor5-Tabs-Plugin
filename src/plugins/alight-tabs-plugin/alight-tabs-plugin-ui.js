@@ -1,8 +1,8 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { ButtonView } from '@ckeditor/ckeditor5-ui';
-import { createTabsPluginElement, createTabElement, findAllDescendants } from './tabs-plugin-utils';
-import { generateTabId } from './tabs-plugin-command';
-import './styles/tabs-plugin.scss';
+import { createTabsPluginElement, createTabElement, findAllDescendants } from './alight-tabs-plugin-utils';
+import { generateTabId } from './alight-tabs-plugin-command';
+import './styles/alight-tabs-plugin.scss';
 
 export default class TabsPluginUI extends Plugin {
     init() {

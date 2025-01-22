@@ -1,4 +1,4 @@
-import { generateTabId } from './tabs-plugin-command';
+import { generateTabId } from './alight-tabs-plugin-command';
 
 // Create tabs plugin element with two initial tabs
 export function createTabsPluginElement(writer) {

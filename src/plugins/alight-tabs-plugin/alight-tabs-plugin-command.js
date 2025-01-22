@@ -1,5 +1,5 @@
 import { Command } from '@ckeditor/ckeditor5-core';
-import { createTabElement, findAllDescendants } from './tabs-plugin-utils';
+import { createTabElement, findAllDescendants } from './alight-tabs-plugin-utils';
 
 // Generates a unique tab ID
 export function generateTabId() {

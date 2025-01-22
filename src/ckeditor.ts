@@ -57,7 +57,7 @@ import AlightImagePlugin from './plugins/alight-image-plugin/alight-image-plugin
 import AlightLinkPlugin from './plugins/alight-link-plugin/alight-link-plugin';
 import AlightPastePlugin from './plugins/alight-paste-plugin/alight-paste-plugin';
 import AlightPopulationPlugin from './plugins/alight-population-plugin/alight-population-plugin';
-import TabsPlugin from './plugins/Tabs_Plugin/tabs-plugin';
+import TabsPlugin from './plugins/alight-tabs-plugin/alight-tabs-plugin';
 
 // Import custom styles for headings, style definitions and custom plugins
 import './styles/styles.scss';
