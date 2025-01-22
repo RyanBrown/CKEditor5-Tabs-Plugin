@@ -53,10 +53,10 @@ import { EditorWatchdog } from '@ckeditor/ckeditor5-watchdog';
 
 // Custom Plugins
 import AlightCopyPlugin from './plugins/alight-copy-plugin/alight-copy-plugin';
-import AlightImagePlugin from './plugins/alight-image_plugin/alight-image-plugin';
-import AlightLinkPlugin from './plugins/alight-link_plugin/alight-link-plugin';
-import AlightPastePlugin from './plugins/alight-paste_plugin/alight-paste-plugin';
-import AlightPopulationPlugin from './plugins/alight-population_plugin/alight-population-plugin';
+import AlightImagePlugin from './plugins/alight-image-plugin/alight-image-plugin';
+import AlightLinkPlugin from './plugins/alight-link-plugin/alight-link-plugin';
+import AlightPastePlugin from './plugins/alight-paste-plugin/alight-paste-plugin';
+import AlightPopulationPlugin from './plugins/alight-population-plugin/alight-population-plugin';
 import TabsPlugin from './plugins/Tabs_Plugin/tabs-plugin';
 
 // Import custom styles for headings, style definitions and custom plugins
