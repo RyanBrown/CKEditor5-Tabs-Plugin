@@ -1,146 +1,147 @@
 @use './_mixins';
 @use './_buttons';
 @use './_inputs';
-// @use './_spacing';
 
 @use './ckeditor-variables';
 
 // Set the minimum height of the ckeditor
 .ck-editor__editable_inline {
-    min-height: 250px;
+  min-height: 250px;
 }
 
 .ck-editor {
-    pre {
-        white-space: pre-wrap;
-        word-wrap: break-word;
-        -moz-tab-size: 4;
-        -o-tab-size: 4;
-        tab-size: 4;
-    }
+  pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    -moz-tab-size: 4;
+    -o-tab-size: 4;
+    tab-size: 4;
+  }
 }
 
 // Set default text properties
 .ck-content {
-    h2.italic-title {
-        font-style: italic;
-    }
+  h2.italic-title {
+    font-style: italic;
+  }
 
-    .subtitle {
-        color: #aaa;
-        font-style: italic;
-    }
+  .subtitle {
+    color: #aaa;
+    font-style: italic;
+  }
 
-    p.special-container {
-        background: #eee;
-        border: 1px solid #ccc;
-        padding: 5px 10px;
-    }
+  p.special-container {
+    background: #eee;
+    border: 1px solid #ccc;
+    padding: 5px 10px;
+  }
 
-    big.big {
-        font-size: larger;
-    }
+  big.big {
+    font-size: larger;
+  }
 
-    small.small {
-        font-size: smaller;
-    }
+  small.small {
+    font-size: smaller;
+  }
 
-    tt.typewriter {
-        font-family: monospace;
-    }
+  tt.typewriter {
+    font-family: monospace;
+  }
 
-    code.computer-code {
-        background-color: #f7f7f9;
-        border: 1px solid #e1e1e8;
-        color: #d14;
-        padding: 2px 4px;
-        white-space: nowrap;
-    }
+  code.computer-code {
+    background-color: #f7f7f9;
+    border: 1px solid #e1e1e8;
+    color: #d14;
+    padding: 2px 4px;
+    white-space: nowrap;
+  }
 
-    kbd.keyboard-phrase {
-        font-family: monospace;
-    }
+  kbd.keyboard-phrase {
+    font-family: monospace;
+  }
 
-    samp.sample-text {
-        font-family: monospace;
-    }
+  samp.sample-text {
+    font-family: monospace;
+  }
 
-    var.variable {
-        font-style: italic;
-    }
+  var.variable {
+    font-style: italic;
+  }
 
-    del.deleted-text {
-        text-decoration: line-through;
-    }
+  del.deleted-text {
+    text-decoration: line-through;
+  }
 
-    ins.inserted-text {
-        text-decoration: underline;
-    }
+  ins.inserted-text {
+    text-decoration: underline;
+  }
 
-    cite.cited-work {
-        font-style: italic;
-    }
+  cite.cited-work {
+    font-style: italic;
+  }
 
-    q.inline-quotation::before {
-        content: open-quote;
-    }
+  q.inline-quotation::before {
+    content: open-quote;
+  }
 
-    q.inline-quotation::after {
-        content: close-quote;
-    }
+  q.inline-quotation::after {
+    content: close-quote;
+  }
 
-    span.language-rtl {
-        direction: rtl;
-        unicode-bidi: isolate;
-    }
+  span.language-rtl {
+    direction: rtl;
+    unicode-bidi: isolate;
+  }
 
-    span.language-ltr {
-        direction: ltr;
-        unicode-bidi: isolate;
-    }
+  span.language-ltr {
+    direction: ltr;
+    unicode-bidi: isolate;
+  }
 }
+
 // End default text properties
 
 // Set table defaults
 // These must be identical to the classes
 // set in ckeditor.ts table properties
 .ck-content {
-    .table {
-        height: 100%;
-        width: 100%;
+  .table {
+    height: 100%;
+    width: 100%;
 
-        table {
-            border-color: rgb(0, 0, 0);
-            border-style: solid;
-            border-width: 2px;
+    table {
+      border-color: rgb(0, 0, 0);
+      border-style: solid;
+      border-width: 2px;
 
-            td {
-                border-color: rgb(0, 0, 0);
-                border-style: solid;
-                border-width: 1px;
-                padding: 10px;
-            }
-        }
+      td {
+        border-color: rgb(0, 0, 0);
+        border-style: solid;
+        border-width: 1px;
+        padding: 10px;
+      }
     }
+  }
 }
 
 // Update the bullet list indent to match UCE
 .ck-content ul {
-    padding-left: 1.25rem;
+  padding-left: 1.25rem;
 }
 
 // END ============================================================================================
 
 // Alight anchor styles
 a {
-    color: var(--primary);
+  color: var(--primary);
 
-    &:hover {
-        color: var(--primary-hover);
-    }
+  &:hover {
+    color: var(--primary-hover);
+  }
 }
+
 a,
 a:hover {
-    cursor: pointer;
-    text-decoration: none;
+  cursor: pointer;
+  text-decoration: none;
 }

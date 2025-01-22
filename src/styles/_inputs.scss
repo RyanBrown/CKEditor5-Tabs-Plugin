@@ -30,13 +30,16 @@
             outline: none;
         }
     }
+
     &.ng-dirty.ng-invalid {
         border-color: var(--error);
     }
+
     &.ck-alight-input-text-sm {
         font-size: var(--font-size-sm);
         padding: mixins.toRem(12) mixins.toRem(12) !important;
     }
+
     &.ck-alight-input-text-lg {
         font-size: var(--font-size-xl);
         padding: mixins.toRem(20) mixins.toRem(20);
