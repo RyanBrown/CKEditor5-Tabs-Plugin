@@ -1,3 +1,4 @@
+// alight-dialog-modal.ts
 import './styles/alight-dialog-modal.scss';
 
 export interface AlightDialogModalProps {
@@ -26,7 +27,21 @@ export class AlightDialogModal {
   constructor({
     title = 'Modal Title',
     tertiaryButton = { label: 'Cancel', onClick: () => this.closeModal() },
-    primaryButton = { label: 'Continue', onClick: () => { } },
+    primaryButton = {
+      label: 'Continue',
+      // Below is an example usage for link insertion. In your actual code,
+      // you would pass “editor” and “selection” from outside and handle them here.
+      // onClick: () => {
+      //   const urlInput = document.getElementById('url') as HTMLInputElement;
+      //   if (urlInput) {
+      //     editor.model.change((writer) => {
+      //       writer.setAttribute('linkHref', urlInput.value, selection);
+      //     });
+      //   }
+      //   this.closeModal();
+      // }
+      onClick: () => { }
+    },
     content = 'Placeholder content',
     onClose = () => { },
     showHeader = true,
@@ -106,7 +121,7 @@ export class AlightDialogModal {
       primaryButtonElement.className = 'ck ck-button ck-button-action ck-off ck-button_with-text';
       primaryButtonElement.type = 'button';
       primaryButtonElement.textContent = primaryButton.label!;
-      primaryButtonElement.onclick = primaryButton.onClick || null; // Fix: Provide fallback
+      primaryButtonElement.onclick = primaryButton.onClick || null;
 
       actions.appendChild(tertiaryButtonElement);
       actions.appendChild(primaryButtonElement);
@@ -134,10 +149,14 @@ export class AlightDialogModal {
     }
   };
 
-  private closeModal(onClose?: () => void) {
-    document.body.removeChild(this.overlay);
+  public closeModal(onClose?: () => void) {
+    // Clean up DOM
+    if (document.body.contains(this.overlay)) {
+      document.body.removeChild(this.overlay);
+    }
     document.removeEventListener('keydown', this.handleKeydown);
 
+    // Fire the callback
     if (onClose) {
       onClose();
     }
