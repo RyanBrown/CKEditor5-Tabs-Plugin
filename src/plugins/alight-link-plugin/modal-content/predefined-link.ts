@@ -15,54 +15,54 @@ export function getPredefinedLinkContent(page: number = 1, pageSize: number = 10
 
   const links = currentPageData.map((link: any) => {
     return `
-            <div class="link-item">
-                <div>
-                    <input type="radio" name="link-selection" value="${link.LinkItemName}" />
-                </div>
+      <div class="link-item">
+        <div>
+          <input type="radio" name="link-selection" value="${link.LinkItemName}" />
+        </div>
 
-                <ul>
-                    <li><strong>${link.LinkTitleDisplayName}</strong></li>
-                    <li><strong>Item Name:</strong> ${link.LinkItemName}</li>
-                    <li><strong>Type:</strong> ${link.BaseOrClientSpecific}</li>
-                    <li><strong>Page Type:</strong> ${link.PageType}</li>
-                    <li><strong>Destination:</strong> ${link.Destination}</li>
-                    <li><strong>Domain:</strong> ${link.Domain}</li>
-                </ul>
-            </div>
-        `;
+        <ul>
+          <li><strong>${link.LinkTitleDisplayName}</strong></li>
+          <li><strong>Item Name:</strong> ${link.LinkItemName}</li>
+          <li><strong>Type:</strong> ${link.BaseOrClientSpecific}</li>
+          <li><strong>Page Type:</strong> ${link.PageType}</li>
+          <li><strong>Destination:</strong> ${link.Destination}</li>
+          <li><strong>Domain:</strong> ${link.Domain}</li>
+        </ul>
+      </div>
+    `;
   });
 
   return `
-        <div class="predefined-link-content">
-            <div class="search-container">
-                <input 
-                    type="text" 
-                    class="search-input" 
-                    placeholder="Search by title..." 
-                    value="${currentSearchQuery}" 
-                />
-                <button class="reset-search-btn">Reset Search</button>
-            </div>
-            ${links.length > 0 ? links.join('') : '<p>No results found.</p>'}
-            <div class="pagination">
-                <button class="page-btn first-page" data-page="1" ${page === 1 ? 'disabled' : ''}>First</button>
-                <button class="page-btn prev-page" data-page="${page - 1}" ${page === 1 ? 'disabled' : ''
+    <div class="predefined-link-content">
+      <div class="search-container">
+        <input 
+          type="text" 
+          class="search-input" 
+          placeholder="Search by title..." 
+          value="${currentSearchQuery}" 
+        />
+        <button class="reset-search-btn">Reset Search</button>
+      </div>
+      ${links.length > 0 ? links.join('') : '<p>No results found.</p>'}
+      <div class="pagination">
+        <button class="page-btn first-page" data-page="1" ${page === 1 ? 'disabled' : ''}>First</button>
+        <button class="page-btn prev-page" data-page="${page - 1}" ${page === 1 ? 'disabled' : ''
     }>Previous</button>
-                <select class="page-select">
-                    ${Array.from({ length: totalPages }, (_, i) => {
+        <select class="page-select">
+            ${Array.from({ length: totalPages }, (_, i) => {
       const currentStart = i * pageSize + 1;
       const currentEnd = Math.min((i + 1) * pageSize, totalItems);
       return `<option value="${i + 1}" ${i + 1 === page ? 'selected' : ''}>Page ${i + 1
         } (${currentStart}–${currentEnd} of ${totalItems})</option>`;
     }).join('')}
-                </select>
-                <button class="page-btn next-page" data-page="${page + 1}" ${page === totalPages ? 'disabled' : ''
+        </select>
+        <button class="page-btn next-page" data-page="${page + 1}" ${page === totalPages ? 'disabled' : ''
     }>Next</button>
-                <button class="page-btn last-page" data-page="${totalPages}" ${page === totalPages ? 'disabled' : ''
+        <button class="page-btn last-page" data-page="${totalPages}" ${page === totalPages ? 'disabled' : ''
     }>Last</button>
-            </div>
-        </div>
-    `;
+      </div>
+    </div>
+  `;
 }
 
 // Search and render filtered results

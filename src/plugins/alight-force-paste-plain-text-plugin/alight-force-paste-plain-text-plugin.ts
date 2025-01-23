@@ -1,5 +1,6 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
 
+// AlightForcePastePlainText plugin forces pasting content as plain text, preserving line breaks. 
 export default class AlightForcePastePlainText extends Plugin {
   init() {
     const editor = this.editor;
@@ -11,7 +12,7 @@ export default class AlightForcePastePlainText extends Plugin {
         // Retrieve plain text data from the clipboard
         let plainText = data.dataTransfer.getData('text/plain');
 
-        // Split the text into lines and wrap each in a <p> tag like ckeditor does by default
+        // Split the plain text into lines and wrap each in a <p> tag like ckeditor does by default
         const wrappedText = plainText
           .split(/\n/)
           .map((line: any) => `<p>${line}</p>`)
