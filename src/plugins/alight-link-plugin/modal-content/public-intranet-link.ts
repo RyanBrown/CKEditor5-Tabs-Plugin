@@ -1,9 +1,9 @@
 // public-intranet-link.ts
 
 /**
- * Renders a unified link modal for either public or intranet links.
- * If `isIntranet` is true, displays the additional intranet note.
- * Optionally populates existingHref / existingOrgName if editing an existing link.
+ * Returns the HTML content for both Public and Intranet links.
+ * If isIntranet=true, we show an extra note or fields. 
+ * existingHref and existingOrgName are used to pre-populate fields when editing.
  */
 export async function getPublicIntranetLinkContent(
   existingHref: string = '',

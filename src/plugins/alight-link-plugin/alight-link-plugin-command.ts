@@ -1,7 +1,9 @@
+// alight-link-plugin-command.ts
 import Command from '@ckeditor/ckeditor5-core/src/command';
 import type Editor from '@ckeditor/ckeditor5-core/src/editor/editor';
 import { AlightDialogModal } from '../alight-dialog-modal/alight-dialog-modal';
 
+// Defines the structure for each link option (title, how to load content, etc.)
 interface LinkOptionData {
   title: string;
   content: string;
@@ -22,9 +24,10 @@ export default class AlightLinkPluginCommand extends Command {
     const { title, content, loadContent, primaryButton } = this.data;
     const editor = this.editor;
 
-    // Load dynamic content if provided
+    // If loadContent is provided, fetch dynamic HTML; else use static content
     const resolvedContent = loadContent ? await loadContent() : content;
 
+    // Create & show the modal
     this.modal = new AlightDialogModal({
       title,
       content: resolvedContent,
@@ -32,18 +35,21 @@ export default class AlightLinkPluginCommand extends Command {
         label: primaryButton || 'Continue',
         onClick: () => {
           const urlInput = document.getElementById('url') as HTMLInputElement | null;
-          if (urlInput && urlInput.value) {
+          if (urlInput?.value) {
+            // Apply the linkHref to the *current selection*
             editor.model.change(writer => {
-              // Use 2-argument form
+              // 2-argument form: ( attributeName, value )
               writer.setSelectionAttribute('linkHref', urlInput.value);
             });
           }
 
+          // Optionally read org-name if needed
           const orgInput = document.getElementById('org-name') as HTMLInputElement | null;
           if (orgInput) {
             console.log('Captured org name:', orgInput.value);
           }
 
+          // Close the modal
           this.modal?.closeModal();
         },
       },

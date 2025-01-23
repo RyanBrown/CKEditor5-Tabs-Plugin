@@ -4,10 +4,9 @@ alight-link-plugin/
 │   ├── icon-link.svg
 ├── modal-content/
 │   ├── existing-document-link.ts
-│   ├── intranet-link.ts
 │   ├── new-document-link.ts
 │   ├── predefined-link.ts
-│   ├── public-website-link.ts
+│   ├── public-intranet-link.ts
 │   └── json/
 │       ├── existing-document-test-data.json
 │       └── predefined-test-data.json
