@@ -1,21 +1,25 @@
 // alight-link-plugin-ui.ts
+
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { ButtonView } from '@ckeditor/ckeditor5-ui';
 import { Locale } from '@ckeditor/ckeditor5-utils';
+
+// This is the built-in plugin that manages the link balloon UI
 import LinkUI from '@ckeditor/ckeditor5-link/src/linkui';
 
 import AlightLinkCommand from './alight-link-plugin-command';
 import { createLinkFormView } from './alight-link-plugin-utils';
 import ToolBarIcon from './assets/icon-link.svg';
 
+// If you have a custom CSS file for your plugin:
 import './styles/alight-link-plugin.css';
 
-// Represents the shape of `command.value` when set by AlightLinkCommand
+// Type describing the shape of the link command value
 interface AlightLinkValue {
   href: string;
 }
 
-// Shape of data returned from the modal
+// Type describing data returned from your custom modal
 interface LinkData {
   href?: string;
 }
@@ -29,7 +33,7 @@ export default class AlightLinkPluginUI extends Plugin {
     const editor = this.editor;
     const t = editor.t;
 
-    // (Optional) Add a toolbar button for Insert/Edit Link
+    // (Optional) Add a toolbar button for Insert/Edit Link.
     editor.ui.componentFactory.add('alightLinkPlugin', (locale: Locale) => {
       const buttonView = createLinkFormView(locale, editor);
 
@@ -37,10 +41,10 @@ export default class AlightLinkPluginUI extends Plugin {
         icon: ToolBarIcon,
         label: t('Insert/Edit Link'),
         tooltip: true,
-        withText: true,
+        withText: true
       });
 
-      // If you want the toolbar button to open the modal as well:
+      // If desired, clicking this toolbar button also opens your modal.
       this.listenTo(buttonView, 'execute', () => {
         this.handleLinkButtonClick();
       });
@@ -49,40 +53,51 @@ export default class AlightLinkPluginUI extends Plugin {
     });
   }
 
+  /**
+   * afterInit() runs after all plugins (including LinkUI) have initialized.
+   * This is where we override the balloon's default "Edit link" button behavior.
+   */
   public afterInit(): void {
     const editor = this.editor;
 
-    // Get the built-in LinkUI plugin, which manages the link balloon
+    // 1. Get the built-in LinkUI plugin, which manages the balloon.
     const linkUI = editor.plugins.get(LinkUI);
+
+    // 2. linkUI.actionsView => the container with class="ck ck-link-actions ck-responsive-form"
+    //    This view holds the "Edit" button, the "Unlink" button, etc.
     if (!linkUI.actionsView) {
-      return; // If there's no actionsView, stop
+      return; // If there's no actionsView, bail out safely.
     }
 
     const actionsView = linkUI.actionsView;
     const editButtonView = actionsView.editButtonView;
     if (!editButtonView) {
-      return; // If there's no 'edit link' button, stop
+      return; // If there's no "edit" button, bail out safely.
     }
 
-    // Remove the default "execute" listener, which shows CKEditor's inline link form
-    // THIS NEEDS TO BE FIXED
-    // editButtonView.off('execute');
+    // 3. Remove ALL default "execute" listeners, which includes the inline form handler
+    editButtonView.off('execute', () => { });
 
-    // Attach our own listener, supplying the third argument to satisfy TS
+
+    // 4. Attach our own handler. Notice the third argument ({}) to satisfy TS strict definitions.
     editButtonView.on(
       'execute',
       (evt, ...args) => {
-        // Prevent the default inline form
+        // Stop the default balloon form from opening
         evt.stop();
-        // Open our custom modal instead
+
+        // Instead, call our function that opens the custom modal
         this.handleLinkButtonClick();
       },
-      {} // <-- The third argument (options) to satisfy TS definitions
+      {}
     );
   }
 
   /**
-   * Retrieve the current link (if any) and open the modal with that URL.
+   * handleLinkButtonClick():
+   *  - Looks up the current link URL via our custom link command
+   *  - Opens the custom modal prefilled with that URL
+   *  - If user confirms, executes the link command with the updated URL
    */
   private handleLinkButtonClick(): void {
     const editor = this.editor;
@@ -91,12 +106,12 @@ export default class AlightLinkPluginUI extends Plugin {
       return;
     }
 
-    // AlightLinkCommand sets this.value = { href: string } or null
+    // In your AlightLinkCommand, you set "this.value = { href } or null".
     const currentValue = linkCommand.value as AlightLinkValue | null;
     const currentHref = currentValue?.href ?? '';
 
-    // Open modal, pre-filling the input
-    this.openCustomModal(currentHref).then((linkData) => {
+    this.openCustomModal(currentHref).then(linkData => {
+      // If user provided a link, execute the command
       if (linkData && linkData.href) {
         editor.execute('alightLinkPlugin', { href: linkData.href });
       }
@@ -104,7 +119,7 @@ export default class AlightLinkPluginUI extends Plugin {
   }
 
   /**
-   * Open your custom modal, returning a promise resolved with user input (or null if canceled).
+   * Opens your custom modal, returning a promise that resolves with the new link data or null.
    */
   private openCustomModal(defaultHref: string): Promise<LinkData | null> {
     const modal = new CustomModal();
@@ -113,8 +128,7 @@ export default class AlightLinkPluginUI extends Plugin {
 }
 
 /**
- * A very basic custom modal class.
- * It creates an overlay, a modal box, and a single input for the URL.
+ * A very basic custom modal class, with a single text <input>.
  */
 class CustomModal {
   private overlay: HTMLDivElement | null;
@@ -159,7 +173,7 @@ class CustomModal {
       const hrefInput = document.createElement('input');
       hrefInput.type = 'text';
       hrefInput.placeholder = 'https://example.com';
-      hrefInput.value = defaultHref; // Pre-fill with the existing link
+      hrefInput.value = defaultHref; // Pre-fill with the current link
       hrefLabel.appendChild(hrefInput);
       mainEl.appendChild(hrefLabel);
 
@@ -176,7 +190,7 @@ class CustomModal {
       footerEl.appendChild(cancelBtn);
       footerEl.appendChild(continueBtn);
 
-      // Combine all parts
+      // Assemble everything
       this.modal.appendChild(headerEl);
       this.modal.appendChild(mainEl);
       this.modal.appendChild(footerEl);
@@ -221,15 +235,15 @@ class CustomModal {
   }
 
   private closeModal(): void {
-    // Clean up DOM
+    // Remove overlay
     if (this.overlay) {
       document.body.removeChild(this.overlay);
     }
+    // Remove ESC listener
     if (this.keyDownHandler) {
       window.removeEventListener('keydown', this.keyDownHandler);
     }
 
-    // Reset
     this.overlay = null;
     this.modal = null;
     this.keyDownHandler = null;
