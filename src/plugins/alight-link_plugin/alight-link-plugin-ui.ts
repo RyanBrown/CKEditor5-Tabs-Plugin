@@ -37,9 +37,9 @@ export default class AlightLinkPluginUI extends Plugin {
         // Open our custom modal (vanilla TypeScript)
         this.openCustomModal().then((linkData: LinkData | null) => {
           if (linkData) {
-            const { href, target, rel } = linkData;
+            const { href } = linkData;
             // Execute the command with the retrieved properties
-            editor.execute('alightLinkPlugin', { href, target, rel });
+            editor.execute('alightLinkPlugin', { href });
           }
         });
       });
@@ -58,30 +58,8 @@ export default class AlightLinkPluginUI extends Plugin {
 // An interface describing the shape of data returned by the modal.
 interface LinkData {
   href?: string;
-  target?: string;
-  rel?: string;
 }
 
-/* =========================================
- * A basic custom modal class that
- * creates a modal in the DOM to collect
- * link properties (href, target, rel).
- *
- * The rendered HTML structure is:
-     <div class="ck-custom-modal">
-       <header>
-         <span class="modal-title"></span>
-         <div>
-           <button class="header-close">&times;</button>
-         </div>
-       </header>
-       <main></main>
-       <footer>
-         <button class="primary">Cancel</button>
-         <button class="secondary">Continue</button>
-       </footer>
-     </div>
- * ========================================= */
 class CustomModal {
   private overlay: HTMLDivElement | null;
   private modal: HTMLDivElement | null;
@@ -131,25 +109,7 @@ class CustomModal {
       hrefInput.placeholder = 'https://example.com';
       hrefLabel.appendChild(hrefInput);
 
-      // TARGET field
-      // const targetLabel = document.createElement('label');
-      // targetLabel.innerText = 'Link Target:';
-      // const targetInput = document.createElement('input');
-      // targetInput.type = 'text';
-      // targetInput.placeholder = '_blank';
-      // targetLabel.appendChild(targetInput);
-
-      // // REL field
-      // const relLabel = document.createElement('label');
-      // relLabel.innerText = 'Link Rel:';
-      // const relInput = document.createElement('input');
-      // relInput.type = 'text';
-      // relInput.placeholder = 'nofollow';
-      // relLabel.appendChild(relInput);
-
       mainEl.appendChild(hrefLabel);
-      // mainEl.appendChild(targetLabel);
-      // mainEl.appendChild(relLabel);
 
       // Build the footer
       const footerEl = document.createElement('footer');
@@ -201,8 +161,6 @@ class CustomModal {
       continueBtn.addEventListener('click', () => {
         const data: LinkData = {
           href: hrefInput.value.trim(),
-          // target: targetInput.value.trim(),
-          // rel: relInput.value.trim(),
         };
         this.closeModal();
 
