@@ -7,12 +7,12 @@ import { Locale } from '@ckeditor/ckeditor5-utils';
 // This is the built-in plugin that manages the link balloon UI.
 import LinkUI from '@ckeditor/ckeditor5-link/src/linkui';
 
-import AlightLinkCommand from './alight-link-plugin-command';
-import { createLinkFormView } from './alight-link-plugin-utils';
+import AlightLinkCommand from './alight-link-url-plugin-command';
+import { createLinkFormView } from './alight-link-url-plugin-utils';
 import ToolBarIcon from './assets/icon-link.svg';
 
 // If you have a custom CSS file for your plugin:
-import './styles/alight-link-plugin.css';
+import './styles/alight-link-url-plugin.css';
 
 // Type describing the shape of the link command value.
 interface AlightLinkValue {
@@ -24,9 +24,9 @@ interface LinkData {
   href?: string;
 }
 
-export default class AlightLinkPluginUI extends Plugin {
+export default class AlightLinkUrlPluginUI extends Plugin {
   static get pluginName() {
-    return 'AlightLinkPluginUI';
+    return 'AlightLinkUrlPluginUI';
   }
 
   public init(): void {
@@ -34,7 +34,7 @@ export default class AlightLinkPluginUI extends Plugin {
     const t = editor.t;
 
     // (Optional) Add a toolbar button for Insert/Edit Link.
-    editor.ui.componentFactory.add('alightLinkPlugin', (locale: Locale) => {
+    editor.ui.componentFactory.add('alightLinkUrlPlugin', (locale: Locale) => {
       const buttonView = createLinkFormView(locale, editor);
 
       buttonView.set({
