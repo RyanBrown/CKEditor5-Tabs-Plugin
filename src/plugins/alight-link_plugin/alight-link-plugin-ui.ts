@@ -1,12 +1,28 @@
 // alight-link-plugin-ui.ts
+
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { ButtonView } from '@ckeditor/ckeditor5-ui';
 import { Locale } from '@ckeditor/ckeditor5-utils';
 import { createLinkFormView } from './alight-link-plugin-utils';
 import ToolBarIcon from './assets/icon-link.svg';
 
-// If your bundler supports direct CSS imports, uncomment below:
 import './styles/alight-link-plugin.css';
+
+// Import the custom command so we can use it for proper type assertions.
+import AlightLinkCommand from './alight-link-plugin-command';
+
+/**
+ * If you want to reference the shape of `command.value` from `AlightLinkCommand`,
+ * recall that in your AlightLinkCommand:
+ *
+ *   this.value = href ? { href } : null;
+ *
+ * This means `value` is either `null` or `{ href: string }`.
+ * We'll define a small type for convenience:
+ */
+interface AlightLinkValue {
+  href: string;
+}
 
 export default class AlightLinkPluginUI extends Plugin {
   static get pluginName() {
@@ -17,28 +33,37 @@ export default class AlightLinkPluginUI extends Plugin {
     const editor = this.editor;
     const t = editor.t;
 
-    // Add the UI button for link insertion
+    // Create a button for inserting/editing links.
     editor.ui.componentFactory.add('alightLinkPlugin', (locale: Locale) => {
-      // Create the basic button view
       const buttonView = createLinkFormView(locale, editor);
 
-      // Configure the button with icon, label, and tooltip
       buttonView.set({
         icon: ToolBarIcon,
-        label: t('Insert Link'),
+        label: t('Insert/Edit Link'),
         tooltip: true,
         withText: true,
       });
 
-      // Handle button click
+      // Listen for button clicks.
       this.listenTo(buttonView, 'execute', () => {
-        const command = editor.commands.get('alightLinkPlugin');
+        // Safely retrieve our custom link command. Type assertion ensures we treat it as AlightLinkCommand.
+        const linkCommand = editor.commands.get('alightLinkPlugin') as AlightLinkCommand | undefined;
 
-        // Open our custom modal (vanilla TypeScript)
-        this.openCustomModal().then((linkData: LinkData | null) => {
+        // If for some reason the command is not registered, gracefully exit or handle the error.
+        if (!linkCommand) {
+          // You could display an error, throw, or just return:
+          return;
+        }
+
+        // Since AlightLinkCommand sets `this.value = href ? { href } : null;`,
+        // `linkCommand.value` could be null or { href: string }.
+        const currentValue = linkCommand.value as AlightLinkValue | null;
+        const currentHref = currentValue?.href ?? '';
+
+        // Now open the modal, passing in the existing URL.
+        this.openCustomModal(currentHref).then((linkData: LinkData | null) => {
           if (linkData) {
             const { href } = linkData;
-            // Execute the command with the retrieved properties
             editor.execute('alightLinkPlugin', { href });
           }
         });
@@ -48,14 +73,14 @@ export default class AlightLinkPluginUI extends Plugin {
     });
   }
 
-  // Opens the custom modal, returning a Promise of LinkData or null.
-  private openCustomModal(): Promise<LinkData | null> {
+  // Pass defaultHref so that the modal can be pre-filled.
+  private openCustomModal(defaultHref: string): Promise<LinkData | null> {
     const modal = new CustomModal();
-    return modal.openModal();
+    return modal.openModal(defaultHref);
   }
 }
 
-// An interface describing the shape of data returned by the modal.
+// Define LinkData to match what's returned by the modal
 interface LinkData {
   href?: string;
 }
@@ -63,8 +88,6 @@ interface LinkData {
 class CustomModal {
   private overlay: HTMLDivElement | null;
   private modal: HTMLDivElement | null;
-
-  // We'll store references to remove them later
   private keyDownHandler: ((e: KeyboardEvent) => void) | null;
 
   constructor() {
@@ -73,21 +96,21 @@ class CustomModal {
     this.keyDownHandler = null;
   }
 
-  public openModal(): Promise<LinkData | null> {
+  public openModal(defaultHref: string): Promise<LinkData | null> {
     return new Promise((resolve) => {
       // Create overlay
       this.overlay = document.createElement('div');
       this.overlay.classList.add('ck-custom-modal-overlay');
 
-      // Create the main modal container
+      // Create the modal container
       this.modal = document.createElement('div');
       this.modal.classList.add('ck-custom-modal');
 
-      // Build the header
+      // Build header
       const headerEl = document.createElement('header');
       const titleSpan = document.createElement('span');
       titleSpan.classList.add('modal-title');
-      titleSpan.innerText = 'Insert Link';
+      titleSpan.innerText = 'Insert/Edit Link';
 
       const headerRightDiv = document.createElement('div');
       const closeBtn = document.createElement('button');
@@ -98,7 +121,7 @@ class CustomModal {
       headerEl.appendChild(titleSpan);
       headerEl.appendChild(headerRightDiv);
 
-      // Build the main section
+      // Build main section
       const mainEl = document.createElement('main');
 
       // URL field
@@ -107,32 +130,29 @@ class CustomModal {
       const hrefInput = document.createElement('input');
       hrefInput.type = 'text';
       hrefInput.placeholder = 'https://example.com';
+      hrefInput.value = defaultHref; // Pre-fill the input field
       hrefLabel.appendChild(hrefInput);
 
       mainEl.appendChild(hrefLabel);
 
-      // Build the footer
+      // Build footer
       const footerEl = document.createElement('footer');
 
-      // Cancel button
       const cancelBtn = document.createElement('button');
       cancelBtn.classList.add('secondary');
       cancelBtn.innerText = 'Cancel';
 
-      // Continue (save) button
       const continueBtn = document.createElement('button');
-      continueBtn.classList.add('primary'); // spelled as requested
+      continueBtn.classList.add('primary');
       continueBtn.innerText = 'Continue';
 
       footerEl.appendChild(cancelBtn);
       footerEl.appendChild(continueBtn);
 
-      // Append header, main, footer to modal
+      // Append all parts
       this.modal.appendChild(headerEl);
       this.modal.appendChild(mainEl);
       this.modal.appendChild(footerEl);
-
-      // Append modal to overlay
       this.overlay.appendChild(this.modal);
       document.body.appendChild(this.overlay);
 
@@ -145,26 +165,25 @@ class CustomModal {
       };
       window.addEventListener('keydown', this.keyDownHandler);
 
-      // Handle the "header-close" (the "×" button)
+      // Close button action
       closeBtn.addEventListener('click', () => {
         this.closeModal();
         resolve(null);
       });
 
-      // Handle the "Cancel" button
+      // Cancel button action
       cancelBtn.addEventListener('click', () => {
         this.closeModal();
         resolve(null);
       });
 
-      // Handle the "Continue" button
+      // Continue button action
       continueBtn.addEventListener('click', () => {
         const data: LinkData = {
           href: hrefInput.value.trim(),
         };
         this.closeModal();
 
-        // If the user didn't provide any HREF, treat that as null
         if (!data.href) {
           resolve(null);
         } else {
@@ -175,15 +194,12 @@ class CustomModal {
   }
 
   private closeModal(): void {
-    // Remove overlay from the DOM
     if (this.overlay) {
       document.body.removeChild(this.overlay);
     }
-    // Remove the keydown event listener
     if (this.keyDownHandler) {
       window.removeEventListener('keydown', this.keyDownHandler);
     }
-
     this.overlay = null;
     this.modal = null;
     this.keyDownHandler = null;
