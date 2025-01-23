@@ -62,6 +62,9 @@ import TabsPlugin from './plugins/alight-tabs-plugin/alight-tabs-plugin';
 // Import custom styles for headings, style definitions and custom plugins
 import './styles/styles.scss';
 
+const LICENSE_KEY =
+    'eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3Njc4MzAzOTksImp0aSI6ImE5MWE5MzFiLWE0MjEtNDZhZC1iZGFlLTVhODNlNzQ3NTFmMyIsImxpY2Vuc2VkSG9zdHMiOlsiMTI3LjAuMC4xIiwibG9jYWxob3N0IiwiMTkyLjE2OC4qLioiLCIxMC4qLiouKiIsIjE3Mi4qLiouKiIsIioudGVzdCIsIioubG9jYWxob3N0IiwiKi5sb2NhbCJdLCJ1c2FnZUVuZHBvaW50IjoiaHR0cHM6Ly9wcm94eS1ldmVudC5ja2VkaXRvci5jb20iLCJkaXN0cmlidXRpb25DaGFubmVsIjpbImNsb3VkIiwiZHJ1cGFsIl0sImxpY2Vuc2VUeXBlIjoiZGV2ZWxvcG1lbnQiLCJmZWF0dXJlcyI6WyJEUlVQIl0sInZjIjoiNjQzMjMwNWYifQ.5HWZI0xLz4KSfFCBXpw3mGuak6Fsh4jATft31D1s9I6mOS61v6E3b9ibS3FhHv3ZMKPMODJQlyhRsM5k0NcFkQ';
+
 // Use default colors from AWLDS
 const awldsColorPalette = [
     // primary colors
@@ -281,8 +284,7 @@ class Editor extends ClassicEditor {
         title: { placeholder: '' },
         placeholder: '',
         // Add the license key here:
-        licenseKey:
-            'eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3Njc4MzAzOTksImp0aSI6ImE5MWE5MzFiLWE0MjEtNDZhZC1iZGFlLTVhODNlNzQ3NTFmMyIsImxpY2Vuc2VkSG9zdHMiOlsiMTI3LjAuMC4xIiwibG9jYWxob3N0IiwiMTkyLjE2OC4qLioiLCIxMC4qLiouKiIsIjE3Mi4qLiouKiIsIioudGVzdCIsIioubG9jYWxob3N0IiwiKi5sb2NhbCJdLCJ1c2FnZUVuZHBvaW50IjoiaHR0cHM6Ly9wcm94eS1ldmVudC5ja2VkaXRvci5jb20iLCJkaXN0cmlidXRpb25DaGFubmVsIjpbImNsb3VkIiwiZHJ1cGFsIl0sImxpY2Vuc2VUeXBlIjoiZGV2ZWxvcG1lbnQiLCJmZWF0dXJlcyI6WyJEUlVQIl0sInZjIjoiNjQzMjMwNWYifQ.5HWZI0xLz4KSfFCBXpw3mGuak6Fsh4jATft31D1s9I6mOS61v6E3b9ibS3FhHv3ZMKPMODJQlyhRsM5k0NcFkQ',
+        licenseKey: LICENSE_KEY,
     };
 }
 
