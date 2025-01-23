@@ -1,0 +1,21 @@
+alight-link-plugin/
+├── assets/
+│   ├── icon-close.svg
+│   ├── icon-link.svg
+│   └── modal-content/
+│       └── json/
+│             ├── existing-document-test-data.json
+│             └── predefined-test-data.json
+├── existing-document-link.ts
+├── intranet-link.ts 
+├── new-document-link.ts
+├── predefined-link.ts
+├── public-website-link.ts
+├── styles/
+│   ├── alight-link-plugin.scss
+│   ├── predefined-link.scss
+│   └── search.scss
+├── alight-link-plugin-command.ts
+├── alight-link-plugin-editing.ts
+├── alight-link-plugin.ts
+└── alight-link-plugin-utils.ts
