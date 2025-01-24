@@ -1,43 +1,52 @@
-import Command from '@ckeditor/ckeditor5-core/src/command';
+// alight-image-plugin-command.ts
+import AlightDialogModalCommand from '../alight-dialog-modal/alight-dialog-modal-command';
 import type Editor from '@ckeditor/ckeditor5-core/src/editor/editor';
-import { AlightDialogModal, AlightDialogModalProps } from './../alight-dialog-modal/alight-dialog-modal';
 
+// Example data interface
 interface ImageOptionData {
   title: string;
-  content: string;
-  loadContent?: () => Promise<string>; // Optional loader for dynamic content
-  primaryButton?: string;
+  primaryButtonLabel?: string;
+  loadContent?: () => Promise<string>;
 }
 
-export default class AlightImagePluginCommand extends Command {
-  private readonly data: ImageOptionData;
-
+/**
+ * One approach: you can have a single "image command" that checks an option.
+ * Or you can define separate commands for each "image option" (existing vs upload).
+ */
+export class AlightImagePluginCommand extends AlightDialogModalCommand {
   constructor(editor: Editor, data: ImageOptionData) {
-    super(editor);
-    this.data = data;
-  }
+    // Build dynamic content
+    const { title, primaryButtonLabel = 'Continue', loadContent } = data;
 
-  override async execute(): Promise<void> {
-    const { title, content, loadContent, primaryButton } = this.data;
-
-    // Load dynamic content if `loadContent` is provided
-    const resolvedContent = loadContent ? await loadContent() : content;
-
-    const modal = new AlightDialogModal({
+    // Synchronously or asynchronously load content
+    // For demonstration, let's assume the content can be loaded later:
+    const modalProps = {
       title,
-      content: resolvedContent,
+      content: 'Loading...',  // or a placeholder
       primaryButton: {
-        label: primaryButton || 'Continue',
-        onClick: () => console.log('Primary action clicked'),
+        label: primaryButtonLabel,
+        onClick: () => {
+          console.log('Primary action for image plugin');
+          // Possibly do something with the editor here
+        }
       },
       tertiaryButton: {
         label: 'Cancel',
-        onClick: () => console.log('Modal dismissed'),
+        onClick: () => {
+          console.log('Dismissed image modal');
+        }
       },
-      onClose: () => console.log('Modal closed'),
-    });
+      // We'll override execute() to handle loading if needed
+    };
 
-    modal.show();
-    console.log('Executing command with dynamic content:', { title, resolvedContent, primaryButton });
+    super(editor, modalProps);
+
+    // Optionally handle asynchronous content
+    // If you want to fully handle async inside this constructor, you'd do:
+    if (loadContent) {
+      loadContent().then((loadedHTML) => {
+        modalProps.content = loadedHTML;
+      });
+    }
   }
 }

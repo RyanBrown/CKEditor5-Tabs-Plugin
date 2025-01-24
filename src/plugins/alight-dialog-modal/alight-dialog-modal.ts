@@ -1,6 +1,10 @@
 // alight-dialog-modal.ts
 import './styles/alight-dialog-modal.scss';
 
+/**
+ * A generic modal that can be used for any plugin or feature.
+ * Receives all content and callbacks in props, no assumptions about "images," "links," etc.
+ */
 export interface AlightDialogModalProps {
   title?: string; // Optional modal title with a default value
   tertiaryButton?: {
@@ -27,21 +31,7 @@ export class AlightDialogModal {
   constructor({
     title = 'Modal Title',
     tertiaryButton = { label: 'Cancel', onClick: () => this.closeModal() },
-    primaryButton = {
-      label: 'Continue',
-      // Below is an example usage for link insertion. In your actual code,
-      // you would pass “editor” and “selection” from outside and handle them here.
-      // onClick: () => {
-      //   const urlInput = document.getElementById('url') as HTMLInputElement;
-      //   if (urlInput) {
-      //     editor.model.change((writer) => {
-      //       writer.setAttribute('linkHref', urlInput.value, selection);
-      //     });
-      //   }
-      //   this.closeModal();
-      // }
-      onClick: () => { }
-    },
+    primaryButton = { label: 'Continue', onClick: () => { } },
     content = 'Placeholder content',
     onClose = () => { },
     showHeader = true,
@@ -98,7 +88,7 @@ export class AlightDialogModal {
     contentContainer.className = 'ck ck-dialog__content';
     if (typeof content === 'string') {
       contentContainer.innerHTML = content;
-    } else {
+    } else if (content instanceof HTMLElement) {
       contentContainer.appendChild(content);
     }
 
@@ -109,18 +99,18 @@ export class AlightDialogModal {
       const actions = document.createElement('div');
       actions.className = 'ck ck-dialog__actions';
 
-      // Cancel button
+      // Tertiary (cancel) button
       const tertiaryButtonElement = document.createElement('button');
       tertiaryButtonElement.className = 'ck ck-button ck-button_with-text';
       tertiaryButtonElement.type = 'button';
-      tertiaryButtonElement.textContent = tertiaryButton.label!;
+      tertiaryButtonElement.textContent = tertiaryButton.label ?? 'Cancel';
       tertiaryButtonElement.onclick = () => this.closeModal(onClose);
 
-      // Accept button
+      // Primary (accept) button
       const primaryButtonElement = document.createElement('button');
       primaryButtonElement.className = 'ck ck-button ck-button-action ck-off ck-button_with-text';
       primaryButtonElement.type = 'button';
-      primaryButtonElement.textContent = primaryButton.label!;
+      primaryButtonElement.textContent = primaryButton.label ?? 'Continue';
       primaryButtonElement.onclick = primaryButton.onClick || null;
 
       actions.appendChild(tertiaryButtonElement);
@@ -140,7 +130,10 @@ export class AlightDialogModal {
   }
 
   public show(): void {
-    document.body.appendChild(this.overlay);
+    // We ensure it's appended; in case the user re-shows the same modal instance
+    if (!document.body.contains(this.overlay)) {
+      document.body.appendChild(this.overlay);
+    }
   }
 
   private handleKeydown = (event: KeyboardEvent) => {

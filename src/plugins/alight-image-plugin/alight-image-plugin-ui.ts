@@ -1,3 +1,4 @@
+// alight-image-plugin-ui.ts
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 import { createDropdown } from '@ckeditor/ckeditor5-ui/src/dropdown/utils';
 import ListView from '@ckeditor/ckeditor5-ui/src/list/listview';
@@ -28,8 +29,7 @@ export default class AlightImagePluginUI extends Plugin {
       // Create a ListView for the dropdown's panel
       const listView = new ListView(locale);
 
-      listView.focus = () => { }; // Prevent focusing on items
-
+      // Example: simple heading
       const headerView = new View(locale);
       headerView.setTemplate({
         tag: 'div',
@@ -40,6 +40,7 @@ export default class AlightImagePluginUI extends Plugin {
       listView.items.add(headerView);
       listView.items.add(new ListSeparatorView(locale));
 
+      // Items
       const itemDefinitions = [
         { label: t('Existing Image'), command: 'imageOption1' },
         { label: t('Upload Image'), command: 'imageOption2' },
@@ -48,7 +49,7 @@ export default class AlightImagePluginUI extends Plugin {
       itemDefinitions.forEach((item) => {
         const listItem = new ListItemView(locale);
         const button = new ButtonView(locale);
-        button.set({ label: item.label, withText: true, tooltip: false });
+        button.set({ label: item.label, withText: true });
 
         button.on('execute', () => {
           editor.execute(item.command);
