@@ -1,4 +1,4 @@
-// alight-link-plugin-ui.ts
+// src/plugins/alight-link-plugin/alight-link-plugin-ui.ts
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 import { createDropdown } from '@ckeditor/ckeditor5-ui/src/dropdown/utils';
 import ListView from '@ckeditor/ckeditor5-ui/src/list/listview';
@@ -18,8 +18,7 @@ export default class AlightLinkPluginUI extends Plugin {
       const dropdown = createDropdown(locale);
 
       // Configure the dropdown button
-      const buttonView = dropdown.buttonView;
-      buttonView.set({
+      dropdown.buttonView.set({
         icon: ToolBarIcon,
         label: t('Insert Alight Link'),
         tooltip: true,
@@ -28,9 +27,11 @@ export default class AlightLinkPluginUI extends Plugin {
 
       // Create a ListView for the dropdown's panel
       const listView = new ListView(locale);
+      listView.focus = () => {
+        /* no-op to prevent focus */
+      };
 
-      listView.focus = () => { }; // Prevent focusing on items
-
+      // A small header in the dropdown
       const headerView = new View(locale);
       headerView.setTemplate({
         tag: 'div',
@@ -41,6 +42,7 @@ export default class AlightLinkPluginUI extends Plugin {
       listView.items.add(headerView);
       listView.items.add(new ListSeparatorView(locale));
 
+      // The link commands we registered in Editing
       const itemDefinitions = [
         { label: t('Predefined Pages'), command: 'linkOption1' },
         { label: t('Public Website'), command: 'linkOption2' },

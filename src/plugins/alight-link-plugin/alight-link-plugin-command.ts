@@ -1,7 +1,6 @@
-// alight-link-plugin-command.ts
-import Command from '@ckeditor/ckeditor5-core/src/command';
+// src/plugins/alight-link-plugin/alight-link-plugin-command.ts
 import type Editor from '@ckeditor/ckeditor5-core/src/editor/editor';
-import { AlightDialogModal } from '../alight-dialog-modal/alight-dialog-modal';
+import AlightDialogModalCommand from './../alight-dialog-modal/alight-dialog-modal-command';
 
 // Defines the structure for each link option (title, how to load content, etc.)
 interface LinkOptionData {
@@ -11,65 +10,60 @@ interface LinkOptionData {
   primaryButton?: string;
 }
 
-export default class AlightLinkPluginCommand extends Command {
-  private readonly data: LinkOptionData;
-  private modal: AlightDialogModal | null = null;
+export default class AlightLinkPluginCommand extends AlightDialogModalCommand {
+  private data: LinkOptionData;
 
   constructor(editor: Editor, data: LinkOptionData) {
-    super(editor);
-    this.data = data;
-  }
+    const { title, content, loadContent, primaryButton } = data;
 
-  public override async execute(): Promise<void> {
-    const { title, content, loadContent, primaryButton } = this.data;
-    const editor = this.editor;
-
-    // If loadContent is provided, fetch dynamic HTML; else use static content
-    const resolvedContent = loadContent ? await loadContent() : content;
-
-    // Create & show the modal
-    this.modal = new AlightDialogModal({
+    // We pass minimal "shell" content, can be updated if loadContent is async
+    const modalProps = {
       title,
-      content: resolvedContent,
+      content: 'Loading...',
       primaryButton: {
         label: primaryButton || 'Continue',
         onClick: () => {
+          // 1) Grab URL
           const urlInput = document.getElementById('url') as HTMLInputElement | null;
           if (urlInput?.value) {
-            // Apply the linkHref to the *current selection*
-            editor.model.change(writer => {
-              // 2-argument form: ( attributeName, value )
+            editor.model.change((writer) => {
               writer.setSelectionAttribute('linkHref', urlInput.value);
             });
           }
 
-          // Optionally read org-name if needed
+          // 2) Optionally read another field
           const orgInput = document.getElementById('org-name') as HTMLInputElement | null;
-          if (orgInput) {
+          if (orgInput?.value) {
             console.log('Captured org name:', orgInput.value);
           }
 
-          // Close the modal
-          this.modal?.closeModal();
-        },
+          // 3) Close the modal
+          this.closeModal(); // <--- we now have a protected method from AlightDialogModalCommand
+        }
       },
       tertiaryButton: {
         label: 'Cancel',
         onClick: () => {
           console.log('Modal dismissed');
-        },
+        }
       },
       onClose: () => {
         console.log('Modal closed');
-      },
-    });
+      }
+    };
 
-    this.modal.show();
+    super(editor, modalProps); // calls AlightDialogModalCommand constructor
+    this.data = data;
 
-    console.log('Executing command with dynamic content:', {
-      title,
-      resolvedContent,
-      primaryButton,
+    // If content is static, set it right away
+    if (!loadContent) {
+      this.modalProps.content = content;
+      return;
+    }
+
+    // If content is async, fetch it, then store it in modalProps
+    loadContent().then((html) => {
+      this.modalProps.content = html;
     });
   }
 }

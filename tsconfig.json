@@ -1,18 +1,25 @@
 {
     "compilerOptions": {
         "types": [],
-        "lib": ["ES2019", "ES2020.String", "DOM", "DOM.Iterable"],
+        "lib": [
+            "ES2019",
+            "ES2020.String",
+            "DOM",
+            "DOM.Iterable"
+        ],
         "resolveJsonModule": true,
         "esModuleInterop": true,
         "noImplicitAny": true,
         "noImplicitOverride": true,
         "strict": true,
-        "module": "es6",
+        "module": "esnext",
         "target": "es2019",
         "sourceMap": true,
         "allowJs": true,
         "moduleResolution": "node",
-        "skipLibCheck": true
+        "skipLibCheck": true,
     },
-    "include": ["./src"]
+    "include": [
+        "./src"
+    ]
 }
