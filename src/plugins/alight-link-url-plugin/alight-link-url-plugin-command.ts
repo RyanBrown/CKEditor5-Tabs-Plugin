@@ -1,23 +1,20 @@
 // src/plugins/alight-link-url-plugin/alight-link-url-plugin-command.ts
-
 import { Writer } from '@ckeditor/ckeditor5-engine';
 import type { Editor } from '@ckeditor/ckeditor5-core';
 
 import AlightDialogModalCommand from './../alight-dialog-modal/alight-dialog-modal-command';
 
-/**
- * Options passed to the `execute()` method to set/remove a link.
- */
+// Options passed to the `execute()` method to set/remove a link.
 interface LinkCommandOptions {
   href?: string;
+  orgNameText?: string;
 }
 
-/**
- * Extends AlightDialogModalCommand, but also implements link-specific logic:
- *  - refresh() sets isEnabled/value
- *  - execute() sets up modal content and handles applying the link
- */
-export default class AlightLinkUrlCommand extends AlightDialogModalCommand {
+
+// Extends AlightDialogModalCommand, but also implements link-specific logic:
+//  - refresh() sets isEnabled/value
+//  - execute() sets up modal content and handles applying the link
+export default class AlightLinkUrlPluginCommand extends AlightDialogModalCommand {
   constructor(editor: Editor) {
     // Build default "shell" props for the modal. The actual <input> can be inserted later.
     super(editor, {
@@ -26,19 +23,23 @@ export default class AlightLinkUrlCommand extends AlightDialogModalCommand {
       primaryButton: {
         label: 'Apply',
         onClick: () => {
-          // 1) Read the <input> value from the modal
+          // 1) Read the <input> values from the modal
           const urlInput = document.getElementById('linkUrl') as HTMLInputElement | null;
           const hrefValue = urlInput?.value.trim() || '';
+          const orgNameTextInput = document.getElementById('orgNameText') as HTMLInputElement | null;
+          const orgNameTextValue = orgNameTextInput?.value.trim() || '';
 
-          // 2) Insert or remove linkHref
+          // 2) Insert or remove linkHref and orgNameText
           const model = this.editor.model;
           model.change((writer: Writer) => {
             const selection = model.document.selection;
             if (selection) {
               if (hrefValue) {
                 writer.setAttribute('linkHref', hrefValue, selection.getFirstRange()!);
+                writer.setAttribute('orgNameText', orgNameTextValue, selection.getFirstRange()!);
               } else {
                 writer.removeAttribute('linkHref', selection.getFirstRange()!);
+                writer.removeAttribute('orgNameText', selection.getFirstRange()!);
               }
             }
           });
@@ -54,18 +55,30 @@ export default class AlightLinkUrlCommand extends AlightDialogModalCommand {
     });
   }
 
-  /**
-   * `execute(options)`: We override the base command's method so we can
-   * set up dynamic form content and then show the modal.
-   */
+
+  // `execute(options)`: We override the base command's method so we can
+  // set up dynamic form content and then show the modal.
   public override execute(options: LinkCommandOptions = {}): void {
-    const { href = '' } = options;
+    const { href = '', orgNameText = '' } = options;
 
     // Insert a minimal HTML form into `modalProps.content`.
-    // This could be replaced with a more elaborate form (org-name, etc.)
     this.modalProps.content = `
       <div class="ck-custom-modal-content">
-        <label>URL: <input type="text" id="linkUrl" value="${href}" /></label>
+        <label for="linkUrl" class="ck-alight-input-label">URL:</label>
+        <input
+          class="ck-alight-input-text"
+          id="linkUrl"
+          placeholder="https://example.com"
+          type="url"
+          value="${href}" />
+
+        <label for="orgNameText" class="ck-alight-input-label mt-4">Org Name</label>
+        <input
+          class="ck-alight-input-text"
+          id="orgNameText"
+          placeholder="Organization Name"
+          type="text"
+          value="${orgNameText}" />
       </div>
     `;
 
@@ -73,9 +86,7 @@ export default class AlightLinkUrlCommand extends AlightDialogModalCommand {
     super.execute();
   }
 
-  /**
-   * `refresh()` sets `isEnabled` and `value` based on the current selection.
-   */
+  // `refresh()` sets `isEnabled` and `value` based on the current selection.
   public override refresh(): void {
     const editor = this.editor;
     const model = editor.model;
@@ -86,6 +97,7 @@ export default class AlightLinkUrlCommand extends AlightDialogModalCommand {
 
     // If there's a linkHref on the selection, store it in `value`.
     const href = selection.getAttribute('linkHref') as string | undefined;
-    this.value = href ? { href } : null;
+    const orgNameText = selection.getAttribute('orgNameText') as string | undefined;
+    this.value = href ? { href, orgNameText } : null;
   }
 }

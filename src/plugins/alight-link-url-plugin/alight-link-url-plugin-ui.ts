@@ -1,5 +1,4 @@
 // src/plugins/alight-link-url-plugin/alight-link-url-plugin-ui.ts
-
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { ButtonView } from '@ckeditor/ckeditor5-ui';
 import { Locale } from '@ckeditor/ckeditor5-utils';
@@ -16,6 +15,7 @@ import './styles/alight-link-url-plugin.scss';
 // Type describing the shape of the link command value.
 interface AlightLinkUrlValue {
   href?: string;
+  orgNameText?: string;
 }
 
 export default class AlightLinkUrlPluginUI extends Plugin {
@@ -48,10 +48,8 @@ export default class AlightLinkUrlPluginUI extends Plugin {
     });
   }
 
-  /**
-   * afterInit() runs after all plugins (including LinkUI) have initialized.
-   * This is where we override the balloon's default "Edit link" button behavior.
-   */
+  // afterInit() runs after all plugins (including LinkUI) have initialized.
+  // This is where we override the balloon's default "Edit link" button behavior.
   public afterInit(): void {
     const editor = this.editor;
 
@@ -63,7 +61,9 @@ export default class AlightLinkUrlPluginUI extends Plugin {
 
     const actionsView = linkUI.actionsView;
     const editButtonView = actionsView.editButtonView;
-    if (!editButtonView) {
+    const unlinkButtonView = actionsView.unlinkButtonView;
+
+    if (!editButtonView || !unlinkButtonView) {
       return;
     }
 
@@ -75,25 +75,46 @@ export default class AlightLinkUrlPluginUI extends Plugin {
       evt.stop();
       this.handleLinkButtonClick();
     });
+
+    // Attach your custom listener to remove the link and appended text
+    unlinkButtonView.on('execute', (evt) => {
+      evt.stop();
+      this.handleUnlinkButtonClick();
+    });
   }
 
-  /**
-   * Looks up the current link URL (if any), then calls our command with it.
-   */
+  // Looks up the current link URL (if any), then calls our command with it.
   private handleLinkButtonClick(): void {
     const editor = this.editor;
 
-    // Our link command is 'alightLinkUrlCommand'
-    const linkCommand = editor.commands.get('alightLinkUrlCommand');
+    // Our link command is 'alightLinkUrlPluginCommand'
+    const linkCommand = editor.commands.get('alightLinkUrlPluginCommand');
     if (!linkCommand) {
       return;
     }
 
-    // Get the current value from the command (this.value = { href } or null)
+    // Get the current value from the command (this.value = { href, orgNameText } or null)
     const currentValue = linkCommand.value as AlightLinkUrlValue | null;
     const currentHref = currentValue?.href ?? '';
+    const currentAppendedText = currentValue?.orgNameText ?? '';
 
-    // Execute the command with the existing href. The command will show the modal.
-    editor.execute('alightLinkUrlCommand', { href: currentHref });
+    // Execute the command with the existing href and orgNameText. The command will show the modal.
+    editor.execute('alightLinkUrlPluginCommand', { href: currentHref, orgNameText: currentAppendedText });
+  }
+
+  // Removes the link and appended text.
+  private handleUnlinkButtonClick(): void {
+    const editor = this.editor;
+    const model = editor.model;
+
+    model.change((writer) => {
+      const selection = model.document.selection;
+      const range = selection.getFirstRange();
+
+      if (range) {
+        writer.removeAttribute('linkHref', range);
+        writer.removeAttribute('orgNameText', range);
+      }
+    });
   }
 }
