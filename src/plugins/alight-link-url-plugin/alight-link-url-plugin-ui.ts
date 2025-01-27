@@ -90,30 +90,38 @@ export default class AlightLinkUrlPluginUI extends Plugin {
       const selection = editor.model.document.selection;
       const range = selection.getFirstRange();
 
-      if (range) {
-        // Find and remove the appended organization name text
-        const nodes = Array.from(range.getItems());
-        let lastNode = nodes[nodes.length - 1];
+      if (!range) return;
 
-        if (lastNode && lastNode.is('$text')) {
-          const text = lastNode.data;
-          const match = text.match(/\s*\([^)]*\)\s*$/);
+      // Remove the link attributes from the main text
+      writer.removeAttribute('linkHref', range);
+      writer.removeAttribute('orgNameText', range);
 
-          if (match) {
-            // Create a new range for just the appended text
-            const appendedRange = writer.createRange(
-              range.end.getShiftedBy(-match[0].length),
-              range.end
-            );
+      // Find and remove orgNameSpan elements
+      const root = editor.model.document.getRoot();
+      if (!root) return;
 
-            // Remove the appended text
-            writer.remove(appendedRange);
-          }
-        }
+      // Function to remove spans recursively
+      const removeSpans = (startPos: import('@ckeditor/ckeditor5-engine').Position, endPos: import('@ckeditor/ckeditor5-engine').Position) => {
+        const range = writer.createRange(startPos, endPos);
+        const spanElements = Array.from(range.getItems()).filter(item =>
+          item.is('element', 'orgNameSpan')
+        );
 
-        // Remove the link attributes from the original text
-        writer.removeAttribute('linkHref', range);
-        writer.removeAttribute('orgNameText', range);
+        spanElements.forEach(span => {
+          writer.remove(writer.createRangeOn(span));
+        });
+      };
+
+      // Remove spans in the current range and immediately after
+      removeSpans(range.start, range.end);
+      if (range.end.nodeAfter) {
+        removeSpans(range.end, writer.createPositionAfter(range.end.nodeAfter));
+      }
+
+      // Explicitly check for and remove any span right after the range
+      const nextNode = range.end.nodeAfter;
+      if (nextNode && nextNode.is('element', 'orgNameSpan')) {
+        writer.remove(nextNode);
       }
     });
   }

@@ -34,9 +34,6 @@ export default class AlightLinkUrlPluginCommand extends AlightDialogModalCommand
             if (selection) {
               // Get the selected text content
               const range = selection.getFirstRange()!;
-              const selectedText = Array.from(range.getItems())
-                .map(item => item.is('$text') ? item.data : '')
-                .join('');
 
               // Apply link attributes to the selected range
               if (hrefValue) {
@@ -47,18 +44,19 @@ export default class AlightLinkUrlPluginCommand extends AlightDialogModalCommand
                 writer.removeAttribute('orgNameText', range);
               }
 
-              // Append organization name after the selected text
+              // Append organization name after the selected text in a span
               if (orgNameTextValue) {
-                const orgText = writer.createText(` (${orgNameTextValue})`, {
-                  linkHref: hrefValue || null,
-                  orgNameText: orgNameTextValue || null
+                const orgText = writer.createText(` (${orgNameTextValue})`);
+                const orgSpan = writer.createElement('orgNameSpan', {
+                  class: 'org-name-append',
+                  linkHref: hrefValue || null
                 });
-                writer.insert(orgText, range.end);
+                writer.insert(orgSpan, range.end);
+                writer.insert(orgText, orgSpan);
               }
             }
           });
 
-          // Close the modal
           this.closeModal();
         }
       },

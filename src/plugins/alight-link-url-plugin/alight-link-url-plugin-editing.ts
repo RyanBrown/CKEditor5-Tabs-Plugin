@@ -19,6 +19,29 @@ export default class AlightLinkUrlPluginEditing extends Plugin {
       allowAttributes: ['linkHref', 'orgNameText'],
     });
 
+    // Register the orgNameSpan element
+    editor.model.schema.register('orgNameSpan', {
+      allowWhere: '$text',
+      allowContentOf: '$text',
+      allowAttributes: ['class', 'linkHref']
+    });
+
+    // Conversion for orgNameSpan - two-way conversion rules
+    editor.conversion.for('downcast').elementToElement({
+      model: 'orgNameSpan',
+      view: (modelElement, { writer }) => {
+        return writer.createContainerElement('span', { class: 'org-name-append' });
+      }
+    });
+
+    editor.conversion.for('upcast').elementToElement({
+      view: {
+        name: 'span',
+        classes: ['org-name-append']
+      },
+      model: 'orgNameSpan'
+    });
+
     // Downcast: Convert linkHref to <a href="...">
     editor.conversion.for('downcast').attributeToElement({
       model: {
