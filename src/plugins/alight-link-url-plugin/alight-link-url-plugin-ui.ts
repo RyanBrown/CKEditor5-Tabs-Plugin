@@ -7,6 +7,9 @@ import LinkUI from '@ckeditor/ckeditor5-link/src/linkui';
 import ToolBarIcon from './assets/icon-link.svg';
 import './styles/alight-link-url-plugin.scss';
 
+// The UI plugin that contributes:
+//   1) A toolbar button that opens our "Insert/Edit Link" modal (see `handleLinkButtonClick()`).
+//   2) Overridden behavior for the built-in LinkUI's edit/unlink actions (see `afterInit()`).
 export default class AlightLinkUrlPluginUI extends Plugin {
   static get pluginName() {
     return 'AlightLinkUrlPluginUI';
@@ -27,9 +30,8 @@ export default class AlightLinkUrlPluginUI extends Plugin {
         withText: true
       });
 
-      // Clicking the toolbar button => open the modal
+      // Clicking the toolbar button => open our custom modal
       this.listenTo(buttonView, 'execute', () => {
-        // Execute the command with the current link (if any)
         this.handleLinkButtonClick();
       });
 
@@ -37,20 +39,26 @@ export default class AlightLinkUrlPluginUI extends Plugin {
     });
   }
 
-  // afterInit() runs after all plugins (including LinkUI) have initialized.
-  // This is where we override the balloon's default "Edit link" button behavior.
+  // `afterInit()` runs after all plugins (including LinkUI) have initialized.
+  // We intercept the built-in LinkUI's unlink button so we can:
+  //   - stop the default unlink,
+  //   - remove our appended `<span class="org-name-append">...</span>`,
+  //   - remove link attributes from the selection.
   public afterInit(): void {
     const editor = this.editor;
-
-    // Access the built-in LinkUI plugin (manages the balloon)
     const linkUI = editor.plugins.get(LinkUI);
+
+    // Bail if LinkUI does not exist or is missing the actionsView
     if (!linkUI?.actionsView) {
       return;
     }
 
+    // The built-in Edit button in the balloon
     const editButtonView = linkUI.actionsView.editButtonView;
+    // The built-in Unlink button in the balloon
     const unlinkButtonView = linkUI.actionsView.unlinkButtonView;
 
+    // Intercept the "Edit link" button => open our custom modal
     if (editButtonView) {
       editButtonView.on('execute', (evt) => {
         evt.stop();
@@ -58,8 +66,8 @@ export default class AlightLinkUrlPluginUI extends Plugin {
       });
     }
 
+    // Intercept the "Unlink" button => remove link + appended spans
     if (unlinkButtonView) {
-      // Attach your custom listener to remove the link and appended text
       unlinkButtonView.on('execute', (evt) => {
         evt.stop();
         this.handleUnlinkButtonClick();
@@ -67,61 +75,57 @@ export default class AlightLinkUrlPluginUI extends Plugin {
     }
   }
 
-  // Looks up the current link URL (if any), then calls our command with it.
+  // When the "Insert/Edit Link" toolbar or balloon button is clicked,
+  // grab the current link data and launch our custom command's modal.
   private handleLinkButtonClick(): void {
     const editor = this.editor;
-
-    // Our link command is 'alightLinkUrlPluginCommand'
+    // "alightLinkUrlPluginCommand" is our custom link command
     const linkCommand = editor.commands.get('alightLinkUrlPluginCommand');
+
     if (!linkCommand) {
       return;
     }
 
-    // Get the current value from the command (this.value = { href, orgNameText } or null)
+    // If the selection already has a link, linkCommand.value = { href, orgNameText }
     const currentValue = linkCommand.value || {};
     editor.execute('alightLinkUrlPluginCommand', currentValue);
   }
 
-  // Removes the link and appended text.
+  /**
+   * Overrides default "unlink" to also remove the appended `<span class="org-name-append">`.
+   */
   private handleUnlinkButtonClick(): void {
     const editor = this.editor;
 
     editor.model.change((writer) => {
+      // 1) Remove link attributes from the current selection
       const selection = editor.model.document.selection;
       const range = selection.getFirstRange();
 
-      if (!range) return;
+      if (!range) {
+        return;
+      }
 
-      // Remove the link attributes from the main text
       writer.removeAttribute('linkHref', range);
       writer.removeAttribute('orgNameText', range);
 
-      // Find and remove orgNameSpan elements
-      const root = editor.model.document.getRoot();
-      if (!root) return;
+      // 2) Remove any <orgNameSpan> that is inside or immediately after the selection
+      //    so the appended text goes away with the link.
+      //    We'll look for orgNameSpan elements in the selection range
+      //    AND check if there's an `orgNameSpan` node right after the range.
 
-      // Function to remove spans recursively
-      const removeSpans = (startPos: import('@ckeditor/ckeditor5-engine').Position, endPos: import('@ckeditor/ckeditor5-engine').Position) => {
-        const range = writer.createRange(startPos, endPos);
-        const spanElements = Array.from(range.getItems()).filter(item =>
-          item.is('element', 'orgNameSpan')
-        );
+      // Remove orgNameSpan in the selection range
+      const itemsInRange = Array.from(range.getItems());
+      itemsInRange.forEach((item) => {
+        if (item.is('element', 'orgNameSpan')) {
+          writer.remove(writer.createRangeOn(item));
+        }
+      });
 
-        spanElements.forEach(span => {
-          writer.remove(writer.createRangeOn(span));
-        });
-      };
-
-      // Remove spans in the current range and immediately after
-      removeSpans(range.start, range.end);
-      if (range.end.nodeAfter) {
-        removeSpans(range.end, writer.createPositionAfter(range.end.nodeAfter));
-      }
-
-      // Explicitly check for and remove any span right after the range
-      const nextNode = range.end.nodeAfter;
-      if (nextNode && nextNode.is('element', 'orgNameSpan')) {
-        writer.remove(nextNode);
+      // Remove any orgNameSpan that appears immediately after the selection
+      const nodeAfter = range.end.nodeAfter;
+      if (nodeAfter && nodeAfter.is('element', 'orgNameSpan')) {
+        writer.remove(writer.createRangeOn(nodeAfter));
       }
     });
   }
