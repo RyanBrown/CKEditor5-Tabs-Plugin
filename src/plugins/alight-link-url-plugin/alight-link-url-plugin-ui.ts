@@ -2,21 +2,10 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { ButtonView } from '@ckeditor/ckeditor5-ui';
 import { Locale } from '@ckeditor/ckeditor5-utils';
-
-// This is the built-in plugin that manages the link balloon UI.
 import LinkUI from '@ckeditor/ckeditor5-link/src/linkui';
 
-import { createLinkFormView } from './alight-link-url-plugin-utils';
 import ToolBarIcon from './assets/icon-link.svg';
-
-// If you have a custom CSS file for your plugin:
 import './styles/alight-link-url-plugin.scss';
-
-// Type describing the shape of the link command value.
-interface AlightLinkUrlValue {
-  href?: string;
-  orgNameText?: string;
-}
 
 export default class AlightLinkUrlPluginUI extends Plugin {
   static get pluginName() {
@@ -29,7 +18,7 @@ export default class AlightLinkUrlPluginUI extends Plugin {
 
     // Add a toolbar button for Insert/Edit Link
     editor.ui.componentFactory.add('alightLinkUrlPlugin', (locale: Locale) => {
-      const buttonView = createLinkFormView(locale, editor);
+      const buttonView = new ButtonView(locale);
 
       buttonView.set({
         icon: ToolBarIcon,
@@ -59,28 +48,23 @@ export default class AlightLinkUrlPluginUI extends Plugin {
       return;
     }
 
-    const actionsView = linkUI.actionsView;
-    const editButtonView = actionsView.editButtonView;
-    const unlinkButtonView = actionsView.unlinkButtonView;
+    const editButtonView = linkUI.actionsView.editButtonView;
+    const unlinkButtonView = linkUI.actionsView.unlinkButtonView;
 
-    if (!editButtonView || !unlinkButtonView) {
-      return;
+    if (editButtonView) {
+      editButtonView.on('execute', (evt) => {
+        evt.stop();
+        this.handleLinkButtonClick();
+      });
     }
 
-    // Remove default "Edit link" behavior
-    editButtonView.off('execute', () => { });
-
-    // Attach your custom listener
-    editButtonView.on('execute', (evt) => {
-      evt.stop();
-      this.handleLinkButtonClick();
-    });
-
-    // Attach your custom listener to remove the link and appended text
-    unlinkButtonView.on('execute', (evt) => {
-      evt.stop();
-      this.handleUnlinkButtonClick();
-    });
+    if (unlinkButtonView) {
+      // Attach your custom listener to remove the link and appended text
+      unlinkButtonView.on('execute', (evt) => {
+        evt.stop();
+        this.handleUnlinkButtonClick();
+      });
+    }
   }
 
   // Looks up the current link URL (if any), then calls our command with it.
@@ -94,24 +78,40 @@ export default class AlightLinkUrlPluginUI extends Plugin {
     }
 
     // Get the current value from the command (this.value = { href, orgNameText } or null)
-    const currentValue = linkCommand.value as AlightLinkUrlValue | null;
-    const currentHref = currentValue?.href ?? '';
-    const currentAppendedText = currentValue?.orgNameText ?? '';
-
-    // Execute the command with the existing href and orgNameText. The command will show the modal.
-    editor.execute('alightLinkUrlPluginCommand', { href: currentHref, orgNameText: currentAppendedText });
+    const currentValue = linkCommand.value || {};
+    editor.execute('alightLinkUrlPluginCommand', currentValue);
   }
 
   // Removes the link and appended text.
   private handleUnlinkButtonClick(): void {
     const editor = this.editor;
-    const model = editor.model;
 
-    model.change((writer) => {
-      const selection = model.document.selection;
+    editor.model.change((writer) => {
+      const selection = editor.model.document.selection;
       const range = selection.getFirstRange();
 
       if (range) {
+        // Find and remove the appended organization name text
+        const nodes = Array.from(range.getItems());
+        let lastNode = nodes[nodes.length - 1];
+
+        if (lastNode && lastNode.is('$text')) {
+          const text = lastNode.data;
+          const match = text.match(/\s*\([^)]*\)\s*$/);
+
+          if (match) {
+            // Create a new range for just the appended text
+            const appendedRange = writer.createRange(
+              range.end.getShiftedBy(-match[0].length),
+              range.end
+            );
+
+            // Remove the appended text
+            writer.remove(appendedRange);
+          }
+        }
+
+        // Remove the link attributes from the original text
         writer.removeAttribute('linkHref', range);
         writer.removeAttribute('orgNameText', range);
       }

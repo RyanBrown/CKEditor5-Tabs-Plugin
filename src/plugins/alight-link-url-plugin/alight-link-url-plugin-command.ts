@@ -1,7 +1,6 @@
 // src/plugins/alight-link-url-plugin/alight-link-url-plugin-command.ts
 import { Writer } from '@ckeditor/ckeditor5-engine';
 import type { Editor } from '@ckeditor/ckeditor5-core';
-
 import AlightDialogModalCommand from './../alight-dialog-modal/alight-dialog-modal-command';
 
 // Options passed to the `execute()` method to set/remove a link.
@@ -9,7 +8,6 @@ interface LinkCommandOptions {
   href?: string;
   orgNameText?: string;
 }
-
 
 // Extends AlightDialogModalCommand, but also implements link-specific logic:
 //  - refresh() sets isEnabled/value
@@ -34,12 +32,28 @@ export default class AlightLinkUrlPluginCommand extends AlightDialogModalCommand
           model.change((writer: Writer) => {
             const selection = model.document.selection;
             if (selection) {
+              // Get the selected text content
+              const range = selection.getFirstRange()!;
+              const selectedText = Array.from(range.getItems())
+                .map(item => item.is('$text') ? item.data : '')
+                .join('');
+
+              // Apply link attributes to the selected range
               if (hrefValue) {
-                writer.setAttribute('linkHref', hrefValue, selection.getFirstRange()!);
-                writer.setAttribute('orgNameText', orgNameTextValue, selection.getFirstRange()!);
+                writer.setAttribute('linkHref', hrefValue, range);
+                writer.setAttribute('orgNameText', orgNameTextValue, range);
               } else {
-                writer.removeAttribute('linkHref', selection.getFirstRange()!);
-                writer.removeAttribute('orgNameText', selection.getFirstRange()!);
+                writer.removeAttribute('linkHref', range);
+                writer.removeAttribute('orgNameText', range);
+              }
+
+              // Append organization name after the selected text
+              if (orgNameTextValue) {
+                const orgText = writer.createText(` (${orgNameTextValue})`, {
+                  linkHref: hrefValue || null,
+                  orgNameText: orgNameTextValue || null
+                });
+                writer.insert(orgText, range.end);
               }
             }
           });
