@@ -1,142 +1,193 @@
-// predefined-link.ts
+// src/plugins/alight-link-plugin/modal-content/predefined-link.ts
 import predefinedLinksData from './json/predefined-test-data.json';
 import './../styles/predefined-link.scss';
 import './../styles/search.scss';
 
-let filteredLinksData = [...predefinedLinksData]; // A copy of the data to handle filtered results.
-let currentSearchQuery = ''; // To retain the search query across renders.
+// State variables to manage data, search query, and current page
+let filteredLinksData = [...predefinedLinksData.predefinedLinksDetails];
+let currentSearchQuery = '';
+let currentPage = 1;
 
-export function getPredefinedLinkContent(page: number = 1, pageSize: number = 10): string {
+// Constants
+const pageSize = 5;  // Number of items per page
+
+/**
+ * Generates the HTML content for the current filtered and paginated data.
+ * @param page - The current page number
+ * @returns string - HTML content for the current page
+ */
+export function getPredefinedLinkContent(page: number): string {
+  console.log('Generating content for page:', page);
   const totalItems = filteredLinksData.length;
-  const totalPages = Math.ceil(totalItems / pageSize);
+  const totalPages = Math.ceil(totalItems / pageSize) || 1;
+
+  // Ensure the current page is valid
+  page = Math.max(1, Math.min(page, totalPages));
+  console.log('Total items:', totalItems, 'Total pages:', totalPages, 'Adjusted page:', page);
+
+  // Calculate the slice of data for the current page
   const startIndex = (page - 1) * pageSize;
   const endIndex = Math.min(startIndex + pageSize, totalItems);
-  const currentPageData = filteredLinksData.slice(startIndex, endIndex);
+  console.log('Slice indices:', startIndex, 'to', endIndex);
 
-  const links = currentPageData.map((link: any) => {
-    return `
+  const currentPageData = filteredLinksData.slice(startIndex, endIndex);
+  console.log('Items for current page:', currentPageData.length);
+
+  // Generate HTML for link items
+  const linksMarkup = currentPageData
+    .map((link: any) => `
       <div class="link-item">
         <div>
-          <input type="radio" name="link-selection" value="${link.LinkItemName}" />
+          <input type="radio" name="link-selection" value="${link.predefinedLinkName}" />
         </div>
-
         <ul>
-          <li><strong>${link.LinkTitleDisplayName}</strong></li>
-          <li><strong>Item Name:</strong> ${link.LinkItemName}</li>
-          <li><strong>Type:</strong> ${link.BaseOrClientSpecific}</li>
-          <li><strong>Page Type:</strong> ${link.PageType}</li>
-          <li><strong>Destination:</strong> ${link.Destination}</li>
-          <li><strong>Domain:</strong> ${link.Domain}</li>
+          <li><strong>${link.predefinedLinkName}</strong></li>
+          <li><strong>Description:</strong> ${link.predefinedLinkDescription}</li>
+          <li><strong>Base/Client Specific:</strong> ${link.baseOrClientSpecific}</li>
+          <li><strong>Page Type:</strong> ${link.pageType}</li>
+          <li><strong>Destination:</strong> ${link.destination}</li>
+          <li><strong>Domain:</strong> ${link.domain}</li>
+          <li><strong>Unique ID:</strong> ${link.uniqueId}</li>
+          <li><strong>Attribute Name:</strong> ${link.attributeName}</li>
+          <li><strong>Attribute Value:</strong> ${link.attributeValue}</li>
         </ul>
       </div>
-    `;
-  });
+    `)
+    .join('');
 
-  return `
-    <div class="predefined-link-content">
-      <div class="search-container">
-        <input 
-          type="text" 
-          class="search-input" 
-          placeholder="Search by title..." 
-          value="${currentSearchQuery}" 
-        />
-        <button class="reset-search-btn">Reset Search</button>
-      </div>
-      ${links.length > 0 ? links.join('') : '<p>No results found.</p>'}
-      <div class="pagination">
-        <button class="page-btn first-page" data-page="1" ${page === 1 ? 'disabled' : ''}>First</button>
-        <button class="page-btn prev-page" data-page="${page - 1}" ${page === 1 ? 'disabled' : ''
-    }>Previous</button>
-        <select class="page-select">
-            ${Array.from({ length: totalPages }, (_, i) => {
-      const currentStart = i * pageSize + 1;
-      const currentEnd = Math.min((i + 1) * pageSize, totalItems);
-      return `<option value="${i + 1}" ${i + 1 === page ? 'selected' : ''}>Page ${i + 1
-        } (${currentStart}–${currentEnd} of ${totalItems})</option>`;
-    }).join('')}
-        </select>
-        <button class="page-btn next-page" data-page="${page + 1}" ${page === totalPages ? 'disabled' : ''
-    }>Next</button>
-        <button class="page-btn last-page" data-page="${totalPages}" ${page === totalPages ? 'disabled' : ''
-    }>Last</button>
-      </div>
+  // Generate pagination controls
+  const paginationMarkup = `
+    <div id="pagination">
+      <button id="first-page" data-page="1" ${page === 1 ? 'disabled' : ''}>First</button>
+      <button id="prev-page" data-page="${page - 1}" ${page === 1 ? 'disabled' : ''}>Previous</button>
+      ${Array.from({ length: totalPages }, (_, i) =>
+    `<button class="page-btn ${i + 1 === page ? 'active' : ''}" data-page="${i + 1}">
+          ${i + 1}
+        </button>`
+  ).join('')}
+      <button id="next-page" data-page="${page + 1}" ${page === totalPages ? 'disabled' : ''}>Next</button>
+      <button id="last-page" data-page="${totalPages}" ${page === totalPages ? 'disabled' : ''}>Last</button>
     </div>
+  `;
+
+  // Return complete HTML structure
+  return `
+    <div id="search-container">
+      <input type="text" id="search-input" placeholder="Search by link name..." value="${currentSearchQuery}" />
+      <button id="search-btn">Search</button>
+      <button id="reset-search-btn">Reset</button>
+    </div>
+    ${linksMarkup || '<p>No results found.</p>'}
+    ${paginationMarkup}
   `;
 }
 
-// Search and render filtered results
-function handleSearch(query: string, pageSize: number = 10): void {
-  currentSearchQuery = query.toLowerCase(); // Store the search query
+/**
+ * Filters the data based on the search query and updates the UI.
+ * @param query - The search query string
+ */
+function handleSearch(query: string): void {
+  console.log('Handling search for query:', query);
+  currentSearchQuery = query.toLowerCase().trim();
 
-  // Check for minimum query length
-  if (currentSearchQuery.length < 2) {
-    filteredLinksData = [...predefinedLinksData]; // Reset to full data if query is too short
+  // Filter the data based on search query
+  filteredLinksData = currentSearchQuery
+    ? predefinedLinksData.predefinedLinksDetails.filter((link: any) =>
+      link.predefinedLinkName.toLowerCase().includes(currentSearchQuery)
+    )
+    : [...predefinedLinksData.predefinedLinksDetails];
+
+  console.log('Filtered results:', filteredLinksData.length);
+
+  // Reset to the first page and render
+  currentPage = 1;
+  renderContent();
+}
+
+/**
+ * Resets the search and displays all data.
+ */
+function resetSearch(): void {
+  console.log('Resetting search');
+  currentSearchQuery = '';
+  filteredLinksData = [...predefinedLinksData.predefinedLinksDetails];
+  currentPage = 1;
+  renderContent();
+}
+
+/**
+ * Renders the filtered and paginated content into the container.
+ */
+function renderContent(): void {
+  console.log('Rendering content for page:', currentPage);
+  const contentDiv = document.querySelector('.ck-dialog__content');
+
+  if (contentDiv) {
+    const content = getPredefinedLinkContent(currentPage);
+    console.log('Content generated, updating DOM');
+    contentDiv.innerHTML = content;
+    console.log('DOM updated, attaching event listeners');
+    attachEventListeners();
   } else {
-    // Filter only `LinkTitleDisplayName` field
-    filteredLinksData = predefinedLinksData.filter((link: any) =>
-      link.LinkTitleDisplayName.toLowerCase().includes(currentSearchQuery)
-    );
-  }
-
-  // Reset to the first page of filtered results
-  const contentDiv = document.querySelector('.predefined-link-container');
-  if (contentDiv) {
-    contentDiv.innerHTML = getPredefinedLinkContent(1, pageSize);
-    const searchInput = document.querySelector('.search-input') as HTMLInputElement;
-    if (searchInput) {
-      searchInput.focus(); // Retain focus on the input
-      searchInput.selectionStart = searchInput.value.length; // Place cursor at the end
-    }
+    console.error('Content div not found');
   }
 }
 
-// Reset search and render the full data set
-function resetSearch(pageSize: number = 10): void {
-  filteredLinksData = [...predefinedLinksData]; // Reset to full data
-  currentSearchQuery = ''; // Clear the search query
-  const contentDiv = document.querySelector('.predefined-link-container');
+/**
+ * Attaches event listeners to search and pagination controls.
+ * Uses event delegation for better performance and to handle dynamically added elements.
+ */
+function attachEventListeners(): void {
+  // Search button listener
+  document.querySelector('#search-btn')?.addEventListener('click', () => {
+    const searchInput = document.querySelector('#search-input') as HTMLInputElement;
+    if (searchInput) handleSearch(searchInput.value);
+  });
 
-  if (contentDiv) {
-    contentDiv.innerHTML = getPredefinedLinkContent(1, pageSize);
-  }
-}
+  // Reset button listener
+  document.querySelector('#reset-search-btn')?.addEventListener('click', resetSearch);
 
-// Add event listeners for search, reset, and pagination
-document.addEventListener('input', (event) => {
-  const target = event.target as HTMLInputElement;
-  if (target.classList.contains('search-input')) {
+  // Input listener for live search
+  document.querySelector('#search-input')?.addEventListener('input', (event) => {
+    const target = event.target as HTMLInputElement;
     handleSearch(target.value);
-  }
-});
+  });
 
-document.addEventListener('click', (event) => {
-  const target = event.target as HTMLElement;
+  // Unified pagination button handler
+  document.querySelectorAll('button[data-page]').forEach((btn) =>
+    btn.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+      const page = Number(target.getAttribute('data-page'));
+      console.log('Button clicked:', target.id || 'page button', 'Page:', page);
 
-  // Handle pagination buttons
-  if (target.classList.contains('page-btn')) {
-    const page = Number(target.dataset.page);
-    const pageSize = 10; // Set your desired page size
-    const contentDiv = document.querySelector('.predefined-link-container');
-    if (contentDiv) {
-      contentDiv.innerHTML = getPredefinedLinkContent(page, pageSize);
-    }
-  }
+      if (!page) {
+        console.log('Invalid page number');
+        return;
+      }
 
-  // Handle reset search button
-  if (target.classList.contains('reset-search-btn')) {
-    resetSearch();
-  }
-});
+      const totalPages = Math.ceil(filteredLinksData.length / pageSize);
+      console.log('Current page:', currentPage, 'Total pages:', totalPages);
 
-document.addEventListener('change', (event) => {
-  const target = event.target as HTMLSelectElement;
-  if (target.classList.contains('page-select')) {
-    const page = Number(target.value);
-    const pageSize = 10; // Set your desired page size
-    const contentDiv = document.querySelector('.predefined-link-container');
-    if (contentDiv) {
-      contentDiv.innerHTML = getPredefinedLinkContent(page, pageSize);
-    }
-  }
+      // Validate the page number
+      if (page < 1 || page > totalPages) {
+        console.log('Page out of range');
+        return;
+      }
+
+      // Only update if it's a different page
+      if (page !== currentPage) {
+        console.log('Updating to page:', page);
+        currentPage = page;
+        renderContent();
+      } else {
+        console.log('Already on page:', page);
+      }
+    })
+  );
+}
+
+// Initialize the content when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('DOM loaded, initializing content');
+  renderContent();
 });

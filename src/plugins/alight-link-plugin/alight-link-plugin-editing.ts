@@ -21,7 +21,7 @@ export default class AlightLinkPluginEditing extends Plugin {
       linkOption1: {
         title: 'Choose a Predefined Link',
         content: '<div class="predefined-link-container"></div>',
-        loadContent: async () => getPredefinedLinkContent(1, 10)
+        loadContent: async () => getPredefinedLinkContent(1) // Set the pagination start page
       },
       linkOption2: {
         title: 'Public Website Link',
