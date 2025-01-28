@@ -1,4 +1,4 @@
-// alight-dialog-modal.ts
+// src/plugins/alight-dialog-modal/alight-dialog-modal.ts
 import './styles/alight-dialog-modal.scss';
 
 /**
@@ -16,6 +16,7 @@ export interface AlightDialogModalProps {
     onClick?: () => void; // Optional function for accept button click
   };
   content?: HTMLElement | string; // Optional modal content with a default value
+  contentClass?: string; // Optional class for styling the content container
   onClose?: () => void; // Callback for closing the modal
   showHeader?: boolean; // Show or hide the header (default: true)
   showFooter?: boolean; // Show or hide the footer (default: true)
@@ -33,6 +34,7 @@ export class AlightDialogModal {
     tertiaryButton = { label: 'Cancel', onClick: () => this.closeModal() },
     primaryButton = { label: 'Continue', onClick: () => { } },
     content = 'Placeholder content',
+    contentClass = '',
     onClose = () => { },
     showHeader = true,
     showFooter = true,
@@ -85,7 +87,7 @@ export class AlightDialogModal {
 
     // Modal content
     const contentContainer = document.createElement('div');
-    contentContainer.className = 'ck ck-dialog__content';
+    contentContainer.className = `ck ck-dialog__content ${contentClass}`;
     if (typeof content === 'string') {
       contentContainer.innerHTML = content;
     } else if (content instanceof HTMLElement) {

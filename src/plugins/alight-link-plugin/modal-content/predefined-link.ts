@@ -104,9 +104,7 @@ function handleSearch(query: string): void {
   renderContent();
 }
 
-/**
- * Resets the search and displays all data.
- */
+// Resets the search and displays all data.
 function resetSearch(): void {
   console.log('Resetting search');
   currentSearchQuery = '';
@@ -115,22 +113,15 @@ function resetSearch(): void {
   renderContent();
 }
 
-/**
- * Renders the filtered and paginated content into the container.
- */
+// Renders the filtered and paginated content into the container.
 function renderContent(): void {
   console.log('Rendering content for page:', currentPage);
-  const contentDiv = document.querySelector('.ck-dialog__content');
-
-  if (contentDiv) {
-    const content = getPredefinedLinkContent(currentPage);
-    console.log('Content generated, updating DOM');
-    contentDiv.innerHTML = content;
-    console.log('DOM updated, attaching event listeners');
-    attachEventListeners();
-  } else {
-    console.error('Content div not found');
-  }
+  const contentDiv = ensureContentDivExists();
+  const content = getPredefinedLinkContent(currentPage);
+  console.log('Content generated, updating DOM');
+  contentDiv.innerHTML = content;
+  console.log('DOM updated, attaching event listeners');
+  attachEventListeners();
 }
 
 /**
@@ -186,8 +177,20 @@ function attachEventListeners(): void {
   );
 }
 
+function ensureContentDivExists(): HTMLElement {
+  let contentDiv = document.querySelector('.ck-dialog__content');
+  if (!contentDiv) {
+    console.log('Content div not found, creating it');
+    contentDiv = document.createElement('div');
+    contentDiv.className = 'ck-dialog__content';
+    document.body.appendChild(contentDiv);
+  }
+  return contentDiv as HTMLElement;
+}
+
 // Initialize the content when the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOM loaded, initializing content');
+  ensureContentDivExists();  // Make sure the div exists before any operations
   renderContent();
 });

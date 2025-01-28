@@ -20,8 +20,13 @@ export default class AlightLinkPluginEditing extends Plugin {
     const linkOptionsContent = {
       linkOption1: {
         title: 'Choose a Predefined Link',
-        content: '<div class="predefined-link-container"></div>',
-        loadContent: async () => getPredefinedLinkContent(1) // Set the pagination start page
+        contentClass: 'predefined-link-container', // Define the class to be applied
+        content: '<div class="predefined-link-container"></div>', // Placeholder content with the correct class
+        loadContent: async () => {
+          // Load the actual content and wrap it in the container class dynamically
+          const predefinedContent = await getPredefinedLinkContent(3);
+          return `<div class="predefined-link-container">${predefinedContent}</div>`;
+        }
       },
       linkOption2: {
         title: 'Public Website Link',

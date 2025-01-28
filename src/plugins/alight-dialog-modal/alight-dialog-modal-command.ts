@@ -1,4 +1,4 @@
-// src/plugins/base-modal/base-modal-command.ts
+// src/plugins/alight-dialog-modal/alight-dialog-command.ts
 import Command from '@ckeditor/ckeditor5-core/src/command';
 import type Editor from '@ckeditor/ckeditor5-core/src/editor/editor';
 import { AlightDialogModal, AlightDialogModalProps } from './alight-dialog-modal';
