@@ -6,6 +6,7 @@ export class VanillaPopover {
   trigger: "click" | "hover";
   placement: "top" | "bottom" | "left" | "right";
   popover: HTMLDivElement | null;
+  isVisible: boolean;
 
   constructor(options: { target: string; content?: string; trigger?: "click" | "hover"; placement?: "top" | "bottom" | "left" | "right" }) {
     this.target = document.querySelector(options.target) as HTMLElement;
@@ -13,6 +14,7 @@ export class VanillaPopover {
     this.trigger = options.trigger || "click";
     this.placement = options.placement || "right";
     this.popover = null;
+    this.isVisible = false;
     this.init();
   }
 
@@ -28,8 +30,17 @@ export class VanillaPopover {
   private createPopover(): void {
     this.popover = document.createElement("div");
     this.popover.className = "vanilla-popover";
-    this.popover.innerHTML = `<div class="popover-arrow"></div><div class="popover-content">${this.content}</div>`;
-    document.body.appendChild(this.popover); // Append popover to body instead of target to prevent layout shifts
+    this.popover.innerHTML = `
+            <div class="popover-header">
+                <span class="popover-close">&times;</span>
+            </div>
+            <div class="popover-content" contenteditable="true">${this.content}</div>
+        `;
+    document.body.appendChild(this.popover);
+
+    // Close button event
+    this.popover.querySelector(".popover-close")?.addEventListener("click", () => this.hidePopover());
+
     this.popover.addEventListener("click", (e) => e.stopPropagation()); // Prevent popover from closing when clicked inside
   }
 
@@ -45,7 +56,7 @@ export class VanillaPopover {
   }
 
   private togglePopover(): void {
-    if (this.popover && this.popover.style.display === "block") {
+    if (this.isVisible) {
       this.hidePopover();
     } else {
       this.showPopover();
@@ -55,12 +66,14 @@ export class VanillaPopover {
   private showPopover(): void {
     if (!this.target || !this.popover) return;
     this.popover.style.display = "block";
+    this.isVisible = true;
     this.setPosition();
   }
 
   private hidePopover(): void {
     if (this.popover) {
       this.popover.style.display = "none";
+      this.isVisible = false;
     }
   }
 
