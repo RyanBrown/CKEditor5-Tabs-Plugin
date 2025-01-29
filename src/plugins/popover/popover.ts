@@ -68,25 +68,39 @@ export class VanillaPopover {
     if (!this.popover) return;
     const popoverRect = this.popover.getBoundingClientRect();
     let top: number, left: number;
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+
     switch (this.placement) {
       case "top":
         top = rect.top - popoverRect.height - 5;
         left = rect.left + rect.width / 2 - popoverRect.width / 2;
+        if (top < 0) top = rect.bottom + 5; // Adjust if out of view
         break;
       case "bottom":
         top = rect.bottom + 5;
         left = rect.left + rect.width / 2 - popoverRect.width / 2;
+        if (top + popoverRect.height > windowHeight) top = rect.top - popoverRect.height - 5;
         break;
       case "left":
         top = rect.top + rect.height / 2 - popoverRect.height / 2;
         left = rect.left - popoverRect.width - 5;
+        if (left < 0) left = rect.right + 5; // Adjust if out of view
         break;
       case "right":
       default:
         top = rect.top + rect.height / 2 - popoverRect.height / 2;
         left = rect.right + 5;
+        if (left + popoverRect.width > windowWidth) left = rect.left - popoverRect.width - 5;
         break;
     }
+
+    // Ensure popover is within bounds
+    if (left < 0) left = 5;
+    if (left + popoverRect.width > windowWidth) left = windowWidth - popoverRect.width - 5;
+    if (top < 0) top = 5;
+    if (top + popoverRect.height > windowHeight) top = windowHeight - popoverRect.height - 5;
+
     this.popover.style.top = `${top}px`;
     this.popover.style.left = `${left}px`;
   }
@@ -102,8 +116,8 @@ export class VanillaPopover {
 // Example usage in a TypeScript file
 // import { VanillaPopover } from './VanillaPopover';
 // new VanillaPopover({
-//     target: "#myButton",
-//     content: "This is a popover!",
+//     target: "#advanced-search", // Replacing with popover for advanced search
+//     content: "Advanced Search Options", // Popover content
 //     trigger: "click",
-//     placement: "right"
+//     placement: "bottom"
 // });
