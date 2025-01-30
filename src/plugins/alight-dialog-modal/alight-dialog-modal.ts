@@ -30,7 +30,7 @@ export class AlightDialogModal {
   private overlay: HTMLElement;
   private modal: HTMLElement;
   private onCloseCallback: () => void;
-  private contentContainer: HTMLElement;
+  private contentContainer!: HTMLElement; // Initialized in constructor
 
   constructor({
     title = 'Modal Title',

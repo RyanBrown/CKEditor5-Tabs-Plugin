@@ -1,6 +1,7 @@
 // src/plugins/alight-link-plugin/alight-link-plugin-command.ts
 import type Editor from '@ckeditor/ckeditor5-core/src/editor/editor';
 import AlightDialogModalCommand from './../alight-dialog-modal/alight-dialog-modal-command';
+import { AlightDialogModalProps } from './../alight-dialog-modal/alight-dialog-modal';
 
 /**
  * Defines the structure for each link option (title, how to load content, etc.)
@@ -10,13 +11,14 @@ export interface LinkOptionData {
   content: string;
   loadContent?: () => Promise<string>;
   primaryButton?: string;
+  contentClass?: string; // Added to fix TS2353
 }
 
 export default class AlightLinkPluginCommand extends AlightDialogModalCommand {
   private data: LinkOptionData;
 
   constructor(editor: Editor, data: LinkOptionData) {
-    const { title, content, loadContent, primaryButton } = data;
+    const { title, content, loadContent, primaryButton, contentClass } = data;
 
     // We pass minimal "shell" content, can be updated if loadContent is async
     const modalProps: AlightDialogModalProps = {
@@ -52,7 +54,8 @@ export default class AlightLinkPluginCommand extends AlightDialogModalCommand {
       },
       onClose: () => {
         console.log('Modal closed');
-      }
+      },
+      contentClass: contentClass || '', // Added contentClass
     };
 
     super(editor, modalProps);
