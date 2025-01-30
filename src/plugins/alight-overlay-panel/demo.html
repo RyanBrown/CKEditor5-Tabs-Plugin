@@ -9,6 +9,9 @@
     <style>
         body {
             font-family: Arial, sans-serif;
+            height: 200vh;
+            /* Added to allow scrolling for testing */
+            position: relative;
         }
 
         .overlay-panel {
@@ -18,9 +21,16 @@
             border: 1px solid transparent;
             display: none;
             min-width: 200px;
+            max-width: 90vw;
+            /* Ensure panel doesn't exceed viewport width */
+            max-height: 90vh;
+            /* Ensure panel doesn't exceed viewport height */
             padding: 0;
-            position: absolute;
+            position: fixed;
+            /* Changed to fixed for easier viewport calculations */
             z-index: 1000;
+            overflow: auto;
+            /* Add scroll if content exceeds max-height */
         }
 
         .overlay-panel.active {
@@ -32,6 +42,7 @@
             display: flex;
             justify-content: space-between;
             padding: 1.5rem;
+            background-color: #f5f5f5;
         }
 
         .overlay-panel main {
@@ -43,6 +54,24 @@
             display: flex;
             justify-content: flex-start;
             padding: 1.5rem;
+            background-color: #f5f5f5;
+        }
+
+        .triggerBtn {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+        }
+
+        .closeBtn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            color: #007BFF;
+        }
+
+        .closeBtn:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -50,36 +79,37 @@
 <body>
 
     <!-- Buttons with their respective panels -->
-    <button class="triggerBtn" data-id="1" style="position: absolute; left: 10px; top: 10px;">Open Overlay</button>
+    <button class="triggerBtn" data-id="1" style="position: absolute; left: 10px; top: 10px;">Open Overlay 1</button>
     <div class="overlay-panel" data-id="1">
-        <header>Title <button class="closeBtn">Close</button></header>
+        <header>Title 1 <button class="closeBtn">Close</button></header>
         <main>
             <p>Panel positioned dynamically.</p>
         </main>
         <footer><button class="closeBtn">Close</button></footer>
     </div>
 
-    <button class="triggerBtn" data-id="2" style="position: absolute; right: 10px; top: 10px;">Open Overlay</button>
+    <button class="triggerBtn" data-id="2" style="position: absolute; right: 10px; top: 10px;">Open Overlay 2</button>
     <div class="overlay-panel" data-id="2">
-        <header>Title <button class="closeBtn">Close</button></header>
+        <header>Title 2 <button class="closeBtn">Close</button></header>
         <main>
             <p>Panel positioned dynamically.</p>
         </main>
         <footer><button class="closeBtn">Close</button></footer>
     </div>
 
-    <button class="triggerBtn" data-id="3" style="position: absolute; left: 10px; bottom: 10px;">Open Overlay</button>
+    <button class="triggerBtn" data-id="3" style="position: absolute; left: 10px; bottom: 10px;">Open Overlay 3</button>
     <div class="overlay-panel" data-id="3">
-        <header>Title <button class="closeBtn">Close</button></header>
+        <header>Title 3 <button class="closeBtn">Close</button></header>
         <main>
             <p>Panel positioned dynamically.</p>
         </main>
         <footer><button class="closeBtn">Close</button></footer>
     </div>
 
-    <button class="triggerBtn" data-id="4" style="position: absolute; right: 10px; bottom: 10px;">Open Overlay</button>
+    <button class="triggerBtn" data-id="4" style="position: absolute; right: 10px; bottom: 10px;">Open Overlay
+        4</button>
     <div class="overlay-panel" data-id="4">
-        <header>Title <button class="closeBtn">Close</button></header>
+        <header>Title 4 <button class="closeBtn">Close</button></header>
         <main>
             <p>Panel positioned dynamically.</p>
         </main>
@@ -91,6 +121,7 @@
             constructor() {
                 this.buttons = document.querySelectorAll(".triggerBtn");
                 this.panels = document.querySelectorAll(".overlay-panel");
+                this.currentPanel = null;
 
                 this.buttons.forEach(button => {
                     button.addEventListener("click", (event) => this.toggle(event));
@@ -100,98 +131,133 @@
                 document.querySelectorAll(".closeBtn").forEach(closeBtn => {
                     closeBtn.addEventListener("click", (event) => this.hide(event));
                 });
+
+                window.addEventListener("resize", () => this.handleWindowResize());
             }
 
             toggle(event) {
+                event.stopPropagation(); // Prevent event from bubbling to document
                 const button = event.currentTarget;
                 const panelId = button.getAttribute("data-id");
                 const panel = document.querySelector(`.overlay-panel[data-id='${panelId}']`);
 
                 if (panel.classList.contains("active")) {
-                    panel.classList.remove("active");
+                    this.hidePanel(panel);
                 } else {
                     this.show(button, panel);
                 }
             }
 
             show(button, panel) {
+                // Hide any currently active panel
+                if (this.currentPanel && this.currentPanel !== panel) {
+                    this.hidePanel(this.currentPanel);
+                }
+
                 const rect = button.getBoundingClientRect();
                 const panelRect = panel.getBoundingClientRect();
                 const windowWidth = window.innerWidth;
                 const windowHeight = window.innerHeight;
 
-                let top, left;
+                // Reset panel's max-height and max-width before measuring
+                panel.style.maxHeight = '90vh';
+                panel.style.maxWidth = '90vw';
 
-                // Check available space
+                // Temporarily display the panel to get accurate dimensions
+                panel.style.display = 'block';
+                panel.style.visibility = 'hidden';
+
+                const updatedPanelRect = panel.getBoundingClientRect();
+
+                // Calculate available space
                 const spaceAbove = rect.top;
                 const spaceBelow = windowHeight - rect.bottom;
                 const spaceLeft = rect.left;
                 const spaceRight = windowWidth - rect.right;
 
-                // Determine best position
-                if (spaceBelow >= panelRect.height) {
-                    // ✅ Place below button (default)
-                    top = rect.bottom + window.scrollY;
-                    left = this.alignHorizontally(rect, panelRect, windowWidth);
-                } else if (spaceAbove >= panelRect.height) {
-                    // ✅ Place above button
-                    top = rect.top - panelRect.height + window.scrollY;
-                    left = this.alignHorizontally(rect, panelRect, windowWidth);
-                } else if (spaceRight >= panelRect.width) {
-                    // ✅ Place to the right
-                    top = this.alignVertically(rect, panelRect, windowHeight);
-                    left = rect.right + window.scrollX;
-                } else if (spaceLeft >= panelRect.width) {
-                    // ✅ Place to the left
-                    top = this.alignVertically(rect, panelRect, windowHeight);
-                    left = rect.left - panelRect.width + window.scrollX;
+                let top, left;
+
+                // Priority: Below, Above, Right, Left
+                if (spaceBelow >= updatedPanelRect.height) {
+                    top = rect.bottom;
+                } else if (spaceAbove >= updatedPanelRect.height) {
+                    top = rect.top - updatedPanelRect.height;
                 } else {
-                    // ❗ Default positioning fallback (below, aligned left)
-                    top = rect.bottom + window.scrollY;
-                    left = rect.left + window.scrollX;
+                    // If not enough space above or below, choose the side with more space
+                    top = spaceBelow >= spaceAbove ? rect.bottom : Math.max(0, rect.top - updatedPanelRect.height);
                 }
 
-                // Ensure panel stays inside viewport
-                if (left + panelRect.width > windowWidth) {
-                    left = windowWidth - panelRect.width - 10;
+                if (spaceRight >= updatedPanelRect.width) {
+                    left = rect.left;
+                } else if (spaceLeft >= updatedPanelRect.width) {
+                    left = rect.right - updatedPanelRect.width;
+                } else {
+                    // If not enough space left or right, adjust to fit within viewport
+                    left = Math.min(rect.left, windowWidth - updatedPanelRect.width - 10);
+                    left = Math.max(left, 10); // Minimum padding from left
                 }
-                if (top + panelRect.height > windowHeight) {
-                    top = windowHeight - panelRect.height - 10;
-                }
-                if (left < 0) left = 10;
-                if (top < 0) top = 10;
 
-                panel.style.top = `${top}px`;
-                panel.style.left = `${left}px`;
+                // Adjust if panel goes out of viewport vertically
+                if (top + updatedPanelRect.height > windowHeight) {
+                    top = windowHeight - updatedPanelRect.height - 10; // 10px padding
+                }
+                if (top < 10) { // Minimum padding from top
+                    top = 10;
+                }
+
+                // Ensure panel doesn't exceed viewport dimensions
+                if (updatedPanelRect.width > windowWidth * 0.9) {
+                    panel.style.width = `${windowWidth * 0.9}px`;
+                } else {
+                    panel.style.width = `${updatedPanelRect.width}px`;
+                }
+
+                if (updatedPanelRect.height > windowHeight * 0.9) {
+                    panel.style.height = `${windowHeight * 0.9}px`;
+                } else {
+                    panel.style.height = 'auto';
+                }
+
+                // Final position after adjustments
+                panel.style.top = `${top + window.scrollY}px`;
+                panel.style.left = `${left + window.scrollX}px`;
+
+                // Make the panel visible
+                panel.style.visibility = 'visible';
                 panel.classList.add("active");
-            }
-
-            alignHorizontally(rect, panelRect, windowWidth) {
-                // Align left if there's space, otherwise align right
-                if (rect.left + panelRect.width <= windowWidth) {
-                    return rect.left + window.scrollX;
-                } else {
-                    return rect.right - panelRect.width + window.scrollX;
-                }
-            }
-
-            alignVertically(rect, panelRect, windowHeight) {
-                // Align top if there's space, otherwise align bottom
-                if (rect.top + panelRect.height <= windowHeight) {
-                    return rect.top + window.scrollY;
-                } else {
-                    return rect.bottom - panelRect.height + window.scrollY;
-                }
+                this.currentPanel = panel;
             }
 
             hide(event) {
-                const panel = event.target.closest(".overlay-panel");
+                event.stopPropagation(); // Prevent event from bubbling to document
+                const closeButton = event.target;
+                const panel = closeButton.closest(".overlay-panel");
+                this.hidePanel(panel);
+            }
+
+            hidePanel(panel) {
                 panel.classList.remove("active");
+                panel.style.display = 'none';
+                this.currentPanel = null;
             }
 
             handleClickOutside(event) {
                 if (!event.target.closest(".overlay-panel") && !event.target.closest(".triggerBtn")) {
-                    this.panels.forEach(panel => panel.classList.remove("active"));
+                    this.panels.forEach(panel => {
+                        panel.classList.remove("active");
+                        panel.style.display = 'none';
+                    });
+                    this.currentPanel = null;
+                }
+            }
+
+            handleWindowResize() {
+                if (this.currentPanel) {
+                    const panelId = this.currentPanel.getAttribute("data-id");
+                    const button = document.querySelector(`.triggerBtn[data-id='${panelId}']`);
+                    if (button) {
+                        this.show(button, this.currentPanel);
+                    }
                 }
             }
         }
