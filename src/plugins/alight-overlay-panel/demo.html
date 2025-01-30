@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overlay Panel Component</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .overlay-panel {
+            position: absolute;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            display: none;
+            z-index: 1000;
+            min-width: 200px;
+            max-width: 300px;
+            word-wrap: break-word;
+        }
+
+        .overlay-panel.active {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Buttons and respective panels -->
+    <button class="triggerBtn" data-id="1" style="position: absolute; left: 10px; top: 10px;">Open Overlay</button>
+    <div class="overlay-panel" data-id="1">
+        <p>This is an overlay panel! It will position dynamically.</p>
+        <button class="closeBtn">Close</button>
+    </div>
+
+    <button class="triggerBtn" data-id="2" style="position: absolute; right: 10px; top: 10px;">Open Overlay</button>
+    <div class="overlay-panel" data-id="2">
+        <p>This is an overlay panel! It will position dynamically.</p>
+        <button class="closeBtn">Close</button>
+    </div>
+
+    <button class="triggerBtn" data-id="3" style="position: absolute; left: 10px; bottom: 10px;">Open Overlay</button>
+    <div class="overlay-panel" data-id="3">
+        <p>This is an overlay panel! It will position dynamically.</p>
+        <button class="closeBtn">Close</button>
+    </div>
+
+    <button class="triggerBtn" data-id="4" style="position: absolute; right: 10px; bottom: 10px;">Open Overlay</button>
+    <div class="overlay-panel" data-id="4">
+        <p>This is an overlay panel! It will position dynamically.</p>
+        <button class="closeBtn">Close</button>
+    </div>
+
+    <script>
+        class OverlayPanel {
+            constructor() {
+                this.buttons = document.querySelectorAll(".triggerBtn");
+                this.panels = document.querySelectorAll(".overlay-panel");
+
+                this.buttons.forEach(button => {
+                    button.addEventListener("click", (event) => this.toggle(event));
+                });
+
+                document.addEventListener("click", (event) => this.handleClickOutside(event));
+                document.querySelectorAll(".closeBtn").forEach(closeBtn => {
+                    closeBtn.addEventListener("click", (event) => this.hide(event));
+                });
+            }
+
+            toggle(event) {
+                const button = event.currentTarget;
+                const panelId = button.getAttribute("data-id");
+                const panel = document.querySelector(`.overlay-panel[data-id='${panelId}']`);
+
+                if (panel.classList.contains("active")) {
+                    panel.classList.remove("active");
+                } else {
+                    this.show(button, panel);
+                }
+            }
+
+            show(button, panel) {
+                const rect = button.getBoundingClientRect();
+                const panelRect = panel.getBoundingClientRect();
+                const windowWidth = window.innerWidth;
+                const windowHeight = window.innerHeight;
+
+                let top, left;
+
+                // Check available space
+                const spaceAbove = rect.top;
+                const spaceBelow = windowHeight - rect.bottom;
+                const spaceLeft = rect.left;
+                const spaceRight = windowWidth - rect.right;
+
+                // **Positioning Logic Based on Image Example**
+                if (spaceBelow >= panelRect.height) {
+                    // ✅ Position below the button (aligned left)
+                    top = rect.bottom + window.scrollY;
+                    left = rect.left + window.scrollX;
+                } else if (spaceAbove >= panelRect.height) {
+                    // ✅ Position above the button (aligned right)
+                    top = rect.top - panelRect.height + window.scrollY;
+                    left = rect.right - panelRect.width + window.scrollX;
+                } else if (spaceRight >= panelRect.width) {
+                    // ✅ Position to the right of the button (aligned top)
+                    top = rect.top + window.scrollY;
+                    left = rect.right + window.scrollX;
+                } else if (spaceLeft >= panelRect.width) {
+                    // ✅ Position to the left of the button (aligned top)
+                    top = rect.top + window.scrollY;
+                    left = rect.left - panelRect.width + window.scrollX;
+                } else {
+                    // ❗ Default to below if no perfect fit
+                    top = rect.bottom + window.scrollY;
+                    left = rect.left + window.scrollX;
+                }
+
+                // ✅ Ensure panel stays inside viewport
+                if (left + panelRect.width > windowWidth) {
+                    left = windowWidth - panelRect.width - 10;
+                }
+                if (top + panelRect.height > windowHeight) {
+                    top = windowHeight - panelRect.height - 10;
+                }
+                if (left < 0) left = 10;
+                if (top < 0) top = 10;
+
+                panel.style.top = `${top}px`;
+                panel.style.left = `${left}px`;
+                panel.classList.add("active");
+            }
+
+            hide(event) {
+                const panel = event.target.closest(".overlay-panel");
+                panel.classList.remove("active");
+            }
+
+            handleClickOutside(event) {
+                if (!event.target.closest(".overlay-panel") && !event.target.closest(".triggerBtn")) {
+                    this.panels.forEach(panel => panel.classList.remove("active"));
+                }
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            new OverlayPanel();
+        });
+    </script>
+
+</body>
+
+</html>

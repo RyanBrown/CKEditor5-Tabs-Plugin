@@ -1,0 +1,17 @@
+@use './../../../styles/mixins' as mixins;
+
+.overlay-panel {
+  @include mixins.component-box-shadow;
+  background: var(--neutral-white);
+  border-radius: 5px;
+  border: 1px solid transparent;
+  display: none;
+  min-width: 200px;
+  padding: 15px;
+  position: absolute;
+  z-index: 1000;
+
+  &.active {
+    display: block;
+  }
+}
