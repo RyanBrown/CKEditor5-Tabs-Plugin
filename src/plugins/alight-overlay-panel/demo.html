@@ -9,7 +9,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            height: 200vh;
+            height: 100vh;
             /* Added to allow scrolling for testing */
             position: relative;
         }
@@ -110,6 +110,16 @@
         4</button>
     <div class="overlay-panel" data-id="4">
         <header>Title 4 <button class="closeBtn">Close</button></header>
+        <main>
+            <p>Panel positioned dynamically.</p>
+        </main>
+        <footer><button class="closeBtn">Close</button></footer>
+    </div>
+
+    <button class="triggerBtn" data-id="5" style="position: absolute; right: 50%; bottom: 50%;">Open Overlay
+        5</button>
+    <div class="overlay-panel" data-id="5">
+        <header>Title 5 <button class="closeBtn">Close</button></header>
         <main>
             <p>Panel positioned dynamically.</p>
         </main>
