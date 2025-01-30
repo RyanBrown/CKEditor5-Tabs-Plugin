@@ -10,7 +10,6 @@
         body {
             font-family: Arial, sans-serif;
             height: 100vh;
-            /* Added to allow scrolling for testing */
             position: relative;
         }
 
@@ -19,7 +18,10 @@
             background: #fff;
             border-radius: 5px;
             border: 1px solid transparent;
-            display: none;
+            opacity: 0;
+            /* Initially hidden */
+            visibility: hidden;
+            /* Prevent interaction when hidden */
             min-width: 200px;
             max-width: 90vw;
             /* Ensure panel doesn't exceed viewport width */
@@ -31,10 +33,15 @@
             z-index: 1000;
             overflow: auto;
             /* Add scroll if content exceeds max-height */
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            /* Transition for fade-in and fade-out */
         }
 
         .overlay-panel.active {
-            display: block;
+            opacity: 1;
+            /* Fully visible */
+            visibility: visible;
+            /* Allow interaction */
         }
 
         .overlay-panel header {
@@ -116,8 +123,7 @@
         <footer><button class="closeBtn">Close</button></footer>
     </div>
 
-    <button class="triggerBtn" data-id="5" style="position: absolute; right: 50%; bottom: 50%;">Open Overlay
-        5</button>
+    <button class="triggerBtn" data-id="5" style="position: absolute; right: 50%; bottom: 50%;">Open Overlay 5</button>
     <div class="overlay-panel" data-id="5">
         <header>Title 5 <button class="closeBtn">Close</button></header>
         <main>
@@ -174,8 +180,9 @@
                 panel.style.width = 'auto';
                 panel.style.height = 'auto';
 
-                // Temporarily display the panel to get accurate dimensions
-                panel.style.display = 'block';
+                // Temporarily make the panel visible for measurement
+                panel.classList.add("active");
+                panel.style.opacity = '0';
                 panel.style.visibility = 'hidden';
 
                 const updatedPanelRect = panel.getBoundingClientRect();
@@ -228,9 +235,13 @@
                 panel.style.top = `${top}px`;
                 panel.style.left = `${left}px`;
 
-                // Make the panel visible
+                // Trigger reflow to apply the initial hidden state before fading in
+                void panel.offsetWidth;
+
+                // Make the panel visible with opacity transition
+                panel.style.opacity = '1';
                 panel.style.visibility = 'visible';
-                panel.classList.add("active");
+
                 this.currentPanel = panel;
             }
 
@@ -242,16 +253,18 @@
             }
 
             hidePanel(panel) {
+                panel.style.opacity = '0';
+                panel.style.visibility = 'hidden';
                 panel.classList.remove("active");
-                panel.style.display = 'none';
                 this.currentPanel = null;
             }
 
             handleClickOutside(event) {
                 if (!event.target.closest(".overlay-panel") && !event.target.closest(".triggerBtn")) {
                     this.panels.forEach(panel => {
+                        panel.style.opacity = '0';
+                        panel.style.visibility = 'hidden';
                         panel.classList.remove("active");
-                        panel.style.display = 'none';
                     });
                     this.currentPanel = null;
                 }
@@ -272,7 +285,3 @@
             new OverlayPanel();
         });
     </script>
-
-</body>
-
-</html>
