@@ -41,19 +41,19 @@
             border-bottom: 1px solid #ccc;
             display: flex;
             justify-content: space-between;
-            padding: 1.5rem;
+            padding: 1rem;
             background-color: #f5f5f5;
         }
 
         .overlay-panel main {
-            padding: 1.5rem;
+            padding: 1rem;
         }
 
         .overlay-panel footer {
             border-top: 1px solid #ccc;
             display: flex;
             justify-content: flex-start;
-            padding: 1.5rem;
+            padding: 1rem;
             background-color: #f5f5f5;
         }
 
@@ -155,13 +155,14 @@
                 }
 
                 const rect = button.getBoundingClientRect();
-                const panelRect = panel.getBoundingClientRect();
                 const windowWidth = window.innerWidth;
                 const windowHeight = window.innerHeight;
 
                 // Reset panel's max-height and max-width before measuring
                 panel.style.maxHeight = '90vh';
                 panel.style.maxWidth = '90vw';
+                panel.style.width = 'auto';
+                panel.style.height = 'auto';
 
                 // Temporarily display the panel to get accurate dimensions
                 panel.style.display = 'block';
@@ -205,22 +206,17 @@
                     top = 10;
                 }
 
-                // Ensure panel doesn't exceed viewport dimensions
-                if (updatedPanelRect.width > windowWidth * 0.9) {
-                    panel.style.width = `${windowWidth * 0.9}px`;
-                } else {
-                    panel.style.width = `${updatedPanelRect.width}px`;
+                // Adjust if panel goes out of viewport horizontally
+                if (left + updatedPanelRect.width > windowWidth) {
+                    left = windowWidth - updatedPanelRect.width - 10; // 10px padding
+                }
+                if (left < 10) { // Minimum padding from left
+                    left = 10;
                 }
 
-                if (updatedPanelRect.height > windowHeight * 0.9) {
-                    panel.style.height = `${windowHeight * 0.9}px`;
-                } else {
-                    panel.style.height = 'auto';
-                }
-
-                // Final position after adjustments
-                panel.style.top = `${top + window.scrollY}px`;
-                panel.style.left = `${left + window.scrollX}px`;
+                // Final position without scroll offsets (since position is fixed)
+                panel.style.top = `${top}px`;
+                panel.style.left = `${left}px`;
 
                 // Make the panel visible
                 panel.style.visibility = 'visible';
