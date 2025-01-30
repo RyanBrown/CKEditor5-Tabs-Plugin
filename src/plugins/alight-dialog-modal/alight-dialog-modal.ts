@@ -2,10 +2,6 @@
 import './styles/alight-dialog-modal.scss';
 import DOMPurify from 'dompurify';
 
-/**
- * A generic modal that can be used for any plugin or feature.
- * Receives all content and callbacks in props, no assumptions about "images," "links," etc.
- */
 export interface AlightDialogModalProps {
   title?: string; // Optional modal title with a default value
   tertiaryButton?: {
@@ -19,6 +15,7 @@ export interface AlightDialogModalProps {
   content?: HTMLElement | string; // Optional modal content with a default value
   contentClass?: string; // Optional class for styling the content container
   onClose?: () => void; // Callback for closing the modal
+  onContentReady?: () => void; // New callback
   showHeader?: boolean; // Show or hide the header (default: true)
   showFooter?: boolean; // Show or hide the footer (default: true)
   maxWidth?: string | null; // Optional max-width with a default value of null
@@ -30,7 +27,7 @@ export class AlightDialogModal {
   private overlay: HTMLElement;
   private modal: HTMLElement;
   private onCloseCallback: () => void;
-  private contentContainer!: HTMLElement; // Initialized in constructor
+  private contentContainer!: HTMLElement;
 
   constructor({
     title = 'Modal Title',
@@ -39,6 +36,7 @@ export class AlightDialogModal {
     content = 'Placeholder content',
     contentClass = '',
     onClose = () => { },
+    onContentReady = () => { },
     showHeader = true,
     showFooter = true,
     maxWidth = null,
@@ -83,7 +81,7 @@ export class AlightDialogModal {
           <path d="m11.591 10.177 4.243 4.242a1 1 0 0 1-1.415 1.415l-4.242-4.243-4.243 4.243a1 1 0 0 1-1.414-1.415l4.243-4.242L4.52 5.934A1 1 0 0 1 5.934 4.52l4.243 4.243 4.242-4.243a1 1 0 1 1 1.415 1.414l-4.243 4.243z"></path>
         </svg>
       `;
-      closeButton.onclick = () => this.closeModal(); // Fixed: no arguments
+      closeButton.onclick = () => this.closeModal();
 
       header.appendChild(titleElement);
       header.appendChild(closeButton);
@@ -91,9 +89,9 @@ export class AlightDialogModal {
     }
 
     // Modal content
-    this.contentContainer = document.createElement('div'); // Initialize
+    this.contentContainer = document.createElement('div');
     this.contentContainer.className = `ck ck-dialog__content ${contentClass}`;
-    this.setContent(content, this.contentContainer); // set initial content
+    this.setContent(content, this.contentContainer, onContentReady);
     this.modal.appendChild(this.contentContainer);
 
     // Modal actions (footer)
@@ -110,7 +108,7 @@ export class AlightDialogModal {
         if (tertiaryButton.onClick) {
           tertiaryButton.onClick();
         }
-        this.closeModal(); // Correct
+        this.closeModal();
       };
 
       // Primary (accept) button
@@ -142,8 +140,9 @@ export class AlightDialogModal {
    * If content is an HTMLElement, it appends it directly.
    * @param content - The content to set (string or HTMLElement)
    * @param container - The container element to set the content in
+   * @param onContentReady - Callback to execute after content is set
    */
-  private setContent(content: HTMLElement | string, container: HTMLElement): void {
+  private setContent(content: HTMLElement | string, container: HTMLElement, onContentReady?: () => void): void {
     if (typeof content === 'string') {
       const sanitizedContent = DOMPurify.sanitize(content);
       container.innerHTML = sanitizedContent;
@@ -151,6 +150,10 @@ export class AlightDialogModal {
     } else if (content instanceof HTMLElement) {
       container.appendChild(content);
       this.executeEmbeddedScripts(content);
+    }
+
+    if (onContentReady) {
+      onContentReady();
     }
   }
 
@@ -183,12 +186,14 @@ export class AlightDialogModal {
   /**
    * Public method to update the modal's content dynamically.
    * @param content - The new content to set (string or HTMLElement)
+   * @param onContentReady - Optional callback after content is set
    */
-  public updateContent(content: HTMLElement | string): void {
+  public updateContent(content: HTMLElement | string, onContentReady?: () => void): void {
     this.contentContainer.innerHTML = ''; // Clear existing content
-    this.setContent(content, this.contentContainer);
+    this.setContent(content, this.contentContainer, onContentReady);
   }
 
+  // Shows the modal by setting the overlay's display to 'block'.
   public show(): void {
     // Ensure it's appended; in case the user re-shows the same modal instance
     if (!document.body.contains(this.overlay)) {
@@ -203,6 +208,7 @@ export class AlightDialogModal {
     }
   };
 
+  // Closes the modal by removing the overlay from the DOM and invoking the onClose callback.
   public closeModal(): void {
     // Clean up DOM
     if (document.body.contains(this.overlay)) {
@@ -214,5 +220,10 @@ export class AlightDialogModal {
     if (this.onCloseCallback) {
       this.onCloseCallback();
     }
+  }
+
+  // Getter to expose the content container for external manipulation.
+  public get contentContainerElement(): HTMLElement {
+    return this.contentContainer;
   }
 }

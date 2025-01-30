@@ -18,13 +18,26 @@ export default class AlightLinkPluginEditing extends Plugin {
 
     // Define link options
     const linkOptionsContent: { [key: string]: LinkOptionData } = {
+      // Define your link option data
       linkOption1: {
         title: 'Choose a Predefined Link',
-        contentClass: 'predefined-link-container',
         content: '<div class="predefined-link-container">Loading...</div>',
+        contentClass: 'predefined-link-container',
+        primaryButton: 'Apply',
         loadContent: async () => {
-          const predefinedContent = await getPredefinedLinkContent(3);
-          return `<div class="predefined-link-container">${predefinedContent}</div>`;
+          // Simulate asynchronous content loading
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          return `
+            <div>
+              <h3>Predefined Links</h3>
+              <button id="dynamic-button">Dynamic Button</button>
+            </div>
+            <script>
+              document.getElementById('dynamic-button').addEventListener('click', () => {
+                alert('Dynamic Button Clicked!');
+              });
+            </script>
+          `;
         }
       },
       linkOption2: {

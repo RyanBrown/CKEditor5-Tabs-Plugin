@@ -83,10 +83,10 @@ export function getPredefinedLinkContent(page: number): string {
 }
 
 /**
- * Filters the data based on the search query and updates the UI.
+ * Filters the data based on the search query.
  * @param query - The search query string
  */
-function handleSearch(query: string): void {
+export function handleSearch(query: string): void {
   console.log('Handling search for query:', query);
   currentSearchQuery = query.toLowerCase().trim();
 
@@ -101,96 +101,95 @@ function handleSearch(query: string): void {
 
   // Reset to the first page and render
   currentPage = 1;
-  renderContent();
 }
 
-// Resets the search and displays all data.
-function resetSearch(): void {
+/**
+ * Resets the search and displays all data.
+ */
+export function resetSearch(): void {
   console.log('Resetting search');
   currentSearchQuery = '';
   filteredLinksData = [...predefinedLinksData.predefinedLinksDetails];
   currentPage = 1;
-  renderContent();
 }
 
-// Renders the filtered and paginated content into the container.
-function renderContent(): void {
+/**
+ * Renders the filtered and paginated content into the container.
+ * @param container - The HTMLElement to render content into
+ */
+export function renderContent(container: HTMLElement): void {
   console.log('Rendering content for page:', currentPage);
-  const contentDiv = ensureContentDivExists();
   const content = getPredefinedLinkContent(currentPage);
   console.log('Content generated, updating DOM');
-  contentDiv.innerHTML = content;
+  container.innerHTML = content;
   console.log('DOM updated, attaching event listeners');
-  attachEventListeners();
+
+  // Attach event listeners after content is injected
+  attachEventListeners(container);
 }
 
 /**
  * Attaches event listeners to search and pagination controls.
  * Uses event delegation for better performance and to handle dynamically added elements.
+ * @param container - The HTMLElement containing the modal's content
  */
-function attachEventListeners(): void {
+function attachEventListeners(container: HTMLElement): void {
   // Search button listener
-  document.querySelector('#search-btn')?.addEventListener('click', () => {
-    const searchInput = document.querySelector('#search-input') as HTMLInputElement;
+  const searchBtn = container.querySelector('#search-btn');
+  const searchInput = container.querySelector('#search-input') as HTMLInputElement | null;
+  const resetSearchBtn = container.querySelector('#reset-search-btn');
+
+  searchBtn?.addEventListener('click', () => {
     if (searchInput) handleSearch(searchInput.value);
+    renderContent(container); // Re-render content after search
   });
 
-  // Reset button listener
-  document.querySelector('#reset-search-btn')?.addEventListener('click', resetSearch);
+  resetSearchBtn?.addEventListener('click', () => {
+    resetSearch();
+    if (searchInput) searchInput.value = '';
+    renderContent(container); // Re-render content after reset
+  });
 
-  // Input listener for live search
-  document.querySelector('#search-input')?.addEventListener('input', (event) => {
+  // Input listener for live search (optional)
+  searchInput?.addEventListener('input', (event) => {
     const target = event.target as HTMLInputElement;
     handleSearch(target.value);
+    renderContent(container); // Re-render content after input
   });
 
-  // Unified pagination button handler
-  document.querySelectorAll('button[data-page]').forEach((btn) =>
-    btn.addEventListener('click', (event) => {
-      const target = event.target as HTMLElement;
-      const page = Number(target.getAttribute('data-page'));
-      console.log('Button clicked:', target.id || 'page button', 'Page:', page);
+  // Unified pagination button handler using event delegation
+  const paginationDiv = container.querySelector('#pagination');
+  paginationDiv?.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement;
+    if (target.tagName !== 'BUTTON') return;
 
-      if (!page) {
-        console.log('Invalid page number');
-        return;
-      }
+    const pageAttr = target.getAttribute('data-page');
+    if (!pageAttr) return;
 
-      const totalPages = Math.ceil(filteredLinksData.length / pageSize);
-      console.log('Current page:', currentPage, 'Total pages:', totalPages);
+    const page = Number(pageAttr);
+    console.log('Button clicked:', target.id || 'page button', 'Page:', page);
 
-      // Validate the page number
-      if (page < 1 || page > totalPages) {
-        console.log('Page out of range');
-        return;
-      }
+    if (!page) {
+      console.log('Invalid page number');
+      return;
+    }
 
-      // Only update if it's a different page
-      if (page !== currentPage) {
-        console.log('Updating to page:', page);
-        currentPage = page;
-        renderContent();
-      } else {
-        console.log('Already on page:', page);
-      }
-    })
-  );
+    const totalPages = Math.ceil(filteredLinksData.length / pageSize);
+    console.log('Current page:', currentPage, 'Total pages:', totalPages);
+
+    // Validate the page number
+    if (page < 1 || page > totalPages) {
+      console.log('Page out of range');
+      return;
+    }
+
+    // Only update if it's a different page
+    if (page !== currentPage) {
+      console.log('Updating to page:', page);
+      currentPage = page;
+      renderContent(container); // Re-render content for the new page
+    } else {
+      console.log('Already on page:', page);
+    }
+  });
 }
-
-function ensureContentDivExists(): HTMLElement {
-  let contentDiv = document.querySelector('.ck-dialog__content');
-  if (!contentDiv) {
-    console.log('Content div not found, creating it');
-    contentDiv = document.createElement('div');
-    contentDiv.className = 'ck-dialog__content';
-    document.body.appendChild(contentDiv);
-  }
-  return contentDiv as HTMLElement;
-}
-
-// Initialize the content when the DOM is fully loaded
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('DOM loaded, initializing content');
-  ensureContentDivExists();  // Make sure the div exists before any operations
-  renderContent();
-});
