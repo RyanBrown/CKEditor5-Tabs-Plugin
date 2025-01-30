@@ -2,8 +2,10 @@
 import type Editor from '@ckeditor/ckeditor5-core/src/editor/editor';
 import AlightDialogModalCommand from './../alight-dialog-modal/alight-dialog-modal-command';
 
-// Defines the structure for each link option (title, how to load content, etc.)
-interface LinkOptionData {
+/**
+ * Defines the structure for each link option (title, how to load content, etc.)
+ */
+export interface LinkOptionData {
   title: string;
   content: string;
   loadContent?: () => Promise<string>;
@@ -17,9 +19,9 @@ export default class AlightLinkPluginCommand extends AlightDialogModalCommand {
     const { title, content, loadContent, primaryButton } = data;
 
     // We pass minimal "shell" content, can be updated if loadContent is async
-    const modalProps = {
+    const modalProps: AlightDialogModalProps = {
       title,
-      content: 'Loading...',
+      content: 'Loading...', // Initial placeholder
       primaryButton: {
         label: primaryButton || 'Continue',
         onClick: () => {
@@ -38,13 +40,14 @@ export default class AlightLinkPluginCommand extends AlightDialogModalCommand {
           }
 
           // 3) Close the modal
-          this.closeModal(); // <--- we now have a protected method from AlightDialogModalCommand
+          this.closeModal(); // Correct: no arguments
         }
       },
       tertiaryButton: {
         label: 'Cancel',
         onClick: () => {
           console.log('Modal dismissed');
+          this.closeModal(); // Correct: no arguments
         }
       },
       onClose: () => {
@@ -52,18 +55,28 @@ export default class AlightLinkPluginCommand extends AlightDialogModalCommand {
       }
     };
 
-    super(editor, modalProps); // calls AlightDialogModalCommand constructor
+    super(editor, modalProps);
     this.data = data;
 
-    // If content is static, set it right away
-    if (!loadContent) {
+    // Handle asynchronous content loading
+    if (loadContent) {
+      loadContent()
+        .then((html) => {
+          if (this.modal) {
+            this.modal.updateContent(html);
+          }
+        })
+        .catch((error) => {
+          console.error('Error loading modal content:', error);
+          if (this.modal) {
+            this.modal.updateContent('<p>Error loading content. Please try again later.</p>');
+          }
+        });
+    } else {
       this.modalProps.content = content;
-      return;
+      if (this.modal) {
+        this.modal.updateContent(content); // Ensure content is updated if modal exists
+      }
     }
-
-    // If content is async, fetch it, then store it in modalProps
-    loadContent().then((html) => {
-      this.modalProps.content = html;
-    });
   }
 }

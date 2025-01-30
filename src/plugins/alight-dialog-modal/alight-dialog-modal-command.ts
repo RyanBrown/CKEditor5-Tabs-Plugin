@@ -1,4 +1,4 @@
-// src/plugins/alight-dialog-modal/alight-dialog-command.ts
+// src/plugins/alight-dialog-modal/alight-dialog-modal-command.ts
 import Command from '@ckeditor/ckeditor5-core/src/command';
 import type Editor from '@ckeditor/ckeditor5-core/src/editor/editor';
 import { AlightDialogModal, AlightDialogModalProps } from './alight-dialog-modal';
@@ -27,7 +27,7 @@ export default class AlightDialogModalCommand extends Command {
   // Let subclasses close the modal
   protected closeModal(): void {
     if (this.modal) {
-      this.modal.closeModal(this.modalProps.onClose);
+      this.modal.closeModal(); // Correct: no arguments
       this.modal = null;
     }
   }

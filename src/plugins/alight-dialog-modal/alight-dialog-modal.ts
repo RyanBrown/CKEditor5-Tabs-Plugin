@@ -1,5 +1,6 @@
 // src/plugins/alight-dialog-modal/alight-dialog-modal.ts
 import './styles/alight-dialog-modal.scss';
+import DOMPurify from 'dompurify';
 
 /**
  * A generic modal that can be used for any plugin or feature.
@@ -28,6 +29,8 @@ export interface AlightDialogModalProps {
 export class AlightDialogModal {
   private overlay: HTMLElement;
   private modal: HTMLElement;
+  private onCloseCallback: () => void;
+  private contentContainer: HTMLElement;
 
   constructor({
     title = 'Modal Title',
@@ -42,6 +45,8 @@ export class AlightDialogModal {
     minWidth = null,
     width = null,
   }: AlightDialogModalProps) {
+    this.onCloseCallback = onClose;
+
     // Create the overlay container
     this.overlay = document.createElement('div');
     this.overlay.className = 'ck ck-dialog-overlay';
@@ -78,7 +83,7 @@ export class AlightDialogModal {
           <path d="m11.591 10.177 4.243 4.242a1 1 0 0 1-1.415 1.415l-4.242-4.243-4.243 4.243a1 1 0 0 1-1.414-1.415l4.243-4.242L4.52 5.934A1 1 0 0 1 5.934 4.52l4.243 4.243 4.242-4.243a1 1 0 1 1 1.415 1.414l-4.243 4.243z"></path>
         </svg>
       `;
-      closeButton.onclick = () => this.closeModal(onClose);
+      closeButton.onclick = () => this.closeModal(); // Fixed: no arguments
 
       header.appendChild(titleElement);
       header.appendChild(closeButton);
@@ -86,15 +91,10 @@ export class AlightDialogModal {
     }
 
     // Modal content
-    const contentContainer = document.createElement('div');
-    contentContainer.className = `ck ck-dialog__content ${contentClass}`;
-    if (typeof content === 'string') {
-      contentContainer.innerHTML = content;
-    } else if (content instanceof HTMLElement) {
-      contentContainer.appendChild(content);
-    }
-
-    this.modal.appendChild(contentContainer);
+    this.contentContainer = document.createElement('div'); // Initialize
+    this.contentContainer.className = `ck ck-dialog__content ${contentClass}`;
+    this.setContent(content, this.contentContainer); // set initial content
+    this.modal.appendChild(this.contentContainer);
 
     // Modal actions (footer)
     if (showFooter) {
@@ -106,14 +106,19 @@ export class AlightDialogModal {
       tertiaryButtonElement.className = 'ck ck-button ck-button_with-text';
       tertiaryButtonElement.type = 'button';
       tertiaryButtonElement.textContent = tertiaryButton.label ?? 'Cancel';
-      tertiaryButtonElement.onclick = () => this.closeModal(onClose);
+      tertiaryButtonElement.onclick = () => {
+        if (tertiaryButton.onClick) {
+          tertiaryButton.onClick();
+        }
+        this.closeModal(); // Correct
+      };
 
       // Primary (accept) button
       const primaryButtonElement = document.createElement('button');
       primaryButtonElement.className = 'ck ck-button ck-button-action ck-off ck-button_with-text';
       primaryButtonElement.type = 'button';
       primaryButtonElement.textContent = primaryButton.label ?? 'Continue';
-      primaryButtonElement.onclick = primaryButton.onClick || null;
+      primaryButtonElement.onclick = primaryButton.onClick || (() => { });
 
       actions.appendChild(tertiaryButtonElement);
       actions.appendChild(primaryButtonElement);
@@ -131,11 +136,65 @@ export class AlightDialogModal {
     document.addEventListener('keydown', this.handleKeydown);
   }
 
+  /**
+   * Sets the content of the modal.
+   * If content is a string, it sets innerHTML and executes any embedded scripts.
+   * If content is an HTMLElement, it appends it directly.
+   * @param content - The content to set (string or HTMLElement)
+   * @param container - The container element to set the content in
+   */
+  private setContent(content: HTMLElement | string, container: HTMLElement): void {
+    if (typeof content === 'string') {
+      const sanitizedContent = DOMPurify.sanitize(content);
+      container.innerHTML = sanitizedContent;
+      this.executeEmbeddedScripts(container);
+    } else if (content instanceof HTMLElement) {
+      container.appendChild(content);
+      this.executeEmbeddedScripts(content);
+    }
+  }
+
+  /**
+   * Finds and executes any <script> tags within the given container.
+   * @param container - The element to search for scripts within
+   */
+  private executeEmbeddedScripts(container: HTMLElement): void {
+    const scripts = container.querySelectorAll('script');
+    scripts.forEach((script) => {
+      const newScript = document.createElement('script');
+      // Copy attributes
+      Array.from(script.attributes).forEach(attr => {
+        newScript.setAttribute(attr.name, attr.value);
+      });
+
+      if (script.src) {
+        newScript.src = script.src;
+        // To handle async script loading
+        newScript.onload = () => { /* Optional: handle script load */ };
+      } else {
+        newScript.textContent = script.textContent || '';
+      }
+
+      // Replace the old script with the new one to execute it
+      script.parentNode?.replaceChild(newScript, script);
+    });
+  }
+
+  /**
+   * Public method to update the modal's content dynamically.
+   * @param content - The new content to set (string or HTMLElement)
+   */
+  public updateContent(content: HTMLElement | string): void {
+    this.contentContainer.innerHTML = ''; // Clear existing content
+    this.setContent(content, this.contentContainer);
+  }
+
   public show(): void {
-    // We ensure it's appended; in case the user re-shows the same modal instance
+    // Ensure it's appended; in case the user re-shows the same modal instance
     if (!document.body.contains(this.overlay)) {
       document.body.appendChild(this.overlay);
     }
+    this.overlay.style.display = 'block';
   }
 
   private handleKeydown = (event: KeyboardEvent) => {
@@ -144,7 +203,7 @@ export class AlightDialogModal {
     }
   };
 
-  public closeModal(onClose?: () => void) {
+  public closeModal(): void {
     // Clean up DOM
     if (document.body.contains(this.overlay)) {
       document.body.removeChild(this.overlay);
@@ -152,8 +211,8 @@ export class AlightDialogModal {
     document.removeEventListener('keydown', this.handleKeydown);
 
     // Fire the callback
-    if (onClose) {
-      onClose();
+    if (this.onCloseCallback) {
+      this.onCloseCallback();
     }
   }
 }

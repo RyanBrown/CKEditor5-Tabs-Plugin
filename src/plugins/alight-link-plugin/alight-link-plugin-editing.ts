@@ -2,7 +2,7 @@
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 import LinkEditing from '@ckeditor/ckeditor5-link/src/linkediting';
 import LinkUI from '@ckeditor/ckeditor5-link/src/linkui';
-import AlightLinkPluginCommand from './alight-link-plugin-command';
+import AlightLinkPluginCommand, { LinkOptionData } from './alight-link-plugin-command';
 import { getPredefinedLinkContent } from './modal-content/predefined-link';
 import { getPublicIntranetLinkContent } from './modal-content/public-intranet-link';
 import { getExistingDocumentLinkContent } from './modal-content/existing-document-link';
@@ -16,36 +16,35 @@ export default class AlightLinkPluginEditing extends Plugin {
   public init() {
     const editor = this.editor;
 
-    // Example link option definitions
-    const linkOptionsContent = {
+    // Define link options
+    const linkOptionsContent: { [key: string]: LinkOptionData } = {
       linkOption1: {
         title: 'Choose a Predefined Link',
-        contentClass: 'predefined-link-container', // Define the class to be applied
-        content: '<div class="predefined-link-container"></div>', // Placeholder content with the correct class
+        contentClass: 'predefined-link-container',
+        content: '<div class="predefined-link-container">Loading...</div>',
         loadContent: async () => {
-          // Load the actual content and wrap it in the container class dynamically
           const predefinedContent = await getPredefinedLinkContent(3);
           return `<div class="predefined-link-container">${predefinedContent}</div>`;
         }
       },
       linkOption2: {
         title: 'Public Website Link',
-        content: '<div class="public-intranet-link-container"></div>',
+        content: '<div class="public-intranet-link-container">Loading...</div>',
         loadContent: async () => getPublicIntranetLinkContent('', false, '')
       },
       linkOption3: {
         title: 'Intranet Link',
-        content: '<div class="public-intranet-link-container"></div>',
+        content: '<div class="public-intranet-link-container">Loading...</div>',
         loadContent: async () => getPublicIntranetLinkContent('', true, '')
       },
       linkOption4: {
         title: 'Existing Document Link',
-        content: '<div class="existing-document-link-container"></div>',
+        content: '<div class="existing-document-link-container">Loading...</div>',
         loadContent: async () => getExistingDocumentLinkContent()
       },
       linkOption5: {
         title: 'New Document Link',
-        content: '<div class="new-document-link-container"></div>',
+        content: '<div class="new-document-link-container">Loading...</div>',
         loadContent: async () => getNewDocumentsLinkContent()
       }
     };
@@ -72,8 +71,8 @@ export default class AlightLinkPluginEditing extends Plugin {
     // Change the balloon button label
     saveButtonView.label = 'Edit with Alight';
 
-    // Intercept the default callback once, open your custom modal instead
-    saveButtonView.once('execute', (evt) => {
+    // Override the default execute handler
+    saveButtonView.on('execute', (evt) => {
       evt.stop();
 
       const selection = editor.model.document.selection;
@@ -81,31 +80,53 @@ export default class AlightLinkPluginEditing extends Plugin {
       const hrefString = typeof currentHrefValue === 'string' ? currentHrefValue : '';
       const isIntranet = hrefString.startsWith('http://intranet') || hrefString.startsWith('https://intranet');
 
-      // Example: load content from an existing function (already statically imported)
-      getPublicIntranetLinkContent(hrefString, isIntranet, '').then((modalContent) => {
-        // If we want to open a manual modal:
-        import('./../../plugins/alight-dialog-modal/alight-dialog-modal').then(({ AlightDialogModal }) => {
-          const modal = new AlightDialogModal({
-            title: isIntranet ? 'Edit Intranet Link' : 'Edit Public Link',
-            content: modalContent,
-            primaryButton: {
-              label: 'Apply',
-              onClick: () => {
-                const urlInput = document.getElementById('url') as HTMLInputElement;
-                if (urlInput?.value) {
-                  editor.model.change((writer) => {
-                    writer.setSelectionAttribute('linkHref', urlInput.value);
-                  });
+      // Load modal content asynchronously
+      getPublicIntranetLinkContent(hrefString, isIntranet, '')
+        .then((modalContent) => {
+          import('./../../plugins/alight-dialog-modal/alight-dialog-modal').then(({ AlightDialogModal }) => {
+            const modal = new AlightDialogModal({
+              title: isIntranet ? 'Edit Intranet Link' : 'Edit Public Link',
+              content: 'Loading...', // Initial placeholder
+              primaryButton: {
+                label: 'Apply',
+                onClick: () => {
+                  const urlInput = document.getElementById('url') as HTMLInputElement;
+                  if (urlInput?.value) {
+                    editor.model.change((writer) => {
+                      writer.setSelectionAttribute('linkHref', urlInput.value);
+                    });
+                  }
+                  modal.closeModal(); // Correct: no arguments
                 }
-                modal.closeModal();
-              }
-            },
-            tertiaryButton: { label: 'Cancel', onClick: () => console.log('Edit canceled') },
-            onClose: () => { console.log('Modal closed'); }
+              },
+              tertiaryButton: { label: 'Cancel', onClick: () => console.log('Edit canceled') },
+              onClose: () => { console.log('Modal closed'); }
+            });
+            modal.show();
+
+            // Update modal content after loading
+            modal.updateContent(modalContent);
           });
-          modal.show();
+        })
+        .catch((error) => {
+          console.error('Error loading link modal content:', error);
+          // Optionally, update the modal with an error message
+          import('./../../plugins/alight-dialog-modal/alight-dialog-modal').then(({ AlightDialogModal }) => {
+            const modal = new AlightDialogModal({
+              title: isIntranet ? 'Edit Intranet Link' : 'Edit Public Link',
+              content: '<p>Error loading content. Please try again later.</p>',
+              primaryButton: {
+                label: 'Close',
+                onClick: () => {
+                  modal.closeModal(); // Correct: no arguments
+                }
+              },
+              tertiaryButton: { label: 'Cancel', onClick: () => console.log('Edit canceled') },
+              onClose: () => { console.log('Modal closed'); }
+            });
+            modal.show();
+          });
         });
-      });
     });
   }
 }
