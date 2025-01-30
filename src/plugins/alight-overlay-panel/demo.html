@@ -4,57 +4,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Overlay Panel Component</title>
+    <title>Dynamic Overlay Panel</title>
+
     <style>
         body {
             font-family: Arial, sans-serif;
         }
 
         .overlay-panel {
-            position: absolute;
-            background: white;
-            border: 1px solid #ccc;
+            box-shadow: 0 0.1875rem 0.5rem rgba(0, 0, 0, 0.15);
+            background: #fff;
             border-radius: 5px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            padding: 15px;
+            border: 1px solid transparent;
             display: none;
-            z-index: 1000;
             min-width: 200px;
-            max-width: 300px;
-            word-wrap: break-word;
+            padding: 0;
+            position: absolute;
+            z-index: 1000;
         }
 
         .overlay-panel.active {
             display: block;
+        }
+
+        .overlay-panel header {
+            border-bottom: 1px solid #ccc;
+            display: flex;
+            justify-content: space-between;
+            padding: 1.5rem;
+        }
+
+        .overlay-panel main {
+            padding: 1.5rem;
+        }
+
+        .overlay-panel footer {
+            border-top: 1px solid #ccc;
+            display: flex;
+            justify-content: flex-start;
+            padding: 1.5rem;
         }
     </style>
 </head>
 
 <body>
 
-    <!-- Buttons and respective panels -->
+    <!-- Buttons with their respective panels -->
     <button class="triggerBtn" data-id="1" style="position: absolute; left: 10px; top: 10px;">Open Overlay</button>
     <div class="overlay-panel" data-id="1">
-        <p>This is an overlay panel! It will position dynamically.</p>
-        <button class="closeBtn">Close</button>
+        <header>Title <button class="closeBtn">Close</button></header>
+        <main>
+            <p>Panel positioned dynamically.</p>
+        </main>
+        <footer><button class="closeBtn">Close</button></footer>
     </div>
 
     <button class="triggerBtn" data-id="2" style="position: absolute; right: 10px; top: 10px;">Open Overlay</button>
     <div class="overlay-panel" data-id="2">
-        <p>This is an overlay panel! It will position dynamically.</p>
-        <button class="closeBtn">Close</button>
+        <header>Title <button class="closeBtn">Close</button></header>
+        <main>
+            <p>Panel positioned dynamically.</p>
+        </main>
+        <footer><button class="closeBtn">Close</button></footer>
     </div>
 
     <button class="triggerBtn" data-id="3" style="position: absolute; left: 10px; bottom: 10px;">Open Overlay</button>
     <div class="overlay-panel" data-id="3">
-        <p>This is an overlay panel! It will position dynamically.</p>
-        <button class="closeBtn">Close</button>
+        <header>Title <button class="closeBtn">Close</button></header>
+        <main>
+            <p>Panel positioned dynamically.</p>
+        </main>
+        <footer><button class="closeBtn">Close</button></footer>
     </div>
 
     <button class="triggerBtn" data-id="4" style="position: absolute; right: 10px; bottom: 10px;">Open Overlay</button>
     <div class="overlay-panel" data-id="4">
-        <p>This is an overlay panel! It will position dynamically.</p>
-        <button class="closeBtn">Close</button>
+        <header>Title <button class="closeBtn">Close</button></header>
+        <main>
+            <p>Panel positioned dynamically.</p>
+        </main>
+        <footer><button class="closeBtn">Close</button></footer>
     </div>
 
     <script>
@@ -99,30 +128,30 @@
                 const spaceLeft = rect.left;
                 const spaceRight = windowWidth - rect.right;
 
-                // **Positioning Logic Based on Image Example**
+                // Determine best position
                 if (spaceBelow >= panelRect.height) {
-                    // ✅ Position below the button (aligned left)
+                    // ✅ Place below button (default)
                     top = rect.bottom + window.scrollY;
-                    left = rect.left + window.scrollX;
+                    left = this.alignHorizontally(rect, panelRect, windowWidth);
                 } else if (spaceAbove >= panelRect.height) {
-                    // ✅ Position above the button (aligned right)
+                    // ✅ Place above button
                     top = rect.top - panelRect.height + window.scrollY;
-                    left = rect.right - panelRect.width + window.scrollX;
+                    left = this.alignHorizontally(rect, panelRect, windowWidth);
                 } else if (spaceRight >= panelRect.width) {
-                    // ✅ Position to the right of the button (aligned top)
-                    top = rect.top + window.scrollY;
+                    // ✅ Place to the right
+                    top = this.alignVertically(rect, panelRect, windowHeight);
                     left = rect.right + window.scrollX;
                 } else if (spaceLeft >= panelRect.width) {
-                    // ✅ Position to the left of the button (aligned top)
-                    top = rect.top + window.scrollY;
+                    // ✅ Place to the left
+                    top = this.alignVertically(rect, panelRect, windowHeight);
                     left = rect.left - panelRect.width + window.scrollX;
                 } else {
-                    // ❗ Default to below if no perfect fit
+                    // ❗ Default positioning fallback (below, aligned left)
                     top = rect.bottom + window.scrollY;
                     left = rect.left + window.scrollX;
                 }
 
-                // ✅ Ensure panel stays inside viewport
+                // Ensure panel stays inside viewport
                 if (left + panelRect.width > windowWidth) {
                     left = windowWidth - panelRect.width - 10;
                 }
@@ -135,6 +164,24 @@
                 panel.style.top = `${top}px`;
                 panel.style.left = `${left}px`;
                 panel.classList.add("active");
+            }
+
+            alignHorizontally(rect, panelRect, windowWidth) {
+                // Align left if there's space, otherwise align right
+                if (rect.left + panelRect.width <= windowWidth) {
+                    return rect.left + window.scrollX;
+                } else {
+                    return rect.right - panelRect.width + window.scrollX;
+                }
+            }
+
+            alignVertically(rect, panelRect, windowHeight) {
+                // Align top if there's space, otherwise align bottom
+                if (rect.top + panelRect.height <= windowHeight) {
+                    return rect.top + window.scrollY;
+                } else {
+                    return rect.bottom - panelRect.height + window.scrollY;
+                }
             }
 
             hide(event) {

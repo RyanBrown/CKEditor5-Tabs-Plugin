@@ -14,4 +14,20 @@
   &.active {
     display: block;
   }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    padding: var(-spacing-xxl);
+  }
+
+  main {
+    padding: var(-spacing-xxl);
+  }
+
+  footer {
+    display: flex;
+    justify-content: flex-start;
+    padding: var(-spacing-xxl);
+  }
 }
