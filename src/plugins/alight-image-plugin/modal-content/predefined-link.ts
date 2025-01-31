@@ -2,6 +2,7 @@
 import predefinedLinksData from './json/predefined-test-data.json';
 import './../../alight-link-plugin/styles/predefined-link.scss';
 import './../../alight-link-plugin/styles/search.scss';
+import './../../components/alight-overlay-panel-component/styles/alight-overlay-panel.scss';
 
 // State variables to manage data, search query, and current page
 let filteredLinksData = [...predefinedLinksData.predefinedLinksDetails];
@@ -70,14 +71,46 @@ export function getPredefinedLinkContent(page: number): string {
     </div>
   `;
 
+  // Create the advanced search panel markup
+  const advancedSearchPanelMarkup = `
+    <div class="ck-alight-overlay-panel" data-id="advanced-search-panel">
+      <button class="ck-alight-closeBtn">×</button>
+      <div class="advanced-search-content">
+        <h3>Advanced Search</h3>
+        <div class="form-group">
+          <label for="advanced-name-search">Link Name:</label>
+          <input type="text" id="advanced-name-search" />
+        </div>
+        <div class="form-group">
+          <label for="advanced-page-type">Page Type:</label>
+          <input type="text" id="advanced-page-type" />
+        </div>
+        <div class="form-group">
+          <label for="advanced-domain">Domain:</label>
+          <input type="text" id="advanced-domain" />
+        </div>
+        <div class="form-group">
+          <label for="advanced-client-specific">Base/Client Specific:</label>
+          <select id="advanced-client-specific">
+            <option value="">All</option>
+            <option value="Base">Base</option>
+            <option value="Client Specific">Client Specific</option>
+          </select>
+        </div>
+        <button id="apply-advanced-search">Apply Filters</button>
+      </div>
+    </div>
+  `;
+
   // Return complete HTML structure
   return `
     <div id="search-container">
       <input type="text" id="search-input" placeholder="Search by link name..." value="${currentSearchQuery}" />
       <button id="reset-search-btn">Reset</button>
-      <button>Advanced Search</button>
+      <button class="ck-alight-triggerBtn" data-id="advanced-search-panel">Advanced Search</button>
       <button id="search-btn">Search</button>
     </div>
+    ${advancedSearchPanelMarkup}
     ${linksMarkup || '<p>No results found.</p>'}
     ${paginationMarkup}
   `;
@@ -115,6 +148,40 @@ export function resetSearch(): void {
 }
 
 /**
+ * Handles the advanced search functionality
+ * @param container - The container element
+ */
+function handleAdvancedSearch(container: HTMLElement): void {
+  const applyButton = container.querySelector('#apply-advanced-search');
+  applyButton?.addEventListener('click', () => {
+    const nameSearch = (container.querySelector('#advanced-name-search') as HTMLInputElement)?.value.toLowerCase();
+    const pageType = (container.querySelector('#advanced-page-type') as HTMLInputElement)?.value.toLowerCase();
+    const domain = (container.querySelector('#advanced-domain') as HTMLInputElement)?.value.toLowerCase();
+    const clientSpecific = (container.querySelector('#advanced-client-specific') as HTMLSelectElement)?.value;
+
+    filteredLinksData = predefinedLinksData.predefinedLinksDetails.filter((link: any) => {
+      const matchesName = !nameSearch || link.predefinedLinkName.toLowerCase().includes(nameSearch);
+      const matchesPageType = !pageType || link.pageType.toLowerCase().includes(pageType);
+      const matchesDomain = !domain || link.domain.toLowerCase().includes(domain);
+      const matchesClientSpecific = !clientSpecific || link.baseOrClientSpecific === clientSpecific;
+
+      return matchesName && matchesPageType && matchesDomain && matchesClientSpecific;
+    });
+
+    currentPage = 1;
+    renderContent(container);
+
+    // Close the panel after applying filters
+    const panel = container.querySelector('.ck-alight-overlay-panel') as HTMLElement;
+    if (panel) {
+      panel.style.opacity = "0";
+      panel.style.visibility = "hidden";
+      panel.classList.remove("ck-alight-active");
+    }
+  });
+}
+
+/**
  * Renders the filtered and paginated content into the container.
  * @param container - The HTMLElement to render content into
  */
@@ -135,7 +202,7 @@ export function renderContent(container: HTMLElement): void {
  * @param container - The HTMLElement containing the modal's content
  */
 function attachEventListeners(container: HTMLElement): void {
-  // Search button listener
+  // Search functionality
   const searchBtn = container.querySelector('#search-btn') as HTMLButtonElement | null;
   const searchInput = container.querySelector('#search-input') as HTMLInputElement | null;
   const resetSearchBtn = container.querySelector('#reset-search-btn') as HTMLButtonElement | null;
@@ -144,15 +211,15 @@ function attachEventListeners(container: HTMLElement): void {
   searchBtn?.addEventListener('click', () => {
     if (searchInput) {
       handleSearch(searchInput.value);
-      renderContent(container); // Re-render content after search
+      renderContent(container);
     }
   });
 
   // Search input enter key handler
   searchInput?.addEventListener('keydown', (event) => {
     if (event.key === 'Enter' && searchBtn) {
-      event.preventDefault(); // Prevent form submission
-      searchBtn.click(); // Now TypeScript knows this is a button with a click method
+      event.preventDefault();
+      searchBtn.click();
     }
   });
 
@@ -160,10 +227,13 @@ function attachEventListeners(container: HTMLElement): void {
   resetSearchBtn?.addEventListener('click', () => {
     resetSearch();
     if (searchInput) searchInput.value = '';
-    renderContent(container); // Re-render content after reset
+    renderContent(container);
   });
 
-  // Unified pagination button handler using event delegation
+  // Advanced search handlers
+  handleAdvancedSearch(container);
+
+  // Pagination handlers
   const paginationDiv = container.querySelector('#pagination');
   paginationDiv?.addEventListener('click', (event) => {
     const target = event.target as HTMLElement;
@@ -193,7 +263,7 @@ function attachEventListeners(container: HTMLElement): void {
     if (page !== currentPage) {
       console.log('Updating to page:', page);
       currentPage = page;
-      renderContent(container); // Re-render content for the new page
+      renderContent(container);
     } else {
       console.log('Already on page:', page);
     }
