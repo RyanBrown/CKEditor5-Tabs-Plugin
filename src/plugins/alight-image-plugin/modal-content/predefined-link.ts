@@ -74,8 +74,9 @@ export function getPredefinedLinkContent(page: number): string {
   return `
     <div id="search-container">
       <input type="text" id="search-input" placeholder="Search by link name..." value="${currentSearchQuery}" />
-      <button id="search-btn">Search</button>
       <button id="reset-search-btn">Reset</button>
+      <button>Advanced Search</button>
+      <button id="search-btn">Search</button>
     </div>
     ${linksMarkup || '<p>No results found.</p>'}
     ${paginationMarkup}

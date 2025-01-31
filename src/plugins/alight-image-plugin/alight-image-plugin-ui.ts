@@ -42,7 +42,7 @@ export default class AlightImagePluginUI extends Plugin {
 
       // Items
       const itemDefinitions = [
-        { label: t('TEST Existing Image'), command: 'imageOption1' },
+        { label: t('Existing Image'), command: 'imageOption1' },
         { label: t('Upload Image'), command: 'imageOption2' },
       ];
 

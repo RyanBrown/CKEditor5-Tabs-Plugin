@@ -293,10 +293,16 @@ class CKAlightModalDialog {
 
   // Rest of the methods remain the same...
   public setContent(content: string | Node): void {
+    this.contentEl.innerHTML = '';  // Clear existing content
+
     if (typeof content === 'string') {
-      this.contentEl.innerHTML = content;
+      const tempContainer = document.createElement('div');
+      tempContainer.innerHTML = content;
+      // Append each child node individually to preserve event listeners
+      while (tempContainer.firstChild) {
+        this.contentEl.appendChild(tempContainer.firstChild);
+      }
     } else if (content instanceof Node) {
-      this.contentEl.innerHTML = '';
       this.contentEl.appendChild(content);
     }
   }

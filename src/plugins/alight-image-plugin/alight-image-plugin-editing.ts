@@ -16,7 +16,7 @@ export default class AlightImagePluginEditing extends Plugin {
         title: 'Existing Image',
         primaryButtonLabel: 'Choose',
         // loadContent: async () => getExistingImageContent()
-        loadContent: async () => getPredefinedLinkContent(1)
+        loadContent: async () => getPredefinedLinkContent(3)
       })
     );
 

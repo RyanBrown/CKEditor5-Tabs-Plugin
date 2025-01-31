@@ -2,6 +2,7 @@
 import type Editor from '@ckeditor/ckeditor5-core/src/editor/editor';
 import Command from '@ckeditor/ckeditor5-core/src/command';
 import CKAlightModalDialog from './../components/alight-modal-dialog-component/alight-modal-dialog-component';
+import { renderContent } from './modal-content/predefined-link';
 
 interface ImageOptionData {
   title: string;
@@ -53,14 +54,24 @@ export class AlightImagePluginCommand extends Command {
   public override execute(): void {
     this.dialog.setTitle(this.data.title);
 
+    // Create a container for the content
+    const contentContainer = document.createElement('div');
+    contentContainer.className = 'modal-content-container';
+
     // Set initial loading state
-    this.dialog.setContent('<div class="loading">Loading content...</div>');
+    contentContainer.innerHTML = '<div class="loading">Loading content...</div>';
+    this.dialog.setContent(contentContainer);
+
     this.dialog.show();
 
     // Load content if available
     if (this.data.loadContent) {
       this.data.loadContent().then((content) => {
-        this.dialog.setContent(content);
+        contentContainer.innerHTML = content;
+        // If this is the predefined link content, initialize it
+        if (this.data.title === 'Existing Image') {
+          renderContent(contentContainer);
+        }
       });
     }
   }
