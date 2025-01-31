@@ -1,4 +1,4 @@
-@use './../../../styles/mixins' as mixins;
+@use './../../../../styles/mixins' as mixins;
 
 .ck-alight-overlay-panel {
   background: #fff;
@@ -54,5 +54,17 @@
 
   &:hover {
     text-decoration: underline;
+  }
+}
+
+.ck-alight-overlay-panel {
+  display: none;
+
+  &.visible {
+    display: block;
+  }
+
+  &.hidden {
+    display: none;
   }
 }

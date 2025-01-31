@@ -1,3 +1,5 @@
+// src/plugins/alight-image-plugin/modal-content/existing-image.ts
+
 export async function getExistingImageContent(): Promise<string> {
   // Placeholder content for public website links
   return `

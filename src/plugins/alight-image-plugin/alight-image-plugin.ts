@@ -1,4 +1,4 @@
-// alight-image-plugin.ts
+// src/plugins/alight-image-plugin/alight-image-plugin.ts
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 import AlightImagePluginUI from './alight-image-plugin-ui';
 import AlightImagePluginEditing from './alight-image-plugin-editing';

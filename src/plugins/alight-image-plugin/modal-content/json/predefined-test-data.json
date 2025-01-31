@@ -1,0 +1,257 @@
+{
+  "predefinedLinksDetails": [
+    {
+      "predefinedLinkName": "SAMPLE_LINK_001",
+      "predefinedLinkDescription": "Description for SAMPLE_LINK_001",
+      "baseOrClientSpecific": "Client Specific",
+      "pageType": "Public Website",
+      "destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_001",
+      "domain": "Sample Domain 1",
+      "uniqueId": "UID-SAMPLE_LINK_001",
+      "attributeName": "sampleAttributeName_1",
+      "attributeValue": "sampleAttributeValue_1"
+    },
+    {
+      "predefinedLinkName": "SAMPLE_LINK_002",
+      "predefinedLinkDescription": "Description for SAMPLE_LINK_002",
+      "baseOrClientSpecific": "Base",
+      "pageType": "App Screen",
+      "destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_002",
+      "domain": "Sample Domain 2",
+      "uniqueId": "UID-SAMPLE_LINK_002",
+      "attributeName": "sampleAttributeName_2",
+      "attributeValue": "sampleAttributeValue_2"
+    },
+    {
+      "predefinedLinkName": "SAMPLE_LINK_003",
+      "predefinedLinkDescription": "Description for SAMPLE_LINK_003",
+      "baseOrClientSpecific": "Client Specific",
+      "pageType": "SSO",
+      "destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_003",
+      "domain": "Sample Domain 3",
+      "uniqueId": "UID-SAMPLE_LINK_003",
+      "attributeName": "sampleAttributeName_3",
+      "attributeValue": "sampleAttributeValue_3"
+    },
+    {
+      "predefinedLinkName": "SAMPLE_LINK_004",
+      "predefinedLinkDescription": "Description for SAMPLE_LINK_004",
+      "baseOrClientSpecific": "Base",
+      "pageType": "UPoint",
+      "destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_004",
+      "domain": "Sample Domain 4",
+      "uniqueId": "UID-SAMPLE_LINK_004",
+      "attributeName": "sampleAttributeName_4",
+      "attributeValue": "sampleAttributeValue_4"
+    },
+    {
+      "predefinedLinkName": "SAMPLE_LINK_005",
+      "predefinedLinkDescription": "Description for SAMPLE_LINK_005",
+      "baseOrClientSpecific": "Client Specific",
+      "pageType": "Intranet",
+      "destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_005",
+      "domain": "Sample Domain 5",
+      "uniqueId": "UID-SAMPLE_LINK_005",
+      "attributeName": "sampleAttributeName_5",
+      "attributeValue": "sampleAttributeValue_5"
+    },
+    {
+      "predefinedLinkName": "SAMPLE_LINK_006",
+      "predefinedLinkDescription": "Description for SAMPLE_LINK_006",
+      "baseOrClientSpecific": "Base",
+      "pageType": "Public Website",
+      "destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_006",
+      "domain": "Sample Domain 6",
+      "uniqueId": "UID-SAMPLE_LINK_006",
+      "attributeName": "sampleAttributeName_6",
+      "attributeValue": "sampleAttributeValue_6"
+    },
+    {
+      "predefinedLinkName": "SAMPLE_LINK_007",
+      "predefinedLinkDescription": "Description for SAMPLE_LINK_007",
+      "baseOrClientSpecific": "Client Specific",
+      "pageType": "App Screen",
+      "destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_007",
+      "domain": "Sample Domain 7",
+      "uniqueId": "UID-SAMPLE_LINK_007",
+      "attributeName": "sampleAttributeName_7",
+      "attributeValue": "sampleAttributeValue_7"
+    },
+    {
+      "predefinedLinkName": "SAMPLE_LINK_008",
+      "predefinedLinkDescription": "Description for SAMPLE_LINK_008",
+      "baseOrClientSpecific": "Base",
+      "pageType": "SSO",
+      "destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_008",
+      "domain": "Sample Domain 8",
+      "uniqueId": "UID-SAMPLE_LINK_008",
+      "attributeName": "sampleAttributeName_8",
+      "attributeValue": "sampleAttributeValue_8"
+    },
+    {
+      "predefinedLinkName": "SAMPLE_LINK_009",
+      "predefinedLinkDescription": "Description for SAMPLE_LINK_009",
+      "baseOrClientSpecific": "Client Specific",
+      "pageType": "UPoint",
+      "destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_009",
+      "domain": "Sample Domain 9",
+      "uniqueId": "UID-SAMPLE_LINK_009",
+      "attributeName": "sampleAttributeName_9",
+      "attributeValue": "sampleAttributeValue_9"
+    },
+    {
+      "predefinedLinkName": "SAMPLE_LINK_010",
+      "predefinedLinkDescription": "Description for SAMPLE_LINK_010",
+      "baseOrClientSpecific": "Base",
+      "pageType": "Intranet",
+      "destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_010",
+      "domain": "Sample Domain 10",
+      "uniqueId": "UID-SAMPLE_LINK_010",
+      "attributeName": "sampleAttributeName_10",
+      "attributeValue": "sampleAttributeValue_10"
+    },
+    {
+      "predefinedLinkName": "SAMPLE_LINK_011",
+      "predefinedLinkDescription": "Description for SAMPLE_LINK_011",
+      "baseOrClientSpecific": "Client Specific",
+      "pageType": "Public Website",
+      "destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_011",
+      "domain": "Sample Domain 11",
+      "uniqueId": "UID-SAMPLE_LINK_011",
+      "attributeName": "sampleAttributeName_11",
+      "attributeValue": "sampleAttributeValue_11"
+    },
+    {
+      "predefinedLinkName": "BROWN_SAMPLE_LINK_012",
+      "predefinedLinkDescription": "Description for SAMPLE_LINK_012",
+      "baseOrClientSpecific": "Base",
+      "pageType": "App Screen",
+      "destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_012",
+      "domain": "Sample Domain 12",
+      "uniqueId": "UID-SAMPLE_LINK_012",
+      "attributeName": "sampleAttributeName_12",
+      "attributeValue": "sampleAttributeValue_12"
+    },
+    {
+      "predefinedLinkName": "SAMPLE_LINK_013",
+      "predefinedLinkDescription": "Description for SAMPLE_LINK_013",
+      "baseOrClientSpecific": "Client Specific",
+      "pageType": "SSO",
+      "destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_013",
+      "domain": "Sample Domain 13",
+      "uniqueId": "UID-SAMPLE_LINK_013",
+      "attributeName": "sampleAttributeName_13",
+      "attributeValue": "sampleAttributeValue_13"
+    },
+    {
+      "predefinedLinkName": "SAMPLE_LINK_014",
+      "predefinedLinkDescription": "Description for SAMPLE_LINK_014",
+      "baseOrClientSpecific": "Base",
+      "pageType": "UPoint",
+      "destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_014",
+      "domain": "Sample Domain 14",
+      "uniqueId": "UID-SAMPLE_LINK_014",
+      "attributeName": "sampleAttributeName_14",
+      "attributeValue": "sampleAttributeValue_14"
+    },
+    {
+      "predefinedLinkName": "SAMPLE_LINK_015",
+      "predefinedLinkDescription": "Description for SAMPLE_LINK_015",
+      "baseOrClientSpecific": "Client Specific",
+      "pageType": "Intranet",
+      "destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_015",
+      "domain": "Sample Domain 15",
+      "uniqueId": "UID-SAMPLE_LINK_015",
+      "attributeName": "sampleAttributeName_15",
+      "attributeValue": "sampleAttributeValue_15"
+    },
+    {
+      "predefinedLinkName": "Ryan_Brown_SAMPLE_LINK_016",
+      "predefinedLinkDescription": "Description for SAMPLE_LINK_016",
+      "baseOrClientSpecific": "Base",
+      "pageType": "Public Website",
+      "destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_016",
+      "domain": "Sample Domain 16",
+      "uniqueId": "UID-SAMPLE_LINK_016",
+      "attributeName": "sampleAttributeName_16",
+      "attributeValue": "sampleAttributeValue_16"
+    },
+    {
+      "predefinedLinkName": "SAMPLE_LINK_017",
+      "predefinedLinkDescription": "Description for SAMPLE_LINK_017",
+      "baseOrClientSpecific": "Client Specific",
+      "pageType": "App Screen",
+      "destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_017",
+      "domain": "Sample Domain 17",
+      "uniqueId": "UID-SAMPLE_LINK_017",
+      "attributeName": "sampleAttributeName_17",
+      "attributeValue": "sampleAttributeValue_17"
+    },
+    {
+      "predefinedLinkName": "SAMPLE_LINK_018",
+      "predefinedLinkDescription": "Description for SAMPLE_LINK_018",
+      "baseOrClientSpecific": "Base",
+      "pageType": "SSO",
+      "destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_018",
+      "domain": "Sample Domain 18",
+      "uniqueId": "UID-SAMPLE_LINK_018",
+      "attributeName": "sampleAttributeName_18",
+      "attributeValue": "sampleAttributeValue_18"
+    },
+    {
+      "predefinedLinkName": "SAMPLE_LINK_019",
+      "predefinedLinkDescription": "Description for SAMPLE_LINK_019",
+      "baseOrClientSpecific": "Client Specific",
+      "pageType": "UPoint",
+      "destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_019",
+      "domain": "Sample Domain 19",
+      "uniqueId": "UID-SAMPLE_LINK_019",
+      "attributeName": "sampleAttributeName_19",
+      "attributeValue": "sampleAttributeValue_19"
+    },
+    {
+      "predefinedLinkName": "SAMPLE_LINK_020",
+      "predefinedLinkDescription": "Description for SAMPLE_LINK_020",
+      "baseOrClientSpecific": "Base",
+      "pageType": "Intranet",
+      "destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_020",
+      "domain": "Sample Domain 20",
+      "uniqueId": "UID-SAMPLE_LINK_020",
+      "attributeName": "sampleAttributeName_20",
+      "attributeValue": "sampleAttributeValue_20"
+    },
+    {
+      "predefinedLinkName": "SAMPLE_LINK_021",
+      "predefinedLinkDescription": "Description for SAMPLE_LINK_021",
+      "baseOrClientSpecific": "Client Specific",
+      "pageType": "Public Website",
+      "destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_021",
+      "domain": "Sample Domain 21",
+      "uniqueId": "UID-SAMPLE_LINK_021",
+      "attributeName": "sampleAttributeName_21",
+      "attributeValue": "sampleAttributeValue_21"
+    },
+    {
+      "predefinedLinkName": "RYAN_SAMPLE_LINK_022",
+      "predefinedLinkDescription": "Description for SAMPLE_LINK_022",
+      "baseOrClientSpecific": "Base",
+      "pageType": "App Screen",
+      "destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_022",
+      "domain": "Sample Domain 22",
+      "uniqueId": "UID-SAMPLE_LINK_022",
+      "attributeName": "sampleAttributeName_22",
+      "attributeValue": "sampleAttributeValue_22"
+    },
+    {
+      "predefinedLinkName": "Ryan_SAMPLE_LINK_023",
+      "predefinedLinkDescription": "Description for SAMPLE_LINK_023",
+      "baseOrClientSpecific": "Client Specific",
+      "pageType": "SSO",
+      "destination": "/sample-path/#/web/{friendlyUrl}/journey?templatename=SAMPLE_TEMPLATE_023",
+      "domain": "Sample Domain 23",
+      "uniqueId": "UID-SAMPLE_LINK_023",
+      "attributeName": "sampleAttributeName_23",
+      "attributeValue": "sampleAttributeValue_23"
+    }
+  ]
+}

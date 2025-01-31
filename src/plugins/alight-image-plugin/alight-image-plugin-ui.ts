@@ -1,4 +1,4 @@
-// alight-image-plugin-ui.ts
+// src/plugins/alight-image-plugin/alight-image-plugin-ui.ts
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 import { createDropdown } from '@ckeditor/ckeditor5-ui/src/dropdown/utils';
 import ListView from '@ckeditor/ckeditor5-ui/src/list/listview';
@@ -42,7 +42,7 @@ export default class AlightImagePluginUI extends Plugin {
 
       // Items
       const itemDefinitions = [
-        { label: t('Existing Image'), command: 'imageOption1' },
+        { label: t('TEST Existing Image'), command: 'imageOption1' },
         { label: t('Upload Image'), command: 'imageOption2' },
       ];
 

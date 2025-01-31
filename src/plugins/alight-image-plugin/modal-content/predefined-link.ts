@@ -1,24 +1,15 @@
-// src/plugins/alight-link-plugin/modal-content/predefined-link.ts
+// src/plugins/alight-image-plugin/modal-content/predefined-link.ts
 import predefinedLinksData from './json/predefined-test-data.json';
-import './../styles/predefined-link.scss';
-import './../styles/search.scss';
-import { AlightOverlayPanel } from '../../components/alight-overlay-panel-component/alight-overlay-panel';
+import './../../alight-link-plugin/styles/predefined-link.scss';
+import './../../alight-link-plugin/styles/search.scss';
 
 // State variables to manage data, search query, and current page
 let filteredLinksData = [...predefinedLinksData.predefinedLinksDetails];
 let currentSearchQuery = '';
 let currentPage = 1;
-let overlayPanel: AlightOverlayPanel | null = null;
 
 // Constants
 const pageSize = 5;  // Number of items per page
-
-// Initialize the overlay panel
-function initializeOverlayPanel(): void {
-  if (!overlayPanel) {
-    overlayPanel = new AlightOverlayPanel();
-  }
-}
 
 /**
  * Generates the HTML content for the current filtered and paginated data.
@@ -47,7 +38,7 @@ export function getPredefinedLinkContent(page: number): string {
     .map((link: any) => `
       <div class="link-item">
         <div>
-          <ck-alight-radio-button name="link-selection" value="${link.predefinedLinkName}" label="${link.predefinedLinkName}"></ck-alight-radio-button>
+          <input type="radio" name="link-selection" value="${link.predefinedLinkName}" />
         </div>
         <ul>
           <li><strong>${link.predefinedLinkName}</strong></li>
@@ -83,39 +74,12 @@ export function getPredefinedLinkContent(page: number): string {
   return `
     <div id="search-container">
       <input type="text" id="search-input" placeholder="Search by link name..." value="${currentSearchQuery}" />
-      <button class="triggerBtn" data-id="1">Open Panel 1</button>
       <button id="search-btn">Search</button>
       <button id="reset-search-btn">Reset</button>
-
-      <div class="overlay-panel hidden" data-id="1">
-        <header>
-          <span>Panel Title</span>
-          <button class="closeBtn">Close</button>
-        </header>
-        <main>
-          <p>This is the overlay panel content.</p>
-        </main>
-        <footer>
-          <button class="closeBtn">Close</button>
-        </footer>
-      </div>
     </div>
     ${linksMarkup || '<p>No results found.</p>'}
     ${paginationMarkup}
   `;
-}
-
-// Renders the filtered and paginated content into the container.
-// Document ready handler
-function onDocumentReady(): void {
-  initializeOverlayPanel();
-}
-
-// Add document ready listener
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', onDocumentReady);
-} else {
-  onDocumentReady();
 }
 
 /**

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Enhanced Vanilla JS PrimeNG-like Radio Button</title>
+</head>
+
+<body>
+
+  <!-- Example Usage -->
+  <form id="radioForm">
+    <ck-alight-radio-button name="group1" value="option1" label="Option 1" checked></ck-alight-radio-button>
+    <ck-alight-radio-button name="group1" value="option2" label="Option 2"></ck-alight-radio-button>
+    <ck-alight-radio-button name="group1" value="option3" label="Option 3" disabled></ck-alight-radio-button>
+  </form>
+
+  <script>
+    class CKAlightRadioButton extends HTMLElement {
+      constructor() {
+        super();
+        this.attachShadow({ mode: 'open' });
+
+        // Create the template
+        const wrapper = document.createElement('label');
+        wrapper.classList.add('ck-alight-radio-button');
+
+        // Handle 'disabled' attribute
+        if (this.hasAttribute('disabled')) {
+          wrapper.classList.add('disabled');
+        }
+
+        // Create the radio input
+        this.radioInput = document.createElement('input');
+        this.radioInput.type = 'radio';
+        this.radioInput.name = this.getAttribute('name') || '';
+        this.radioInput.value = this.getAttribute('value') || '';
+        this.radioInput.id = `radio-${Math.random().toString(36).substr(2, 9)}`; // Unique ID for accessibility
+
+        // Handle 'checked' attribute
+        if (this.hasAttribute('checked')) {
+          this.radioInput.checked = true;
+        }
+
+        // Handle 'disabled' attribute
+        if (this.hasAttribute('disabled')) {
+          this.radioInput.disabled = true;
+        }
+
+        // Create the custom radio icon
+        const radioIcon = document.createElement('span');
+        radioIcon.classList.add('ck-alight-radio-icon');
+
+        // Create the label text
+        const labelText = document.createElement('span');
+        labelText.classList.add('label-text');
+        labelText.textContent = this.getAttribute('label') || '';
+
+        // Associate label with input for accessibility
+        wrapper.htmlFor = this.radioInput.id;
+
+        // Append elements
+        wrapper.appendChild(this.radioInput);
+        wrapper.appendChild(radioIcon);
+        wrapper.appendChild(labelText);
+        this.shadowRoot.appendChild(wrapper);
+
+        // Event Listener
+        this.radioInput.addEventListener('change', (e) => {
+          this.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+
+        // Define and attach styles within the Shadow DOM
+        const style = document.createElement('style');
+        style.textContent = `
+          /* Enhanced PrimeNG-like Radio Button Styles */
+          :host {
+            display: inline-block;
+            margin: 0.5rem 0;
+          }
+
+          .ck-alight-radio-button {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            padding-left: 2rem;
+            font-size: 1rem;
+            color: #333;
+            transition: color 0.3s;
+          }
+
+          .ck-alight-radio-button input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+          }
+
+          .ck-alight-radio-button .ck-alight-radio-icon {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 1.2rem;
+            width: 1.2rem;
+            background-color: #fff;
+            border: 2px solid #007ad9;
+            border-radius: 50%;
+            box-sizing: border-box;
+            transition: border-color 0.3s, background-color 0.3s;
+          }
+
+          /* Outer Circle Animation */
+          .ck-alight-radio-button .ck-alight-radio-icon::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            width: 0.6rem;
+            height: 0.6rem;
+            background-color: #007ad9;
+            border-radius: 50%;
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+            opacity: 0;
+          }
+
+          /* Checked State */
+          .ck-alight-radio-button input[type="radio"]:checked + .ck-alight-radio-icon::after {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+          }
+
+          /* Hover Effects */
+          .ck-alight-radio-button:hover .ck-alight-radio-icon {
+            border-color: #005bb5;
+          }
+
+          .ck-alight-radio-button:hover .label-text {
+            color: #005bb5;
+          }
+
+          /* Focus Styles for Accessibility */
+          .ck-alight-radio-button input[type="radio"]:focus + .ck-alight-radio-icon {
+            box-shadow: 0 0 0 3px rgba(0, 122, 217, 0.3);
+          }
+
+          /* Disabled State */
+          .ck-alight-radio-button.disabled {
+            cursor: not-allowed;
+            color: #a8a8a8;
+          }
+
+          .ck-alight-radio-button.disabled .ck-alight-radio-icon {
+            border-color: #a8a8a8;
+            background-color: #f5f5f5;
+          }
+
+          .ck-alight-radio-button.disabled input[type="radio"]:checked + .ck-alight-radio-icon::after {
+            background-color: #a8a8a8;
+          }
+
+          /* Transition for Label Color */
+          .ck-alight-radio-button .label-text {
+            transition: color 0.3s;
+          }
+        `;
+        this.shadowRoot.appendChild(style);
+      }
+
+      static get observedAttributes() {
+        return ['name', 'value', 'label', 'checked', 'disabled'];
+      }
+
+      attributeChangedCallback(name, oldValue, newValue) {
+        switch (name) {
+          case 'name':
+            this.radioInput.name = newValue;
+            break;
+          case 'value':
+            this.radioInput.value = newValue;
+            break;
+          case 'label':
+            this.shadowRoot.querySelector('.label-text').textContent = newValue;
+            break;
+          case 'checked':
+            this.radioInput.checked = newValue !== null;
+            break;
+          case 'disabled':
+            if (newValue !== null) {
+              this.radioInput.disabled = true;
+              this.shadowRoot.querySelector('.ck-alight-radio-button').classList.add('disabled');
+            } else {
+              this.radioInput.disabled = false;
+              this.shadowRoot.querySelector('.ck-alight-radio-button').classList.remove('disabled');
+            }
+            break;
+        }
+      }
+
+      // Getter and Setter for checked property
+      get checked() {
+        return this.radioInput.checked;
+      }
+
+      set checked(val) {
+        this.radioInput.checked = val;
+        if (val) {
+          this.setAttribute('checked', '');
+        } else {
+          this.removeAttribute('checked');
+        }
+      }
+
+      // Getter and Setter for disabled property
+      get disabled() {
+        return this.radioInput.disabled;
+      }
+
+      set disabled(val) {
+        if (val) {
+          this.setAttribute('disabled', '');
+        } else {
+          this.removeAttribute('disabled');
+        }
+      }
+    }
+
+    // Define the custom element with the new name
+    window.customElements.define('ck-alight-radio-button', CKAlightRadioButton);
+
+    // Example: Handling change events
+    document.getElementById('radioForm').addEventListener('change', (e) => {
+      const selected = document.querySelector('ck-alight-radio-button[name="group1"] input[type="radio"]:checked');
+      if (selected) {
+        console.log('Selected Value:', selected.value);
+      }
+    });
+  </script>
+</body>
+
+</html>
