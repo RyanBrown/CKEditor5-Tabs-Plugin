@@ -100,7 +100,7 @@ export function handleSearch(query: string): void {
 
   console.log('Filtered results:', filteredLinksData.length);
 
-  // Reset to the first page and render
+  // Reset to the first page after search
   currentPage = 1;
 }
 
@@ -136,26 +136,31 @@ export function renderContent(container: HTMLElement): void {
  */
 function attachEventListeners(container: HTMLElement): void {
   // Search button listener
-  const searchBtn = container.querySelector('#search-btn');
+  const searchBtn = container.querySelector('#search-btn') as HTMLButtonElement | null;
   const searchInput = container.querySelector('#search-input') as HTMLInputElement | null;
-  const resetSearchBtn = container.querySelector('#reset-search-btn');
+  const resetSearchBtn = container.querySelector('#reset-search-btn') as HTMLButtonElement | null;
 
+  // Search button click handler
   searchBtn?.addEventListener('click', () => {
-    if (searchInput) handleSearch(searchInput.value);
-    renderContent(container); // Re-render content after search
+    if (searchInput) {
+      handleSearch(searchInput.value);
+      renderContent(container); // Re-render content after search
+    }
   });
 
+  // Search input enter key handler
+  searchInput?.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' && searchBtn) {
+      event.preventDefault(); // Prevent form submission
+      searchBtn.click(); // Now TypeScript knows this is a button with a click method
+    }
+  });
+
+  // Reset button handler
   resetSearchBtn?.addEventListener('click', () => {
     resetSearch();
     if (searchInput) searchInput.value = '';
     renderContent(container); // Re-render content after reset
-  });
-
-  // Input listener for live search (optional)
-  searchInput?.addEventListener('input', (event) => {
-    const target = event.target as HTMLInputElement;
-    handleSearch(target.value);
-    renderContent(container); // Re-render content after input
   });
 
   // Unified pagination button handler using event delegation
