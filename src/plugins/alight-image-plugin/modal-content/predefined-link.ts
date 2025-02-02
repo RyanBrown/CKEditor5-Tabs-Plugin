@@ -1,6 +1,7 @@
 // src/plugins/alight-image-plugin/modal-content/predefined-link.ts
 import predefinedLinksData from './json/predefined-test-data.json';
 import { AlightOverlayPanel } from '../../ui-components/alight-overlay-panel-component/alight-overlay-panel';
+import { CKALightSelectMenu } from '../../ui-components/alight-select-menu-component/alight-select-menu-component';
 import './../../alight-link-plugin/styles/predefined-link.scss';
 import './../../alight-link-plugin/styles/search.scss';
 import '../../ui-components/alight-checkbox-component/alight-checkbox-component';
@@ -123,16 +124,12 @@ export function getPredefinedLinkContent(page: number): string {
     `)
     .join('');
 
-  // Generate pagination controls
+  // Generate pagination controls with select menu
   const paginationMarkup = `
     <div id="pagination">
       <button id="first-page" data-page="1" ${page === 1 ? 'disabled' : ''}>First</button>
       <button id="prev-page" data-page="${page - 1}" ${page === 1 ? 'disabled' : ''}>Previous</button>
-      ${Array.from({ length: totalPages }, (_, i) =>
-    `<button class="page-btn ${i + 1 === page ? 'active' : ''}" data-page="${i + 1}">
-          ${i + 1}
-        </button>`
-  ).join('')}
+      <div id="page-select-container"></div>
       <button id="next-page" data-page="${page + 1}" ${page === totalPages ? 'disabled' : ''}>Next</button>
       <button id="last-page" data-page="${totalPages}" ${page === totalPages ? 'disabled' : ''}>Last</button>
     </div>
@@ -149,6 +146,32 @@ export function getPredefinedLinkContent(page: number): string {
     ${linksMarkup || '<p>No results found.</p>'}
     ${paginationMarkup}
   `;
+}
+
+// Initialize the page select menu
+function initializePageSelect(container: HTMLElement, currentPage: number, totalPages: number): void {
+  const pageSelectContainer = container.querySelector('#page-select-container') as HTMLElement;
+  if (!pageSelectContainer) return;
+
+  const pageOptions = Array.from({ length: totalPages }, (_, i) => ({
+    label: `Page ${i + 1} of ${totalPages}`,
+    value: i + 1
+  }));
+
+  const pageSelect = new CKALightSelectMenu({
+    options: pageOptions,
+    value: currentPage,
+    placeholder: `Page ${currentPage} of ${totalPages}`,
+    onChange: (value) => {
+      if (value && typeof value === 'number') {
+        currentPage = value;
+        renderContent(container);
+      }
+    }
+  });
+
+  pageSelectContainer.innerHTML = '';
+  pageSelect.mount(pageSelectContainer);
 }
 
 // Applies all active filters to the data
@@ -209,6 +232,12 @@ export function renderContent(container: HTMLElement): void {
 
   // Initialize overlay panel
   new AlightOverlayPanel();
+
+  // Calculate total pages for select menu
+  const totalPages = Math.ceil(filteredLinksData.length / pageSize) || 1;
+
+  // Initialize the page select menu
+  initializePageSelect(container, currentPage, totalPages);
 
   // Attach event listeners after content is injected
   attachEventListeners(container);
