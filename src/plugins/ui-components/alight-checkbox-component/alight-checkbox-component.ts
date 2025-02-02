@@ -1,9 +1,4 @@
 // src/plugins/ui-components/alight-checkbox-component/alight-checkbox-component.ts
-
-/**
- * PrimeNG-style checkbox component for CKEditor 5
- */
-
 import './styles/alight-checkbox-component.scss';
 
 export class CkAlightCheckbox extends HTMLElement {
@@ -16,21 +11,21 @@ export class CkAlightCheckbox extends HTMLElement {
   constructor() {
     super();
     this.innerHTML = `
-      <label class="p-checkbox p-component" tabindex="0" role="checkbox" aria-checked="false">
-        <div class="p-checkbox-box">
-          <svg class="p-checkbox-icon" viewBox="0 0 14 14" width="14px" height="14px">
+      <label class="cka-checkbox cka-component" tabindex="0" role="checkbox" aria-checked="false">
+        <div class="cka-checkbox-box">
+          <svg class="cka-checkbox-icon" viewBox="0 0 14 14" width="14px" height="14px">
             <path d="M4.86 7.52L3.25 5.91l-.99.99 2.6 2.6 5.49-5.49-.99-.99z"></path>
           </svg>
         </div>
-        <span class="p-checkbox-label">
+        <span class="cka-checkbox-label">
           ${this.textContent || ''}
         </span>
       </label>
     `;
 
     // Cache elements
-    this._container = this.querySelector('.p-checkbox');
-    this._box = this.querySelector('.p-checkbox-box');
+    this._container = this.querySelector('.cka-checkbox');
+    this._box = this.querySelector('.cka-checkbox-box');
 
     // Bind methods
     this._onClick = this._onClick.bind(this);
@@ -142,12 +137,12 @@ export class CkAlightCheckbox extends HTMLElement {
     if (!this._container || !this._box) return;
 
     // Update container
-    this._container.classList.toggle('p-checkbox-focused', this._focused);
-    this._container.classList.toggle('p-disabled', this._disabled);
+    this._container.classList.toggle('cka-checkbox-focused', this._focused);
+    this._container.classList.toggle('cka-disabled', this._disabled);
     this._container.setAttribute('aria-checked', String(this._checked));
 
     // Update checkbox box
-    this._box.classList.toggle('p-highlight', this._checked);
+    this._box.classList.toggle('cka-highlight', this._checked);
 
     // Update attributes
     if (this._checked) {

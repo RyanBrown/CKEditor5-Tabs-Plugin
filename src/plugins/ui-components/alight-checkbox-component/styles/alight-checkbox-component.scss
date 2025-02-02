@@ -1,5 +1,3 @@
-// src/plugins/ui-components/alight-checkbox-component/styles/alight-checkbox-component.scss
-
 ck-alight-checkbox {
   display: inline-flex;
   user-select: none;
@@ -12,7 +10,7 @@ ck-alight-checkbox {
   }
 }
 
-.p-checkbox {
+.cka-checkbox {
   display: inline-flex;
   cursor: pointer;
   user-select: none;
@@ -20,13 +18,13 @@ ck-alight-checkbox {
   position: relative;
   align-items: center;
 
-  &:not(.p-disabled) {
-    .p-checkbox-box {
-      &:not(.p-highlight):hover {
+  &:not(.cka-disabled) {
+    .cka-checkbox-box {
+      &:not(.cka-highlight):hover {
         border-color: var(--primary-color, #3B82F6);
       }
 
-      &.p-highlight {
+      &.cka-highlight {
         background: var(--primary-color, #3B82F6);
         border-color: var(--primary-color, #3B82F6);
 
@@ -35,35 +33,35 @@ ck-alight-checkbox {
           border-color: var(--primary-600, #2563EB);
         }
 
-        .p-checkbox-icon {
+        .cka-checkbox-icon {
           transform: scale(1);
           opacity: 1;
         }
       }
 
-      &.p-focus {
+      &.cka-focus {
         box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
         border-color: var(--primary-color, #3B82F6);
       }
     }
   }
 
-  &.p-checkbox-focused {
-    .p-checkbox-box {
+  &.cka-checkbox-focused {
+    .cka-checkbox-box {
       outline: 0 none;
       box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
       border-color: var(--primary-color, #3B82F6);
     }
   }
 
-  &.p-disabled {
+  &.cka-disabled {
     cursor: default;
     pointer-events: none;
     opacity: 0.6;
   }
 }
 
-.p-checkbox-box {
+.cka-checkbox-box {
   border: 2px solid #ced4da;
   background: #ffffff;
   width: 20px;
@@ -76,7 +74,7 @@ ck-alight-checkbox {
   justify-content: center;
 }
 
-.p-checkbox-icon {
+.cka-checkbox-icon {
   transform: scale(0);
   opacity: 0;
   transition: transform 0.12s cubic-bezier(0, 0, 0.2, 1), opacity 0.12s cubic-bezier(0, 0, 0.2, 1);
@@ -86,7 +84,7 @@ ck-alight-checkbox {
   pointer-events: none;
 }
 
-.p-checkbox-label {
+.cka-checkbox-label {
   margin-left: 0.5rem;
   line-height: 1;
   user-select: none;
