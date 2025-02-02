@@ -1,4 +1,4 @@
-// src/plugins/ui-components/alight-tabs-component/alight-tabs-component.ts
+// src/plugins/ui-components/alight-select-menu-component/alight-select-menu-component.ts
 import './styles/alight-select-menu.scss';
 
 interface SelectOption {
@@ -67,17 +67,21 @@ export class CKALightSelectMenu<T extends SelectOption> {
     this.selectedDisplay.className = 'cka-select-value';
     this.updateSelectedDisplay();
 
-    // Create dropdown arrow
+    // Create dropdown arrow with updated styling
     const arrow = document.createElement('span');
     arrow.className = 'cka-select-arrow';
-    arrow.innerHTML = '▼';
+    // Arrow styling handled by CSS
 
     selectButton.appendChild(this.selectedDisplay);
     selectButton.appendChild(arrow);
 
-    // Create dropdown panel
+    // Create dropdown panel with updated structure
     this.dropdownElement = document.createElement('div');
     this.dropdownElement.className = 'cka-select-dropdown';
+
+    // Add a wrapper for better styling
+    const dropdownContent = document.createElement('div');
+    dropdownContent.className = 'cka-select-dropdown-content';
 
     // Create filter input if enabled
     if (this.filter) {
@@ -91,16 +95,17 @@ export class CKALightSelectMenu<T extends SelectOption> {
       filterInput.addEventListener('click', (e) => e.stopPropagation());
 
       filterContainer.appendChild(filterInput);
-      this.dropdownElement.appendChild(filterContainer);
+      dropdownContent.appendChild(filterContainer);
     }
 
     // Create options container
     this.optionsContainer = document.createElement('div');
     this.optionsContainer.className = 'cka-select-options';
 
-    this.renderOptions();
+    dropdownContent.appendChild(this.optionsContainer);
+    this.dropdownElement.appendChild(dropdownContent);
 
-    this.dropdownElement.appendChild(this.optionsContainer);
+    this.renderOptions();
 
     // Append elements to main container
     this.element.appendChild(selectButton);
@@ -114,7 +119,6 @@ export class CKALightSelectMenu<T extends SelectOption> {
       }
     });
   }
-
 
   private renderOptions(): void {
     this.optionsContainer.innerHTML = '';
@@ -135,7 +139,20 @@ export class CKALightSelectMenu<T extends SelectOption> {
         optionElement.classList.add('disabled');
       }
 
-      optionElement.textContent = String(optionLabel);
+      // Create a label container for better alignment
+      const labelContainer = document.createElement('span');
+      labelContainer.className = 'cka-select-option-label';
+      labelContainer.textContent = String(optionLabel);
+
+      // Add checkmark icon for selected items
+      if (this.isSelected(optionValue)) {
+        const checkmark = document.createElement('span');
+        checkmark.className = 'cka-select-option-checkmark';
+        checkmark.innerHTML = '✓';
+        optionElement.appendChild(checkmark);
+      }
+
+      optionElement.appendChild(labelContainer);
       optionElement.addEventListener('click', () => this.handleOptionClick(option));
 
       this.optionsContainer.appendChild(optionElement);
@@ -293,22 +310,3 @@ export class CKALightSelectMenu<T extends SelectOption> {
     }
   }
 }
-
-// Example usage with TypeScript
-interface ExampleOption {
-  label: string;
-  value: number;
-  disabled?: boolean;
-}
-
-const select = new CKALightSelectMenu<ExampleOption>({
-  options: [
-    { label: 'Option 1', value: 1 },
-    { label: 'Option 2', value: 2, disabled: true },
-    { label: 'Option 3', value: 3 }
-  ],
-  placeholder: 'Select an option',
-  onChange: (value) => console.log('Selected value:', value),
-  multiple: true,
-  filter: true
-});
