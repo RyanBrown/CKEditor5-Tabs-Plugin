@@ -1,3 +1,6 @@
+// src/plugins/ui-components/alight-overlay-panel-component/alight-overlay-panel.ts
+import './styles/alight-overlay-panel.scss';
+
 export class AlightOverlayPanel {
   private panels: Map<string, HTMLDivElement> = new Map();
   private currentPanel: HTMLDivElement | null = null;

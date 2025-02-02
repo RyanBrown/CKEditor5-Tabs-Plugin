@@ -3,9 +3,7 @@ import predefinedLinksData from './json/predefined-test-data.json';
 import { AlightOverlayPanel } from '../../ui-components/alight-overlay-panel-component/alight-overlay-panel';
 import './../../alight-link-plugin/styles/predefined-link.scss';
 import './../../alight-link-plugin/styles/search.scss';
-import './../../ui-components/alight-overlay-panel-component/styles/alight-overlay-panel.scss';
 import '../../ui-components/alight-checkbox-component/alight-checkbox-component';
-import '../../ui-components/alight-checkbox-component/styles/alight-checkbox-component.scss';
 
 // Define interfaces for type safety
 interface SelectedFilters {
