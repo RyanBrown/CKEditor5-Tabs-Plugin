@@ -1,59 +1,93 @@
 // src/plugins/ui-components/alight-checkbox-component/styles/alight-checkbox-component.scss
 
-/**
- * ck-alight-checkbox.scss
- *
- * This SCSS file contains the styling for the <ck-alight-checkbox> custom element.
- * It is imported into the TypeScript component and injected into the shadow DOM.
- */
-
-:host {
+ck-alight-checkbox {
   display: inline-flex;
-  align-items: center;
-  cursor: pointer;
-  outline: none;
   user-select: none;
+  cursor: pointer;
+
+  &[disabled] {
+    cursor: default;
+    opacity: 0.6;
+    pointer-events: none;
+  }
 }
 
-:host([disabled]) {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.checkbox-container {
+.p-checkbox {
   display: inline-flex;
+  cursor: pointer;
+  user-select: none;
+  vertical-align: bottom;
+  position: relative;
   align-items: center;
+
+  &:not(.p-disabled) {
+    .p-checkbox-box {
+      &:not(.p-highlight):hover {
+        border-color: var(--primary-color, #3B82F6);
+      }
+
+      &.p-highlight {
+        background: var(--primary-color, #3B82F6);
+        border-color: var(--primary-color, #3B82F6);
+
+        &:hover {
+          background: var(--primary-600, #2563EB);
+          border-color: var(--primary-600, #2563EB);
+        }
+
+        .p-checkbox-icon {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      &.p-focus {
+        box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+        border-color: var(--primary-color, #3B82F6);
+      }
+    }
+  }
+
+  &.p-checkbox-focused {
+    .p-checkbox-box {
+      outline: 0 none;
+      box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+      border-color: var(--primary-color, #3B82F6);
+    }
+  }
+
+  &.p-disabled {
+    cursor: default;
+    pointer-events: none;
+    opacity: 0.6;
+  }
 }
 
-.checkbox-box {
-  width: 16px;
-  height: 16px;
-  border: 1px solid #ccc;
+.p-checkbox-box {
+  border: 2px solid #ced4da;
+  background: #ffffff;
+  width: 20px;
+  height: 20px;
+  color: #495057;
+  border-radius: 4px;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 0.5em;
-  background-color: #fff;
-  transition: background-color 0.2s, border-color 0.2s;
 }
 
-:host([checked]) .checkbox-box {
-  background-color: #007ad9;
-  border-color: #007ad9;
-}
-
-.checkbox-check {
-  color: white;
-  font-size: 12px;
-  line-height: 16px;
-  display: none;
-}
-
-:host([checked]) .checkbox-check {
+.p-checkbox-icon {
+  transform: scale(0);
+  opacity: 0;
+  transition: transform 0.12s cubic-bezier(0, 0, 0.2, 1), opacity 0.12s cubic-bezier(0, 0, 0.2, 1);
+  color: #ffffff;
+  fill: currentColor;
   display: block;
+  pointer-events: none;
 }
 
-/* Styling for projected label */
-.checkbox-label {
-  display: inline;
+.p-checkbox-label {
+  margin-left: 0.5rem;
+  line-height: 1;
+  user-select: none;
 }

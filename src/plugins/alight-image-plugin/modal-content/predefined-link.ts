@@ -4,74 +4,63 @@ import { AlightOverlayPanel } from '../../ui-components/alight-overlay-panel-com
 import './../../alight-link-plugin/styles/predefined-link.scss';
 import './../../alight-link-plugin/styles/search.scss';
 import './../../ui-components/alight-overlay-panel-component/styles/alight-overlay-panel.scss';
+import '../../ui-components/alight-checkbox-component/alight-checkbox-component';
+import '../../ui-components/alight-checkbox-component/styles/alight-checkbox-component.scss';
+
+// Define interfaces for type safety
+interface SelectedFilters {
+  [key: string]: string[];
+  baseOrClientSpecific: string[];
+  pageType: string[];
+  domain: string[];
+}
 
 // State variables to manage data, search query, and current page
 let filteredLinksData = [...predefinedLinksData.predefinedLinksDetails];
 let currentSearchQuery = '';
 let currentPage = 1;
-let currentAdvancedSearchFilter = '';
-// Define interface for filter types
-interface SelectedFilters {
-  [key: string]: string;
-  baseOrClientSpecific: string;
-  pageType: string;
-  domain: string;
-}
 
-// Initialize selected filters with type
+// Initialize selected filters with empty arrays
 let selectedFilters: SelectedFilters = {
-  baseOrClientSpecific: '',
-  pageType: '',
-  domain: ''
+  baseOrClientSpecific: [],
+  pageType: [],
+  domain: []
 };
 
 // Constants
 const pageSize = 5;  // Number of items per page
 
-const advancedSearchOptions = [
-  { label: 'Link Name', value: 'name' },
-  { label: 'Page Type', value: 'pageType' },
-  { label: 'Domain', value: 'domain' },
-  { label: 'Base/Client Specific', value: 'clientSpecific' }
-];
-
 /**
  * Gets unique values from an array of objects for a specific key
- * @param data - Array of objects
- * @param key - Key to extract unique values from
- * @returns Array of unique values
  */
 function getUniqueValues(data: any[], key: string): string[] {
   return Array.from(new Set(data.map(item => item[key]))).sort();
 }
 
 /**
- * Creates a select dropdown for filter options
- * @param options - Array of options
- * @param name - Name of the select element
- * @param label - Label text
- * @returns HTML string for select element
+ * Creates a checkbox list for filter options
  */
-function createSelectDropdown(options: string[], name: keyof SelectedFilters, label: string): string {
+function createCheckboxList(options: string[], filterType: keyof SelectedFilters, title: string): string {
   return `
-    <div class="form-group">
-      <label>${label}</label>
-      <select name="${name}" class="filter-select">
-        <option value="">All</option>
+    <div class="filter-section">
+      <h4>${title}</h4>
+      <ul class="checkbox-list">
         ${options.map(option => `
-          <option value="${option}" ${selectedFilters[name] === option ? 'selected' : ''}>
-            ${option}
-          </option>
+          <li>
+            <ck-alight-checkbox 
+              data-filter-type="${filterType}"
+              data-value="${option}"
+              ${selectedFilters[filterType].includes(option) ? 'initialvalue="true"' : ''}
+            >${option}</ck-alight-checkbox>
+          </li>
         `).join('')}
-      </select>
+      </ul>
     </div>
   `;
 }
 
 /**
- * Generates the HTML content for the current filtered and paginated data.
- * @param page - The current page number
- * @returns string - HTML content for the current page
+ * Generates the HTML content for the current filtered and paginated data
  */
 export function getPredefinedLinkContent(page: number): string {
   const totalItems = filteredLinksData.length;
@@ -97,9 +86,11 @@ export function getPredefinedLinkContent(page: number): string {
       <button class="cka-close-btn">×</button>
       <div class="advanced-search-content">
         <h3>Advanced Search</h3>
-        ${createSelectDropdown(baseOrClientSpecificOptions, 'baseOrClientSpecific', 'Base/Client Specific')}
-        ${createSelectDropdown(pageTypeOptions, 'pageType', 'Page Type')}
-        ${createSelectDropdown(domainOptions, 'domain', 'Domain')}
+        <div class="search-filters">
+          ${createCheckboxList(baseOrClientSpecificOptions, 'baseOrClientSpecific', 'Base/Client Specific')}
+          ${createCheckboxList(pageTypeOptions, 'pageType', 'Page Type')}
+          ${createCheckboxList(domainOptions, 'domain', 'Domain')}
+        </div>
         <div class="form-group">
           <input type="text" id="advanced-search-input" placeholder="Search by link name..." />
         </div>
@@ -146,7 +137,6 @@ export function getPredefinedLinkContent(page: number): string {
     </div>
   `;
 
-  // Return complete HTML structure
   return `
     <div id="search-container">
       <input type="text" id="search-input" placeholder="Search by link name..." value="${currentSearchQuery}" />
@@ -169,40 +159,38 @@ function applyFilters(): void {
       link.predefinedLinkName.toLowerCase().includes(currentSearchQuery.toLowerCase()) :
       true;
 
-    const baseOrClientSpecificMatch = selectedFilters.baseOrClientSpecific ?
-      link.baseOrClientSpecific === selectedFilters.baseOrClientSpecific :
-      true;
+    const baseOrClientSpecificMatch = selectedFilters.baseOrClientSpecific.length === 0 ||
+      selectedFilters.baseOrClientSpecific.includes(link.baseOrClientSpecific);
 
-    const pageTypeMatch = selectedFilters.pageType ?
-      link.pageType === selectedFilters.pageType :
-      true;
+    const pageTypeMatch = selectedFilters.pageType.length === 0 ||
+      selectedFilters.pageType.includes(link.pageType);
 
-    const domainMatch = selectedFilters.domain ?
-      link.domain === selectedFilters.domain :
-      true;
+    const domainMatch = selectedFilters.domain.length === 0 ||
+      selectedFilters.domain.includes(link.domain);
 
     return nameMatch && baseOrClientSpecificMatch && pageTypeMatch && domainMatch;
   });
 }
 
 /**
- * Handles the advanced search functionality
- * @param container - The container element
+ * Handles checkbox change events
  */
-function handleAdvancedSearch(container: HTMLElement): void {
-  const searchInput = container.querySelector('#advanced-search-input') as HTMLInputElement;
-  currentSearchQuery = searchInput?.value || '';
+function handleCheckboxChange(event: Event): void {
+  const checkbox = event.target as any;
+  if (!checkbox || !('checked' in checkbox)) return;
 
-  // Update selected filters from dropdowns
-  const filterSelects = container.querySelectorAll('.filter-select') as NodeListOf<HTMLSelectElement>;
-  filterSelects.forEach(select => {
-    const filterName = select.name as keyof SelectedFilters;
-    selectedFilters[filterName] = select.value;
-  });
+  const filterType = checkbox.dataset.filterType as keyof SelectedFilters;
+  const value = checkbox.dataset.value;
 
-  applyFilters();
-  currentPage = 1;
-  renderContent(container);
+  if (!filterType || !value) return;
+
+  if (checkbox.checked) {
+    if (!selectedFilters[filterType].includes(value)) {
+      selectedFilters[filterType].push(value);
+    }
+  } else {
+    selectedFilters[filterType] = selectedFilters[filterType].filter(v => v !== value);
+  }
 }
 
 /**
@@ -211,17 +199,16 @@ function handleAdvancedSearch(container: HTMLElement): void {
 export function resetSearch(): void {
   currentSearchQuery = '';
   selectedFilters = {
-    baseOrClientSpecific: '',
-    pageType: '',
-    domain: ''
+    baseOrClientSpecific: [],
+    pageType: [],
+    domain: []
   };
   filteredLinksData = [...predefinedLinksData.predefinedLinksDetails];
   currentPage = 1;
 }
 
 /**
- * Renders the filtered and paginated content into the container.
- * @param container - The HTMLElement to render content into
+ * Renders the filtered and paginated content into the container
  */
 export function renderContent(container: HTMLElement): void {
   const content = getPredefinedLinkContent(currentPage);
@@ -235,33 +222,40 @@ export function renderContent(container: HTMLElement): void {
 }
 
 /**
- * Attaches event listeners to search and pagination controls.
- * @param container - The HTMLElement containing the modal's content
+ * Attaches event listeners to the container
  */
 function attachEventListeners(container: HTMLElement): void {
   // Search functionality
-  const searchBtn = container.querySelector('#search-btn') as HTMLButtonElement | null;
-  const searchInput = container.querySelector('#search-input') as HTMLInputElement | null;
-  const resetSearchBtn = container.querySelector('#reset-search-btn') as HTMLButtonElement | null;
-  const applyAdvancedSearch = container.querySelector('#apply-advanced-search') as HTMLButtonElement | null;
-  const clearAdvancedSearch = container.querySelector('#clear-advanced-search') as HTMLButtonElement | null;
+  const searchBtn = container.querySelector('#search-btn');
+  const searchInput = container.querySelector('#search-input') as HTMLInputElement;
+  const resetSearchBtn = container.querySelector('#reset-search-btn');
+  const applyAdvancedSearch = container.querySelector('#apply-advanced-search');
+  const clearAdvancedSearch = container.querySelector('#clear-advanced-search');
+
+  // Add checkbox change listeners
+  const checkboxes = container.querySelectorAll('ck-alight-checkbox');
+  checkboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', handleCheckboxChange);
+  });
 
   // Search button click handler
-  searchBtn?.addEventListener('click', () => {
-    if (searchInput) {
-      currentSearchQuery = searchInput.value;
+  if (searchBtn instanceof HTMLElement) {
+    searchBtn.addEventListener('click', () => {
+      currentSearchQuery = searchInput?.value || '';
       applyFilters();
       renderContent(container);
-    }
-  });
+    });
+  }
 
   // Search input enter key handler
-  searchInput?.addEventListener('keydown', (event: KeyboardEvent) => {
-    if (event.key === 'Enter' && searchBtn) {
-      event.preventDefault();
-      searchBtn.click();
-    }
-  });
+  if (searchInput instanceof HTMLInputElement) {
+    searchInput.addEventListener('keydown', (event: KeyboardEvent) => {
+      if (event.key === 'Enter' && searchBtn instanceof HTMLElement) {
+        event.preventDefault();
+        searchBtn.click();
+      }
+    });
+  }
 
   // Reset button handler
   resetSearchBtn?.addEventListener('click', () => {
@@ -272,7 +266,8 @@ function attachEventListeners(container: HTMLElement): void {
 
   // Advanced search handlers
   applyAdvancedSearch?.addEventListener('click', () => {
-    handleAdvancedSearch(container);
+    applyFilters();
+    renderContent(container);
   });
 
   clearAdvancedSearch?.addEventListener('click', () => {
