@@ -1,3 +1,5 @@
+// alight-tabs-component-view.ts - Update class references
+// In TabView template
 // src/plugins/ui-components/views/tabs/tab-view.ts
 import { View, ViewCollection } from '@ckeditor/ckeditor5-ui';
 import type { Locale } from '@ckeditor/ckeditor5-utils';
@@ -49,13 +51,13 @@ export class TabView extends View implements TabViewProperties {
       attributes: {
         class: [
           'ck',
-          'ck-alight-tab',
-          bind.to('isActive', value => value ? 'ck-alight-tab--active' : ''),
+          'cka-tab',
+          bind.to('isActive', value => value ? 'cka-tab--active' : ''),
           bind.to('isEnabled', value => value ? 'ck-enabled' : 'ck-disabled')
         ],
         role: 'tab',
         'aria-selected': bind.to('isActive', String),
-        'aria-controls': `tab-panel-${this.id}`,
+        'aria-controls': `cka-tab-panel-${this.id}`,
         id: `tab-${this.id}`,
         tabindex: bind.to('isActive', isActive => isActive ? '0' : '-1')
       },
@@ -63,7 +65,7 @@ export class TabView extends View implements TabViewProperties {
         {
           tag: 'button',
           attributes: {
-            class: ['ck-alight-tab__button']
+            class: ['cka-tab__button']
           },
           children: [
             {
@@ -115,11 +117,11 @@ export class TabPanelView extends View {
       attributes: {
         class: [
           'ck',
-          'ck-alight-tab-panel',
-          bind.to('isActive', value => value ? 'ck-alight-tab-panel--active' : '')
+          'cka-tab-panel',
+          bind.to('isActive', value => value ? 'cka-tab-panel--active' : '')
         ],
         role: 'tabpanel',
-        id: `tab-panel-${this.id}`,
+        id: `cka-tab-panel-${this.id}`,
         'aria-labelledby': `tab-${this.id}`,
         tabindex: '0'
       },
@@ -150,14 +152,14 @@ export class TabsView extends View {
       attributes: {
         class: [
           'ck',
-          'ck-alight-tabs'
+          'cka-tabs'
         ]
       },
       children: [
         {
           tag: 'ul',
           attributes: {
-            class: ['ck-alight-tabs__list'],
+            class: ['cka-tabs__list'],
             role: 'tablist'
           },
           children: this.tabsCollection
@@ -165,9 +167,8 @@ export class TabsView extends View {
         {
           tag: 'div',
           attributes: {
-            class: ['ck-alight-tabs__panels']
-          },
-          children: this.panelsCollection
+            class: ['cka-tabs__panels']
+          }
         }
       ]
     };
@@ -178,9 +179,7 @@ export class TabsView extends View {
     this._setUpKeyboardNavigation();
   }
 
-  /**
-   * Creates tabs from configuration
-   */
+  // Creates tabs from configuration
   private _createTabs(tabConfigs: TabViewConfig[]): void {
     for (const config of tabConfigs) {
       const tabView = new TabView(this.locale as Locale, config);

@@ -63,7 +63,7 @@ export default class AlightTabsComponent extends Plugin {
       model: 'alightTabs',
       view: (modelElement, { writer }) => {
         return writer.createContainerElement('div', {
-          class: 'ck-alight-tabs'
+          class: 'cka-tabs'
         });
       }
     });
@@ -72,7 +72,7 @@ export default class AlightTabsComponent extends Plugin {
       model: 'alightTabs',
       view: (modelElement, { writer }) => {
         const div = writer.createContainerElement('div', {
-          class: 'ck-alight-tabs'
+          class: 'cka-tabs'
         });
         return toWidget(div, writer, { label: 'tab widget' });
       }
@@ -81,7 +81,7 @@ export default class AlightTabsComponent extends Plugin {
     editor.conversion.for('upcast').elementToElement({
       view: {
         name: 'div',
-        classes: ['ck-alight-tabs']
+        classes: ['cka-tabs']
       },
       model: 'alightTabs'
     });
