@@ -28,16 +28,12 @@ let selectedFilters: SelectedFilters = {
 // Constants
 const pageSize = 5;  // Number of items per page
 
-/**
- * Gets unique values from an array of objects for a specific key
- */
+// Gets unique values from an array of objects for a specific key
 function getUniqueValues(data: any[], key: string): string[] {
   return Array.from(new Set(data.map(item => item[key]))).sort();
 }
 
-/**
- * Creates a checkbox list for filter options
- */
+// Creates a checkbox list for filter options
 function createCheckboxList(options: string[], filterType: keyof SelectedFilters, title: string): string {
   return `
     <div class="filter-section">
@@ -57,9 +53,7 @@ function createCheckboxList(options: string[], filterType: keyof SelectedFilters
   `;
 }
 
-/**
- * Generates the HTML content for the current filtered and paginated data
- */
+// Generates the HTML content for the current filtered and paginated data
 export function getPredefinedLinkContent(page: number): string {
   const totalItems = filteredLinksData.length;
   const totalPages = Math.ceil(totalItems / pageSize) || 1;
@@ -81,9 +75,11 @@ export function getPredefinedLinkContent(page: number): string {
   // Create the advanced search panel markup
   const advancedSearchPanelMarkup = `
     <div class="cka-overlay-panel" data-id="advanced-search-panel">
+    <header>
+      <h3>Advanced Search</h3>
       <button class="cka-close-btn">×</button>
-      <div class="advanced-search-content">
-        <h3>Advanced Search</h3>
+    </header>
+      <main class="advanced-search-content">
         <div class="search-filters">
           ${createCheckboxList(baseOrClientSpecificOptions, 'baseOrClientSpecific', 'Base/Client Specific')}
           ${createCheckboxList(pageTypeOptions, 'pageType', 'Page Type')}
@@ -92,9 +88,11 @@ export function getPredefinedLinkContent(page: number): string {
         <div class="form-group">
           <input type="text" id="advanced-search-input" placeholder="Search by link name..." />
         </div>
+      </main>
+      <footer>
         <button id="apply-advanced-search">Apply Filters</button>
         <button id="clear-advanced-search">Clear Filters</button>
-      </div>
+      </footer>
     </div>
   `;
 
@@ -148,9 +146,7 @@ export function getPredefinedLinkContent(page: number): string {
   `;
 }
 
-/**
- * Applies all active filters to the data
- */
+// Applies all active filters to the data
 function applyFilters(): void {
   filteredLinksData = predefinedLinksData.predefinedLinksDetails.filter((link: any) => {
     const nameMatch = currentSearchQuery ?
@@ -170,9 +166,7 @@ function applyFilters(): void {
   });
 }
 
-/**
- * Handles checkbox change events
- */
+// Handles checkbox change events
 function handleCheckboxChange(event: Event): void {
   const checkbox = event.target as any;
   if (!checkbox || !('checked' in checkbox)) return;
@@ -191,9 +185,7 @@ function handleCheckboxChange(event: Event): void {
   }
 }
 
-/**
- * Resets all filters and search criteria
- */
+// Resets all filters and search criteria
 export function resetSearch(): void {
   currentSearchQuery = '';
   selectedFilters = {
@@ -205,9 +197,7 @@ export function resetSearch(): void {
   currentPage = 1;
 }
 
-/**
- * Renders the filtered and paginated content into the container
- */
+// Renders the filtered and paginated content into the container
 export function renderContent(container: HTMLElement): void {
   const content = getPredefinedLinkContent(currentPage);
   container.innerHTML = content;
@@ -219,9 +209,7 @@ export function renderContent(container: HTMLElement): void {
   attachEventListeners(container);
 }
 
-/**
- * Attaches event listeners to the container
- */
+// Attaches event listeners to the container
 function attachEventListeners(container: HTMLElement): void {
   // Search functionality
   const searchBtn = container.querySelector('#search-btn');

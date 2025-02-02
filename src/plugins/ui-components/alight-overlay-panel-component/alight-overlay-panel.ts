@@ -1,20 +1,27 @@
 // src/plugins/ui-components/alight-overlay-panel-component/alight-overlay-panel.ts
+
 import './styles/alight-overlay-panel.scss';
+
+interface PanelConfig {
+  width?: string;
+  height?: string;
+}
 
 export class AlightOverlayPanel {
   private panels: Map<string, HTMLDivElement> = new Map();
   private currentPanel: HTMLDivElement | null = null;
   private zIndex: number = 1000;
+  private configs: Map<string, PanelConfig> = new Map();
 
-  constructor() {
+  constructor(config?: PanelConfig) {
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => this.initialize());
+      document.addEventListener('DOMContentLoaded', () => this.initialize(config));
     } else {
-      this.initialize();
+      this.initialize(config);
     }
   }
 
-  private initialize(): void {
+  private initialize(defaultConfig?: PanelConfig): void {
     const buttons = document.querySelectorAll('.cka-trigger-btn');
     const panels = document.querySelectorAll('.cka-overlay-panel');
 
@@ -22,6 +29,15 @@ export class AlightOverlayPanel {
       const id = panel.getAttribute('data-id');
       if (id) {
         this.panels.set(id, panel as HTMLDivElement);
+
+        // Get panel-specific config from data attributes
+        const panelConfig: PanelConfig = {
+          width: panel.getAttribute('data-width') || defaultConfig?.width,
+          height: panel.getAttribute('data-height') || defaultConfig?.height,
+        };
+
+        this.configs.set(id, panelConfig);
+        this.applyConfig(panel as HTMLDivElement, panelConfig);
       }
     });
 
@@ -38,6 +54,16 @@ export class AlightOverlayPanel {
     window.addEventListener('scroll', () => this.handleWindowResize(), true);
   }
 
+  private applyConfig(panel: HTMLDivElement, config: PanelConfig): void {
+    // Apply width and height if provided
+    if (config.width) {
+      panel.style.width = config.width;
+    }
+    if (config.height) {
+      panel.style.height = config.height;
+    }
+  }
+
   private toggle(event: Event): void {
     event.stopPropagation();
     const button = event.currentTarget as HTMLButtonElement;
@@ -46,10 +72,14 @@ export class AlightOverlayPanel {
     if (!panelId || !this.panels.has(panelId)) return;
 
     const panel = this.panels.get(panelId)!;
+    const config = this.configs.get(panelId);
 
     if (panel.classList.contains('cka-active')) {
       this.hidePanel(panel);
     } else {
+      if (config) {
+        this.applyConfig(panel, config);
+      }
       this.show(button, panel);
     }
   }
@@ -140,6 +170,17 @@ export class AlightOverlayPanel {
       if (button) {
         this.show(button, this.currentPanel);
       }
+    }
+  }
+
+  // Public method to update config for a specific panel
+  public updatePanelConfig(panelId: string, config: Partial<PanelConfig>): void {
+    const panel = this.panels.get(panelId);
+    if (panel) {
+      const currentConfig = this.configs.get(panelId) || {};
+      const newConfig = { ...currentConfig, ...config };
+      this.configs.set(panelId, newConfig);
+      this.applyConfig(panel, newConfig);
     }
   }
 }

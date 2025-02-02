@@ -1,145 +1,94 @@
+// src/plugins/ui-components/alight-overlay-panel-component/styles/alight-overlay-panel.scss
+
 .cka-overlay-panel {
-  position: fixed;
   background: #ffffff;
-  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, .2), 0 4px 5px 0 rgba(0, 0, 0, .14), 0 1px 10px 0 rgba(0, 0, 0, .12);
   border-radius: 6px;
-  padding: 1.25rem;
-  min-width: 200px;
-  z-index: 1000;
-  transform-origin: top;
-  animation: overlayAnimation 120ms cubic-bezier(0, 0, 0.2, 1);
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.2), 0 4px 5px 0 rgba(0, 0, 0, 0.14), 0 1px 10px 0 rgba(0, 0, 0, 0.12);
   display: none;
+  max-height: 90vh;
+  min-width: 300px;
+  overflow: hidden;
+  position: absolute;
+
+  header {
+    border-bottom: 1px solid #ccc;
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem;
+  }
+
+  main {
+    overflow: auto;
+    padding: 1rem;
+  }
+
+  footer {
+    border-top: 1px solid #ccc;
+    display: flex;
+    justify-content: flex-start;
+    padding: 1rem;
+  }
+
 
   &.cka-active {
-    display: block;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .cka-overlay-header {
+    padding: 1rem;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    &.cka-hidden {
+      display: none;
+    }
+  }
+
+  .cka-overlay-content {
+    padding: 1rem;
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .cka-overlay-footer {
+    padding: 1rem;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+
+    &.cka-hidden {
+      display: none;
+    }
   }
 
   .cka-close-btn {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
-    width: 2rem;
-    height: 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: none;
     border: none;
-    background: transparent;
-    border-radius: 50%;
+    padding: 0.5rem;
     cursor: pointer;
-    font-size: 1.25rem;
+    font-size: 1.5rem;
+    line-height: 1;
     color: #6c757d;
-    transition: background-color 0.2s;
+    transition: color 0.2s;
 
     &:hover {
-      background-color: rgba(0, 0, 0, 0.04);
-    }
-  }
-
-  .advanced-search-content {
-    h3 {
-      margin: 0 0 1rem 0;
-      font-size: 1.25rem;
-      font-weight: 500;
       color: #343a40;
     }
-
-    .form-group {
-      margin-bottom: 1rem;
-
-      label {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        cursor: pointer;
-        color: #495057;
-        font-size: 1rem;
-        padding: 0.5rem;
-        border-radius: 6px;
-        transition: background-color 0.2s;
-
-        &:hover {
-          background-color: #f8f9fa;
-        }
-
-        input[type="radio"] {
-          margin: 0;
-          cursor: pointer;
-        }
-      }
-
-      input[type="text"] {
-        width: 100%;
-        padding: 0.5rem 0.75rem;
-        border: 1px solid #ced4da;
-        border-radius: 6px;
-        font-size: 1rem;
-        transition: border-color 0.2s, box-shadow 0.2s;
-
-        &:focus {
-          outline: none;
-          border-color: #6366F1;
-          box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
-        }
-      }
-    }
-
-    button {
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
-      border: 1px solid transparent;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: background-color 0.2s, border-color 0.2s;
-      margin-right: 0.5rem;
-
-      &#apply-advanced-search {
-        background-color: #6366F1;
-        color: white;
-
-        &:hover {
-          background-color: #4F46E5;
-        }
-      }
-
-      &#clear-advanced-search {
-        background-color: #ffffff;
-        border-color: #ced4da;
-        color: #6c757d;
-
-        &:hover {
-          background-color: #f8f9fa;
-          border-color: #b5bdc4;
-        }
-      }
-    }
   }
 }
 
-.cka-trigger-btn {
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  background-color: #ffffff;
-  border: 1px solid #ced4da;
-  color: #6c757d;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-size: 1rem;
+// Animation classes
+.cka-overlay-panel {
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.2s, transform 0.2s;
 
-  &:hover {
-    background-color: #f8f9fa;
-    border-color: #b5bdc4;
-  }
-}
-
-@keyframes overlayAnimation {
-  from {
-    opacity: 0;
-    transform: scaleY(0.8);
-  }
-
-  to {
+  &.cka-active {
     opacity: 1;
-    transform: scaleY(1);
+    transform: translateY(0);
   }
 }
