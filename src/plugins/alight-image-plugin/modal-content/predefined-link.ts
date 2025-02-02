@@ -78,8 +78,8 @@ export function getPredefinedLinkContent(page: number): string {
 
   // Create the advanced search panel markup
   const advancedSearchPanelMarkup = `
-    <div class="ck-alight-overlay-panel" data-id="advanced-search-panel">
-      <button class="ck-alight-closeBtn">×</button>
+    <div class="cka-overlay-panel" data-id="advanced-search-panel">
+      <button class="cka-close-btn">×</button>
       <div class="advanced-search-content">
         <h3>Advanced Search</h3>
         ${advancedSearchOptions.map(option => `
@@ -105,7 +105,7 @@ export function getPredefinedLinkContent(page: number): string {
     <div id="search-container">
       <input type="text" id="search-input" placeholder="Search by link name..." value="${currentSearchQuery}" />
       <button id="reset-search-btn">Reset</button>
-      <button class="ck-alight-triggerBtn" data-id="advanced-search-panel">Advanced Search</button>
+      <button class="cka-trigger-btn" data-id="advanced-search-panel">Advanced Search</button>
       <button id="search-btn">Search</button>
     </div>
     ${advancedSearchPanelMarkup}
