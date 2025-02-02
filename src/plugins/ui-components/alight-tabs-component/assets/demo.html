@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vanilla Tabs</title>
+  <style>
+    .tabs {
+      width: 100%;
+      max-width: 800px;
+      margin: 20px auto;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .tabs-header {
+      display: flex;
+      border-bottom: 2px solid #dee2e6;
+      position: relative;
+    }
+
+    .tab-button {
+      padding: 1rem 1.5rem;
+      border: none;
+      background: none;
+      color: #6c757d;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .tab-button:hover {
+      color: #3B82F6;
+      background-color: rgba(59, 130, 246, 0.04);
+    }
+
+    .tab-button.active {
+      color: #3B82F6;
+    }
+
+    .tab-button.active::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background-color: #3B82F6;
+      animation: slideIn 0.2s ease-out;
+    }
+
+    .tab-content {
+      padding: 1.5rem;
+      display: none;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .close-button {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: none;
+      background: #dee2e6;
+      color: #6c757d;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      margin-left: 8px;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .close-button:hover {
+      background: #6c757d;
+      color: white;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: scaleX(0);
+      }
+
+      to {
+        transform: scaleX(1);
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    /* Optional scroll buttons for overflow */
+    .scroll-button {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 24px;
+      height: 24px;
+      border: none;
+      background: white;
+      box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+      border-radius: 50%;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1;
+    }
+
+    .scroll-button.left {
+      left: -12px;
+    }
+
+    .scroll-button.right {
+      right: -12px;
+    }
+
+    .scroll-button:hover {
+      background: #f8f9fa;
+    }
+
+    .tabs-header.scrollable {
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    .tabs-header.scrollable .scroll-button {
+      display: flex;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Example usage -->
+  <div id="myTabs" class="tabs">
+    <div class="tabs-header">
+      <button class="scroll-button left" aria-label="Scroll left">←</button>
+      <button class="scroll-button right" aria-label="Scroll right">→</button>
+    </div>
+    <div class="tabs-content"></div>
+  </div>
+
+  <script>
+    class VanillaTabs {
+      constructor(element, options = {}) {
+        this.element = element;
+        this.options = {
+          closable: false,
+          scrollable: true,
+          ...options
+        };
+
+        this.header = element.querySelector('.tabs-header');
+        this.content = element.querySelector('.tabs-content');
+        this.activeIndex = 0;
+        this.tabs = [];
+
+        if (this.options.scrollable) {
+          this.setupScrollButtons();
+        }
+      }
+
+      addTab(title, content, closable = this.options.closable) {
+        const index = this.tabs.length;
+
+        // Create tab button
+        const button = document.createElement('button');
+        button.className = 'tab-button';
+        button.setAttribute('role', 'tab');
+        button.setAttribute('aria-selected', 'false');
+        button.setAttribute('id', `tab-${index}`);
+        button.innerHTML = title;
+
+        if (closable) {
+          const closeBtn = document.createElement('button');
+          closeBtn.className = 'close-button';
+          closeBtn.innerHTML = '×';
+          closeBtn.setAttribute('aria-label', 'Close tab');
+          closeBtn.onclick = (e) => {
+            e.stopPropagation();
+            this.removeTab(index);
+          };
+          button.appendChild(closeBtn);
+        }
+
+        // Create content panel
+        const panel = document.createElement('div');
+        panel.className = 'tab-content';
+        panel.setAttribute('role', 'tabpanel');
+        panel.setAttribute('aria-labelledby', `tab-${index}`);
+        panel.innerHTML = content;
+
+        // Add click handler
+        button.onclick = () => this.activate(index);
+
+        // Store tab data
+        this.tabs.push({ button, panel });
+
+        // Add to DOM
+        this.header.appendChild(button);
+        this.content.appendChild(panel);
+
+        // Activate if first tab
+        if (this.tabs.length === 1) {
+          this.activate(0);
+        }
+
+        this.updateScrollButtons();
+      }
+
+      removeTab(index) {
+        const tab = this.tabs[index];
+        if (!tab) return;
+
+        // Remove DOM elements
+        tab.button.remove();
+        tab.panel.remove();
+
+        // Remove from array
+        this.tabs.splice(index, 1);
+
+        // Update remaining tabs' indices
+        this.tabs.forEach((tab, i) => {
+          tab.button.setAttribute('id', `tab-${i}`);
+          tab.panel.setAttribute('aria-labelledby', `tab-${i}`);
+        });
+
+        // Activate nearest tab if removed tab was active
+        if (index === this.activeIndex) {
+          const newIndex = Math.min(index, this.tabs.length - 1);
+          if (newIndex >= 0) {
+            this.activate(newIndex);
+          }
+        }
+
+        this.updateScrollButtons();
+      }
+
+      activate(index) {
+        // Deactivate current tab
+        if (this.activeIndex !== null) {
+          const currentTab = this.tabs[this.activeIndex];
+          if (currentTab) {
+            currentTab.button.classList.remove('active');
+            currentTab.button.setAttribute('aria-selected', 'false');
+            currentTab.panel.classList.remove('active');
+          }
+        }
+
+        // Activate new tab
+        const tab = this.tabs[index];
+        if (tab) {
+          tab.button.classList.add('active');
+          tab.button.setAttribute('aria-selected', 'true');
+          tab.panel.classList.add('active');
+          this.activeIndex = index;
+
+          // Scroll into view if needed
+          if (this.options.scrollable) {
+            tab.button.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+          }
+        }
+      }
+
+      setupScrollButtons() {
+        const leftBtn = this.header.querySelector('.scroll-button.left');
+        const rightBtn = this.header.querySelector('.scroll-button.right');
+
+        leftBtn.onclick = () => {
+          this.header.scrollBy({ left: -100, behavior: 'smooth' });
+        };
+
+        rightBtn.onclick = () => {
+          this.header.scrollBy({ left: 100, behavior: 'smooth' });
+        };
+
+        // Update scroll buttons visibility on scroll
+        this.header.onscroll = () => this.updateScrollButtons();
+      }
+
+      updateScrollButtons() {
+        if (!this.options.scrollable) return;
+
+        const { scrollLeft, scrollWidth, clientWidth } = this.header;
+        const leftBtn = this.header.querySelector('.scroll-button.left');
+        const rightBtn = this.header.querySelector('.scroll-button.right');
+
+        leftBtn.style.display = scrollLeft > 0 ? 'flex' : 'none';
+        rightBtn.style.display = scrollLeft < scrollWidth - clientWidth ? 'flex' : 'none';
+      }
+    }
+
+    // Example usage
+    const tabs = new VanillaTabs(document.getElementById('myTabs'), {
+      closable: true,
+      scrollable: true
+    });
+
+    // Add some example tabs
+    tabs.addTab('Home', '<h2>Home Content</h2><p>Welcome to the home tab!</p>');
+    tabs.addTab('Profile', '<h2>Profile Content</h2><p>This is your profile information.</p>');
+    tabs.addTab('Messages', '<h2>Messages</h2><p>You have no new messages.</p>');
+    tabs.addTab('Settings', '<h2>Settings</h2><p>Adjust your preferences here.</p>');
+  </script>
+</body>
+
+</html>

@@ -10,15 +10,20 @@ export class AlightOverlayPanel {
     this.buttons = document.querySelectorAll(".ck-alight-triggerBtn") as NodeListOf<HTMLButtonElement>;
     this.panels = document.querySelectorAll(".ck-alight-overlay-panel") as NodeListOf<HTMLDivElement>;
 
+    // Bind the method to preserve context
+    this.handleClickOutside = this.handleClickOutside.bind(this);
+
     this.buttons.forEach((button) => {
       button.addEventListener("click", (event: MouseEvent) => this.toggle(event));
     });
 
+    document.addEventListener("click", this.handleClickOutside);
+
     // Use type casting to resolve TypeScript typing issue
-    document.addEventListener("click", this.handleClickOutside as EventListener);
+    document.addEventListener("click", (event: Event) => this.handleClickOutside(event));
 
     document.querySelectorAll(".ck-alight-closeBtn").forEach((closeBtn) => {
-      closeBtn.addEventListener("click", this.hide as EventListener);
+      closeBtn.addEventListener("click", (event: Event) => this.hide(event));
     });
 
     window.addEventListener("resize", () => this.handleWindowResize());

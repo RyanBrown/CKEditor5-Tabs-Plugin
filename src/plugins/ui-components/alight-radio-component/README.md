@@ -118,7 +118,7 @@ The `package.json` includes several scripts to facilitate development and buildi
     "build": "webpack",
     "watch": "webpack --watch",
     "start": "webpack serve --open",
-    "compile-scss": "sass src/components/ck-alight-radio-button.scss dist/styles/ck-alight-radio-button.css"
+    "compile-scss": "sass src/ui-components/ck-alight-radio-button.scss dist/styles/ck-alight-radio-button.css"
   }
 }
 ```

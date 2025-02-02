@@ -1,0 +1,59 @@
+// src/plugins/ui-components/alight-checkbox-component/styles/alight-checkbox-component.scss
+
+/**
+ * ck-alight-checkbox.scss
+ *
+ * This SCSS file contains the styling for the <ck-alight-checkbox> custom element.
+ * It is imported into the TypeScript component and injected into the shadow DOM.
+ */
+
+:host {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+}
+
+:host([disabled]) {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.checkbox-container {
+  display: inline-flex;
+  align-items: center;
+}
+
+.checkbox-box {
+  width: 16px;
+  height: 16px;
+  border: 1px solid #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.5em;
+  background-color: #fff;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+:host([checked]) .checkbox-box {
+  background-color: #007ad9;
+  border-color: #007ad9;
+}
+
+.checkbox-check {
+  color: white;
+  font-size: 12px;
+  line-height: 16px;
+  display: none;
+}
+
+:host([checked]) .checkbox-check {
+  display: block;
+}
+
+/* Styling for projected label */
+.checkbox-label {
+  display: inline;
+}

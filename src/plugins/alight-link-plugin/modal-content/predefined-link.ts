@@ -2,7 +2,7 @@
 import predefinedLinksData from './json/predefined-test-data.json';
 import './../styles/predefined-link.scss';
 import './../styles/search.scss';
-import { AlightOverlayPanel } from '../../components/alight-overlay-panel-component/alight-overlay-panel';
+import { AlightOverlayPanel } from '../../ui-components/alight-overlay-panel-component/alight-overlay-panel';
 
 // State variables to manage data, search query, and current page
 let filteredLinksData = [...predefinedLinksData.predefinedLinksDetails];

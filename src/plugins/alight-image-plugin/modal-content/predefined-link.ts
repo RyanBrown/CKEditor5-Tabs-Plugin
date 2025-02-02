@@ -1,8 +1,9 @@
 // src/plugins/alight-image-plugin/modal-content/predefined-link.ts
 import predefinedLinksData from './json/predefined-test-data.json';
+import { AlightOverlayPanel } from '../../ui-components/alight-overlay-panel-component/alight-overlay-panel';
 import './../../alight-link-plugin/styles/predefined-link.scss';
 import './../../alight-link-plugin/styles/search.scss';
-import './../../components/alight-overlay-panel-component/styles/alight-overlay-panel.scss';
+import './../../ui-components/alight-overlay-panel-component/styles/alight-overlay-panel.scss';
 
 // State variables to manage data, search query, and current page
 let filteredLinksData = [...predefinedLinksData.predefinedLinksDetails];
@@ -18,21 +19,17 @@ const pageSize = 5;  // Number of items per page
  * @returns string - HTML content for the current page
  */
 export function getPredefinedLinkContent(page: number): string {
-  console.log('Generating content for page:', page);
   const totalItems = filteredLinksData.length;
   const totalPages = Math.ceil(totalItems / pageSize) || 1;
 
   // Ensure the current page is valid
   page = Math.max(1, Math.min(page, totalPages));
-  console.log('Total items:', totalItems, 'Total pages:', totalPages, 'Adjusted page:', page);
 
   // Calculate the slice of data for the current page
   const startIndex = (page - 1) * pageSize;
   const endIndex = Math.min(startIndex + pageSize, totalItems);
-  console.log('Slice indices:', startIndex, 'to', endIndex);
 
   const currentPageData = filteredLinksData.slice(startIndex, endIndex);
-  console.log('Items for current page:', currentPageData.length);
 
   // Generate HTML for link items
   const linksMarkup = currentPageData
@@ -121,7 +118,6 @@ export function getPredefinedLinkContent(page: number): string {
  * @param query - The search query string
  */
 export function handleSearch(query: string): void {
-  console.log('Handling search for query:', query);
   currentSearchQuery = query.toLowerCase().trim();
 
   // Filter the data based on search query
@@ -131,8 +127,6 @@ export function handleSearch(query: string): void {
     )
     : [...predefinedLinksData.predefinedLinksDetails];
 
-  console.log('Filtered results:', filteredLinksData.length);
-
   // Reset to the first page after search
   currentPage = 1;
 }
@@ -141,7 +135,6 @@ export function handleSearch(query: string): void {
  * Resets the search and displays all data.
  */
 export function resetSearch(): void {
-  console.log('Resetting search');
   currentSearchQuery = '';
   filteredLinksData = [...predefinedLinksData.predefinedLinksDetails];
   currentPage = 1;
@@ -181,16 +174,18 @@ function handleAdvancedSearch(container: HTMLElement): void {
   });
 }
 
+// Initialize AlightOverlayPanel when content is rendered
+document.addEventListener("DOMContentLoaded", () => {
+  new AlightOverlayPanel();
+});
+
 /**
  * Renders the filtered and paginated content into the container.
  * @param container - The HTMLElement to render content into
  */
 export function renderContent(container: HTMLElement): void {
-  console.log('Rendering content for page:', currentPage);
   const content = getPredefinedLinkContent(currentPage);
-  console.log('Content generated, updating DOM');
   container.innerHTML = content;
-  console.log('DOM updated, attaching event listeners');
 
   // Attach event listeners after content is injected
   attachEventListeners(container);
@@ -243,29 +238,23 @@ function attachEventListeners(container: HTMLElement): void {
     if (!pageAttr) return;
 
     const page = Number(pageAttr);
-    console.log('Button clicked:', target.id || 'page button', 'Page:', page);
 
     if (!page) {
-      console.log('Invalid page number');
       return;
     }
 
     const totalPages = Math.ceil(filteredLinksData.length / pageSize);
-    console.log('Current page:', currentPage, 'Total pages:', totalPages);
 
     // Validate the page number
     if (page < 1 || page > totalPages) {
-      console.log('Page out of range');
       return;
     }
 
     // Only update if it's a different page
     if (page !== currentPage) {
-      console.log('Updating to page:', page);
       currentPage = page;
       renderContent(container);
     } else {
-      console.log('Already on page:', page);
     }
   });
 }

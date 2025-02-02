@@ -1,4 +1,4 @@
-// src/plugins/components/alight-radio-component/alight-radio-component.ts
+// src/plugins/ui-components/alight-radio-component/alight-radio-component.ts
 import './ck-alight-radio-button.scss';
 
 export class CKAlightRadioButton extends HTMLElement {

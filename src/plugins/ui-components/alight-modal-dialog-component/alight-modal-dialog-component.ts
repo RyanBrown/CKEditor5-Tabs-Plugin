@@ -1,4 +1,4 @@
-// src/plugins/components/alight-modal-dialog-component/alight-modal-dialog-component.ts
+// src/plugins/ui-components/alight-modal-dialog-component/alight-modal-dialog-component.ts
 import './styles/alight-modal-dialog-component.scss';
 
 interface DialogOptions {

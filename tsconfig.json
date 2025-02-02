@@ -7,6 +7,10 @@
             "DOM",
             "DOM.Iterable"
         ],
+        "typeRoots": [
+            "./node_modules/@types",
+            "./src/types"
+        ],
         "resolveJsonModule": true,
         "esModuleInterop": true,
         "noImplicitAny": true,
@@ -20,6 +24,8 @@
         "skipLibCheck": true,
     },
     "include": [
-        "./src"
+        "./src",
+        "./src/**/*.ts",
+        "./src/**/*.d.ts"
     ]
 }
