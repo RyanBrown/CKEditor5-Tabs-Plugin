@@ -101,7 +101,7 @@ export function getPredefinedLinkContent(page: number): string {
   // Generate HTML for link items
   const linksMarkup = currentPageData
     .map((link: any) => `
-      <div class="link-item">
+      <div class="cka-link-item">
         <div>
           <ck-alight-radio-button
             name="link-selection"
@@ -126,17 +126,17 @@ export function getPredefinedLinkContent(page: number): string {
 
   // Generate pagination controls with select menu
   const paginationMarkup = `
-    <div id="pagination">
+    <article id="pagination" class="cka-pagination">
       <button id="first-page" data-page="1" ${page === 1 ? 'disabled' : ''}>First</button>
       <button id="prev-page" data-page="${page - 1}" ${page === 1 ? 'disabled' : ''}>Previous</button>
-      <div id="page-select-container"></div>
+      <div id="page-select-container" class="cka-select-menu-wrap"></div>
       <button id="next-page" data-page="${page + 1}" ${page === totalPages ? 'disabled' : ''}>Next</button>
       <button id="last-page" data-page="${totalPages}" ${page === totalPages ? 'disabled' : ''}>Last</button>
-    </div>
+    </article>
   `;
 
   return `
-    <div id="search-container">
+    <div id="search-container" class="cka-search-container">
       <input type="text" id="search-input" placeholder="Search by link name..." value="${currentSearchQuery}" />
       <button id="reset-search-btn">Reset</button>
       <button class="cka-trigger-btn" data-id="advanced-search-panel">Advanced Search</button>

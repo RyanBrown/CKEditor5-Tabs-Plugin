@@ -1,7 +1,64 @@
 // alight-image-plugin.scss
 
+
+
+
+// Predefined Links Page styles
+
+.cka-link-item {
+  align-items: center;
+  border-bottom: 1px solid #ccc;
+  display: flex;
+  padding: 1rem;
+  transition: background-color 0.15s;
+
+  &:hover {
+    background-color: #fafafa;
+    cursor: pointer;
+  }
+
+  &:last-of-type {
+    border-bottom: none;
+    padding-bottom: 1.25rem;
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+}
+
 ul.checkbox-list {
   list-style: none;
   margin: 0;
   padding: 0;
+}
+
+.cka-search-container {
+  align-items: center;
+  background-color: #fff;
+  border-bottom: 1px solid #ccc;
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+  position: sticky;
+  top: 0;
+  width: 100%;
+}
+
+.cka-pagination {
+  align-items: center;
+  background-color: #fff;
+  border-top: 1px solid #ccc;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+  position: sticky;
+  width: 100%;
+
+  .cka-select-menu-wrap {
+    display: inline-flex;
+  }
 }
