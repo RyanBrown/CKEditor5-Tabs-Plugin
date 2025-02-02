@@ -23,7 +23,7 @@ interface Size {
   height: number;
 }
 
-class CKAlightModalDialog {
+export class CKAlightModalDialog {
   private options: Required<DialogOptions>;
   private visible: boolean = false;
   private maximized: boolean = false;

@@ -25,7 +25,7 @@ template.innerHTML = `
   </div>
 `;
 
-class CkAlightCheckbox extends HTMLElement {
+export class CkAlightCheckbox extends HTMLElement {
   private _checked: boolean = false;
   private _disabled: boolean = false;
   protected _shadowRoot: ShadowRoot;

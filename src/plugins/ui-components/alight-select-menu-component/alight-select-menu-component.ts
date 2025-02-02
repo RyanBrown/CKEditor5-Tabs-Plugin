@@ -1,5 +1,5 @@
 // src/plugins/ui-components/alight-tabs-component/alight-tabs-component.ts
-import './styles/alight-tabs-component.scss';
+import './styles/alight-select-menu.scss';
 
 interface SelectOption {
   [key: string]: any;
@@ -18,7 +18,7 @@ interface SelectConfig<T> {
   value?: T[keyof T] | T[keyof T][] | null;
 }
 
-class CKALightSelectMenu<T extends SelectOption> {
+export class CKALightSelectMenu<T extends SelectOption> {
   private element: HTMLDivElement = document.createElement('div');
   private dropdownElement: HTMLDivElement = document.createElement('div');
   private selectedDisplay: HTMLDivElement = document.createElement('div');

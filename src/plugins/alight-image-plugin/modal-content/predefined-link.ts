@@ -1,17 +1,24 @@
 // src/plugins/alight-image-plugin/modal-content/predefined-link.ts
 import predefinedLinksData from './json/predefined-test-data.json';
-import { AlightOverlayPanel } from '../../ui-components/alight-overlay-panel-component/alight-overlay-panel';
+import { CKALightSelectMenu } from '../../ui-components/alight-select-menu-component/alight-select-menu-component';
 import './../../alight-link-plugin/styles/predefined-link.scss';
 import './../../alight-link-plugin/styles/search.scss';
-import './../../ui-components/alight-overlay-panel-component/styles/alight-overlay-panel.scss';
 
 // State variables to manage data, search query, and current page
 let filteredLinksData = [...predefinedLinksData.predefinedLinksDetails];
 let currentSearchQuery = '';
 let currentPage = 1;
+let advancedSearchSelect: CKALightSelectMenu<{ label: string; value: string }> | null = null;
 
 // Constants
 const pageSize = 5;  // Number of items per page
+
+const advancedSearchOptions = [
+  { label: 'Link Name', value: 'name' },
+  { label: 'Page Type', value: 'pageType' },
+  { label: 'Domain', value: 'domain' },
+  { label: 'Base/Client Specific', value: 'clientSpecific' }
+];
 
 /**
  * Generates the HTML content for the current filtered and paginated data.
@@ -68,33 +75,15 @@ export function getPredefinedLinkContent(page: number): string {
     </div>
   `;
 
-  // Create the advanced search panel markup
-  const advancedSearchPanelMarkup = `
-    <div class="ck-alight-overlay-panel" data-id="advanced-search-panel">
-      <button class="ck-alight-closeBtn">×</button>
+  // Create the advanced search form markup
+  const advancedSearchFormMarkup = `
+    <div id="advanced-search-form" class="hidden">
       <div class="advanced-search-content">
-        <h3>Advanced Search</h3>
         <div class="form-group">
-          <label for="advanced-name-search">Link Name:</label>
-          <input type="text" id="advanced-name-search" />
+          <input type="text" id="advanced-search-input" placeholder="Enter search term..." />
         </div>
-        <div class="form-group">
-          <label for="advanced-page-type">Page Type:</label>
-          <input type="text" id="advanced-page-type" />
-        </div>
-        <div class="form-group">
-          <label for="advanced-domain">Domain:</label>
-          <input type="text" id="advanced-domain" />
-        </div>
-        <div class="form-group">
-          <label for="advanced-client-specific">Base/Client Specific:</label>
-          <select id="advanced-client-specific">
-            <option value="">All</option>
-            <option value="Base">Base</option>
-            <option value="Client Specific">Client Specific</option>
-          </select>
-        </div>
-        <button id="apply-advanced-search">Apply Filters</button>
+        <button id="apply-advanced-search">Apply Filter</button>
+        <button id="clear-advanced-search">Clear Filter</button>
       </div>
     </div>
   `;
@@ -104,13 +93,76 @@ export function getPredefinedLinkContent(page: number): string {
     <div id="search-container">
       <input type="text" id="search-input" placeholder="Search by link name..." value="${currentSearchQuery}" />
       <button id="reset-search-btn">Reset</button>
-      <button class="ck-alight-triggerBtn" data-id="advanced-search-panel">Advanced Search</button>
+      <div id="advanced-search-select"></div>
       <button id="search-btn">Search</button>
     </div>
-    ${advancedSearchPanelMarkup}
+    ${advancedSearchFormMarkup}
     ${linksMarkup || '<p>No results found.</p>'}
     ${paginationMarkup}
   `;
+}
+
+/**
+ * Initializes the advanced search select menu
+ * @param container - The container element
+ */
+function initializeAdvancedSearch(container: HTMLElement): void {
+  const selectContainer = container.querySelector('#advanced-search-select') as HTMLElement;
+  if (!selectContainer) return;
+
+  advancedSearchSelect = new CKALightSelectMenu<{ label: string; value: string }>({
+    options: advancedSearchOptions,
+    placeholder: 'Advanced Search',
+    onChange: (value) => {
+      const searchForm = container.querySelector('#advanced-search-form');
+      const searchInput = container.querySelector('#advanced-search-input') as HTMLInputElement | null;
+
+      if (!searchForm || !searchInput) return;
+
+      if (value && typeof value === 'string') {
+        searchForm.classList.remove('hidden');
+        const selectedOption = advancedSearchOptions.find(opt => opt.value === value);
+        searchInput.placeholder = selectedOption ? `Search by ${selectedOption.label}...` : 'Enter search term...';
+      } else {
+        searchForm.classList.add('hidden');
+      }
+    }
+  });
+
+  advancedSearchSelect.mount(selectContainer);
+}
+
+/**
+ * Handles the advanced search functionality
+ * @param container - The container element
+ * @param searchTerm - The search term
+ */
+function handleAdvancedSearch(container: HTMLElement, searchTerm: string): void {
+  const selectedFilter = advancedSearchSelect?.getValue();
+
+  if (!selectedFilter || typeof selectedFilter !== 'string' || !searchTerm) {
+    return;
+  }
+
+  const searchTermLower = searchTerm.toLowerCase();
+
+  filteredLinksData = predefinedLinksData.predefinedLinksDetails.filter((link: any) => {
+    switch (selectedFilter) {
+      case 'name':
+        return link.predefinedLinkName.toLowerCase().includes(searchTermLower);
+      case 'pageType':
+        return link.pageType.toLowerCase().includes(searchTermLower);
+      case 'domain':
+        return link.domain.toLowerCase().includes(searchTermLower);
+      case 'clientSpecific':
+        return link.baseOrClientSpecific.toLowerCase().includes(searchTermLower);
+      default:
+        return true;
+    }
+  });
+
+  currentPage = 1;
+  renderContent(container);
 }
 
 /**
@@ -120,14 +172,12 @@ export function getPredefinedLinkContent(page: number): string {
 export function handleSearch(query: string): void {
   currentSearchQuery = query.toLowerCase().trim();
 
-  // Filter the data based on search query
   filteredLinksData = currentSearchQuery
     ? predefinedLinksData.predefinedLinksDetails.filter((link: any) =>
       link.predefinedLinkName.toLowerCase().includes(currentSearchQuery)
     )
     : [...predefinedLinksData.predefinedLinksDetails];
 
-  // Reset to the first page after search
   currentPage = 1;
 }
 
@@ -138,46 +188,10 @@ export function resetSearch(): void {
   currentSearchQuery = '';
   filteredLinksData = [...predefinedLinksData.predefinedLinksDetails];
   currentPage = 1;
+  if (advancedSearchSelect) {
+    advancedSearchSelect.setValue(null);
+  }
 }
-
-/**
- * Handles the advanced search functionality
- * @param container - The container element
- */
-function handleAdvancedSearch(container: HTMLElement): void {
-  const applyButton = container.querySelector('#apply-advanced-search');
-  applyButton?.addEventListener('click', () => {
-    const nameSearch = (container.querySelector('#advanced-name-search') as HTMLInputElement)?.value.toLowerCase();
-    const pageType = (container.querySelector('#advanced-page-type') as HTMLInputElement)?.value.toLowerCase();
-    const domain = (container.querySelector('#advanced-domain') as HTMLInputElement)?.value.toLowerCase();
-    const clientSpecific = (container.querySelector('#advanced-client-specific') as HTMLSelectElement)?.value;
-
-    filteredLinksData = predefinedLinksData.predefinedLinksDetails.filter((link: any) => {
-      const matchesName = !nameSearch || link.predefinedLinkName.toLowerCase().includes(nameSearch);
-      const matchesPageType = !pageType || link.pageType.toLowerCase().includes(pageType);
-      const matchesDomain = !domain || link.domain.toLowerCase().includes(domain);
-      const matchesClientSpecific = !clientSpecific || link.baseOrClientSpecific === clientSpecific;
-
-      return matchesName && matchesPageType && matchesDomain && matchesClientSpecific;
-    });
-
-    currentPage = 1;
-    renderContent(container);
-
-    // Close the panel after applying filters
-    const panel = container.querySelector('.ck-alight-overlay-panel') as HTMLElement;
-    if (panel) {
-      panel.style.opacity = "0";
-      panel.style.visibility = "hidden";
-      panel.classList.remove("ck-alight-active");
-    }
-  });
-}
-
-// Initialize AlightOverlayPanel when content is rendered
-document.addEventListener("DOMContentLoaded", () => {
-  new AlightOverlayPanel();
-});
 
 /**
  * Renders the filtered and paginated content into the container.
@@ -187,13 +201,15 @@ export function renderContent(container: HTMLElement): void {
   const content = getPredefinedLinkContent(currentPage);
   container.innerHTML = content;
 
+  // Initialize advanced search select after content is rendered
+  initializeAdvancedSearch(container);
+
   // Attach event listeners after content is injected
   attachEventListeners(container);
 }
 
 /**
  * Attaches event listeners to search and pagination controls.
- * Uses event delegation for better performance and to handle dynamically added elements.
  * @param container - The HTMLElement containing the modal's content
  */
 function attachEventListeners(container: HTMLElement): void {
@@ -201,6 +217,9 @@ function attachEventListeners(container: HTMLElement): void {
   const searchBtn = container.querySelector('#search-btn') as HTMLButtonElement | null;
   const searchInput = container.querySelector('#search-input') as HTMLInputElement | null;
   const resetSearchBtn = container.querySelector('#reset-search-btn') as HTMLButtonElement | null;
+  const advancedSearchInput = container.querySelector('#advanced-search-input') as HTMLInputElement | null;
+  const applyAdvancedSearch = container.querySelector('#apply-advanced-search') as HTMLButtonElement | null;
+  const clearAdvancedSearch = container.querySelector('#clear-advanced-search') as HTMLButtonElement | null;
 
   // Search button click handler
   searchBtn?.addEventListener('click', () => {
@@ -211,7 +230,7 @@ function attachEventListeners(container: HTMLElement): void {
   });
 
   // Search input enter key handler
-  searchInput?.addEventListener('keydown', (event) => {
+  searchInput?.addEventListener('keydown', (event: KeyboardEvent) => {
     if (event.key === 'Enter' && searchBtn) {
       event.preventDefault();
       searchBtn.click();
@@ -222,15 +241,28 @@ function attachEventListeners(container: HTMLElement): void {
   resetSearchBtn?.addEventListener('click', () => {
     resetSearch();
     if (searchInput) searchInput.value = '';
+    if (advancedSearchInput) advancedSearchInput.value = '';
     renderContent(container);
   });
 
   // Advanced search handlers
-  handleAdvancedSearch(container);
+  applyAdvancedSearch?.addEventListener('click', () => {
+    if (advancedSearchInput) {
+      handleAdvancedSearch(container, advancedSearchInput.value);
+    }
+  });
+
+  clearAdvancedSearch?.addEventListener('click', () => {
+    if (advancedSearchInput) {
+      advancedSearchInput.value = '';
+      resetSearch();
+      renderContent(container);
+    }
+  });
 
   // Pagination handlers
   const paginationDiv = container.querySelector('#pagination');
-  paginationDiv?.addEventListener('click', (event) => {
+  paginationDiv?.addEventListener('click', (event: Event) => {
     const target = event.target as HTMLElement;
     if (target.tagName !== 'BUTTON') return;
 
@@ -238,23 +270,14 @@ function attachEventListeners(container: HTMLElement): void {
     if (!pageAttr) return;
 
     const page = Number(pageAttr);
-
-    if (!page) {
-      return;
-    }
+    if (!page) return;
 
     const totalPages = Math.ceil(filteredLinksData.length / pageSize);
+    if (page < 1 || page > totalPages) return;
 
-    // Validate the page number
-    if (page < 1 || page > totalPages) {
-      return;
-    }
-
-    // Only update if it's a different page
     if (page !== currentPage) {
       currentPage = page;
       renderContent(container);
-    } else {
     }
   });
 }
