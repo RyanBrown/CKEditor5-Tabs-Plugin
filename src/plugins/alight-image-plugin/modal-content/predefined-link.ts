@@ -10,6 +10,20 @@ let filteredLinksData = [...predefinedLinksData.predefinedLinksDetails];
 let currentSearchQuery = '';
 let currentPage = 1;
 let currentAdvancedSearchFilter = '';
+// Define interface for filter types
+interface SelectedFilters {
+  [key: string]: string;
+  baseOrClientSpecific: string;
+  pageType: string;
+  domain: string;
+}
+
+// Initialize selected filters with type
+let selectedFilters: SelectedFilters = {
+  baseOrClientSpecific: '',
+  pageType: '',
+  domain: ''
+};
 
 // Constants
 const pageSize = 5;  // Number of items per page
@@ -20,6 +34,39 @@ const advancedSearchOptions = [
   { label: 'Domain', value: 'domain' },
   { label: 'Base/Client Specific', value: 'clientSpecific' }
 ];
+
+/**
+ * Gets unique values from an array of objects for a specific key
+ * @param data - Array of objects
+ * @param key - Key to extract unique values from
+ * @returns Array of unique values
+ */
+function getUniqueValues(data: any[], key: string): string[] {
+  return Array.from(new Set(data.map(item => item[key]))).sort();
+}
+
+/**
+ * Creates a select dropdown for filter options
+ * @param options - Array of options
+ * @param name - Name of the select element
+ * @param label - Label text
+ * @returns HTML string for select element
+ */
+function createSelectDropdown(options: string[], name: keyof SelectedFilters, label: string): string {
+  return `
+    <div class="form-group">
+      <label>${label}</label>
+      <select name="${name}" class="filter-select">
+        <option value="">All</option>
+        ${options.map(option => `
+          <option value="${option}" ${selectedFilters[name] === option ? 'selected' : ''}>
+            ${option}
+          </option>
+        `).join('')}
+      </select>
+    </div>
+  `;
+}
 
 /**
  * Generates the HTML content for the current filtered and paginated data.
@@ -38,6 +85,29 @@ export function getPredefinedLinkContent(page: number): string {
   const endIndex = Math.min(startIndex + pageSize, totalItems);
 
   const currentPageData = filteredLinksData.slice(startIndex, endIndex);
+
+  // Get unique values for filters
+  const baseOrClientSpecificOptions = getUniqueValues(predefinedLinksData.predefinedLinksDetails, 'baseOrClientSpecific');
+  const pageTypeOptions = getUniqueValues(predefinedLinksData.predefinedLinksDetails, 'pageType');
+  const domainOptions = getUniqueValues(predefinedLinksData.predefinedLinksDetails, 'domain');
+
+  // Create the advanced search panel markup
+  const advancedSearchPanelMarkup = `
+    <div class="cka-overlay-panel" data-id="advanced-search-panel">
+      <button class="cka-close-btn">×</button>
+      <div class="advanced-search-content">
+        <h3>Advanced Search</h3>
+        ${createSelectDropdown(baseOrClientSpecificOptions, 'baseOrClientSpecific', 'Base/Client Specific')}
+        ${createSelectDropdown(pageTypeOptions, 'pageType', 'Page Type')}
+        ${createSelectDropdown(domainOptions, 'domain', 'Domain')}
+        <div class="form-group">
+          <input type="text" id="advanced-search-input" placeholder="Search by link name..." />
+        </div>
+        <button id="apply-advanced-search">Apply Filters</button>
+        <button id="clear-advanced-search">Clear Filters</button>
+      </div>
+    </div>
+  `;
 
   // Generate HTML for link items
   const linksMarkup = currentPageData
@@ -76,30 +146,6 @@ export function getPredefinedLinkContent(page: number): string {
     </div>
   `;
 
-  // Create the advanced search panel markup
-  const advancedSearchPanelMarkup = `
-    <div class="cka-overlay-panel" data-id="advanced-search-panel">
-      <button class="cka-close-btn">×</button>
-      <div class="advanced-search-content">
-        <h3>Advanced Search</h3>
-        ${advancedSearchOptions.map(option => `
-          <div class="form-group">
-            <label>
-              <input type="radio" name="search-filter" value="${option.value}" 
-                ${currentAdvancedSearchFilter === option.value ? 'checked' : ''}>
-              ${option.label}
-            </label>
-          </div>
-        `).join('')}
-        <div class="form-group">
-          <input type="text" id="advanced-search-input" placeholder="Enter search term..." />
-        </div>
-        <button id="apply-advanced-search">Apply Filters</button>
-        <button id="clear-advanced-search">Clear Filters</button>
-      </div>
-    </div>
-  `;
-
   // Return complete HTML structure
   return `
     <div id="search-container">
@@ -115,60 +161,60 @@ export function getPredefinedLinkContent(page: number): string {
 }
 
 /**
+ * Applies all active filters to the data
+ */
+function applyFilters(): void {
+  filteredLinksData = predefinedLinksData.predefinedLinksDetails.filter((link: any) => {
+    const nameMatch = currentSearchQuery ?
+      link.predefinedLinkName.toLowerCase().includes(currentSearchQuery.toLowerCase()) :
+      true;
+
+    const baseOrClientSpecificMatch = selectedFilters.baseOrClientSpecific ?
+      link.baseOrClientSpecific === selectedFilters.baseOrClientSpecific :
+      true;
+
+    const pageTypeMatch = selectedFilters.pageType ?
+      link.pageType === selectedFilters.pageType :
+      true;
+
+    const domainMatch = selectedFilters.domain ?
+      link.domain === selectedFilters.domain :
+      true;
+
+    return nameMatch && baseOrClientSpecificMatch && pageTypeMatch && domainMatch;
+  });
+}
+
+/**
  * Handles the advanced search functionality
  * @param container - The container element
- * @param searchTerm - The search term
- * @param filterValue - The selected filter value
  */
-function handleAdvancedSearch(container: HTMLElement, searchTerm: string, filterValue: string): void {
-  if (!filterValue || !searchTerm) {
-    return;
-  }
+function handleAdvancedSearch(container: HTMLElement): void {
+  const searchInput = container.querySelector('#advanced-search-input') as HTMLInputElement;
+  currentSearchQuery = searchInput?.value || '';
 
-  currentAdvancedSearchFilter = filterValue;
-  const searchTermLower = searchTerm.toLowerCase();
-
-  filteredLinksData = predefinedLinksData.predefinedLinksDetails.filter((link: any) => {
-    switch (filterValue) {
-      case 'name':
-        return link.predefinedLinkName.toLowerCase().includes(searchTermLower);
-      case 'pageType':
-        return link.pageType.toLowerCase().includes(searchTermLower);
-      case 'domain':
-        return link.domain.toLowerCase().includes(searchTermLower);
-      case 'clientSpecific':
-        return link.baseOrClientSpecific.toLowerCase().includes(searchTermLower);
-      default:
-        return true;
-    }
+  // Update selected filters from dropdowns
+  const filterSelects = container.querySelectorAll('.filter-select') as NodeListOf<HTMLSelectElement>;
+  filterSelects.forEach(select => {
+    const filterName = select.name as keyof SelectedFilters;
+    selectedFilters[filterName] = select.value;
   });
 
+  applyFilters();
   currentPage = 1;
   renderContent(container);
 }
 
 /**
- * Filters the data based on the search query.
- * @param query - The search query string
- */
-export function handleSearch(query: string): void {
-  currentSearchQuery = query.toLowerCase().trim();
-
-  filteredLinksData = currentSearchQuery
-    ? predefinedLinksData.predefinedLinksDetails.filter((link: any) =>
-      link.predefinedLinkName.toLowerCase().includes(currentSearchQuery)
-    )
-    : [...predefinedLinksData.predefinedLinksDetails];
-
-  currentPage = 1;
-}
-
-/**
- * Resets the search and displays all data.
+ * Resets all filters and search criteria
  */
 export function resetSearch(): void {
   currentSearchQuery = '';
-  currentAdvancedSearchFilter = '';
+  selectedFilters = {
+    baseOrClientSpecific: '',
+    pageType: '',
+    domain: ''
+  };
   filteredLinksData = [...predefinedLinksData.predefinedLinksDetails];
   currentPage = 1;
 }
@@ -197,14 +243,14 @@ function attachEventListeners(container: HTMLElement): void {
   const searchBtn = container.querySelector('#search-btn') as HTMLButtonElement | null;
   const searchInput = container.querySelector('#search-input') as HTMLInputElement | null;
   const resetSearchBtn = container.querySelector('#reset-search-btn') as HTMLButtonElement | null;
-  const advancedSearchInput = container.querySelector('#advanced-search-input') as HTMLInputElement | null;
   const applyAdvancedSearch = container.querySelector('#apply-advanced-search') as HTMLButtonElement | null;
   const clearAdvancedSearch = container.querySelector('#clear-advanced-search') as HTMLButtonElement | null;
 
   // Search button click handler
   searchBtn?.addEventListener('click', () => {
     if (searchInput) {
-      handleSearch(searchInput.value);
+      currentSearchQuery = searchInput.value;
+      applyFilters();
       renderContent(container);
     }
   });
@@ -221,26 +267,17 @@ function attachEventListeners(container: HTMLElement): void {
   resetSearchBtn?.addEventListener('click', () => {
     resetSearch();
     if (searchInput) searchInput.value = '';
-    if (advancedSearchInput) advancedSearchInput.value = '';
     renderContent(container);
   });
 
   // Advanced search handlers
   applyAdvancedSearch?.addEventListener('click', () => {
-    if (advancedSearchInput) {
-      const selectedFilter = container.querySelector('input[name="search-filter"]:checked') as HTMLInputElement | null;
-      if (selectedFilter) {
-        handleAdvancedSearch(container, advancedSearchInput.value, selectedFilter.value);
-      }
-    }
+    handleAdvancedSearch(container);
   });
 
   clearAdvancedSearch?.addEventListener('click', () => {
-    if (advancedSearchInput) {
-      advancedSearchInput.value = '';
-      resetSearch();
-      renderContent(container);
-    }
+    resetSearch();
+    renderContent(container);
   });
 
   // Pagination handlers
