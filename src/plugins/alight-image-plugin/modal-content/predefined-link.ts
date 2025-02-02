@@ -246,9 +246,15 @@ export function renderContent(container: HTMLElement): void {
 // Attaches event listeners to the container
 function attachEventListeners(container: HTMLElement): void {
   // Link item click handlers
+  // Link item click handlers
   const linkItems = container.querySelectorAll('.cka-link-item');
   linkItems.forEach(item => {
     item.addEventListener('click', (event: Event) => {
+      // Prevent triggering if clicking directly on the radio button
+      if ((event.target as HTMLElement).closest('ck-alight-radio-button')) {
+        return;
+      }
+
       const linkItem = event.currentTarget as HTMLElement;
       const linkName = linkItem.getAttribute('data-link-name');
       if (linkName) {
@@ -256,9 +262,19 @@ function attachEventListeners(container: HTMLElement): void {
         const radio = linkItem.querySelector('ck-alight-radio-button') as any;
         if (radio) {
           // Set the radio button's checked state
+          radio.checked = true;
           radio.value = linkName;
-          // Trigger a change event if needed
-          radio.dispatchEvent(new Event('change'));
+          // Dispatch both change and input events to ensure proper state updates
+          radio.dispatchEvent(new Event('change', { bubbles: true }));
+          radio.dispatchEvent(new Event('input', { bubbles: true }));
+
+          // Uncheck all other radio buttons
+          const otherRadios = container.querySelectorAll('ck-alight-radio-button');
+          otherRadios.forEach(otherRadio => {
+            if (otherRadio !== radio) {
+              (otherRadio as any).checked = false;
+            }
+          });
         }
       }
     });
