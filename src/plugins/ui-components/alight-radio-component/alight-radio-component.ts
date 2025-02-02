@@ -1,18 +1,16 @@
 // src/plugins/ui-components/alight-radio-component/alight-radio-component.ts
-import './ck-alight-radio-button.scss';
+import './styles/alight-radio-component.scss';
 
 export class CKAlightRadioButton extends HTMLElement {
-  private shadow: ShadowRoot;
   private radioInput: HTMLInputElement;
   private wrapper: HTMLLabelElement;
 
   constructor() {
     super();
-    this.shadow = this.attachShadow({ mode: 'open' });
 
     // Create the label wrapper
     this.wrapper = document.createElement('label');
-    this.wrapper.classList.add('ck-alight-radio-button');
+    this.wrapper.classList.add('cka-radio-button');
 
     // Handle 'disabled' attribute
     if (this.hasAttribute('disabled')) {
@@ -25,6 +23,7 @@ export class CKAlightRadioButton extends HTMLElement {
     this.radioInput.name = this.getAttribute('name') || '';
     this.radioInput.value = this.getAttribute('value') || '';
     this.radioInput.id = `radio-${Math.random().toString(36).substr(2, 9)}`; // Unique ID for accessibility
+    this.radioInput.classList.add('cka-radio-input');
 
     // Handle 'checked' attribute
     if (this.hasAttribute('checked')) {
@@ -38,7 +37,7 @@ export class CKAlightRadioButton extends HTMLElement {
 
     // Create the custom radio icon
     const radioIcon = document.createElement('span');
-    radioIcon.classList.add('ck-alight-radio-icon');
+    radioIcon.classList.add('cka-radio-icon');
 
     // Create the label text
     const labelText = document.createElement('span');
@@ -52,15 +51,26 @@ export class CKAlightRadioButton extends HTMLElement {
     this.wrapper.appendChild(this.radioInput);
     this.wrapper.appendChild(radioIcon);
     this.wrapper.appendChild(labelText);
-    this.shadow.appendChild(this.wrapper);
+    this.appendChild(this.wrapper);
 
     // Event Listener for change events
     this.radioInput.addEventListener('change', () => {
       this.dispatchEvent(new Event('change', { bubbles: true }));
-    });
 
-    // Import styles
-    // Note: Styles are handled by Webpack's loaders, so no need to append a <style> tag
+      // Handle radio group behavior manually
+      if (this.radioInput.checked) {
+        const name = this.radioInput.name;
+        if (name) {
+          // Find all other radios in the group and uncheck them
+          document.querySelectorAll(`ck-alight-radio-button input[name="${name}"]`).forEach(input => {
+            if (input !== this.radioInput && input instanceof HTMLInputElement) {
+              input.checked = false;
+              (input.closest('ck-alight-radio-button') as CKAlightRadioButton)?.removeAttribute('checked');
+            }
+          });
+        }
+      }
+    });
   }
 
   static get observedAttributes() {
@@ -68,6 +78,8 @@ export class CKAlightRadioButton extends HTMLElement {
   }
 
   attributeChangedCallback(name: string, oldValue: string, newValue: string) {
+    if (!this.radioInput) return;
+
     switch (name) {
       case 'name':
         this.radioInput.name = newValue;
@@ -76,7 +88,7 @@ export class CKAlightRadioButton extends HTMLElement {
         this.radioInput.value = newValue;
         break;
       case 'label':
-        const label = this.shadow.querySelector('.label-text') as HTMLElement;
+        const label = this.wrapper.querySelector('.label-text') as HTMLElement;
         if (label) {
           label.textContent = newValue;
         }
@@ -105,6 +117,16 @@ export class CKAlightRadioButton extends HTMLElement {
     this.radioInput.checked = val;
     if (val) {
       this.setAttribute('checked', '');
+      // Uncheck other radios in the group
+      const name = this.radioInput.name;
+      if (name) {
+        document.querySelectorAll(`ck-alight-radio-button input[name="${name}"]`).forEach(input => {
+          if (input !== this.radioInput && input instanceof HTMLInputElement) {
+            input.checked = false;
+            (input.closest('ck-alight-radio-button') as CKAlightRadioButton)?.removeAttribute('checked');
+          }
+        });
+      }
     } else {
       this.removeAttribute('checked');
     }
@@ -122,7 +144,12 @@ export class CKAlightRadioButton extends HTMLElement {
       this.removeAttribute('disabled');
     }
   }
+
+  // Add focus method for consistency with native elements
+  override focus() {
+    this.radioInput.focus();
+  }
 }
 
-// Define the custom element with the new name
+// Define the custom element
 customElements.define('ck-alight-radio-button', CKAlightRadioButton);

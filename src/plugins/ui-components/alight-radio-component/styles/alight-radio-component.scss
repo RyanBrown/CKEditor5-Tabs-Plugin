@@ -1,5 +1,3 @@
-// src/ui-components/ck-alight-radio-button.scss
-
 // Variables
 $radio-primary-color: #007ad9;
 $radio-hover-color: #005bb5;
@@ -9,13 +7,14 @@ $radio-background-color: #fff;
 $radio-focus-shadow: rgba(0, 122, 217, 0.3);
 $radio-disabled-background-color: #f5f5f5;
 
-// Styles
-:host {
+// Reset default styles for the custom element
+ck-alight-radio-button {
   display: inline-block;
   margin: 0.5rem 0;
 }
 
-.ck-alight-radio-button {
+// Main radio button container
+.cka-radio-button {
   align-items: center;
   color: $radio-text-color;
   cursor: pointer;
@@ -26,7 +25,8 @@ $radio-disabled-background-color: #f5f5f5;
   transition: color 0.3s;
   user-select: none;
 
-  input[type="radio"] {
+  // Hide native radio input
+  .cka-radio-input {
     cursor: pointer;
     height: 0;
     opacity: 0;
@@ -34,7 +34,8 @@ $radio-disabled-background-color: #f5f5f5;
     width: 0;
   }
 
-  .ck-alight-radio-icon {
+  // Custom radio icon
+  .cka-radio-icon {
     background-color: $radio-background-color;
     border-radius: 50%;
     border: 2px solid $radio-primary-color;
@@ -46,12 +47,8 @@ $radio-disabled-background-color: #f5f5f5;
     transform: translateY(-50%);
     transition: border-color 0.3s, background-color 0.3s;
     width: 1.2rem;
-  }
-}
 
-// Outer Circle Animation
-.ck-alight-radio-button {
-  .ck-alight-radio-icon {
+    // Inner circle for checked state
     &::after {
       content: "";
       position: absolute;
@@ -66,20 +63,16 @@ $radio-disabled-background-color: #f5f5f5;
       opacity: 0;
     }
   }
-}
 
-// Checked State
-.ck-alight-radio-button {
-  input[type="radio"]:checked+.ck-alight-radio-icon::after {
+  // Checked state
+  .cka-radio-input:checked+.cka-radio-icon::after {
     transform: translate(-50%, -50%) scale(1);
     opacity: 1;
   }
-}
 
-// Hover Effects
-.ck-alight-radio-button {
+  // Hover effects
   &:hover {
-    .ck-alight-radio-icon {
+    .cka-radio-icon {
       border-color: $radio-hover-color;
     }
 
@@ -87,38 +80,28 @@ $radio-disabled-background-color: #f5f5f5;
       color: $radio-hover-color;
     }
   }
-}
 
-// Focus Styles for Accessibility
-.ck-alight-radio-button {
-  input[type="radio"]:focus+.ck-alight-radio-icon {
+  // Focus styles for accessibility
+  .cka-radio-input:focus+.cka-radio-icon {
     box-shadow: 0 0 0 3px $radio-focus-shadow;
   }
-}
 
-// Disabled State
-.ck-alight-radio-button {
+  // Disabled state
   &.disabled {
     color: $radio-disabled-color;
     cursor: not-allowed;
 
-    .ck-alight-radio-icon {
+    .cka-radio-icon {
       background-color: $radio-disabled-background-color;
       border-color: $radio-disabled-color;
     }
-  }
-}
 
-.ck-alight-radio-button {
-  &.disabled {
-    input[type="radio"]:checked+.ck-alight-radio-icon::after {
+    .cka-radio-input:checked+.cka-radio-icon::after {
       background-color: $radio-disabled-color;
     }
   }
-}
 
-// Transition for Label Color
-.ck-alight-radio-button {
+  // Label text transitions
   .label-text {
     transition: color 0.3s;
   }

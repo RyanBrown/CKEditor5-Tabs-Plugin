@@ -4,6 +4,7 @@ import { AlightOverlayPanel } from '../../ui-components/alight-overlay-panel-com
 import './../../alight-link-plugin/styles/predefined-link.scss';
 import './../../alight-link-plugin/styles/search.scss';
 import '../../ui-components/alight-checkbox-component/alight-checkbox-component';
+import '../../ui-components/alight-radio-component/alight-radio-component';
 
 // Define interfaces for type safety
 interface SelectedFilters {
@@ -101,7 +102,11 @@ export function getPredefinedLinkContent(page: number): string {
     .map((link: any) => `
       <div class="link-item">
         <div>
-          <input type="radio" name="link-selection" value="${link.predefinedLinkName}" />
+          <ck-alight-radio-button
+            name="link-selection"
+            value="${link.predefinedLinkName}"
+            label=""
+          ></ck-alight-radio-button>
         </div>
         <ul>
           <li><strong>${link.predefinedLinkName}</strong></li>

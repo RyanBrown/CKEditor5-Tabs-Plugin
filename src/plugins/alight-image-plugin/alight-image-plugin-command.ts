@@ -22,7 +22,7 @@ export class AlightImagePluginCommand extends Command {
       modal: true,
       draggable: false,
       resizable: false,
-      width: '600px',
+      width: '80vw',
       position: 'center',
       closeOnEscape: true
     });

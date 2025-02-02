@@ -39,10 +39,10 @@ export class RadioButtonView extends AlightUIBaseComponent implements RadioButto
       tag: 'label',
       attributes: {
         class: [
-          'ck',
-          'ck-alight-radio',
-          bind.to('isSelected', (value: boolean) => value ? 'ck-alight-selected' : ''),
-          bind.to('isEnabled', (value: boolean) => value ? 'ck-enabled' : 'ck-disabled')
+          'cka',
+          'cka-radio',
+          bind.to('isSelected', (value: boolean) => value ? 'cka-selected' : ''),
+          bind.to('isEnabled', (value: boolean) => value ? 'cka-enabled' : 'cka-disabled')
         ]
       },
       children: [
@@ -50,7 +50,7 @@ export class RadioButtonView extends AlightUIBaseComponent implements RadioButto
           tag: 'input',
           attributes: {
             type: 'radio',
-            class: ['ck-alight-radio__input'],
+            class: ['cka-radio__input'],
             name: bind.to('name'),
             value: bind.to('value'),
             checked: bind.to('isSelected')
@@ -71,13 +71,13 @@ export class RadioButtonView extends AlightUIBaseComponent implements RadioButto
         {
           tag: 'span',
           attributes: {
-            class: ['ck-alight-radio__checkmark']
+            class: ['cka-radio__checkmark']
           }
         },
         {
           tag: 'span',
           attributes: {
-            class: ['ck-alight-radio__label']
+            class: ['cka-radio__label']
           },
           children: [
             {
