@@ -1,14 +1,15 @@
 // src/plugins/alight-image-plugin/modal-content/predefined-link.ts
 import predefinedLinksData from './json/predefined-test-data.json';
-import { CKALightSelectMenu } from '../../ui-components/alight-select-menu-component/alight-select-menu-component';
+import { AlightOverlayPanel } from '../../ui-components/alight-overlay-panel-component/alight-overlay-panel';
 import './../../alight-link-plugin/styles/predefined-link.scss';
 import './../../alight-link-plugin/styles/search.scss';
+import './../../ui-components/alight-overlay-panel-component/styles/alight-overlay-panel.scss';
 
 // State variables to manage data, search query, and current page
 let filteredLinksData = [...predefinedLinksData.predefinedLinksDetails];
 let currentSearchQuery = '';
 let currentPage = 1;
-let advancedSearchSelect: CKALightSelectMenu<{ label: string; value: string }> | null = null;
+let currentAdvancedSearchFilter = '';
 
 // Constants
 const pageSize = 5;  // Number of items per page
@@ -75,15 +76,26 @@ export function getPredefinedLinkContent(page: number): string {
     </div>
   `;
 
-  // Create the advanced search form markup
-  const advancedSearchFormMarkup = `
-    <div id="advanced-search-form" class="hidden">
+  // Create the advanced search panel markup
+  const advancedSearchPanelMarkup = `
+    <div class="ck-alight-overlay-panel" data-id="advanced-search-panel">
+      <button class="ck-alight-closeBtn">×</button>
       <div class="advanced-search-content">
+        <h3>Advanced Search</h3>
+        ${advancedSearchOptions.map(option => `
+          <div class="form-group">
+            <label>
+              <input type="radio" name="search-filter" value="${option.value}" 
+                ${currentAdvancedSearchFilter === option.value ? 'checked' : ''}>
+              ${option.label}
+            </label>
+          </div>
+        `).join('')}
         <div class="form-group">
           <input type="text" id="advanced-search-input" placeholder="Enter search term..." />
         </div>
-        <button id="apply-advanced-search">Apply Filter</button>
-        <button id="clear-advanced-search">Clear Filter</button>
+        <button id="apply-advanced-search">Apply Filters</button>
+        <button id="clear-advanced-search">Clear Filters</button>
       </div>
     </div>
   `;
@@ -93,61 +105,31 @@ export function getPredefinedLinkContent(page: number): string {
     <div id="search-container">
       <input type="text" id="search-input" placeholder="Search by link name..." value="${currentSearchQuery}" />
       <button id="reset-search-btn">Reset</button>
-      <div id="advanced-search-select"></div>
+      <button class="ck-alight-triggerBtn" data-id="advanced-search-panel">Advanced Search</button>
       <button id="search-btn">Search</button>
     </div>
-    ${advancedSearchFormMarkup}
+    ${advancedSearchPanelMarkup}
     ${linksMarkup || '<p>No results found.</p>'}
     ${paginationMarkup}
   `;
 }
 
 /**
- * Initializes the advanced search select menu
- * @param container - The container element
- */
-function initializeAdvancedSearch(container: HTMLElement): void {
-  const selectContainer = container.querySelector('#advanced-search-select') as HTMLElement;
-  if (!selectContainer) return;
-
-  advancedSearchSelect = new CKALightSelectMenu<{ label: string; value: string }>({
-    options: advancedSearchOptions,
-    placeholder: 'Advanced Search',
-    onChange: (value) => {
-      const searchForm = container.querySelector('#advanced-search-form');
-      const searchInput = container.querySelector('#advanced-search-input') as HTMLInputElement | null;
-
-      if (!searchForm || !searchInput) return;
-
-      if (value && typeof value === 'string') {
-        searchForm.classList.remove('hidden');
-        const selectedOption = advancedSearchOptions.find(opt => opt.value === value);
-        searchInput.placeholder = selectedOption ? `Search by ${selectedOption.label}...` : 'Enter search term...';
-      } else {
-        searchForm.classList.add('hidden');
-      }
-    }
-  });
-
-  advancedSearchSelect.mount(selectContainer);
-}
-
-/**
  * Handles the advanced search functionality
  * @param container - The container element
  * @param searchTerm - The search term
+ * @param filterValue - The selected filter value
  */
-function handleAdvancedSearch(container: HTMLElement, searchTerm: string): void {
-  const selectedFilter = advancedSearchSelect?.getValue();
-
-  if (!selectedFilter || typeof selectedFilter !== 'string' || !searchTerm) {
+function handleAdvancedSearch(container: HTMLElement, searchTerm: string, filterValue: string): void {
+  if (!filterValue || !searchTerm) {
     return;
   }
 
+  currentAdvancedSearchFilter = filterValue;
   const searchTermLower = searchTerm.toLowerCase();
 
   filteredLinksData = predefinedLinksData.predefinedLinksDetails.filter((link: any) => {
-    switch (selectedFilter) {
+    switch (filterValue) {
       case 'name':
         return link.predefinedLinkName.toLowerCase().includes(searchTermLower);
       case 'pageType':
@@ -186,11 +168,9 @@ export function handleSearch(query: string): void {
  */
 export function resetSearch(): void {
   currentSearchQuery = '';
+  currentAdvancedSearchFilter = '';
   filteredLinksData = [...predefinedLinksData.predefinedLinksDetails];
   currentPage = 1;
-  if (advancedSearchSelect) {
-    advancedSearchSelect.setValue(null);
-  }
 }
 
 /**
@@ -201,8 +181,8 @@ export function renderContent(container: HTMLElement): void {
   const content = getPredefinedLinkContent(currentPage);
   container.innerHTML = content;
 
-  // Initialize advanced search select after content is rendered
-  initializeAdvancedSearch(container);
+  // Initialize overlay panel
+  new AlightOverlayPanel();
 
   // Attach event listeners after content is injected
   attachEventListeners(container);
@@ -248,7 +228,10 @@ function attachEventListeners(container: HTMLElement): void {
   // Advanced search handlers
   applyAdvancedSearch?.addEventListener('click', () => {
     if (advancedSearchInput) {
-      handleAdvancedSearch(container, advancedSearchInput.value);
+      const selectedFilter = container.querySelector('input[name="search-filter"]:checked') as HTMLInputElement | null;
+      if (selectedFilter) {
+        handleAdvancedSearch(container, advancedSearchInput.value, selectedFilter.value);
+      }
     }
   });
 

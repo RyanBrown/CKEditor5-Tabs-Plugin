@@ -1,47 +1,54 @@
-// src/plugins/alight-overlay-panel/alight-overlay-panel.ts
-import './styles/alight-overlay-panel.scss';
-
 export class AlightOverlayPanel {
-  private buttons: NodeListOf<HTMLButtonElement>;
-  private panels: NodeListOf<HTMLDivElement>;
+  private panels: Map<string, HTMLDivElement> = new Map();
   private currentPanel: HTMLDivElement | null = null;
+  private zIndex: number = 1000;
 
   constructor() {
-    this.buttons = document.querySelectorAll(".ck-alight-triggerBtn") as NodeListOf<HTMLButtonElement>;
-    this.panels = document.querySelectorAll(".ck-alight-overlay-panel") as NodeListOf<HTMLDivElement>;
-
-    // Bind the method to preserve context
-    this.handleClickOutside = this.handleClickOutside.bind(this);
-
-    this.buttons.forEach((button) => {
-      button.addEventListener("click", (event: MouseEvent) => this.toggle(event));
-    });
-
-    document.addEventListener("click", this.handleClickOutside);
-
-    // Use type casting to resolve TypeScript typing issue
-    document.addEventListener("click", (event: Event) => this.handleClickOutside(event));
-
-    document.querySelectorAll(".ck-alight-closeBtn").forEach((closeBtn) => {
-      closeBtn.addEventListener("click", (event: Event) => this.hide(event));
-    });
-
-    window.addEventListener("resize", () => this.handleWindowResize());
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => this.initialize());
+    } else {
+      this.initialize();
+    }
   }
 
-  private toggle(event: MouseEvent): void {
-    event.stopPropagation(); // Prevent event from bubbling to document
+  private initialize(): void {
+    const buttons = document.querySelectorAll('.cka-trigger-btn');
+    const panels = document.querySelectorAll('.cka-overlay-panel');
 
+    panels.forEach((panel: Element) => {
+      const id = panel.getAttribute('data-id');
+      if (id) {
+        this.panels.set(id, panel as HTMLDivElement);
+      }
+    });
+
+    buttons.forEach((button: Element) => {
+      button.addEventListener('click', (event: Event) => this.toggle(event));
+    });
+
+    document.querySelectorAll('.cka-close-btn').forEach((btn: Element) => {
+      btn.addEventListener('click', (event: Event) => this.hide(event));
+    });
+
+    document.addEventListener('click', (event: Event) => this.handleClickOutside(event));
+    window.addEventListener('resize', () => this.handleWindowResize());
+    window.addEventListener('scroll', () => this.handleWindowResize(), true);
+  }
+
+  private toggle(event: Event): void {
+    event.stopPropagation();
     const button = event.currentTarget as HTMLButtonElement;
-    const panelId = button.getAttribute("data-id");
+    const panelId = button.getAttribute('data-id');
 
-    if (!panelId) return;
+    if (!panelId || !this.panels.has(panelId)) return;
 
-    const panel = document.querySelector(`.ck-alight-overlay-panel[data-id='${panelId}']`) as HTMLDivElement | null;
+    const panel = this.panels.get(panelId)!;
 
-    if (!panel) return;
-
-    panel.classList.contains("ck-alight-active") ? this.hidePanel(panel) : this.show(button, panel);
+    if (panel.classList.contains('cka-active')) {
+      this.hidePanel(panel);
+    } else {
+      this.show(button, panel);
+    }
   }
 
   private show(button: HTMLButtonElement, panel: HTMLDivElement): void {
@@ -50,65 +57,60 @@ export class AlightOverlayPanel {
     }
 
     const rect = button.getBoundingClientRect();
-    const windowWidth = window.innerWidth;
-    const windowHeight = window.innerHeight;
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
 
-    panel.style.maxHeight = "90vh";
-    panel.style.maxWidth = "90vw";
-    panel.style.width = "auto";
-    panel.style.height = "auto";
+    this.zIndex += 1;
+    panel.style.zIndex = this.zIndex.toString();
 
-    panel.classList.add("ck-alight-active");
-    panel.style.opacity = "0";
-    panel.style.visibility = "hidden";
+    panel.classList.add('cka-active');
 
-    const updatedPanelRect = panel.getBoundingClientRect();
+    this.positionPanel(panel, {
+      x: rect.left + scrollLeft,
+      y: rect.bottom + scrollTop,
+      targetHeight: rect.height,
+      targetWidth: rect.width
+    });
 
-    let top: number, left: number;
+    this.currentPanel = panel;
+  }
 
-    if (windowHeight - rect.bottom >= updatedPanelRect.height) {
-      top = rect.bottom;
-    } else if (rect.top >= updatedPanelRect.height) {
-      top = rect.top - updatedPanelRect.height;
-    } else {
-      top = Math.max(10, rect.top - updatedPanelRect.height);
+  private positionPanel(panel: HTMLDivElement, target: { x: number; y: number; targetHeight: number; targetWidth: number }): void {
+    const panelRect = panel.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+
+    let top = target.y;
+    let left = target.x;
+
+    if (left + panelRect.width > viewportWidth + scrollLeft) {
+      left = target.x + target.targetWidth - panelRect.width;
     }
 
-    if (windowWidth - rect.right >= updatedPanelRect.width) {
-      left = rect.left;
-    } else if (rect.left >= updatedPanelRect.width) {
-      left = rect.right - updatedPanelRect.width;
-    } else {
-      left = Math.max(10, Math.min(rect.left, windowWidth - updatedPanelRect.width - 10));
+    if (top + panelRect.height > viewportHeight + scrollTop) {
+      top = target.y - panelRect.height - target.targetHeight;
     }
 
-    top = Math.max(10, Math.min(top, windowHeight - updatedPanelRect.height - 10));
-    left = Math.max(10, Math.min(left, windowWidth - updatedPanelRect.width - 10));
+    left = Math.max(scrollLeft, Math.min(left, viewportWidth + scrollLeft - panelRect.width));
+    top = Math.max(scrollTop, Math.min(top, viewportHeight + scrollTop - panelRect.height));
 
     panel.style.top = `${top}px`;
     panel.style.left = `${left}px`;
-
-    void panel.offsetWidth;
-
-    panel.style.opacity = "1";
-    panel.style.visibility = "visible";
-
-    this.currentPanel = panel;
   }
 
   private hide(event: Event): void {
     event.stopPropagation();
     const closeButton = event.target as HTMLElement;
-    const panel = closeButton.closest(".ck-alight-overlay-panel") as HTMLDivElement | null;
+    const panel = closeButton.closest('.cka-overlay-panel') as HTMLDivElement;
     if (panel) {
       this.hidePanel(panel);
     }
   }
 
   private hidePanel(panel: HTMLDivElement): void {
-    panel.style.opacity = "0";
-    panel.style.visibility = "hidden";
-    panel.classList.remove("ck-alight-active");
+    panel.classList.remove('cka-active');
     if (this.currentPanel === panel) {
       this.currentPanel = null;
     }
@@ -116,24 +118,25 @@ export class AlightOverlayPanel {
 
   private handleClickOutside(event: Event): void {
     const target = event.target as HTMLElement;
-    if (!target.closest(".ck-alight-overlay-panel") && !target.closest(".ck-alight-triggerBtn")) {
-      this.panels.forEach((panel) => {
-        this.hidePanel(panel);
-      });
+    if (
+      this.currentPanel &&
+      !this.currentPanel.contains(target) &&
+      !target.closest('.cka-trigger-btn')
+    ) {
+      this.hidePanel(this.currentPanel);
     }
   }
 
   private handleWindowResize(): void {
     if (this.currentPanel) {
-      const panelId = this.currentPanel.getAttribute("data-id");
-      const button = panelId ? document.querySelector(`.ck-alight-triggerBtn[data-id='${panelId}']`) as HTMLButtonElement | null : null;
+      const panelId = this.currentPanel.getAttribute('data-id');
+      const button = panelId
+        ? document.querySelector(`.cka-trigger-btn[data-id='${panelId}']`) as HTMLButtonElement
+        : null;
+
       if (button) {
         this.show(button, this.currentPanel);
       }
     }
   }
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-  new AlightOverlayPanel();
-});
