@@ -101,8 +101,8 @@ export function getPredefinedLinkContent(page: number): string {
   // Generate HTML for link items
   const linksMarkup = currentPageData
     .map((link: any) => `
-      <div class="cka-link-item">
-        <div>
+      <div class="cka-link-item" data-link-name="${link.predefinedLinkName}">
+        <div class="radio-container">
           <ck-alight-radio-button
             name="link-selection"
             value="${link.predefinedLinkName}"
@@ -245,6 +245,25 @@ export function renderContent(container: HTMLElement): void {
 
 // Attaches event listeners to the container
 function attachEventListeners(container: HTMLElement): void {
+  // Link item click handlers
+  const linkItems = container.querySelectorAll('.cka-link-item');
+  linkItems.forEach(item => {
+    item.addEventListener('click', (event: Event) => {
+      const linkItem = event.currentTarget as HTMLElement;
+      const linkName = linkItem.getAttribute('data-link-name');
+      if (linkName) {
+        // Find the radio button within this link item
+        const radio = linkItem.querySelector('ck-alight-radio-button') as any;
+        if (radio) {
+          // Set the radio button's checked state
+          radio.value = linkName;
+          // Trigger a change event if needed
+          radio.dispatchEvent(new Event('change'));
+        }
+      }
+    });
+  });
+
   // Search functionality
   const searchBtn = container.querySelector('#search-btn');
   const searchInput = container.querySelector('#search-input') as HTMLInputElement;

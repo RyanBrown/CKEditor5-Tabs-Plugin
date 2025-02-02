@@ -45,6 +45,7 @@ ul.checkbox-list {
   position: sticky;
   top: 0;
   width: 100%;
+  z-index: 3;
 }
 
 .cka-pagination {
@@ -57,6 +58,7 @@ ul.checkbox-list {
   padding: 1rem;
   position: sticky;
   width: 100%;
+  z-index: 3;
 
   .cka-select-menu-wrap {
     display: inline-flex;
