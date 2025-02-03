@@ -92,8 +92,8 @@ export function getPredefinedLinkContent(page: number): string {
     <div id="search-container" class="cka-search-container">
       <input type="text" id="search-input" placeholder="Search by link name..." value="${currentSearchQuery}" />
       <button id="reset-search-btn">Reset</button>
-      <button id="${advancedSearchTriggerId}" data-panel-id="advanced-search-panel">Advanced Search</button>
-      <button id="search-btn">Search</button>
+      <button id="${advancedSearchTriggerId}" data-panel-id="advanced-search-panel" class="cka-button cka-button-rounded cka-button-text">Advanced Search</button>
+      <button id="search-btn" class="cka-button cka-button-rounded cka-button-outlined">Search</button>
     </div>
   `;
 
@@ -115,8 +115,8 @@ export function getPredefinedLinkContent(page: number): string {
         </div>
       </main>
       <footer>
-        <button id="apply-advanced-search">Apply Filters</button>
-        <button id="clear-advanced-search">Clear Filters</button>
+        <button id="clear-advanced-search" class="cka-button cka-button-rounded cka-button-outlined cka-button-sm">Clear Filters</button>
+        <button id="apply-advanced-search" class="cka-button cka-button-rounded cka-button-sm">Apply Filters</button>
       </footer>
     </div>
   `;

@@ -26,9 +26,17 @@
 }
 
 ul.checkbox-list {
+  display: flex;
+  flex-wrap: wrap;
   list-style: none;
   margin: 0;
   padding: 0;
+
+  li {
+    box-sizing: border-box;
+    flex: 0 0 50%;
+    padding: 0 5px;
+  }
 }
 
 .cka-search-container {

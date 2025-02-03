@@ -56,7 +56,9 @@ export class AlightOverlayPanel {
     }
 
     // Set up close buttons
-    const closeButtons = document.querySelectorAll(`.cka-overlay-panel[data-id="${panelId}"] .cka-close-btn`);
+    const closeButtons = document.querySelectorAll(
+      `.cka-overlay-panel[data-id="${panelId}"] .cka-close-btn`
+    );
     closeButtons.forEach((btn: Element) => {
       btn.addEventListener('click', (event: Event) => this.hide(event));
     });
@@ -88,6 +90,7 @@ export class AlightOverlayPanel {
     const config = this.configs.get(panelId);
 
     if (panel.classList.contains('cka-active')) {
+      // Now calls our new public hidePanel():
       this.hidePanel(panel);
     } else {
       if (config) {
@@ -119,7 +122,10 @@ export class AlightOverlayPanel {
     this.currentPanel = panel;
   }
 
-  private positionPanel(panel: HTMLDivElement, target: { x: number; y: number; targetHeight: number; targetWidth: number }): void {
+  private positionPanel(
+    panel: HTMLDivElement,
+    target: { x: number; y: number; targetHeight: number; targetWidth: number }
+  ): void {
     const panelRect = panel.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
@@ -160,7 +166,15 @@ export class AlightOverlayPanel {
     }
   }
 
-  private hidePanel(panel: HTMLDivElement): void {
+  // Make this public and optionally accept the panel:
+  public hidePanel(panel?: HTMLDivElement): void {
+    if (!panel) {
+      if (this.currentPanel) {
+        panel = this.currentPanel;
+      } else {
+        return;
+      }
+    }
     panel.classList.remove('cka-active');
     if (this.currentPanel === panel) {
       this.currentPanel = null;
@@ -202,18 +216,3 @@ export class AlightOverlayPanel {
     }
   }
 }
-
-// Example usage:
-/*
-<button id="advancedSearchTrigger" data-panel-id="advanced-search-panel">
-  Advanced Search
-</button>
-
-<div class="cka-overlay-panel" data-id="advanced-search-panel">
-  <!-- Panel content -->
-</div>
-
-const advancedSearchPanel = new AlightOverlayPanel('advancedSearchTrigger', {
-  width: '400px'
-});
-*/

@@ -17,6 +17,10 @@
     display: flex;
     justify-content: space-between;
     padding: 1rem;
+
+    h3 {
+      margin: 0;
+    }
   }
 
   main {
@@ -27,6 +31,7 @@
   footer {
     border-top: 1px solid #ccc;
     display: flex;
+    gap: 1rem;
     justify-content: flex-start;
     padding: 1rem;
   }

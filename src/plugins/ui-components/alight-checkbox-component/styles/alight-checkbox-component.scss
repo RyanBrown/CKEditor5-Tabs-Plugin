@@ -24,27 +24,27 @@ cka-checkbox {
   &:not(.cka-disabled) {
     .cka-checkbox-box {
       &:not(.cka-highlight):hover {
-        border-color: var(--primary-color, #3B82F6);
+        border-color: var(--primary-color, var(--primary));
       }
 
       &.cka-highlight {
-        background: var(--primary-color, #3B82F6);
-        border-color: var(--primary-color, #3B82F6);
+        background: var(--primary-color, var(--primary));
+        border-color: var(--primary-color, var(--primary));
 
         &:hover {
-          background: var(--primary-600, #2563EB);
-          border-color: var(--primary-600, #2563EB);
+          background: var(--primary-600, var(--primary-active));
+          border-color: var(--primary-600, var(--primary-active));
         }
 
         .cka-checkbox-icon {
-          transform: scale(1);
+          transform: scale(1.5);
           opacity: 1;
         }
       }
 
       &.cka-focus {
         box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
-        border-color: var(--primary-color, #3B82F6);
+        border-color: var(--primary-color, var(--primary));
       }
     }
   }
@@ -53,7 +53,7 @@ cka-checkbox {
     .cka-checkbox-box {
       outline: 0 none;
       box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
-      border-color: var(--primary-color, #3B82F6);
+      border-color: var(--primary-color, var(--primary));
     }
   }
 
@@ -65,16 +65,16 @@ cka-checkbox {
 }
 
 .cka-checkbox-box {
-  border: 2px solid #ced4da;
-  background: var(--neutral-white);
-  width: 20px;
-  height: 20px;
-  color: #495057;
-  border-radius: 4px;
-  transition: background-color 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
-  display: flex;
   align-items: center;
+  background: var(--neutral-white);
+  border-radius: 0;
+  border: 2px solid var(--gray-400);
+  color: var(--gray-700);
+  display: flex;
+  height: 1rem;
   justify-content: center;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
+  width: 1rem;
 }
 
 .cka-checkbox-icon {
