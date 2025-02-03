@@ -3,7 +3,7 @@ import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 import { AlightImagePluginCommand } from './alight-image-plugin-command';
 // import { getExistingImageContent } from './modal-content/existing-image';
 import { getUploadImageContent } from './modal-content/upload-image';
-import { getPredefinedLinkContent } from './modal-content/predefined-link'
+import { getPredefinedLinkContent } from './modal-content/predefined-link';
 
 export default class AlightImagePluginEditing extends Plugin {
   init() {
@@ -14,8 +14,23 @@ export default class AlightImagePluginEditing extends Plugin {
       'imageOption1',
       new AlightImagePluginCommand(editor, {
         title: 'Existing Image',
-        primaryButtonLabel: 'Choose',
-        // loadContent: async () => getExistingImageContent()
+        modalType: 'existingImage',
+        modalOptions: {
+          width: '90vw',
+          draggable: true
+        },
+        buttons: [
+          {
+            label: 'Cancel',
+            className: 'ck-button-secondary',
+            onClick: () => this.handleCancel()
+          },
+          {
+            label: 'Choose',
+            className: 'ck-button-primary',
+            onClick: () => this.handleImageSelection()
+          }
+        ],
         loadContent: async () => getPredefinedLinkContent(3)
       })
     );
@@ -24,9 +39,35 @@ export default class AlightImagePluginEditing extends Plugin {
       'imageOption2',
       new AlightImagePluginCommand(editor, {
         title: 'Upload Image',
-        primaryButtonLabel: 'Upload',
+        modalType: 'uploadImage',
+        buttons: [
+          {
+            label: 'Cancel',
+            className: 'ck-button-secondary'
+          },
+          {
+            label: 'Upload',
+            className: 'ck-button-primary',
+            onClick: () => this.handleUpload()
+          }
+        ],
         loadContent: async () => getUploadImageContent()
       })
     );
+  }
+
+  private handleCancel(): void {
+    // Implementation
+    console.log('Cancel clicked');
+  }
+
+  private handleImageSelection(): void {
+    // Implementation
+    console.log('Image selection confirmed');
+  }
+
+  private handleUpload(): void {
+    // Implementation
+    console.log('Upload clicked');
   }
 }

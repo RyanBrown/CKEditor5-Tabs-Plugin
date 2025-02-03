@@ -22,14 +22,14 @@ export class AlightLinkPluginCommand extends Command {
       modal: true,
       draggable: false,
       resizable: false,
-      width: '80vw',
+      width: '600px',
       position: 'center',
       closeOnEscape: true
     });
 
     // Set up the footer with action buttons
     const footerContent = document.createElement('div');
-    footerContent.className = 'ck-alight-dialog-footer-buttons';
+    footerContent.className = 'cka-dialog-footer-buttons';
 
     const primaryButton = document.createElement('button');
     primaryButton.className = 'ck-button-primary';

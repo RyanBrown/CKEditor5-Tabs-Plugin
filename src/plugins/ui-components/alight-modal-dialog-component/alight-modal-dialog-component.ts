@@ -40,6 +40,10 @@ export class CKAlightModalDialog {
   private contentEl!: HTMLDivElement;
   private footer!: HTMLDivElement;
 
+  public getContentElement(): HTMLElement | null {
+    return this.contentEl || null;
+  }
+
   constructor(options: DialogOptions = {}) {
     this.options = {
       modal: true,
