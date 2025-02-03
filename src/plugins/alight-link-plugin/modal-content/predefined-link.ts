@@ -82,9 +82,9 @@ export class PredefinedLinkManager {
     `;
   }
 
-  // Constructs the main content with pagination, search, and advanced filters.
-  private getPredefinedLinkContent(page: number): string {
-    // Calculate total pages
+  // Currently it's a private method; make it public to return the HTML string:
+  public getPredefinedLinkContent(page: number): string {
+    // everything that was previously in the private getPredefinedLinkContent method
     const totalItems = this.filteredLinksData.length;
     const totalPages = Math.ceil(totalItems / this.pageSize) || 1;
 
