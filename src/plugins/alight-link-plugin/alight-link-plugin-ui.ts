@@ -18,7 +18,8 @@ export default class AlightLinkPluginUI extends Plugin {
       const dropdown = createDropdown(locale);
 
       // Configure the dropdown button
-      dropdown.buttonView.set({
+      const buttonView = dropdown.buttonView;
+      buttonView.set({
         icon: ToolBarIcon,
         label: t('Insert Alight Link'),
         tooltip: true,
@@ -27,11 +28,8 @@ export default class AlightLinkPluginUI extends Plugin {
 
       // Create a ListView for the dropdown's panel
       const listView = new ListView(locale);
-      listView.focus = () => {
-        /* no-op to prevent focus */
-      };
 
-      // A small header in the dropdown
+      // Example: simple heading
       const headerView = new View(locale);
       headerView.setTemplate({
         tag: 'div',
@@ -42,7 +40,7 @@ export default class AlightLinkPluginUI extends Plugin {
       listView.items.add(headerView);
       listView.items.add(new ListSeparatorView(locale));
 
-      // The link commands we registered in Editing
+      // Items
       const itemDefinitions = [
         { label: t('Predefined Pages'), command: 'linkOption1' },
         { label: t('Public Website'), command: 'linkOption2' },
@@ -54,7 +52,7 @@ export default class AlightLinkPluginUI extends Plugin {
       itemDefinitions.forEach((item) => {
         const listItem = new ListItemView(locale);
         const button = new ButtonView(locale);
-        button.set({ label: item.label, withText: true, tooltip: false });
+        button.set({ label: item.label, withText: true });
 
         button.on('execute', () => {
           editor.execute(item.command);

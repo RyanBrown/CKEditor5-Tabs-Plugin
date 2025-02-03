@@ -1,89 +1,83 @@
 // src/plugins/alight-link-plugin/alight-link-plugin-command.ts
 import type Editor from '@ckeditor/ckeditor5-core/src/editor/editor';
-import AlightDialogModalCommand from './../alight-dialog-modal/alight-dialog-modal-command';
-import { AlightDialogModalProps } from './../alight-dialog-modal/alight-dialog-modal';
+import Command from '@ckeditor/ckeditor5-core/src/command';
+import CKAlightModalDialog from './../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import { renderContent } from './modal-content/predefined-link';
 
-// Defines the structure for each link option (title, how to load content, etc.)
-export interface LinkOptionData {
+interface LinkOptionData {
   title: string;
-  content: string;
+  primaryButtonLabel?: string;
   loadContent?: () => Promise<string>;
-  primaryButton?: string;
-  contentClass?: string;
 }
 
-export default class AlightLinkPluginCommand extends AlightDialogModalCommand {
+export class AlightLinkPluginCommand extends Command {
+  private dialog: CKAlightModalDialog;
   private data: LinkOptionData;
 
   constructor(editor: Editor, data: LinkOptionData) {
-    const { title, primaryButton, contentClass } = data;
+    super(editor);
+    this.data = data;
 
-    // Initialize modal properties with an empty content; content will be rendered later
-    const modalProps: AlightDialogModalProps = {
-      title,
-      content: '', // Will be set after content is rendered
-      primaryButton: {
-        label: primaryButton || 'Continue',
-        onClick: () => {
-          // Handle primary button click if needed
-          const selectedRadio = document.querySelector('input[name="link-selection"]:checked') as HTMLInputElement | null;
-          if (selectedRadio) {
-            const selectedLinkName = selectedRadio.value;
-            console.log('Selected Link:', selectedLinkName);
-            // Implement logic to apply the selected link
-            // e.g., editor.model.change(...);
-          }
-          this.closeModal();
-        }
-      },
-      tertiaryButton: {
-        label: 'Cancel',
-        onClick: () => {
-          console.log('Modal dismissed');
-          this.closeModal();
-        }
-      },
-      onClose: () => {
-        console.log('Modal closed');
-      },
-      contentClass: contentClass || '',
-      onContentReady: () => {
-        console.log('Content is ready and scripts have been executed.');
-        // Place any additional code you want to run after content is ready here
-      }
+    this.dialog = new CKAlightModalDialog({
+      modal: true,
+      draggable: false,
+      resizable: false,
+      width: '80vw',
+      position: 'center',
+      closeOnEscape: true
+    });
+
+    // Set up the footer with action buttons
+    const footerContent = document.createElement('div');
+    footerContent.className = 'ck-alight-dialog-footer-buttons';
+
+    const primaryButton = document.createElement('button');
+    primaryButton.className = 'ck-button-primary';
+    primaryButton.textContent = data.primaryButtonLabel || 'Continue';
+    primaryButton.onclick = () => {
+      console.log('Primary action for link plugin');
+      this.dialog.hide();
     };
 
-    super(editor, modalProps);
-    this.data = data;
+    const cancelButton = document.createElement('button');
+    cancelButton.className = 'ck-button-secondary';
+    cancelButton.textContent = 'Cancel';
+    cancelButton.onclick = () => {
+      this.dialog.hide();
+    };
+
+    footerContent.appendChild(cancelButton);
+    footerContent.appendChild(primaryButton);
+    this.dialog.setFooter(footerContent);
   }
 
   public override execute(): void {
-    // Initialize and show the modal
-    super.execute();
+    this.dialog.setTitle(this.data.title);
 
-    if (this.modal) {
-      // Get the modal's content container using the getter
-      const modalContentContainer = this.modal.contentContainerElement;
-      console.log('Modal Content Container:', modalContentContainer);
+    // Create a container for the content
+    const contentContainer = document.createElement('div');
+    contentContainer.className = 'modal-content-container';
 
-      // Render the initial content (first page) and attach event listeners
-      renderContent(modalContentContainer);
+    // Set initial loading state
+    contentContainer.innerHTML = '<div class="loading">Loading content...</div>';
+    this.dialog.setContent(contentContainer);
 
-      // Inject any arbitrary code here
-      // Example: Dynamically adding a script
-      const arbitraryScript = document.createElement('script');
-      arbitraryScript.textContent = `
-        console.log('Arbitrary script is running inside the modal.');
-        // Add more custom JavaScript as needed
-        const customButton = document.createElement('button');
-        customButton.textContent = 'Custom Action';
-        customButton.id = 'custom-action-button';
-        customButton.style.marginTop = '10px';
-        customButton.onclick = () => alert('Custom Action Executed!');
-        document.body.appendChild(customButton);
-      `;
-      modalContentContainer.appendChild(arbitraryScript);
+    this.dialog.show();
+
+    // Load content if available
+    if (this.data.loadContent) {
+      this.data.loadContent().then((content) => {
+        contentContainer.innerHTML = content;
+        // If this is the predefined link content, initialize it
+        if (this.data.title === 'Predefined Link') {
+          renderContent(contentContainer);
+        }
+      });
     }
+  }
+
+  public override destroy(): void {
+    this.dialog.destroy();
+    super.destroy();
   }
 }

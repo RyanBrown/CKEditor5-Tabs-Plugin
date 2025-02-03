@@ -1,145 +1,56 @@
 // src/plugins/alight-link-plugin/alight-link-plugin-editing.ts
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
-import LinkEditing from '@ckeditor/ckeditor5-link/src/linkediting';
-import LinkUI from '@ckeditor/ckeditor5-link/src/linkui';
-import AlightLinkPluginCommand, { LinkOptionData } from './alight-link-plugin-command';
+import { AlightLinkPluginCommand } from './alight-link-plugin-command';
 import { getPredefinedLinkContent } from './modal-content/predefined-link';
 import { getPublicIntranetLinkContent } from './modal-content/public-intranet-link';
 import { getExistingDocumentLinkContent } from './modal-content/existing-document-link';
 import { getNewDocumentsLinkContent } from './modal-content/new-document-link';
 
 export default class AlightLinkPluginEditing extends Plugin {
-  public static get requires() {
-    return [LinkEditing, LinkUI];
-  }
-
-  public init() {
+  init() {
     const editor = this.editor;
 
-    // Define link options
-    const linkOptionsContent: { [key: string]: LinkOptionData } = {
-      // Define your link option data
-      linkOption1: {
+    // Two separate commands for two types of content
+    editor.commands.add(
+      'linkOption1',
+      new AlightLinkPluginCommand(editor, {
         title: 'Choose a Predefined Link',
-        content: '<div class="predefined-link-container">Loading...</div>',
-        contentClass: 'predefined-link-container',
-        primaryButton: 'Apply',
-        loadContent: async () => {
-          // Simulate asynchronous content loading
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          return `
-            <div>
-              <h3>Predefined Links</h3>
-              <button id="dynamic-button">Dynamic Button</button>
-            </div>
-            <script>
-              document.getElementById('dynamic-button').addEventListener('click', () => {
-                alert('Dynamic Button Clicked!');
-              });
-            </script>
-          `;
-        }
-      },
-      linkOption2: {
+        primaryButtonLabel: 'Choose',
+        // loadContent: async () => getPredefinedLinkContent(3)
+        loadContent: async () => getPublicIntranetLinkContent()
+      })
+    );
+    editor.commands.add(
+      'linkOption2',
+      new AlightLinkPluginCommand(editor, {
         title: 'Public Website Link',
-        content: '<div class="public-intranet-link-container">Loading...</div>',
-        loadContent: async () => getPublicIntranetLinkContent('', false, '')
-      },
-      linkOption3: {
+        primaryButtonLabel: 'Continue',
+        loadContent: async () => getPublicIntranetLinkContent()
+      })
+    );
+    editor.commands.add(
+      'linkOption3',
+      new AlightLinkPluginCommand(editor, {
         title: 'Intranet Link',
-        content: '<div class="public-intranet-link-container">Loading...</div>',
-        loadContent: async () => getPublicIntranetLinkContent('', true, '')
-      },
-      linkOption4: {
+        primaryButtonLabel: 'Continue',
+        loadContent: async () => getPublicIntranetLinkContent()
+      })
+    );
+    editor.commands.add(
+      'linkOption4',
+      new AlightLinkPluginCommand(editor, {
         title: 'Existing Document Link',
-        content: '<div class="existing-document-link-container">Loading...</div>',
+        primaryButtonLabel: 'Continue',
         loadContent: async () => getExistingDocumentLinkContent()
-      },
-      linkOption5: {
+      })
+    );
+    editor.commands.add(
+      'linkOption5',
+      new AlightLinkPluginCommand(editor, {
         title: 'New Document Link',
-        content: '<div class="new-document-link-container">Loading...</div>',
+        primaryButtonLabel: 'Continue',
         loadContent: async () => getNewDocumentsLinkContent()
-      }
-    };
-
-    // Register commands
-    Object.entries(linkOptionsContent).forEach(([commandName, data]) => {
-      editor.commands.add(commandName, new AlightLinkPluginCommand(editor, data));
-    });
-  }
-
-  public afterInit() {
-    const editor = this.editor;
-
-    // Access the default LinkUI plugin to override the link balloon
-    const linkUI = editor.plugins.get(LinkUI);
-    if (!linkUI) return;
-
-    const formView = linkUI.formView;
-    if (!formView) return;
-
-    const saveButtonView = formView.saveButtonView;
-    if (!saveButtonView) return;
-
-    // Change the balloon button label
-    saveButtonView.label = 'Edit with Alight';
-
-    // Override the default execute handler
-    saveButtonView.on('execute', (evt) => {
-      evt.stop();
-
-      const selection = editor.model.document.selection;
-      const currentHrefValue = selection.getAttribute('linkHref') || '';
-      const hrefString = typeof currentHrefValue === 'string' ? currentHrefValue : '';
-      const isIntranet = hrefString.startsWith('http://intranet') || hrefString.startsWith('https://intranet');
-
-      // Load modal content asynchronously
-      getPublicIntranetLinkContent(hrefString, isIntranet, '')
-        .then((modalContent) => {
-          import('./../../plugins/alight-dialog-modal/alight-dialog-modal').then(({ AlightDialogModal }) => {
-            const modal = new AlightDialogModal({
-              title: isIntranet ? 'Edit Intranet Link' : 'Edit Public Link',
-              content: 'Loading...', // Initial placeholder
-              primaryButton: {
-                label: 'Apply',
-                onClick: () => {
-                  const urlInput = document.getElementById('url') as HTMLInputElement;
-                  if (urlInput?.value) {
-                    editor.model.change((writer) => {
-                      writer.setSelectionAttribute('linkHref', urlInput.value);
-                    });
-                  }
-                  modal.closeModal(); // Correct: no arguments
-                }
-              },
-              tertiaryButton: { label: 'Cancel', onClick: () => console.log('Edit canceled') },
-              onClose: () => { console.log('Modal closed'); }
-            });
-            modal.show();
-
-            // Update modal content after loading
-            modal.updateContent(modalContent);
-          });
-        })
-        .catch((error) => {
-          console.error('Error loading link modal content:', error);
-          // Optionally, update the modal with an error message
-          import('./../../plugins/alight-dialog-modal/alight-dialog-modal').then(({ AlightDialogModal }) => {
-            const modal = new AlightDialogModal({
-              title: isIntranet ? 'Edit Intranet Link' : 'Edit Public Link',
-              content: '<p>Error loading content. Please try again later.</p>',
-              primaryButton: {
-                label: 'Close',
-                onClick: () => {
-                  modal.closeModal(); // Correct: no arguments
-                }
-              },
-              tertiaryButton: { label: 'Cancel', onClick: () => console.log('Edit canceled') },
-              onClose: () => { console.log('Modal closed'); }
-            });
-            modal.show();
-          });
-        });
-    });
+      })
+    );
   }
 }
