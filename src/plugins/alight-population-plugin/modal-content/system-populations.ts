@@ -4,7 +4,7 @@ export async function getSystemPopulationsContent(): Promise<string> {
   // Placeholder content for public website links
   return `
     <div>
-      <h1>System Populations Content TEST</h1>
+      <h1>System Populations Content</h1>
     </div>
   `;
 }
