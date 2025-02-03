@@ -22,7 +22,7 @@ export async function getPublicIntranetLinkContent(
     <div class="public-intranet-link-content">
       ${intranetNote}
 
-      <label for="url" class="cka-input-text">URL</label>
+      <label for="url" class="cka-input-label">URL</label>
       <input 
         id="url" 
         type="url" 
@@ -30,7 +30,7 @@ export async function getPublicIntranetLinkContent(
         value="${existingHref}"
       />
 
-      <label for="org-name" class="cka-input-text">
+      <label for="org-name" class="cka-input-label">
         Organization Name (Optional)<span class="asterisk">*</span>
       </label>
       <input 

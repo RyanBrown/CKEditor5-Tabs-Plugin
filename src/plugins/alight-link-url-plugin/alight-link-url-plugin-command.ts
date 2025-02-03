@@ -76,7 +76,7 @@ export default class AlightLinkUrlPluginCommand extends AlightDialogModalCommand
     // Insert a minimal HTML form into `modalProps.content`.
     this.modalProps.content = `
       <div class="ck-custom-modal-content">
-        <label for="linkUrl" class="cka-input-text">URL:</label>
+        <label for="linkUrl" class="cka-input-label">URL:</label>
         <input
           class="cka-input-text"
           id="linkUrl"
@@ -84,7 +84,7 @@ export default class AlightLinkUrlPluginCommand extends AlightDialogModalCommand
           type="url"
           value="${href}" />
 
-        <label for="orgNameText" class="cka-input-text mt-4">Org Name</label>
+        <label for="orgNameText" class="cka-input-label mt-4">Org Name</label>
         <input
           class="cka-input-text"
           id="orgNameText"

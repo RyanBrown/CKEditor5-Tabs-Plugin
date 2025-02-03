@@ -1,7 +1,7 @@
 @use './_mixins.scss' as mixins;
 
 // Alight input label styles
-.cka-input-text {
+.cka-input-label {
   display: block;
   font-weight: var(--font-weight-bold);
 }
@@ -35,12 +35,12 @@
     border-color: var(--error);
   }
 
-  &.cka-input-text-sm {
+  &.cka-input-label-sm {
     font-size: var(--font-size-sm);
     padding: mixins.toRem(12) mixins.toRem(12) !important;
   }
 
-  &.cka-input-text-lg {
+  &.cka-input-label-lg {
     font-size: var(--font-size-xl);
     padding: mixins.toRem(20) mixins.toRem(20);
   }
