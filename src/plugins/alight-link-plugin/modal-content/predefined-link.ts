@@ -7,7 +7,7 @@ import '../../ui-components/alight-checkbox-component/alight-checkbox-component'
 import '../../ui-components/alight-radio-component/alight-radio-component';
 import { ILinkManager } from './ILinkManager';
 
-// Tracks which filters have been selected.
+// Interface for selected filters.
 interface SelectedFilters {
   [key: string]: string[];
   baseOrClientSpecific: string[];
@@ -29,9 +29,8 @@ interface PredefinedLink {
 }
 
 /**
- * Manages "Predefined Link" logic: filtering, searching, pagination,
- * rendering, and event listeners. Implements ILinkManager so it can
- * be used in commands expecting a generic manager.
+ * Manages all logic for Predefined Links (filters, search, pagination).
+ * Implements ILinkManager so it can be used by a CKEditor command.
  */
 export class PredefinedLinkManager implements ILinkManager {
   // Overlay panel configuration
@@ -40,56 +39,52 @@ export class PredefinedLinkManager implements ILinkManager {
     height: 'auto'
   };
 
-  // Raw data from the JSON file
+  // Data from JSON
   private predefinedLinksData: PredefinedLink[] = predefinedLinksData.predefinedLinksDetails;
-
-  // Derived, filtered list
+  // Filtered subset
   private filteredLinksData: PredefinedLink[] = [...this.predefinedLinksData];
 
-  // State
+  // Internal state
   private currentSearchQuery = '';
   private currentPage = 1;
   private readonly pageSize = 5;
-  // ID used for the "Advanced Search" trigger button
-  private readonly advancedSearchTriggerId = 'advanced-search-trigger-image';
+  private readonly advancedSearchTriggerId = 'advanced-search-trigger';
 
-  // Selected filters for base/client-specific, pageType, and domain
+  // Selected filters
   private selectedFilters: SelectedFilters = {
     baseOrClientSpecific: [],
     pageType: [],
     domain: []
   };
 
-  /**
-   * ILinkManager method:
-   * Returns an HTML string for a given page of data.
-   */
+  // Returns raw HTML for a particular page of data.
   public getLinkContent(page: number): string {
     return this.buildContentForPage(page);
   }
 
   /**
-   * ILinkManager method:
-   * Injects the page’s HTML into the container, sets up the overlay, 
-   * pagination, and attaches event listeners.
+   * Renders the HTML into the container, then sets up
+   * the overlay panel, pagination, and event handlers.
    */
   public renderContent(container: HTMLElement): void {
-    const html = this.buildContentForPage(this.currentPage);
-    container.innerHTML = html;
+    // 1. Insert the HTML
+    container.innerHTML = this.buildContentForPage(this.currentPage);
 
-    // If AlightOverlayPanel only accepts a string:
+    // 2. If AlightOverlayPanel needs a global selector string:
+    //    it calls document.querySelector('#advanced-search-trigger')
+    //    to find the button. This will only work if the container is
+    //    actually appended to the DOM, so that ID can be found globally.
     new AlightOverlayPanel(`#${this.advancedSearchTriggerId}`, this.overlayPanelConfig);
 
-    // Then proceed with pagination, event listeners, etc.
+    // 3. Pagination
     const totalPages = Math.ceil(this.filteredLinksData.length / this.pageSize);
     this.initializePageSelect(container, this.currentPage, totalPages);
+
+    // 4. Event listeners (search, advanced search, checkboxes, etc.)
     this.attachEventListeners(container);
   }
 
-  /**
-   * ILinkManager method:
-   * Resets all filters and search terms to default (empty).
-   */
+  // Resets all search/filter state to defaults.
   public resetSearch(): void {
     this.currentSearchQuery = '';
     this.selectedFilters = {
@@ -101,11 +96,11 @@ export class PredefinedLinkManager implements ILinkManager {
     this.currentPage = 1;
   }
 
-  // ---------------------------------------------------------
-  // PRIVATE (internal) methods for building UI, filtering, etc.
-  // ---------------------------------------------------------
+  // -------------------------------------------------------
+  // PRIVATE HELPERS for building UI, applying filters, etc.
+  // -------------------------------------------------------
 
-  // Builds the main HTML for a specific page of the filtered data.
+  // Generates the HTML for a given page.
   private buildContentForPage(page: number): string {
     // Clamp the requested page
     const totalItems = this.filteredLinksData.length;
@@ -171,7 +166,11 @@ export class PredefinedLinkManager implements ILinkManager {
       'baseOrClientSpecific',
       'Base/Client Specific'
     )}
-            ${this.createCheckboxList(pageTypeOptions, 'pageType', 'Page Type')}
+            ${this.createCheckboxList(
+      pageTypeOptions,
+      'pageType',
+      'Page Type'
+    )}
             ${this.createCheckboxList(domainOptions, 'domain', 'Domain')}
           </div>
           <div class="form-group">
@@ -286,9 +285,7 @@ export class PredefinedLinkManager implements ILinkManager {
     `;
   }
 
-  /**
-   * Applies filters (including search text) to the data and resets to page 1.
-   */
+  // Recomputes the filtered list (search + checkboxes) and resets to page 1.
   private applyFilters(): void {
     this.filteredLinksData = this.predefinedLinksData.filter(link => {
       const nameMatch =
@@ -315,11 +312,9 @@ export class PredefinedLinkManager implements ILinkManager {
     this.currentPage = 1;
   }
 
-  /**
-   * Wires up search buttons, advanced search, checkboxes, pagination, etc.
-   */
+  // Attaches event listeners for basic search, advanced search, pagination, etc.
   private attachEventListeners(container: HTMLElement): void {
-    // 1. Basic search
+    // BASIC SEARCH
     const searchInput = container.querySelector('#search-input') as HTMLInputElement | null;
     const searchBtn = container.querySelector('#search-btn') as HTMLButtonElement | null;
     const resetSearchBtn = container.querySelector('#reset-search-btn') as HTMLButtonElement | null;
@@ -330,10 +325,10 @@ export class PredefinedLinkManager implements ILinkManager {
       this.renderContent(container);
     });
 
-    // Pressing Enter in the search box
-    searchInput?.addEventListener('keydown', (event: KeyboardEvent) => {
-      if (event.key === 'Enter') {
-        event.preventDefault();
+    // Press Enter in search box
+    searchInput?.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
         searchBtn?.click();
       }
     });
@@ -347,7 +342,7 @@ export class PredefinedLinkManager implements ILinkManager {
       this.renderContent(container);
     });
 
-    // 2. Advanced search
+    // ADVANCED SEARCH
     const applyAdvancedSearchBtn = container.querySelector('#apply-advanced-search') as HTMLButtonElement | null;
     const clearAdvancedSearchBtn = container.querySelector('#clear-advanced-search') as HTMLButtonElement | null;
     const advancedSearchInput = container.querySelector('#advanced-search-input') as HTMLInputElement | null;
@@ -365,11 +360,11 @@ export class PredefinedLinkManager implements ILinkManager {
       this.renderContent(container);
     });
 
-    // 3. Checkboxes for base/client-specific, pageType, domain
+    // CHECKBOX FILTERS
     const checkboxes = container.querySelectorAll('cka-checkbox');
     checkboxes.forEach(checkbox => {
-      checkbox.addEventListener('change', e => {
-        const target = e.target as HTMLInputElement;
+      checkbox.addEventListener('change', event => {
+        const target = event.target as HTMLInputElement;
         if (!target) return;
 
         const filterType = target.dataset.filterType as keyof SelectedFilters;
@@ -386,7 +381,7 @@ export class PredefinedLinkManager implements ILinkManager {
       });
     });
 
-    // 4. Pagination (First, Prev, Next, Last)
+    // PAGINATION
     const paginationDiv = container.querySelector('#pagination');
     paginationDiv?.addEventListener('click', e => {
       const target = e.target as HTMLElement;
@@ -403,17 +398,17 @@ export class PredefinedLinkManager implements ILinkManager {
       }
     });
 
-    // 5. Click anywhere on a link item to select its radio
+    // RADIO SELECTION ON CLICK
     const linkItems = container.querySelectorAll('.cka-link-item');
     linkItems.forEach(item => {
       item.addEventListener('click', event => {
-        // If clicked directly on <cka-radio-button>, skip
+        // If directly on <cka-radio-button>, skip
         if ((event.target as HTMLElement).closest('cka-radio-button')) return;
 
         const linkName = (event.currentTarget as HTMLElement).getAttribute('data-link-name');
         if (!linkName) return;
 
-        // Mark this radio as checked, uncheck others
+        // Mark that radio as checked, uncheck others
         const radio = (event.currentTarget as HTMLElement).querySelector(
           'cka-radio-button'
         ) as any;
@@ -421,7 +416,6 @@ export class PredefinedLinkManager implements ILinkManager {
           radio.checked = true;
           radio.value = linkName;
 
-          // Dispatch events for CKEditor to see the changes
           radio.dispatchEvent(new Event('change', { bubbles: true }));
           radio.dispatchEvent(new Event('input', { bubbles: true }));
 
@@ -436,16 +430,15 @@ export class PredefinedLinkManager implements ILinkManager {
   }
 
   /**
-   * Creates the select menu for pagination (page dropdown).
+   * Creates the select menu for pagination.
+   * NOTE: we must use .mount(...) if CKALightSelectMenu does not have .render(...).
    */
   private initializePageSelect(
     container: HTMLElement,
     pageNum: number,
     totalPages: number
   ): void {
-    const pageSelectContainer = container.querySelector(
-      '#page-select-container'
-    ) as HTMLElement | null;
+    const pageSelectContainer = container.querySelector('#page-select-container') as HTMLElement | null;
     if (!pageSelectContainer) return;
 
     const pageOptions = Array.from({ length: totalPages }, (_, i) => ({
@@ -465,21 +458,17 @@ export class PredefinedLinkManager implements ILinkManager {
       }
     });
 
-    // Clear & mount the select
+    // CKALightSelectMenu might require .mount(...) instead of .render(...)
     pageSelectContainer.innerHTML = '';
-    pageSelect.mount(pageSelectContainer);
+    pageSelect.mount(pageSelectContainer);  // <--- "mount" is correct for many libraries
   }
 
-  /**
-   * Helper to get unique, sorted values for a specific property.
-   */
+  // Returns a sorted array of unique values for a given key.
   private getUniqueValues(data: PredefinedLink[], key: keyof PredefinedLink): string[] {
     return Array.from(new Set(data.map(item => item[key]))).sort();
   }
 
-  /**
-   * Creates checkbox lists for a given filter type (Base/Client, PageType, Domain, etc.)
-   */
+  // Builds a set of checkboxes for a given filter type (Base/Client, PageType, Domain).
   private createCheckboxList(
     options: string[],
     filterType: keyof SelectedFilters,
@@ -496,7 +485,7 @@ export class PredefinedLinkManager implements ILinkManager {
             : '';
           return `
               <li>
-                <cka-checkbox 
+                <cka-checkbox
                   data-filter-type="${filterType}"
                   data-value="${option}"
                   ${checked}
