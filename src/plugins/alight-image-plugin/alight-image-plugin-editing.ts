@@ -1,9 +1,8 @@
 // src/plugins/alight-image-plugin/alight-image-plugin-editing.ts
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 import { AlightImagePluginCommand } from './alight-image-plugin-command';
-// import { getExistingImageContent } from './modal-content/existing-image';
+import { getExistingImageContent } from './modal-content/existing-image';
 import { getUploadImageContent } from './modal-content/upload-image';
-import { getPredefinedLinkContent } from './modal-content/predefined-link';
 
 export default class AlightImagePluginEditing extends Plugin {
   init() {
@@ -30,7 +29,7 @@ export default class AlightImagePluginEditing extends Plugin {
             onClick: () => this.handleImageSelection()
           }
         ],
-        loadContent: async () => getPredefinedLinkContent(3)
+        loadContent: async () => getExistingImageContent()
       })
     );
 

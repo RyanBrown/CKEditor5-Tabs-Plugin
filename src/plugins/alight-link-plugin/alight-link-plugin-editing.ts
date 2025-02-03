@@ -15,16 +15,41 @@ export default class AlightLinkPluginEditing extends Plugin {
       'linkOption1',
       new AlightLinkPluginCommand(editor, {
         title: 'Choose a Predefined Link',
-        primaryButtonLabel: 'Choose',
-        // loadContent: async () => getPredefinedLinkContent(3)
-        loadContent: async () => getPublicIntranetLinkContent()
+        modalType: 'predefinedLink',
+        modalOptions: {
+          width: '90vw',
+        },
+        buttons: [
+          {
+            label: 'Cancel',
+            className: 'ck-button-secondary',
+            onClick: () => this.handleCancel()
+          },
+          {
+            label: 'Choose',
+            className: 'ck-button-primary',
+            onClick: () => this.handleImageSelection()
+          }
+        ],
+        loadContent: async () => getPredefinedLinkContent(1) // set start pagination page
       })
     );
     editor.commands.add(
       'linkOption2',
       new AlightLinkPluginCommand(editor, {
         title: 'Public Website Link',
-        primaryButtonLabel: 'Continue',
+        modalType: 'publicWebsiteLink',
+        buttons: [
+          {
+            label: 'Cancel',
+            className: 'ck-button-secondary'
+          },
+          {
+            label: 'Continue',
+            className: 'ck-button-primary',
+            onClick: () => this.handleUpload()
+          }
+        ],
         loadContent: async () => getPublicIntranetLinkContent()
       })
     );
@@ -32,7 +57,18 @@ export default class AlightLinkPluginEditing extends Plugin {
       'linkOption3',
       new AlightLinkPluginCommand(editor, {
         title: 'Intranet Link',
-        primaryButtonLabel: 'Continue',
+        modalType: 'intranetLink',
+        buttons: [
+          {
+            label: 'Cancel',
+            className: 'ck-button-secondary'
+          },
+          {
+            label: 'Upload',
+            className: 'ck-button-primary',
+            onClick: () => this.handleUpload()
+          }
+        ],
         loadContent: async () => getPublicIntranetLinkContent()
       })
     );
@@ -40,7 +76,18 @@ export default class AlightLinkPluginEditing extends Plugin {
       'linkOption4',
       new AlightLinkPluginCommand(editor, {
         title: 'Existing Document Link',
-        primaryButtonLabel: 'Continue',
+        modalType: 'existingDocumentLink',
+        buttons: [
+          {
+            label: 'Cancel',
+            className: 'ck-button-secondary'
+          },
+          {
+            label: 'Upload',
+            className: 'ck-button-primary',
+            onClick: () => this.handleUpload()
+          }
+        ],
         loadContent: async () => getExistingDocumentLinkContent()
       })
     );
@@ -48,9 +95,35 @@ export default class AlightLinkPluginEditing extends Plugin {
       'linkOption5',
       new AlightLinkPluginCommand(editor, {
         title: 'New Document Link',
-        primaryButtonLabel: 'Continue',
+        modalType: 'newDocumentLink',
+        buttons: [
+          {
+            label: 'Cancel',
+            className: 'ck-button-secondary'
+          },
+          {
+            label: 'Upload',
+            className: 'ck-button-primary',
+            onClick: () => this.handleUpload()
+          }
+        ],
         loadContent: async () => getNewDocumentsLinkContent()
       })
     );
+  }
+
+  private handleCancel(): void {
+    // Implementation
+    console.log('Cancel clicked');
+  }
+
+  private handleImageSelection(): void {
+    // Implementation
+    console.log('Image selection confirmed');
+  }
+
+  private handleUpload(): void {
+    // Implementation
+    console.log('Upload clicked');
   }
 }

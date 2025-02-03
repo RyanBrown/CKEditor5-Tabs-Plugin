@@ -1,79 +1,95 @@
 // src/plugins/alight-link-plugin/alight-link-plugin-command.ts
 import type Editor from '@ckeditor/ckeditor5-core/src/editor/editor';
 import Command from '@ckeditor/ckeditor5-core/src/command';
-import CKAlightModalDialog from './../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
+import CKAlightModalDialog from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import { renderContent } from './modal-content/predefined-link';
 
-interface LinkOptionData {
+interface DialogButton {
+  label: string;
+  className: string;
+  onClick?: () => void;
+}
+
+interface CommandData {
   title: string;
-  primaryButtonLabel?: string;
-  loadContent?: () => Promise<string>;
+  modalType?: 'predefinedLink' | 'publicWebsiteLink' | 'intranetLink' | 'existingDocumentLink' | 'newDocumentLink';
+  modalOptions?: {
+    modal?: boolean;
+    draggable?: boolean;
+    resizable?: boolean;
+    width?: string;
+    position?: 'center' | 'top' | 'bottom' | 'left' | 'right' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+    closeOnEscape?: boolean;
+  };
+  buttons?: DialogButton[];
+  loadContent: () => Promise<string>;
 }
 
 export class AlightLinkPluginCommand extends Command {
   private dialog: CKAlightModalDialog;
-  private data: LinkOptionData;
+  private data: CommandData;
 
-  constructor(editor: Editor, data: LinkOptionData) {
+  constructor(editor: Editor, data: CommandData) {
     super(editor);
     this.data = data;
-
     this.dialog = new CKAlightModalDialog({
       modal: true,
       draggable: false,
       resizable: false,
       width: '600px',
       position: 'center',
-      closeOnEscape: true
+      closeOnEscape: true,
+      ...data.modalOptions
     });
 
-    // Set up the footer with action buttons
-    const footerContent = document.createElement('div');
-    footerContent.className = 'cka-dialog-footer-buttons';
+    this.setupDialogButtons();
+  }
 
-    const primaryButton = document.createElement('button');
-    primaryButton.className = 'ck-button-primary';
-    primaryButton.textContent = data.primaryButtonLabel || 'Continue';
-    primaryButton.onclick = () => {
-      console.log('Primary action for link plugin');
-      this.dialog.hide();
-    };
+  private setupDialogButtons(): void {
+    if (!this.data.buttons?.length) {
+      const footer = document.createElement('div');
+      footer.className = 'cka-dialog-footer-buttons';
 
-    const cancelButton = document.createElement('button');
-    cancelButton.className = 'ck-button-secondary';
-    cancelButton.textContent = 'Cancel';
-    cancelButton.onclick = () => {
-      this.dialog.hide();
-    };
+      const defaultButton = document.createElement('button');
+      defaultButton.className = 'ck-button-primary';
+      defaultButton.textContent = 'Close';
+      defaultButton.onclick = () => this.dialog.hide();
 
-    footerContent.appendChild(cancelButton);
-    footerContent.appendChild(primaryButton);
-    this.dialog.setFooter(footerContent);
+      footer.appendChild(defaultButton);
+      this.dialog.setFooter(footer);
+      return;
+    }
+
+    const footer = document.createElement('div');
+    footer.className = 'cka-dialog-footer-buttons';
+
+    this.data.buttons.forEach(button => {
+      const btnElement = document.createElement('button');
+      btnElement.className = button.className;
+      btnElement.textContent = button.label;
+      btnElement.onclick = () => {
+        button.onClick?.();
+        this.dialog.hide();
+      };
+      footer.appendChild(btnElement);
+    });
+
+    this.dialog.setFooter(footer);
   }
 
   public override execute(): void {
     this.dialog.setTitle(this.data.title);
+    this.data.loadContent().then(content => {
+      this.dialog.setContent(content);
 
-    // Create a container for the content
-    const contentContainer = document.createElement('div');
-    contentContainer.className = 'modal-content-container';
-
-    // Set initial loading state
-    contentContainer.innerHTML = '<div class="loading">Loading content...</div>';
-    this.dialog.setContent(contentContainer);
-
-    this.dialog.show();
-
-    // Load content if available
-    if (this.data.loadContent) {
-      this.data.loadContent().then((content) => {
-        contentContainer.innerHTML = content;
-        // If this is the predefined link content, initialize it
-        if (this.data.title === 'Predefined Link') {
-          renderContent(contentContainer);
+      if (this.data.modalType === 'predefinedLink') {
+        const contentEl = this.dialog.getContentElement();
+        if (contentEl) {
+          renderContent(contentEl);
         }
-      });
-    }
+      }
+    });
+    this.dialog.show();
   }
 
   public override destroy(): void {

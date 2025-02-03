@@ -2,7 +2,7 @@
 import type Editor from '@ckeditor/ckeditor5-core/src/editor/editor';
 import Command from '@ckeditor/ckeditor5-core/src/command';
 import CKAlightModalDialog from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
-import { renderContent } from './modal-content/predefined-link';
+import { renderContent } from './modal-content/existing-image';
 
 interface DialogButton {
   label: string;
