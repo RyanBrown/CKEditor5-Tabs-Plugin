@@ -1,7 +1,8 @@
-@use './_mixins';
-@use './_inputs';
+@use './mixins';
+@use './inputs';
+@use './buttons';
 @use './ckeditor-variables';
-@use './_search';
+@use './search';
 
 // Set the minimum height of the ckeditor
 .ck-editor__editable_inline {

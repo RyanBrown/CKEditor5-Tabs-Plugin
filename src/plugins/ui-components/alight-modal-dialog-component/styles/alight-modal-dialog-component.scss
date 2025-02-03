@@ -85,7 +85,6 @@ $cka-dialog-border-radius: 0;
 .cka-dialog-footer {
   border-top: 1px solid #dee2e6;
   display: flex;
-  gap: 0.5rem;
   justify-content: flex-start;
   padding: var(--spacing-xl);
 }
@@ -136,26 +135,8 @@ $cka-dialog-border-radius: 0;
 // Additional classes
 .cka-dialog-footer-buttons {
   display: flex;
+  gap: 1rem;
   justify-content: flex-end;
-  gap: 8px;
-}
-
-// Keep ck- prefix for these since they're general CKEditor classes
-.ck-button-primary {
-  background-color: #1a73e8;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.ck-button-secondary {
-  background-color: transparent;
-  border: 1px solid #ccc;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
 }
 
 .loading {

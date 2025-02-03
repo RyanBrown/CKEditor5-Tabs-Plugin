@@ -281,40 +281,40 @@
     }
   }
 
-  button {
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    border: 1px solid transparent;
-    cursor: pointer;
-    transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
+  // button {
+  //   padding: 0.5rem 1rem;
+  //   border-radius: 6px;
+  //   border: 1px solid transparent;
+  //   cursor: pointer;
+  //   transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
 
-    &#search-btn {
-      background-color: #6366F1;
-      color: white;
+  //   &#search-btn {
+  //     background-color: #6366F1;
+  //     color: white;
 
-      &:hover {
-        background-color: #4F46E5;
-      }
+  //     &:hover {
+  //       background-color: #4F46E5;
+  //     }
 
-      &:focus {
-        box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
-      }
-    }
+  //     &:focus {
+  //       box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
+  //     }
+  //   }
 
-    &#reset-search-btn {
-      background-color: var(--neutral-white);
-      border-color: #ced4da;
-      color: #6c757d;
+  //   &#reset-search-btn {
+  //     background-color: var(--neutral-white);
+  //     border-color: #ced4da;
+  //     color: #6c757d;
 
-      &:hover {
-        background-color: #f8f9fa;
-      }
+  //     &:hover {
+  //       background-color: #f8f9fa;
+  //     }
 
-      &:focus {
-        box-shadow: 0 0 0 0.2rem rgba(108, 117, 125, 0.25);
-      }
-    }
-  }
+  //     &:focus {
+  //       box-shadow: 0 0 0 0.2rem rgba(108, 117, 125, 0.25);
+  //     }
+  //   }
+  // }
 
   #advanced-search-select {
     min-width: 200px;
