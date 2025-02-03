@@ -15,17 +15,17 @@ export default class AlightImagePluginEditing extends Plugin {
         title: 'Existing Image',
         modalType: 'existingImage',
         modalOptions: {
-          width: '90vw',
+          width: '80vw',
         },
         buttons: [
           {
             label: 'Cancel',
-            className: 'ck-button-secondary',
+            className: 'cka-button cka-button-rounded cka-button-outlined',
             onClick: () => this.handleCancel()
           },
           {
-            label: 'Choose',
-            className: 'ck-button-primary',
+            label: 'Continue',
+            className: 'cka-button cka-button-rounded',
             onClick: () => this.handleImageSelection()
           }
         ],
@@ -41,11 +41,11 @@ export default class AlightImagePluginEditing extends Plugin {
         buttons: [
           {
             label: 'Cancel',
-            className: 'ck-button-secondary'
+            className: 'cka-button cka-button-rounded cka-button-outlined'
           },
           {
             label: 'Upload',
-            className: 'ck-button-primary',
+            className: 'cka-button cka-button-rounded',
             onClick: () => this.handleUpload()
           }
         ],

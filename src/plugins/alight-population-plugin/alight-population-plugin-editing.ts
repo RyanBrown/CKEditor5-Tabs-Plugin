@@ -20,12 +20,12 @@ export default class AlightPopulationPluginEditing extends Plugin {
         buttons: [
           {
             label: 'Cancel',
-            className: 'ck-button-secondary',
+            className: 'cka-button cka-button-rounded cka-button-outlined',
             onClick: () => this.handleCancel()
           },
           {
             label: 'Upload',
-            className: 'ck-button-primary',
+            className: 'cka-button cka-button-rounded',
             onClick: () => this.handleUpload()
           }
         ],
