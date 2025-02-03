@@ -17,7 +17,6 @@ export default class AlightImagePluginEditing extends Plugin {
         modalType: 'existingImage',
         modalOptions: {
           width: '90vw',
-          draggable: true
         },
         buttons: [
           {
