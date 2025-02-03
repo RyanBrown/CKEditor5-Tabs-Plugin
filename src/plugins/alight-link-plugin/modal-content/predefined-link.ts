@@ -1,11 +1,13 @@
-// src/plugins/alight-image-plugin/modal-content/predefined-link.ts
+// src/plugins/alight-link-plugin/modal-content/predefined-link.ts
+
 import predefinedLinksData from './json/predefined-test-data.json';
 import { AlightOverlayPanel } from '../../ui-components/alight-overlay-panel-component/alight-overlay-panel';
 import { CKALightSelectMenu } from '../../ui-components/alight-select-menu-component/alight-select-menu-component';
 import '../../ui-components/alight-checkbox-component/alight-checkbox-component';
 import '../../ui-components/alight-radio-component/alight-radio-component';
+import { ILinkManager } from './ILinkManager';
 
-// Define interfaces for type safety
+// Tracks which filters have been selected.
 interface SelectedFilters {
   [key: string]: string[];
   baseOrClientSpecific: string[];
@@ -26,83 +28,112 @@ interface PredefinedLink {
 }
 
 /**
- * This class encapsulates the entire functionality related to 
- * displaying, filtering, and paginating the predefined links.
+ * This class manages all "Predefined Link" logic: filtering, search, pagination,
+ * rendering, and attaching event listeners. It implements ILinkManager so it
+ * can be passed to commands that expect a generic manager.
  */
-export class PredefinedLinkManager {
-  // Configuration for the overlay panel
+export class PredefinedLinkManager implements ILinkManager {
+  // Overlay panel configuration
   private overlayPanelConfig = {
-    width: '600px',  // Optional: Add your desired width
-    height: 'auto'   // Optional: Add your desired height
+    width: '600px',
+    height: 'auto'
   };
 
-  // Data from JSON
+  // Raw data from JSON
   private predefinedLinksData: PredefinedLink[] = predefinedLinksData.predefinedLinksDetails;
 
-  // State management
+  // Derived, filtered list
   private filteredLinksData: PredefinedLink[] = [...this.predefinedLinksData];
+
+  // State
   private currentSearchQuery = '';
   private currentPage = 1;
   private readonly pageSize = 5;
   private readonly advancedSearchTriggerId = 'advanced-search-trigger-image';
 
-  // Initialize selected filters with empty arrays
+  // Selected filters for base/client-specific, pageType, and domain
   private selectedFilters: SelectedFilters = {
     baseOrClientSpecific: [],
     pageType: [],
     domain: []
   };
 
-  constructor() {
-    // Any initialization if needed
+  /**
+   * ILinkManager interface method:
+   * Returns the raw HTML for the given page, without attaching event listeners.
+   */
+  public getLinkContent(page: number): string {
+    return this.buildContentForPage(page);
   }
 
-  // Returns a sorted array of unique values for a given key.
-  private getUniqueValues(data: PredefinedLink[], key: keyof PredefinedLink): string[] {
-    return Array.from(new Set(data.map(item => item[key]))).sort();
+  /**
+   * ILinkManager interface method:
+   * Renders the current page’s HTML into the container, sets up overlay,
+   * pagination, and attaches event handlers.
+   */
+  public renderContent(container: HTMLElement): void {
+    const content = this.buildContentForPage(this.currentPage);
+    container.innerHTML = content;
+
+    // Initialize advanced search overlay
+    // 1) Option A: Pass a string selector directly (simplest):
+    new AlightOverlayPanel('#' + this.advancedSearchTriggerId, this.overlayPanelConfig);
+
+    // OR Option B: If you prefer an HTMLElement, do a runtime check:
+    /*
+    const triggerEl = document.getElementById(this.advancedSearchTriggerId);
+    if (triggerEl instanceof HTMLElement) {
+      new AlightOverlayPanel(triggerEl, this.overlayPanelConfig);
+    }
+    */
+
+    // Pagination: create the select menu
+    const totalPages = Math.ceil(this.filteredLinksData.length / this.pageSize);
+    this.initializePageSelect(container, this.currentPage, totalPages);
+
+    // Attach all event handlers for pagination, checkboxes, search, etc.
+    this.attachEventListeners(container);
   }
 
-  // Creates the checkbox list markup for a given filter type.
-  private createCheckboxList(options: string[], filterType: keyof SelectedFilters, title: string): string {
-    return `
-      <div class="filter-section">
-        <h4>${title}</h4>
-        <ul class="checkbox-list">
-          ${options.map(option => `
-            <li>
-              <cka-checkbox 
-                data-filter-type="${filterType}"
-                data-value="${option}"
-                ${this.selectedFilters[filterType].includes(option) ? 'initialvalue="true"' : ''}
-              >${option}</cka-checkbox>
-            </li>
-          `).join('')}
-        </ul>
-      </div>
-    `;
+  /**
+   * ILinkManager interface method:
+   * Resets all filters and search terms to the default empty state.
+   */
+  public resetSearch(): void {
+    this.currentSearchQuery = '';
+    this.selectedFilters = {
+      baseOrClientSpecific: [],
+      pageType: [],
+      domain: []
+    };
+    this.filteredLinksData = [...this.predefinedLinksData];
+    this.currentPage = 1;
   }
 
-  // Currently it's a private method; make it public to return the HTML string:
-  public getPredefinedLinkContent(page: number): string {
-    // everything that was previously in the private getPredefinedLinkContent method
+  // --------------------------------------------------------------------------
+  // INTERNAL (private) methods below: building HTML, applying filters, etc.
+  // --------------------------------------------------------------------------
+
+  /**
+   * Builds the main HTML for a given page of filtered data.
+   */
+  private buildContentForPage(page: number): string {
     const totalItems = this.filteredLinksData.length;
     const totalPages = Math.ceil(totalItems / this.pageSize) || 1;
-
-    // Validate and adjust page number
+    // Clamp page to valid range
     page = Math.max(1, Math.min(page, totalPages));
-    this.currentPage = page; // Update state
+    this.currentPage = page;
 
-    // Calculate page slice
     const startIndex = (page - 1) * this.pageSize;
     const endIndex = Math.min(startIndex + this.pageSize, totalItems);
     const currentPageData = this.filteredLinksData.slice(startIndex, endIndex);
 
-    // Get filter options
+    // Unique filter options
     const baseOrClientSpecificOptions = this.getUniqueValues(this.predefinedLinksData, 'baseOrClientSpecific');
     const pageTypeOptions = this.getUniqueValues(this.predefinedLinksData, 'pageType');
     const domainOptions = this.getUniqueValues(this.predefinedLinksData, 'domain');
 
-    // Create UI components
+    // Search + Advanced Search UI
     const searchContainerMarkup = `
       <div id="search-container" class="cka-search-container">
         <input type="text" id="search-input" placeholder="Search by link name..." value="${this.currentSearchQuery}" />
@@ -112,7 +143,6 @@ export class PredefinedLinkManager {
       </div>
     `;
 
-    // Create the advanced search panel markup
     const advancedSearchPanelMarkup = `
       <div class="cka-overlay-panel" data-id="advanced-search-panel">
         <header>
@@ -136,44 +166,50 @@ export class PredefinedLinkManager {
       </div>
     `;
 
-    // Generate HTML for link items
+    // Display the links in the current page data
     const linksMarkup = currentPageData.length > 0
       ? currentPageData
-        .map(link => `
-            <div class="cka-link-item" data-link-name="${link.predefinedLinkName}">
-              <div class="radio-container">
-                <cka-radio-button
-                  name="link-selection"
-                  value="${link.predefinedLinkName}"
-                  label=""
-                ></cka-radio-button>
+        .map(
+          link => `
+              <div class="cka-link-item" data-link-name="${link.predefinedLinkName}">
+                <div class="radio-container">
+                  <cka-radio-button
+                    name="link-selection"
+                    value="${link.predefinedLinkName}"
+                    label=""
+                  ></cka-radio-button>
+                </div>
+                <ul>
+                  <li><strong>${link.predefinedLinkName}</strong></li>
+                  <li><strong>Description:</strong> ${link.predefinedLinkDescription}</li>
+                  <li><strong>Base/Client Specific:</strong> ${link.baseOrClientSpecific}</li>
+                  <li><strong>Page Type:</strong> ${link.pageType}</li>
+                  <li><strong>Destination:</strong> ${link.destination}</li>
+                  <li><strong>Domain:</strong> ${link.domain}</li>
+                  <li><strong>Unique ID:</strong> ${link.uniqueId}</li>
+                  <li><strong>Attribute Name:</strong> ${link.attributeName}</li>
+                  <li><strong>Attribute Value:</strong> ${link.attributeValue}</li>
+                </ul>
               </div>
-              <ul>
-                <li><strong>${link.predefinedLinkName}</strong></li>
-                <li><strong>Description:</strong> ${link.predefinedLinkDescription}</li>
-                <li><strong>Base/Client Specific:</strong> ${link.baseOrClientSpecific}</li>
-                <li><strong>Page Type:</strong> ${link.pageType}</li>
-                <li><strong>Destination:</strong> ${link.destination}</li>
-                <li><strong>Domain:</strong> ${link.domain}</li>
-                <li><strong>Unique ID:</strong> ${link.uniqueId}</li>
-                <li><strong>Attribute Name:</strong> ${link.attributeName}</li>
-                <li><strong>Attribute Value:</strong> ${link.attributeValue}</li>
-              </ul>
-            </div>
-          `)
+            `
+        )
         .join('')
       : '<p>No results found.</p>';
 
-    const paginationMarkup = totalPages > 1 ? `
-      <article id="pagination" class="cka-pagination">
-        <button id="first-page" class="pagination-btn" data-page="1" ${page === 1 ? 'disabled' : ''}>First</button>
-        <button id="prev-page" class="pagination-btn" data-page="${page - 1}" ${page === 1 ? 'disabled' : ''}>Previous</button>
-        <div id="page-select-container" class="cka-select-menu-wrap"></div>
-        <button id="next-page" class="pagination-btn" data-page="${page + 1}" ${page === totalPages ? 'disabled' : ''}>Next</button>
-        <button id="last-page" class="pagination-btn" data-page="${totalPages}" ${page === totalPages ? 'disabled' : ''}>Last</button>
-      </article>
-    ` : '';
+    // Pagination controls
+    const paginationMarkup = totalPages > 1
+      ? `
+        <article id="pagination" class="cka-pagination">
+          <button id="first-page" class="pagination-btn" data-page="1" ${page === 1 ? 'disabled' : ''}>First</button>
+          <button id="prev-page" class="pagination-btn" data-page="${page - 1}" ${page === 1 ? 'disabled' : ''}>Previous</button>
+          <div id="page-select-container" class="cka-select-menu-wrap"></div>
+          <button id="next-page" class="pagination-btn" data-page="${page + 1}" ${page === totalPages ? 'disabled' : ''}>Next</button>
+          <button id="last-page" class="pagination-btn" data-page="${totalPages}" ${page === totalPages ? 'disabled' : ''}>Last</button>
+        </article>
+      `
+      : '';
 
+    // Combine and return the final HTML
     return `
       ${searchContainerMarkup}
       ${advancedSearchPanelMarkup}
@@ -184,10 +220,161 @@ export class PredefinedLinkManager {
     `;
   }
 
-  // Initialize the custom Select Menu for pagination.
+  /**
+   * Applies filter criteria (search text, checkboxes) to the link list.
+   * Resets the page to 1 after applying.
+   */
+  private applyFilters(): void {
+    this.filteredLinksData = this.predefinedLinksData.filter(link => {
+      const nameMatch =
+        !this.currentSearchQuery ||
+        link.predefinedLinkName.toLowerCase().includes(this.currentSearchQuery.toLowerCase());
+
+      const baseOrClientSpecificMatch =
+        this.selectedFilters.baseOrClientSpecific.length === 0 ||
+        this.selectedFilters.baseOrClientSpecific.includes(link.baseOrClientSpecific);
+
+      const pageTypeMatch =
+        this.selectedFilters.pageType.length === 0 ||
+        this.selectedFilters.pageType.includes(link.pageType);
+
+      const domainMatch =
+        this.selectedFilters.domain.length === 0 ||
+        this.selectedFilters.domain.includes(link.domain);
+
+      return nameMatch && baseOrClientSpecificMatch && pageTypeMatch && domainMatch;
+    });
+
+    this.currentPage = 1;
+  }
+
+  /**
+   * Set up event listeners for search, filters, pagination, etc.
+   */
+  private attachEventListeners(container: HTMLElement): void {
+    // 1. Search
+    const searchInput = container.querySelector('#search-input') as HTMLInputElement | null;
+    const searchBtn = container.querySelector('#search-btn') as HTMLButtonElement | null;
+    const resetSearchBtn = container.querySelector('#reset-search-btn') as HTMLButtonElement | null;
+
+    searchBtn?.addEventListener('click', () => {
+      this.currentSearchQuery = searchInput?.value || '';
+      this.applyFilters();
+      this.renderContent(container);
+    });
+
+    // Enter key on the search input
+    searchInput?.addEventListener('keydown', (event: KeyboardEvent) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        searchBtn?.click();
+      }
+    });
+
+    // 2. Reset search
+    resetSearchBtn?.addEventListener('click', () => {
+      this.resetSearch();
+      if (searchInput) {
+        searchInput.value = '';
+      }
+      this.renderContent(container);
+    });
+
+    // 3. Advanced search apply/clear
+    const applyAdvancedSearchBtn = container.querySelector('#apply-advanced-search') as HTMLButtonElement | null;
+    const clearAdvancedSearchBtn = container.querySelector('#clear-advanced-search') as HTMLButtonElement | null;
+    const advancedSearchInput = container.querySelector('#advanced-search-input') as HTMLInputElement | null;
+
+    applyAdvancedSearchBtn?.addEventListener('click', () => {
+      if (advancedSearchInput) {
+        this.currentSearchQuery = advancedSearchInput.value;
+      }
+      this.applyFilters();
+      this.renderContent(container);
+    });
+
+    clearAdvancedSearchBtn?.addEventListener('click', () => {
+      this.resetSearch();
+      this.renderContent(container);
+    });
+
+    // 4. Checkbox filters
+    const checkboxes = container.querySelectorAll('cka-checkbox');
+    checkboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', (event: Event) => {
+        const target = event.target as HTMLInputElement;
+        if (!target) return;
+
+        const filterType = target.dataset.filterType as keyof SelectedFilters;
+        const value = target.dataset.value;
+        if (!filterType || !value) return;
+
+        if (target.checked) {
+          this.selectedFilters[filterType].push(value);
+        } else {
+          this.selectedFilters[filterType] = this.selectedFilters[filterType].filter(v => v !== value);
+        }
+      });
+    });
+
+    // 5. Pagination (First, Prev, Next, Last buttons)
+    const paginationDiv = container.querySelector('#pagination');
+    paginationDiv?.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      if (!target.matches('.pagination-btn')) return;
+
+      const pageAttr = target.getAttribute('data-page');
+      if (!pageAttr) return;
+
+      const newPage = parseInt(pageAttr, 10);
+      const totalPages = Math.ceil(this.filteredLinksData.length / this.pageSize);
+
+      if (
+        !isNaN(newPage) &&
+        newPage >= 1 &&
+        newPage <= totalPages &&
+        newPage !== this.currentPage
+      ) {
+        this.currentPage = newPage;
+        this.renderContent(container);
+      }
+    });
+
+    // 6. Link selection by clicking on the item (radio)
+    const linkItems = container.querySelectorAll('.cka-link-item');
+    linkItems.forEach(item => {
+      item.addEventListener('click', event => {
+        // Don’t toggle if directly clicking on radio
+        if ((event.target as HTMLElement).closest('cka-radio-button')) return;
+
+        const linkName = (event.currentTarget as HTMLElement).getAttribute('data-link-name');
+        if (!linkName) return;
+
+        // Mark this radio as checked, uncheck others
+        const radio = (event.currentTarget as HTMLElement).querySelector('cka-radio-button') as any;
+        if (radio) {
+          radio.checked = true;
+          radio.value = linkName;
+          radio.dispatchEvent(new Event('change', { bubbles: true }));
+          radio.dispatchEvent(new Event('input', { bubbles: true }));
+
+          container.querySelectorAll('cka-radio-button').forEach(otherRadio => {
+            if (otherRadio !== radio) {
+              (otherRadio as any).checked = false;
+            }
+          });
+        }
+      });
+    });
+  }
+
+  /**
+   * Creates the "Select Menu" for pagination (page dropdown).
+   */
   private initializePageSelect(container: HTMLElement, pageNum: number, totalPages: number): void {
-    const pageSelectContainer = container.querySelector('#page-select-container');
-    if (!pageSelectContainer || !(pageSelectContainer instanceof HTMLElement)) return;
+    // Type it more specifically to HTMLElement
+    const pageSelectContainer = container.querySelector('#page-select-container') as HTMLElement | null;
+    if (!pageSelectContainer) return;
 
     const pageOptions = Array.from({ length: totalPages }, (_, i) => ({
       label: `Page ${i + 1} of ${totalPages}`,
@@ -200,9 +387,7 @@ export class PredefinedLinkManager {
       placeholder: `Page ${pageNum} of ${totalPages}`,
       onChange: (selectedValue) => {
         if (selectedValue && typeof selectedValue === 'number' && selectedValue !== this.currentPage) {
-          // Update the internal currentPage
           this.currentPage = selectedValue;
-          console.log('Select menu changing page to:', this.currentPage); // Debug log
           this.renderContent(container);
         }
       }
@@ -212,185 +397,36 @@ export class PredefinedLinkManager {
     pageSelect.mount(pageSelectContainer);
   }
 
-  // Applies the current search and filter criteria to the data.
-  private applyFilters(): void {
-    this.filteredLinksData = this.predefinedLinksData.filter((link: PredefinedLink) => {
-      const nameMatch = !this.currentSearchQuery ||
-        link.predefinedLinkName.toLowerCase().includes(this.currentSearchQuery.toLowerCase());
-
-      const baseOrClientSpecificMatch = this.selectedFilters.baseOrClientSpecific.length === 0 ||
-        this.selectedFilters.baseOrClientSpecific.includes(link.baseOrClientSpecific);
-
-      const pageTypeMatch = this.selectedFilters.pageType.length === 0 ||
-        this.selectedFilters.pageType.includes(link.pageType);
-
-      const domainMatch = this.selectedFilters.domain.length === 0 ||
-        this.selectedFilters.domain.includes(link.domain);
-
-      return nameMatch && baseOrClientSpecificMatch && pageTypeMatch && domainMatch;
-    });
-
-    // Reset to first page when filters change
-    this.currentPage = 1;
+  /**
+   * Returns a sorted array of unique values for a specified key.
+   */
+  private getUniqueValues(data: PredefinedLink[], key: keyof PredefinedLink): string[] {
+    return Array.from(new Set(data.map(item => item[key]))).sort();
   }
 
-  // Event handler for checkbox changes.
-  private handleCheckboxChange = (event: Event): void => {
-    const checkbox = event.target as HTMLInputElement;
-    if (!checkbox || !('checked' in checkbox)) return;
-
-    const filterType = checkbox.dataset.filterType as keyof SelectedFilters;
-    const value = checkbox.dataset.value;
-
-    if (!filterType || !value) return;
-
-    if (checkbox.checked) {
-      if (!this.selectedFilters[filterType].includes(value)) {
-        this.selectedFilters[filterType].push(value);
-      }
-    } else {
-      this.selectedFilters[filterType] = this.selectedFilters[filterType].filter(v => v !== value);
-    }
-  };
-
-  // Resets all filters and search criteria to default state.
-  public resetSearch(): void {
-    this.currentSearchQuery = '';
-    this.selectedFilters = {
-      baseOrClientSpecific: [],
-      pageType: [],
-      domain: []
-    };
-    this.filteredLinksData = [...this.predefinedLinksData];
-    this.currentPage = 1;
-  }
-
-  // Handles pagination button clicks (First, Previous, Next, Last).
-  private handlePaginationClick = (event: Event, container: HTMLElement): void => {
-    const target = event.target as HTMLElement;
-    if (!target.matches('.pagination-btn')) return;
-
-    const pageAttr = target.getAttribute('data-page');
-    if (!pageAttr) return;
-
-    const newPage = parseInt(pageAttr, 10);
-    const totalPages = Math.ceil(this.filteredLinksData.length / this.pageSize);
-
-    if (isNaN(newPage) || newPage < 1 || newPage > totalPages || newPage === this.currentPage) return;
-
-    console.log(`Changing page from ${this.currentPage} to ${newPage}`); // Debug log
-    this.currentPage = newPage;
-    this.renderContent(container);
-  };
-
-  // Attaches all necessary event listeners to the container.
-  private attachEventListeners(container: HTMLElement): void {
-    // Link selection
-    const linkItems = container.querySelectorAll('.cka-link-item');
-    linkItems.forEach(item => {
-      item.addEventListener('click', (event) => {
-        // Prevent triggering if clicking directly on the radio button
-        if ((event.target as HTMLElement).closest('cka-radio-button')) return;
-
-        const linkName = (event.currentTarget as HTMLElement).getAttribute('data-link-name');
-        if (!linkName) return;
-        // Find the radio button within this link item
-        const radio = (event.currentTarget as HTMLElement).querySelector('cka-radio-button') as any;
-        if (radio) {
-          // Set the radio button's checked state
-          radio.checked = true;
-          radio.value = linkName;
-          // Dispatch both change and input events to ensure proper state updates
-          radio.dispatchEvent(new Event('change', { bubbles: true }));
-          radio.dispatchEvent(new Event('input', { bubbles: true }));
-
-          container.querySelectorAll('cka-radio-button').forEach(otherRadio => {
-            if (otherRadio !== radio) {
-              (otherRadio as any).checked = false;
-            }
-          });
-        }
-      });
-    });
-
-    // Search functionality
-    const searchBtn = container.querySelector('#search-btn') as HTMLButtonElement;
-    const searchInput = container.querySelector('#search-input') as HTMLInputElement;
-    const resetSearchBtn = container.querySelector('#reset-search-btn');
-    const applyAdvancedSearch = container.querySelector('#apply-advanced-search');
-    const clearAdvancedSearch = container.querySelector('#clear-advanced-search');
-    const paginationDiv = container.querySelector('#pagination');
-
-    // Checkbox listeners
-    container.querySelectorAll('cka-checkbox').forEach(checkbox => {
-      checkbox.addEventListener('change', this.handleCheckboxChange);
-    });
-
-    // Search button
-    if (searchBtn) {
-      searchBtn.addEventListener('click', () => {
-        this.currentSearchQuery = searchInput?.value || '';
-        this.applyFilters();
-        this.renderContent(container);
-      });
-    }
-
-    // Search input enter key
-    if (searchInput) {
-      searchInput.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter' && searchBtn) {
-          event.preventDefault();
-          searchBtn.click();
-        }
-      });
-    }
-
-    // Reset button
-    if (resetSearchBtn instanceof HTMLElement) {
-      resetSearchBtn.addEventListener('click', () => {
-        this.resetSearch();
-        if (searchInput) searchInput.value = '';
-        this.renderContent(container);
-      });
-    }
-
-    // Advanced search buttons
-    if (applyAdvancedSearch instanceof HTMLElement) {
-      applyAdvancedSearch.addEventListener('click', () => {
-        this.applyFilters();
-        this.renderContent(container);
-      });
-    }
-
-    if (clearAdvancedSearch instanceof HTMLElement) {
-      clearAdvancedSearch.addEventListener('click', () => {
-        this.resetSearch();
-        this.renderContent(container);
-      });
-    }
-
-    // Pagination
-    if (paginationDiv) {
-      paginationDiv.addEventListener('click', (event) => this.handlePaginationClick(event, container));
-    }
-  }
-
-  // Renders the main content (filters, search, pagination, etc.) into the given container.
-  public renderContent(container: HTMLElement): void {
-    const content = this.getPredefinedLinkContent(this.currentPage);
-    container.innerHTML = content;
-
-    // Initialize overlay panel
-    const trigger = document.getElementById(this.advancedSearchTriggerId);
-    if (trigger) {
-      new AlightOverlayPanel(this.advancedSearchTriggerId, this.overlayPanelConfig);
-    }
-
-    // Initialize page select
-    const totalPages = Math.ceil(this.filteredLinksData.length / this.pageSize);
-    this.initializePageSelect(container, this.currentPage, totalPages);
-
-    // Attach event listeners
-    this.attachEventListeners(container);
+  /**
+   * Generates a list of checkboxes for a given filter type.
+   */
+  private createCheckboxList(options: string[], filterType: keyof SelectedFilters, title: string): string {
+    return `
+      <div class="filter-section">
+        <h4>${title}</h4>
+        <ul class="checkbox-list">
+          ${options
+        .map(
+          option => `
+            <li>
+              <cka-checkbox 
+                data-filter-type="${filterType}"
+                data-value="${option}"
+                ${this.selectedFilters[filterType].includes(option) ? 'initialvalue="true"' : ''}
+              >${option}</cka-checkbox>
+            </li>
+          `
+        )
+        .join('')}
+        </ul>
+      </div>
+    `;
   }
 }

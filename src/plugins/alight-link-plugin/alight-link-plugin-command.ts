@@ -2,7 +2,7 @@
 import type Editor from '@ckeditor/ckeditor5-core/src/editor/editor';
 import Command from '@ckeditor/ckeditor5-core/src/command';
 import CKAlightModalDialog from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
-import { PredefinedLinkManager } from './modal-content/predefined-link';
+import { ILinkManager } from './modal-content/ILinkManager';
 
 interface DialogButton {
   label: string;
@@ -32,36 +32,28 @@ interface CommandData {
   };
   buttons?: DialogButton[];
 
-  /**
-   * Function that returns an HTML string to load into the dialog.
-   * (e.g. from `PredefinedLinkManager.getPredefinedLinkContent()`)
-   */
+  // A function that returns HTML for the dialog content.
   loadContent: () => Promise<string>;
 
   /**
-   * If this command needs to handle advanced rendering/behavior
-   * (e.g. attaching events, advanced search), include a reference
-   * to the manager.
+   * The optional manager can handle advanced behavior (pagination, filters).
+   * Both PredefinedLinkManager and ExistingDocumentLinkManager 
+   * implement the ILinkManager interface.
    */
-  manager?: PredefinedLinkManager;
+  manager?: ILinkManager;
 }
 
 export class AlightLinkPluginCommand extends Command {
   private dialog: CKAlightModalDialog;
   private data: CommandData;
 
-  /**
-   * If we need to render events or do advanced logic,
-   * we'll store a reference to the PredefinedLinkManager.
-   */
-  private manager?: PredefinedLinkManager;
+  // Manager typed as ILinkManager or undefined.
+  private manager?: ILinkManager;
 
   constructor(editor: Editor, data: CommandData) {
     super(editor);
     this.data = data;
-
-    // Store the manager if provided
-    this.manager = data.manager;
+    this.manager = data.manager; // store reference if provided
 
     this.dialog = new CKAlightModalDialog({
       modal: true,
@@ -77,23 +69,21 @@ export class AlightLinkPluginCommand extends Command {
   }
 
   private setupDialogButtons(): void {
-    if (!this.data.buttons?.length) {
-      const footer = document.createElement('div');
-      footer.className = 'cka-dialog-footer-buttons';
+    const footer = document.createElement('div');
+    footer.className = 'cka-dialog-footer-buttons';
 
+    if (!this.data.buttons?.length) {
+      // If no buttons provided, create a simple Close
       const defaultButton = document.createElement('button');
       defaultButton.className = 'cka-button cka-button-rounded';
       defaultButton.textContent = 'Close';
       defaultButton.onclick = () => this.dialog.hide();
-
       footer.appendChild(defaultButton);
       this.dialog.setFooter(footer);
       return;
     }
 
-    const footer = document.createElement('div');
-    footer.className = 'cka-dialog-footer-buttons';
-
+    // Otherwise, create the provided buttons
     this.data.buttons.forEach(button => {
       const btnElement = document.createElement('button');
       btnElement.className = button.className;
@@ -109,26 +99,21 @@ export class AlightLinkPluginCommand extends Command {
   }
 
   public override execute(): void {
-    // Set the dialog title
     this.dialog.setTitle(this.data.title);
 
-    // Load content (returns a Promise<string>)
+    // loadContent returns a Promise<string>
     this.data.loadContent().then(content => {
-      // Insert the HTML into the modal
       this.dialog.setContent(content);
 
-      // If it's the "predefinedLink" type, we might need to attach
-      // event listeners, advanced filtering, etc. via the manager
-      if (this.data.modalType === 'predefinedLink' && this.manager) {
+      // If we have a manager, let it handle advanced logic (renderContent)
+      if (this.manager) {
         const contentEl = this.dialog.getContentElement();
         if (contentEl) {
-          // This will wire up checkboxes, pagination, etc.
           this.manager.renderContent(contentEl);
         }
       }
     });
 
-    // Finally, show the dialog
     this.dialog.show();
   }
 

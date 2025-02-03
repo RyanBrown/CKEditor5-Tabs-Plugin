@@ -1,20 +1,22 @@
 // src/plugins/alight-link-plugin/alight-link-plugin-editing.ts
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 import { AlightLinkPluginCommand } from './alight-link-plugin-command';
-import { PredefinedLinkManager } from './modal-content/predefined-link';
-import { getPublicIntranetLinkContent } from './modal-content/public-intranet-link';
-import { getExistingDocumentLinkContent } from './modal-content/existing-document-link';
+import { ExistingDocumentLinkManager } from './modal-content/existing-document-link';
 import { getNewDocumentsLinkContent } from './modal-content/new-document-link';
+import { getPublicIntranetLinkContent } from './modal-content/public-intranet-link';
+import { PredefinedLinkManager } from './modal-content/predefined-link';
 
 export default class AlightLinkPluginEditing extends Plugin {
   // Use definite assignment assertion
   private predefinedLinkManager!: PredefinedLinkManager;
+  private existingDocumentLinkManager!: ExistingDocumentLinkManager;
 
   init() {
     const editor = this.editor;
 
-    // Actually assign it here
+    // Create your managers
     this.predefinedLinkManager = new PredefinedLinkManager();
+    this.existingDocumentLinkManager = new ExistingDocumentLinkManager();
 
     // Command 1: Predefined Link
     editor.commands.add(
@@ -23,7 +25,7 @@ export default class AlightLinkPluginEditing extends Plugin {
         title: 'Choose a Predefined Link',
         modalType: 'predefinedLink',
         modalOptions: {
-          width: '90vw',
+          width: '90vw'
         },
         buttons: [
           {
@@ -37,9 +39,9 @@ export default class AlightLinkPluginEditing extends Plugin {
             onClick: () => this.handleImageSelection()
           }
         ],
-        // Use the manager’s method to get the initial HTML string
-        loadContent: async () => this.predefinedLinkManager.getPredefinedLinkContent(1),
-        // Pass the manager so the command can call manager.renderContent(...)
+        // Provide the HTML for page 1
+        loadContent: async () => this.predefinedLinkManager.getLinkContent(1),
+        // Provide the manager so the command can call renderContent(...)
         manager: this.predefinedLinkManager
       })
     );
@@ -61,6 +63,7 @@ export default class AlightLinkPluginEditing extends Plugin {
             onClick: () => this.handleUpload()
           }
         ],
+        // No manager needed, just return raw HTML from a separate function
         loadContent: async () => getPublicIntranetLinkContent()
       })
     );
@@ -103,7 +106,10 @@ export default class AlightLinkPluginEditing extends Plugin {
             onClick: () => this.handleUpload()
           }
         ],
-        loadContent: async () => getExistingDocumentLinkContent(1)
+        // Return the HTML for page 1 from the existing document manager
+        loadContent: async () => this.existingDocumentLinkManager.getLinkContent(1),
+        // Provide the manager so the command can attach advanced logic
+        manager: this.existingDocumentLinkManager
       })
     );
 
@@ -130,7 +136,6 @@ export default class AlightLinkPluginEditing extends Plugin {
   }
 
   private handleCancel(): void {
-    // Implementation
     console.log('Cancel clicked');
   }
 
@@ -139,7 +144,6 @@ export default class AlightLinkPluginEditing extends Plugin {
   }
 
   private handleUpload(): void {
-    // Implementation
     console.log('Upload clicked');
   }
 }
