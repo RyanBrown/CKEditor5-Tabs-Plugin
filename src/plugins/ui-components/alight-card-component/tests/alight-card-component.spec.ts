@@ -1,0 +1,1 @@
+// src/plugins/ui-components/alight-card-component/tests/alight-card-component.spec.ts

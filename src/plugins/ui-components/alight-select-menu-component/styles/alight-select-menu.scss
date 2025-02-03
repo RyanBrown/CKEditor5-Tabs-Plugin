@@ -1,3 +1,6 @@
+// src/plugins/ui-components/alight-select-menu-component/styles/alight-select-menu.scss
+@use './../../../../styles/mixins' as mixins;
+
 .cka-select {
   position: relative;
   display: inline-block;
@@ -14,7 +17,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: #ffffff;
+    background: var(--neutral-white);
     border: 1px solid #ced4da;
     padding: 0.5rem 0.75rem;
     border-radius: 6px;
@@ -72,7 +75,7 @@
     position: absolute;
     left: 0;
     width: 100%;
-    background: #ffffff;
+    background: var(--neutral-white);
     border: 1px solid #ced4da;
     border-radius: 6px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -187,7 +190,7 @@
 /* Advanced search form styles */
 #advanced-search-form {
   margin-top: 0.5rem;
-  background: #ffffff;
+  background: var(--neutral-white);
   border: 1px solid #ced4da;
   border-radius: 6px;
   padding: 1rem;
@@ -241,7 +244,7 @@
       }
 
       &#clear-advanced-search {
-        background-color: #ffffff;
+        background-color: var(--neutral-white);
         border-color: #ced4da;
         color: #6c757d;
 
@@ -299,7 +302,7 @@
     }
 
     &#reset-search-btn {
-      background-color: #ffffff;
+      background-color: var(--neutral-white);
       border-color: #ced4da;
       color: #6c757d;
 

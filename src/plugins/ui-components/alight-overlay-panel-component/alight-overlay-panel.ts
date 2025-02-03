@@ -102,18 +102,16 @@ export class AlightOverlayPanel {
       this.hidePanel(this.currentPanel);
     }
 
+    // Get the latest button position
     const rect = button.getBoundingClientRect();
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
 
     this.zIndex += 1;
     panel.style.zIndex = this.zIndex.toString();
-
     panel.classList.add('cka-active');
 
     this.positionPanel(panel, {
-      x: rect.left + scrollLeft,
-      y: rect.bottom + scrollTop,
+      x: rect.left,
+      y: rect.bottom,
       targetHeight: rect.height,
       targetWidth: rect.width
     });
@@ -125,25 +123,32 @@ export class AlightOverlayPanel {
     const panelRect = panel.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
 
-    let top = target.y;
+    // Calculate position relative to viewport
     let left = target.x;
+    let top = target.y;
 
-    if (left + panelRect.width > viewportWidth + scrollLeft) {
+    // Adjust for right overflow
+    if (left + panelRect.width > viewportWidth) {
       left = target.x + target.targetWidth - panelRect.width;
     }
 
-    if (top + panelRect.height > viewportHeight + scrollTop) {
+    // Adjust for bottom overflow
+    if (top + panelRect.height > viewportHeight) {
       top = target.y - panelRect.height - target.targetHeight;
     }
 
-    left = Math.max(scrollLeft, Math.min(left, viewportWidth + scrollLeft - panelRect.width));
-    top = Math.max(scrollTop, Math.min(top, viewportHeight + scrollTop - panelRect.height));
+    // Ensure panel stays within viewport bounds
+    left = Math.max(0, Math.min(left, viewportWidth - panelRect.width));
+    top = Math.max(0, Math.min(top, viewportHeight - panelRect.height));
 
-    panel.style.top = `${top}px`;
-    panel.style.left = `${left}px`;
+    // Convert viewport coordinates to absolute positions
+    const absoluteLeft = left + window.pageXOffset;
+    const absoluteTop = top + window.pageYOffset;
+
+    // Apply the position
+    panel.style.top = `${absoluteTop}px`;
+    panel.style.left = `${absoluteLeft}px`;
   }
 
   private hide(event: Event): void {
@@ -176,11 +181,11 @@ export class AlightOverlayPanel {
   private handleWindowResize(): void {
     if (this.currentPanel) {
       const panelId = this.currentPanel.getAttribute('data-id');
-      const button = panelId
-        ? document.querySelector(`.cka-trigger-btn[data-id='${panelId}']`) as HTMLButtonElement
-        : null;
+      if (!panelId) return;
 
+      const button = document.querySelector(`[data-panel-id='${panelId}']`) as HTMLButtonElement;
       if (button) {
+        // Re-position based on the current button position
         this.show(button, this.currentPanel);
       }
     }

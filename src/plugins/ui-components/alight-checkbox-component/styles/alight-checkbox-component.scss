@@ -1,3 +1,6 @@
+// src/plugins/ui-components/alight-checkbox-component/styles/alight-checkbox-component.scss
+@use './../../../../styles/mixins' as mixins;
+
 ck-alight-checkbox {
   display: inline-flex;
   user-select: none;
@@ -63,7 +66,7 @@ ck-alight-checkbox {
 
 .cka-checkbox-box {
   border: 2px solid #ced4da;
-  background: #ffffff;
+  background: var(--neutral-white);
   width: 20px;
   height: 20px;
   color: #495057;
@@ -78,7 +81,7 @@ ck-alight-checkbox {
   transform: scale(0);
   opacity: 0;
   transition: transform 0.12s cubic-bezier(0, 0, 0.2, 1), opacity 0.12s cubic-bezier(0, 0, 0.2, 1);
-  color: #ffffff;
+  color: var(--neutral-white);
   fill: currentColor;
   display: block;
   pointer-events: none;

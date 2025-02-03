@@ -1,0 +1,50 @@
+// src/plugins/ui-components/alight-card-component/styles/alight-card-component.scss
+@use './../../../styles/mixins' as mixins;
+
+$card-background: var(--neutral-white);
+$card-border-color: #dee2e6;
+$card-border-radius: 6px;
+$card-shadow: 0 2px 1px -1px rgba(0, 0, 0, .2), 0 1px 1px 0 rgba(0, 0, 0, .14), 0 1px 3px 0 rgba(0, 0, 0, .12);
+$card-header-padding: 1.5rem;
+$card-content-padding: 1.5rem;
+$card-footer-padding: 1.5rem;
+$card-title-font-size: 1.5rem;
+$card-title-font-weight: 700;
+$card-title-margin: 0;
+
+ck-alight-card {
+  display: block;
+  margin: 0.5rem 0;
+}
+
+.cka-card {
+  background: $card-background;
+  border-radius: $card-border-radius;
+  box-shadow: $card-shadow;
+  color: inherit;
+  margin-bottom: 2rem;
+  position: relative;
+
+  .cka-card-header {
+    align-items: center;
+    border-bottom: 1px solid $card-border-color;
+    display: flex;
+    justify-content: space-between;
+    padding: $card-header-padding;
+
+    .cka-card-title {
+      font-size: $card-title-font-size;
+      font-weight: $card-title-font-weight;
+      margin: $card-title-margin;
+    }
+  }
+
+  .cka-card-content {
+    padding: $card-content-padding;
+  }
+
+  .cka-card-footer {
+    border-top: 1px solid $card-border-color;
+    padding: $card-footer-padding;
+  }
+}

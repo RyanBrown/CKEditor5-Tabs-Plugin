@@ -1,7 +1,8 @@
 // src/plugins/ui-components/alight-overlay-panel-component/styles/alight-overlay-panel.scss
+@use './../../../../styles/mixins' as mixins;
 
 .cka-overlay-panel {
-  background: #ffffff;
+  background: var(--neutral-white);
   border-radius: 6px;
   box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.2), 0 4px 5px 0 rgba(0, 0, 0, 0.14), 0 1px 10px 0 rgba(0, 0, 0, 0.12);
   display: none;
@@ -29,7 +30,6 @@
     justify-content: flex-start;
     padding: 1rem;
   }
-
 
   &.cka-active {
     display: flex;

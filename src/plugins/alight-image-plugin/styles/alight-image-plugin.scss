@@ -1,9 +1,5 @@
-// alight-image-plugin.scss
-
-
-
-
-// Predefined Links Page styles
+// src/plugins/alight-image-plugin/styles/alight-image-plugin.scss
+@use './../../../styles/mixins' as mixins;
 
 .cka-link-item {
   align-items: center;
@@ -37,7 +33,7 @@ ul.checkbox-list {
 
 .cka-search-container {
   align-items: center;
-  background-color: #fff;
+  background-color: var(--neutral-white);
   border-bottom: 1px solid #ccc;
   display: flex;
   justify-content: center;
@@ -50,7 +46,7 @@ ul.checkbox-list {
 
 .cka-pagination {
   align-items: center;
-  background-color: #fff;
+  background-color: var(--neutral-white);
   border-top: 1px solid #ccc;
   bottom: 0;
   display: flex;
