@@ -67,19 +67,18 @@ export class CKALightSelectMenu<T extends SelectOption> {
     this.selectedDisplay.className = 'cka-select-value';
     this.updateSelectedDisplay();
 
-    // Create dropdown arrow with updated styling
+    // Create dropdown arrow
     const arrow = document.createElement('span');
     arrow.className = 'cka-select-arrow';
-    // Arrow styling handled by CSS
 
     selectButton.appendChild(this.selectedDisplay);
     selectButton.appendChild(arrow);
 
-    // Create dropdown panel with updated structure
+    // Create dropdown panel
     this.dropdownElement = document.createElement('div');
     this.dropdownElement.className = 'cka-select-dropdown';
 
-    // Add a wrapper for better styling
+    // Add dropdown content wrapper
     const dropdownContent = document.createElement('div');
     dropdownContent.className = 'cka-select-dropdown-content';
 
@@ -120,6 +119,57 @@ export class CKALightSelectMenu<T extends SelectOption> {
     });
   }
 
+  private calculateDropdownPosition(): { top: boolean } {
+    if (!this.dropdownElement) return { top: false };
+
+    const triggerRect = this.element.getBoundingClientRect();
+    const dropdownRect = this.dropdownElement.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+
+    // Check if there's space below
+    const spaceBelow = viewportHeight - triggerRect.bottom;
+    // Check if there's space above
+    const spaceAbove = triggerRect.top;
+
+    // Get closest scrollable parent
+    let parent = this.element.parentElement;
+    let scrollParent: HTMLElement | null = null;
+    while (parent) {
+      const overflowY = window.getComputedStyle(parent).overflowY;
+      if (overflowY === 'auto' || overflowY === 'scroll') {
+        scrollParent = parent;
+        break;
+      }
+      parent = parent.parentElement;
+    }
+
+    // If no scrollable parent found, use viewport dimensions
+    const parentRect = scrollParent
+      ? scrollParent.getBoundingClientRect()
+      : { top: 0, bottom: window.innerHeight };
+
+    // Check if dropdown would overflow the parent container
+    const wouldOverflowParentBottom = triggerRect.bottom + dropdownRect.height > parentRect.bottom;
+    const wouldOverflowParentTop = triggerRect.top - dropdownRect.height < parentRect.top;
+
+    // Determine if dropdown should open upward
+    const shouldOpenUpward = (spaceBelow < dropdownRect.height && spaceAbove >= dropdownRect.height) ||
+      (wouldOverflowParentBottom && !wouldOverflowParentTop);
+
+    return { top: shouldOpenUpward };
+  }
+
+  private positionDropdown(): void {
+    const { top } = this.calculateDropdownPosition();
+
+    // Remove existing positioning classes
+    this.dropdownElement.classList.remove('cka-select-dropdown--top');
+    this.dropdownElement.classList.remove('cka-select-dropdown--bottom');
+
+    // Add appropriate positioning class
+    this.dropdownElement.classList.add(top ? 'cka-select-dropdown--top' : 'cka-select-dropdown--bottom');
+  }
+
   private renderOptions(): void {
     this.optionsContainer.innerHTML = '';
     const filteredOptions = this.filterOptions();
@@ -139,12 +189,12 @@ export class CKALightSelectMenu<T extends SelectOption> {
         optionElement.classList.add('disabled');
       }
 
-      // Create a label container for better alignment
+      // Create label container
       const labelContainer = document.createElement('span');
       labelContainer.className = 'cka-select-option-label';
       labelContainer.textContent = String(optionLabel);
 
-      // Add checkmark icon for selected items
+      // Add checkmark for selected items
       if (this.isSelected(optionValue)) {
         const checkmark = document.createElement('span');
         checkmark.className = 'cka-select-option-checkmark';
@@ -244,13 +294,56 @@ export class CKALightSelectMenu<T extends SelectOption> {
 
   private openDropdown(): void {
     this.isOpen = true;
+
+    // Position the dropdown before showing it
+    this.positionDropdown();
     this.dropdownElement.classList.add('open');
+
     if (this.filter) {
       const filterInput = this.dropdownElement.querySelector('input');
       if (filterInput) {
         filterInput.focus();
       }
     }
+
+    // Add resize and scroll listeners
+    window.addEventListener('resize', this.handleResize);
+    this.addScrollListener();
+  }
+
+  private handleResize = (): void => {
+    if (this.isOpen) {
+      this.positionDropdown();
+    }
+  };
+
+  private addScrollListener(): void {
+    // Find scrollable parent
+    let parent = this.element.parentElement;
+    while (parent) {
+      const overflowY = window.getComputedStyle(parent).overflowY;
+      if (overflowY === 'auto' || overflowY === 'scroll') {
+        parent.addEventListener('scroll', this.handleResize);
+        break;
+      }
+      parent = parent.parentElement;
+    }
+
+    // Also listen to window scroll
+    window.addEventListener('scroll', this.handleResize);
+  }
+
+  private removeScrollListener(): void {
+    let parent = this.element.parentElement;
+    while (parent) {
+      const overflowY = window.getComputedStyle(parent).overflowY;
+      if (overflowY === 'auto' || overflowY === 'scroll') {
+        parent.removeEventListener('scroll', this.handleResize);
+        break;
+      }
+      parent = parent.parentElement;
+    }
+    window.removeEventListener('scroll', this.handleResize);
   }
 
   private closeDropdown(): void {
@@ -263,6 +356,11 @@ export class CKALightSelectMenu<T extends SelectOption> {
         (filterInput as HTMLInputElement).value = '';
       }
     }
+
+    // Remove event listeners
+    window.removeEventListener('resize', this.handleResize);
+    this.removeScrollListener();
+
     this.renderOptions();
   }
 
@@ -305,6 +403,10 @@ export class CKALightSelectMenu<T extends SelectOption> {
   }
 
   public destroy(): void {
+    // Remove event listeners
+    window.removeEventListener('resize', this.handleResize);
+    this.removeScrollListener();
+
     if (this.element && this.element.parentNode) {
       this.element.parentNode.removeChild(this.element);
     }

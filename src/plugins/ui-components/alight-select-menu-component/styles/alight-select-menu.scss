@@ -63,17 +63,15 @@
       padding: 3px;
       transform: rotate(45deg);
       margin-top: -3px;
+      transition: transform 0.2s;
     }
   }
 
   .cka-select-dropdown {
     display: none;
     position: absolute;
-    top: 100%;
     left: 0;
     width: 100%;
-    // margin-top: 0.25rem;
-    margin-top: 0;
     background: #ffffff;
     border: 1px solid #ced4da;
     border-radius: 6px;
@@ -82,10 +80,38 @@
     padding: 0.5rem 0;
     max-height: 200px;
     overflow-y: auto;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+
+    // Bottom positioning (default)
+    &.cka-select-dropdown--bottom {
+      top: 100%;
+      margin-top: 4px;
+      transform-origin: top;
+      animation: selectDropdownFadeInDown 0.1s ease-out;
+    }
+
+    // Top positioning
+    &.cka-select-dropdown--top {
+      bottom: 100%;
+      margin-bottom: 4px;
+      transform-origin: bottom;
+      animation: selectDropdownFadeInUp 0.1s ease-out;
+    }
 
     &.open {
       display: block;
-      animation: selectDropdownFadeIn 0.1s;
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+
+  // Rotate arrow when dropdown is positioned above
+  &:has(.cka-select-dropdown--top.open) {
+    .cka-select-arrow::after {
+      transform: rotate(-135deg);
+      margin-top: 3px;
     }
   }
 
@@ -132,8 +158,8 @@
   }
 }
 
-/* Animation for dropdown */
-@keyframes selectDropdownFadeIn {
+/* Animations for dropdown */
+@keyframes selectDropdownFadeInDown {
   from {
     opacity: 0;
     transform: translateY(-5px);
@@ -145,6 +171,19 @@
   }
 }
 
+@keyframes selectDropdownFadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Rest of the existing styles remain unchanged */
 /* Advanced search form styles */
 #advanced-search-form {
   margin-top: 0.5rem;
