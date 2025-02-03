@@ -1,8 +1,7 @@
 @use './_mixins';
-// @use './_buttons';
 @use './_inputs';
-@use './search';
 @use './ckeditor-variables';
+@use './_search';
 
 // Set the minimum height of the ckeditor
 .ck-editor__editable_inline {
@@ -124,10 +123,27 @@
   }
 }
 
+// Hide toolbar when readonly - comment or remove if toolbar is needed in readonly
+ckeditor .readonly .ck.ck-toolbar,
+.readonly .ck.ck-toolbar .readonly .ck.ck-editor__top.ck-reset_all {
+  display: none !important;
+}
+
+// Hide toolbar pointer events when readonly - comment or remove if toolbar is needed in readonly
+.readonly .ck.ck-reset.ck-editor.ck-rounded-corners .ck.ck-editor__main,
+.readonly .ck.ck-editor__main {
+  pointer-events: none !important;
+}
+
 // Update the bullet list indent to match UCE
 .ck-content ul {
   padding-left: 1.25rem;
 }
+
+// // Hide population on awl site
+// .hide-in-awl.p-hidden {
+//   display: inherit !important;
+// }
 
 // END ============================================================================================
 
@@ -145,3 +161,78 @@ a:hover {
   cursor: pointer;
   text-decoration: none;
 }
+
+// Margin and padding helper classes
+@mixin generate-spacing-classes($property, $values, $type) {
+  @each $key, $value in $values {
+    @if $type =='m' {
+      @if $property =='r' {
+        .#{$type}#{$property}-#{$key} {
+          margin-right: $value !important;
+        }
+      }
+
+      @else if $property =='l' {
+        .#{$type}#{$property}-#{$key} {
+          margin-left: $value !important;
+        }
+      }
+
+      @else if $property =='t' {
+        .#{$type}#{$property}-#{$key} {
+          margin-top: $value !important;
+        }
+      }
+
+      @else if $property =='b' {
+        .#{$type}#{$property}-#{$key} {
+          margin-bottom: $value !important;
+        }
+      }
+    }
+
+    @else if $type =='p' {
+      @if $property =='r' {
+        .#{$type}#{$property}-#{$key} {
+          padding-right: $value !important;
+        }
+      }
+
+      @else if $property =='l' {
+        .#{$type}#{$property}-#{$key} {
+          padding-left: $value !important;
+        }
+      }
+
+      @else if $property =='t' {
+        .#{$type}#{$property}-#{$key} {
+          padding-top: $value !important;
+        }
+      }
+
+      @else if $property =='b' {
+        .#{$type}#{$property}-#{$key} {
+          padding-bottom: $value !important;
+        }
+      }
+    }
+  }
+}
+
+$spacing-values: (
+  1: 0.25rem,
+  2: 0.5rem,
+  3: 1rem,
+  4: 1.5rem,
+  5: 2rem,
+);
+
+@include generate-spacing-classes('t', $spacing-values, 'm');
+@include generate-spacing-classes('b', $spacing-values, 'm');
+@include generate-spacing-classes('l', $spacing-values, 'm');
+@include generate-spacing-classes('r', $spacing-values, 'm');
+
+@include generate-spacing-classes('t', $spacing-values, 'p');
+@include generate-spacing-classes('b', $spacing-values, 'p');
+@include generate-spacing-classes('l', $spacing-values, 'p');
+@include generate-spacing-classes('r', $spacing-values, 'p');

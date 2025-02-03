@@ -88,7 +88,7 @@ export default class AlightLinkPluginEditing extends Plugin {
             onClick: () => this.handleUpload()
           }
         ],
-        loadContent: async () => getExistingDocumentLinkContent()
+        loadContent: async () => getExistingDocumentLinkContent(1)
       })
     );
     editor.commands.add(

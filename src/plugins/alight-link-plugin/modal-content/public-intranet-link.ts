@@ -22,21 +22,21 @@ export async function getPublicIntranetLinkContent(
     <div class="public-intranet-link-content">
       ${intranetNote}
 
-      <label for="url" class="ck-alight-input-label">URL</label>
+      <label for="url" class="cka-input-text">URL</label>
       <input 
         id="url" 
         type="url" 
-        class="ck-alight-input-text" 
+        class="cka-input-text" 
         value="${existingHref}"
       />
 
-      <label for="org-name" class="ck-alight-input-label">
+      <label for="org-name" class="cka-input-text">
         Organization Name (Optional)<span class="asterisk">*</span>
       </label>
       <input 
         id="org-name" 
         type="text" 
-        class="ck-alight-input-text"
+        class="cka-input-text"
         value="${existingOrgName}"
       />
 

@@ -1,13 +1,13 @@
 @use './_mixins.scss' as mixins;
 
 // Alight input label styles
-.ck-alight-input-label {
+.cka-input-text {
   display: block;
   font-weight: var(--font-weight-bold);
 }
 
 // Alight text input styles
-.ck-alight-input-text {
+.cka-input-text {
   appearance: none;
   background: var(--neutral-white);
   border-radius: 0;
@@ -35,12 +35,12 @@
     border-color: var(--error);
   }
 
-  &.ck-alight-input-text-sm {
+  &.cka-input-text-sm {
     font-size: var(--font-size-sm);
     padding: mixins.toRem(12) mixins.toRem(12) !important;
   }
 
-  &.ck-alight-input-text-lg {
+  &.cka-input-text-lg {
     font-size: var(--font-size-xl);
     padding: mixins.toRem(20) mixins.toRem(20);
   }

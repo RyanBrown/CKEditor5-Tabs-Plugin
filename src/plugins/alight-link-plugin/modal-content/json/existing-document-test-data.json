@@ -1,38 +1,42 @@
-[
-  {
-    "DocumentName": "Financial Freedom Blueprint",
-    "Population": "All_Authenticated_Users",
-    "Language": "English (default)",
-    "FileType": "pptx"
-  },
-  {
-    "DocumentName": "Ultimate Success Guide",
-    "Population": "ALWAYS_FAIL",
-    "Language": "English (default)",
-    "FileType": "docx"
-  },
-  {
-    "DocumentName": "Pathway to Prosperity",
-    "Population": "ALWAYS_PASS",
-    "Language": "English (default)",
-    "FileType": "xlsx"
-  },
-  {
-    "DocumentName": "Visonary Ventures",
-    "Population": "No_One",
-    "Language": "English (default)",
-    "FileType": "pdf"
-  },
-  {
-    "DocumentName": "Wealth Wizard Workbook",
-    "Population": "All",
-    "Language": "English (default)",
-    "FileType": "xlsx"
-  },
-  {
-    "DocumentName": "Dream Achiever's Manual",
-    "Population": "IsPrtlChgCtrbElig",
-    "Language": "English (default)",
-    "FileType": "pdf"
-  }
-]
+{
+  "responseStatus": "SUCCESS",
+  "branchName": "masterclone",
+  "documentList": [
+    {
+      "DocumentName": "Financial Freedom Blueprint",
+      "Population": "All_Authenticated_Users",
+      "Language": "English (default)",
+      "FileType": "pptx"
+    },
+    {
+      "DocumentName": "Ultimate Success Guide",
+      "Population": "ALWAYS_FAIL",
+      "Language": "English (default)",
+      "FileType": "docx"
+    },
+    {
+      "DocumentName": "Pathway to Prosperity",
+      "Population": "ALWAYS_PASS",
+      "Language": "English (default)",
+      "FileType": "xlsx"
+    },
+    {
+      "DocumentName": "Visonary Ventures",
+      "Population": "No_One",
+      "Language": "English (default)",
+      "FileType": "pdf"
+    },
+    {
+      "DocumentName": "Wealth Wizard Workbook",
+      "Population": "All",
+      "Language": "English (default)",
+      "FileType": "xlsx"
+    },
+    {
+      "DocumentName": "Dream Achiever's Manual",
+      "Population": "IsPrtlChgCtrbElig",
+      "Language": "English (default)",
+      "FileType": "pdf"
+    }
+  ]
+}

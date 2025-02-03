@@ -1,29 +1,30 @@
+// src/plugins/alight-link-plugin/styles/search.scss
 @use './_mixins.scss' as mixins;
 
 // Flex Layout for Search Bar
-.search-wrapper {
+.ck-alight-search-input {
   align-items: center;
   display: flex;
   margin-bottom: 1rem;
   justify-content: space-between;
 
-  .search-left-col {
+  .ck-alight-search-left-col {
     margin-right: 0.5rem;
   }
 
-  .search-center-col {
+  .ck-alight-search-center-col {
     flex-grow: 1;
     margin-right: 0.5rem;
   }
 }
 
 @media screen and (max-width: var(--media-query-768)) {
-  .search-wrapper {
+  .ck-alight-search-input {
     flex-wrap: wrap;
   }
 }
 
-.search-main {
+.ck-alight-search-main {
   display: flex;
 
   @media screen and (max-width: var(--media-query-576)) {
@@ -31,7 +32,7 @@
   }
 }
 
-.search-input {
+.ck-alight-search-input {
   align-items: center;
   background-color: var(--neutral-white);
   border-radius: 5rem;
@@ -40,10 +41,10 @@
   flex-grow: 1;
   justify-content: space-between;
   margin-right: 0.5rem !important;
-  padding: mixins.toRem(9) mixins.toRem(16);
+  //   padding: mixins.toRem(9) mixins.toRem(16);
 }
 
-.search-main {
+.ck-alight-search-main {
 
   .p-input-icon-left,
   .p-input-icon-right {
@@ -52,49 +53,43 @@
   }
 
   input {
-    border: none !important;
     background-color: transparent !important;
+    border: none !important;
+    border-bottom-left-radius: 5rem !important;
     border-top-left-radius: 5rem !important;
-    border-bottom-right-radius: 5rem !important;
     display: inline-flex;
     flex-grow: 1;
+    font-size: var(--font-size-base);
+    padding: mixins.toRem(10) mixins.toRem(16);
     width: 100% !important;
+
+    &:focus {
+      border: none;
+      outline: none;
+    }
 
     &:placeholder-shown {
       text-overflow: ellipsis;
     }
   }
 
-  button.advanced-search-btn {
+  button.ck-alight-search-center-col {
     min-width: mixins.toRem(160);
   }
 }
 
-.search-btn {
-  background-color: var(--neutral-white);
-}
+// Styles are handled in _buttons.scss
+//.ck-alight-advanced-search-btn {}
 
-.search-field-display {
-  color: var(--primary);
-  font-weight: var(--font-weight-light);
-
-  span {
-    display: block;
-
-    &:not(:empty):first-of-type {
-      margin-top: mixins.toRem(10);
-    }
-  }
-}
-
-.search-field-note {
-  color: var(--neutral-black);
-  font-size: var(--font-size-x-sm);
-  font-style: italic;
-}
-
-.clear-input {
-  max-width: 0 0.75rem;
+.ck-alight-clear-input {
+  background-color: transparent;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g id="times"><path d="M13.06,12l4.42-4.42a.75.75,0,1,0-1.06-1.06L12,10.94,7.58,6.52A.75.75,0,0,0,6.52,7.58L10.94,12,6.52,16.42a.75.75,0,0,0,0,1.06.75.75,0,0,0,1.06,0L12,13.06l4.42,4.42a.75.75,0,0,0,1.06,0,.75.75,0,0,0,0-1.06Z"/></g></svg>');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 24px 24px;
+  border: 1px solid transparent;
+  margin: 0 .75rem;
+  padding: mixins.toRem(16);
 
   &:hover {
     cursor: pointer;

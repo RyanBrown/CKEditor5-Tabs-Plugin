@@ -1,20 +1,15 @@
 @use './_mixins' as mixins;
 
 // Alight button styles
-.ck-alight-button {
-  align-items: center;
+.cka-button {
   background: var(--primary);
-  border-radius: mixins.toRem(30);
-  border: 2px solid var(--primary);
+  border-radius: var(--border-radius-base);
+  border: 1px solid var(--primary);
   color: var(--neutral-white);
   cursor: pointer;
-  display: inline-flex;
   font-size: var(--font-size-base);
-  font-weight: var(--font-weight-bold);
-  justify-content: center;
-  line-height: mixins.toRem(21);
-  min-width: mixins.toRem(40);
   padding: mixins.toRem(10) mixins.toRem(16);
+  line-height: mixins.toRem(21);
   transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
 
   &:enabled {
@@ -31,7 +26,7 @@
     }
   }
 
-  &.ck-alight-button-outlined {
+  &.cka-button-outlined {
     background-color: transparent;
     border: var(--button-outlined-border);
     color: var(--primary);
@@ -49,11 +44,150 @@
         color: var(--primary);
       }
     }
+
+    &.cka-button-plain {
+      border-color: var(--plain);
+      color: var(--plain);
+
+      &:enabled {
+        &:hover {
+          background: var(--plain-hover);
+          color: var(--neutral-white);
+        }
+
+        &:active {
+          background: var(--plain-active);
+          color: var(--neutral-white);
+        }
+      }
+    }
+  }
+
+  &.cka-button-text {
+    background-color: transparent;
+    border-color: transparent;
+    color: var(--primary);
+
+    &:enabled {
+      &:hover {
+        background: var(--primary-outline-hover);
+        border-color: transparent;
+        color: var(--primary);
+      }
+
+      &:active {
+        background: var(--primary-outline-active);
+        border-color: transparent;
+        color: var(--primary);
+      }
+    }
+
+    &.cka-button-plain {
+      color: var(--plain);
+
+      &:enabled {
+        &:hover {
+          background: var(--plain-outline-hover);
+          color: var(--plain);
+        }
+
+        &:active {
+          background: var(--plain-outline-active);
+          color: var(--plain);
+        }
+      }
+    }
   }
 
   &:focus {
     box-shadow: var(--focus-state);
     outline-offset: 0;
-    outline: none;
+    outline: 0 none;
+  }
+
+  .cka-button-icon-left {
+    margin-right: var(--spacing-m);
+  }
+
+  .cka-button-icon-right {
+    margin-left: var(--spacing-m);
+  }
+
+  .cka-button-icon-bottom {
+    margin-top: var(--spacing-m);
+  }
+
+  .cka-button-icon-top {
+    margin-bottom: var(--spacing-m);
+  }
+
+  .p-badge {
+    background-color: var(--neutral-white);
+    color: var(--primary);
+    height: 1rem;
+    line-height: 1rem;
+    margin-left: var(--spacing-m);
+    min-width: 1rem;
+  }
+
+  &.cka-button-raised {
+    box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
+  }
+
+  &.cka-button-rounded {
+    align-items: center;
+    border-radius: mixins.toRem(30) !important;
+    border-style: solid;
+    border-width: 2px;
+    display: inline-flex;
+    font-weight: var(--font-weight-bold);
+    justify-content: center;
+    min-width: mixins.toRem(40);
+    padding: mixins.toRem(10) mixins.toRem(16);
+  }
+
+  &.cka-button-icon-only {
+    padding: var(--spacing-m) 0;
+    width: 2.357rem;
+
+    .cka-button-icon-left,
+    .cka-button-icon-right {
+      margin: 0;
+    }
+
+    &.cka-button-rounded {
+      border-radius: 50%;
+      height: 2.357rem;
+    }
+  }
+
+  &.cka-button-sm {
+    font-size: var(--font-size-base);
+    line-height: mixins.toRem(18);
+    padding: 0.5rem mixins.toRem(16);
+
+    .cka-button-icon {
+      font-size: var(--font-size-base);
+    }
+  }
+
+  &.cka-button-lg {
+    font-size: var(--font-size-lg);
+    line-height: mixins.toRem(24);
+    padding: mixins.toRem(12) mixins.toRem(18);
+
+    .cka-button-icon {
+      font-size: var(--font-size-lg);
+    }
+  }
+
+  &.cka-button-loading-label-only {
+    .cka-button-label {
+      margin-left: var(--spacing-m);
+    }
+
+    .cka-button-loading-icon {
+      margin-right: 0;
+    }
   }
 }

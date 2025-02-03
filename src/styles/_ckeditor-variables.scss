@@ -8,16 +8,16 @@
   // --ck-font-size-base: 14px;
 
   /* Helper variables to avoid duplication in the colors. */
-  // --ck-custom-background: hsl(270, 1%, 29%);
-  // --ck-custom-foreground: hsl(255, 3%, 18%);
-  // --ck-custom-border: hsl(300, 1%, 22%);
-  // --ck-custom-white: hsl(0, 0%, 100%);
+  // --ck-custom-background: #4a494b;
+  // --ck-custom-foreground: #2d2d2f;
+  // --ck-custom-border: #393839;
+  // --ck-custom-white: #ffffff;
 
   /* -- Overrides generic colors. ------------------------------------------------------------- */
 
   // --ck-color-base-foreground: var(--ck-custom-background);
   // --ck-color-focus-border: hsl(208, 90%, 62%);
-  // --ck-color-text: hsl(0, 0%, 98%);
+  --ck-color-text: #010101;
   // --ck-color-shadow-drop: hsla(0, 0%, 0%, 0.2);
   // --ck-color-shadow-inner: hsla(0, 0%, 0%, 0.1);
 
@@ -35,10 +35,10 @@
   // --ck-color-button-on-active-shadow: hsl(240, 3%, 19%);
   // --ck-color-button-on-disabled-background: var(--ck-custom-foreground);
 
-  // --ck-color-button-action-background: hsl(168, 76%, 42%);
-  // --ck-color-button-action-hover-background: hsl(168, 76%, 38%);
-  // --ck-color-button-action-active-background: hsl(168, 76%, 36%);
-  // --ck-color-button-action-active-shadow: hsl(168, 75%, 34%);
+  // --ck-color-button-action-background: var(--primary);
+  // --ck-color-button-action-hover-background: var(--primary-hover);
+  // --ck-color-button-action-active-background: var(--primary-active);
+  // --ck-color-button-action-active-shadow: none;
   // --ck-color-button-action-disabled-background: hsl(168, 76%, 42%);
   // --ck-color-button-action-text: var(--ck-custom-white);
 
@@ -55,7 +55,7 @@
   --ck-color-dialog-background: var(--neutral-white);
   --ck-color-dialog-form-header-border: var(--neutral-athens-gray);
   --ck-dialog-overlay-background-color: var(--maskbg);
-  --ck-dialog-drop-shadow: 0 0.1875rem 0.5rem rgb(0, 0, 0, 0.15);
+  --ck-dialog-drop-shadow: 0 0.1875rem 0.5rem rgba(0, 0, 0, 0.15);
 
   /* -- Overrides the default .ck-splitbutton class colors. ----------------------------------- */
 
@@ -112,4 +112,8 @@
   /* -- Overrides the default colors used by the ckeditor5-link package. ---------------------- */
 
   --ck-color-link-default: var(--primary);
+
+  /* -- Overrides the default font face - Added thrive font as the default ---------------------- */
+
+  --ck-font-face: 'FSThriveElliotWeb-Regular', 'FSThriveElliotWeb-Bold', 'FSThriveElliotWeb-Heavy', 'FSThriveElliotWeb-Light', Helvetica, Arial, Tahoma, Verdana, Sans-Serif;
 }

@@ -19,6 +19,7 @@ interface SelectConfig<T> {
 }
 
 export class CKALightSelectMenu<T extends SelectOption> {
+  [x: string]: any;
   private element: HTMLDivElement = document.createElement('div');
   private dropdownElement: HTMLDivElement = document.createElement('div');
   private selectedDisplay: HTMLDivElement = document.createElement('div');
