@@ -58,8 +58,8 @@ export class SelectMenuView extends AlightUIBaseComponent implements SelectMenuP
       attributes: {
         class: [
           'ck',
-          'ck-alight-select',
-          bind.to('isExpanded', (value: boolean) => value ? 'ck-alight-select--expanded' : ''),
+          'cka-select',
+          bind.to('isExpanded', (value: boolean) => value ? 'cka-select--expanded' : ''),
           bind.to('isEnabled', (value: boolean) => value ? 'ck-enabled' : 'ck-disabled')
         ],
         'aria-expanded': bind.to('isExpanded', String)
@@ -68,13 +68,13 @@ export class SelectMenuView extends AlightUIBaseComponent implements SelectMenuP
         {
           tag: 'div',
           attributes: {
-            class: ['ck-alight-select__trigger']
+            class: ['cka-select__trigger']
           },
           children: [
             {
               tag: 'span',
               attributes: {
-                class: ['ck-alight-select__label']
+                class: ['cka-select__label']
               },
               children: [
                 {
@@ -89,7 +89,7 @@ export class SelectMenuView extends AlightUIBaseComponent implements SelectMenuP
             {
               tag: 'span',
               attributes: {
-                class: ['ck-alight-select__arrow']
+                class: ['cka-select__arrow']
               }
             }
           ],
@@ -104,7 +104,7 @@ export class SelectMenuView extends AlightUIBaseComponent implements SelectMenuP
         {
           tag: 'div',
           attributes: {
-            class: ['ck-alight-select__dropdown']
+            class: ['cka-select__dropdown']
           },
           children: this.optionsView
         }
@@ -126,7 +126,7 @@ export class SelectMenuView extends AlightUIBaseComponent implements SelectMenuP
         tag: 'div',
         attributes: {
           class: [
-            'ck-alight-select__option',
+            'cka-select__option',
             option.disabled ? 'ck-disabled' : '',
             this.value === option.value ? 'ck-selected' : ''
           ]

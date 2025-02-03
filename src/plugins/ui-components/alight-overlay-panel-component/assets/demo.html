@@ -13,7 +13,7 @@
             position: relative;
         }
 
-        .ck-alight-overlay-panel {
+        .cka-overlay-panel {
             box-shadow: 0 0.1875rem 0.5rem rgba(0, 0, 0, 0.15);
             background: #fff;
             border-radius: 5px;
@@ -37,14 +37,14 @@
             /* Transition for fade-in and fade-out */
         }
 
-        .ck-alight-overlay-panel.active {
+        .cka-overlay-panel.active {
             opacity: 1;
             /* Fully visible */
             visibility: visible;
             /* Allow interaction */
         }
 
-        .ck-alight-overlay-panel header {
+        .cka-overlay-panel header {
             border-bottom: 1px solid #ccc;
             display: flex;
             justify-content: space-between;
@@ -52,11 +52,11 @@
             background-color: #f5f5f5;
         }
 
-        .ck-alight-overlay-panel main {
+        .cka-overlay-panel main {
             padding: 1rem;
         }
 
-        .ck-alight-overlay-panel footer {
+        .cka-overlay-panel footer {
             border-top: 1px solid #ccc;
             display: flex;
             justify-content: flex-start;
@@ -64,12 +64,12 @@
             background-color: #f5f5f5;
         }
 
-        .ck-alight-triggerBtn {
+        .cka-triggerBtn {
             padding: 0.5rem 1rem;
             cursor: pointer;
         }
 
-        .ck-alight-closeBtn {
+        .cka-closeBtn {
             background: none;
             border: none;
             cursor: pointer;
@@ -77,7 +77,7 @@
             color: #007BFF;
         }
 
-        .ck-alight-closeBtn:hover {
+        .cka-closeBtn:hover {
             text-decoration: underline;
         }
     </style>
@@ -86,61 +86,61 @@
 <body>
 
     <!-- Buttons with their respective panels -->
-    <button class="ck-alight-triggerBtn" data-id="1" style="position: absolute; left: 10px; top: 10px;">Open Overlay
+    <button class="cka-triggerBtn" data-id="1" style="position: absolute; left: 10px; top: 10px;">Open Overlay
         1</button>
-    <div class="ck-alight-overlay-panel" data-id="1">
-        <header>Title 1 <button class="ck-alight-closeBtn">Close</button></header>
+    <div class="cka-overlay-panel" data-id="1">
+        <header>Title 1 <button class="cka-closeBtn">Close</button></header>
         <main>
             <p>Panel positioned dynamically.</p>
         </main>
-        <footer><button class="ck-alight-closeBtn">Close</button></footer>
+        <footer><button class="cka-closeBtn">Close</button></footer>
     </div>
 
-    <button class="ck-alight-triggerBtn" data-id="2" style="position: absolute; right: 10px; top: 10px;">Open Overlay
+    <button class="cka-triggerBtn" data-id="2" style="position: absolute; right: 10px; top: 10px;">Open Overlay
         2</button>
-    <div class="ck-alight-overlay-panel" data-id="2">
-        <header>Title 2 <button class="ck-alight-closeBtn">Close</button></header>
+    <div class="cka-overlay-panel" data-id="2">
+        <header>Title 2 <button class="cka-closeBtn">Close</button></header>
         <main>
             <p>Panel positioned dynamically.</p>
         </main>
-        <footer><button class="ck-alight-closeBtn">Close</button></footer>
+        <footer><button class="cka-closeBtn">Close</button></footer>
     </div>
 
-    <button class="ck-alight-triggerBtn" data-id="3" style="position: absolute; left: 10px; bottom: 10px;">Open Overlay
+    <button class="cka-triggerBtn" data-id="3" style="position: absolute; left: 10px; bottom: 10px;">Open Overlay
         3</button>
-    <div class="ck-alight-overlay-panel" data-id="3">
-        <header>Title 3 <button class="ck-alight-closeBtn">Close</button></header>
+    <div class="cka-overlay-panel" data-id="3">
+        <header>Title 3 <button class="cka-closeBtn">Close</button></header>
         <main>
             <p>Panel positioned dynamically.</p>
         </main>
-        <footer><button class="ck-alight-closeBtn">Close</button></footer>
+        <footer><button class="cka-closeBtn">Close</button></footer>
     </div>
 
-    <button class="ck-alight-triggerBtn" data-id="4" style="position: absolute; right: 10px; bottom: 10px;">Open Overlay
+    <button class="cka-triggerBtn" data-id="4" style="position: absolute; right: 10px; bottom: 10px;">Open Overlay
         4</button>
-    <div class="ck-alight-overlay-panel" data-id="4">
-        <header>Title 4 <button class="ck-alight-closeBtn">Close</button></header>
+    <div class="cka-overlay-panel" data-id="4">
+        <header>Title 4 <button class="cka-closeBtn">Close</button></header>
         <main>
             <p>Panel positioned dynamically.</p>
         </main>
-        <footer><button class="ck-alight-closeBtn">Close</button></footer>
+        <footer><button class="cka-closeBtn">Close</button></footer>
     </div>
 
-    <button class="ck-alight-triggerBtn" data-id="5" style="position: absolute; right: 50%; bottom: 50%;">Open Overlay
+    <button class="cka-triggerBtn" data-id="5" style="position: absolute; right: 50%; bottom: 50%;">Open Overlay
         5</button>
-    <div class="ck-alight-overlay-panel" data-id="5">
-        <header>Title 5 <button class="ck-alight-closeBtn">Close</button></header>
+    <div class="cka-overlay-panel" data-id="5">
+        <header>Title 5 <button class="cka-closeBtn">Close</button></header>
         <main>
             <p>Panel positioned dynamically.</p>
         </main>
-        <footer><button class="ck-alight-closeBtn">Close</button></footer>
+        <footer><button class="cka-closeBtn">Close</button></footer>
     </div>
 
     <script>
         class OverlayPanel {
             constructor() {
-                this.buttons = document.querySelectorAll(".ck-alight-triggerBtn");
-                this.panels = document.querySelectorAll(".ck-alight-overlay-panel");
+                this.buttons = document.querySelectorAll(".cka-triggerBtn");
+                this.panels = document.querySelectorAll(".cka-overlay-panel");
                 this.currentPanel = null;
 
                 this.buttons.forEach(button => {
@@ -148,7 +148,7 @@
                 });
 
                 document.addEventListener("click", (event) => this.handleClickOutside(event));
-                document.querySelectorAll(".ck-alight-closeBtn").forEach(closeBtn => {
+                document.querySelectorAll(".cka-closeBtn").forEach(closeBtn => {
                     closeBtn.addEventListener("click", (event) => this.hide(event));
                 });
 
@@ -159,9 +159,9 @@
                 event.stopPropagation(); // Prevent event from bubbling to document
                 const button = event.currentTarget;
                 const panelId = button.getAttribute("data-id");
-                const panel = document.querySelector(`.ck-alight-overlay-panel[data-id='${panelId}']`);
+                const panel = document.querySelector(`.cka-overlay-panel[data-id='${panelId}']`);
 
-                if (panel.classList.contains("ck-alight-active")) {
+                if (panel.classList.contains("cka-active")) {
                     this.hidePanel(panel);
                 } else {
                     this.show(button, panel);
@@ -185,7 +185,7 @@
                 panel.style.height = 'auto';
 
                 // Temporarily make the panel visible for measurement
-                panel.classList.add("ck-alight-active");
+                panel.classList.add("cka-active");
                 panel.style.opacity = '0';
                 panel.style.visibility = 'hidden';
 
@@ -252,23 +252,23 @@
             hide(event) {
                 event.stopPropagation(); // Prevent event from bubbling to document
                 const closeButton = event.target;
-                const panel = closeButton.closest(".ck-alight-overlay-panel");
+                const panel = closeButton.closest(".cka-overlay-panel");
                 this.hidePanel(panel);
             }
 
             hidePanel(panel) {
                 panel.style.opacity = '0';
                 panel.style.visibility = 'hidden';
-                panel.classList.remove("ck-alight-active");
+                panel.classList.remove("cka-active");
                 this.currentPanel = null;
             }
 
             handleClickOutside(event) {
-                if (!event.target.closest(".ck-alight-overlay-panel") && !event.target.closest(".ck-alight-triggerBtn")) {
+                if (!event.target.closest(".cka-overlay-panel") && !event.target.closest(".cka-triggerBtn")) {
                     this.panels.forEach(panel => {
                         panel.style.opacity = '0';
                         panel.style.visibility = 'hidden';
-                        panel.classList.remove("ck-alight-active");
+                        panel.classList.remove("cka-active");
                     });
                     this.currentPanel = null;
                 }

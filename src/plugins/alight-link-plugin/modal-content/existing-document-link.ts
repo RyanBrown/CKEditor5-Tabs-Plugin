@@ -47,11 +47,11 @@ function createCheckboxList(options: string[], filterType: keyof SelectedFilters
       <ul class="checkbox-list">
         ${options.map(option => `
           <li>
-            <ck-alight-checkbox 
+            <cka-checkbox 
               data-filter-type="${filterType}"
               data-value="${option}"
               ${selectedFilters[filterType].includes(option) ? 'initialvalue="true"' : ''}
-            >${option}</ck-alight-checkbox>
+            >${option}</cka-checkbox>
           </li>
         `).join('')}
       </ul>
@@ -139,7 +139,7 @@ function attachEventListeners(container: HTMLElement): void {
   });
 
   // Checkbox event listeners
-  const checkboxes = container.querySelectorAll('ck-alight-checkbox');
+  const checkboxes = container.querySelectorAll('cka-checkbox');
   checkboxes.forEach(checkbox => {
     checkbox.addEventListener('change', (e: Event) => {
       const target = e.target as HTMLInputElement;
@@ -209,11 +209,11 @@ export function getExistingDocumentLinkContent(page: number): string {
       .map(doc => `
           <div class="cka-document-item" data-doc-name="${doc.DocumentName}">
             <div class="radio-container">
-              <ck-alight-radio-button
+              <cka-radio-button
                 name="document-selection"
                 value="${doc.DocumentName}"
                 label=""
-              ></ck-alight-radio-button>
+              ></cka-radio-button>
             </div>
             <ul>
               <li><strong>${doc.DocumentName}</strong></li>

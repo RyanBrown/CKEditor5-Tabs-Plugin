@@ -51,7 +51,7 @@ export class OverlayPanelView extends AlightUIBaseComponent implements OverlayPa
       attributes: {
         class: [
           'ck',
-          'ck-alight-overlay-panel__content'
+          'cka-overlay-panel__content'
         ]
       }
     });
@@ -65,9 +65,9 @@ export class OverlayPanelView extends AlightUIBaseComponent implements OverlayPa
       attributes: {
         class: [
           'ck',
-          'ck-alight-overlay-panel',
-          bind.to('isVisible', (value: boolean) => value ? 'ck-alight-overlay-panel--visible' : ''),
-          bind.to('position', (value: PanelPosition) => `ck-alight-overlay-panel--${value}`)
+          'cka-overlay-panel',
+          bind.to('isVisible', (value: boolean) => value ? 'cka-overlay-panel--visible' : ''),
+          bind.to('position', (value: PanelPosition) => `cka-overlay-panel--${value}`)
         ],
         tabindex: '-1'
       },
@@ -120,7 +120,7 @@ export class OverlayPanelView extends AlightUIBaseComponent implements OverlayPa
       attributes: {
         class: [
           'ck',
-          'ck-alight-overlay-panel__content'
+          'cka-overlay-panel__content'
         ]
       },
       children: typeof content === 'string' ? [{ text: content }] : [content]

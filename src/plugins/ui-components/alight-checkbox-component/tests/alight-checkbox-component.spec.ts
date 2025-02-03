@@ -1,7 +1,7 @@
 // src/plugins/ui-components/alight-checkbox-component/alight-checkbox-component.ts
 
 /**
- * ck-alight-checkbox.ts
+ * cka-checkbox.ts
  *
  * A custom checkbox element for CKEditor 5 that behaves like a PrimeNG checkbox.
  * This component follows Web Components standards and integrates with CKEditor 5's UI system.
@@ -15,11 +15,11 @@ import styles from './styles/alight-checkbox-component.scss';
 // Define a template for the component's HTML
 const template: HTMLTemplateElement = document.createElement('template');
 template.innerHTML = `
-  <div class="ck ck-alight-checkbox-container" tabindex="0" role="checkbox" aria-checked="false">
-    <div class="ck-alight-checkbox-box">
-      <span class="ck-alight-checkbox-check">✓</span>
+  <div class="ck cka-checkbox-container" tabindex="0" role="checkbox" aria-checked="false">
+    <div class="cka-checkbox-box">
+      <span class="cka-checkbox-check">✓</span>
     </div>
-    <div class="ck-alight-checkbox-label">
+    <div class="cka-checkbox-label">
       <slot></slot>
     </div>
   </div>
@@ -121,7 +121,7 @@ class CkAlightCheckbox extends HTMLElement {
       this.disabled = true;
     }
 
-    const container = this._shadowRoot?.querySelector('.ck-alight-checkbox-container');
+    const container = this._shadowRoot?.querySelector('.cka-checkbox-container');
     container?.addEventListener('click', this._onClick);
     container?.addEventListener('keydown', (e: Event) => this._onKeyDown(e as KeyboardEvent));
 
@@ -132,7 +132,7 @@ class CkAlightCheckbox extends HTMLElement {
    * Lifecycle callback when element is disconnected from the DOM
    */
   disconnectedCallback(): void {
-    const container = this._shadowRoot?.querySelector('.ck-alight-checkbox-container');
+    const container = this._shadowRoot?.querySelector('.cka-checkbox-container');
     container?.removeEventListener('click', this._onClick);
     container?.removeEventListener('keydown', (e: Event) => this._onKeyDown(e as KeyboardEvent));
   }
@@ -177,7 +177,7 @@ class CkAlightCheckbox extends HTMLElement {
    * Updates the visual representation of the checkbox
    */
   private _updateRendering(): void {
-    const container = this._shadowRoot?.querySelector('.ck-alight-checkbox-container');
+    const container = this._shadowRoot?.querySelector('.cka-checkbox-container');
     if (!container) {
       return;
     }
@@ -185,30 +185,30 @@ class CkAlightCheckbox extends HTMLElement {
     if (this._checked) {
       this.setAttribute('checked', '');
       container.setAttribute('aria-checked', 'true');
-      container.classList.add('ck-alight-checked');
+      container.classList.add('cka-checked');
     } else {
       this.removeAttribute('checked');
       container.setAttribute('aria-checked', 'false');
-      container.classList.remove('ck-alight-checked');
+      container.classList.remove('cka-checked');
     }
 
     if (this._disabled) {
       this.setAttribute('disabled', '');
       this.removeAttribute('tabindex');
-      container.classList.add('ck-alight-disabled');
+      container.classList.add('cka-disabled');
     } else {
       this.removeAttribute('disabled');
       if (!this.hasAttribute('tabindex')) {
         this.setAttribute('tabindex', '0');
       }
-      container.classList.remove('ck-alight-disabled');
+      container.classList.remove('cka-disabled');
     }
   }
 }
 
 // Define the custom element
-if (!customElements.get('ck-alight-checkbox')) {
-  customElements.define('ck-alight-checkbox', CkAlightCheckbox);
+if (!customElements.get('cka-checkbox')) {
+  customElements.define('cka-checkbox', CkAlightCheckbox);
 }
 
 export default CkAlightCheckbox;

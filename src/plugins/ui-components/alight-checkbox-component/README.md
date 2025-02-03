@@ -21,8 +21,8 @@ The **CK Alight Checkbox** is a vanilla JavaScript custom element implemented us
 1. **Clone the repository or copy the source files.**
 
    This repository includes the following key files:
-   * `ck-alight-checkbox.ts` – TypeScript source code defining the custom element
-   * `ck-alight-checkbox.scss` – SCSS file containing the styles for the component
+   * `cka-checkbox.ts` – TypeScript source code defining the custom element
+   * `cka-checkbox.scss` – SCSS file containing the styles for the component
    * `README.md` – This file
 
 2. **Install dependencies:**
@@ -43,7 +43,7 @@ The **CK Alight Checkbox** is a vanilla JavaScript custom element implemented us
    npm run build
    ```
 
-   This should produce a JavaScript file (e.g., `bundle.js`) that registers the `<ck-alight-checkbox>` element.
+   This should produce a JavaScript file (e.g., `bundle.js`) that registers the `<cka-checkbox>` element.
 
 2. **Include the Component in Your HTML**
 
@@ -60,14 +60,14 @@ The **CK Alight Checkbox** is a vanilla JavaScript custom element implemented us
    </head>
    <body>
      <!-- Use the custom element -->
-     <ck-alight-checkbox initialvalue="false">
+     <cka-checkbox initialvalue="false">
        Accept Terms and Conditions
-     </ck-alight-checkbox>
+     </cka-checkbox>
 
      <script>
        // Listen for change events on the custom element.
        document.addEventListener('DOMContentLoaded', () => {
-         const checkbox = document.querySelector('ck-alight-checkbox');
+         const checkbox = document.querySelector('cka-checkbox');
          checkbox.addEventListener('change', (event) => {
            console.log('Checkbox state changed:', event.detail);
          });
@@ -85,9 +85,9 @@ The **CK Alight Checkbox** is a vanilla JavaScript custom element implemented us
    Example:
 
    ```html
-   <ck-alight-checkbox initialvalue="true" disabled>
+   <cka-checkbox initialvalue="true" disabled>
      I agree to the terms.
-   </ck-alight-checkbox>
+   </cka-checkbox>
    ```
 
 ## Development
@@ -103,8 +103,8 @@ To work on the component:
    This will recompile your TypeScript and SCSS files when changes are detected.
 
 2. Edit the source files:
-   * `ck-alight-checkbox.ts` for the component logic
-   * `ck-alight-checkbox.scss` for the styling
+   * `cka-checkbox.ts` for the component logic
+   * `cka-checkbox.scss` for the styling
 
 ## Building
 
@@ -120,7 +120,7 @@ const path = require('path');
 
 module.exports = {
   mode: 'production', // or 'development'
-  entry: './src/ck-alight-checkbox.ts',
+  entry: './src/cka-checkbox.ts',
   output: {
     filename: 'bundle.js',
     path: path.resolve(__dirname, 'dist'),

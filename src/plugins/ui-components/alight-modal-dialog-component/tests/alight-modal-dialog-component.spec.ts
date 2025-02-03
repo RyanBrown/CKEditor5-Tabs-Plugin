@@ -80,27 +80,27 @@ class CKAlightModalDialog {
   private createDialog(): void {
     // Create main container with overlay
     this.container = document.createElement('div');
-    this.container.className = 'ck-alight-dialog-wrapper';
+    this.container.className = 'cka-dialog-wrapper';
     this.container.setAttribute('role', 'dialog');
     this.container.setAttribute('aria-modal', 'true');
 
     // Create overlay
     this.overlay = document.createElement('div');
-    this.overlay.className = 'ck-alight-dialog-overlay';
+    this.overlay.className = 'cka-dialog-overlay';
 
     // Create dialog content
     const content = `
-      <div class="ck-alight-dialog" style="width: ${this.options.width};">
-        <div class="ck-alight-dialog-header ${this.options.draggable ? 'draggable' : ''}">
-          <span class="ck-alight-dialog-title"></span>
-          <div class="ck-alight-dialog-header-icons">
-            ${this.options.maximizable ? '<button class="ck-alight-dialog-maximize" aria-label="Maximize"><i class="ck-alight-maximize-icon"></i></button>' : ''}
-            <button class="ck-alight-dialog-close" aria-label="Close"><i class="ck-alight-close-icon"></i></button>
+      <div class="cka-dialog" style="width: ${this.options.width};">
+        <div class="cka-dialog-header ${this.options.draggable ? 'draggable' : ''}">
+          <span class="cka-dialog-title"></span>
+          <div class="cka-dialog-header-icons">
+            ${this.options.maximizable ? '<button class="cka-dialog-maximize" aria-label="Maximize"><i class="cka-maximize-icon"></i></button>' : ''}
+            <button class="cka-dialog-close" aria-label="Close"><i class="cka-close-icon"></i></button>
           </div>
         </div>
-        <div class="ck-alight-dialog-content"></div>
-        <div class="ck-alight-dialog-footer"></div>
-        ${this.options.resizable ? '<div class="ck-alight-resizer"></div>' : ''}
+        <div class="cka-dialog-content"></div>
+        <div class="cka-dialog-footer"></div>
+        ${this.options.resizable ? '<div class="cka-resizer"></div>' : ''}
       </div>
     `;
 
@@ -110,10 +110,10 @@ class CKAlightModalDialog {
     document.body.appendChild(this.container);
 
     // Store references to elements
-    const dialogEl = this.container.querySelector('.ck-alight-dialog');
-    const headerEl = this.container.querySelector('.ck-alight-dialog-header');
-    const contentEl = this.container.querySelector('.ck-alight-dialog-content');
-    const footerEl = this.container.querySelector('.ck-alight-dialog-footer');
+    const dialogEl = this.container.querySelector('.cka-dialog');
+    const headerEl = this.container.querySelector('.cka-dialog-header');
+    const contentEl = this.container.querySelector('.cka-dialog-content');
+    const footerEl = this.container.querySelector('.cka-dialog-footer');
 
     if (!dialogEl || !headerEl || !contentEl || !footerEl) {
       throw new Error('Failed to initialize dialog elements');
@@ -130,14 +130,14 @@ class CKAlightModalDialog {
 
   private setupEventListeners(): void {
     // Close button
-    const closeBtn = this.container.querySelector('.ck-alight-dialog-close');
+    const closeBtn = this.container.querySelector('.cka-dialog-close');
     if (closeBtn) {
       closeBtn.addEventListener('click', () => this.hide());
     }
 
     // Maximize button
     if (this.options.maximizable) {
-      const maxBtn = this.container.querySelector('.ck-alight-dialog-maximize');
+      const maxBtn = this.container.querySelector('.cka-dialog-maximize');
       if (maxBtn) {
         maxBtn.addEventListener('click', () => this.toggleMaximize());
       }
@@ -175,7 +175,7 @@ class CKAlightModalDialog {
 
     const handleMouseDown = (e: Event) => {
       if (!(e instanceof MouseEvent)) return;
-      if (e.target instanceof Element && e.target.closest('.ck-alight-dialog-header-icons')) return;
+      if (e.target instanceof Element && e.target.closest('.cka-dialog-header-icons')) return;
 
       isDragging = true;
       const rect = this.dialog.getBoundingClientRect();
@@ -218,7 +218,7 @@ class CKAlightModalDialog {
     let initialX: number;
     let initialY: number;
 
-    const resizer = this.container.querySelector('.ck-alight-resizer');
+    const resizer = this.container.querySelector('.cka-resizer');
     if (!resizer) return;
 
     const handleMouseDown = (e: Event) => {
@@ -308,7 +308,7 @@ class CKAlightModalDialog {
   }
 
   public setTitle(title: string): void {
-    const titleEl = this.container.querySelector('.ck-alight-dialog-title');
+    const titleEl = this.container.querySelector('.cka-dialog-title');
     if (titleEl) {
       titleEl.textContent = title;
     }

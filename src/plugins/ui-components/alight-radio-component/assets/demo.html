@@ -10,9 +10,9 @@
 
   <!-- Example Usage -->
   <form id="radioForm">
-    <ck-alight-radio-button name="group1" value="option1" label="Option 1" checked></ck-alight-radio-button>
-    <ck-alight-radio-button name="group1" value="option2" label="Option 2"></ck-alight-radio-button>
-    <ck-alight-radio-button name="group1" value="option3" label="Option 3" disabled></ck-alight-radio-button>
+    <cka-radio-button name="group1" value="option1" label="Option 1" checked></cka-radio-button>
+    <cka-radio-button name="group1" value="option2" label="Option 2"></cka-radio-button>
+    <cka-radio-button name="group1" value="option3" label="Option 3" disabled></cka-radio-button>
   </form>
 
   <script>
@@ -23,7 +23,7 @@
 
         // Create the template
         const wrapper = document.createElement('label');
-        wrapper.classList.add('ck-alight-radio-button');
+        wrapper.classList.add('cka-radio-button');
 
         // Handle 'disabled' attribute
         if (this.hasAttribute('disabled')) {
@@ -49,7 +49,7 @@
 
         // Create the custom radio icon
         const radioIcon = document.createElement('span');
-        radioIcon.classList.add('ck-alight-radio-icon');
+        radioIcon.classList.add('cka-radio-icon');
 
         // Create the label text
         const labelText = document.createElement('span');
@@ -79,7 +79,7 @@
             margin: 0.5rem 0;
           }
 
-          .ck-alight-radio-button {
+          .cka-radio-button {
             display: flex;
             align-items: center;
             cursor: pointer;
@@ -91,7 +91,7 @@
             transition: color 0.3s;
           }
 
-          .ck-alight-radio-button input[type="radio"] {
+          .cka-radio-button input[type="radio"] {
             position: absolute;
             opacity: 0;
             cursor: pointer;
@@ -99,7 +99,7 @@
             width: 0;
           }
 
-          .ck-alight-radio-button .ck-alight-radio-icon {
+          .cka-radio-button .cka-radio-icon {
             position: absolute;
             left: 0;
             top: 50%;
@@ -114,7 +114,7 @@
           }
 
           /* Outer Circle Animation */
-          .ck-alight-radio-button .ck-alight-radio-icon::after {
+          .cka-radio-button .cka-radio-icon::after {
             content: "";
             position: absolute;
             top: 50%;
@@ -129,42 +129,42 @@
           }
 
           /* Checked State */
-          .ck-alight-radio-button input[type="radio"]:checked + .ck-alight-radio-icon::after {
+          .cka-radio-button input[type="radio"]:checked + .cka-radio-icon::after {
             transform: translate(-50%, -50%) scale(1);
             opacity: 1;
           }
 
           /* Hover Effects */
-          .ck-alight-radio-button:hover .ck-alight-radio-icon {
+          .cka-radio-button:hover .cka-radio-icon {
             border-color: #005bb5;
           }
 
-          .ck-alight-radio-button:hover .label-text {
+          .cka-radio-button:hover .label-text {
             color: #005bb5;
           }
 
           /* Focus Styles for Accessibility */
-          .ck-alight-radio-button input[type="radio"]:focus + .ck-alight-radio-icon {
+          .cka-radio-button input[type="radio"]:focus + .cka-radio-icon {
             box-shadow: 0 0 0 3px rgba(0, 122, 217, 0.3);
           }
 
           /* Disabled State */
-          .ck-alight-radio-button.disabled {
+          .cka-radio-button.disabled {
             cursor: not-allowed;
             color: #a8a8a8;
           }
 
-          .ck-alight-radio-button.disabled .ck-alight-radio-icon {
+          .cka-radio-button.disabled .cka-radio-icon {
             border-color: #a8a8a8;
             background-color: #f5f5f5;
           }
 
-          .ck-alight-radio-button.disabled input[type="radio"]:checked + .ck-alight-radio-icon::after {
+          .cka-radio-button.disabled input[type="radio"]:checked + .cka-radio-icon::after {
             background-color: #a8a8a8;
           }
 
           /* Transition for Label Color */
-          .ck-alight-radio-button .label-text {
+          .cka-radio-button .label-text {
             transition: color 0.3s;
           }
         `;
@@ -192,10 +192,10 @@
           case 'disabled':
             if (newValue !== null) {
               this.radioInput.disabled = true;
-              this.shadowRoot.querySelector('.ck-alight-radio-button').classList.add('disabled');
+              this.shadowRoot.querySelector('.cka-radio-button').classList.add('disabled');
             } else {
               this.radioInput.disabled = false;
-              this.shadowRoot.querySelector('.ck-alight-radio-button').classList.remove('disabled');
+              this.shadowRoot.querySelector('.cka-radio-button').classList.remove('disabled');
             }
             break;
         }
@@ -230,11 +230,11 @@
     }
 
     // Define the custom element with the new name
-    window.customElements.define('ck-alight-radio-button', CKAlightRadioButton);
+    window.customElements.define('cka-radio-button', CKAlightRadioButton);
 
     // Example: Handling change events
     document.getElementById('radioForm').addEventListener('change', (e) => {
-      const selected = document.querySelector('ck-alight-radio-button[name="group1"] input[type="radio"]:checked');
+      const selected = document.querySelector('cka-radio-button[name="group1"] input[type="radio"]:checked');
       if (selected) {
         console.log('Selected Value:', selected.value);
       }

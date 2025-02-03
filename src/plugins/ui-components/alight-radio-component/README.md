@@ -34,8 +34,8 @@ To integrate the CK Alight Radio Button into your project, follow these steps:
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/ck-alight-radio-button.git
-cd ck-alight-radio-button
+git clone https://github.com/yourusername/cka-radio-button.git
+cd cka-radio-button
 ```
 
 ### 2. Install Dependencies
@@ -67,17 +67,17 @@ Add the bundled JavaScript file to your HTML. Ensure you use the `type="module"`
   
   <!-- Radio Button Group -->
   <form id="radioForm">
-    <ck-alight-radio-button name="group1" value="option1" label="Option 1" checked></ck-alight-radio-button>
-    <ck-alight-radio-button name="group1" value="option2" label="Option 2"></ck-alight-radio-button>
-    <ck-alight-radio-button name="group1" value="option3" label="Option 3" disabled></ck-alight-radio-button>
+    <cka-radio-button name="group1" value="option1" label="Option 1" checked></cka-radio-button>
+    <cka-radio-button name="group1" value="option2" label="Option 2"></cka-radio-button>
+    <cka-radio-button name="group1" value="option3" label="Option 3" disabled></cka-radio-button>
   </form>
 
   <!-- Include the bundled JavaScript -->
-  <script type="module" src="../dist/ck-alight-radio-button.js"></script>
+  <script type="module" src="../dist/cka-radio-button.js"></script>
 
   <script>
     document.getElementById('radioForm')?.addEventListener('change', (e) => {
-      const selected = document.querySelector('ck-alight-radio-button[name="group1"] input[type="radio"]:checked');
+      const selected = document.querySelector('cka-radio-button[name="group1"] input[type="radio"]:checked');
       if (selected) {
         console.log('Selected Value:', selected.value);
       }
@@ -91,18 +91,18 @@ Add the bundled JavaScript file to your HTML. Ensure you use the `type="module"`
 
 ### Project Structure
 ```
-ck-alight-radio-button/
+cka-radio-button/
 ├── src/
 │   ├── components/
-│   │   ├── ck-alight-radio-button.ts
-│   │   └── ck-alight-radio-button.scss
+│   │   ├── cka-radio-button.ts
+│   │   └── cka-radio-button.scss
 │   ├── index.html
 │   └── styles/
 │       └── main.scss
 ├── dist/
-│   ├── ck-alight-radio-button.js
+│   ├── cka-radio-button.js
 │   └── styles/
-│       └── ck-alight-radio-button.css
+│       └── cka-radio-button.css
 ├── tsconfig.json
 ├── webpack.config.js
 ├── package.json
@@ -118,7 +118,7 @@ The `package.json` includes several scripts to facilitate development and buildi
     "build": "webpack",
     "watch": "webpack --watch",
     "start": "webpack serve --open",
-    "compile-scss": "sass src/ui-components/ck-alight-radio-button.scss dist/styles/ck-alight-radio-button.css"
+    "compile-scss": "sass src/ui-components/cka-radio-button.scss dist/styles/cka-radio-button.css"
   }
 }
 ```
@@ -134,7 +134,7 @@ npm run start
 
 ## Customization
 
-Modify SCSS variables in `ck-alight-radio-button.scss` to change colors and styles.
+Modify SCSS variables in `cka-radio-button.scss` to change colors and styles.
 ```scss
 $radio-primary-color: #007ad9;
 $radio-hover-color: #005bb5;
@@ -145,7 +145,7 @@ $radio-disabled-color: #a8a8a8;
 Example HTML with custom CSS variables:
 ```html
 <style>
-  ck-alight-radio-button {
+  cka-radio-button {
     --radio-primary-color: #28a745;
   }
 </style>
@@ -160,7 +160,7 @@ Example HTML with custom CSS variables:
 
 Example of ARIA labels:
 ```html
-<ck-alight-radio-button name="group1" value="option1" checked aria-label="Option 1"></ck-alight-radio-button>
+<cka-radio-button name="group1" value="option1" checked aria-label="Option 1"></cka-radio-button>
 ```
 
 ## Contributing
@@ -170,8 +170,8 @@ Click the Fork button at the top right of the repository page.
 
 ### 2. Clone Your Fork
 ```bash
-git clone https://github.com/yourusername/ck-alight-radio-button.git
-cd ck-alight-radio-button
+git clone https://github.com/yourusername/cka-radio-button.git
+cd cka-radio-button
 ```
 
 ### 3. Create a New Branch

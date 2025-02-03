@@ -163,8 +163,8 @@ export class CkAlightCheckbox extends HTMLElement {
   }
 }
 
-if (!customElements.get('ck-alight-checkbox')) {
-  customElements.define('ck-alight-checkbox', CkAlightCheckbox);
+if (!customElements.get('cka-checkbox')) {
+  customElements.define('cka-checkbox', CkAlightCheckbox);
 }
 
 export default CkAlightCheckbox;

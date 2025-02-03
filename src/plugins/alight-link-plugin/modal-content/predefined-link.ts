@@ -56,11 +56,11 @@ function createCheckboxList(options: string[], filterType: keyof SelectedFilters
       <ul class="checkbox-list">
         ${options.map(option => `
           <li>
-            <ck-alight-checkbox 
+            <cka-checkbox 
               data-filter-type="${filterType}"
               data-value="${option}"
               ${selectedFilters[filterType].includes(option) ? 'initialvalue="true"' : ''}
-            >${option}</ck-alight-checkbox>
+            >${option}</cka-checkbox>
           </li>
         `).join('')}
       </ul>
@@ -127,11 +127,11 @@ export function getPredefinedLinkContent(page: number): string {
       .map(link => `
           <div class="cka-link-item" data-link-name="${link.predefinedLinkName}">
             <div class="radio-container">
-              <ck-alight-radio-button
+              <cka-radio-button
                 name="link-selection"
                 value="${link.predefinedLinkName}"
                 label=""
-              ></ck-alight-radio-button>
+              ></cka-radio-button>
             </div>
             <ul>
               <li><strong>${link.predefinedLinkName}</strong></li>
@@ -274,12 +274,12 @@ function attachEventListeners(container: HTMLElement): void {
   linkItems.forEach(item => {
     item.addEventListener('click', (event) => {
       // Prevent triggering if clicking directly on the radio button
-      if ((event.target as HTMLElement).closest('ck-alight-radio-button')) return;
+      if ((event.target as HTMLElement).closest('cka-radio-button')) return;
 
       const linkName = (event.currentTarget as HTMLElement).getAttribute('data-link-name');
       if (!linkName) return;
       // Find the radio button within this link item
-      const radio = (event.currentTarget as HTMLElement).querySelector('ck-alight-radio-button') as any;
+      const radio = (event.currentTarget as HTMLElement).querySelector('cka-radio-button') as any;
       if (radio) {
         // Set the radio button's checked state
         radio.checked = true;
@@ -288,7 +288,7 @@ function attachEventListeners(container: HTMLElement): void {
         radio.dispatchEvent(new Event('change', { bubbles: true }));
         radio.dispatchEvent(new Event('input', { bubbles: true }));
 
-        container.querySelectorAll('ck-alight-radio-button').forEach(otherRadio => {
+        container.querySelectorAll('cka-radio-button').forEach(otherRadio => {
           if (otherRadio !== radio) {
             (otherRadio as any).checked = false;
           }
@@ -306,7 +306,7 @@ function attachEventListeners(container: HTMLElement): void {
   const paginationDiv = container.querySelector('#pagination');
 
   // Checkbox listeners
-  container.querySelectorAll('ck-alight-checkbox').forEach(checkbox => {
+  container.querySelectorAll('cka-checkbox').forEach(checkbox => {
     checkbox.addEventListener('change', handleCheckboxChange);
   });
 

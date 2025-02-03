@@ -2,29 +2,29 @@
 @use './_mixins.scss' as mixins;
 
 // Flex Layout for Search Bar
-.ck-alight-search-input {
+.cka-search-input {
   align-items: center;
   display: flex;
   margin-bottom: 1rem;
   justify-content: space-between;
 
-  .ck-alight-search-left-col {
+  .cka-search-left-col {
     margin-right: 0.5rem;
   }
 
-  .ck-alight-search-center-col {
+  .cka-search-center-col {
     flex-grow: 1;
     margin-right: 0.5rem;
   }
 }
 
 @media screen and (max-width: var(--media-query-768)) {
-  .ck-alight-search-input {
+  .cka-search-input {
     flex-wrap: wrap;
   }
 }
 
-.ck-alight-search-main {
+.cka-search-main {
   display: flex;
 
   @media screen and (max-width: var(--media-query-576)) {
@@ -32,7 +32,7 @@
   }
 }
 
-.ck-alight-search-input {
+.cka-search-input {
   align-items: center;
   background-color: var(--neutral-white);
   border-radius: 5rem;
@@ -44,7 +44,7 @@
   //   padding: mixins.toRem(9) mixins.toRem(16);
 }
 
-.ck-alight-search-main {
+.cka-search-main {
 
   .p-input-icon-left,
   .p-input-icon-right {
@@ -73,15 +73,15 @@
     }
   }
 
-  button.ck-alight-search-center-col {
+  button.cka-search-center-col {
     min-width: mixins.toRem(160);
   }
 }
 
 // Styles are handled in _buttons.scss
-//.ck-alight-advanced-search-btn {}
+//.cka-advanced-search-btn {}
 
-.ck-alight-clear-input {
+.cka-clear-input {
   background-color: transparent;
   background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g id="times"><path d="M13.06,12l4.42-4.42a.75.75,0,1,0-1.06-1.06L12,10.94,7.58,6.52A.75.75,0,0,0,6.52,7.58L10.94,12,6.52,16.42a.75.75,0,0,0,0,1.06.75.75,0,0,0,1.06,0L12,13.06l4.42,4.42a.75.75,0,0,0,1.06,0,.75.75,0,0,0,0-1.06Z"/></g></svg>');
   background-position: center;

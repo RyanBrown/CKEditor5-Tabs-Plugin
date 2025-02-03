@@ -62,10 +62,10 @@ export class CKAlightRadioButton extends HTMLElement {
         const name = this.radioInput.name;
         if (name) {
           // Find all other radios in the group and uncheck them
-          document.querySelectorAll(`ck-alight-radio-button input[name="${name}"]`).forEach(input => {
+          document.querySelectorAll(`cka-radio-button input[name="${name}"]`).forEach(input => {
             if (input !== this.radioInput && input instanceof HTMLInputElement) {
               input.checked = false;
-              (input.closest('ck-alight-radio-button') as CKAlightRadioButton)?.removeAttribute('checked');
+              (input.closest('cka-radio-button') as CKAlightRadioButton)?.removeAttribute('checked');
             }
           });
         }
@@ -120,10 +120,10 @@ export class CKAlightRadioButton extends HTMLElement {
       // Uncheck other radios in the group
       const name = this.radioInput.name;
       if (name) {
-        document.querySelectorAll(`ck-alight-radio-button input[name="${name}"]`).forEach(input => {
+        document.querySelectorAll(`cka-radio-button input[name="${name}"]`).forEach(input => {
           if (input !== this.radioInput && input instanceof HTMLInputElement) {
             input.checked = false;
-            (input.closest('ck-alight-radio-button') as CKAlightRadioButton)?.removeAttribute('checked');
+            (input.closest('cka-radio-button') as CKAlightRadioButton)?.removeAttribute('checked');
           }
         });
       }
@@ -152,4 +152,4 @@ export class CKAlightRadioButton extends HTMLElement {
 }
 
 // Define the custom element
-customElements.define('ck-alight-radio-button', CKAlightRadioButton);
+customElements.define('cka-radio-button', CKAlightRadioButton);

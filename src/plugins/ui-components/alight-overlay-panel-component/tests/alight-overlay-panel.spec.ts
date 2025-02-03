@@ -9,11 +9,11 @@
 //   beforeEach(() => {
 //     // Create DOM elements dynamically
 //     document.body.innerHTML = `
-//       <button class="ck-alight-triggerBtn" data-id="1">Open Panel</button>
-//       <div class="ck-alight-overlay-panel" data-id="1">
+//       <button class="cka-triggerBtn" data-id="1">Open Panel</button>
+//       <div class="cka-overlay-panel" data-id="1">
 //         <header>
 //           <span>Panel Title</span>
-//           <button class="ck-alight-closeBtn">Close</button>
+//           <button class="cka-closeBtn">Close</button>
 //         </header>
 //         <main>
 //           <p>This is a dynamic overlay panel.</p>
@@ -22,9 +22,9 @@
 //     `;
 
 //     // Get references to dynamically created elements
-//     triggerButton = document.querySelector(".ck-alight-triggerBtn") as HTMLButtonElement;
-//     overlayElement = document.querySelector(".ck-alight-overlay-panel") as HTMLDivElement;
-//     closeButton = document.querySelector(".ck-alight-closeBtn") as HTMLButtonElement;
+//     triggerButton = document.querySelector(".cka-triggerBtn") as HTMLButtonElement;
+//     overlayElement = document.querySelector(".cka-overlay-panel") as HTMLDivElement;
+//     closeButton = document.querySelector(".cka-closeBtn") as HTMLButtonElement;
 
 //     // Initialize the overlay panel instance
 //     overlayPanel = new AlightOverlayPanel();
@@ -41,7 +41,7 @@
 
 //   it("should open the overlay panel when the trigger button is clicked", () => {
 //     triggerButton.click(); // Simulate button click
-//     expect(overlayElement.classList.contains("ck-alight-active")).toBeTrue();
+//     expect(overlayElement.classList.contains("cka-active")).toBeTrue();
 //     expect(overlayElement.style.opacity).toBe("1");
 //     expect(overlayElement.style.visibility).toBe("visible");
 //   });
@@ -49,7 +49,7 @@
 //   it("should close the overlay panel when the close button is clicked", () => {
 //     triggerButton.click(); // Open the panel first
 //     closeButton.click(); // Click close button
-//     expect(overlayElement.classList.contains("ck-alight-active")).toBeFalse();
+//     expect(overlayElement.classList.contains("cka-active")).toBeFalse();
 //     expect(overlayElement.style.opacity).toBe("0");
 //     expect(overlayElement.style.visibility).toBe("hidden");
 //   });
@@ -57,7 +57,7 @@
 //   it("should close the panel when clicking outside the panel", () => {
 //     triggerButton.click(); // Open panel
 //     document.body.click(); // Simulate clicking outside
-//     expect(overlayElement.classList.contains("ck-alight-active")).toBeFalse();
+//     expect(overlayElement.classList.contains("cka-active")).toBeFalse();
 //     expect(overlayElement.style.opacity).toBe("0");
 //     expect(overlayElement.style.visibility).toBe("hidden");
 //   });
@@ -65,7 +65,7 @@
 //   it("should not close the panel when clicking inside it", () => {
 //     triggerButton.click(); // Open panel
 //     overlayElement.click(); // Click inside panel
-//     expect(overlayElement.classList.contains("ck-alight-active")).toBeTrue();
+//     expect(overlayElement.classList.contains("cka-active")).toBeTrue();
 //   });
 
 //   it("should reposition the panel correctly on window resize", () => {

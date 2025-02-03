@@ -93,4 +93,4 @@ export class CKAlightCard extends HTMLElement {
   }
 }
 
-customElements.define('ck-alight-card', CKAlightCard);
+customElements.define('cka-card', CKAlightCard);
