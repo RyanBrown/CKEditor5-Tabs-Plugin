@@ -2,10 +2,9 @@
 import predefinedLinksData from './json/predefined-test-data.json';
 import { AlightOverlayPanel } from '../../ui-components/alight-overlay-panel-component/alight-overlay-panel';
 import { CKALightSelectMenu } from '../../ui-components/alight-select-menu-component/alight-select-menu-component';
-import './../../alight-link-plugin/styles/predefined-link.scss';
-import './../../alight-link-plugin/styles/search.scss';
 import '../../ui-components/alight-checkbox-component/alight-checkbox-component';
 import '../../ui-components/alight-radio-component/alight-radio-component';
+import './../../alight-link-plugin/styles/predefined-link.scss';
 
 // Define interfaces for type safety
 interface SelectedFilters {
@@ -14,6 +13,11 @@ interface SelectedFilters {
   pageType: string[];
   domain: string[];
 }
+
+const overlayPanelConfig = {
+  width: '600px',  // Optional: Add your desired width
+  height: 'auto'   // Optional: Add your desired height
+};
 
 // State variables to manage data, search query, and current page
 let filteredLinksData = [...predefinedLinksData.predefinedLinksDetails];
@@ -29,6 +33,7 @@ let selectedFilters: SelectedFilters = {
 
 // Constants
 const pageSize = 5;  // Number of items per page
+const advancedSearchTriggerId = 'advanced-search-trigger-image';
 
 // Gets unique values from an array of objects for a specific key
 function getUniqueValues(data: any[], key: string): string[] {
@@ -74,13 +79,23 @@ export function getPredefinedLinkContent(page: number): string {
   const pageTypeOptions = getUniqueValues(predefinedLinksData.predefinedLinksDetails, 'pageType');
   const domainOptions = getUniqueValues(predefinedLinksData.predefinedLinksDetails, 'domain');
 
+  // Create the search container markup
+  const searchContainerMarkup = `
+    <div id="search-container" class="cka-search-container">
+      <input type="text" id="search-input" placeholder="Search by link name..." value="${currentSearchQuery}" />
+      <button id="reset-search-btn">Reset</button>
+      <button id="${advancedSearchTriggerId}" data-panel-id="advanced-search-panel">Advanced Search</button>
+      <button id="search-btn">Search</button>
+    </div>
+  `;
+
   // Create the advanced search panel markup
   const advancedSearchPanelMarkup = `
     <div class="cka-overlay-panel" data-id="advanced-search-panel">
-    <header>
-      <h3>Advanced Search</h3>
-      <button class="cka-close-btn">×</button>
-    </header>
+      <header>
+        <h3>Advanced Search</h3>
+        <button class="cka-close-btn">×</button>
+      </header>
       <main class="advanced-search-content">
         <div class="search-filters">
           ${createCheckboxList(baseOrClientSpecificOptions, 'baseOrClientSpecific', 'Base/Client Specific')}
@@ -136,12 +151,7 @@ export function getPredefinedLinkContent(page: number): string {
   `;
 
   return `
-    <div id="search-container" class="cka-search-container">
-      <input type="text" id="search-input" placeholder="Search by link name..." value="${currentSearchQuery}" />
-      <button id="reset-search-btn">Reset</button>
-      <button class="cka-trigger-btn" data-id="advanced-search-panel">Advanced Search</button>
-      <button id="search-btn">Search</button>
-    </div>
+    ${searchContainerMarkup}
     ${advancedSearchPanelMarkup}
     ${linksMarkup || '<p>No results found.</p>'}
     ${paginationMarkup}
@@ -230,8 +240,11 @@ export function renderContent(container: HTMLElement): void {
   const content = getPredefinedLinkContent(currentPage);
   container.innerHTML = content;
 
-  // Initialize overlay panel
-  new AlightOverlayPanel();
+  // Initialize overlay panel with specific trigger ID and optional config
+  const trigger = document.getElementById(advancedSearchTriggerId);
+  if (trigger) {
+    new AlightOverlayPanel(advancedSearchTriggerId, overlayPanelConfig);
+  }
 
   // Calculate total pages for select menu
   const totalPages = Math.ceil(filteredLinksData.length / pageSize) || 1;
@@ -245,7 +258,6 @@ export function renderContent(container: HTMLElement): void {
 
 // Attaches event listeners to the container
 function attachEventListeners(container: HTMLElement): void {
-  // Link item click handlers
   // Link item click handlers
   const linkItems = container.querySelectorAll('.cka-link-item');
   linkItems.forEach(item => {

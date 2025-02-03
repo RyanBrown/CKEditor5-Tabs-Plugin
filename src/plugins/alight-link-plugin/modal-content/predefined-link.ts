@@ -1,53 +1,128 @@
-// src/plugins/alight-link-plugin/modal-content/predefined-link.ts
+// src/plugins/alight-image-plugin/modal-content/predefined-link.ts
 import predefinedLinksData from './json/predefined-test-data.json';
-import './../styles/predefined-link.scss';
-import './../styles/search.scss';
 import { AlightOverlayPanel } from '../../ui-components/alight-overlay-panel-component/alight-overlay-panel';
+import { CKALightSelectMenu } from '../../ui-components/alight-select-menu-component/alight-select-menu-component';
+import '../../ui-components/alight-checkbox-component/alight-checkbox-component';
+import '../../ui-components/alight-radio-component/alight-radio-component';
+import './../../alight-link-plugin/styles/predefined-link.scss';
+
+// Define interfaces for type safety
+interface SelectedFilters {
+  [key: string]: string[];
+  baseOrClientSpecific: string[];
+  pageType: string[];
+  domain: string[];
+}
+
+const overlayPanelConfig = {
+  width: '600px',  // Optional: Add your desired width
+  height: 'auto'   // Optional: Add your desired height
+};
 
 // State variables to manage data, search query, and current page
 let filteredLinksData = [...predefinedLinksData.predefinedLinksDetails];
 let currentSearchQuery = '';
 let currentPage = 1;
-let overlayPanel: AlightOverlayPanel | null = null;
+
+// Initialize selected filters with empty arrays
+let selectedFilters: SelectedFilters = {
+  baseOrClientSpecific: [],
+  pageType: [],
+  domain: []
+};
 
 // Constants
 const pageSize = 5;  // Number of items per page
+const advancedSearchTriggerId = 'advanced-search-trigger-image';
 
-// Initialize the overlay panel
-function initializeOverlayPanel(): void {
-  if (!overlayPanel) {
-    overlayPanel = new AlightOverlayPanel();
-  }
+// Gets unique values from an array of objects for a specific key
+function getUniqueValues(data: any[], key: string): string[] {
+  return Array.from(new Set(data.map(item => item[key]))).sort();
 }
 
-/**
- * Generates the HTML content for the current filtered and paginated data.
- * @param page - The current page number
- * @returns string - HTML content for the current page
- */
+// Creates a checkbox list for filter options
+function createCheckboxList(options: string[], filterType: keyof SelectedFilters, title: string): string {
+  return `
+    <div class="filter-section">
+      <h4>${title}</h4>
+      <ul class="checkbox-list">
+        ${options.map(option => `
+          <li>
+            <ck-alight-checkbox 
+              data-filter-type="${filterType}"
+              data-value="${option}"
+              ${selectedFilters[filterType].includes(option) ? 'initialvalue="true"' : ''}
+            >${option}</ck-alight-checkbox>
+          </li>
+        `).join('')}
+      </ul>
+    </div>
+  `;
+}
+
+// Generates the HTML content for the current filtered and paginated data
 export function getPredefinedLinkContent(page: number): string {
-  console.log('Generating content for page:', page);
   const totalItems = filteredLinksData.length;
   const totalPages = Math.ceil(totalItems / pageSize) || 1;
 
   // Ensure the current page is valid
   page = Math.max(1, Math.min(page, totalPages));
-  console.log('Total items:', totalItems, 'Total pages:', totalPages, 'Adjusted page:', page);
 
   // Calculate the slice of data for the current page
   const startIndex = (page - 1) * pageSize;
   const endIndex = Math.min(startIndex + pageSize, totalItems);
-  console.log('Slice indices:', startIndex, 'to', endIndex);
 
   const currentPageData = filteredLinksData.slice(startIndex, endIndex);
-  console.log('Items for current page:', currentPageData.length);
+
+  // Get unique values for filters
+  const baseOrClientSpecificOptions = getUniqueValues(predefinedLinksData.predefinedLinksDetails, 'baseOrClientSpecific');
+  const pageTypeOptions = getUniqueValues(predefinedLinksData.predefinedLinksDetails, 'pageType');
+  const domainOptions = getUniqueValues(predefinedLinksData.predefinedLinksDetails, 'domain');
+
+  // Create the search container markup
+  const searchContainerMarkup = `
+    <div id="search-container" class="cka-search-container">
+      <input type="text" id="search-input" placeholder="Search by link name..." value="${currentSearchQuery}" />
+      <button id="reset-search-btn">Reset</button>
+      <button id="${advancedSearchTriggerId}" data-panel-id="advanced-search-panel">Advanced Search</button>
+      <button id="search-btn">Search</button>
+    </div>
+  `;
+
+  // Create the advanced search panel markup
+  const advancedSearchPanelMarkup = `
+    <div class="cka-overlay-panel" data-id="advanced-search-panel">
+      <header>
+        <h3>Advanced Search</h3>
+        <button class="cka-close-btn">×</button>
+      </header>
+      <main class="advanced-search-content">
+        <div class="search-filters">
+          ${createCheckboxList(baseOrClientSpecificOptions, 'baseOrClientSpecific', 'Base/Client Specific')}
+          ${createCheckboxList(pageTypeOptions, 'pageType', 'Page Type')}
+          ${createCheckboxList(domainOptions, 'domain', 'Domain')}
+        </div>
+        <div class="form-group">
+          <input type="text" id="advanced-search-input" placeholder="Search by link name..." />
+        </div>
+      </main>
+      <footer>
+        <button id="apply-advanced-search">Apply Filters</button>
+        <button id="clear-advanced-search">Clear Filters</button>
+      </footer>
+    </div>
+  `;
 
   // Generate HTML for link items
   const linksMarkup = currentPageData
     .map((link: any) => `
-      <div class="link-item">
-        <div>
-          <ck-alight-radio-button name="link-selection" value="${link.predefinedLinkName}" label="${link.predefinedLinkName}"></ck-alight-radio-button>
+      <div class="cka-link-item" data-link-name="${link.predefinedLinkName}">
+        <div class="radio-container">
+          <ck-alight-radio-button
+            name="link-selection"
+            value="${link.predefinedLinkName}"
+            label=""
+          ></ck-alight-radio-button>
         </div>
         <ul>
           <li><strong>${link.predefinedLinkName}</strong></li>
@@ -64,138 +139,212 @@ export function getPredefinedLinkContent(page: number): string {
     `)
     .join('');
 
-  // Generate pagination controls
+  // Generate pagination controls with select menu
   const paginationMarkup = `
-    <div id="pagination">
+    <article id="pagination" class="cka-pagination">
       <button id="first-page" data-page="1" ${page === 1 ? 'disabled' : ''}>First</button>
       <button id="prev-page" data-page="${page - 1}" ${page === 1 ? 'disabled' : ''}>Previous</button>
-      ${Array.from({ length: totalPages }, (_, i) =>
-    `<button class="page-btn ${i + 1 === page ? 'active' : ''}" data-page="${i + 1}">
-          ${i + 1}
-        </button>`
-  ).join('')}
+      <div id="page-select-container" class="cka-select-menu-wrap"></div>
       <button id="next-page" data-page="${page + 1}" ${page === totalPages ? 'disabled' : ''}>Next</button>
       <button id="last-page" data-page="${totalPages}" ${page === totalPages ? 'disabled' : ''}>Last</button>
-    </div>
+    </article>
   `;
 
-  // Return complete HTML structure
   return `
-    <div id="search-container">
-      <input type="text" id="search-input" placeholder="Search by link name..." value="${currentSearchQuery}" />
-      <button class="triggerBtn" data-id="1">Open Panel 1</button>
-      <button id="search-btn">Search</button>
-      <button id="reset-search-btn">Reset</button>
-
-      <div class="overlay-panel hidden" data-id="1">
-        <header>
-          <span>Panel Title</span>
-          <button class="closeBtn">Close</button>
-        </header>
-        <main>
-          <p>This is the overlay panel content.</p>
-        </main>
-        <footer>
-          <button class="closeBtn">Close</button>
-        </footer>
-      </div>
-    </div>
+    ${searchContainerMarkup}
+    ${advancedSearchPanelMarkup}
     ${linksMarkup || '<p>No results found.</p>'}
     ${paginationMarkup}
   `;
 }
 
-// Renders the filtered and paginated content into the container.
-// Document ready handler
-function onDocumentReady(): void {
-  initializeOverlayPanel();
+// Initialize the page select menu
+function initializePageSelect(container: HTMLElement, currentPage: number, totalPages: number): void {
+  const pageSelectContainer = container.querySelector('#page-select-container') as HTMLElement;
+  if (!pageSelectContainer) return;
+
+  const pageOptions = Array.from({ length: totalPages }, (_, i) => ({
+    label: `Page ${i + 1} of ${totalPages}`,
+    value: i + 1
+  }));
+
+  const pageSelect = new CKALightSelectMenu({
+    options: pageOptions,
+    value: currentPage,
+    placeholder: `Page ${currentPage} of ${totalPages}`,
+    onChange: (value) => {
+      if (value && typeof value === 'number') {
+        currentPage = value;
+        renderContent(container);
+      }
+    }
+  });
+
+  pageSelectContainer.innerHTML = '';
+  pageSelect.mount(pageSelectContainer);
 }
 
-// Add document ready listener
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', onDocumentReady);
-} else {
-  onDocumentReady();
+// Applies all active filters to the data
+function applyFilters(): void {
+  filteredLinksData = predefinedLinksData.predefinedLinksDetails.filter((link: any) => {
+    const nameMatch = currentSearchQuery ?
+      link.predefinedLinkName.toLowerCase().includes(currentSearchQuery.toLowerCase()) :
+      true;
+
+    const baseOrClientSpecificMatch = selectedFilters.baseOrClientSpecific.length === 0 ||
+      selectedFilters.baseOrClientSpecific.includes(link.baseOrClientSpecific);
+
+    const pageTypeMatch = selectedFilters.pageType.length === 0 ||
+      selectedFilters.pageType.includes(link.pageType);
+
+    const domainMatch = selectedFilters.domain.length === 0 ||
+      selectedFilters.domain.includes(link.domain);
+
+    return nameMatch && baseOrClientSpecificMatch && pageTypeMatch && domainMatch;
+  });
 }
 
-/**
- * Filters the data based on the search query.
- * @param query - The search query string
- */
-export function handleSearch(query: string): void {
-  console.log('Handling search for query:', query);
-  currentSearchQuery = query.toLowerCase().trim();
+// Handles checkbox change events
+function handleCheckboxChange(event: Event): void {
+  const checkbox = event.target as any;
+  if (!checkbox || !('checked' in checkbox)) return;
 
-  // Filter the data based on search query
-  filteredLinksData = currentSearchQuery
-    ? predefinedLinksData.predefinedLinksDetails.filter((link: any) =>
-      link.predefinedLinkName.toLowerCase().includes(currentSearchQuery)
-    )
-    : [...predefinedLinksData.predefinedLinksDetails];
+  const filterType = checkbox.dataset.filterType as keyof SelectedFilters;
+  const value = checkbox.dataset.value;
 
-  console.log('Filtered results:', filteredLinksData.length);
+  if (!filterType || !value) return;
 
-  // Reset to the first page and render
-  currentPage = 1;
+  if (checkbox.checked) {
+    if (!selectedFilters[filterType].includes(value)) {
+      selectedFilters[filterType].push(value);
+    }
+  } else {
+    selectedFilters[filterType] = selectedFilters[filterType].filter(v => v !== value);
+  }
 }
 
-/**
- * Resets the search and displays all data.
- */
+// Resets all filters and search criteria
 export function resetSearch(): void {
-  console.log('Resetting search');
   currentSearchQuery = '';
+  selectedFilters = {
+    baseOrClientSpecific: [],
+    pageType: [],
+    domain: []
+  };
   filteredLinksData = [...predefinedLinksData.predefinedLinksDetails];
   currentPage = 1;
 }
 
-/**
- * Renders the filtered and paginated content into the container.
- * @param container - The HTMLElement to render content into
- */
+// Renders the filtered and paginated content into the container
 export function renderContent(container: HTMLElement): void {
-  console.log('Rendering content for page:', currentPage);
   const content = getPredefinedLinkContent(currentPage);
-  console.log('Content generated, updating DOM');
   container.innerHTML = content;
-  console.log('DOM updated, attaching event listeners');
+
+  // Initialize overlay panel with specific trigger ID and optional config
+  const trigger = document.getElementById(advancedSearchTriggerId);
+  if (trigger) {
+    new AlightOverlayPanel(advancedSearchTriggerId, overlayPanelConfig);
+  }
+
+  // Calculate total pages for select menu
+  const totalPages = Math.ceil(filteredLinksData.length / pageSize) || 1;
+
+  // Initialize the page select menu
+  initializePageSelect(container, currentPage, totalPages);
 
   // Attach event listeners after content is injected
   attachEventListeners(container);
 }
 
-/**
- * Attaches event listeners to search and pagination controls.
- * Uses event delegation for better performance and to handle dynamically added elements.
- * @param container - The HTMLElement containing the modal's content
- */
+// Attaches event listeners to the container
 function attachEventListeners(container: HTMLElement): void {
-  // Search button listener
-  const searchBtn = container.querySelector('#search-btn');
-  const searchInput = container.querySelector('#search-input') as HTMLInputElement | null;
-  const resetSearchBtn = container.querySelector('#reset-search-btn');
+  // Link item click handlers
+  const linkItems = container.querySelectorAll('.cka-link-item');
+  linkItems.forEach(item => {
+    item.addEventListener('click', (event: Event) => {
+      // Prevent triggering if clicking directly on the radio button
+      if ((event.target as HTMLElement).closest('ck-alight-radio-button')) {
+        return;
+      }
 
-  searchBtn?.addEventListener('click', () => {
-    if (searchInput) handleSearch(searchInput.value);
-    renderContent(container); // Re-render content after search
+      const linkItem = event.currentTarget as HTMLElement;
+      const linkName = linkItem.getAttribute('data-link-name');
+      if (linkName) {
+        // Find the radio button within this link item
+        const radio = linkItem.querySelector('ck-alight-radio-button') as any;
+        if (radio) {
+          // Set the radio button's checked state
+          radio.checked = true;
+          radio.value = linkName;
+          // Dispatch both change and input events to ensure proper state updates
+          radio.dispatchEvent(new Event('change', { bubbles: true }));
+          radio.dispatchEvent(new Event('input', { bubbles: true }));
+
+          // Uncheck all other radio buttons
+          const otherRadios = container.querySelectorAll('ck-alight-radio-button');
+          otherRadios.forEach(otherRadio => {
+            if (otherRadio !== radio) {
+              (otherRadio as any).checked = false;
+            }
+          });
+        }
+      }
+    });
   });
 
+  // Search functionality
+  const searchBtn = container.querySelector('#search-btn');
+  const searchInput = container.querySelector('#search-input') as HTMLInputElement;
+  const resetSearchBtn = container.querySelector('#reset-search-btn');
+  const applyAdvancedSearch = container.querySelector('#apply-advanced-search');
+  const clearAdvancedSearch = container.querySelector('#clear-advanced-search');
+
+  // Add checkbox change listeners
+  const checkboxes = container.querySelectorAll('ck-alight-checkbox');
+  checkboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', handleCheckboxChange);
+  });
+
+  // Search button click handler
+  if (searchBtn instanceof HTMLElement) {
+    searchBtn.addEventListener('click', () => {
+      currentSearchQuery = searchInput?.value || '';
+      applyFilters();
+      renderContent(container);
+    });
+  }
+
+  // Search input enter key handler
+  if (searchInput instanceof HTMLInputElement) {
+    searchInput.addEventListener('keydown', (event: KeyboardEvent) => {
+      if (event.key === 'Enter' && searchBtn instanceof HTMLElement) {
+        event.preventDefault();
+        searchBtn.click();
+      }
+    });
+  }
+
+  // Reset button handler
   resetSearchBtn?.addEventListener('click', () => {
     resetSearch();
     if (searchInput) searchInput.value = '';
-    renderContent(container); // Re-render content after reset
+    renderContent(container);
   });
 
-  // Input listener for live search (optional)
-  searchInput?.addEventListener('input', (event) => {
-    const target = event.target as HTMLInputElement;
-    handleSearch(target.value);
-    renderContent(container); // Re-render content after input
+  // Advanced search handlers
+  applyAdvancedSearch?.addEventListener('click', () => {
+    applyFilters();
+    renderContent(container);
   });
 
-  // Unified pagination button handler using event delegation
+  clearAdvancedSearch?.addEventListener('click', () => {
+    resetSearch();
+    renderContent(container);
+  });
+
+  // Pagination handlers
   const paginationDiv = container.querySelector('#pagination');
-  paginationDiv?.addEventListener('click', (event) => {
+  paginationDiv?.addEventListener('click', (event: Event) => {
     const target = event.target as HTMLElement;
     if (target.tagName !== 'BUTTON') return;
 
@@ -203,29 +352,14 @@ function attachEventListeners(container: HTMLElement): void {
     if (!pageAttr) return;
 
     const page = Number(pageAttr);
-    console.log('Button clicked:', target.id || 'page button', 'Page:', page);
-
-    if (!page) {
-      console.log('Invalid page number');
-      return;
-    }
+    if (!page) return;
 
     const totalPages = Math.ceil(filteredLinksData.length / pageSize);
-    console.log('Current page:', currentPage, 'Total pages:', totalPages);
+    if (page < 1 || page > totalPages) return;
 
-    // Validate the page number
-    if (page < 1 || page > totalPages) {
-      console.log('Page out of range');
-      return;
-    }
-
-    // Only update if it's a different page
     if (page !== currentPage) {
-      console.log('Updating to page:', page);
       currentPage = page;
-      renderContent(container); // Re-render content for the new page
-    } else {
-      console.log('Already on page:', page);
+      renderContent(container);
     }
   });
 }

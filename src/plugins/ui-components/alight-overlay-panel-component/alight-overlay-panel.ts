@@ -12,8 +12,10 @@ export class AlightOverlayPanel {
   private currentPanel: HTMLDivElement | null = null;
   private zIndex: number = 1000;
   private configs: Map<string, PanelConfig> = new Map();
+  private triggerId: string;
 
-  constructor(config?: PanelConfig) {
+  constructor(triggerId: string, config?: PanelConfig) {
+    this.triggerId = triggerId;
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => this.initialize(config));
     } else {
@@ -22,33 +24,44 @@ export class AlightOverlayPanel {
   }
 
   private initialize(defaultConfig?: PanelConfig): void {
-    const buttons = document.querySelectorAll('.cka-trigger-btn');
-    const panels = document.querySelectorAll('.cka-overlay-panel');
+    // Get trigger button by ID
+    const triggerButton = document.getElementById(this.triggerId);
+    if (!triggerButton) {
+      console.warn(`Trigger button with ID '${this.triggerId}' not found`);
+      return;
+    }
 
-    panels.forEach((panel: Element) => {
-      const id = panel.getAttribute('data-id');
-      if (id) {
-        this.panels.set(id, panel as HTMLDivElement);
+    // Find associated panel using data-panel-id attribute
+    const panelId = triggerButton.getAttribute('data-panel-id');
+    if (!panelId) {
+      console.warn(`No panel ID specified for trigger '${this.triggerId}'`);
+      return;
+    }
 
-        // Get panel-specific config from data attributes
-        const panelConfig: PanelConfig = {
-          width: panel.getAttribute('data-width') || defaultConfig?.width,
-          height: panel.getAttribute('data-height') || defaultConfig?.height,
-        };
+    const panel = document.querySelector(`.cka-overlay-panel[data-id="${panelId}"]`);
+    if (panel instanceof HTMLDivElement) {
+      this.panels.set(panelId, panel);
 
-        this.configs.set(id, panelConfig);
-        this.applyConfig(panel as HTMLDivElement, panelConfig);
-      }
-    });
+      // Get panel-specific config from data attributes
+      const panelConfig: PanelConfig = {
+        width: panel.getAttribute('data-width') || defaultConfig?.width,
+        height: panel.getAttribute('data-height') || defaultConfig?.height,
+      };
 
-    buttons.forEach((button: Element) => {
-      button.addEventListener('click', (event: Event) => this.toggle(event));
-    });
+      this.configs.set(panelId, panelConfig);
+      this.applyConfig(panel, panelConfig);
 
-    document.querySelectorAll('.cka-close-btn').forEach((btn: Element) => {
+      // Add click listener to trigger button
+      triggerButton.addEventListener('click', (event: Event) => this.toggle(event));
+    }
+
+    // Set up close buttons
+    const closeButtons = document.querySelectorAll(`.cka-overlay-panel[data-id="${panelId}"] .cka-close-btn`);
+    closeButtons.forEach((btn: Element) => {
       btn.addEventListener('click', (event: Event) => this.hide(event));
     });
 
+    // Global event listeners
     document.addEventListener('click', (event: Event) => this.handleClickOutside(event));
     window.addEventListener('resize', () => this.handleWindowResize());
     window.addEventListener('scroll', () => this.handleWindowResize(), true);
@@ -67,7 +80,7 @@ export class AlightOverlayPanel {
   private toggle(event: Event): void {
     event.stopPropagation();
     const button = event.currentTarget as HTMLButtonElement;
-    const panelId = button.getAttribute('data-id');
+    const panelId = button.getAttribute('data-panel-id');
 
     if (!panelId || !this.panels.has(panelId)) return;
 
@@ -154,7 +167,7 @@ export class AlightOverlayPanel {
     if (
       this.currentPanel &&
       !this.currentPanel.contains(target) &&
-      !target.closest('.cka-trigger-btn')
+      target.id !== this.triggerId
     ) {
       this.hidePanel(this.currentPanel);
     }
@@ -184,3 +197,18 @@ export class AlightOverlayPanel {
     }
   }
 }
+
+// Example usage:
+/*
+<button id="advancedSearchTrigger" data-panel-id="advanced-search-panel">
+  Advanced Search
+</button>
+
+<div class="cka-overlay-panel" data-id="advanced-search-panel">
+  <!-- Panel content -->
+</div>
+
+const advancedSearchPanel = new AlightOverlayPanel('advancedSearchTrigger', {
+  width: '400px'
+});
+*/
