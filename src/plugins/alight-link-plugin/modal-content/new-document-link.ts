@@ -108,8 +108,8 @@ export class NewDocumentLinkManager implements ILinkManager {
   // Creates the button group for the form.
   // @returns The HTML string for the button group.
   private createButtonsHTML(): string {
-    const continueBtnHTML = `<button id="continue-btn" type="button" class="button">Continue</button>`;
-    const cancelBtnHTML = `<button id="cancel-btn" type="button" class="button-outlined">Cancel</button>`;
+    const cancelBtnHTML = `<button id="cancel-btn" type="button" class="cka-button cka-button-rounded cka-button-outlined">Cancel</button>`;
+    const continueBtnHTML = `<button id="continue-btn" type="button" class="cka-button cka-button-rounded">Create Document</button>`;
     return `<div class="button-group">${continueBtnHTML + cancelBtnHTML}</div>`;
   }
 
