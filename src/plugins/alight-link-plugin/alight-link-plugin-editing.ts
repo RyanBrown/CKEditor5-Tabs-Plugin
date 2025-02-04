@@ -129,12 +129,22 @@ export default class AlightLinkPluginEditing extends Plugin {
           {
             label: 'Cancel',
             className: 'cka-button cka-button-rounded cka-button-outlined',
-            onClick: () => this.handleCancel()
+            onClick: () => {
+              this.newDocumentLinkManager.resetSearch();
+              this.handleCancel();
+            }
           },
           {
-            label: 'Continue',
+            label: 'Create Document',
             className: 'cka-button cka-button-rounded',
-            onClick: () => this.handleUpload()
+            onClick: () => {
+              if (this.newDocumentLinkManager.submitForm()) {
+                const formData = this.newDocumentLinkManager.getFormData();
+                // Here you would typically do something with the form data
+                console.log('Document created:', formData);
+                this.handleUpload();
+              }
+            }
           }
         ],
         loadContent: async () => this.newDocumentLinkManager.getLinkContent(1),
