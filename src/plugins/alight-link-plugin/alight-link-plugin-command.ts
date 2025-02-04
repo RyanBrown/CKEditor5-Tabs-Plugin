@@ -127,28 +127,31 @@ export class AlightLinkPluginCommand extends Command {
 
   private insertLink(destination: string): void {
     const selection = this.editor.model.document.selection;
-    const range = selection.getFirstRange();
-
-    if (!range) return;
 
     this.editor.model.change(writer => {
-      // If there's selected text, wrap it in a link
-      if (!range.isCollapsed) {
-        const linkElement = writer.createElement('link', {
-          href: destination,
-          target: '_blank'
-        });
-        writer.wrap(range, linkElement);
+      if (selection.isCollapsed) {
+        // If no text is selected, insert a new "Link" text with the link attribute
+        const position = selection.getFirstPosition();
+        if (!position) return;
+
+        const attributes = {
+          linkHref: destination,
+          linkTarget: '_blank'
+        };
+        const text = writer.createText('Link', attributes);
+        writer.insert(text, position);
       } else {
-        // If no selection, insert new text with link
-        const position = range.start;
-        const linkElement = writer.createElement('link', {
-          href: destination,
-          target: '_blank'
-        });
-        const textNode = writer.createText('Link');
-        writer.insert(textNode, linkElement);
-        writer.insert(linkElement, position);
+        // If text is selected, apply the link attributes to the selection
+        const range = selection.getFirstRange();
+        if (!range) return;
+
+        writer.setAttributes(
+          {
+            linkHref: destination,
+            linkTarget: '_blank'
+          },
+          range
+        );
       }
     });
   }

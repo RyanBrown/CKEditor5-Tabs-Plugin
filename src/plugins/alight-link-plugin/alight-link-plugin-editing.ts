@@ -14,6 +14,10 @@ export default class AlightLinkPluginEditing extends Plugin {
   private publicWebsiteLinkManager!: PublicIntranetLinkManager;
   private intranetLinkManager!: PublicIntranetLinkManager;
 
+  public static get pluginName() {
+    return 'AlightLinkPluginEditing';
+  }
+
   init() {
     const editor = this.editor;
 
@@ -147,7 +151,6 @@ export default class AlightLinkPluginEditing extends Plugin {
             onClick: () => {
               if (this.newDocumentLinkManager.submitForm()) {
                 const formData = this.newDocumentLinkManager.getFormData();
-                // Here you would typically do something with the form data
                 console.log('Document created:', formData);
                 this.handleUpload();
               }
@@ -165,67 +168,58 @@ export default class AlightLinkPluginEditing extends Plugin {
 
     // Allow links on text
     schema.extend('$text', {
-      allowAttributes: ['link', 'linkTarget']
-    });
-
-    // Register the link element in the schema
-    schema.register('link', {
-      allowWhere: '$text',
-      allowContentOf: '$text',
-      allowAttributes: ['href', 'target']
+      allowAttributes: ['linkHref', 'linkTarget']
     });
   }
 
   private setupConverters(): void {
     const conversion = this.editor.conversion;
 
-    // Model to view conversion for data pipeline
-    conversion.for('dataDowncast').elementToElement({
-      model: 'link',
-      view: (modelElement, { writer }) => {
-        const href = modelElement.getAttribute('href');
-        const target = modelElement.getAttribute('target');
-
-        return writer.createContainerElement('a', {
+    // Model to view conversion for data pipeline (saving/loading)
+    conversion.for('dataDowncast').attributeToElement({
+      model: {
+        key: 'linkHref',
+        name: 'a'
+      },
+      view: (href, { writer }) => {
+        return writer.createAttributeElement('a', {
+          class: 'ck-link',
           href,
-          target: target || '_blank'
+          target: '_blank'
+        }, {
+          priority: 5
         });
       }
     });
 
-    // Model to view conversion for editing pipeline
-    conversion.for('editingDowncast').elementToElement({
-      model: 'link',
-      view: (modelElement, { writer }) => {
-        const href = modelElement.getAttribute('href');
-        const target = modelElement.getAttribute('target');
-
-        const linkElement = writer.createContainerElement('a', {
+    // Model to view conversion for editing pipeline (editing in editor)
+    conversion.for('editingDowncast').attributeToElement({
+      model: {
+        key: 'linkHref',
+        name: 'a'
+      },
+      view: (href, { writer }) => {
+        return writer.createAttributeElement('a', {
+          class: 'ck-link',
           href,
-          target: target || '_blank',
-          class: 'ck-link'
+          target: '_blank'
+        }, {
+          priority: 5
         });
-
-        return linkElement;
       }
     });
 
     // View to model conversion
-    conversion.for('upcast').elementToElement({
+    conversion.for('upcast').elementToAttribute({
       view: {
         name: 'a',
         attributes: {
           href: true
         }
       },
-      model: (viewElement, { writer }) => {
-        const href = viewElement.getAttribute('href');
-        const target = viewElement.getAttribute('target');
-
-        return writer.createElement('link', {
-          href,
-          target: target || '_blank'
-        });
+      model: {
+        key: 'linkHref',
+        value: (viewElement: any) => viewElement.getAttribute('href')
       }
     });
   }
