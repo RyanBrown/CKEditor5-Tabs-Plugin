@@ -1,4 +1,5 @@
 // src/plugins/ui-components/alight-card-component/alight-card-component.ts
+import './styles/alight-card-component.scss';
 
 export class CKAlightCard extends HTMLElement {
   private wrapper: HTMLDivElement;

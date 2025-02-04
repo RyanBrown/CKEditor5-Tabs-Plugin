@@ -1,5 +1,6 @@
 // src/plugins/alight-link-plugin/modal-content/new-document-link.ts
 import { ILinkManager } from './ILinkManager';
+import { CKAlightCard } from '../../ui-components/alight-card-component/alight-card-component';
 
 export class NewDocumentLinkManager implements ILinkManager {
   private container: HTMLElement | null = null;
@@ -13,70 +14,109 @@ export class NewDocumentLinkManager implements ILinkManager {
       documentType: 'article'
     };
 
+  private createFormGroup(labelText: string, inputElement: HTMLElement): HTMLDivElement {
+    const formGroup = document.createElement('div');
+    formGroup.className = 'form-group';
+
+    const label = document.createElement('label');
+    label.className = 'cka-input-label';
+    label.textContent = labelText;
+
+    // Set the label's 'for' attribute if the input has an id
+    if (inputElement instanceof HTMLElement && inputElement.id) {
+      label.setAttribute('for', inputElement.id);
+    }
+
+    formGroup.appendChild(label);
+    formGroup.appendChild(inputElement);
+
+    return formGroup;
+  }
+
+  private createTitleInput(): HTMLDivElement {
+    const titleInput = document.createElement('input');
+    titleInput.id = 'doc-title';
+    titleInput.type = 'text';
+    titleInput.className = 'cka-input-text';
+    titleInput.value = this.formData.title;
+    titleInput.required = true;
+
+    titleInput.addEventListener('input', (e) => {
+      this.formData.title = (e.target as HTMLInputElement).value;
+    });
+
+    return this.createFormGroup('Document Title', titleInput);
+  }
+
+  private createTypeSelect(): HTMLDivElement {
+    const typeSelect = document.createElement('select');
+    typeSelect.id = 'doc-type';
+    typeSelect.className = 'cka-input-select';
+
+    const options = [
+      { value: 'article', label: 'Article' },
+      { value: 'policy', label: 'Policy' },
+      { value: 'procedure', label: 'Procedure' },
+      { value: 'form', label: 'Form' }
+    ];
+
+    options.forEach(option => {
+      const optionElement = document.createElement('option');
+      optionElement.value = option.value;
+      optionElement.textContent = option.label;
+      optionElement.selected = this.formData.documentType === option.value;
+      typeSelect.appendChild(optionElement);
+    });
+
+    typeSelect.addEventListener('change', (e) => {
+      this.formData.documentType = (e.target as HTMLSelectElement).value;
+    });
+
+    return this.createFormGroup('Document Type', typeSelect);
+  }
+
+  private createDescriptionTextarea(): HTMLDivElement {
+    const descriptionTextarea = document.createElement('textarea');
+    descriptionTextarea.id = 'doc-description';
+    descriptionTextarea.className = 'cka-input-textarea';
+    descriptionTextarea.rows = 4;
+    descriptionTextarea.value = this.formData.description;
+
+    descriptionTextarea.addEventListener('input', (e) => {
+      this.formData.description = (e.target as HTMLTextAreaElement).value;
+    });
+
+    return this.createFormGroup('Description', descriptionTextarea);
+  }
+
+  private createCardElement(page: number): HTMLElement {
+    const card = new CKAlightCard();
+    card.setAttribute('header', 'Create New Document');
+
+    const formDiv = document.createElement('div');
+    formDiv.className = 'new-document-form';
+
+    // Add form elements
+    formDiv.appendChild(this.createTitleInput());
+    formDiv.appendChild(this.createTypeSelect());
+    formDiv.appendChild(this.createDescriptionTextarea());
+
+    // Get the content div and append to it directly
+    const contentDiv = card.querySelector('.cka-card-content');
+    if (contentDiv) {
+      contentDiv.appendChild(formDiv);
+    }
+    return card;
+  }
+
   getLinkContent(page: number): string {
-    return `
-      <cka-card header="Create New Document">
-        <div class="new-document-form">
-          <div class="form-group">
-            <label for="doc-title" class="cka-input-label">Document Title</label>
-            <input
-              id="doc-title"
-              type="text"
-              class="cka-input-text"
-              value="${this.formData.title}"
-              required
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="doc-type" class="cka-input-label">Document Type</label>
-            <select id="doc-type" class="cka-input-select">
-              <option value="article" ${this.formData.documentType === 'article' ? 'selected' : ''}>Article</option>
-              <option value="policy" ${this.formData.documentType === 'policy' ? 'selected' : ''}>Policy</option>
-              <option value="procedure" ${this.formData.documentType === 'procedure' ? 'selected' : ''}>Procedure</option>
-              <option value="form" ${this.formData.documentType === 'form' ? 'selected' : ''}>Form</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="doc-description" class="cka-input-label">Description</label>
-            <textarea
-              id="doc-description"
-              class="cka-input-textarea"
-              rows="4"
-            >${this.formData.description}</textarea>
-          </div>
-        </div>
-      </cka-card>
-    `;
+    const card = this.createCardElement(page);
+    return card.outerHTML;
   }
 
   renderContent(container: HTMLElement): void {
     this.container = container;
     container.innerHTML = this.getLinkContent(1);
-
-    // Add event listeners for form inputs
-    const titleInput = container.querySelector('#doc-title') as HTMLInputElement;
-    const typeSelect = container.querySelector('#doc-type') as HTMLSelectElement;
-    const descriptionTextarea = container.querySelector('#doc-description') as HTMLTextAreaElement;
-
-    if (titleInput) {
-      titleInput.addEventListener('input', (e) => {
-        this.formData.title = (e.target as HTMLInputElement).value;
-      });
-    }
-
-    if (typeSelect) {
-      typeSelect.addEventListener('change', (e) => {
-        this.formData.documentType = (e.target as HTMLSelectElement).value;
-      });
-    }
-
-    if (descriptionTextarea) {
-      descriptionTextarea.addEventListener('input', (e) => {
-        this.formData.description = (e.target as HTMLTextAreaElement).value;
-      });
-    }
   }
 
   resetSearch(): void {
@@ -91,7 +131,6 @@ export class NewDocumentLinkManager implements ILinkManager {
     }
   }
 
-  // Method to validate the form data
   validateForm(): { isValid: boolean; message?: string } {
     if (!this.formData.title.trim()) {
       return {
@@ -103,12 +142,10 @@ export class NewDocumentLinkManager implements ILinkManager {
     return { isValid: true };
   }
 
-  // Method to get the current form data
   getFormData() {
     return { ...this.formData };
   }
 
-  // Method to submit the form - can be called from the modal's continue button
   submitForm(): boolean {
     const validation = this.validateForm();
 
@@ -119,9 +156,7 @@ export class NewDocumentLinkManager implements ILinkManager {
       return false;
     }
 
-    // Here you would typically handle the form submission
     console.log('Form submitted with data:', this.formData);
-
     return true;
   }
 }
