@@ -1,12 +1,11 @@
 // src/plugins/alight-link-plugin/modal-content/new-document-link.ts
-/**
- * This file defines the NewDocumentLinkManager class which renders a document upload form
- * using innerHTML. It now leverages the custom card (<cka-card>) and checkbox (<cka-checkbox>)
- * components for rendering the UI.
- *
- * Note: Since innerHTML is used, any event listeners attached directly to rendered HTML elements
- * will not persist when the HTML is re-parsed. We reattach event listeners in attachEventListeners().
- */
+
+// This file defines the NewDocumentLinkManager class which renders a document upload form
+// using innerHTML. It now leverages the custom card (<cka-card>), checkbox (<cka-checkbox>),
+// and select (<cka-light-select-menu>) components for rendering the UI.
+
+// Note: Since innerHTML is used, any event listeners attached directly to rendered HTML elements
+// will not persist when the HTML is re-parsed. We reattach event listeners in attachEventListeners().
 
 import { ILinkManager } from './ILinkManager';
 import { CKAlightCard } from '../../ui-components/alight-card-component/alight-card-component';
@@ -30,12 +29,10 @@ export class NewDocumentLinkManager implements ILinkManager {
     showInSearch: true
   };
 
-  /**
-   * Creates a form group with an optional title and wraps the provided content inside a container.
-   * @param title - The title of the form group.
-   * @param content - The HTML string for the group content.
-   * @returns A string representing the form group.
-   */
+  // Creates a form group with an optional title and wraps the provided content inside a container.
+  // @param title - The title of the form group.
+  // @param content - The HTML string for the group content.
+  // @returns A string representing the form group.
   private createFormGroupHTML(title: string, content: string): string {
     let groupHTML = `<div class="form-group">`;
     if (title) {
@@ -46,52 +43,41 @@ export class NewDocumentLinkManager implements ILinkManager {
     return groupHTML;
   }
 
-  /**
-   * Creates a language selection dropdown.
-   * @returns The HTML string for the language select form group.
-   */
+  // Creates a language selection dropdown using the custom CKALightSelectMenu component.
+  // @returns The HTML string for the language select form group.
   private createLanguageSelectHTML(): string {
-    const options = [
-      { value: 'en', label: 'English (default)' },
-      { value: 'fr', label: 'French' },
-      { value: 'es', label: 'Spanish' }
-    ];
-    let optionsHTML = '';
-    options.forEach(option => {
-      optionsHTML += `<option value="${option.value}">${option.label}</option>`;
-    });
-    const selectHTML = `<select id="language-select">${optionsHTML}</select>`;
+    const optionsHTML = `
+      <option value="en">English (default)</option>
+      <option value="fr">French</option>
+      <option value="es">Spanish</option>
+    `;
+    // The custom select component is used here.
+    const selectHTML = `<cka-light-select-menu id="language-select" initialvalue="en">${optionsHTML}</cka-light-select-menu>`;
     return this.createFormGroupHTML('Language', selectHTML);
   }
 
-  /**
-   * Creates the file input for document selection.
-   * @returns The HTML string for the file input form group.
-   */
+  // Creates the file input for document selection.
+  // @returns The HTML string for the file input form group.
   private createFileInputHTML(): string {
-    const fileInputHTML = `<input id="file-input" type="file" accept=".doc,.docx,.xls,.xlsx,.xlsm,.ppt,.pptx,.pdf" />`;
+    const fileInputHTML = `<input id="file-input" class="cka-input-text" type="file" accept=".doc,.docx,.xls,.xlsx,.xlsm,.ppt,.pptx,.pdf" />`;
     const supportedTypesHTML = `<p><em class="control-footer"><strong>Supported file types:</strong> .doc, .docx, .xls, .xlsx, .xlsm, .ppt, .pptx, .pdf</em></p>`;
     return this.createFormGroupHTML('Document & Title', fileInputHTML + supportedTypesHTML);
   }
 
-  /**
-   * Creates the title input for the document.
-   * @returns The HTML string for the title input form group.
-   */
+  // Creates the title input for the document.
+  // @returns The HTML string for the title input form group.
   private createTitleInputHTML(): string {
-    const titleInputHTML = `<input id="title-input" type="text" name="documentTitle" maxlength="250" />`;
+    const titleInputHTML = `<input id="title-input" class="cka-input-text" type="text" name="documentTitle" maxlength="250" />`;
     const charCountHTML = `<span id="char-count" class="control-footer">250 characters remaining</span>`;
-    const noteHTML = `<div class="control-footer"><strong>Note:</strong> Special characters such as (\\, ], :, >, /, <, [, |, ?, ", *, comma) are not allowed.</div>`;
+    const noteHTML = `<div class="control-footer"><strong>Note:</strong> Special characters such as (\\, ], :, >, /, <, [, |, ?, ", //, comma) are not allowed.</div>`;
     return this.createFormGroupHTML('', titleInputHTML + charCountHTML + noteHTML);
   }
 
-  /**
-   * Creates the search criteria inputs including tags, description, and a link to choose categories.
-   * @returns The HTML string for the search criteria.
-   */
+  // Creates the search criteria inputs including tags, description, and a link to choose categories.
+  // @returns The HTML string for the search criteria.
   private createSearchCriteriaHTML(): string {
-    const tagsInputHTML = `<input id="tags-input" type="text" placeholder="Use , for separator" />`;
-    const descriptionHTML = `<textarea id="description" rows="5" cols="30"></textarea>`;
+    const tagsInputHTML = `<input id="tags-input" class="cka-input-text" type="text" placeholder="Use , for separator" />`;
+    const descriptionHTML = `<textarea id="description" class="cka-input-text" rows="5" cols="30"></textarea>`;
     const categoriesHTML = `<a id="choose-categories" class="linkStyle" href="#">Choose Categories</a>`;
     return `<div>
       ${this.createFormGroupHTML('Search Criteria', tagsInputHTML)}
@@ -100,14 +86,12 @@ export class NewDocumentLinkManager implements ILinkManager {
     </div>`;
   }
 
-  /**
-   * Creates a checkbox group using the custom <cka-checkbox> component.
-   * @param title - The title for the group.
-   * @param label - The label text for the checkbox.
-   * @param checked - Whether the checkbox is initially checked.
-   * @param footer - Optional footer text.
-   * @returns The HTML string for the checkbox group.
-   */
+  // Creates a checkbox group using the custom <cka-checkbox> component.
+  // @param title - The title for the group.
+  // @param label - The label text for the checkbox.
+  // @param checked - Whether the checkbox is initially checked.
+  // @param footer - Optional footer text.
+  // @returns The HTML string for the checkbox group.
   private createCheckboxGroupHTML(title: string, label: string, checked: boolean, footer?: string): string {
     // Generate an ID from the label for event attachment.
     const checkboxId = `${label.replace(/\s+/g, '-').toLowerCase()}-checkbox`;
@@ -121,21 +105,17 @@ export class NewDocumentLinkManager implements ILinkManager {
     return this.createFormGroupHTML(title, checkboxHTML + footerHTML);
   }
 
-  /**
-   * Creates the button group for the form.
-   * @returns The HTML string for the button group.
-   */
+  // Creates the button group for the form.
+  // @returns The HTML string for the button group.
   private createButtonsHTML(): string {
     const continueBtnHTML = `<button id="continue-btn" type="button" class="button">Continue</button>`;
     const cancelBtnHTML = `<button id="cancel-btn" type="button" class="button-outlined">Cancel</button>`;
     return `<div class="button-group">${continueBtnHTML + cancelBtnHTML}</div>`;
   }
 
-  /**
-   * Creates the <cka-card> element and appends the form as an HTML string.
-   * @param page - The page number (not used in this example).
-   * @returns The HTML string representing the card element with the form.
-   */
+  // Creates the <cka-card> element and appends the form as an HTML string.
+  // @param page - The page number (not used in this example).
+  // @returns The HTML string representing the card element with the form.
   private createCardElementHTML(page: number): string {
     // Build the inner form HTML from the various pieces.
     const formContent = `
@@ -164,21 +144,17 @@ export class NewDocumentLinkManager implements ILinkManager {
     </cka-card>`;
   }
 
-  /**
-   * Returns the complete HTML string representation of the card element.
-   * @param page - The page number.
-   * @returns The HTML string for the card.
-   */
+  // Returns the complete HTML string representation of the card element.
+  // @param page - The page number.
+  // @returns The HTML string for the card.
   getLinkContent(page: number): string {
     return this.createCardElementHTML(page);
   }
 
-  /**
-   * Renders the content into the provided container using innerHTML.
-   * Note: Using innerHTML means that event listeners added in the HTML string will not be preserved.
-   * You may need to use event delegation or reattach events after rendering.
-   * @param container - The container where the form will be rendered.
-   */
+  // Renders the content into the provided container using innerHTML.
+  // Note: Using innerHTML means that event listeners added in the HTML string will not be preserved.
+  // You may need to use event delegation or reattach events after rendering.
+  // @param container - The container where the form will be rendered.
   renderContent(container: HTMLElement): void {
     this.container = container;
     container.innerHTML = this.getLinkContent(1);
@@ -186,17 +162,16 @@ export class NewDocumentLinkManager implements ILinkManager {
     this.attachEventListeners();
   }
 
-  /**
-   * Reattaches event listeners for elements that were created via innerHTML.
-   * This is necessary because innerHTML does not preserve event listeners.
-   */
+  // Reattaches event listeners for elements that were created via innerHTML.
+  // This is necessary because innerHTML does not preserve event listeners.
   private attachEventListeners(): void {
-    // Language select change event
-    const languageSelect = document.getElementById('language-select') as HTMLSelectElement | null;
+    // Language select change event for CKALightSelectMenu.
+    const languageSelect = document.getElementById('language-select');
     if (languageSelect) {
-      languageSelect.value = this.formData.language;
+      // Set the initial value.
+      (languageSelect as any).value = this.formData.language;
       languageSelect.addEventListener('change', (e) => {
-        this.formData.language = (e.target as HTMLSelectElement).value;
+        this.formData.language = (e.target as any).value;
       });
     }
 
@@ -276,9 +251,7 @@ export class NewDocumentLinkManager implements ILinkManager {
     }
   }
 
-  /**
-   * Resets the form to its initial state and re-renders the content.
-   */
+  // Resets the form to its initial state and re-renders the content.
   resetSearch(): void {
     this.formData = {
       language: 'en',
@@ -297,10 +270,8 @@ export class NewDocumentLinkManager implements ILinkManager {
     }
   }
 
-  /**
-   * Validates the form data.
-   * @returns An object indicating whether the form is valid and an optional message.
-   */
+  // Validates the form data.
+  // @returns An object indicating whether the form is valid and an optional message.
   validateForm(): { isValid: boolean; message?: string } {
     if (!this.formData.file) {
       return { isValid: false, message: 'Please choose a file' };
@@ -311,17 +282,13 @@ export class NewDocumentLinkManager implements ILinkManager {
     return { isValid: true };
   }
 
-  /**
-   * Returns a copy of the form data.
-   */
+  // Returns a copy of the form data.
   getFormData() {
     return { ...this.formData };
   }
 
-  /**
-   * Submits the form after validation.
-   * @returns True if submission is successful, false otherwise.
-   */
+  // Submits the form after validation.
+  // @returns True if submission is successful, false otherwise.
   submitForm(): boolean {
     const validation = this.validateForm();
     if (!validation.isValid) {
