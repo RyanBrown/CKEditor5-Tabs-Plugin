@@ -1,5 +1,4 @@
-// src/plugins/ui-components/alight-card-component/styles/alight-card-component.scss
-@use './../../../../styles/mixins' as mixins;
+@use './mixins' as mixins;
 
 $card-background: var(--neutral-white);
 $card-border-color: #dee2e6;
@@ -18,12 +17,15 @@ cka-card {
 }
 
 .cka-card {
-  background: $card-background;
-  border-radius: $card-border-radius;
+  @include mixins.component-box-shadow;
+  background: var(--neutral-white);
+  border-radius: .625rem;
   box-shadow: $card-shadow;
   color: inherit;
-  margin-bottom: 2rem;
+  // margin-bottom: 2rem;
   position: relative;
+
+  padding: 2rem;
 
   .cka-card-header {
     align-items: center;

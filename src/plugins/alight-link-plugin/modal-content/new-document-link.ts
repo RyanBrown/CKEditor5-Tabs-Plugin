@@ -8,7 +8,6 @@
 // will not persist when the HTML is re-parsed. We reattach event listeners in attachEventListeners().
 
 import { ILinkManager } from './ILinkManager';
-import { CKAlightCard } from '../../ui-components/alight-card-component/alight-card-component';
 import { CKALightSelectMenu } from '../../ui-components/alight-select-menu-component/alight-select-menu-component';
 import '../../ui-components/alight-checkbox-component/alight-checkbox-component';
 
@@ -34,19 +33,27 @@ export class NewDocumentLinkManager implements ILinkManager {
   // @param title - The title of the form group.
   // @param content - The HTML string for the group content.
   // @returns A string representing the form group.
-  private createFormGroupHTML(title: string, content: string): string {
-    let groupHTML = `<div class="form-group">`;
+  private createFormGroupHTML(title: string, content: string, errorMessage?: string): string {
+    let groupHTML = '<div class="form-group">';
     if (title) {
       groupHTML += `<h3>${title}</h3>`;
     }
-    // Wrap content in a div for styling purposes.
-    groupHTML += `<div class="form-group-content">${content}</div></div>`;
+    // Wrap content in a cka-card component
+    groupHTML += `<div class="cka-card">
+      <div class="form-group-content">
+        ${content}
+        ${errorMessage ? `<div class="error-message">${errorMessage}</div>` : ''}
+      </div>
+    </div></div>`;
     return groupHTML;
   }
 
   private createLanguageSelectContainer(): string {
-    // Create a container for the select menu to be mounted later
-    return this.createFormGroupHTML('Language', '<div id="language-select-container"></div>');
+    return this.createFormGroupHTML(
+      'Language',
+      '<div id="language-select-container"></div>',
+      'Choose a language to continue.'
+    );
   }
 
   private initializeLanguageSelect() {
@@ -81,57 +88,69 @@ export class NewDocumentLinkManager implements ILinkManager {
   }
 
   private createFileInputHTML(): string {
-    const fileInputHTML = `<input id="file-input" class="cka-input-text" type="file" accept=".doc,.docx,.xls,.xlsx,.xlsm,.ppt,.pptx,.pdf" />`;
-    const supportedTypesHTML = `<p><em class="control-footer"><strong>Supported file types:</strong> .doc, .docx, .xls, .xlsx, .xlsm, .ppt, .pptx, .pdf</em></p>`;
-    return this.createFormGroupHTML('Document & Title', fileInputHTML + supportedTypesHTML);
+    const fileInputHTML = `
+      <input id="file-input" class="cka-input-text" type="file" 
+        accept=".doc,.docx,.xls,.xlsx,.xlsm,.ppt,.pptx,.pdf" />
+      <p><em class="control-footer">
+        <strong>Supported file types:</strong> .doc, .docx, .xls, .xlsx, .xlsm, .ppt, .pptx, .pdf
+      </em></p>`;
+    return this.createFormGroupHTML(
+      'Document & Title',
+      fileInputHTML,
+      'Choose a file.'
+    );
   }
 
-  // Creates the title input for the document.
-  // @returns The HTML string for the title input form group.
   private createTitleInputHTML(): string {
-    const titleInputHTML = `<input id="title-input" class="cka-input-text" type="text" name="documentTitle" maxlength="250" value="${this.formData.documentTitle}" />`;
-    const charCountHTML = `<span id="char-count" class="control-footer">${250 - this.formData.documentTitle.length} characters remaining</span>`;
-    const noteHTML = `<div class="control-footer"><strong>Note:</strong> Special characters such as (\\, ], :, >, /, <, [, |, ?, ", //, comma) are not allowed.</div>`;
-    return this.createFormGroupHTML('', titleInputHTML + charCountHTML + noteHTML);
+    const titleInputHTML = `
+      <input id="title-input" class="cka-input-text" type="text" 
+        name="documentTitle" maxlength="250" value="${this.formData.documentTitle}" />
+      <span id="char-count" class="control-footer">${250 - this.formData.documentTitle.length} characters remaining</span>
+      <div class="control-footer">
+        <strong>Note:</strong> Special characters such as (\, ], :, >, /, <, [, |, ?, ", *, comma) are not allowed.
+      </div>`;
+    return this.createFormGroupHTML(
+      '',
+      titleInputHTML,
+      'Enter title to continue.'
+    );
   }
 
-  // Creates the search criteria inputs including tags, description, and a link to choose categories.
-  // @returns The HTML string for the search criteria.
   private createSearchCriteriaHTML(): string {
-    const tagsInputHTML = `<input id="tags-input" class="cka-input-text" type="text" placeholder="Use , for separator" value="${this.formData.searchTags.join(', ')}" />`;
-    const descriptionHTML = `<textarea id="description" class="cka-input-text" rows="5" cols="30">${this.formData.description}</textarea>`;
-    const categoriesHTML = `<a id="choose-categories" class="linkStyle" href="#">Choose Categories</a>`;
-    return `<div>
-      ${this.createFormGroupHTML('Search Criteria', tagsInputHTML)}
-      ${this.createFormGroupHTML('', descriptionHTML)}
-      ${this.createFormGroupHTML('', categoriesHTML)}
-    </div>`;
+    const tagsCard = this.createFormGroupHTML(
+      'Search Criteria',
+      `<input id="tags-input" class="cka-input-text" type="text" 
+        placeholder="Use , for separator" value="${this.formData.searchTags.join(', ')}" />
+      <span class="control-footer">Add search tags to improve the relevancy of search results. 
+        Type your one-word search tag and then press Enter.</span>
+      <div class="control-footer"><strong>Note:</strong> Special characters such as (&, #, @, +, /, %, >, <, [, ], \\) are not allowed.</div>`
+    );
+
+    const descriptionCard = this.createFormGroupHTML(
+      '',
+      `<textarea id="description" class="cka-input-text" rows="5" cols="30">${this.formData.description}</textarea>`,
+      'Enter a description to continue.'
+    );
+
+    const categoriesCard = this.createFormGroupHTML(
+      '',
+      `<a id="choose-categories" class="linkStyle" href="#">Choose Categories</a>
+      <div class="control-footer"><strong>Note:</strong> Categories apply to both search and Content Library.</div>`
+    );
+
+    return `<div>${tagsCard}${descriptionCard}${categoriesCard}</div>`;
   }
 
-  // Creates a checkbox group using the custom <cka-checkbox> component.
-  // @param title - The title for the group.
-  // @param label - The label text for the checkbox.
-  // @param checked - Whether the checkbox is initially checked.
-  // @param footer - Optional footer text.
-  // @returns The HTML string for the checkbox group.
-  private createCheckboxGroupHTML(title: string, label: string, checked: boolean, footer?: string): string {
-    // Generate an ID from the label for event attachment.
+  private createCheckboxGroupHTML(title: string, label: string, checked: boolean, footer?: string, errorMessage?: string): string {
     const checkboxId = `${label.replace(/\s+/g, '-').toLowerCase()}-checkbox`;
-    // Create the checkbox using the custom component. The initial value is set via the "initialvalue" attribute.
-    const checkboxHTML = `<cka-checkbox id="${checkboxId}" initialvalue="${checked}">${label}</cka-checkbox>`;
-    let footerHTML = '';
-    if (footer) {
-      footerHTML = `<div class="control-footer">${footer}</div>`;
-    }
-    // Wrap everything in a form group container.
-    return this.createFormGroupHTML(title, checkboxHTML + footerHTML);
+    const checkboxHTML = `
+      <cka-checkbox id="${checkboxId}" initialvalue="${checked}">${label}</cka-checkbox>
+      ${footer ? `<div class="control-footer">${footer}</div>` : ''}`;
+
+    return this.createFormGroupHTML(title, checkboxHTML, errorMessage);
   }
 
-  // Creates the <cka-card> element and appends the form as an HTML string.
-  // @param page - The page number (not used in this example).
-  // @returns The HTML string representing the card element with the form.
   private createCardElementHTML(page: number): string {
-    // Build the inner form HTML from the various pieces.
     const formContent = `
       ${this.createLanguageSelectContainer()}
       ${this.createFileInputHTML()}
@@ -143,23 +162,16 @@ export class NewDocumentLinkManager implements ILinkManager {
       'Search Results',
       'Show in Search Results (optional)',
       this.formData.showInSearch,
-      'If this document matches a user\'s search criteria, checking this box makes it eligible to appear in the search results.'
+      'If this document matches a user\'s search criteria, checking this box makes it eligible to appear in the search results.',
+      'Choose show in search results (optional) to continue. The document needs to appear as a search result, as it is accessible from the Content Library.'
     )}
+      <p><b>Note:</b> Updates will not be reflected in Alight Worklife search results in QA/QC until tomorrow.</p>
     `;
 
-    // Use the custom card component.
-    return `<cka-card header="New Document">
-      <div class="cka-card-content">
-        <form novalidate>
-          ${formContent}
-        </form>
-      </div>
-    </cka-card>`;
+    return `<form novalidate>${formContent}</form>`;
   }
 
-  // Returns the complete HTML string representation of the card element.
-  // @param page - The page number.
-  // @returns The HTML string for the card.
+  // Rest of the class implementation remains the same...
   getLinkContent(page: number): string {
     return this.createCardElementHTML(page);
   }
