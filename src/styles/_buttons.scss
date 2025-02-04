@@ -7,7 +7,9 @@
   border: 1px solid var(--primary);
   color: var(--neutral-white);
   cursor: pointer;
+  font-family: var(--font-family-base);
   font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
   padding: mixins.toRem(10) mixins.toRem(16);
   line-height: mixins.toRem(21);
   transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
