@@ -1,8 +1,13 @@
+// src/plugins/alight-link-plugin/modal-content/new-document-link.ts
+
 import { ILinkManager } from './ILinkManager';
 import { CKAlightCard } from '../../ui-components/alight-card-component/alight-card-component';
 
 export class NewDocumentLinkManager implements ILinkManager {
+  // Reference to the container element where the form is rendered.
   private container: HTMLElement | null = null;
+
+  // Holds the state of the form data.
   private formData = {
     language: 'en',
     file: null as File | null,
@@ -15,6 +20,12 @@ export class NewDocumentLinkManager implements ILinkManager {
     showInSearch: true
   };
 
+  /**
+   * Creates a form group with an optional title and wraps the provided content inside a card.
+   * @param title - The title of the form group.
+   * @param content - The HTMLElement to be included in the group.
+   * @returns A div element containing the form group.
+   */
   private createFormGroup(title: string, content: HTMLElement): HTMLDivElement {
     const group = document.createElement('div');
     if (title) {
@@ -31,6 +42,10 @@ export class NewDocumentLinkManager implements ILinkManager {
     return group;
   }
 
+  /**
+   * Creates a language selection dropdown.
+   * @returns A div element containing the language select form group.
+   */
   private createLanguageSelect(): HTMLDivElement {
     const select = document.createElement('select');
     const options = [
@@ -54,6 +69,9 @@ export class NewDocumentLinkManager implements ILinkManager {
     return this.createFormGroup('Language', select);
   }
 
+
+  // Creates the file input for document selection.
+  // @returns A div element containing the file input form group.
   private createFileInput(): HTMLDivElement {
     const container = document.createElement('div');
 
@@ -73,6 +91,8 @@ export class NewDocumentLinkManager implements ILinkManager {
     return this.createFormGroup('Document & Title', container);
   }
 
+  // Creates the title input for the document.
+  // @returns A div element containing the title input form group.
   private createTitleInput(): HTMLDivElement {
     const container = document.createElement('div');
 
@@ -80,6 +100,11 @@ export class NewDocumentLinkManager implements ILinkManager {
     input.type = 'text';
     input.name = 'documentTitle';
     input.maxLength = 250;
+    input.addEventListener('input', () => {
+      const remaining = 250 - input.value.length;
+      charCount.textContent = `${remaining} characters remaining`;
+      this.formData.documentTitle = input.value;
+    });
 
     const charCount = document.createElement('span');
     charCount.className = 'control-footer';
@@ -96,20 +121,32 @@ export class NewDocumentLinkManager implements ILinkManager {
     return this.createFormGroup('', container);
   }
 
+  /**
+   * Creates the search criteria inputs including tags, description, and a link to choose categories.
+   * @returns A div element containing the search criteria.
+   */
   private createSearchCriteria(): HTMLDivElement {
     const container = document.createElement('div');
 
     const tagsInput = document.createElement('input');
     tagsInput.type = 'text';
     tagsInput.placeholder = 'Use , for separator';
+    tagsInput.addEventListener('input', () => {
+      // Update searchTags by splitting input value by comma.
+      this.formData.searchTags = tagsInput.value.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
+    });
 
     const description = document.createElement('textarea');
     description.rows = 5;
     description.cols = 30;
+    description.addEventListener('input', () => {
+      this.formData.description = description.value;
+    });
 
     const categories = document.createElement('a');
     categories.className = 'linkStyle';
     categories.textContent = 'Choose Categories';
+    // You can attach an event listener here to handle category selection.
 
     container.appendChild(this.createFormGroup('Search Criteria', tagsInput));
     container.appendChild(this.createFormGroup('', description));
@@ -118,12 +155,30 @@ export class NewDocumentLinkManager implements ILinkManager {
     return container;
   }
 
+  /**
+   * Creates a checkbox group with an optional footer.
+   * @param title - The title for the group.
+   * @param label - The label text for the checkbox.
+   * @param checked - Whether the checkbox is initially checked.
+   * @param footer - Optional footer text.
+   * @returns A div element containing the checkbox group.
+   */
   private createCheckboxGroup(title: string, label: string, checked: boolean, footer?: string): HTMLDivElement {
     const container = document.createElement('div');
 
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.checked = checked;
+    checkbox.addEventListener('change', () => {
+      // Update corresponding formData property based on the label.
+      if (label.includes('Content Library')) {
+        this.formData.contentLibraryAccess = checkbox.checked;
+      } else if (label.includes('Worklife')) {
+        this.formData.worklifeLink = checkbox.checked;
+      } else if (label.includes('Search Results')) {
+        this.formData.showInSearch = checkbox.checked;
+      }
+    });
 
     const labelElement = document.createElement('label');
     labelElement.textContent = label;
@@ -141,6 +196,10 @@ export class NewDocumentLinkManager implements ILinkManager {
     return this.createFormGroup(title, container);
   }
 
+  /**
+   * Creates the button group for the form.
+   * @returns A div element containing the buttons.
+   */
   private createButtons(): HTMLDivElement {
     const container = document.createElement('div');
     container.className = 'card';
@@ -149,11 +208,17 @@ export class NewDocumentLinkManager implements ILinkManager {
     continueBtn.type = 'button';
     continueBtn.className = 'button';
     continueBtn.textContent = 'Continue';
+    continueBtn.addEventListener('click', () => {
+      this.submitForm();
+    });
 
     const cancelBtn = document.createElement('button');
     cancelBtn.type = 'button';
     cancelBtn.className = 'button-outlined';
     cancelBtn.textContent = 'Cancel';
+    cancelBtn.addEventListener('click', () => {
+      this.resetSearch();
+    });
 
     container.appendChild(continueBtn);
     container.appendChild(cancelBtn);
@@ -161,13 +226,21 @@ export class NewDocumentLinkManager implements ILinkManager {
     return container;
   }
 
+  /**
+   * Creates the CKAlightCard element and appends the form to its content container.
+   * @param page - The page number (not used in this example).
+   * @returns The CKAlightCard element with the form appended.
+   */
   private createCardElement(page: number): HTMLElement {
+    // Create a new CKAlightCard instance.
     const card = new CKAlightCard();
     card.setAttribute('header', 'New Document');
 
+    // Create the form element.
     const form = document.createElement('form');
     form.setAttribute('novalidate', '');
 
+    // Append the various form groups to the form.
     form.appendChild(this.createLanguageSelect());
     form.appendChild(this.createFileInput());
     form.appendChild(this.createTitleInput());
@@ -182,24 +255,44 @@ export class NewDocumentLinkManager implements ILinkManager {
     ));
     form.appendChild(this.createButtons());
 
+    // Append the form to the card's content container.
     const contentDiv = card.querySelector('.cka-card-content');
     if (contentDiv) {
       contentDiv.appendChild(form);
+    } else {
+      // If the content container is not found, you might want to append directly.
+      card.appendChild(form);
     }
 
     return card;
   }
 
+  /**
+   * Returns the HTML string representation of the card element.
+   * (This method is no longer needed if we append the element directly.)
+   * @param page - The page number.
+   * @returns The outer HTML of the card element.
+   */
   getLinkContent(page: number): string {
     const card = this.createCardElement(page);
     return card.outerHTML;
   }
 
+  /**
+   * Renders the content into the provided container.
+   * Updated to directly append the element rather than setting innerHTML.
+   * @param container - The container where the form will be rendered.
+   */
   renderContent(container: HTMLElement): void {
     this.container = container;
-    container.innerHTML = this.getLinkContent(1);
+    container.innerHTML = ''; // Clear the container.
+    // Append the card element directly to avoid issues with re-parsing and duplicate rendering.
+    container.appendChild(this.createCardElement(1));
   }
 
+  /**
+   * Resets the form to its initial state and re-renders the content.
+   */
   resetSearch(): void {
     this.formData = {
       language: 'en',
@@ -218,6 +311,8 @@ export class NewDocumentLinkManager implements ILinkManager {
     }
   }
 
+  // Validates the form data.
+  // @returns An object indicating whether the form is valid and an optional message.
   validateForm(): { isValid: boolean; message?: string } {
     if (!this.formData.file) {
       return { isValid: false, message: 'Please choose a file' };
@@ -228,10 +323,13 @@ export class NewDocumentLinkManager implements ILinkManager {
     return { isValid: true };
   }
 
+  // Returns a copy of the form data.
   getFormData() {
     return { ...this.formData };
   }
 
+  // Submits the form after validation.
+  // @returns True if submission is successful, false otherwise.
   submitForm(): boolean {
     const validation = this.validateForm();
     if (!validation.isValid) {
