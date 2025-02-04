@@ -1,101 +1,93 @@
 // src/plugins/alight-link-plugin/modal-content/existing-document-link.ts
 
-import { type DocumentData, type DocumentItem } from './types/document-types';
 import existingDocumentLinkData from './json/existing-document-test-data.json';
+import { ILinkManager } from './ILinkManager';
 import { AlightOverlayPanel } from '../../ui-components/alight-overlay-panel-component/alight-overlay-panel';
 import { CKALightSelectMenu } from '../../ui-components/alight-select-menu-component/alight-select-menu-component';
 import '../../ui-components/alight-checkbox-component/alight-checkbox-component';
 import '../../ui-components/alight-radio-component/alight-radio-component';
-import { ILinkManager } from './ILinkManager';
 
-// Each document item can be filtered by population, language, fileType, etc.
+// Type for document from JSON
+interface DocumentItem {
+  serverFilePath: string;
+  title: string;
+  fileId: string;
+  fileType: string;
+  population: string;
+  local: string;
+  lastUpdated: number;
+  updatedBy: string;
+  upointLink: string;
+  documentDescription: string;
+  expiryDate: string;
+}
+
+// JSON response type
+interface DocumentData {
+  responseStatus: string;
+  branchName: string;
+  documentList: DocumentItem[];
+}
+
+// Selected filters interface
 interface SelectedFilters {
   [key: string]: string[];
   population: string[];
-  language: string[];
   fileType: string[];
+  local: string[];
 }
 
-// This class encapsulates all the logic for filtering/searching
-// "Existing Document Links". It implements the ILinkManager interface
-// so it can be used in the same way as PredefinedLinkManager.
 export class ExistingDocumentLinkManager implements ILinkManager {
-  // Data from the JSON file
-  private documentData: DocumentData;
-  // Current, filtered dataset
-  private filteredDocsData: DocumentItem[];
-
-  // Internal state
-  private currentSearchQuery = '';
-  private currentPage = 1;
-  private readonly pageSize = 5;
-  private readonly advancedSearchTriggerId = 'advanced-search-trigger-document';
-
-  // Which filters have been selected (population, language, fileType)
-  private selectedFilters: SelectedFilters = {
-    population: [],
-    language: [],
-    fileType: []
-  };
-
-  // Overlay panel configuration
   private overlayPanelConfig = {
     width: '600px',
     height: 'auto'
   };
 
-  // Constructor loads the test data from existingDocumentLinkData
-  // and initializes the filtered list to contain everything.
-  constructor() {
-    this.documentData = existingDocumentLinkData as DocumentData;
-    this.filteredDocsData = [...this.documentData.documentList];
-  }
+  private documentData: DocumentData = existingDocumentLinkData as DocumentData;
+  private filteredDocsData: DocumentItem[] = [...this.documentData.documentList];
 
-  // ILinkManager method:
-  // Returns the HTML for a given page of the data (without attaching events).
+  private currentSearchQuery = '';
+  private currentPage = 1;
+  private readonly pageSize = 5;
+  private readonly advancedSearchTriggerId = 'advanced-search-trigger-document';
+
+  private selectedFilters: SelectedFilters = {
+    population: [],
+    fileType: [],
+    local: []
+  };
+
   public getLinkContent(page: number): string {
     return this.buildContentForPage(page);
   }
 
-  // ILinkManager method:
-  // Renders the current page's HTML into the container, then
-  // attaches event listeners (checkboxes, search, pagination, etc.).
   public renderContent(container: HTMLElement): void {
-    const content = this.buildContentForPage(this.currentPage);
-    container.innerHTML = content;
+    container.innerHTML = this.buildContentForPage(this.currentPage);
 
-    // Initialize the overlay panel (Advanced Search)
-    const trigger = document.getElementById(this.advancedSearchTriggerId);
-    if (trigger) {
-      new AlightOverlayPanel(this.advancedSearchTriggerId, this.overlayPanelConfig);
+    const triggerEl = container.querySelector(`#${this.advancedSearchTriggerId}`) as HTMLButtonElement | null;
+    if (triggerEl) {
+      new AlightOverlayPanel(triggerEl, this.overlayPanelConfig);
     }
 
-    // Set up pagination dropdown
     const totalPages = Math.ceil(this.filteredDocsData.length / this.pageSize);
     this.initializePageSelect(container, this.currentPage, totalPages);
-
-    // Attach event listeners (filters, search, pagination, etc.)
     this.attachEventListeners(container);
   }
 
-  // ILinkManager method:
-  // Resets all filters and search terms to the default empty state.
   public resetSearch(): void {
     this.currentSearchQuery = '';
     this.selectedFilters = {
       population: [],
-      language: [],
-      fileType: []
+      fileType: [],
+      local: []
     };
     this.filteredDocsData = [...this.documentData.documentList];
     this.currentPage = 1;
   }
 
-  // Builds the raw HTML for a specified page number (internal helper).
   private buildContentForPage(page: number): string {
     const totalItems = this.filteredDocsData.length;
     const totalPages = Math.ceil(totalItems / this.pageSize) || 1;
-    // Clamp page between 1 and totalPages
     page = Math.max(1, Math.min(page, totalPages));
     this.currentPage = page;
 
@@ -103,22 +95,21 @@ export class ExistingDocumentLinkManager implements ILinkManager {
     const endIndex = Math.min(startIndex + this.pageSize, totalItems);
     const currentPageData = this.filteredDocsData.slice(startIndex, endIndex);
 
-    // Collect unique values for the filters
-    const populationOptions = this.getUniqueValues(this.documentData.documentList, 'Population');
-    const languageOptions = this.getUniqueValues(this.documentData.documentList, 'Language');
-    const fileTypeOptions = this.getUniqueValues(this.documentData.documentList, 'FileType');
+    const populationOptions = this.getUniqueValues(this.documentData.documentList, 'population');
+    const fileTypeOptions = this.getUniqueValues(this.documentData.documentList, 'fileType');
+    const localOptions = this.getUniqueValues(this.documentData.documentList, 'local');
 
-    // Basic search UI
     const searchContainerMarkup = `
       <div id="search-container" class="cka-search-container">
-        <input type="text" id="search-input" placeholder="Search by document name..." value="${this.currentSearchQuery}" />
+        <input type="text" id="search-input" placeholder="Search by document title..." value="${this.currentSearchQuery}" />
         <button id="reset-search-btn">Reset</button>
-        <button id="${this.advancedSearchTriggerId}" data-panel-id="advanced-search-panel">Advanced Search</button>
-        <button id="search-btn">Search</button>
+        <button id="${this.advancedSearchTriggerId}" data-panel-id="advanced-search-panel" class="cka-button cka-button-rounded cka-button-text">
+          Advanced Search
+        </button>
+        <button id="search-btn" class="cka-button cka-button-rounded cka-button-outlined">Search</button>
       </div>
     `;
 
-    // Advanced search overlay
     const advancedSearchPanelMarkup = `
       <div class="cka-overlay-panel" data-id="advanced-search-panel">
         <header>
@@ -128,47 +119,44 @@ export class ExistingDocumentLinkManager implements ILinkManager {
         <main class="advanced-search-content">
           <div class="search-filters">
             ${this.createCheckboxList(populationOptions, 'population', 'Population')}
-            ${this.createCheckboxList(languageOptions, 'language', 'Language')}
             ${this.createCheckboxList(fileTypeOptions, 'fileType', 'File Type')}
+            ${this.createCheckboxList(localOptions, 'local', 'Language')}
           </div>
           <div class="form-group">
-            <input type="text" id="advanced-search-input" placeholder="Search by document name..." />
+            <input type="text" id="advanced-search-input" placeholder="Search by document title..." />
           </div>
         </main>
         <footer>
-          <button id="apply-advanced-search">Apply Filters</button>
-          <button id="clear-advanced-search">Clear Filters</button>
+          <button id="clear-advanced-search" class="cka-button cka-button-rounded cka-button-outlined cka-button-sm">Clear Filters</button>
+          <button id="apply-advanced-search" class="cka-button cka-button-rounded cka-button-sm">Apply Filters</button>
         </footer>
       </div>
     `;
 
-    // Document items (radio buttons + details)
     const documentsMarkup = currentPageData.length > 0
       ? currentPageData
         .map(doc => `
-            <div class="cka-document-item" data-doc-name="${doc.DocumentName}">
-              <div class="radio-container">
-                <cka-radio-button
-                  name="document-selection"
-                  value="${doc.DocumentName}"
-                  label=""
-                ></cka-radio-button>
-              </div>
-              <ul>
-                <li><strong>${doc.DocumentName}</strong></li>
-                <li><strong>Population:</strong> ${doc.Population}</li>
-                <li><strong>Language:</strong> ${doc.Language}</li>
-                <li><strong>File Type:</strong> ${doc.FileType}</li>
-              </ul>
+          <div class="cka-document-item" data-doc-title="${doc.title}">
+            <div class="radio-container">
+              <cka-radio-button name="document-selection" value="${doc.title}" label=""></cka-radio-button>
             </div>
-          `)
+            <ul>
+              <li><strong>${doc.title}</strong></li>
+              <li><strong>Description:</strong> ${doc.documentDescription}</li>
+              <li><strong>Population:</strong> ${doc.population}</li>
+              <li><strong>Language:</strong> ${doc.local}</li>
+              <li><strong>File Type:</strong> ${doc.fileType}</li>
+              <li><strong>File ID:</strong> ${doc.fileId}</li>
+              <li><strong>Last Updated:</strong> ${new Date(doc.lastUpdated).toLocaleDateString()}</li>
+              <li><strong>Updated By:</strong> ${doc.updatedBy}</li>
+            </ul>
+          </div>
+        `)
         .join('')
       : '<p>No results found.</p>';
 
-    // Pagination controls
-    const paginationMarkup =
-      totalPages > 1
-        ? `
+    const paginationMarkup = totalPages > 1
+      ? `
         <article id="pagination" class="cka-pagination">
           <button id="first-page" class="pagination-btn" data-page="1" ${page === 1 ? 'disabled' : ''}>First</button>
           <button id="prev-page" class="pagination-btn" data-page="${page - 1}" ${page === 1 ? 'disabled' : ''}>Previous</button>
@@ -177,9 +165,8 @@ export class ExistingDocumentLinkManager implements ILinkManager {
           <button id="last-page" class="pagination-btn" data-page="${totalPages}" ${page === totalPages ? 'disabled' : ''}>Last</button>
         </article>
       `
-        : '';
+      : '';
 
-    // Return the combined HTML
     return `
       ${searchContainerMarkup}
       ${advancedSearchPanelMarkup}
@@ -190,35 +177,26 @@ export class ExistingDocumentLinkManager implements ILinkManager {
     `;
   }
 
-  // Applies the selected filters + search query to this.filteredDocsData.
-  // Resets to page 1 after applying.
   private applyFilters(): void {
-    this.filteredDocsData = this.documentData.documentList.filter((doc: DocumentItem) => {
-      const nameMatch =
-        !this.currentSearchQuery ||
-        doc.DocumentName.toLowerCase().includes(this.currentSearchQuery.toLowerCase());
+    this.filteredDocsData = this.documentData.documentList.filter(doc => {
+      const titleMatch = !this.currentSearchQuery ||
+        doc.title.toLowerCase().includes(this.currentSearchQuery.toLowerCase());
 
-      const populationMatch =
-        this.selectedFilters.population.length === 0 ||
-        this.selectedFilters.population.includes(doc.Population);
+      const populationMatch = this.selectedFilters.population.length === 0 ||
+        this.selectedFilters.population.includes(doc.population);
 
-      const languageMatch =
-        this.selectedFilters.language.length === 0 ||
-        this.selectedFilters.language.includes(doc.Language);
+      const fileTypeMatch = this.selectedFilters.fileType.length === 0 ||
+        this.selectedFilters.fileType.includes(doc.fileType);
 
-      const fileTypeMatch =
-        this.selectedFilters.fileType.length === 0 ||
-        this.selectedFilters.fileType.includes(doc.FileType);
+      const localMatch = this.selectedFilters.local.length === 0 ||
+        this.selectedFilters.local.includes(doc.local);
 
-      return nameMatch && populationMatch && languageMatch && fileTypeMatch;
+      return titleMatch && populationMatch && fileTypeMatch && localMatch;
     });
-
     this.currentPage = 1;
   }
 
-  // Attach event listeners for search, pagination, filters, etc.
   private attachEventListeners(container: HTMLElement): void {
-    // SEARCH + RESET
     const searchInput = container.querySelector('#search-input') as HTMLInputElement;
     const searchBtn = container.querySelector('#search-btn');
     const resetBtn = container.querySelector('#reset-search-btn');
@@ -229,36 +207,46 @@ export class ExistingDocumentLinkManager implements ILinkManager {
       this.renderContent(container);
     });
 
+    searchInput?.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        (searchBtn as HTMLButtonElement)?.click();
+      }
+    });
+
     resetBtn?.addEventListener('click', () => {
       this.resetSearch();
+      if (searchInput) {
+        searchInput.value = '';
+      }
       this.renderContent(container);
     });
 
-    // ADVANCED SEARCH
-    const applyFiltersBtn = container.querySelector('#apply-advanced-search');
-    const clearFiltersBtn = container.querySelector('#clear-advanced-search');
+    const applyAdvancedSearchBtn = container.querySelector('#apply-advanced-search');
+    const clearAdvancedSearchBtn = container.querySelector('#clear-advanced-search');
     const advancedSearchInput = container.querySelector('#advanced-search-input') as HTMLInputElement;
 
-    applyFiltersBtn?.addEventListener('click', () => {
-      this.currentSearchQuery = advancedSearchInput.value;
+    applyAdvancedSearchBtn?.addEventListener('click', () => {
+      if (advancedSearchInput) {
+        this.currentSearchQuery = advancedSearchInput.value;
+      }
       this.applyFilters();
       this.renderContent(container);
     });
 
-    clearFiltersBtn?.addEventListener('click', () => {
+    clearAdvancedSearchBtn?.addEventListener('click', () => {
       this.resetSearch();
       this.renderContent(container);
     });
 
-    // CHECKBOXES
     const checkboxes = container.querySelectorAll('cka-checkbox');
     checkboxes.forEach(checkbox => {
-      checkbox.addEventListener('change', (e: Event) => {
-        const target = e.target as HTMLInputElement;
+      checkbox.addEventListener('change', event => {
+        const target = event.target as HTMLInputElement;
+        if (!target) return;
         const filterType = target.dataset.filterType as keyof SelectedFilters;
-        const value = target.dataset.value as string;
+        const value = target.dataset.value;
         if (!filterType || !value) return;
-
         if (target.checked) {
           this.selectedFilters[filterType].push(value);
         } else {
@@ -267,77 +255,87 @@ export class ExistingDocumentLinkManager implements ILinkManager {
       });
     });
 
-    // PAGINATION
-    const paginationBtns = container.querySelectorAll('.pagination-btn');
-    paginationBtns.forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const target = e.target as HTMLButtonElement;
-        if (!target.disabled) {
-          const page = parseInt(target.dataset.page || '1', 10);
-          this.currentPage = page;
-          this.renderContent(container);
+    const paginationDiv = container.querySelector('#pagination');
+    paginationDiv?.addEventListener('click', e => {
+      const target = e.target as HTMLElement;
+      if (!target.matches('.pagination-btn')) return;
+      const pageAttr = target.getAttribute('data-page');
+      if (!pageAttr) return;
+      const newPage = parseInt(pageAttr, 10);
+      const totalPages = Math.ceil(this.filteredDocsData.length / this.pageSize);
+      if (!isNaN(newPage) && newPage >= 1 && newPage <= totalPages && newPage !== this.currentPage) {
+        this.currentPage = newPage;
+        this.renderContent(container);
+      }
+    });
+
+    const documentItems = container.querySelectorAll('.cka-document-item');
+    documentItems.forEach(item => {
+      item.addEventListener('click', event => {
+        if ((event.target as HTMLElement).closest('cka-radio-button')) return;
+        const docTitle = (event.currentTarget as HTMLElement).getAttribute('data-doc-title');
+        if (!docTitle) return;
+        const radio = (event.currentTarget as HTMLElement).querySelector('cka-radio-button') as any;
+        if (radio) {
+          radio.checked = true;
+          radio.value = docTitle;
+          radio.dispatchEvent(new Event('change', { bubbles: true }));
+          radio.dispatchEvent(new Event('input', { bubbles: true }));
+          container.querySelectorAll('cka-radio-button').forEach(otherRadio => {
+            if (otherRadio !== radio) {
+              (otherRadio as any).checked = false;
+            }
+          });
         }
       });
     });
   }
 
-  // Initializes a custom select menu for pagination.
   private initializePageSelect(container: HTMLElement, pageNum: number, totalPages: number): void {
-    const selectContainer = container.querySelector('#page-select-container');
-    if (!selectContainer) return;
+    const pageSelectContainer = container.querySelector('#page-select-container');
+    if (!pageSelectContainer) return;
 
-    type SelectOption = {
-      value: string;
-      label: string;
-      selected: boolean;
-    };
-
-    const options: SelectOption[] = Array.from({ length: totalPages }, (_, i) => ({
-      value: (i + 1).toString(),
+    const pageOptions = Array.from({ length: totalPages }, (_, i) => ({
       label: `Page ${i + 1} of ${totalPages}`,
-      selected: i + 1 === pageNum
+      value: i + 1
     }));
 
-    const select = new CKALightSelectMenu<SelectOption>({
-      options,
-      onChange: (selectedOption: SelectOption | SelectOption[] | null) => {
-        if (selectedOption && !Array.isArray(selectedOption)) {
-          const newPage = parseInt(selectedOption.value, 10);
-          if (newPage !== this.currentPage) {
-            this.currentPage = newPage;
-            this.renderContent(container);
-          }
+    const pageSelect = new CKALightSelectMenu({
+      options: pageOptions,
+      value: pageNum,
+      placeholder: `Page ${pageNum} of ${totalPages}`,
+      onChange: (selectedValue) => {
+        if (selectedValue && typeof selectedValue === 'number' && selectedValue !== this.currentPage) {
+          this.currentPage = selectedValue;
+          this.renderContent(container);
         }
       }
     });
 
-    // Render the select menu inside the container
-    select.render(selectContainer);
+    pageSelectContainer.innerHTML = '';
+    pageSelect.mount(pageSelectContainer as HTMLElement);
   }
 
-  // Returns sorted unique values for the requested document key.
   private getUniqueValues(data: DocumentItem[], key: keyof DocumentItem): string[] {
-    return Array.from(new Set(data.map(item => item[key]))).sort();
+    return Array.from(new Set(data.map(item => String(item[key])))).sort();
   }
 
-  // Creates the HTML for a set of checkbox filters (Population, Language, File Type).
   private createCheckboxList(options: string[], filterType: keyof SelectedFilters, title: string): string {
     return `
       <div class="filter-section">
         <h4>${title}</h4>
         <ul class="checkbox-list">
           ${options
-        .map(
-          option => `
-            <li>
-              <cka-checkbox 
-                data-filter-type="${filterType}"
-                data-value="${option}"
-                ${this.selectedFilters[filterType].includes(option) ? 'initialvalue="true"' : ''}
-              >${option}</cka-checkbox>
-            </li>
-          `
-        )
+        .map(option => {
+          const checked = this.selectedFilters[filterType].includes(option) ? 'initialvalue="true"' : '';
+          return `
+                <li>
+                  <cka-checkbox data-filter-type="${filterType}" data-value="${option}" ${checked}>
+                    ${option}
+                  </cka-checkbox>
+                </li>
+              `;
+        })
         .join('')}
         </ul>
       </div>
