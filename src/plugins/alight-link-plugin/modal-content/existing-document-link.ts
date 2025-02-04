@@ -8,9 +8,7 @@ import '../../ui-components/alight-checkbox-component/alight-checkbox-component'
 import '../../ui-components/alight-radio-component/alight-radio-component';
 import { ILinkManager } from './ILinkManager';
 
-/**
- * Each document item can be filtered by population, language, fileType, etc.
- */
+// Each document item can be filtered by population, language, fileType, etc.
 interface SelectedFilters {
   [key: string]: string[];
   population: string[];
@@ -18,11 +16,9 @@ interface SelectedFilters {
   fileType: string[];
 }
 
-/**
- * This class encapsulates all the logic for filtering/searching
- * "Existing Document Links". It implements the ILinkManager interface
- * so it can be used in the same way as PredefinedLinkManager.
- */
+// This class encapsulates all the logic for filtering/searching
+// "Existing Document Links". It implements the ILinkManager interface
+// so it can be used in the same way as PredefinedLinkManager.
 export class ExistingDocumentLinkManager implements ILinkManager {
   // Data from the JSON file
   private documentData: DocumentData;
@@ -48,28 +44,22 @@ export class ExistingDocumentLinkManager implements ILinkManager {
     height: 'auto'
   };
 
-  /**
-   * Constructor loads the test data from existingDocumentLinkData
-   * and initializes the filtered list to contain everything.
-   */
+  // Constructor loads the test data from existingDocumentLinkData
+  // and initializes the filtered list to contain everything.
   constructor() {
     this.documentData = existingDocumentLinkData as DocumentData;
     this.filteredDocsData = [...this.documentData.documentList];
   }
 
-  /**
-   * ILinkManager method:
-   * Returns the HTML for a given page of the data (without attaching events).
-   */
+  // ILinkManager method:
+  // Returns the HTML for a given page of the data (without attaching events).
   public getLinkContent(page: number): string {
     return this.buildContentForPage(page);
   }
 
-  /**
-   * ILinkManager method:
-   * Renders the current page's HTML into the container, then
-   * attaches event listeners (checkboxes, search, pagination, etc.).
-   */
+  // ILinkManager method:
+  // Renders the current page's HTML into the container, then
+  // attaches event listeners (checkboxes, search, pagination, etc.).
   public renderContent(container: HTMLElement): void {
     const content = this.buildContentForPage(this.currentPage);
     container.innerHTML = content;
@@ -88,10 +78,8 @@ export class ExistingDocumentLinkManager implements ILinkManager {
     this.attachEventListeners(container);
   }
 
-  /**
-   * ILinkManager method:
-   * Resets all filters and search terms to the default empty state.
-   */
+  // ILinkManager method:
+  // Resets all filters and search terms to the default empty state.
   public resetSearch(): void {
     this.currentSearchQuery = '';
     this.selectedFilters = {
@@ -103,9 +91,7 @@ export class ExistingDocumentLinkManager implements ILinkManager {
     this.currentPage = 1;
   }
 
-  /**
-   * Builds the raw HTML for a specified page number (internal helper).
-   */
+  // Builds the raw HTML for a specified page number (internal helper).
   private buildContentForPage(page: number): string {
     const totalItems = this.filteredDocsData.length;
     const totalPages = Math.ceil(totalItems / this.pageSize) || 1;
@@ -204,10 +190,8 @@ export class ExistingDocumentLinkManager implements ILinkManager {
     `;
   }
 
-  /**
-   * Applies the selected filters + search query to this.filteredDocsData.
-   * Resets to page 1 after applying.
-   */
+  // Applies the selected filters + search query to this.filteredDocsData.
+  // Resets to page 1 after applying.
   private applyFilters(): void {
     this.filteredDocsData = this.documentData.documentList.filter((doc: DocumentItem) => {
       const nameMatch =
@@ -232,9 +216,7 @@ export class ExistingDocumentLinkManager implements ILinkManager {
     this.currentPage = 1;
   }
 
-  /**
-   * Attach event listeners for search, pagination, filters, etc.
-   */
+  // Attach event listeners for search, pagination, filters, etc.
   private attachEventListeners(container: HTMLElement): void {
     // SEARCH + RESET
     const searchInput = container.querySelector('#search-input') as HTMLInputElement;
@@ -299,9 +281,7 @@ export class ExistingDocumentLinkManager implements ILinkManager {
     });
   }
 
-  /**
-   * Initializes a custom select menu for pagination.
-   */
+  // Initializes a custom select menu for pagination.
   private initializePageSelect(container: HTMLElement, pageNum: number, totalPages: number): void {
     const selectContainer = container.querySelector('#page-select-container');
     if (!selectContainer) return;
@@ -335,16 +315,12 @@ export class ExistingDocumentLinkManager implements ILinkManager {
     select.render(selectContainer);
   }
 
-  /**
-   * Returns sorted unique values for the requested document key.
-   */
+  // Returns sorted unique values for the requested document key.
   private getUniqueValues(data: DocumentItem[], key: keyof DocumentItem): string[] {
     return Array.from(new Set(data.map(item => item[key]))).sort();
   }
 
-  /**
-   * Creates the HTML for a set of checkbox filters (Population, Language, File Type).
-   */
+  // Creates the HTML for a set of checkbox filters (Population, Language, File Type).
   private createCheckboxList(options: string[], filterType: keyof SelectedFilters, title: string): string {
     return `
       <div class="filter-section">
