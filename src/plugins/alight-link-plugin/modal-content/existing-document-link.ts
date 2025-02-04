@@ -14,7 +14,7 @@ interface DocumentItem {
   fileId: string;
   fileType: string;
   population: string;
-  local: string;
+  locale: string;
   lastUpdated: number;
   updatedBy: string;
   upointLink: string;
@@ -34,7 +34,7 @@ interface SelectedFilters {
   [key: string]: string[];
   population: string[];
   fileType: string[];
-  local: string[];
+  locale: string[];
 }
 
 export class ExistingDocumentLinkManager implements ILinkManager {
@@ -54,7 +54,7 @@ export class ExistingDocumentLinkManager implements ILinkManager {
   private selectedFilters: SelectedFilters = {
     population: [],
     fileType: [],
-    local: []
+    locale: []
   };
 
   public getLinkContent(page: number): string {
@@ -79,7 +79,7 @@ export class ExistingDocumentLinkManager implements ILinkManager {
     this.selectedFilters = {
       population: [],
       fileType: [],
-      local: []
+      locale: []
     };
     this.filteredDocsData = [...this.documentData.documentList];
     this.currentPage = 1;
@@ -97,7 +97,7 @@ export class ExistingDocumentLinkManager implements ILinkManager {
 
     const populationOptions = this.getUniqueValues(this.documentData.documentList, 'population');
     const fileTypeOptions = this.getUniqueValues(this.documentData.documentList, 'fileType');
-    const localOptions = this.getUniqueValues(this.documentData.documentList, 'local');
+    const localeOptions = this.getUniqueValues(this.documentData.documentList, 'locale');
 
     const searchContainerMarkup = `
       <div id="search-container" class="cka-search-container">
@@ -120,7 +120,7 @@ export class ExistingDocumentLinkManager implements ILinkManager {
           <div class="search-filters">
             ${this.createCheckboxList(populationOptions, 'population', 'Population')}
             ${this.createCheckboxList(fileTypeOptions, 'fileType', 'File Type')}
-            ${this.createCheckboxList(localOptions, 'local', 'Language')}
+            ${this.createCheckboxList(localeOptions, 'locale', 'Language')}
           </div>
           <div class="form-group">
             <input type="text" id="advanced-search-input" placeholder="Search by document title..." />
@@ -144,7 +144,7 @@ export class ExistingDocumentLinkManager implements ILinkManager {
               <li><strong>${doc.title}</strong></li>
               <li><strong>Description:</strong> ${doc.documentDescription}</li>
               <li><strong>Population:</strong> ${doc.population}</li>
-              <li><strong>Language:</strong> ${doc.local}</li>
+              <li><strong>Language:</strong> ${doc.locale}</li>
               <li><strong>File Type:</strong> ${doc.fileType}</li>
               <li><strong>File ID:</strong> ${doc.fileId}</li>
               <li><strong>Last Updated:</strong> ${new Date(doc.lastUpdated).toLocaleDateString()}</li>
@@ -188,10 +188,10 @@ export class ExistingDocumentLinkManager implements ILinkManager {
       const fileTypeMatch = this.selectedFilters.fileType.length === 0 ||
         this.selectedFilters.fileType.includes(doc.fileType);
 
-      const localMatch = this.selectedFilters.local.length === 0 ||
-        this.selectedFilters.local.includes(doc.local);
+      const localeMatch = this.selectedFilters.locale.length === 0 ||
+        this.selectedFilters.locale.includes(doc.locale);
 
-      return titleMatch && populationMatch && fileTypeMatch && localMatch;
+      return titleMatch && populationMatch && fileTypeMatch && localeMatch;
     });
     this.currentPage = 1;
   }
