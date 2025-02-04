@@ -7,7 +7,7 @@ import { CKALightSelectMenu } from '../../ui-components/alight-select-menu-compo
 import '../../ui-components/alight-checkbox-component/alight-checkbox-component';
 import '../../ui-components/alight-radio-component/alight-radio-component';
 
-// Interface for selected filters.
+// Interface for selected filters
 interface SelectedFilters {
   [key: string]: string[];
   baseOrClientSpecific: string[];
@@ -15,7 +15,7 @@ interface SelectedFilters {
   domain: string[];
 }
 
-// A single Predefined Link record from JSON.
+// A single Predefined Link record from JSON
 interface PredefinedLink {
   predefinedLinkName: string;
   predefinedLinkDescription: string;
@@ -28,14 +28,16 @@ interface PredefinedLink {
   attributeValue: string;
 }
 
-// Manages all logic for Predefined Links (filters, search, pagination).
-// Implements ILinkManager so it can be used by a CKEditor command.
+// Manages all logic for Predefined Links (filters, search, pagination)
 export class PredefinedLinkManager implements ILinkManager {
   // Overlay panel configuration
   private overlayPanelConfig = {
     width: '600px',
     height: 'auto'
   };
+
+  // Currently selected link
+  private selectedLink: PredefinedLink | null = null;
 
   // Data from JSON
   private predefinedLinksData: PredefinedLink[] = predefinedLinksData.predefinedLinksDetails;
@@ -46,7 +48,6 @@ export class PredefinedLinkManager implements ILinkManager {
   private currentSearchQuery = '';
   private currentPage = 1;
   private readonly pageSize = 5;
-  // Use a simple unique ID for the trigger button.
   private readonly advancedSearchTriggerId = 'advanced-search-trigger';
 
   // Selected filters
@@ -56,37 +57,42 @@ export class PredefinedLinkManager implements ILinkManager {
     domain: []
   };
 
-  // Returns raw HTML for a particular page of data.
+  // Returns the currently selected link or null if none selected
+  public getSelectedLink(): PredefinedLink | null {
+    return this.selectedLink;
+  }
+
+  // Returns raw HTML for a particular page of data
   public getLinkContent(page: number): string {
     return this.buildContentForPage(page);
   }
 
   // Renders the HTML into the container, then sets up the overlay panel,
-  // pagination, and event handlers.
+  // pagination, and event handlers
   public renderContent(container: HTMLElement): void {
-    // Insert the HTML into the container.
+    // Insert the HTML into the container
     container.innerHTML = this.buildContentForPage(this.currentPage);
 
-    // Use container.querySelector to find the trigger button within the container.
+    // Setup overlay panel for advanced search
     const triggerEl = container.querySelector(`#${this.advancedSearchTriggerId}`) as HTMLButtonElement | null;
     if (triggerEl) {
-      // Pass the trigger element to AlightOverlayPanel.
       new AlightOverlayPanel(triggerEl, this.overlayPanelConfig);
     } else {
       console.error(`Trigger button with ID "#${this.advancedSearchTriggerId}" not found in container.`);
     }
 
-    // Initialize pagination.
+    // Initialize pagination
     const totalPages = Math.ceil(this.filteredLinksData.length / this.pageSize);
     this.initializePageSelect(container, this.currentPage, totalPages);
 
-    // Attach event listeners (search, advanced search, checkboxes, pagination, etc.).
+    // Attach all event listeners
     this.attachEventListeners(container);
   }
 
-  // Resets all search/filter state to defaults.
+  // Resets all search/filter state to defaults
   public resetSearch(): void {
     this.currentSearchQuery = '';
+    this.selectedLink = null;
     this.selectedFilters = {
       baseOrClientSpecific: [],
       pageType: [],
@@ -96,29 +102,27 @@ export class PredefinedLinkManager implements ILinkManager {
     this.currentPage = 1;
   }
 
-  // -------------------------------------------------------
-  // PRIVATE HELPERS for building UI, applying filters, etc.
-  // -------------------------------------------------------
+  // PRIVATE HELPERS
 
-  // Generates the HTML for a given page.
+  // Generates the HTML for a given page
   private buildContentForPage(page: number): string {
-    // Clamp the requested page.
+    // Clamp the requested page
     const totalItems = this.filteredLinksData.length;
     const totalPages = Math.ceil(totalItems / this.pageSize) || 1;
     page = Math.max(1, Math.min(page, totalPages));
     this.currentPage = page;
 
-    // Get the current page subset.
+    // Get the current page subset
     const startIndex = (page - 1) * this.pageSize;
     const endIndex = Math.min(startIndex + this.pageSize, totalItems);
     const currentPageData = this.filteredLinksData.slice(startIndex, endIndex);
 
-    // Compute unique filter options.
+    // Compute unique filter options
     const baseOrClientSpecificOptions = this.getUniqueValues(this.predefinedLinksData, 'baseOrClientSpecific');
     const pageTypeOptions = this.getUniqueValues(this.predefinedLinksData, 'pageType');
     const domainOptions = this.getUniqueValues(this.predefinedLinksData, 'domain');
 
-    // Basic and Advanced Search markup.
+    // Basic and Advanced Search markup
     const searchContainerMarkup = `
       <div id="search-container" class="cka-search-container">
         <input type="text" id="search-input" placeholder="Search by link name..." value="${this.currentSearchQuery}" />
@@ -153,13 +157,15 @@ export class PredefinedLinkManager implements ILinkManager {
       </div>
     `;
 
-    // Render link items.
+    // Render link items
     const linksMarkup = currentPageData.length > 0
       ? currentPageData
         .map(link => `
             <div class="cka-link-item" data-link-name="${link.predefinedLinkName}">
               <div class="radio-container">
-                <cka-radio-button name="link-selection" value="${link.predefinedLinkName}" label=""></cka-radio-button>
+                <cka-radio-button name="link-selection" value="${link.predefinedLinkName}" 
+                  ${this.selectedLink?.predefinedLinkName === link.predefinedLinkName ? 'initialvalue="true"' : ''}>
+                </cka-radio-button>
               </div>
               <ul>
                 <li><strong>${link.predefinedLinkName}</strong></li>
@@ -177,7 +183,7 @@ export class PredefinedLinkManager implements ILinkManager {
         .join('')
       : '<p>No results found.</p>';
 
-    // Pagination controls.
+    // Pagination controls
     const paginationMarkup = totalPages > 1
       ? `
         <article id="pagination" class="cka-pagination">
@@ -200,7 +206,7 @@ export class PredefinedLinkManager implements ILinkManager {
     `;
   }
 
-  // Recomputes the filtered list (based on search text and checkboxes) and resets to page 1.
+  // Recomputes the filtered list and resets to page 1
   private applyFilters(): void {
     this.filteredLinksData = this.predefinedLinksData.filter(link => {
       const nameMatch =
@@ -220,8 +226,25 @@ export class PredefinedLinkManager implements ILinkManager {
     this.currentPage = 1;
   }
 
-  // Attaches event listeners for search, advanced search, checkboxes, pagination, and radio selection.
+  // Attaches all event listeners
   private attachEventListeners(container: HTMLElement): void {
+    // Search functionality
+    this.attachSearchListeners(container);
+
+    // Advanced search functionality
+    this.attachAdvancedSearchListeners(container);
+
+    // Checkbox filters
+    this.attachFilterListeners(container);
+
+    // Pagination
+    this.attachPaginationListeners(container);
+
+    // Link selection
+    this.attachLinkSelectionListeners(container);
+  }
+
+  private attachSearchListeners(container: HTMLElement): void {
     const searchInput = container.querySelector('#search-input') as HTMLInputElement | null;
     const searchBtn = container.querySelector('#search-btn') as HTMLButtonElement | null;
     const resetSearchBtn = container.querySelector('#reset-search-btn') as HTMLButtonElement | null;
@@ -246,7 +269,9 @@ export class PredefinedLinkManager implements ILinkManager {
       }
       this.renderContent(container);
     });
+  }
 
+  private attachAdvancedSearchListeners(container: HTMLElement): void {
     const applyAdvancedSearchBtn = container.querySelector('#apply-advanced-search') as HTMLButtonElement | null;
     const clearAdvancedSearchBtn = container.querySelector('#clear-advanced-search') as HTMLButtonElement | null;
     const advancedSearchInput = container.querySelector('#advanced-search-input') as HTMLInputElement | null;
@@ -263,7 +288,9 @@ export class PredefinedLinkManager implements ILinkManager {
       this.resetSearch();
       this.renderContent(container);
     });
+  }
 
+  private attachFilterListeners(container: HTMLElement): void {
     const checkboxes = container.querySelectorAll('cka-checkbox');
     checkboxes.forEach(checkbox => {
       checkbox.addEventListener('change', event => {
@@ -279,7 +306,9 @@ export class PredefinedLinkManager implements ILinkManager {
         }
       });
     });
+  }
 
+  private attachPaginationListeners(container: HTMLElement): void {
     const paginationDiv = container.querySelector('#pagination');
     paginationDiv?.addEventListener('click', e => {
       const target = e.target as HTMLElement;
@@ -293,19 +322,30 @@ export class PredefinedLinkManager implements ILinkManager {
         this.renderContent(container);
       }
     });
+  }
 
+  private attachLinkSelectionListeners(container: HTMLElement): void {
     const linkItems = container.querySelectorAll('.cka-link-item');
     linkItems.forEach(item => {
       item.addEventListener('click', event => {
         if ((event.target as HTMLElement).closest('cka-radio-button')) return;
         const linkName = (event.currentTarget as HTMLElement).getAttribute('data-link-name');
         if (!linkName) return;
+
+        // Update selected link
+        this.selectedLink = this.predefinedLinksData.find(
+          link => link.predefinedLinkName === linkName
+        ) || null;
+
+        // Update radio button
         const radio = (event.currentTarget as HTMLElement).querySelector('cka-radio-button') as any;
         if (radio) {
           radio.checked = true;
           radio.value = linkName;
           radio.dispatchEvent(new Event('change', { bubbles: true }));
           radio.dispatchEvent(new Event('input', { bubbles: true }));
+
+          // Uncheck other radio buttons
           container.querySelectorAll('cka-radio-button').forEach(otherRadio => {
             if (otherRadio !== radio) {
               (otherRadio as any).checked = false;
@@ -314,16 +354,32 @@ export class PredefinedLinkManager implements ILinkManager {
         }
       });
     });
+
+    // Add radio button change listeners
+    const radioButtons = container.querySelectorAll('cka-radio-button');
+    radioButtons.forEach(radio => {
+      radio.addEventListener('change', (event) => {
+        const target = event.target as HTMLInputElement;
+        if (!target || !target.checked) return;
+
+        const linkName = target.value;
+        this.selectedLink = this.predefinedLinksData.find(
+          link => link.predefinedLinkName === linkName
+        ) || null;
+      });
+    });
   }
 
-  // Creates the select menu for pagination.
+  // Creates the select menu for pagination
   private initializePageSelect(container: HTMLElement, pageNum: number, totalPages: number): void {
     const pageSelectContainer = container.querySelector('#page-select-container') as HTMLElement | null;
     if (!pageSelectContainer) return;
+
     const pageOptions = Array.from({ length: totalPages }, (_, i) => ({
       label: `${i + 1} of ${totalPages}`,
       value: i + 1
     }));
+
     const pageSelect = new CKALightSelectMenu({
       options: pageOptions,
       value: pageNum,
@@ -335,16 +391,17 @@ export class PredefinedLinkManager implements ILinkManager {
         }
       }
     });
+
     pageSelectContainer.innerHTML = '';
     pageSelect.mount(pageSelectContainer);
   }
 
-  // Returns a sorted array of unique values for a given key.
+  // Returns a sorted array of unique values for a given key
   private getUniqueValues(data: PredefinedLink[], key: keyof PredefinedLink): string[] {
     return Array.from(new Set(data.map(item => item[key]))).sort();
   }
 
-  // Builds a set of checkboxes for a given filter type.
+  // Builds a set of checkboxes for a given filter type
   private createCheckboxList(options: string[], filterType: keyof SelectedFilters, title: string): string {
     return `
       <div class="filter-section">
@@ -354,11 +411,11 @@ export class PredefinedLinkManager implements ILinkManager {
         .map(option => {
           const checked = this.selectedFilters[filterType].includes(option) ? 'initialvalue="true"' : '';
           return `
-              <li>
-                <cka-checkbox data-filter-type="${filterType}" data-value="${option}" ${checked}>
-                  ${option}
-                </cka-checkbox>
-              </li>
+                <li>
+                  <cka-checkbox data-filter-type="${filterType}" data-value="${option}" ${checked}>
+                    ${option}
+                  </cka-checkbox>
+                </li>
               `;
         })
         .join('')}

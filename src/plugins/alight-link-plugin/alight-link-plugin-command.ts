@@ -3,6 +3,7 @@ import type Editor from '@ckeditor/ckeditor5-core/src/editor/editor';
 import Command from '@ckeditor/ckeditor5-core/src/command';
 import CKAlightModalDialog from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import { ILinkManager } from './modal-content/ILinkManager';
+import { PredefinedLinkManager } from './modal-content/predefined-link';
 
 interface DialogButton {
   label: string;
@@ -31,29 +32,19 @@ interface CommandData {
     closeOnEscape?: boolean;
   };
   buttons?: DialogButton[];
-
-  // A function that returns HTML for the dialog content.
   loadContent: () => Promise<string>;
-
-  /**
-   * The optional manager can handle advanced behavior (pagination, filters).
-   * Both PredefinedLinkManager and ExistingDocumentLinkManager 
-   * implement the ILinkManager interface.
-   */
   manager?: ILinkManager;
 }
 
 export class AlightLinkPluginCommand extends Command {
-  private dialog: CKAlightModalDialog;
-  private data: CommandData;
-
-  // Manager typed as ILinkManager or undefined.
-  private manager?: ILinkManager;
+  protected dialog: CKAlightModalDialog;
+  protected data: CommandData;
+  protected manager?: ILinkManager;
 
   constructor(editor: Editor, data: CommandData) {
     super(editor);
     this.data = data;
-    this.manager = data.manager; // store reference if provided
+    this.manager = data.manager;
 
     this.dialog = new CKAlightModalDialog({
       modal: true,
@@ -73,7 +64,7 @@ export class AlightLinkPluginCommand extends Command {
     footer.className = 'cka-dialog-footer-buttons';
 
     if (!this.data.buttons?.length) {
-      // If no buttons provided, create a simple Close
+      // If no buttons provided, create a simple Close button
       const defaultButton = document.createElement('button');
       defaultButton.className = 'cka-button cka-button-rounded';
       defaultButton.textContent = 'Close';
@@ -83,8 +74,46 @@ export class AlightLinkPluginCommand extends Command {
       return;
     }
 
-    // Otherwise, create the provided buttons
-    this.data.buttons.forEach(button => {
+    // Create custom buttons based on modal type
+    if (this.data.modalType === 'predefinedLink') {
+      this.setupPredefinedLinkButtons(footer);
+    } else {
+      // Handle other modal types
+      this.setupDefaultButtons(footer);
+    }
+
+    this.dialog.setFooter(footer);
+  }
+
+  private setupPredefinedLinkButtons(footer: HTMLDivElement): void {
+    // Cancel button
+    const cancelButton = document.createElement('button');
+    cancelButton.className = 'cka-button cka-button-rounded cka-button-outlined';
+    cancelButton.textContent = 'Cancel';
+    cancelButton.onclick = () => {
+      this.dialog.hide();
+    };
+    footer.appendChild(cancelButton);
+
+    // Continue button
+    const continueButton = document.createElement('button');
+    continueButton.className = 'cka-button cka-button-rounded';
+    continueButton.textContent = 'Continue';
+    continueButton.onclick = () => {
+      const predefinedManager = this.manager as PredefinedLinkManager;
+      const selectedLink = predefinedManager?.getSelectedLink();
+
+      if (selectedLink) {
+        this.insertLink(selectedLink.destination);
+      }
+
+      this.dialog.hide();
+    };
+    footer.appendChild(continueButton);
+  }
+
+  private setupDefaultButtons(footer: HTMLDivElement): void {
+    this.data.buttons?.forEach(button => {
       const btnElement = document.createElement('button');
       btnElement.className = button.className;
       btnElement.textContent = button.label;
@@ -94,18 +123,44 @@ export class AlightLinkPluginCommand extends Command {
       };
       footer.appendChild(btnElement);
     });
+  }
 
-    this.dialog.setFooter(footer);
+  private insertLink(destination: string): void {
+    const selection = this.editor.model.document.selection;
+    const range = selection.getFirstRange();
+
+    if (!range) return;
+
+    this.editor.model.change(writer => {
+      // If there's selected text, wrap it in a link
+      if (!range.isCollapsed) {
+        const linkElement = writer.createElement('link', {
+          href: destination,
+          target: '_blank'
+        });
+        writer.wrap(range, linkElement);
+      } else {
+        // If no selection, insert new text with link
+        const position = range.start;
+        const linkElement = writer.createElement('link', {
+          href: destination,
+          target: '_blank'
+        });
+        const textNode = writer.createText('Link');
+        writer.insert(textNode, linkElement);
+        writer.insert(linkElement, position);
+      }
+    });
   }
 
   public override execute(): void {
     this.dialog.setTitle(this.data.title);
 
-    // loadContent returns a Promise<string>
+    // Load content and handle manager setup
     this.data.loadContent().then(content => {
       this.dialog.setContent(content);
 
-      // If we have a manager, let it handle advanced logic (renderContent)
+      // If we have a manager, let it handle advanced logic
       if (this.manager) {
         const contentEl = this.dialog.getContentElement();
         if (contentEl) {

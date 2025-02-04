@@ -17,6 +17,10 @@ export default class AlightLinkPluginEditing extends Plugin {
   init() {
     const editor = this.editor;
 
+    // Set up link schema and conversion
+    this.setupSchema();
+    this.setupConverters();
+
     // Create all managers
     this.predefinedLinkManager = new PredefinedLinkManager();
     this.existingDocumentLinkManager = new ExistingDocumentLinkManager();
@@ -154,6 +158,76 @@ export default class AlightLinkPluginEditing extends Plugin {
         manager: this.newDocumentLinkManager
       })
     );
+  }
+
+  private setupSchema(): void {
+    const schema = this.editor.model.schema;
+
+    // Allow links on text
+    schema.extend('$text', {
+      allowAttributes: ['link', 'linkTarget']
+    });
+
+    // Register the link element in the schema
+    schema.register('link', {
+      allowWhere: '$text',
+      allowContentOf: '$text',
+      allowAttributes: ['href', 'target']
+    });
+  }
+
+  private setupConverters(): void {
+    const conversion = this.editor.conversion;
+
+    // Model to view conversion for data pipeline
+    conversion.for('dataDowncast').elementToElement({
+      model: 'link',
+      view: (modelElement, { writer }) => {
+        const href = modelElement.getAttribute('href');
+        const target = modelElement.getAttribute('target');
+
+        return writer.createContainerElement('a', {
+          href,
+          target: target || '_blank'
+        });
+      }
+    });
+
+    // Model to view conversion for editing pipeline
+    conversion.for('editingDowncast').elementToElement({
+      model: 'link',
+      view: (modelElement, { writer }) => {
+        const href = modelElement.getAttribute('href');
+        const target = modelElement.getAttribute('target');
+
+        const linkElement = writer.createContainerElement('a', {
+          href,
+          target: target || '_blank',
+          class: 'ck-link'
+        });
+
+        return linkElement;
+      }
+    });
+
+    // View to model conversion
+    conversion.for('upcast').elementToElement({
+      view: {
+        name: 'a',
+        attributes: {
+          href: true
+        }
+      },
+      model: (viewElement, { writer }) => {
+        const href = viewElement.getAttribute('href');
+        const target = viewElement.getAttribute('target');
+
+        return writer.createElement('link', {
+          href,
+          target: target || '_blank'
+        });
+      }
+    });
   }
 
   private handleCancel(): void {
