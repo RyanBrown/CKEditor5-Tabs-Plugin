@@ -1,10 +1,17 @@
 // src/plugins/alight-link-plugin/modal-content/new-document-link.ts
-// This file defines the NewDocumentLinkManager class which renders a document upload form 
-// using innerHTML. Note that using innerHTML means any event listeners attached via addEventListener 
-// will be lost when the HTML is re-parsed. You may need to reattach event listeners if you rely on them.
+/**
+ * This file defines the NewDocumentLinkManager class which renders a document upload form
+ * using innerHTML. It now leverages the custom card (<cka-card>) and checkbox (<cka-checkbox>)
+ * components for rendering the UI.
+ *
+ * Note: Since innerHTML is used, any event listeners attached directly to rendered HTML elements
+ * will not persist when the HTML is re-parsed. We reattach event listeners in attachEventListeners().
+ */
 
 import { ILinkManager } from './ILinkManager';
 import { CKAlightCard } from '../../ui-components/alight-card-component/alight-card-component';
+import { CKALightSelectMenu } from '../../ui-components/alight-select-menu-component/alight-select-menu-component';
+import '../../ui-components/alight-checkbox-component/alight-checkbox-component';
 
 export class NewDocumentLinkManager implements ILinkManager {
   // Reference to the container element where the form is rendered.
@@ -24,17 +31,18 @@ export class NewDocumentLinkManager implements ILinkManager {
   };
 
   /**
-   * Creates a form group with an optional title and wraps the provided content inside a card.
+   * Creates a form group with an optional title and wraps the provided content inside a container.
    * @param title - The title of the form group.
    * @param content - The HTML string for the group content.
    * @returns A string representing the form group.
    */
   private createFormGroupHTML(title: string, content: string): string {
-    let groupHTML = `<div>`;
+    let groupHTML = `<div class="form-group">`;
     if (title) {
       groupHTML += `<h3>${title}</h3>`;
     }
-    groupHTML += `<div class="card">${content}</div></div>`;
+    // Wrap content in a div for styling purposes.
+    groupHTML += `<div class="form-group-content">${content}</div></div>`;
     return groupHTML;
   }
 
@@ -93,7 +101,7 @@ export class NewDocumentLinkManager implements ILinkManager {
   }
 
   /**
-   * Creates a checkbox group with an optional footer.
+   * Creates a checkbox group using the custom <cka-checkbox> component.
    * @param title - The title for the group.
    * @param label - The label text for the checkbox.
    * @param checked - Whether the checkbox is initially checked.
@@ -101,13 +109,16 @@ export class NewDocumentLinkManager implements ILinkManager {
    * @returns The HTML string for the checkbox group.
    */
   private createCheckboxGroupHTML(title: string, label: string, checked: boolean, footer?: string): string {
-    const checkboxHTML = `<input id="${label.replace(/\s+/g, '-').toLowerCase()}-checkbox" type="checkbox" ${checked ? 'checked' : ''} />`;
-    const labelHTML = `<label for="${label.replace(/\s+/g, '-').toLowerCase()}-checkbox">${label}</label>`;
+    // Generate an ID from the label for event attachment.
+    const checkboxId = `${label.replace(/\s+/g, '-').toLowerCase()}-checkbox`;
+    // Create the checkbox using the custom component. The initial value is set via the "initialvalue" attribute.
+    const checkboxHTML = `<cka-checkbox id="${checkboxId}" initialvalue="${checked}">${label}</cka-checkbox>`;
     let footerHTML = '';
     if (footer) {
       footerHTML = `<div class="control-footer">${footer}</div>`;
     }
-    return this.createFormGroupHTML(title, checkboxHTML + labelHTML + footerHTML);
+    // Wrap everything in a form group container.
+    return this.createFormGroupHTML(title, checkboxHTML + footerHTML);
   }
 
   /**
@@ -117,11 +128,11 @@ export class NewDocumentLinkManager implements ILinkManager {
   private createButtonsHTML(): string {
     const continueBtnHTML = `<button id="continue-btn" type="button" class="button">Continue</button>`;
     const cancelBtnHTML = `<button id="cancel-btn" type="button" class="button-outlined">Cancel</button>`;
-    return `<div class="card">${continueBtnHTML + cancelBtnHTML}</div>`;
+    return `<div class="button-group">${continueBtnHTML + cancelBtnHTML}</div>`;
   }
 
   /**
-   * Creates the CKAlightCard element and appends the form as an HTML string.
+   * Creates the <cka-card> element and appends the form as an HTML string.
    * @param page - The page number (not used in this example).
    * @returns The HTML string representing the card element with the form.
    */
@@ -143,15 +154,14 @@ export class NewDocumentLinkManager implements ILinkManager {
       ${this.createButtonsHTML()}
     `;
 
-    // Assume CKAlightCard is a custom element that uses a slot or a dedicated content container.
-    // Here we are wrapping the form content in a card container.
-    return `<ck-a-light-card header="New Document">
+    // Use the custom card component.
+    return `<cka-card header="New Document">
       <div class="cka-card-content">
         <form novalidate>
           ${formContent}
         </form>
       </div>
-    </ck-a-light-card>`;
+    </cka-card>`;
   }
 
   /**
@@ -172,7 +182,7 @@ export class NewDocumentLinkManager implements ILinkManager {
   renderContent(container: HTMLElement): void {
     this.container = container;
     container.innerHTML = this.getLinkContent(1);
-    // Optionally, call a method to reattach event listeners if needed.
+    // Reattach event listeners after rendering.
     this.attachEventListeners();
   }
 
@@ -213,7 +223,10 @@ export class NewDocumentLinkManager implements ILinkManager {
     const tagsInput = document.getElementById('tags-input') as HTMLInputElement | null;
     if (tagsInput) {
       tagsInput.addEventListener('input', () => {
-        this.formData.searchTags = tagsInput.value.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
+        this.formData.searchTags = tagsInput.value
+          .split(',')
+          .map(tag => tag.trim())
+          .filter(tag => tag !== '');
       });
     }
 
@@ -225,23 +238,26 @@ export class NewDocumentLinkManager implements ILinkManager {
       });
     }
 
-    // Checkbox events
-    const contentLibraryCheckbox = document.getElementById('access-from-content-library-(optional)-checkbox') as HTMLInputElement | null;
+    // Checkbox events using the custom <cka-checkbox> component.
+    const contentLibraryCheckbox = document.getElementById('access-from-content-library-(optional)-checkbox');
     if (contentLibraryCheckbox) {
-      contentLibraryCheckbox.addEventListener('change', () => {
-        this.formData.contentLibraryAccess = contentLibraryCheckbox.checked;
+      contentLibraryCheckbox.addEventListener('change', (e: Event) => {
+        const customEvent = e as CustomEvent;
+        this.formData.contentLibraryAccess = customEvent.detail;
       });
     }
-    const worklifeCheckbox = document.getElementById('link-to-document-from-a-alight-worklife-link-(optional)-checkbox') as HTMLInputElement | null;
+    const worklifeCheckbox = document.getElementById('link-to-document-from-a-alight-worklife-link-(optional)-checkbox');
     if (worklifeCheckbox) {
-      worklifeCheckbox.addEventListener('change', () => {
-        this.formData.worklifeLink = worklifeCheckbox.checked;
+      worklifeCheckbox.addEventListener('change', (e: Event) => {
+        const customEvent = e as CustomEvent;
+        this.formData.worklifeLink = customEvent.detail;
       });
     }
-    const searchResultsCheckbox = document.getElementById('show-in-search-results-(optional)-checkbox') as HTMLInputElement | null;
+    const searchResultsCheckbox = document.getElementById('show-in-search-results-(optional)-checkbox');
     if (searchResultsCheckbox) {
-      searchResultsCheckbox.addEventListener('change', () => {
-        this.formData.showInSearch = searchResultsCheckbox.checked;
+      searchResultsCheckbox.addEventListener('change', (e: Event) => {
+        const customEvent = e as CustomEvent;
+        this.formData.showInSearch = customEvent.detail;
       });
     }
 
