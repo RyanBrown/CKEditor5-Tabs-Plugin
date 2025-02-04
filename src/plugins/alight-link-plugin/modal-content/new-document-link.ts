@@ -15,6 +15,7 @@ import '../../ui-components/alight-checkbox-component/alight-checkbox-component'
 export class NewDocumentLinkManager implements ILinkManager {
   // Reference to the container element where the form is rendered.
   private container: HTMLElement | null = null;
+  private languageSelect: CKALightSelectMenu<{ value: string; label: string }> | null = null;
 
   // Holds the state of the form data.
   private formData = {
@@ -43,21 +44,42 @@ export class NewDocumentLinkManager implements ILinkManager {
     return groupHTML;
   }
 
-  // Creates a language selection dropdown using the custom CKALightSelectMenu component.
-  // @returns The HTML string for the language select form group.
-  private createLanguageSelectHTML(): string {
-    const optionsHTML = `
-      <option value="en">English (default)</option>
-      <option value="fr">French</option>
-      <option value="es">Spanish</option>
-    `;
-    // The custom select component is used here.
-    const selectHTML = `<cka-light-select-menu id="language-select" initialvalue="en">${optionsHTML}</cka-light-select-menu>`;
-    return this.createFormGroupHTML('Language', selectHTML);
+  private createLanguageSelectContainer(): string {
+    // Create a container for the select menu to be mounted later
+    return this.createFormGroupHTML('Language', '<div id="language-select-container"></div>');
   }
 
-  // Creates the file input for document selection.
-  // @returns The HTML string for the file input form group.
+  private initializeLanguageSelect() {
+    const container = document.getElementById('language-select-container');
+    if (!container) return;
+
+    this.languageSelect = new CKALightSelectMenu({
+      options: [
+        { value: 'en', label: 'English (default)' },
+        { value: 'fr', label: 'French' },
+        { value: 'es', label: 'Spanish' }
+      ],
+      placeholder: 'Select language',
+      value: this.formData.language,
+      optionLabel: 'label',
+      optionValue: 'value',
+      onChange: (selectedValue) => {
+        if (selectedValue) {
+          if (Array.isArray(selectedValue)) {
+            // If it's an array, take the first item's value property
+            this.formData.language = selectedValue[0]?.value || 'en';
+          } else {
+            // If it's a single object, take its value property
+            this.formData.language = selectedValue.value;
+          }
+        } else {
+          this.formData.language = 'en';
+        }
+      }
+    });
+    this.languageSelect.mount(container);
+  }
+
   private createFileInputHTML(): string {
     const fileInputHTML = `<input id="file-input" class="cka-input-text" type="file" accept=".doc,.docx,.xls,.xlsx,.xlsm,.ppt,.pptx,.pdf" />`;
     const supportedTypesHTML = `<p><em class="control-footer"><strong>Supported file types:</strong> .doc, .docx, .xls, .xlsx, .xlsm, .ppt, .pptx, .pdf</em></p>`;
@@ -67,8 +89,8 @@ export class NewDocumentLinkManager implements ILinkManager {
   // Creates the title input for the document.
   // @returns The HTML string for the title input form group.
   private createTitleInputHTML(): string {
-    const titleInputHTML = `<input id="title-input" class="cka-input-text" type="text" name="documentTitle" maxlength="250" />`;
-    const charCountHTML = `<span id="char-count" class="control-footer">250 characters remaining</span>`;
+    const titleInputHTML = `<input id="title-input" class="cka-input-text" type="text" name="documentTitle" maxlength="250" value="${this.formData.documentTitle}" />`;
+    const charCountHTML = `<span id="char-count" class="control-footer">${250 - this.formData.documentTitle.length} characters remaining</span>`;
     const noteHTML = `<div class="control-footer"><strong>Note:</strong> Special characters such as (\\, ], :, >, /, <, [, |, ?, ", //, comma) are not allowed.</div>`;
     return this.createFormGroupHTML('', titleInputHTML + charCountHTML + noteHTML);
   }
@@ -76,8 +98,8 @@ export class NewDocumentLinkManager implements ILinkManager {
   // Creates the search criteria inputs including tags, description, and a link to choose categories.
   // @returns The HTML string for the search criteria.
   private createSearchCriteriaHTML(): string {
-    const tagsInputHTML = `<input id="tags-input" class="cka-input-text" type="text" placeholder="Use , for separator" />`;
-    const descriptionHTML = `<textarea id="description" class="cka-input-text" rows="5" cols="30"></textarea>`;
+    const tagsInputHTML = `<input id="tags-input" class="cka-input-text" type="text" placeholder="Use , for separator" value="${this.formData.searchTags.join(', ')}" />`;
+    const descriptionHTML = `<textarea id="description" class="cka-input-text" rows="5" cols="30">${this.formData.description}</textarea>`;
     const categoriesHTML = `<a id="choose-categories" class="linkStyle" href="#">Choose Categories</a>`;
     return `<div>
       ${this.createFormGroupHTML('Search Criteria', tagsInputHTML)}
@@ -119,16 +141,16 @@ export class NewDocumentLinkManager implements ILinkManager {
   private createCardElementHTML(page: number): string {
     // Build the inner form HTML from the various pieces.
     const formContent = `
-      ${this.createLanguageSelectHTML()}
+      ${this.createLanguageSelectContainer()}
       ${this.createFileInputHTML()}
       ${this.createTitleInputHTML()}
       ${this.createSearchCriteriaHTML()}
-      ${this.createCheckboxGroupHTML('Content Library', 'Access from Content Library (optional)', false)}
-      ${this.createCheckboxGroupHTML('Alight Worklife Link', 'Link to Document From a Alight Worklife Link (optional)', false)}
+      ${this.createCheckboxGroupHTML('Content Library', 'Access from Content Library (optional)', this.formData.contentLibraryAccess)}
+      ${this.createCheckboxGroupHTML('Alight Worklife Link', 'Link to Document From a Alight Worklife Link (optional)', this.formData.worklifeLink)}
       ${this.createCheckboxGroupHTML(
       'Search Results',
       'Show in Search Results (optional)',
-      true,
+      this.formData.showInSearch,
       'If this document matches a user\'s search criteria, checking this box makes it eligible to appear in the search results.'
     )}
       ${this.createButtonsHTML()}
@@ -158,25 +180,17 @@ export class NewDocumentLinkManager implements ILinkManager {
   renderContent(container: HTMLElement): void {
     this.container = container;
     container.innerHTML = this.getLinkContent(1);
-    // Reattach event listeners after rendering.
+
+    // Initialize select menu after the container is rendered
+    this.initializeLanguageSelect();
+
+    // Attach other event listeners
     this.attachEventListeners();
   }
 
-  // Reattaches event listeners for elements that were created via innerHTML.
-  // This is necessary because innerHTML does not preserve event listeners.
   private attachEventListeners(): void {
-    // Language select change event for CKALightSelectMenu.
-    const languageSelect = document.getElementById('language-select');
-    if (languageSelect) {
-      // Set the initial value.
-      (languageSelect as any).value = this.formData.language;
-      languageSelect.addEventListener('change', (e) => {
-        this.formData.language = (e.target as any).value;
-      });
-    }
-
     // File input change event
-    const fileInput = document.getElementById('file-input') as HTMLInputElement | null;
+    const fileInput = document.getElementById('file-input') as HTMLInputElement;
     if (fileInput) {
       fileInput.addEventListener('change', (e) => {
         this.formData.file = (e.target as HTMLInputElement).files?.[0] || null;
@@ -184,8 +198,8 @@ export class NewDocumentLinkManager implements ILinkManager {
     }
 
     // Title input events
-    const titleInput = document.getElementById('title-input') as HTMLInputElement | null;
-    const charCount = document.getElementById('char-count') as HTMLElement | null;
+    const titleInput = document.getElementById('title-input') as HTMLInputElement;
+    const charCount = document.getElementById('char-count');
     if (titleInput && charCount) {
       titleInput.addEventListener('input', () => {
         const remaining = 250 - titleInput.value.length;
@@ -195,7 +209,7 @@ export class NewDocumentLinkManager implements ILinkManager {
     }
 
     // Tags input event
-    const tagsInput = document.getElementById('tags-input') as HTMLInputElement | null;
+    const tagsInput = document.getElementById('tags-input') as HTMLInputElement;
     if (tagsInput) {
       tagsInput.addEventListener('input', () => {
         this.formData.searchTags = tagsInput.value
@@ -206,14 +220,14 @@ export class NewDocumentLinkManager implements ILinkManager {
     }
 
     // Description textarea event
-    const description = document.getElementById('description') as HTMLTextAreaElement | null;
+    const description = document.getElementById('description') as HTMLTextAreaElement;
     if (description) {
       description.addEventListener('input', () => {
         this.formData.description = description.value;
       });
     }
 
-    // Checkbox events using the custom <cka-checkbox> component.
+    // Checkbox events
     const contentLibraryCheckbox = document.getElementById('access-from-content-library-(optional)-checkbox');
     if (contentLibraryCheckbox) {
       contentLibraryCheckbox.addEventListener('change', (e: Event) => {
@@ -237,13 +251,13 @@ export class NewDocumentLinkManager implements ILinkManager {
     }
 
     // Button events
-    const continueBtn = document.getElementById('continue-btn') as HTMLButtonElement | null;
+    const continueBtn = document.getElementById('continue-btn');
     if (continueBtn) {
       continueBtn.addEventListener('click', () => {
         this.submitForm();
       });
     }
-    const cancelBtn = document.getElementById('cancel-btn') as HTMLButtonElement | null;
+    const cancelBtn = document.getElementById('cancel-btn');
     if (cancelBtn) {
       cancelBtn.addEventListener('click', () => {
         this.resetSearch();
@@ -251,8 +265,13 @@ export class NewDocumentLinkManager implements ILinkManager {
     }
   }
 
-  // Resets the form to its initial state and re-renders the content.
   resetSearch(): void {
+    // Clean up existing select menu
+    if (this.languageSelect) {
+      this.languageSelect.destroy();
+      this.languageSelect = null;
+    }
+
     this.formData = {
       language: 'en',
       file: null,
