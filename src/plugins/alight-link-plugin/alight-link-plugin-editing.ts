@@ -2,21 +2,27 @@
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 import { AlightLinkPluginCommand } from './alight-link-plugin-command';
 import { ExistingDocumentLinkManager } from './modal-content/existing-document-link';
-import { getNewDocumentsLinkContent } from './modal-content/new-document-link';
-import { getPublicIntranetLinkContent } from './modal-content/public-intranet-link';
+import { NewDocumentLinkManager } from './modal-content/new-document-link';
+import { PublicIntranetLinkManager } from './modal-content/public-intranet-link';
 import { PredefinedLinkManager } from './modal-content/predefined-link';
 
 export default class AlightLinkPluginEditing extends Plugin {
-  // Use definite assignment assertion
+  // Use definite assignment assertion for all managers
   private predefinedLinkManager!: PredefinedLinkManager;
   private existingDocumentLinkManager!: ExistingDocumentLinkManager;
+  private newDocumentLinkManager!: NewDocumentLinkManager;
+  private publicWebsiteLinkManager!: PublicIntranetLinkManager;
+  private intranetLinkManager!: PublicIntranetLinkManager;
 
   init() {
     const editor = this.editor;
 
-    // Create your managers
+    // Create all managers
     this.predefinedLinkManager = new PredefinedLinkManager();
     this.existingDocumentLinkManager = new ExistingDocumentLinkManager();
+    this.newDocumentLinkManager = new NewDocumentLinkManager();
+    this.publicWebsiteLinkManager = new PublicIntranetLinkManager('', false);
+    this.intranetLinkManager = new PublicIntranetLinkManager('', true);
 
     // Command 1: Predefined Link
     editor.commands.add(
@@ -39,9 +45,7 @@ export default class AlightLinkPluginEditing extends Plugin {
             onClick: () => this.handleImageSelection()
           }
         ],
-        // Provide the HTML for page 1
         loadContent: async () => this.predefinedLinkManager.getLinkContent(1),
-        // Provide the manager so the command can call renderContent(...)
         manager: this.predefinedLinkManager
       })
     );
@@ -55,7 +59,8 @@ export default class AlightLinkPluginEditing extends Plugin {
         buttons: [
           {
             label: 'Cancel',
-            className: 'cka-button cka-button-rounded cka-button-outlined'
+            className: 'cka-button cka-button-rounded cka-button-outlined',
+            onClick: () => this.handleCancel()
           },
           {
             label: 'Continue',
@@ -63,8 +68,8 @@ export default class AlightLinkPluginEditing extends Plugin {
             onClick: () => this.handleUpload()
           }
         ],
-        // No manager needed, just return raw HTML from a separate function
-        loadContent: async () => getPublicIntranetLinkContent()
+        loadContent: async () => this.publicWebsiteLinkManager.getLinkContent(1),
+        manager: this.publicWebsiteLinkManager
       })
     );
 
@@ -77,15 +82,17 @@ export default class AlightLinkPluginEditing extends Plugin {
         buttons: [
           {
             label: 'Cancel',
-            className: 'cka-button cka-button-rounded cka-button-outlined'
+            className: 'cka-button cka-button-rounded cka-button-outlined',
+            onClick: () => this.handleCancel()
           },
           {
-            label: 'Upload',
+            label: 'Continue',
             className: 'cka-button cka-button-rounded',
             onClick: () => this.handleUpload()
           }
         ],
-        loadContent: async () => getPublicIntranetLinkContent()
+        loadContent: async () => this.intranetLinkManager.getLinkContent(1),
+        manager: this.intranetLinkManager
       })
     );
 
@@ -98,17 +105,16 @@ export default class AlightLinkPluginEditing extends Plugin {
         buttons: [
           {
             label: 'Cancel',
-            className: 'cka-button cka-button-rounded cka-button-outlined'
+            className: 'cka-button cka-button-rounded cka-button-outlined',
+            onClick: () => this.handleCancel()
           },
           {
-            label: 'Upload',
+            label: 'Continue',
             className: 'cka-button cka-button-rounded',
             onClick: () => this.handleUpload()
           }
         ],
-        // Return the HTML for page 1 from the existing document manager
         loadContent: async () => this.existingDocumentLinkManager.getLinkContent(1),
-        // Provide the manager so the command can attach advanced logic
         manager: this.existingDocumentLinkManager
       })
     );
@@ -122,15 +128,17 @@ export default class AlightLinkPluginEditing extends Plugin {
         buttons: [
           {
             label: 'Cancel',
-            className: 'cka-button cka-button-rounded cka-button-outlined'
+            className: 'cka-button cka-button-rounded cka-button-outlined',
+            onClick: () => this.handleCancel()
           },
           {
-            label: 'Upload',
+            label: 'Continue',
             className: 'cka-button cka-button-rounded',
             onClick: () => this.handleUpload()
           }
         ],
-        loadContent: async () => getNewDocumentsLinkContent()
+        loadContent: async () => this.newDocumentLinkManager.getLinkContent(1),
+        manager: this.newDocumentLinkManager
       })
     );
   }

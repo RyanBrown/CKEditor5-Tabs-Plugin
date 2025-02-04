@@ -1,49 +1,106 @@
-// public-intranet-link.ts
+// src/plugins/alight-link-plugin/modal-content/public-intranet-link.ts
+import { ILinkManager } from './ILinkManager';
 
-/**
- * Returns the HTML content for both Public and Intranet links.
- * If isIntranet=true, we show an extra note or fields. 
- * existingHref and existingOrgName are used to pre-populate fields when editing.
- */
-export async function getPublicIntranetLinkContent(
-  existingHref: string = '',
-  isIntranet: boolean = false,
-  existingOrgName: string = ''
-): Promise<string> {
-  const intranetNote = isIntranet
-    ? `
-      <p><strong>Note:</strong> When an employee clicks on an intranet link, 
-      a message will let them know they need to be connected 
-      to that network to successfully continue.</p>
-    `
-    : '';
+export class PublicIntranetLinkManager implements ILinkManager {
+  private container: HTMLElement | null = null;
+  private currentPage: number = 1;
 
-  return `
-    <div class="public-intranet-link-content">
-      ${intranetNote}
+  constructor(
+    private existingHref: string = '',
+    private isIntranet: boolean = false,
+    private existingOrgName: string = ''
+  ) { }
 
-      <label for="url" class="cka-input-label">URL</label>
-      <input 
-        id="url" 
-        type="url" 
-        class="cka-input-text" 
-        value="${existingHref}"
-      />
+  getLinkContent(page: number): string {
+    this.currentPage = page;
 
-      <label for="org-name" class="cka-input-label">
-        Organization Name (Optional)<span class="asterisk">*</span>
-      </label>
-      <input 
-        id="org-name" 
-        type="text" 
-        class="cka-input-text"
-        value="${existingOrgName}"
-      />
+    const intranetNote = this.isIntranet
+      ? `
+          <p><strong>Note:</strong> When an employee clicks on an intranet link, 
+           a message will let them know they need to be connected 
+           to that network to successfully continue.</p>
+        `
+      : '';
 
-      <p>
-        <span class="asterisk">*</span>
-        Enter the third-party organization to inform users the destination of the link.
-      </p>
-    </div>
-  `;
+    return `
+      <div class="public-intranet-link-content">
+        ${intranetNote}
+        
+        <label for="url" class="cka-input-label">URL</label>
+        <input
+          id="url"
+          type="url"
+          class="cka-input-text"
+          value="${this.escapeHtml(this.existingHref)}"
+        />
+        
+        <label for="org-name" class="cka-input-label">
+          Organization Name (Optional)<span class="asterisk">*</span>
+        </label>
+        <input
+          id="org-name"
+          type="text"
+          class="cka-input-text"
+          value="${this.escapeHtml(this.existingOrgName)}"
+        />
+        
+        <p>
+          <span class="asterisk">*</span>
+          Enter the third-party organization to inform users the destination of the link.
+        </p>
+      </div>
+    `;
+  }
+
+  renderContent(container: HTMLElement): void {
+    this.container = container;
+    container.innerHTML = this.getLinkContent(this.currentPage);
+
+    // Add event listeners for form inputs
+    const urlInput = container.querySelector('#url') as HTMLInputElement;
+    const orgNameInput = container.querySelector('#org-name') as HTMLInputElement;
+
+    if (urlInput) {
+      urlInput.addEventListener('input', (e) => {
+        this.existingHref = (e.target as HTMLInputElement).value;
+      });
+    }
+
+    if (orgNameInput) {
+      orgNameInput.addEventListener('input', (e) => {
+        this.existingOrgName = (e.target as HTMLInputElement).value;
+      });
+    }
+  }
+
+  resetSearch(): void {
+    this.existingHref = '';
+    this.existingOrgName = '';
+    if (this.container) {
+      this.renderContent(this.container);
+    }
+  }
+
+  // Helper method to prevent XSS
+  private escapeHtml(unsafe: string): string {
+    return unsafe
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  // Getters for form values
+  getUrl(): string {
+    return this.existingHref;
+  }
+
+  getOrgName(): string {
+    return this.existingOrgName;
+  }
+
+  getIsIntranet(): boolean {
+    return this.isIntranet;
+  }
 }
