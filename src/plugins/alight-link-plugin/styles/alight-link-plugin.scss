@@ -1,7 +1,8 @@
 // src/plugins/alight-link-plugin/styles/alight-link-plugin.scss
 @use './../../../styles/mixins' as mixins;
 
-.cka-link-item {
+.cka-link-item,
+.cka-document-item {
   align-items: center;
   border-bottom: 1px solid #ccc;
   display: flex;

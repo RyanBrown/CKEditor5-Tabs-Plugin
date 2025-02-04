@@ -136,7 +136,7 @@ export class ExistingDocumentLinkManager implements ILinkManager {
     const documentsMarkup = currentPageData.length > 0
       ? currentPageData
         .map(doc => `
-          <div class="cka-link-item" data-doc-title="${doc.title}">
+          <div class="cka-document-item" data-doc-title="${doc.title}">
             <div class="radio-container">
               <cka-radio-button name="document-selection" value="${doc.title}" label=""></cka-radio-button>
             </div>
@@ -269,7 +269,7 @@ export class ExistingDocumentLinkManager implements ILinkManager {
       }
     });
 
-    const documentItems = container.querySelectorAll('.cka-link-item');
+    const documentItems = container.querySelectorAll('.cka-document-item');
     documentItems.forEach(item => {
       item.addEventListener('click', event => {
         if ((event.target as HTMLElement).closest('cka-radio-button')) return;
