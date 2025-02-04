@@ -1,11 +1,11 @@
 // src/plugins/alight-link-plugin/modal-content/predefined-link.ts
 
 import predefinedLinksData from './json/predefined-test-data.json';
+import { ILinkManager } from './ILinkManager';
 import { AlightOverlayPanel } from '../../ui-components/alight-overlay-panel-component/alight-overlay-panel';
 import { CKALightSelectMenu } from '../../ui-components/alight-select-menu-component/alight-select-menu-component';
 import '../../ui-components/alight-checkbox-component/alight-checkbox-component';
 import '../../ui-components/alight-radio-component/alight-radio-component';
-import { ILinkManager } from './ILinkManager';
 
 // Interface for selected filters.
 interface SelectedFilters {
