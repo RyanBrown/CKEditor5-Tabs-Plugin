@@ -127,14 +127,6 @@ export class NewDocumentLinkManager implements ILinkManager {
     return this.createFormGroupHTML(title, checkboxHTML + footerHTML);
   }
 
-  // Creates the button group for the form.
-  // @returns The HTML string for the button group.
-  private createButtonsHTML(): string {
-    const cancelBtnHTML = `<button id="cancel-btn" type="button" class="cka-button cka-button-rounded cka-button-outlined">Cancel</button>`;
-    const continueBtnHTML = `<button id="continue-btn" type="button" class="cka-button cka-button-rounded">Create Document</button>`;
-    return `<div class="button-group">${continueBtnHTML + cancelBtnHTML}</div>`;
-  }
-
   // Creates the <cka-card> element and appends the form as an HTML string.
   // @param page - The page number (not used in this example).
   // @returns The HTML string representing the card element with the form.
@@ -153,7 +145,6 @@ export class NewDocumentLinkManager implements ILinkManager {
       this.formData.showInSearch,
       'If this document matches a user\'s search criteria, checking this box makes it eligible to appear in the search results.'
     )}
-      ${this.createButtonsHTML()}
     `;
 
     // Use the custom card component.
@@ -247,20 +238,6 @@ export class NewDocumentLinkManager implements ILinkManager {
       searchResultsCheckbox.addEventListener('change', (e: Event) => {
         const customEvent = e as CustomEvent;
         this.formData.showInSearch = customEvent.detail;
-      });
-    }
-
-    // Button events
-    const continueBtn = document.getElementById('continue-btn');
-    if (continueBtn) {
-      continueBtn.addEventListener('click', () => {
-        this.submitForm();
-      });
-    }
-    const cancelBtn = document.getElementById('cancel-btn');
-    if (cancelBtn) {
-      cancelBtn.addEventListener('click', () => {
-        this.resetSearch();
       });
     }
   }
