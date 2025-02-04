@@ -102,6 +102,9 @@ export default class AlightLinkPluginEditing extends Plugin {
       new AlightLinkPluginCommand(editor, {
         title: 'Existing Document Link',
         modalType: 'existingDocumentLink',
+        modalOptions: {
+          width: '90vw'
+        },
         buttons: [
           {
             label: 'Cancel',

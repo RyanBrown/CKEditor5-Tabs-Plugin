@@ -118,8 +118,8 @@ export class ExistingDocumentLinkManager implements ILinkManager {
         </header>
         <main class="advanced-search-content">
           <div class="search-filters">
-            ${this.createCheckboxList(populationOptions, 'population', 'Population')}
             ${this.createCheckboxList(fileTypeOptions, 'fileType', 'File Type')}
+            ${this.createCheckboxList(populationOptions, 'population', 'Population')}
             ${this.createCheckboxList(localeOptions, 'locale', 'Language')}
           </div>
           <div class="form-group">
@@ -136,19 +136,19 @@ export class ExistingDocumentLinkManager implements ILinkManager {
     const documentsMarkup = currentPageData.length > 0
       ? currentPageData
         .map(doc => `
-          <div class="cka-document-item" data-doc-title="${doc.title}">
+          <div class="cka-link-item" data-doc-title="${doc.title}">
             <div class="radio-container">
               <cka-radio-button name="document-selection" value="${doc.title}" label=""></cka-radio-button>
             </div>
             <ul>
               <li><strong>${doc.title}</strong></li>
-              <li><strong>Description:</strong> ${doc.documentDescription}</li>
+              <!--<li><strong>Description:</strong> ${doc.documentDescription}</li>-->
               <li><strong>Population:</strong> ${doc.population}</li>
               <li><strong>Language:</strong> ${doc.locale}</li>
               <li><strong>File Type:</strong> ${doc.fileType}</li>
-              <li><strong>File ID:</strong> ${doc.fileId}</li>
+              <!--<li><strong>File ID:</strong> ${doc.fileId}</li>
               <li><strong>Last Updated:</strong> ${new Date(doc.lastUpdated).toLocaleDateString()}</li>
-              <li><strong>Updated By:</strong> ${doc.updatedBy}</li>
+              <li><strong>Updated By:</strong> ${doc.updatedBy}</li>-->
             </ul>
           </div>
         `)
@@ -269,7 +269,7 @@ export class ExistingDocumentLinkManager implements ILinkManager {
       }
     });
 
-    const documentItems = container.querySelectorAll('.cka-document-item');
+    const documentItems = container.querySelectorAll('.cka-link-item');
     documentItems.forEach(item => {
       item.addEventListener('click', event => {
         if ((event.target as HTMLElement).closest('cka-radio-button')) return;
