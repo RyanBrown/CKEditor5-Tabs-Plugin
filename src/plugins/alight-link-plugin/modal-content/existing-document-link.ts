@@ -296,7 +296,7 @@ export class ExistingDocumentLinkManager implements ILinkManager {
     if (!pageSelectContainer) return;
 
     const pageOptions = Array.from({ length: totalPages }, (_, i) => ({
-      label: `Page ${i + 1} of ${totalPages}`,
+      label: `${i + 1} of ${totalPages}`,
       value: i + 1
     }));
 
