@@ -2,23 +2,26 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { ButtonView, ContextualBalloon, View } from '@ckeditor/ckeditor5-ui';
 import { Locale } from '@ckeditor/ckeditor5-utils';
-import { LinkFormView, createLinkFormView } from './alight-link-url-plugin-utils';
-import LinkUI from '@ckeditor/ckeditor5-link/src/linkui';
+import { LinkUI } from '@ckeditor/ckeditor5-link';
 import { CKAlightModalDialog } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
+import CustomLinkBalloonView from './custom-link-balloon-view';
 
 import ToolBarIcon from './assets/icon-link.svg';
+import UnlinkIcon from '@ckeditor/ckeditor5-link/theme/icons/unlink.svg';
 import './styles/alight-link-url-plugin.scss';
 
 // The UI plugin that contributes:
 //   1) A toolbar button that opens our "Insert/Edit Link" modal (see `handleLinkButtonClick()`).
 //   2) Overridden behavior for the built-in LinkUI's edit/unlink actions (see `afterInit()`).
 export default class AlightLinkUrlPluginUI extends Plugin {
-  public formView: LinkFormView | null = null;
   private _balloon!: ContextualBalloon;
   private dialog: CKAlightModalDialog | null = null;
+  private _defaultLinkUI!: LinkUI;
+  private _currentView: View | null = null;
+  private _balloonView!: CustomLinkBalloonView;
 
   static get requires() {
-    return [ContextualBalloon];
+    return [ContextualBalloon, LinkUI];
   }
 
   static get pluginName() {
@@ -27,17 +30,18 @@ export default class AlightLinkUrlPluginUI extends Plugin {
 
   public init(): void {
     const editor = this.editor;
-
-    // Get the balloon instance
     this._balloon = editor.plugins.get(ContextualBalloon);
+    this._defaultLinkUI = editor.plugins.get('LinkUI');
+    this._balloonView = new CustomLinkBalloonView(editor.locale);
 
-    // Add toolbar button
+    // Replace the inline button creation with the new method
     this._createToolbarLinkButton();
 
-    // Enable custom balloon interactions
-    this._enableBalloonActivators();
+    this._balloonView.on('submit', () => this._updateLink());
+    this._enableCustomBalloonActivators();
   }
 
+  // Add the new private method
   private _createToolbarLinkButton(): void {
     const editor = this.editor;
     const t = editor.t;
@@ -58,13 +62,42 @@ export default class AlightLinkUrlPluginUI extends Plugin {
         const hasLinkAtSelection = selection.getAttribute('linkHref');
 
         if (hasLinkAtSelection) {
-          this._showBalloonUI();
+          this._showBalloon();
         } else {
           this._showModalUI();
         }
       });
 
       return buttonView;
+    });
+  }
+
+  private _showCustomUI(forceVisible = false): void {
+    const editor = this.editor;
+    const selection = editor.model.document.selection;
+    const hasLinkAtSelection = selection.getAttribute('linkHref');
+
+    if (hasLinkAtSelection) {
+      this._showBalloon();
+    } else {
+      this._showModalUI();
+    }
+  }
+
+  private _showBalloon(): void {
+    const editor = this.editor;
+    const selection = editor.model.document.selection;
+    const linkHref = selection.getAttribute('linkHref');
+    const orgNameText = selection.getAttribute('orgNameText');
+
+    if (this._balloonView.urlInputElement && this._balloonView.orgNameInputElement) {
+      this._balloonView.urlInputElement.value = linkHref as string || '';
+      this._balloonView.orgNameInputElement.value = orgNameText as string || '';
+    }
+
+    this._balloon.add({
+      view: this._balloonView,
+      position: this._getBalloonPositionData()
     });
   }
 
@@ -103,8 +136,8 @@ export default class AlightLinkUrlPluginUI extends Plugin {
     // Add footer buttons using the dialog's API
     const footerContent = document.createElement('div');
     footerContent.innerHTML = `
-      <button class="ck-button secondary">Cancel</button>
-      <button class="ck-button primary">Insert</button>
+      <button class="cka-button cka-button-rounded cka-button-outlined">Cancel</button>
+      <button class="cka-button cka-button-rounded">Continue</button>
     `;
 
     this.dialog.setFooter(footerContent);
@@ -117,88 +150,32 @@ export default class AlightLinkUrlPluginUI extends Plugin {
     this.dialog.show();
   }
 
-  private _showBalloonUI(): void {
-    const balloonView = new View(this.editor.locale);
+  private _handleUnlink(): void {
+    const editor = this.editor;
 
-    // Create the balloon content using proper template definition
-    balloonView.setTemplate({
-      tag: 'div',
-      attributes: {
-        class: ['ck', 'ck-link-balloon-content']
-      },
-      children: [
-        {
-          tag: 'div',
-          attributes: {
-            class: ['ck-link-actions']
-          },
-          children: [
-            {
-              tag: 'div',
-              attributes: {
-                class: ['ck-link-actions__preview']
-              },
-              children: [
-                {
-                  tag: 'a',
-                  attributes: {
-                    class: ['ck-link-actions__preview-link'],
-                    target: '_blank',
-                    rel: 'noopener noreferrer',
-                    href: this._getSelectedLinkText()
-                  },
-                  children: [
-                    {
-                      text: this._getSelectedLinkText()
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              tag: 'div',
-              attributes: {
-                class: ['ck-link-actions__buttons']
-              },
-              children: [
-                {
-                  tag: 'button',
-                  attributes: {
-                    class: ['ck-button', 'ck-button-edit']
-                  },
-                  children: [{ text: 'Edit' }]
-                },
-                {
-                  tag: 'button',
-                  attributes: {
-                    class: ['ck-button', 'ck-button-unlink']
-                  },
-                  children: [{ text: 'Unlink' }]
-                }
-              ]
-            }
-          ]
+    // Use the default unlink command
+    editor.execute('unlink');
+
+    // Additional cleanup for org name
+    editor.model.change(writer => {
+      const selection = editor.model.document.selection;
+      const range = selection.getFirstRange();
+
+      if (!range) return;
+
+      // Remove org name spans
+      const itemsToCheck = [...range.getItems()];
+      const nodeAfter = range.end.nodeAfter;
+      if (nodeAfter) {
+        itemsToCheck.push(nodeAfter);
+      }
+
+      itemsToCheck.forEach(item => {
+        if (item.is('element', 'orgNameSpan')) {
+          writer.remove(item);
         }
-      ]
-    });
-
-    this._balloon.add({
-      view: balloonView,
-      position: this._getBalloonPositionData()
-    });
-
-    // Add event listeners to balloon buttons
-    const element = balloonView.element;
-    if (element) {
-      const editButton = element.querySelector('.ck-button-edit');
-      const unlinkButton = element.querySelector('.ck-button-unlink');
-
-      editButton?.addEventListener('click', () => this._showModalUI());
-      unlinkButton?.addEventListener('click', () => {
-        this.editor.execute('alightLinkUrlPluginCommand', { href: '' });
-        this._hideBalloon();
       });
-    }
+    });
   }
 
   private _getSelectedLinkText(): string {
@@ -208,9 +185,10 @@ export default class AlightLinkUrlPluginUI extends Plugin {
   }
 
   private _hideBalloon(): void {
-    if (this._balloon.hasView(this.formView!)) {
-      this._balloon.remove(this.formView!);
+    if (this._currentView && this._balloon.hasView(this._currentView)) {
+      this._balloon.remove(this._currentView);
     }
+    this._currentView = null;
   }
 
   private _handleModalSubmit(): void {
@@ -227,7 +205,28 @@ export default class AlightLinkUrlPluginUI extends Plugin {
       orgNameText: orgNameInput?.value || ''
     };
 
-    this.editor.execute('alightLinkUrlPluginCommand', linkData);
+    this.editor.model.change(writer => {
+      // First execute the link command
+      this.editor.execute('link', linkData.href);
+
+      // If we have org name text, handle it after the link is created
+      if (linkData.orgNameText) {
+        const selection = this.editor.model.document.selection;
+        const position = selection.getLastPosition()!;
+
+        // Create and insert the orgNameSpan
+        const orgNameSpan = writer.createElement('orgNameSpan', {
+          class: 'org-name-append'
+        });
+
+        writer.insertText(` (${linkData.orgNameText})`, orgNameSpan);
+        writer.insert(orgNameSpan, position);
+
+        // Store the orgNameText as an attribute on the link
+        writer.setAttribute('orgNameText', linkData.orgNameText, selection.getFirstRange()!);
+      }
+    });
+
     this.dialog.destroy();
   }
 
@@ -241,26 +240,15 @@ export default class AlightLinkUrlPluginUI extends Plugin {
     };
   }
 
-  private _enableBalloonActivators(): void {
+  private _enableCustomBalloonActivators(): void {
     const editor = this.editor;
 
     // Handle clicking on existing links
     editor.editing.view.document.on('click', (evt, data) => {
       if (this._isClickOnLink(data)) {
-        this._showBalloonUI();
+        this._showBalloon();
         evt.stop();
       }
-    });
-
-    // Handle Ctrl+K shortcut
-    editor.keystrokes.set('Ctrl+K', (data, cancel) => {
-      const hasLink = editor.model.document.selection.getAttribute('linkHref');
-      if (hasLink) {
-        this._showBalloonUI();
-      } else {
-        this._showModalUI();
-      }
-      cancel();
     });
   }
 
@@ -358,5 +346,27 @@ export default class AlightLinkUrlPluginUI extends Plugin {
         writer.remove(writer.createRangeOn(nodeAfter));
       }
     });
+  }
+
+  private _updateLink(): void {
+    const editor = this.editor;
+    const model = editor.model;
+
+    if (this._balloonView.urlInputElement && this._balloonView.orgNameInputElement) {
+      const linkValue = this._balloonView.urlInputElement.value;
+      const orgNameValue = this._balloonView.orgNameInputElement.value;
+
+      model.change(writer => {
+        const selection = model.document.selection;
+        const range = selection.getFirstRange();
+
+        if (range) {
+          writer.setAttribute('linkHref', linkValue, range);
+          writer.setAttribute('orgNameText', orgNameValue, range);
+        }
+      });
+    }
+
+    this._balloon.remove(this._balloonView);
   }
 }
