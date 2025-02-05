@@ -67,6 +67,11 @@ ul.checkbox-list {
 
   .cka-select-menu-wrap {
     display: inline-flex;
+
+    .cka-select {
+      color: var(--gray-700);
+      min-width: 100px;
+    }
   }
 }
 

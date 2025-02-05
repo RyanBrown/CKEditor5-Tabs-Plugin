@@ -45,12 +45,12 @@ export default class AlightLinkPluginEditing extends Plugin {
         buttons: [
           {
             label: 'Cancel',
-            className: 'cka-button cka-button-rounded cka-button-outlined',
+            className: 'cka-button cka-button-rounded cka-button-outlined cka-button-sm',
             onClick: () => this.handleCancel()
           },
           {
             label: 'Continue',
-            className: 'cka-button cka-button-rounded',
+            className: 'cka-button cka-button-rounded cka-button-sm',
             onClick: () => this.handleImageSelection()
           }
         ],
@@ -68,12 +68,12 @@ export default class AlightLinkPluginEditing extends Plugin {
         buttons: [
           {
             label: 'Cancel',
-            className: 'cka-button cka-button-rounded cka-button-outlined',
+            className: 'cka-button cka-button-rounded cka-button-outlined cka-button-sm',
             onClick: () => this.handleCancel()
           },
           {
             label: 'Continue',
-            className: 'cka-button cka-button-rounded',
+            className: 'cka-button cka-button-rounded cka-button-sm',
             onClick: () => this.handleUpload()
           }
         ],
@@ -91,12 +91,12 @@ export default class AlightLinkPluginEditing extends Plugin {
         buttons: [
           {
             label: 'Cancel',
-            className: 'cka-button cka-button-rounded cka-button-outlined',
+            className: 'cka-button cka-button-rounded cka-button-outlined cka-button-sm',
             onClick: () => this.handleCancel()
           },
           {
             label: 'Continue',
-            className: 'cka-button cka-button-rounded',
+            className: 'cka-button cka-button-rounded cka-button-sm',
             onClick: () => this.handleUpload()
           }
         ],
@@ -118,12 +118,12 @@ export default class AlightLinkPluginEditing extends Plugin {
         buttons: [
           {
             label: 'Cancel',
-            className: 'cka-button cka-button-rounded cka-button-outlined',
+            className: 'cka-button cka-button-rounded cka-button-outlined cka-button-sm',
             onClick: () => this.handleCancel()
           },
           {
             label: 'Continue',
-            className: 'cka-button cka-button-rounded',
+            className: 'cka-button cka-button-rounded cka-button-sm',
             onClick: () => this.handleUpload()
           }
         ],
@@ -141,7 +141,7 @@ export default class AlightLinkPluginEditing extends Plugin {
         buttons: [
           {
             label: 'Cancel',
-            className: 'cka-button cka-button-rounded cka-button-outlined',
+            className: 'cka-button cka-button-rounded cka-button-outlined cka-button-sm',
             onClick: () => {
               this.newDocumentLinkManager.resetSearch();
               this.handleCancel();

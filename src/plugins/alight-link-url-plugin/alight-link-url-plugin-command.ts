@@ -61,8 +61,8 @@ export default class AlightLinkUrlPluginCommand extends Command {
     // Set footer with buttons
     this.dialog.setFooter(`
       <div class="cka-dialog-footer-buttons">
-        <button class="cka-button cka-button-rounded cka-button-outlined" id="cancelBtn">Cancel</button>
-        <button class="cka-button cka-button-rounded" id="applyBtn">Apply</button>
+        <button class="cka-button cka-button-rounded cka-button-outlined cka-button-sm" id="cancelBtn">Cancel</button>
+        <button class="cka-button cka-button-rounded" id="applyBtn cka-button-sm">Apply</button>
       </div>
     `);
 
