@@ -1,0 +1,1 @@
+// src/plugins/alight-force-paste-plain-text-plugin/tests/alight-force-paste-plain-text-plugin.spec.ts

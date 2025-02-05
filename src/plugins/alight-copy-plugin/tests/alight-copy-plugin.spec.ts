@@ -1,0 +1,1 @@
+// src/plugins/alight-copy-plugin/tests/alight-copy-plugin.spec.ts
