@@ -40,19 +40,6 @@ ul.checkbox-list {
   }
 }
 
-.cka-search-container {
-  align-items: center;
-  background-color: var(--neutral-white);
-  border-bottom: 1px solid #ccc;
-  display: flex;
-  justify-content: center;
-  padding: mixins.toRem(10) var(--spacing-xl);
-  position: sticky;
-  top: 0;
-  width: 100%;
-  z-index: 3;
-}
-
 .cka-pagination {
   align-items: center;
   background-color: var(--neutral-white);

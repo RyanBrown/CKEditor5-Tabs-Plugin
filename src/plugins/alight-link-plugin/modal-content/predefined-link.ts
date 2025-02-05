@@ -125,11 +125,13 @@ export class PredefinedLinkManager implements ILinkManager {
     // Basic and Advanced Search markup
     const searchContainerMarkup = `
       <div id="search-container" class="cka-search-container">
-        <input type="text" id="search-input" placeholder="Search by link name..." value="${this.currentSearchQuery}" />
-        <button id="reset-search-btn" class="cka-button cka-button-rounded cka-button-text">Reset</button>
-        <button id="${this.advancedSearchTriggerId}" data-panel-id="advanced-search-panel" class="cka-button cka-button-rounded cka-button-text">
-          Advanced Search
-        </button>
+        <div class="cka-search-input-container">
+          <input type="text" id="search-input" class="cka-search-input" placeholder="Search by link name..." value="${this.currentSearchQuery}" />
+          <button id="reset-search-btn" class="cka-button cka-button-rounded cka-button-text">Reset</button>
+          <button id="${this.advancedSearchTriggerId}" data-panel-id="advanced-search-panel" class="cka-button cka-button-rounded cka-button-text">
+            Advanced Search
+          </button>
+        </div>
         <button id="search-btn" class="cka-button cka-button-rounded cka-button-outlined">Search</button>
       </div>
     `;
@@ -187,11 +189,11 @@ export class PredefinedLinkManager implements ILinkManager {
     const paginationMarkup = totalPages > 1
       ? `
         <article id="pagination" class="cka-pagination">
-          <button id="first-page" class="pagination-btn cka-button cka-button-text" data-page="1" ${page === 1 ? 'disabled' : ''}>First</button>
-          <button id="prev-page" class="pagination-btn cka-button cka-button-text" data-page="${page - 1}" ${page === 1 ? 'disabled' : ''}>Previous</button>
+          <button id="first-page" class="first pagination-btn cka-button cka-button-text" data-page="1" ${page === 1 ? 'disabled' : ''}>First</button>
+          <button id="prev-page" class="previous pagination-btn cka-button cka-button-text" data-page="${page - 1}" ${page === 1 ? 'disabled' : ''}>Previous</button>
           <div id="page-select-container" class="cka-select-menu-wrap"></div>
-          <button id="next-page" class="pagination-btn cka-button cka-button-text" data-page="${page + 1}" ${page === totalPages ? 'disabled' : ''}>Next</button>
-          <button id="last-page" class="pagination-btn cka-button cka-button-text" data-page="${totalPages}" ${page === totalPages ? 'disabled' : ''}>Last</button>
+          <button id="next-page" class="next pagination-btn cka-button cka-button-text" data-page="${page + 1}" ${page === totalPages ? 'disabled' : ''}>Next</button>
+          <button id="last-page" class="last pagination-btn cka-button cka-button-text" data-page="${totalPages}" ${page === totalPages ? 'disabled' : ''}>Last</button>
         </article>
       `
       : '';

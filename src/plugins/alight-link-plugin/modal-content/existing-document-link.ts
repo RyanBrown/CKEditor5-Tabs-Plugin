@@ -101,11 +101,13 @@ export class ExistingDocumentLinkManager implements ILinkManager {
 
     const searchContainerMarkup = `
       <div id="search-container" class="cka-search-container">
-        <input type="text" id="search-input" placeholder="Search by document title..." value="${this.currentSearchQuery}" />
-        <button id="reset-search-btn" class="cka-button cka-button-rounded cka-button-outlined cka-button-text">Reset</button>
-        <button id="${this.advancedSearchTriggerId}" data-panel-id="advanced-search-panel" class="cka-button cka-button-rounded cka-button-text">
-          Advanced Search
-        </button>
+        <div class="cka-search-input-container">
+          <input type="text" id="search-input" class="cka-search-input" placeholder="Search by document title..." value="${this.currentSearchQuery}" />
+          <button id="reset-search-btn" class="cka-button cka-button-rounded cka-button-outlined cka-button-text">Reset</button>
+          <button id="${this.advancedSearchTriggerId}" data-panel-id="advanced-search-panel" class="cka-button cka-button-rounded cka-button-text">
+            Advanced Search
+          </button>
+        </div>
         <button id="search-btn" class="cka-button cka-button-rounded cka-button-outlined">Search</button>
       </div>
     `;
