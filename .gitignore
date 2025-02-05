@@ -171,3 +171,6 @@ testem.log
 Thumbs.db
 package-lock.json
 /core.20355
+
+# CKEditor5 directory
+/ckeditor5-master/
