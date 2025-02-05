@@ -1,1 +1,15 @@
 // src/plugins/alight-link-url-plugin/styles/alight-link-url-plugin.scss
+.ck.ck-link-form {
+  padding: var(--ck-spacing-standard);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ck-spacing-standard);
+
+  .ck-labeled-field-view {
+    width: 100%;
+  }
+
+  .ck-button {
+    margin-top: var(--ck-spacing-standard);
+  }
+}
