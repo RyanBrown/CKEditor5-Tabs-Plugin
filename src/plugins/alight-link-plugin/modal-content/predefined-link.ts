@@ -199,7 +199,7 @@ export class PredefinedLinkManager implements ILinkManager {
     return `
       ${searchContainerMarkup}
       ${advancedSearchPanelMarkup}
-      <div id="links-container">
+      <div id="links-container" class="cka-links-container">
         ${linksMarkup}
       </div>
       ${paginationMarkup}

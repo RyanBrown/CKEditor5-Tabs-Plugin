@@ -39,7 +39,8 @@ export default class AlightLinkPluginEditing extends Plugin {
         title: 'Choose a Predefined Link',
         modalType: 'predefinedLink',
         modalOptions: {
-          width: '90vw'
+          width: '90vw',
+          contentClass: 'cka-predefined-link-content'
         },
         buttons: [
           {
@@ -111,7 +112,8 @@ export default class AlightLinkPluginEditing extends Plugin {
         title: 'Existing Document Link',
         modalType: 'existingDocumentLink',
         modalOptions: {
-          width: '90vw'
+          width: '90vw',
+          contentClass: 'cka-existing-document-content'
         },
         buttons: [
           {

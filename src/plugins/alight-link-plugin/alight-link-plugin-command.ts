@@ -30,6 +30,9 @@ interface CommandData {
     | 'bottom-left'
     | 'bottom-right';
     closeOnEscape?: boolean;
+    headerClass?: string;
+    contentClass?: string;
+    footerClass?: string;
   };
   buttons?: DialogButton[];
   loadContent: () => Promise<string>;
@@ -53,6 +56,9 @@ export class AlightLinkPluginCommand extends Command {
       width: '600px',
       position: 'center',
       closeOnEscape: true,
+      headerClass: '',
+      contentClass: '',
+      footerClass: '',
       ...data.modalOptions
     });
 

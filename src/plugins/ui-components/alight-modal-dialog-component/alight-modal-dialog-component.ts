@@ -11,6 +11,9 @@ interface DialogOptions {
   position?: 'center' | 'top' | 'bottom' | 'left' | 'right' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
   closeOnEscape?: boolean;
   overlayOpacity?: number;
+  headerClass?: string;
+  contentClass?: string;
+  footerClass?: string;
 }
 
 interface Position {
@@ -55,6 +58,9 @@ export class CKAlightModalDialog {
       position: 'center',
       closeOnEscape: true,
       overlayOpacity: 0.5,
+      headerClass: '',
+      contentClass: '',
+      footerClass: '',
       ...options
     };
 
@@ -95,15 +101,15 @@ export class CKAlightModalDialog {
     // Create dialog content
     const content = `
       <div class="cka-dialog" style="width: ${this.options.width};">
-        <div class="cka-dialog-header ${this.options.draggable ? 'draggable' : ''}">
+        <div class="cka-dialog-header ${this.options.draggable ? 'draggable' : ''} ${this.options.headerClass}">
           <span class="cka-dialog-title"></span>
           <div class="cka-dialog-header-icons">
             ${this.options.maximizable ? '<button class="cka-dialog-maximize" aria-label="Maximize"><i class="cka-maximize-icon"></i></button>' : ''}
             <button class="cka-dialog-close" aria-label="Close"><i class="cka-close-icon"></i></button>
           </div>
         </div>
-        <div class="cka-dialog-content"></div>
-        <div class="cka-dialog-footer"></div>
+        <div class="cka-dialog-content ${this.options.contentClass}"></div>
+        <div class="cka-dialog-footer ${this.options.footerClass}"></div>
         ${this.options.resizable ? '<div class="cka-resizer"></div>' : ''}
       </div>
     `;

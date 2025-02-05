@@ -170,7 +170,7 @@ export class ExistingDocumentLinkManager implements ILinkManager {
     return `
       ${searchContainerMarkup}
       ${advancedSearchPanelMarkup}
-      <div id="documents-container">
+      <div id="documents-container" class="cka-documents-container">
         ${documentsMarkup}
       </div>
       ${paginationMarkup}

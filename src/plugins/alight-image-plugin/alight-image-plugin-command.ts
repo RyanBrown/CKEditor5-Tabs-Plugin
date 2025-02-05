@@ -20,6 +20,9 @@ interface CommandData {
     width?: string;
     position?: 'center' | 'top' | 'bottom' | 'left' | 'right' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
     closeOnEscape?: boolean;
+    headerClass?: string;
+    contentClass?: string;
+    footerClass?: string;
   };
   buttons?: DialogButton[];
   loadContent: () => Promise<string>;

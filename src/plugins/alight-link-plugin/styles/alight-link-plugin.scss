@@ -46,7 +46,7 @@ ul.checkbox-list {
   border-bottom: 1px solid #ccc;
   display: flex;
   justify-content: center;
-  padding: 1rem;
+  padding: mixins.toRem(10) var(--spacing-xl);
   position: sticky;
   top: 0;
   width: 100%;
@@ -60,7 +60,7 @@ ul.checkbox-list {
   bottom: 0;
   display: flex;
   justify-content: center;
-  padding: 1rem;
+  padding: var(--spacing-xl) var(--spacing-xl) 0;
   position: sticky;
   width: 100%;
   z-index: 3;
@@ -68,4 +68,15 @@ ul.checkbox-list {
   .cka-select-menu-wrap {
     display: inline-flex;
   }
+}
+
+.cka-predefined-link-content,
+.cka-existing-document-content {
+  margin: 0;
+  padding: 0;
+}
+
+.cka-links-container,
+.cka-documents-container {
+  padding: var(--spacing-xl);
 }

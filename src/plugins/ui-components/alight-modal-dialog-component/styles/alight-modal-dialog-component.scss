@@ -32,7 +32,7 @@ $cka-dialog-border-radius: 0;
 
 .cka-dialog-header {
   align-items: center;
-  background: #f8f9fa;
+  // background-color: #f8f9fa;
   border-bottom: 1px solid #dee2e6;
   border-top-left-radius: $cka-dialog-border-radius;
   border-top-right-radius: $cka-dialog-border-radius;
@@ -83,7 +83,7 @@ $cka-dialog-border-radius: 0;
 }
 
 .cka-dialog-footer {
-  border-top: 1px solid #dee2e6;
+  // border-top: 1px solid #dee2e6;
   display: flex;
   justify-content: flex-start;
   padding: var(--spacing-xl);
