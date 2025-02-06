@@ -2,38 +2,39 @@
 @use './../../../../styles/mixins' as mixins;
 
 .cka-select {
-  display: inline-block;
-  font-family: var(--font-family-base);
-  min-width: 200px;
   position: relative;
+  display: inline-block;
+  width: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
 
   &.disabled {
-    cursor: default;
     opacity: 0.6;
     pointer-events: none;
   }
 
   .cka-select-button {
-    align-items: center;
-    background: var(--neutral-white);
-    border-radius: 0;
-    border: 1px solid #ced4da;
-    cursor: pointer;
     display: flex;
+    align-items: center;
     justify-content: space-between;
-    padding: 0.5rem 0.75rem;
-    position: relative;
-    transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+    min-height: 36px;
+    padding: 0.5rem 1rem;
+    background: #ffffff;
+    border: 1px solid #ced4da;
+    border-radius: 0;
+    cursor: pointer;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 
     &:hover {
-      border-color: var(--primary);
+      border-color: #a0a0a0;
     }
 
-    &:focus,
-    &:focus-within {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
+    &:focus {
       outline: none;
+      border-color: #80bdff;
+      box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
     }
   }
 
@@ -42,6 +43,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    padding-right: 1rem;
 
     &.placeholder {
       color: #6c757d;
@@ -49,123 +51,96 @@
   }
 
   .cka-select-arrow {
-    align-items: center;
-    color: #6c757d;
-    display: inline-flex;
-    height: 1.2rem;
-    justify-content: center;
-    margin-left: 0.5rem;
-    transition: transform 0.2s;
-    width: 1.2rem;
+    position: relative;
+    width: 10px;
+    height: 10px;
 
     &::after {
-      border: solid #6c757d;
-      border-width: 0 2px 2px 0;
-      content: "";
-      display: inline-block;
-      margin-top: -3px;
-      padding: 3px;
-      transform: rotate(45deg);
-      transition: transform 0.2s;
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(45deg);
+      width: 6px;
+      height: 6px;
+      border-right: 2px solid #6c757d;
+      border-bottom: 2px solid #6c757d;
+      transition: transform 0.2s ease;
     }
   }
+}
 
-  .cka-select-dropdown {
-    background: var(--neutral-white);
-    border: 1px solid #ced4da;
-    border-radius: 0;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    display: none;
-    left: 0;
-    max-height: 200px;
-    opacity: 0;
+.cka-select-dropdown {
+  position: absolute;
+  background: #ffffff;
+  border: 1px solid #ced4da;
+  border-radius: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  // min-width: 100%;
+
+  .cka-select-dropdown-content {
+    max-height: 250px;
     overflow-y: auto;
-    padding: 0.5rem 0;
-    position: absolute;
-    transition: opacity 0.2s ease, visibility 0.2s ease;
-    visibility: hidden;
-    width: 100%;
-    z-index: 1000;
-
-    // Bottom positioning (default)
-    &.cka-select-dropdown--bottom {
-      animation: selectDropdownFadeInDown 0.1s ease-out;
-      margin-top: 4px;
-      top: 100%;
-      transform-origin: top;
-    }
-
-    // Top positioning
-    &.cka-select-dropdown--top {
-      animation: selectDropdownFadeInUp 0.1s ease-out;
-      bottom: 100%;
-      margin-bottom: 4px;
-      transform-origin: bottom;
-    }
-
-    &.open {
-      display: block;
-      opacity: 1;
-      visibility: visible;
-    }
-  }
-
-  // Rotate arrow when dropdown is positioned above
-  &:has(.cka-select-dropdown--top.open) {
-    .cka-select-arrow::after {
-      margin-top: 3px;
-      transform: rotate(-135deg);
-    }
   }
 
   .cka-select-filter {
-    border-bottom: 1px solid #e9ecef;
     padding: 0.5rem;
+    border-bottom: 1px solid #ced4da;
+    background: #f8f9fa;
 
     input {
+      width: 100%;
+      padding: 0.5rem;
       border: 1px solid #ced4da;
       border-radius: 0;
-      padding: 0.375rem 0.75rem;
-      transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-      width: 100%;
+      font-size: inherit;
 
       &:focus {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
         outline: none;
+        border-color: #80bdff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
       }
     }
   }
 
   .cka-select-options {
-    .cka-select-option {
-      cursor: pointer;
-      padding: 0.5rem 0.75rem;
-      transition: background-color 0.2s;
+    padding: 0.5rem 0;
+  }
 
-      &:hover {
-        background-color: #f8f9fa;
-      }
+  .cka-select-option {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
 
-      &.selected {
-        background-color: #EEF2FF;
-        color: var(--primary);
-      }
+    &:hover {
+      background-color: #f8f9fa;
+    }
 
-      &.disabled {
-        background-color: #f8f9fa;
-        cursor: default;
-        opacity: 0.6;
-      }
+    &.selected {
+      background-color: #e9ecef;
+      font-weight: 500;
+    }
+
+    &.disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      background-color: #f8f9fa;
     }
   }
 }
 
-/* Animations for dropdown */
-@keyframes selectDropdownFadeInDown {
+// Animation classes
+.cka-select-dropdown {
+  &.open {
+    animation: dropdownFadeIn 0.1s ease-out;
+  }
+}
+
+@keyframes dropdownFadeIn {
   from {
     opacity: 0;
-    transform: translateY(-5px);
+    transform: translateY(-2px);
   }
 
   to {
@@ -174,14 +149,43 @@
   }
 }
 
-@keyframes selectDropdownFadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(5px);
+// Scrollbar styling
+.cka-select-dropdown .cka-select-dropdown-content {
+  &::-webkit-scrollbar {
+    width: 6px;
   }
 
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 0;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 0;
+
+    &:hover {
+      background: #a8a8a8;
+    }
+  }
+}
+
+// Focus styles for accessibility
+.cka-select:focus-within .cka-select-button {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+// Multiple selection styles
+.cka-select.multiple .cka-select-option {
+  &.selected {
+    position: relative;
+    padding-left: 2rem;
+
+    &::before {
+      content: '✓';
+      position: absolute;
+      left: 0.75rem;
+    }
   }
 }

@@ -1,12 +1,13 @@
 // src/plugins/ui-components/alight-select-menu-component/alight-select-menu-component.ts
 import './styles/alight-select-menu.scss';
+import { AlightPositionManager, PositionConfig } from '../alight-ui-component-utils/alight-position-manager';
 
 interface SelectOption {
   [key: string]: any;
   disabled?: boolean;
 }
 
-interface SelectConfig<T> {
+interface SelectConfig<T> extends PositionConfig {
   options?: T[];
   placeholder?: string;
   onChange?: (value: T | T[] | null) => void;
@@ -35,6 +36,9 @@ export class CKALightSelectMenu<T extends SelectOption> {
   private value: T[keyof T] | T[keyof T][] | null;
   private isOpen: boolean = false;
   private filterValue: string = '';
+  private positionManager: AlightPositionManager;
+  private readonly menuId: string;
+  private config: PositionConfig;
 
   constructor(config: SelectConfig<T> = {}) {
     this.options = config.options || [];
@@ -46,6 +50,20 @@ export class CKALightSelectMenu<T extends SelectOption> {
     this.optionLabel = config.optionLabel || 'label' as keyof T;
     this.optionValue = config.optionValue || 'value' as keyof T;
     this.value = config.value || (this.multiple ? [] : null);
+
+    this.positionManager = AlightPositionManager.getInstance();
+    this.menuId = `select-menu-${Math.random().toString(36).substr(2, 9)}`;
+
+    // Add position-related defaults
+    this.config = {
+      position: 'bottom',
+      offset: 4,
+      followTrigger: false,
+      constrainToViewport: true,
+      autoFlip: true,
+      alignment: 'start',
+      ...config
+    };
 
     this.init();
   }
@@ -75,9 +93,13 @@ export class CKALightSelectMenu<T extends SelectOption> {
     selectButton.appendChild(this.selectedDisplay);
     selectButton.appendChild(arrow);
 
-    // Create dropdown panel
+    // Create dropdown panel with absolute positioning
     this.dropdownElement = document.createElement('div');
     this.dropdownElement.className = 'cka-select-dropdown';
+    this.dropdownElement.style.position = 'absolute';
+    this.dropdownElement.style.width = '100%';
+    this.dropdownElement.style.zIndex = '1000';
+    this.dropdownElement.style.display = 'none'; // Hide initially
 
     // Add dropdown content wrapper
     const dropdownContent = document.createElement('div');
@@ -105,16 +127,16 @@ export class CKALightSelectMenu<T extends SelectOption> {
     dropdownContent.appendChild(this.optionsContainer);
     this.dropdownElement.appendChild(dropdownContent);
 
-    this.renderOptions();
-
     // Append elements to main container
     this.element.appendChild(selectButton);
-    this.element.appendChild(this.dropdownElement);
+    document.body.appendChild(this.dropdownElement); // Append to body instead
+
+    this.renderOptions();
 
     // Add click outside listener
     document.addEventListener('click', (e: MouseEvent) => {
       const target = e.target as Node;
-      if (!this.element.contains(target)) {
+      if (!this.element.contains(target) && !this.dropdownElement.contains(target)) {
         this.closeDropdown();
       }
     });
@@ -294,11 +316,26 @@ export class CKALightSelectMenu<T extends SelectOption> {
   }
 
   private openDropdown(): void {
-    this.isOpen = true;
+    if (this.disabled) return;
 
-    // Position the dropdown before showing it
-    this.positionDropdown();
-    this.dropdownElement.classList.add('open');
+    this.isOpen = true;
+    this.dropdownElement.style.display = 'block';
+
+    // Register with position manager
+    this.positionManager.register(
+      this.menuId,
+      this.dropdownElement,
+      this.element,
+      {
+        ...this.config,
+        position: 'bottom',
+        offset: 4,
+        constrainToViewport: true,
+        autoFlip: true,
+        alignment: 'start',
+        width: this.element.offsetWidth + 'px'
+      }
+    );
 
     if (this.filter) {
       const filterInput = this.dropdownElement.querySelector('input');
@@ -306,10 +343,6 @@ export class CKALightSelectMenu<T extends SelectOption> {
         filterInput.focus();
       }
     }
-
-    // Add resize and scroll listeners
-    window.addEventListener('resize', this.handleResize);
-    this.addScrollListener();
   }
 
   private handleResize = (): void => {
@@ -349,20 +382,19 @@ export class CKALightSelectMenu<T extends SelectOption> {
 
   private closeDropdown(): void {
     this.isOpen = false;
-    this.dropdownElement.classList.remove('open');
-    this.filterValue = '';
+    this.dropdownElement.style.display = 'none';
+
+    // Unregister from position manager
+    this.positionManager.unregister(this.menuId);
+
     if (this.filter) {
-      const filterInput = this.dropdownElement.querySelector('input');
+      const filterInput = this.dropdownElement.querySelector('input') as HTMLInputElement;
       if (filterInput) {
-        (filterInput as HTMLInputElement).value = '';
+        filterInput.value = '';
+        this.filterValue = '';
+        this.renderOptions();
       }
     }
-
-    // Remove event listeners
-    window.removeEventListener('resize', this.handleResize);
-    this.removeScrollListener();
-
-    this.renderOptions();
   }
 
   public mount(container: string | HTMLElement): void {
@@ -404,12 +436,13 @@ export class CKALightSelectMenu<T extends SelectOption> {
   }
 
   public destroy(): void {
-    // Remove event listeners
-    window.removeEventListener('resize', this.handleResize);
-    this.removeScrollListener();
+    this.positionManager.unregister(this.menuId);
 
     if (this.element && this.element.parentNode) {
       this.element.parentNode.removeChild(this.element);
+    }
+    if (this.dropdownElement && this.dropdownElement.parentNode) {
+      this.dropdownElement.parentNode.removeChild(this.dropdownElement);
     }
   }
 }
