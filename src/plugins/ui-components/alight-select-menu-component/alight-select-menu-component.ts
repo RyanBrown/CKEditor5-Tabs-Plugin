@@ -96,10 +96,8 @@ export class CKALightSelectMenu<T extends SelectOption> {
     // Create dropdown panel with absolute positioning
     this.dropdownElement = document.createElement('div');
     this.dropdownElement.className = 'cka-select-dropdown';
-    this.dropdownElement.style.position = 'absolute';
-    this.dropdownElement.style.width = '100%';
-    this.dropdownElement.style.zIndex = '1000';
-    this.dropdownElement.style.display = 'none'; // Hide initially
+    this.dropdownElement.style.position = 'fixed';
+    this.dropdownElement.style.display = 'none';
 
     // Add dropdown content wrapper
     const dropdownContent = document.createElement('div');
@@ -129,7 +127,10 @@ export class CKALightSelectMenu<T extends SelectOption> {
 
     // Append elements to main container
     this.element.appendChild(selectButton);
-    document.body.appendChild(this.dropdownElement); // Append to body instead
+    document.body.appendChild(this.dropdownElement);
+
+    // Force a layout recalculation
+    this.dropdownElement.getBoundingClientRect();
 
     this.renderOptions();
 
@@ -319,23 +320,33 @@ export class CKALightSelectMenu<T extends SelectOption> {
     if (this.disabled) return;
 
     this.isOpen = true;
+
+    // Set display block before registering with position manager
     this.dropdownElement.style.display = 'block';
 
-    // Register with position manager
-    this.positionManager.register(
-      this.menuId,
-      this.dropdownElement,
-      this.element,
-      {
-        ...this.config,
-        position: 'bottom',
-        offset: 4,
-        constrainToViewport: true,
-        autoFlip: true,
-        alignment: 'start',
-        width: this.element.offsetWidth + 'px'
-      }
-    );
+    // Force a layout recalculation
+    this.dropdownElement.getBoundingClientRect();
+
+    // Register with position manager with a slight delay to ensure proper positioning
+    requestAnimationFrame(() => {
+      this.positionManager.register(
+        this.menuId,
+        this.dropdownElement,
+        this.element,
+        {
+          ...this.config,
+          position: 'bottom',
+          offset: 4,
+          constrainToViewport: true,
+          autoFlip: true,
+          alignment: 'start',
+          width: this.element.offsetWidth + 'px'
+        }
+      );
+
+      // Add open class for animation after positioning
+      this.dropdownElement.classList.add('open');
+    });
 
     if (this.filter) {
       const filterInput = this.dropdownElement.querySelector('input');
@@ -382,6 +393,7 @@ export class CKALightSelectMenu<T extends SelectOption> {
 
   private closeDropdown(): void {
     this.isOpen = false;
+    this.dropdownElement.classList.remove('open');
     this.dropdownElement.style.display = 'none';
 
     // Unregister from position manager
@@ -407,6 +419,12 @@ export class CKALightSelectMenu<T extends SelectOption> {
     } else {
       container.appendChild(this.element);
     }
+
+    // Force a layout recalculation after mounting
+    requestAnimationFrame(() => {
+      this.element.getBoundingClientRect();
+      this.dropdownElement.getBoundingClientRect();
+    });
   }
 
   public setValue(value: T[keyof T] | T[keyof T][] | null): void {
