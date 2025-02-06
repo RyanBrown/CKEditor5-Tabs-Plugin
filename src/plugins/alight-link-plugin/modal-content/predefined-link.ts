@@ -85,7 +85,7 @@ export class PredefinedLinkManager implements ILinkManager {
     const totalPages = Math.ceil(this.filteredLinksData.length / this.pageSize);
     this.initializePageSelect(container, this.currentPage, totalPages);
 
-    // Attach all event listeners
+    // Attach all event handlers
     this.attachEventListeners(container);
   }
 
@@ -100,6 +100,28 @@ export class PredefinedLinkManager implements ILinkManager {
     };
     this.filteredLinksData = [...this.predefinedLinksData];
     this.currentPage = 1;
+
+    // Reset both search inputs
+    const mainSearchInput = document.querySelector('#search-input') as HTMLInputElement;
+    const advancedSearchInput = document.querySelector('#advanced-search-input') as HTMLInputElement;
+
+    if (mainSearchInput) {
+      mainSearchInput.value = '';
+    }
+    if (advancedSearchInput) {
+      advancedSearchInput.value = '';
+    }
+
+    // Reset all checkboxes in both main and overlay panels
+    document.querySelectorAll('cka-checkbox').forEach(checkbox => {
+      (checkbox as any).checked = false;
+    });
+
+    // Re-render to update the view
+    const container = document.querySelector('.cka-predefined-link-content');
+    if (container instanceof HTMLElement) {
+      this.renderContent(container);
+    }
   }
 
   // PRIVATE HELPERS
@@ -125,11 +147,13 @@ export class PredefinedLinkManager implements ILinkManager {
     // Basic and Advanced Search markup
     const searchContainerMarkup = `
       <div id="search-container" class="cka-search-container">
-        <input type="text" id="search-input" placeholder="Search by link name..." value="${this.currentSearchQuery}" />
-        <button id="reset-search-btn" class="cka-button cka-button-rounded cka-button-text">Reset</button>
-        <button id="${this.advancedSearchTriggerId}" data-panel-id="advanced-search-panel" class="cka-button cka-button-rounded cka-button-text">
-          Advanced Search
-        </button>
+        <div class="cka-search-input-container">
+          <input type="text" id="search-input" class="cka-search-input" placeholder="Search by link name..." value="${this.currentSearchQuery}" />
+          <button id="reset-search-btn" class="cka-button cka-button-rounded cka-button-text">Reset</button>
+          <button id="${this.advancedSearchTriggerId}" data-panel-id="advanced-search-panel" class="cka-button cka-button-rounded cka-button-text">
+            Advanced Search
+          </button>
+        </div>
         <button id="search-btn" class="cka-button cka-button-rounded cka-button-outlined">Search</button>
       </div>
     `;
@@ -187,11 +211,11 @@ export class PredefinedLinkManager implements ILinkManager {
     const paginationMarkup = totalPages > 1
       ? `
         <article id="pagination" class="cka-pagination">
-          <button id="first-page" class="pagination-btn cka-button cka-button-text" data-page="1" ${page === 1 ? 'disabled' : ''}>First</button>
-          <button id="prev-page" class="pagination-btn cka-button cka-button-text" data-page="${page - 1}" ${page === 1 ? 'disabled' : ''}>Previous</button>
+          <button id="first-page" class="first pagination-btn cka-button cka-button-text" data-page="1" ${page === 1 ? 'disabled' : ''}>First</button>
+          <button id="prev-page" class="previous pagination-btn cka-button cka-button-text" data-page="${page - 1}" ${page === 1 ? 'disabled' : ''}>Previous</button>
           <div id="page-select-container" class="cka-select-menu-wrap"></div>
-          <button id="next-page" class="pagination-btn cka-button cka-button-text" data-page="${page + 1}" ${page === totalPages ? 'disabled' : ''}>Next</button>
-          <button id="last-page" class="pagination-btn cka-button cka-button-text" data-page="${totalPages}" ${page === totalPages ? 'disabled' : ''}>Last</button>
+          <button id="next-page" class="next pagination-btn cka-button cka-button-text" data-page="${page + 1}" ${page === totalPages ? 'disabled' : ''}>Next</button>
+          <button id="last-page" class="last pagination-btn cka-button cka-button-text" data-page="${totalPages}" ${page === totalPages ? 'disabled' : ''}>Last</button>
         </article>
       `
       : '';
@@ -275,18 +299,57 @@ export class PredefinedLinkManager implements ILinkManager {
     const applyAdvancedSearchBtn = container.querySelector('#apply-advanced-search') as HTMLButtonElement | null;
     const clearAdvancedSearchBtn = container.querySelector('#clear-advanced-search') as HTMLButtonElement | null;
     const advancedSearchInput = container.querySelector('#advanced-search-input') as HTMLInputElement | null;
+    const overlayPanel = container.querySelector('.cka-overlay-panel') as HTMLElement | null;
 
     applyAdvancedSearchBtn?.addEventListener('click', () => {
       if (advancedSearchInput) {
         this.currentSearchQuery = advancedSearchInput.value;
       }
+
+      // Update the main search input to match
+      const mainSearchInput = container.querySelector('#search-input') as HTMLInputElement;
+      if (mainSearchInput) {
+        mainSearchInput.value = this.currentSearchQuery;
+      }
+
       this.applyFilters();
       this.renderContent(container);
+
+      // Close the overlay panel
+      if (overlayPanel) {
+        const closeBtn = overlayPanel.querySelector('.cka-close-btn') as HTMLButtonElement;
+        closeBtn?.click();
+      }
     });
 
     clearAdvancedSearchBtn?.addEventListener('click', () => {
+      // Reset search state
       this.resetSearch();
-      this.renderContent(container);
+
+      // Force re-render the overlay panel content
+      if (overlayPanel) {
+        const advancedSearchContent = overlayPanel.querySelector('.advanced-search-content');
+        if (advancedSearchContent) {
+          // Re-render the filter sections
+          const baseOrClientSpecificOptions = this.getUniqueValues(this.predefinedLinksData, 'baseOrClientSpecific');
+          const pageTypeOptions = this.getUniqueValues(this.predefinedLinksData, 'pageType');
+          const domainOptions = this.getUniqueValues(this.predefinedLinksData, 'domain');
+
+          advancedSearchContent.innerHTML = `
+            <div class="search-filters">
+              ${this.createCheckboxList(baseOrClientSpecificOptions, 'baseOrClientSpecific', 'Base/Client Specific')}
+              ${this.createCheckboxList(pageTypeOptions, 'pageType', 'Page Type')}
+              ${this.createCheckboxList(domainOptions, 'domain', 'Domain')}
+            </div>
+            <div class="form-group">
+              <input type="text" id="advanced-search-input" placeholder="Search by link name..." />
+            </div>
+          `;
+        }
+      }
+
+      // Re-attach event listeners for the new checkboxes
+      this.attachFilterListeners(container);
     });
   }
 

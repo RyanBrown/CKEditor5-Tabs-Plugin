@@ -83,6 +83,28 @@ export class ExistingDocumentLinkManager implements ILinkManager {
     };
     this.filteredDocsData = [...this.documentData.documentList];
     this.currentPage = 1;
+
+    // Reset both search inputs
+    const mainSearchInput = document.querySelector('#search-input') as HTMLInputElement;
+    const advancedSearchInput = document.querySelector('#advanced-search-input') as HTMLInputElement;
+
+    if (mainSearchInput) {
+      mainSearchInput.value = '';
+    }
+    if (advancedSearchInput) {
+      advancedSearchInput.value = '';
+    }
+
+    // Reset all checkboxes in both main and overlay panels
+    document.querySelectorAll('cka-checkbox').forEach(checkbox => {
+      (checkbox as any).checked = false;
+    });
+
+    // Re-render to update the view
+    const container = document.querySelector('.cka-existing-document-content');
+    if (container instanceof HTMLElement) {
+      this.renderContent(container);
+    }
   }
 
   private buildContentForPage(page: number): string {
@@ -101,11 +123,13 @@ export class ExistingDocumentLinkManager implements ILinkManager {
 
     const searchContainerMarkup = `
       <div id="search-container" class="cka-search-container">
-        <input type="text" id="search-input" placeholder="Search by document title..." value="${this.currentSearchQuery}" />
-        <button id="reset-search-btn" class="cka-button cka-button-rounded cka-button-outlined cka-button-text">Reset</button>
-        <button id="${this.advancedSearchTriggerId}" data-panel-id="advanced-search-panel" class="cka-button cka-button-rounded cka-button-text">
-          Advanced Search
-        </button>
+        <div class="cka-search-input-container">
+          <input type="text" id="search-input" class="cka-search-input" placeholder="Search by document title..." value="${this.currentSearchQuery}" />
+          <button id="reset-search-btn" class="cka-button cka-button-rounded cka-button-outlined cka-button-text">Reset</button>
+          <button id="${this.advancedSearchTriggerId}" data-panel-id="advanced-search-panel" class="cka-button cka-button-rounded cka-button-text">
+            Advanced Search
+          </button>
+        </div>
         <button id="search-btn" class="cka-button cka-button-rounded cka-button-outlined">Search</button>
       </div>
     `;
@@ -230,12 +254,33 @@ export class ExistingDocumentLinkManager implements ILinkManager {
       if (advancedSearchInput) {
         this.currentSearchQuery = advancedSearchInput.value;
       }
+
+      // Update the main search input to match
+      const mainSearchInput = container.querySelector('#search-input') as HTMLInputElement;
+      if (mainSearchInput) {
+        mainSearchInput.value = this.currentSearchQuery;
+      }
+
       this.applyFilters();
       this.renderContent(container);
+
+      // Close the overlay panel
+      const overlayPanel = container.querySelector('.cka-overlay-panel') as HTMLElement | null;
+      if (overlayPanel) {
+        const closeBtn = overlayPanel.querySelector('.cka-close-btn') as HTMLButtonElement;
+        closeBtn?.click();
+      }
     });
 
     clearAdvancedSearchBtn?.addEventListener('click', () => {
       this.resetSearch();
+
+      // Update the main search input
+      const mainSearchInput = container.querySelector('#search-input') as HTMLInputElement;
+      if (mainSearchInput) {
+        mainSearchInput.value = '';
+      }
+
       this.renderContent(container);
     });
 

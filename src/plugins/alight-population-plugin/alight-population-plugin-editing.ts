@@ -20,7 +20,7 @@ export default class AlightPopulationPluginEditing extends Plugin {
         buttons: [
           {
             label: 'Cancel',
-            className: 'cka-button cka-button-rounded cka-button-outlined',
+            className: 'cka-button cka-button-rounded cka-button-outlined cka-button-sm',
             onClick: () => this.handleCancel()
           },
           {

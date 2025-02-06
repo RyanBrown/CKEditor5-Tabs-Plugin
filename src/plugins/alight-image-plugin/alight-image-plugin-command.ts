@@ -54,7 +54,7 @@ export class AlightImagePluginCommand extends Command {
       footer.className = 'cka-dialog-footer-buttons';
 
       const defaultButton = document.createElement('button');
-      defaultButton.className = 'cka-button cka-button-rounded';
+      defaultButton.className = 'cka-button cka-button-rounded cka-button-sm';
       defaultButton.textContent = 'Close';
       defaultButton.onclick = () => this.dialog.hide();
 

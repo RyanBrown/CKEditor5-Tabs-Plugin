@@ -34,7 +34,6 @@ $cka-dialog-border-radius: 0;
 
 .cka-dialog-header {
   align-items: center;
-  // background-color: #f8f9fa;
   border-bottom: 1px solid #dee2e6;
   border-top-left-radius: $cka-dialog-border-radius;
   border-top-right-radius: $cka-dialog-border-radius;
@@ -48,14 +47,14 @@ $cka-dialog-border-radius: 0;
 }
 
 .cka-dialog-title {
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-size: 1.375rem;
+  font-weight: var(--font-weight-normal);
   margin: 0;
 }
 
 .cka-dialog-header-icons {
-  display: flex;
   align-items: center;
+  display: flex;
   gap: 0.5rem;
 }
 
@@ -85,7 +84,6 @@ $cka-dialog-border-radius: 0;
 }
 
 .cka-dialog-footer {
-  // border-top: 1px solid #dee2e6;
   display: flex;
   justify-content: flex-start;
   padding: var(--spacing-xl);
@@ -117,7 +115,7 @@ $cka-dialog-border-radius: 0;
 }
 
 .dark .cka-dialog {
-  background: #1a1a1a;
+  background: var(--neutral-black);
   color: var(--neutral-white);
 }
 

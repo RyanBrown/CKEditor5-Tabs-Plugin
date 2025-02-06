@@ -72,7 +72,7 @@ export class AlightLinkPluginCommand extends Command {
     if (!this.data.buttons?.length) {
       // If no buttons provided, create a simple Close button
       const defaultButton = document.createElement('button');
-      defaultButton.className = 'cka-button cka-button-rounded';
+      defaultButton.className = 'cka-button cka-button-rounded cka-button-sm';
       defaultButton.textContent = 'Close';
       defaultButton.onclick = () => this.dialog.hide();
       footer.appendChild(defaultButton);
@@ -94,7 +94,7 @@ export class AlightLinkPluginCommand extends Command {
   private setupPredefinedLinkButtons(footer: HTMLDivElement): void {
     // Cancel button
     const cancelButton = document.createElement('button');
-    cancelButton.className = 'cka-button cka-button-rounded cka-button-outlined';
+    cancelButton.className = 'cka-button cka-button-rounded cka-button-outlined cka-button-sm';
     cancelButton.textContent = 'Cancel';
     cancelButton.onclick = () => {
       this.dialog.hide();
@@ -103,7 +103,7 @@ export class AlightLinkPluginCommand extends Command {
 
     // Continue button
     const continueButton = document.createElement('button');
-    continueButton.className = 'cka-button cka-button-rounded';
+    continueButton.className = 'cka-button cka-button-rounded cka-button-sm';
     continueButton.textContent = 'Continue';
     continueButton.onclick = () => {
       const predefinedManager = this.manager as PredefinedLinkManager;
