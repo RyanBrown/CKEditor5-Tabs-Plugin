@@ -44,6 +44,8 @@ module.exports = {
             // When changing the built-in language, remember to also change it in the editor's configuration (src/ckeditor.ts).
             language: 'en',
             additionalLanguages: 'all',
+            outputDirectory: "src/assets/translations",
+            translationsOutputFile: "build/translations.json",
         }),
         new webpack.BannerPlugin({
             banner: bundler.getLicenseBanner(),
