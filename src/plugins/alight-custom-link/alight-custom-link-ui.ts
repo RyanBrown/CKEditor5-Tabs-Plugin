@@ -1,6 +1,6 @@
 // src/plugins/alight-custom-link/alight-custom-link-ui.ts
 
-/* 
+/**
  * Creates and manages a custom balloon panel for your custom link feature,
  * ensuring it only appears for your "dataAlightLink" attribute.
  */
@@ -91,12 +91,13 @@ export default class AlightCustomLinkUI extends Plugin {
   }
 
   // Creates the custom link form and wraps it in a CKEditor UI View.
+  // COPY THIS TO PASS INTO DEFAULT BALLOONS
   private _createForm(): void {
     const command = this.editor.commands.get('alightCustomLink');
 
     // Create a labeled input field for the custom link URL.
     this._formView = new LabeledFieldView(this.editor.locale, createLabeledInputText);
-    this._formView.label = 'Custom Link URL';
+    this._formView.label = 'Custom Link URL'; // Adds a legend
     (this._formView.fieldView as any).placeholder = 'https://example.com';
 
     if (command) {
