@@ -1,8 +1,9 @@
 // src/plugins/ui-components/alight-overlay-panel-component/alight-overlay-panel.ts
 
+import { AlightPositionManager, PositionConfig } from '../alight-ui-component-utils/alight-position-manager';
 import './styles/alight-overlay-panel.scss';
 
-interface PanelConfig {
+interface PanelConfig extends PositionConfig {
   width?: string;
   height?: string;
 }
@@ -15,9 +16,12 @@ export class AlightOverlayPanel {
   private configs: Map<string, PanelConfig> = new Map();
   // Store the trigger element.
   private _trigger: HTMLElement | null = null;
+  private positionManager: AlightPositionManager;
 
   // The constructor now accepts either a string (selector) or an HTMLElement.
   constructor(trigger: string | HTMLElement, config?: PanelConfig) {
+    this.positionManager = AlightPositionManager.getInstance();
+
     if (typeof trigger === 'string') {
       // Remove any leading '#' and look up the element.
       this._trigger = document.getElementById(trigger.replace(/^#/, ''));
@@ -45,15 +49,29 @@ export class AlightOverlayPanel {
     }
     const panel = document.querySelector(`.cka-overlay-panel[data-id="${panelId}"]`);
     if (panel instanceof HTMLDivElement) {
+      // Move panel to body to prevent scroll issues
+      document.body.appendChild(panel);
+
+      panel.style.position = 'fixed';
+      panel.style.display = 'none';
+
       this.panels.set(panelId, panel);
+
       const panelConfig: PanelConfig = {
+        position: 'bottom',
+        offset: 4,
+        followTrigger: false, // Set to false to prevent scroll following
+        constrainToViewport: true,
+        autoFlip: true,
+        alignment: 'start',
         width: panel.getAttribute('data-width') || defaultConfig?.width,
         height: panel.getAttribute('data-height') || defaultConfig?.height,
+        ...defaultConfig
       };
+
       this.configs.set(panelId, panelConfig);
       this.applyConfig(panel, panelConfig);
 
-      // Add click listener to the trigger element.
       this._trigger.addEventListener('click', (event: Event) => this.toggle(event));
     } else {
       console.warn(`Panel with data-id="${panelId}" not found`);
@@ -68,17 +86,15 @@ export class AlightOverlayPanel {
 
     // Global event listeners.
     document.addEventListener('click', (event: Event) => this.handleClickOutside(event));
-    window.addEventListener('resize', () => this.handleWindowResize());
-    window.addEventListener('scroll', () => this.handleWindowResize(), true);
   }
 
   // Applies width and height settings.
   private applyConfig(panel: HTMLDivElement, config: PanelConfig): void {
     if (config.width) {
-      panel.style.width = config.width;
+      panel.style.width = typeof config.width === 'number' ? `${config.width}px` : config.width;
     }
     if (config.height) {
-      panel.style.height = config.height;
+      panel.style.height = typeof config.height === 'number' ? `${config.height}px` : config.height;
     }
   }
 
@@ -101,39 +117,27 @@ export class AlightOverlayPanel {
     if (this.currentPanel && this.currentPanel !== panel) {
       this.hidePanel(this.currentPanel);
     }
-    const rect = button.getBoundingClientRect();
-    this.zIndex += 1;
-    panel.style.zIndex = this.zIndex.toString();
-    panel.classList.add('cka-active');
-    this.positionPanel(panel, {
-      x: rect.left,
-      y: rect.bottom,
-      targetHeight: rect.height,
-      targetWidth: rect.width
-    });
-    this.currentPanel = panel;
-  }
 
-  // Positions the panel relative to the trigger button.
-  private positionPanel(panel: HTMLDivElement, target: { x: number; y: number; targetHeight: number; targetWidth: number }): void {
-    const panelRect = panel.getBoundingClientRect();
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-    let left = target.x;
-    let top = target.y;
+    const panelId = panel.getAttribute('data-id')!;
+    const config = this.configs.get(panelId);
 
-    if (left + panelRect.width > viewportWidth) {
-      left = target.x + target.targetWidth - panelRect.width;
+    if (config) {
+      panel.style.display = 'block';
+
+      // Force a layout recalculation
+      panel.getBoundingClientRect();
+
+      // Register with position manager
+      requestAnimationFrame(() => {
+        this.positionManager.register(panelId, panel, button, {
+          ...config,
+          followTrigger: false // Ensure panel doesn't follow scroll
+        });
+        panel.classList.add('cka-active');
+      });
+
+      this.currentPanel = panel;
     }
-    if (top + panelRect.height > viewportHeight) {
-      top = target.y - panelRect.height - target.targetHeight;
-    }
-    left = Math.max(0, Math.min(left, viewportWidth - panelRect.width));
-    top = Math.max(0, Math.min(top, viewportHeight - panelRect.height));
-    const absoluteLeft = left + window.pageXOffset;
-    const absoluteTop = top + window.pageYOffset;
-    panel.style.top = `${absoluteTop}px`;
-    panel.style.left = `${absoluteLeft}px`;
   }
 
   // Hides the panel when a close event occurs.
@@ -155,7 +159,12 @@ export class AlightOverlayPanel {
         return;
       }
     }
+    const panelId = panel.getAttribute('data-id');
+    if (panelId) {
+      this.positionManager.unregister(panelId);
+    }
     panel.classList.remove('cka-active');
+    panel.style.display = 'none';
     if (this.currentPanel === panel) {
       this.currentPanel = null;
     }
@@ -169,18 +178,6 @@ export class AlightOverlayPanel {
     }
   }
 
-  // Repositions the panel on window resize or scroll.
-  private handleWindowResize(): void {
-    if (this.currentPanel) {
-      const panelId = this.currentPanel.getAttribute('data-id');
-      if (!panelId) return;
-      const button = document.querySelector(`[data-panel-id='${panelId}']`) as HTMLButtonElement;
-      if (button) {
-        this.show(button, this.currentPanel);
-      }
-    }
-  }
-
   // Public method to update a panel's config.
   public updatePanelConfig(panelId: string, config: Partial<PanelConfig>): void {
     const panel = this.panels.get(panelId);
@@ -189,6 +186,10 @@ export class AlightOverlayPanel {
       const newConfig = { ...currentConfig, ...config };
       this.configs.set(panelId, newConfig);
       this.applyConfig(panel, newConfig);
+
+      if (panel.classList.contains('cka-active')) {
+        this.positionManager.updateConfig(panelId, newConfig);
+      }
     }
   }
 }
