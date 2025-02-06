@@ -196,16 +196,18 @@ export class CKALightSelectMenu<T extends SelectOption> {
 
   private renderOptions(): void {
     this.optionsContainer.innerHTML = '';
-    const filteredOptions = this.filterOptions();
+
+    const filteredOptions = this.filter && this.filterValue
+      ? this.options.filter(option =>
+        String(option[this.optionLabel]).toLowerCase().includes(this.filterValue.toLowerCase())
+      )
+      : this.options;
 
     filteredOptions.forEach(option => {
       const optionElement = document.createElement('div');
       optionElement.className = 'cka-select-option';
 
-      const optionValue = option[this.optionValue];
-      const optionLabel = option[this.optionLabel];
-
-      if (this.isSelected(optionValue)) {
+      if (this.isSelected(option[this.optionValue])) {
         optionElement.classList.add('selected');
       }
 
@@ -213,34 +215,13 @@ export class CKALightSelectMenu<T extends SelectOption> {
         optionElement.classList.add('disabled');
       }
 
-      // Create label container
-      const labelContainer = document.createElement('span');
-      labelContainer.className = 'cka-select-option-label';
-      labelContainer.textContent = String(optionLabel);
+      optionElement.textContent = String(option[this.optionLabel]);
 
-      // Add checkmark for selected items
-      if (this.isSelected(optionValue)) {
-        const checkmark = document.createElement('span');
-        checkmark.className = 'cka-select-option-checkmark';
-        checkmark.innerHTML = '✓';
-        optionElement.appendChild(checkmark);
+      if (!option.disabled) {
+        optionElement.addEventListener('click', () => this.handleOptionClick(option));
       }
 
-      optionElement.appendChild(labelContainer);
-      optionElement.addEventListener('click', () => this.handleOptionClick(option));
-
       this.optionsContainer.appendChild(optionElement);
-    });
-  }
-
-  private filterOptions(): T[] {
-    if (!this.filter || !this.filterValue) {
-      return this.options;
-    }
-
-    return this.options.filter(option => {
-      const label = String(option[this.optionLabel]).toLowerCase();
-      return label.includes(this.filterValue.toLowerCase());
     });
   }
 

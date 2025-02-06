@@ -1,8 +1,9 @@
 // src/plugins/ui-components/alight-overlay-panel-component/alight-overlay-panel.ts
 
+import { AlightPositionManager, PositionConfig } from '../alight-ui-component-utils/alight-position-manager';
 import './styles/alight-overlay-panel.scss';
 
-interface PanelConfig {
+interface PanelConfig extends PositionConfig {
   width?: string;
   height?: string;
 }
@@ -15,9 +16,12 @@ export class AlightOverlayPanel {
   private configs: Map<string, PanelConfig> = new Map();
   // Store the trigger element.
   private _trigger: HTMLElement | null = null;
+  private positionManager: AlightPositionManager;
 
   // The constructor now accepts either a string (selector) or an HTMLElement.
   constructor(trigger: string | HTMLElement, config?: PanelConfig) {
+    this.positionManager = AlightPositionManager.getInstance();
+
     if (typeof trigger === 'string') {
       // Remove any leading '#' and look up the element.
       this._trigger = document.getElementById(trigger.replace(/^#/, ''));
@@ -47,8 +51,15 @@ export class AlightOverlayPanel {
     if (panel instanceof HTMLDivElement) {
       this.panels.set(panelId, panel);
       const panelConfig: PanelConfig = {
+        position: 'bottom',
+        offset: 4,
+        followTrigger: true,
+        constrainToViewport: true,
+        autoFlip: true,
+        alignment: 'start',
         width: panel.getAttribute('data-width') || defaultConfig?.width,
         height: panel.getAttribute('data-height') || defaultConfig?.height,
+        ...defaultConfig
       };
       this.configs.set(panelId, panelConfig);
       this.applyConfig(panel, panelConfig);
@@ -105,35 +116,8 @@ export class AlightOverlayPanel {
     this.zIndex += 1;
     panel.style.zIndex = this.zIndex.toString();
     panel.classList.add('cka-active');
-    this.positionPanel(panel, {
-      x: rect.left,
-      y: rect.bottom,
-      targetHeight: rect.height,
-      targetWidth: rect.width
-    });
+    this.positionManager.register(panel.getAttribute('data-id')!, panel, button, this.configs.get(panel.getAttribute('data-id')!)!);
     this.currentPanel = panel;
-  }
-
-  // Positions the panel relative to the trigger button.
-  private positionPanel(panel: HTMLDivElement, target: { x: number; y: number; targetHeight: number; targetWidth: number }): void {
-    const panelRect = panel.getBoundingClientRect();
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-    let left = target.x;
-    let top = target.y;
-
-    if (left + panelRect.width > viewportWidth) {
-      left = target.x + target.targetWidth - panelRect.width;
-    }
-    if (top + panelRect.height > viewportHeight) {
-      top = target.y - panelRect.height - target.targetHeight;
-    }
-    left = Math.max(0, Math.min(left, viewportWidth - panelRect.width));
-    top = Math.max(0, Math.min(top, viewportHeight - panelRect.height));
-    const absoluteLeft = left + window.pageXOffset;
-    const absoluteTop = top + window.pageYOffset;
-    panel.style.top = `${absoluteTop}px`;
-    panel.style.left = `${absoluteLeft}px`;
   }
 
   // Hides the panel when a close event occurs.
@@ -154,6 +138,10 @@ export class AlightOverlayPanel {
       } else {
         return;
       }
+    }
+    const panelId = panel.getAttribute('data-id');
+    if (panelId) {
+      this.positionManager.unregister(panelId);
     }
     panel.classList.remove('cka-active');
     if (this.currentPanel === panel) {
@@ -189,6 +177,10 @@ export class AlightOverlayPanel {
       const newConfig = { ...currentConfig, ...config };
       this.configs.set(panelId, newConfig);
       this.applyConfig(panel, newConfig);
+
+      if (panel.classList.contains('cka-active')) {
+        this.positionManager.updateConfig(panelId, newConfig);
+      }
     }
   }
 }
