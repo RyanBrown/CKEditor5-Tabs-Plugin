@@ -2,12 +2,12 @@
 @use './../../../../styles/mixins' as mixins;
 
 .cka-select {
-  position: relative;
   display: inline-block;
-  width: 100%;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: var(--font-family-base);
   font-size: 14px;
   line-height: 1.4;
+  position: relative;
+  width: 100%;
 
   &.disabled {
     opacity: 0.6;
@@ -15,35 +15,35 @@
   }
 
   .cka-select-button {
-    display: flex;
     align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    min-height: 36px;
-    padding: 0.5rem 1rem;
-    background: #ffffff;
+    background: var(--neutral-white);
     border: 1px solid #ced4da;
     border-radius: 0;
     cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    min-height: 36px;
+    padding: 0.5rem 1rem;
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    width: 100%;
 
     &:hover {
       border-color: #a0a0a0;
     }
 
     &:focus {
-      outline: none;
       border-color: #80bdff;
       box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+      outline: none;
     }
   }
 
   .cka-select-value {
     flex: 1;
     overflow: hidden;
+    padding-right: 1rem;
     text-overflow: ellipsis;
     white-space: nowrap;
-    padding-right: 1rem;
 
     &.placeholder {
       color: #6c757d;
@@ -56,28 +56,28 @@
     height: 10px;
 
     &::after {
+      border-bottom: 2px solid #6c757d;
+      border-right: 2px solid #6c757d;
       content: '';
+      height: 6px;
+      left: 50%;
       position: absolute;
       top: 50%;
-      left: 50%;
       transform: translate(-50%, -50%) rotate(45deg);
-      width: 6px;
-      height: 6px;
-      border-right: 2px solid #6c757d;
-      border-bottom: 2px solid #6c757d;
       transition: transform 0.2s ease;
+      width: 6px;
     }
   }
 }
 
 .cka-select-dropdown {
-  position: absolute;
-  background: #ffffff;
+  background: var(--neutral-white);
   border: 1px solid #ced4da;
   border-radius: 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
   // min-width: 100%;
+  position: absolute;
+  z-index: 1000;
 
   .cka-select-dropdown-content {
     max-height: 250px;
@@ -85,21 +85,21 @@
   }
 
   .cka-select-filter {
-    padding: 0.5rem;
-    border-bottom: 1px solid #ced4da;
     background: #f8f9fa;
+    border-bottom: 1px solid #ced4da;
+    padding: 0.5rem;
 
     input {
-      width: 100%;
-      padding: 0.5rem;
-      border: 1px solid #ced4da;
       border-radius: 0;
+      border: 1px solid #ced4da;
       font-size: inherit;
+      padding: 0.5rem;
+      width: 100%;
 
       &:focus {
-        outline: none;
         border-color: #80bdff;
         box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        outline: none;
       }
     }
   }
@@ -109,8 +109,8 @@
   }
 
   .cka-select-option {
-    padding: 0.5rem 1rem;
     cursor: pointer;
+    padding: 0.5rem 1rem;
     transition: background-color 0.15s ease;
 
     &:hover {
@@ -123,9 +123,9 @@
     }
 
     &.disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
       background-color: #f8f9fa;
+      cursor: not-allowed;
+      opacity: 0.6;
     }
   }
 }
@@ -176,16 +176,10 @@
   box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 
-// Multiple selection styles
+// Multiple selection styles (without checkmark)
 .cka-select.multiple .cka-select-option {
   &.selected {
-    position: relative;
-    padding-left: 2rem;
-
-    &::before {
-      content: '✓';
-      position: absolute;
-      left: 0.75rem;
-    }
+    background-color: #e9ecef;
+    font-weight: var(--font-weight-bold);
   }
 }
