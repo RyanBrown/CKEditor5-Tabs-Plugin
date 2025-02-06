@@ -60,6 +60,8 @@ import AlightPastePlugin from './plugins/alight-paste-plugin/alight-paste-plugin
 import AlightPopulationPlugin from './plugins/alight-population-plugin/alight-population-plugin';
 import TabsPlugin from './plugins/alight-tabs-plugin/alight-tabs-plugin';
 
+import AlightCustomLink from './plugins/alight-custom-link/alight-custom-link';
+
 // Import custom styles for headings, style definitions and custom plugins
 import './styles/styles.scss';
 
@@ -176,6 +178,7 @@ class Editor extends ClassicEditor {
         AlightPastePlugin,
         AlightPopulationPlugin,
         TabsPlugin,
+        AlightCustomLink,
     ];
 
     public static override defaultConfig: EditorConfig = {
@@ -232,6 +235,7 @@ class Editor extends ClassicEditor {
                 'alightPopulationPlugin',
                 'alightLinkPlugin',
                 'alightLinkUrlPlugin',
+                'alightCustomLink'
             ],
             shouldNotGroupWhenFull: true,
         },
