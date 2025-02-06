@@ -44,6 +44,8 @@ module.exports = {
             // When changing the built-in language, remember to also change it in the editor's configuration (src/ckeditor.ts).
             language: 'en',
             additionalLanguages: 'all',
+            outputDirectory: "src/assets/translations",
+            translationsOutputFile: "build/translations.json",
         }),
         new webpack.BannerPlugin({
             banner: bundler.getLicenseBanner(),
@@ -59,7 +61,7 @@ module.exports = {
         rules: [
             {
                 test: /\.svg$/,
-                use: ['raw-loader'],
+                use: ['raw-loader']
             },
             {
                 test: /\.ts$/,
@@ -73,25 +75,25 @@ module.exports = {
                         options: {
                             injectType: 'singletonStyleTag',
                             attributes: {
-                                'data-cke': true,
-                            },
-                        },
+                                'data-cke': true
+                            }
+                        }
                     },
                     {
-                        loader: 'css-loader',
+                        loader: 'css-loader'
                     },
                     {
                         loader: 'postcss-loader',
                         options: {
                             postcssOptions: styles.getPostCssConfig({
                                 themeImporter: {
-                                    themePath: require.resolve('@ckeditor/ckeditor5-theme-lark'),
+                                    themePath: require.resolve('@ckeditor/ckeditor5-theme-lark')
                                 },
-                                minify: true,
-                            }),
-                        },
-                    },
-                ],
+                                minify: true
+                            })
+                        }
+                    }
+                ]
             },
             {
                 test: /\.scss$/,
