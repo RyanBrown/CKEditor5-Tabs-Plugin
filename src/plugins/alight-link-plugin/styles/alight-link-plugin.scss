@@ -72,3 +72,29 @@ ul.checkbox-list {
 .cka-documents-container {
   padding: var(--spacing-xl);
 }
+
+.ck.ck-balloon-panel {
+  &[class*="-link-balloon"] {
+    padding: 1rem;
+  }
+
+  &.predefined-link-balloon {
+    background-color: #e3f2fd;
+  }
+
+  &.existing-document-link-balloon {
+    background-color: #f3e5f5;
+  }
+
+  &.new-document-link-balloon {
+    background-color: #e8f5e9;
+  }
+
+  &.public-website-link-balloon {
+    background-color: #fff3e0;
+  }
+
+  &.intranet-link-balloon {
+    background-color: #fce4ec;
+  }
+}
