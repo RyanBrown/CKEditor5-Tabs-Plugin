@@ -135,11 +135,31 @@ export class AlightCustomLinkPluginUI extends Plugin {
       },
       children: [
         {
-          tag: 'label',
+          tag: 'a',
           attributes: {
-            class: ['my-label']
+            class: 'ck ck-button ck-off ck-button_with-text ck ck-link-actions__preview',
+            type: 'button',
+            tabindex: '-1',
+            'aria-labelledby': 'ck-editor__aria-label',
+            'data-cke-tooltip-text': 'Open link in new tab',
+            'data-cke-tooltip-position': 's',
+            href: 'https://www.researchgate.net/publication/9440038_Language_and_TAT_content_in_bilinguals',
+            target: '_blank',
+            rel: 'noopener noreferrer'
           },
-          children: ['LABEL']
+          children: [
+            {
+              tag: 'span',
+              attributes: {
+                class: 'ck ck-button__label',
+                id: 'ck-editor__aria-label'
+              },
+              children: [
+                // 'https://www.researchgate.net/publication/9440038_Language_and_TAT_content_in_bilinguals'
+                'My custom link url text...'
+              ]
+            }
+          ]
         },
         // Insert the two ButtonView instances as children.
         // CKEditor’s UI framework will render them as <button> elements 
