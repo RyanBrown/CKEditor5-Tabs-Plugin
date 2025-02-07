@@ -1,3 +1,6 @@
+// src/plugins/alight-link-plugin/modal-content/types.ts
+
+// Dialog and Command Types
 export interface DialogButton {
   label: string;
   variant?: 'outlined' | 'default';
@@ -19,4 +22,18 @@ export interface CommandData {
   buttons?: DialogButton[];
   loadContent: () => Promise<string>;
   manager?: any;
-} 
+}
+
+// Document Types
+export interface DocumentItem {
+  DocumentName: string;
+  Population: string;
+  Language: string;
+  FileType: string;
+}
+
+export interface DocumentData {
+  responseStatus: string;
+  branchName: string;
+  documentList: DocumentItem[];
+}
