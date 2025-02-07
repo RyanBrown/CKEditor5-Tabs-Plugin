@@ -15,6 +15,24 @@ export default class AlightLinkPluginEditing extends Plugin {
   private publicWebsiteLinkManager!: PublicIntranetLinkManager;
   private intranetLinkManager!: PublicIntranetLinkManager;
 
+  private readonly defaultButtons = {
+    cancel: {
+      label: 'Cancel',
+      variant: 'outlined' as const,
+      className: 'cka-button cka-button-rounded cka-button-outlined cka-button-sm'
+    },
+    continue: {
+      label: 'Continue',
+      variant: 'default' as const,
+      className: 'cka-button cka-button-rounded cka-button-sm'
+    },
+    create: {
+      label: 'Create Document',
+      variant: 'default' as const,
+      className: 'cka-button cka-button-rounded cka-button-sm'
+    }
+  };
+
   public static get pluginName() {
     return 'AlightLinkPluginEditing';
   }
@@ -43,14 +61,12 @@ export default class AlightLinkPluginEditing extends Plugin {
       },
       buttons: [
         {
-          label: 'Cancel',
-          className: 'cka-button cka-button-rounded cka-button-outlined cka-button-sm',
-          variant: 'outlined',
+          ...this.defaultButtons.cancel,
           onClick: () => this.handleCancel()
         },
         {
-          label: 'Continue',
-          className: 'cka-button cka-button-rounded cka-button-sm',
+          ...this.defaultButtons.continue,
+          variant: 'default' as 'default',
           onClick: () => this.handleImageSelection()
         }
       ],
@@ -68,13 +84,11 @@ export default class AlightLinkPluginEditing extends Plugin {
         modalType: 'publicWebsiteLink',
         buttons: [
           {
-            label: 'Cancel',
-            className: 'cka-button cka-button-rounded cka-button-outlined cka-button-sm',
+            ...this.defaultButtons.cancel,
             onClick: () => this.handleCancel()
           },
           {
-            label: 'Continue',
-            className: 'cka-button cka-button-rounded cka-button-sm',
+            ...this.defaultButtons.continue,
             onClick: () => this.handleUpload()
           }
         ],
@@ -91,13 +105,11 @@ export default class AlightLinkPluginEditing extends Plugin {
         modalType: 'intranetLink',
         buttons: [
           {
-            label: 'Cancel',
-            className: 'cka-button cka-button-rounded cka-button-outlined cka-button-sm',
+            ...this.defaultButtons.cancel,
             onClick: () => this.handleCancel()
           },
           {
-            label: 'Continue',
-            className: 'cka-button cka-button-rounded cka-button-sm',
+            ...this.defaultButtons.continue,
             onClick: () => this.handleUpload()
           }
         ],
@@ -118,13 +130,11 @@ export default class AlightLinkPluginEditing extends Plugin {
         },
         buttons: [
           {
-            label: 'Cancel',
-            className: 'cka-button cka-button-rounded cka-button-outlined cka-button-sm',
+            ...this.defaultButtons.cancel,
             onClick: () => this.handleCancel()
           },
           {
-            label: 'Continue',
-            className: 'cka-button cka-button-rounded cka-button-sm',
+            ...this.defaultButtons.continue,
             onClick: () => this.handleUpload()
           }
         ],
@@ -141,16 +151,14 @@ export default class AlightLinkPluginEditing extends Plugin {
         modalType: 'newDocumentLink',
         buttons: [
           {
-            label: 'Cancel',
-            className: 'cka-button cka-button-rounded cka-button-outlined cka-button-sm',
+            ...this.defaultButtons.cancel,
             onClick: () => {
               this.newDocumentLinkManager.resetSearch();
               this.handleCancel();
             }
           },
           {
-            label: 'Create Document',
-            className: 'cka-button cka-button-rounded',
+            ...this.defaultButtons.create,
             onClick: () => {
               if (this.newDocumentLinkManager.submitForm()) {
                 const formData = this.newDocumentLinkManager.getFormData();

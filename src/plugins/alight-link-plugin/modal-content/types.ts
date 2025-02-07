@@ -1,8 +1,8 @@
 export interface DialogButton {
   label: string;
-  className: string;
-  variant?: 'text' | 'outlined' | 'default';
-  position?: string;
+  variant?: 'outlined' | 'default';
+  className?: string;
+  position?: 'left' | 'right';
   onClick?: () => void;
 }
 

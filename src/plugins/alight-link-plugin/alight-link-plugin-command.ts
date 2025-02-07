@@ -16,16 +16,7 @@ export class AlightLinkPluginCommand extends Command {
     this.manager = data.manager;
 
     this.dialog = new CKAlightModalDialog({
-      modal: true,
-      draggable: false,
-      resizable: false,
-      width: '600px',
-      position: 'center',
-      closeOnEscape: false,
-      closeOnClickOutside: false,
-      headerClass: '',
-      contentClass: '',
-      footerClass: '',
+      width: '600px', // set the custom modal width
       ...data.modalOptions
     });
 
@@ -58,8 +49,11 @@ export class AlightLinkPluginCommand extends Command {
   private setupDefaultButtons(footer: HTMLDivElement, buttons: DialogButton[]): void {
     buttons.forEach(button => {
       const btnElement = document.createElement('button');
-      btnElement.className = button.className;
-      btnElement.textContent = button.label;
+      btnElement.setAttribute('type', 'button');
+      if (button.className) {
+        btnElement.className = button.className;
+      }
+      btnElement.textContent = button.label || '';
       btnElement.onclick = () => {
         if (this.manager?.getSelectedLink) {
           const selectedLink = this.manager.getSelectedLink();
