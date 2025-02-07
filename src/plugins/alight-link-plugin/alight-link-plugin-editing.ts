@@ -60,45 +60,36 @@ export default class AlightLinkPluginEditing extends Plugin {
   init() {
     const editor = this.editor;
 
-    // Re-initialize managers to ensure clean state
-    this.predefinedLinkManager = new PredefinedLinkManager();
-    this.existingDocumentLinkManager = new ExistingDocumentLinkManager();
-    this.newDocumentLinkManager = new NewDocumentLinkManager();
-    this.publicWebsiteLinkManager = new PublicIntranetLinkManager('', false);
-    this.intranetLinkManager = new PublicIntranetLinkManager('', true);
-
-    // Set up core functionality
     this.setupSchema();
     this.setupConverters();
     this.setupCommands(editor);
 
-    // Set up balloon panel event listener for debugging and UI enhancement
+    // Add event listener to modify balloon panel classes dynamically
     this.editor.ui.on('balloonPanel:show', (evt, data) => {
-      // Get the balloon panel DOM element and the currently selected link
+      // Get the balloon panel DOM element
       const balloonPanel = data.view.element;
       const selectedLink = this.editor.editing.view.document.selection.getFirstPosition()?.parent;
 
       if (selectedLink instanceof Element && balloonPanel) {
-        // Add appropriate CSS class based on link type
+        // Get the link type from data attribute
         const linkType = selectedLink.getAttribute('data-link-type') || '';
+
+        // Remove previous link type classes
+        balloonPanel.classList.remove(
+          'predefined-link-balloon',
+          'existing-document-link-balloon',
+          'new-document-link-balloon',
+          'public-website-link-balloon',
+          'intranet-link-balloon'
+        );
+
+        // Add the new class based on link type
         const className = this.getLinkClass(linkType);
-        balloonPanel.classList.add(className);
+        if (className) {
+          balloonPanel.classList.add(className);
+        }
 
-        // Debug logging for balloon panel structure
-        console.log('=== Balloon Panel Structure ===');
-        const elementsWithIds = balloonPanel.querySelectorAll('[id]');
-        console.log(`Found ${elementsWithIds.length} elements with IDs:`);
-
-        // Iterate through each element and log its details
-        elementsWithIds.forEach((element: Element, index: number) => {
-          console.log(`${index + 1}. Element Details:`);
-          console.log(`   - ID: ${element.id}`);
-          console.log(`   - Tag: ${element.tagName.toLowerCase()}`);
-          console.log(`   - Classes: ${element.className}`);
-          console.log(`   - Text Content: ${element.textContent?.trim()}`);
-        });
-
-        console.log('=== End Balloon Panel Structure ===');
+        console.log(`Applied class "${className}" to balloon panel.`);
       }
     });
   }
@@ -116,43 +107,29 @@ export default class AlightLinkPluginEditing extends Plugin {
   private setupConverters(): void {
     const conversion = this.editor.conversion;
 
-    // Data pipeline: Convert model attributes to view elements
+    // Data Downcast: Convert model attributes to view elements
     conversion.for('dataDowncast').attributeToElement({
-      model: {
-        key: 'linkHref',
-        values: ['linkType']
-      },
-      view: (href, conversionApi) => {
-        const { writer, consumable } = conversionApi;
-        const linkType = consumable.consume(this.editor.model.document.selection, 'linkType');
-
+      model: 'linkHref',
+      view: (href, { writer }) => {
         return writer.createAttributeElement('a', {
-          class: `ck-link ${linkType || ''}`,
           href,
-          target: '_blank'
-        }, {
-          priority: 5
-        });
+          target: '_blank',
+          class: 'ck-link ck-link_selected',
+          'data-link-type': this.editor.model.document.selection.getAttribute('linkType') || ''
+        }, { priority: 5 });
       }
     });
 
-    // Editing pipeline: Convert model attributes to editable view elements
+    // Editing Downcast: Convert model attributes to editable view elements
     conversion.for('editingDowncast').attributeToElement({
-      model: {
-        key: 'linkHref'
-      },
-      view: (href, { writer, mapper, consumable }) => {
-        const linkType = this.editor.model.document.selection.getAttribute('linkType');
-        const className = this.getLinkClass(linkType as string);
-
+      model: 'linkHref',
+      view: (href, { writer }) => {
         return writer.createAttributeElement('a', {
-          class: `ck-link ${className}`, // Add the class directly to link
           href,
           target: '_blank',
-          'data-link-type': linkType // Store link type as data attribute
-        }, {
-          priority: 5
-        });
+          class: 'ck-link ck-link_selected',
+          'data-link-type': this.editor.model.document.selection.getAttribute('linkType') || ''
+        }, { priority: 5 });
       }
     });
 
@@ -161,7 +138,8 @@ export default class AlightLinkPluginEditing extends Plugin {
       view: {
         name: 'a',
         attributes: {
-          href: true
+          href: true,
+          'data-link-type': true // Capture link type for UI updates
         }
       },
       model: {

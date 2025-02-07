@@ -55,7 +55,7 @@ import { EditorWatchdog } from '@ckeditor/ckeditor5-watchdog';
 import AlightCopyPlugin from './plugins/alight-copy-plugin/alight-copy-plugin';
 import AlightImagePlugin from './plugins/alight-image-plugin/alight-image-plugin';
 import AlightLinkPlugin from './plugins/alight-link-plugin/alight-link-plugin';
-import AlightLinkUrlPlugin from './plugins/alight-link-url-plugin/alight-link-url-plugin';
+// import AlightLinkUrlPlugin from './plugins/alight-link-url-plugin/alight-link-url-plugin';
 import AlightPastePlugin from './plugins/alight-paste-plugin/alight-paste-plugin';
 import AlightPopulationPlugin from './plugins/alight-population-plugin/alight-population-plugin';
 import TabsPlugin from './plugins/alight-tabs-plugin/alight-tabs-plugin';
@@ -174,7 +174,7 @@ class Editor extends ClassicEditor {
         AlightCopyPlugin,
         AlightImagePlugin,
         AlightLinkPlugin,
-        AlightLinkUrlPlugin,
+        // AlightLinkUrlPlugin,
         AlightPastePlugin,
         AlightPopulationPlugin,
         TabsPlugin,
@@ -234,7 +234,7 @@ class Editor extends ClassicEditor {
                 'alightImagePlugin',
                 'alightPopulationPlugin',
                 'alightLinkPlugin',
-                'alightLinkUrlPlugin',
+                // 'alightLinkUrlPlugin',
                 'alightCustomLink'
             ],
             shouldNotGroupWhenFull: true,
