@@ -12,7 +12,7 @@ export interface DialogButton {
 
 export interface CommandData {
   title: string;
-  modalType?: 'predefinedLink' | 'publicWebsiteLink' | 'intranetLink' | 'existingDocumentLink' | 'newDocumentLink';
+  modalType?: string;
   modalOptions?: {
     width?: string;
     height?: string;
@@ -22,6 +22,7 @@ export interface CommandData {
   buttons?: DialogButton[];
   loadContent: () => Promise<string>;
   manager?: any;
+  linkType: string;
 }
 
 // Document Types
