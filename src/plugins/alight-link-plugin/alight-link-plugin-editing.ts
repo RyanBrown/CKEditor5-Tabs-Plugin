@@ -8,17 +8,19 @@ import { PredefinedLinkManager } from './modal-content/predefined-link';
 import { CommandData, DialogButton } from './modal-content/types';
 import type { Editor } from '@ckeditor/ckeditor5-core';
 
-/**
- * A CKEditor plugin that extends the editor with enhanced link functionality.
- * This plugin provides various types of link options including predefined links,
- * document links, and intranet links, each with their own UI and behavior.
- */
+// A CKEditor plugin that extends the editor with enhanced link functionality.
+// This plugin provides various types of link options including predefined links,
+// document links, and intranet links, each with their own UI and behavior.
+
 export default class AlightLinkPluginEditing extends Plugin {
+  // Link managers for different types of links
   private predefinedLinkManager: PredefinedLinkManager;
   private existingDocumentLinkManager: ExistingDocumentLinkManager;
   private newDocumentLinkManager: NewDocumentLinkManager;
   private publicWebsiteLinkManager: PublicIntranetLinkManager;
   private intranetLinkManager: PublicIntranetLinkManager;
+
+  // Default button configurations used across different link dialogs
   private readonly defaultButtons = {
     cancel: {
       label: 'Cancel',
@@ -40,10 +42,12 @@ export default class AlightLinkPluginEditing extends Plugin {
     }
   };
 
+  // Initialize the plugin with necessary link managers
+  // @param editor - The CKEditor instance
   constructor(editor: Editor) {
     super(editor);
 
-    // Initialize managers
+    // Initialize all link managers
     this.predefinedLinkManager = new PredefinedLinkManager();
     this.existingDocumentLinkManager = new ExistingDocumentLinkManager();
     this.newDocumentLinkManager = new NewDocumentLinkManager();
@@ -51,34 +55,36 @@ export default class AlightLinkPluginEditing extends Plugin {
     this.intranetLinkManager = new PublicIntranetLinkManager('', true);
   }
 
+  // Initialize the plugin by setting up schema, converters, commands,
+  // and event listeners for the balloon panel
   init() {
     const editor = this.editor;
 
-    // Initialize managers
+    // Re-initialize managers to ensure clean state
     this.predefinedLinkManager = new PredefinedLinkManager();
     this.existingDocumentLinkManager = new ExistingDocumentLinkManager();
     this.newDocumentLinkManager = new NewDocumentLinkManager();
     this.publicWebsiteLinkManager = new PublicIntranetLinkManager('', false);
     this.intranetLinkManager = new PublicIntranetLinkManager('', true);
 
-    // Setup schema and converters
+    // Set up core functionality
     this.setupSchema();
     this.setupConverters();
     this.setupCommands(editor);
 
-    // Listen for balloon panel show events
+    // Set up balloon panel event listener for debugging and UI enhancement
     this.editor.ui.on('balloonPanel:show', (evt, data) => {
       // Get the balloon panel DOM element and the currently selected link
       const balloonPanel = data.view.element;
       const selectedLink = this.editor.editing.view.document.selection.getFirstPosition()?.parent;
 
       if (selectedLink instanceof Element && balloonPanel) {
-        // Add the appropriate link type class to the balloon panel
+        // Add appropriate CSS class based on link type
         const linkType = selectedLink.getAttribute('data-link-type') || '';
         const className = this.getLinkClass(linkType);
         balloonPanel.classList.add(className);
 
-        // Debug: Log all elements with IDs in the balloon panel
+        // Debug logging for balloon panel structure
         console.log('=== Balloon Panel Structure ===');
         const elementsWithIds = balloonPanel.querySelectorAll('[id]');
         console.log(`Found ${elementsWithIds.length} elements with IDs:`);
@@ -97,6 +103,7 @@ export default class AlightLinkPluginEditing extends Plugin {
     });
   }
 
+  // Set up the editor's schema to allow link-related attributes on text nodes
   private setupSchema(): void {
     const schema = this.editor.model.schema;
     schema.extend('$text', {
@@ -104,10 +111,12 @@ export default class AlightLinkPluginEditing extends Plugin {
     });
   }
 
+  // Configure data conversion between the model and view
+  // Handles both editing and data pipelines
   private setupConverters(): void {
     const conversion = this.editor.conversion;
 
-    // Model to view conversion for data pipeline
+    // Data pipeline: Convert model attributes to view elements
     conversion.for('dataDowncast').attributeToElement({
       model: {
         key: 'linkHref',
@@ -127,7 +136,7 @@ export default class AlightLinkPluginEditing extends Plugin {
       }
     });
 
-    // Model to view conversion for editing pipeline
+    // Editing pipeline: Convert model attributes to editable view elements
     conversion.for('editingDowncast').attributeToElement({
       model: {
         key: 'linkHref'
@@ -147,7 +156,7 @@ export default class AlightLinkPluginEditing extends Plugin {
       }
     });
 
-    // View to model conversion
+    // Upcast: Convert view elements to model attributes
     conversion.for('upcast').elementToAttribute({
       view: {
         name: 'a',
@@ -161,7 +170,9 @@ export default class AlightLinkPluginEditing extends Plugin {
       }
     });
   }
-
+  // Get the appropriate CSS class for a given link type
+  // @param linkType - The type of link (predefined, existing-document, etc.)
+  // @returns The corresponding CSS class name
   private getLinkClass(linkType: string): string {
     switch (linkType) {
       case 'predefined':
@@ -179,8 +190,11 @@ export default class AlightLinkPluginEditing extends Plugin {
     }
   }
 
+  // Set up all link-related commands in the editor
+  // Each command corresponds to a different type of link
+  // @param editor - The CKEditor instance
   private setupCommands(editor: Editor): void {
-    // Command 1: Predefined Link
+    // Command for predefined links
     editor.commands.add('linkOption1', new AlightLinkPluginCommand(editor, {
       title: 'Choose a Predefined Link',
       modalType: 'predefinedLink',
@@ -194,7 +208,7 @@ export default class AlightLinkPluginEditing extends Plugin {
       linkType: 'predefined'
     }));
 
-    // Command 2: Public Website Link
+    // Command for public website links
     editor.commands.add('linkOption2', new AlightLinkPluginCommand(editor, {
       title: 'Public Website Link',
       modalType: 'publicWebsiteLink',
@@ -204,7 +218,7 @@ export default class AlightLinkPluginEditing extends Plugin {
       linkType: 'public-website'
     }));
 
-    // Command 3: Intranet Link
+    // Command for intranet links
     editor.commands.add(
       'linkOption3',
       new AlightLinkPluginCommand(editor, {
@@ -217,7 +231,7 @@ export default class AlightLinkPluginEditing extends Plugin {
       })
     );
 
-    // Command 4: Existing Document Link
+    // Command for existing document links
     editor.commands.add(
       'linkOption4',
       new AlightLinkPluginCommand(editor, {
@@ -234,7 +248,7 @@ export default class AlightLinkPluginEditing extends Plugin {
       })
     );
 
-    // Command 5: New Document Link
+    // Command for new document links
     editor.commands.add('linkOption5', new AlightLinkPluginCommand(editor, {
       title: 'New Document Link',
       modalType: 'newDocumentLink',
@@ -257,6 +271,9 @@ export default class AlightLinkPluginEditing extends Plugin {
     }));
   }
 
+  // Get standard button configuration for modal dialogs
+  // @param onContinue - Callback function for the continue button
+  // @returns Array of button configurations
   private getStandardButtons(onContinue: () => void): DialogButton[] {
     return [
       {
@@ -275,18 +292,23 @@ export default class AlightLinkPluginEditing extends Plugin {
     ];
   }
 
+  // Handle selection of a predefined link
+  // TODO: Implement link selection logic
   private handlePredefinedLinkSelection(): void {
     // Implementation
   }
 
+  // Handle selection of an intranet link
   private handleIntranetLinkSelection(): void {
     console.log('Intranet Link confirmed');
   }
 
+  // Handle selection of an existing document
   private handleExistingDocumentSelection(): void {
     console.log('Existing Document Link confirmed');
   }
 
+  // Handle upload of a new document
   private handleNewDocumentUpload(): void {
     console.log('New Document Upload clicked');
   }
