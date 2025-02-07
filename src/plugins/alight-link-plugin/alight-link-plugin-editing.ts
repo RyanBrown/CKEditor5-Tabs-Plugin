@@ -19,19 +19,32 @@ export default class AlightLinkPluginEditing extends Plugin {
     cancel: {
       label: 'Cancel',
       variant: 'outlined' as const,
-      className: 'cka-button cka-button-rounded cka-button-outlined cka-button-sm'
+      className: 'cka-button cka-button-rounded cka-button-outlined cka-button-sm',
+      closeOnClick: true
     },
     continue: {
       label: 'Continue',
       variant: 'default' as const,
-      className: 'cka-button cka-button-rounded cka-button-sm'
+      className: 'cka-button cka-button-rounded cka-button-sm',
+      closeOnClick: true
     },
     create: {
       label: 'Create Document',
       variant: 'default' as const,
-      className: 'cka-button cka-button-rounded cka-button-sm'
+      className: 'cka-button cka-button-rounded',
+      closeOnClick: true
     }
   };
+
+  private getStandardButtons(onContinue: () => void): DialogButton[] {
+    return [
+      this.defaultButtons.cancel,
+      {
+        ...this.defaultButtons.continue,
+        onClick: onContinue
+      }
+    ];
+  }
 
   public static get pluginName() {
     return 'AlightLinkPluginEditing';
@@ -59,17 +72,7 @@ export default class AlightLinkPluginEditing extends Plugin {
         width: '90vw',
         contentClass: 'cka-predefined-link-content'
       },
-      buttons: [
-        {
-          ...this.defaultButtons.cancel,
-          onClick: () => this.handleCancel()
-        },
-        {
-          ...this.defaultButtons.continue,
-          variant: 'default' as 'default',
-          onClick: () => this.handleImageSelection()
-        }
-      ],
+      buttons: this.getStandardButtons(() => this.handlePredefinedLinkSelection()),
       loadContent: async () => this.predefinedLinkManager.getLinkContent(1),
       manager: this.predefinedLinkManager
     };
@@ -82,16 +85,7 @@ export default class AlightLinkPluginEditing extends Plugin {
       new AlightLinkPluginCommand(editor, {
         title: 'Public Website Link',
         modalType: 'publicWebsiteLink',
-        buttons: [
-          {
-            ...this.defaultButtons.cancel,
-            onClick: () => this.handleCancel()
-          },
-          {
-            ...this.defaultButtons.continue,
-            onClick: () => this.handleUpload()
-          }
-        ],
+        buttons: this.getStandardButtons(() => this.handlePublicWebsiteLinkSelection()),
         loadContent: async () => this.publicWebsiteLinkManager.getLinkContent(1),
         manager: this.publicWebsiteLinkManager
       })
@@ -103,16 +97,7 @@ export default class AlightLinkPluginEditing extends Plugin {
       new AlightLinkPluginCommand(editor, {
         title: 'Intranet Link',
         modalType: 'intranetLink',
-        buttons: [
-          {
-            ...this.defaultButtons.cancel,
-            onClick: () => this.handleCancel()
-          },
-          {
-            ...this.defaultButtons.continue,
-            onClick: () => this.handleUpload()
-          }
-        ],
+        buttons: this.getStandardButtons(() => this.handleIntranetLinkSelection()),
         loadContent: async () => this.intranetLinkManager.getLinkContent(1),
         manager: this.intranetLinkManager
       })
@@ -128,42 +113,27 @@ export default class AlightLinkPluginEditing extends Plugin {
           width: '90vw',
           contentClass: 'cka-existing-document-content'
         },
-        buttons: [
-          {
-            ...this.defaultButtons.cancel,
-            onClick: () => this.handleCancel()
-          },
-          {
-            ...this.defaultButtons.continue,
-            onClick: () => this.handleUpload()
-          }
-        ],
+        buttons: this.getStandardButtons(() => this.handleExistingDocumentSelection()),
         loadContent: async () => this.existingDocumentLinkManager.getLinkContent(1),
         manager: this.existingDocumentLinkManager
       })
     );
 
-    // Command 5: New Document Link
+    // Command 5: New Document Link (special case with create button)
     editor.commands.add(
       'linkOption5',
       new AlightLinkPluginCommand(editor, {
         title: 'New Document Link',
         modalType: 'newDocumentLink',
         buttons: [
-          {
-            ...this.defaultButtons.cancel,
-            onClick: () => {
-              this.newDocumentLinkManager.resetSearch();
-              this.handleCancel();
-            }
-          },
+          this.defaultButtons.cancel,
           {
             ...this.defaultButtons.create,
             onClick: () => {
               if (this.newDocumentLinkManager.submitForm()) {
                 const formData = this.newDocumentLinkManager.getFormData();
                 console.log('Document created:', formData);
-                this.handleUpload();
+                this.handleNewDocumentUpload();
               }
             }
           }
@@ -235,15 +205,23 @@ export default class AlightLinkPluginEditing extends Plugin {
     });
   }
 
-  private handleCancel(): void {
-    console.log('Cancel clicked');
+  private handlePredefinedLinkSelection(): void {
+    console.log('Predefined Link confirmed');
   }
 
-  private handleImageSelection(): void {
-    console.log('Image selection confirmed');
+  private handlePublicWebsiteLinkSelection(): void {
+    console.log('Public Website Link confirmed');
   }
 
-  private handleUpload(): void {
+  private handleIntranetLinkSelection(): void {
+    console.log('Intranet Link confirmed');
+  }
+
+  private handleExistingDocumentSelection(): void {
+    console.log('Existing Document Link confirmed');
+  }
+
+  private handleNewDocumentUpload(): void {
     console.log('Upload clicked');
   }
 }

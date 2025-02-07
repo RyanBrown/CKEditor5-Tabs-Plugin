@@ -3,6 +3,7 @@ export interface DialogButton {
   variant?: 'outlined' | 'default';
   className?: string;
   position?: 'left' | 'right';
+  closeOnClick?: boolean;
   onClick?: () => void;
 }
 
