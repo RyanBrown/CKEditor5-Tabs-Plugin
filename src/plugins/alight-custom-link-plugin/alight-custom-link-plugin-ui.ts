@@ -92,13 +92,93 @@ export class AlightCustomLinkPluginUI extends Plugin {
 
     formView.setTemplate({
       tag: 'div',
+      // top-level container
       attributes: {
-        class: ['alight-custom-link-form']
+        class: ['ck', 'ck-link-actions', 'ck-responsive-form'],
+        tabindex: '-1'
       },
       children: [
+        // LABEL
         {
-          tag: 'p',
-          children: ['Your custom link balloon content.']
+          tag: 'label',
+          attributes: {
+            class: ['my-label']
+          },
+          children: ['LABEL']
+        },
+        // EDIT BUTTON
+        {
+          tag: 'button',
+          attributes: {
+            class: 'ck ck-button ck-off',
+            type: 'button',
+            tabindex: '-1',
+            // the ARIA label ID can be the same or dynamic:
+            'aria-labelledby': 'ck-editor__aria-label',
+            'data-cke-tooltip-text': 'Edit link',
+            'data-cke-tooltip-position': 's'
+          },
+          children: [
+            {
+              tag: 'button',
+              attributes: { class: 'ck ck-button ck-off', type: 'button' },
+              children: [
+                {
+                  tag: 'img',
+                  attributes: {
+                    src: './assets/icon-pencil.svg',
+                    class: 'ck ck-icon ck-reset_all-excluded ck-icon_inherit-color ck-button__icon',
+                    'aria-hidden': 'true'
+                  }
+                },
+                {
+                  tag: 'span',
+                  attributes: { class: 'ck ck-button__label' },
+                  children: ['Edit link']
+                }
+              ]
+            }
+          ]
+        },
+        // UNLINK BUTTON
+        {
+          tag: 'button',
+          attributes: {
+            class: 'ck ck-button ck-off',
+            type: 'button',
+            tabindex: '-1',
+            'aria-labelledby': 'ck-editor__aria-label',
+            'data-cke-tooltip-text': 'Unlink',
+            'data-cke-tooltip-position': 's'
+          },
+          children: [
+            {
+              tag: 'svg',
+              attributes: {
+                class: 'ck ck-icon ck-reset_all-excluded ck-icon_inherit-color ck-button__icon',
+                viewBox: '0 0 20 20',
+                'aria-hidden': 'true'
+              },
+              children: [
+                {
+                  tag: 'img',
+                  attributes: {
+                    src: './assets/icon-unlink.svg',
+                    class: 'ck ck-icon ck-reset_all-excluded ck-icon_inherit-color ck-button__icon',
+                    'aria-hidden': 'true'
+                  }
+                },
+              ]
+            },
+            {
+              tag: 'span',
+              attributes: {
+                class: 'ck ck-button__label',
+                id: 'ck-editor__aria-label_e17bdab0b56976cd5a52bc05f06b94140'
+              },
+              children: ['Unlink']
+            }
+          ]
         }
       ]
     });
