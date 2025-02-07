@@ -4,7 +4,7 @@
  * alight-custom-link-plugin-ui.ts
  *
  * A custom UI plugin:
- *  - Adds a new toolbar button "alightLink".
+ *  - Adds a new toolbar button "alightCustomLinkPlugin".
  *  - Shows a custom balloon panel with your own content.
  * 
  * Key changes:
@@ -33,8 +33,8 @@ export class AlightCustomLinkPluginUI extends Plugin {
     // Create and store our custom form view
     this.formView = this._createFormView();
 
-    // Register a new toolbar button named "alightLink"
-    editor.ui.componentFactory.add('alightLink', locale => {
+    // Register a new toolbar button named "alightCustomLinkPlugin"
+    editor.ui.componentFactory.add('alightCustomLinkPlugin', locale => {
       const view = new ButtonView(locale);
 
       view.set({
@@ -65,7 +65,7 @@ export class AlightCustomLinkPluginUI extends Plugin {
       domRange = editor.editing.view.domConverter.viewRangeToDom(viewRange);
     }
 
-    const stackId = 'alightLinkStack';
+    const stackId = 'alightCustomLinkPluginStack';
 
     // If it's already showing this view, do nothing
     if (this.balloon.visibleView === this.formView) {
