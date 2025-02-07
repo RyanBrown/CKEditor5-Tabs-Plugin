@@ -55,12 +55,14 @@ import { EditorWatchdog } from '@ckeditor/ckeditor5-watchdog';
 import AlightCopyPlugin from './plugins/alight-copy-plugin/alight-copy-plugin';
 import AlightImagePlugin from './plugins/alight-image-plugin/alight-image-plugin';
 import AlightLinkPlugin from './plugins/alight-link-plugin/alight-link-plugin';
-// import AlightLinkUrlPlugin from './plugins/alight-link-url-plugin/alight-link-url-plugin';
 import AlightPastePlugin from './plugins/alight-paste-plugin/alight-paste-plugin';
 import AlightPopulationPlugin from './plugins/alight-population-plugin/alight-population-plugin';
 import TabsPlugin from './plugins/alight-tabs-plugin/alight-tabs-plugin';
 
 import AlightCustomLink from './plugins/alight-custom-link/alight-custom-link';
+import AlightCustomLinkPlugin from './plugins/alight-custom-link-plugin/alight-custom-link-plugin';
+
+
 
 // Import custom styles for headings, style definitions and custom plugins
 import './styles/styles.scss';
@@ -174,11 +176,10 @@ class Editor extends ClassicEditor {
         AlightCopyPlugin,
         AlightImagePlugin,
         AlightLinkPlugin,
-        // AlightLinkUrlPlugin,
+        AlightCustomLinkPlugin,
         AlightPastePlugin,
         AlightPopulationPlugin,
         TabsPlugin,
-        AlightCustomLink,
     ];
 
     public static override defaultConfig: EditorConfig = {
@@ -234,8 +235,7 @@ class Editor extends ClassicEditor {
                 'alightImagePlugin',
                 'alightPopulationPlugin',
                 'alightLinkPlugin',
-                // 'alightLinkUrlPlugin',
-                'alightCustomLink'
+                'alightCustomLinkPlugin'
             ],
             shouldNotGroupWhenFull: true,
         },
@@ -295,3 +295,5 @@ class Editor extends ClassicEditor {
 }
 
 export default { Editor, EditorWatchdog };
+
+
