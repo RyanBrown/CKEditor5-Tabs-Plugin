@@ -17,6 +17,8 @@ import { ButtonView, ContextualBalloon, View } from '@ckeditor/ckeditor5-ui';
 import { getSelectedLinkRange } from './alight-custom-link-plugin-utils';
 import type { Editor } from '@ckeditor/ckeditor5-core';
 import type { Range as ModelRange } from '@ckeditor/ckeditor5-engine';
+import editIcons from './assets/icon-pencil.svg';
+import unlinkIcon from './assets/icon-unlink.svg';
 
 export class AlightCustomLinkPluginUI extends Plugin {
   private balloon!: ContextualBalloon;
@@ -88,17 +90,50 @@ export class AlightCustomLinkPluginUI extends Plugin {
   }
 
   private _createFormView(): View {
-    const formView = new View();
+    const editor = this.editor as Editor;
+    const locale = editor.locale;
 
+    // 1. Create the parent View for the balloon content
+    const formView = new View(locale);
+
+    // 2. Create "Edit link" button
+    const editButton = new ButtonView(locale);
+    editButton.set({
+      label: 'Edit link',
+      icon: editIcons,        // The inline SVG string
+      tooltip: true,
+      withText: false         // true to display text beside icon
+    });
+    // If you want an action when clicked:
+    editButton.on('execute', () => {
+      // For example, run the link command or open a custom UI:
+      console.log('Edit link clicked!');
+      // editor.execute( 'link' );
+    });
+
+    // 3. Create "Unlink" button
+    const unlinkButton = new ButtonView(locale);
+    unlinkButton.set({
+      label: 'Unlink',
+      icon: unlinkIcon,
+      tooltip: true,
+      withText: false
+    });
+    // Action on click:
+    unlinkButton.on('execute', () => {
+      console.log('Unlink clicked!');
+      // editor.execute( 'unlink' );
+    });
+
+    // 4. Set the template so the formView is a simple <div> container
+    //    containing the label and both buttons in sequence.
     formView.setTemplate({
       tag: 'div',
-      // top-level container
       attributes: {
         class: ['ck', 'ck-link-actions', 'ck-responsive-form'],
         tabindex: '-1'
       },
       children: [
-        // LABEL
         {
           tag: 'label',
           attributes: {
@@ -106,80 +141,11 @@ export class AlightCustomLinkPluginUI extends Plugin {
           },
           children: ['LABEL']
         },
-        // EDIT BUTTON
-        {
-          tag: 'button',
-          attributes: {
-            class: 'ck ck-button ck-off',
-            type: 'button',
-            tabindex: '-1',
-            // the ARIA label ID can be the same or dynamic:
-            'aria-labelledby': 'ck-editor__aria-label',
-            'data-cke-tooltip-text': 'Edit link',
-            'data-cke-tooltip-position': 's'
-          },
-          children: [
-            {
-              tag: 'button',
-              attributes: { class: 'ck ck-button ck-off', type: 'button' },
-              children: [
-                {
-                  tag: 'img',
-                  attributes: {
-                    src: './assets/icon-pencil.svg',
-                    class: 'ck ck-icon ck-reset_all-excluded ck-icon_inherit-color ck-button__icon',
-                    'aria-hidden': 'true'
-                  }
-                },
-                {
-                  tag: 'span',
-                  attributes: { class: 'ck ck-button__label' },
-                  children: ['Edit link']
-                }
-              ]
-            }
-          ]
-        },
-        // UNLINK BUTTON
-        {
-          tag: 'button',
-          attributes: {
-            class: 'ck ck-button ck-off',
-            type: 'button',
-            tabindex: '-1',
-            'aria-labelledby': 'ck-editor__aria-label',
-            'data-cke-tooltip-text': 'Unlink',
-            'data-cke-tooltip-position': 's'
-          },
-          children: [
-            {
-              tag: 'svg',
-              attributes: {
-                class: 'ck ck-icon ck-reset_all-excluded ck-icon_inherit-color ck-button__icon',
-                viewBox: '0 0 20 20',
-                'aria-hidden': 'true'
-              },
-              children: [
-                {
-                  tag: 'img',
-                  attributes: {
-                    src: './assets/icon-unlink.svg',
-                    class: 'ck ck-icon ck-reset_all-excluded ck-icon_inherit-color ck-button__icon',
-                    'aria-hidden': 'true'
-                  }
-                },
-              ]
-            },
-            {
-              tag: 'span',
-              attributes: {
-                class: 'ck ck-button__label',
-                id: 'ck-editor__aria-label_e17bdab0b56976cd5a52bc05f06b94140'
-              },
-              children: ['Unlink']
-            }
-          ]
-        }
+        // Insert the two ButtonView instances as children.
+        // CKEditor’s UI framework will render them as <button> elements 
+        // with .ck-button, .ck-icon, etc.
+        editButton,
+        unlinkButton
       ]
     });
 
