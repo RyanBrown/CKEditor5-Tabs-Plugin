@@ -12,5 +12,11 @@ export interface ILinkManager {
   renderContent(container: HTMLElement): void;
 
   // Resets internal filters, pagination, etc. (if needed).
-  resetSearch(): void;
+  resetSearch?(): void;
+
+  // Returns the selected link.
+  getSelectedLink(): { destination: string; title: string } | null;
+
+  // Sets the dialog.
+  setDialog?(dialog: any): void;
 }

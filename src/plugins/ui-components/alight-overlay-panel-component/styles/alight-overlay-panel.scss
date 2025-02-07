@@ -13,12 +13,15 @@
   position: absolute;
 
   header {
+    align-items: center;
     border-bottom: 1px solid #ccc;
     display: flex;
     justify-content: space-between;
     padding: 1rem;
 
     h3 {
+      font-family: mixins.toRem(22);
+      font-weight: var(--font-weight-normal);
       margin: 0;
     }
   }

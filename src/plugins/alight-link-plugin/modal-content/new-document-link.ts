@@ -15,6 +15,7 @@ export class NewDocumentLinkManager implements ILinkManager {
   // Reference to the container element where the form is rendered.
   private container: HTMLElement | null = null;
   private languageSelect: CKALightSelectMenu<{ value: string; label: string }> | null = null;
+  private selectedLink: { destination: string; title: string } | null = null;
 
   // Holds the state of the form data.
   private formData = {
@@ -255,6 +256,7 @@ export class NewDocumentLinkManager implements ILinkManager {
   }
 
   resetSearch(): void {
+    this.selectedLink = null;
     // Clean up existing select menu
     if (this.languageSelect) {
       this.languageSelect.destroy();
@@ -308,5 +310,13 @@ export class NewDocumentLinkManager implements ILinkManager {
 
     console.log('Form submitted with data:', this.formData);
     return true;
+  }
+
+  public getSelectedLink(): { destination: string; title: string } | null {
+    return this.selectedLink;
+  }
+
+  private handleDocumentCreation(destination: string, title: string): void {
+    this.selectedLink = { destination, title };
   }
 }

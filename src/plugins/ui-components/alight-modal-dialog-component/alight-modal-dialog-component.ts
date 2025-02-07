@@ -1,7 +1,15 @@
 // src/plugins/ui-components/alight-modal-dialog-component/alight-modal-dialog-component.ts
 import './styles/alight-modal-dialog-component.scss';
 
-interface DialogOptions {
+export interface DialogButton {
+  label: string;
+  className: string;
+  variant?: 'default' | 'outlined' | 'text';
+  position?: 'left' | 'right';
+  closeOnClick?: boolean;
+}
+
+export interface DialogOptions {
   modal?: boolean;
   draggable?: boolean;
   resizable?: boolean;
@@ -10,10 +18,13 @@ interface DialogOptions {
   height?: string;
   position?: 'center' | 'top' | 'bottom' | 'left' | 'right' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
   closeOnEscape?: boolean;
+  closeOnClickOutside?: boolean;
   overlayOpacity?: number;
   headerClass?: string;
   contentClass?: string;
   footerClass?: string;
+  buttons?: DialogButton[];
+  defaultCloseButton?: boolean;
 }
 
 interface Position {
@@ -21,7 +32,7 @@ interface Position {
   y: number;
 }
 
-interface Size {
+export interface Size {
   width: number;
   height: number;
 }
@@ -34,6 +45,7 @@ export class CKAlightModalDialog {
   private initialSize: Size = { width: 0, height: 0 };
   private boundHandleEscape: (e: KeyboardEvent) => void;
   private boundHandleClickOutside: (e: MouseEvent) => void;
+  private eventListeners: Map<string, Function[]> = new Map();
 
   // Initialize with ! to tell TypeScript these will be set in constructor
   private container!: HTMLDivElement;
@@ -43,24 +55,23 @@ export class CKAlightModalDialog {
   private contentEl!: HTMLDivElement;
   private footer!: HTMLDivElement;
 
-  public getContentElement(): HTMLElement | null {
-    return this.contentEl || null;
-  }
-
   constructor(options: DialogOptions = {}) {
     this.options = {
       modal: true,
-      draggable: true,
-      resizable: true,
-      maximizable: true,
+      draggable: false,
+      resizable: false,
+      maximizable: false,
       width: '50vw',
       height: 'auto',
       position: 'center',
       closeOnEscape: true,
+      closeOnClickOutside: false,
       overlayOpacity: 0.5,
       headerClass: '',
       contentClass: '',
       footerClass: '',
+      buttons: [],
+      defaultCloseButton: true,
       ...options
     };
 
@@ -72,18 +83,35 @@ export class CKAlightModalDialog {
     this.setupEventListeners();
   }
 
+  public on(event: string, callback: Function): void {
+    if (!this.eventListeners.has(event)) {
+      this.eventListeners.set(event, []);
+    }
+    this.eventListeners.get(event)?.push(callback);
+  }
+
+  public emit(event: string, data?: any): void {
+    this.eventListeners.get(event)?.forEach(callback => callback(data));
+  }
+
+  public getContentElement(): HTMLElement | null {
+    return this.contentEl || null;
+  }
+
   private handleEscape(e: KeyboardEvent): void {
     if (e.key === 'Escape' && this.visible && this.options.closeOnEscape) {
       this.hide();
+      this.emit('close');
     }
   }
 
   private handleClickOutside(e: MouseEvent): void {
-    if (!this.visible || !this.options.modal) return;
+    if (!this.visible || !this.options.modal || !this.options.closeOnClickOutside) return;
 
     const target = e.target as HTMLElement;
     if (target && (target === this.overlay || target === this.container)) {
       this.hide();
+      this.emit('close');
     }
   }
 
@@ -97,10 +125,11 @@ export class CKAlightModalDialog {
     // Create overlay
     this.overlay = document.createElement('div');
     this.overlay.className = 'cka-dialog-overlay';
+    this.overlay.style.opacity = this.options.overlayOpacity.toString();
 
     // Create dialog content
     const content = `
-      <div class="cka-dialog" style="width: ${this.options.width};">
+      <div class="cka-dialog" style="width: ${this.options.width}; height: ${this.options.height};">
         <div class="cka-dialog-header ${this.options.draggable ? 'draggable' : ''} ${this.options.headerClass}">
           <span class="cka-dialog-title"></span>
           <div class="cka-dialog-header-icons">
@@ -114,12 +143,10 @@ export class CKAlightModalDialog {
       </div>
     `;
 
-    // Append overlay and dialog content
     document.body.appendChild(this.overlay);
     this.container.innerHTML = content;
     document.body.appendChild(this.container);
 
-    // Store references to elements
     const dialogEl = this.container.querySelector('.cka-dialog');
     const headerEl = this.container.querySelector('.cka-dialog-header');
     const contentEl = this.container.querySelector('.cka-dialog-content');
@@ -134,8 +161,55 @@ export class CKAlightModalDialog {
     this.contentEl = contentEl as HTMLDivElement;
     this.footer = footerEl as HTMLDivElement;
 
-    // Initial state
+    this.setupButtons(this.options.buttons);
     this.hide();
+  }
+
+  private setupButtons(buttons?: DialogButton[]): void {
+    const footer = document.createElement('div');
+    footer.className = 'cka-dialog-footer-buttons';
+
+    if (buttons?.length) {
+      const leftButtons = buttons.filter(btn => btn.position === 'left');
+      const rightButtons = buttons.filter(btn => btn.position !== 'left');
+
+      if (leftButtons.length) {
+        const leftGroup = document.createElement('div');
+        leftGroup.className = 'cka-dialog-footer-left';
+        leftButtons.forEach(buttonConfig => {
+          leftGroup.appendChild(this.createButton(buttonConfig));
+        });
+        footer.appendChild(leftGroup);
+      }
+
+      if (rightButtons.length) {
+        const rightGroup = document.createElement('div');
+        rightGroup.className = 'cka-dialog-footer-right';
+        rightButtons.forEach(buttonConfig => {
+          rightGroup.appendChild(this.createButton(buttonConfig));
+        });
+        footer.appendChild(rightGroup);
+      }
+    }
+
+    this.setFooter(footer);
+  }
+
+  private createButton(config: DialogButton): HTMLButtonElement {
+    const button = document.createElement('button');
+    let className = config.className;
+    if (config.variant) {
+      className += ` cka-button-${config.variant}`;
+    }
+    button.className = className;
+    button.textContent = config.label;
+    button.onclick = () => {
+      this.emit('buttonClick', config.label);
+      if (config.closeOnClick !== false) {
+        this.hide();
+      }
+    };
+    return button;
   }
 
   private setupEventListeners(): void {
