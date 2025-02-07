@@ -1,11 +1,12 @@
 // src/plugins/alight-link-plugin/modal-content/predefined-link.ts
 
 import predefinedLinksData from './json/predefined-test-data.json';
-import { ILinkManager } from './ILinkManager';
-import { AlightOverlayPanel } from '../../ui-components/alight-overlay-panel-component/alight-overlay-panel';
+import { CKAlightModalDialog } from '../../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import { CKALightSelectMenu } from '../../ui-components/alight-select-menu-component/alight-select-menu-component';
+import { AlightOverlayPanel } from '../../ui-components/alight-overlay-panel-component/alight-overlay-panel';
 import '../../ui-components/alight-checkbox-component/alight-checkbox-component';
 import '../../ui-components/alight-radio-component/alight-radio-component';
+import { ILinkManager } from './ILinkManager';
 
 // Interface for selected filters
 interface SelectedFilters {
@@ -57,9 +58,20 @@ export class PredefinedLinkManager implements ILinkManager {
     domain: []
   };
 
+  private dialog?: CKAlightModalDialog;
+
+  // Add method to set dialog reference
+  public setDialog(dialog: CKAlightModalDialog): void {
+    this.dialog = dialog;
+  }
+
   // Returns the currently selected link or null if none selected
-  public getSelectedLink(): PredefinedLink | null {
-    return this.selectedLink;
+  public getSelectedLink(): { destination: string; title: string } | null {
+    if (!this.selectedLink) return null;
+    return {
+      destination: this.selectedLink.destination,
+      title: this.selectedLink.predefinedLinkName
+    };
   }
 
   // Returns raw HTML for a particular page of data
@@ -252,27 +264,12 @@ export class PredefinedLinkManager implements ILinkManager {
 
   // Attaches all event listeners
   private attachEventListeners(container: HTMLElement): void {
-    // Search functionality
-    this.attachSearchListeners(container);
+    // Search input handlers
+    const searchInput = container.querySelector('#search-input') as HTMLInputElement;
+    const searchBtn = container.querySelector('#search-btn') as HTMLButtonElement;
+    const resetSearchBtn = container.querySelector('#reset-search-btn') as HTMLButtonElement;
 
-    // Advanced search functionality
-    this.attachAdvancedSearchListeners(container);
-
-    // Checkbox filters
-    this.attachFilterListeners(container);
-
-    // Pagination
-    this.attachPaginationListeners(container);
-
-    // Link selection
-    this.attachLinkSelectionListeners(container);
-  }
-
-  private attachSearchListeners(container: HTMLElement): void {
-    const searchInput = container.querySelector('#search-input') as HTMLInputElement | null;
-    const searchBtn = container.querySelector('#search-btn') as HTMLButtonElement | null;
-    const resetSearchBtn = container.querySelector('#reset-search-btn') as HTMLButtonElement | null;
-
+    // Main search functionality
     searchBtn?.addEventListener('click', () => {
       this.currentSearchQuery = searchInput?.value || '';
       this.applyFilters();
@@ -288,18 +285,12 @@ export class PredefinedLinkManager implements ILinkManager {
 
     resetSearchBtn?.addEventListener('click', () => {
       this.resetSearch();
-      if (searchInput) {
-        searchInput.value = '';
-      }
-      this.renderContent(container);
     });
-  }
 
-  private attachAdvancedSearchListeners(container: HTMLElement): void {
-    const applyAdvancedSearchBtn = container.querySelector('#apply-advanced-search') as HTMLButtonElement | null;
-    const clearAdvancedSearchBtn = container.querySelector('#clear-advanced-search') as HTMLButtonElement | null;
-    const advancedSearchInput = container.querySelector('#advanced-search-input') as HTMLInputElement | null;
-    const overlayPanel = container.querySelector('.cka-overlay-panel') as HTMLElement | null;
+    // Advanced search functionality
+    const advancedSearchInput = container.querySelector('#advanced-search-input') as HTMLInputElement;
+    const applyAdvancedSearchBtn = container.querySelector('#apply-advanced-search') as HTMLButtonElement;
+    const clearAdvancedSearchBtn = container.querySelector('#clear-advanced-search') as HTMLButtonElement;
 
     applyAdvancedSearchBtn?.addEventListener('click', () => {
       if (advancedSearchInput) {
@@ -307,15 +298,15 @@ export class PredefinedLinkManager implements ILinkManager {
       }
 
       // Update the main search input to match
-      const mainSearchInput = container.querySelector('#search-input') as HTMLInputElement;
-      if (mainSearchInput) {
-        mainSearchInput.value = this.currentSearchQuery;
+      if (searchInput) {
+        searchInput.value = this.currentSearchQuery;
       }
 
       this.applyFilters();
       this.renderContent(container);
 
       // Close the overlay panel
+      const overlayPanel = container.querySelector('.cka-overlay-panel');
       if (overlayPanel) {
         const closeBtn = overlayPanel.querySelector('.cka-close-btn') as HTMLButtonElement;
         closeBtn?.click();
@@ -323,34 +314,57 @@ export class PredefinedLinkManager implements ILinkManager {
     });
 
     clearAdvancedSearchBtn?.addEventListener('click', () => {
-      // Reset search state
       this.resetSearch();
-
-      // Force re-render the overlay panel content
-      if (overlayPanel) {
-        const advancedSearchContent = overlayPanel.querySelector('.advanced-search-content');
-        if (advancedSearchContent) {
-          // Re-render the filter sections
-          const baseOrClientSpecificOptions = this.getUniqueValues(this.predefinedLinksData, 'baseOrClientSpecific');
-          const pageTypeOptions = this.getUniqueValues(this.predefinedLinksData, 'pageType');
-          const domainOptions = this.getUniqueValues(this.predefinedLinksData, 'domain');
-
-          advancedSearchContent.innerHTML = `
-            <div class="search-filters">
-              ${this.createCheckboxList(baseOrClientSpecificOptions, 'baseOrClientSpecific', 'Base/Client Specific')}
-              ${this.createCheckboxList(pageTypeOptions, 'pageType', 'Page Type')}
-              ${this.createCheckboxList(domainOptions, 'domain', 'Domain')}
-            </div>
-            <div class="form-group">
-              <input type="text" id="advanced-search-input" placeholder="Search by link name..." />
-            </div>
-          `;
-        }
-      }
-
-      // Re-attach event listeners for the new checkboxes
-      this.attachFilterListeners(container);
     });
+
+    // Link selection
+    const linkItems = container.querySelectorAll('.cka-link-item');
+    linkItems.forEach(item => {
+      item.addEventListener('click', event => {
+        if ((event.target as HTMLElement).closest('cka-radio-button')) return;
+        const linkName = (event.currentTarget as HTMLElement).getAttribute('data-link-name');
+        if (!linkName) return;
+
+        // Update selected link
+        this.selectedLink = this.predefinedLinksData.find(
+          link => link.predefinedLinkName === linkName
+        ) || null;
+
+        // Update radio button
+        const radio = (event.currentTarget as HTMLElement).querySelector('cka-radio-button') as any;
+        if (radio) {
+          radio.checked = true;
+          radio.value = linkName;
+          radio.dispatchEvent(new Event('change', { bubbles: true }));
+          radio.dispatchEvent(new Event('input', { bubbles: true }));
+
+          // Uncheck other radio buttons
+          container.querySelectorAll('cka-radio-button').forEach(otherRadio => {
+            if (otherRadio !== radio) {
+              (otherRadio as any).checked = false;
+            }
+          });
+        }
+      });
+    });
+
+    // Radio button change listeners
+    const radioButtons = container.querySelectorAll('cka-radio-button');
+    radioButtons.forEach(radio => {
+      radio.addEventListener('change', (event) => {
+        const target = event.target as HTMLInputElement;
+        if (!target || !target.checked) return;
+
+        const linkName = target.value;
+        this.selectedLink = this.predefinedLinksData.find(
+          link => link.predefinedLinkName === linkName
+        ) || null;
+      });
+    });
+
+    // Attach filter and pagination listeners
+    this.attachFilterListeners(container);
+    this.attachPaginationListeners(container);
   }
 
   private attachFilterListeners(container: HTMLElement): void {
@@ -384,52 +398,6 @@ export class PredefinedLinkManager implements ILinkManager {
         this.currentPage = newPage;
         this.renderContent(container);
       }
-    });
-  }
-
-  private attachLinkSelectionListeners(container: HTMLElement): void {
-    const linkItems = container.querySelectorAll('.cka-link-item');
-    linkItems.forEach(item => {
-      item.addEventListener('click', event => {
-        if ((event.target as HTMLElement).closest('cka-radio-button')) return;
-        const linkName = (event.currentTarget as HTMLElement).getAttribute('data-link-name');
-        if (!linkName) return;
-
-        // Update selected link
-        this.selectedLink = this.predefinedLinksData.find(
-          link => link.predefinedLinkName === linkName
-        ) || null;
-
-        // Update radio button
-        const radio = (event.currentTarget as HTMLElement).querySelector('cka-radio-button') as any;
-        if (radio) {
-          radio.checked = true;
-          radio.value = linkName;
-          radio.dispatchEvent(new Event('change', { bubbles: true }));
-          radio.dispatchEvent(new Event('input', { bubbles: true }));
-
-          // Uncheck other radio buttons
-          container.querySelectorAll('cka-radio-button').forEach(otherRadio => {
-            if (otherRadio !== radio) {
-              (otherRadio as any).checked = false;
-            }
-          });
-        }
-      });
-    });
-
-    // Add radio button change listeners
-    const radioButtons = container.querySelectorAll('cka-radio-button');
-    radioButtons.forEach(radio => {
-      radio.addEventListener('change', (event) => {
-        const target = event.target as HTMLInputElement;
-        if (!target || !target.checked) return;
-
-        const linkName = target.value;
-        this.selectedLink = this.predefinedLinksData.find(
-          link => link.predefinedLinkName === linkName
-        ) || null;
-      });
     });
   }
 

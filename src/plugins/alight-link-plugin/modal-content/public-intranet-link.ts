@@ -2,83 +2,85 @@
 import { ILinkManager } from './ILinkManager';
 
 export class PublicIntranetLinkManager implements ILinkManager {
-  private container: HTMLElement | null = null;
-  private currentPage: number = 1;
+  private selectedLink: { destination: string; title: string } | null = null;
+  private isIntranet: boolean;
+  private baseUrl: string;
+  private existingHref: string = '';
+  private existingOrgName: string = '';
 
-  constructor(
-    private existingHref: string = '',
-    private isIntranet: boolean = false,
-    private existingOrgName: string = ''
-  ) { }
+  constructor(baseUrl: string, isIntranet: boolean) {
+    this.isIntranet = isIntranet;
+    this.baseUrl = baseUrl;
+  }
 
-  getLinkContent(page: number): string {
-    this.currentPage = page;
+  public getSelectedLink(): { destination: string; title: string } | null {
+    return this.selectedLink;
+  }
 
-    const intranetNote = this.isIntranet
-      ? `
-          <p><strong>Note:</strong> When an employee clicks on an intranet link, 
-           a message will let them know they need to be connected 
-           to that network to successfully continue.</p>
-        `
-      : '';
+  public getLinkContent(page: number): string {
+    const urlInputValue = this.existingHref || '';
+    const orgNameValue = this.existingOrgName || '';
 
     return `
-      <div class="public-intranet-link-content">
-        ${intranetNote}
-        
-        <label for="url" class="cka-input-label">URL</label>
-        <input
-          id="url"
-          type="url"
-          class="cka-input-text"
-          value="${this.escapeHtml(this.existingHref)}"
-        />
-        
-        <label for="org-name" class="cka-input-label">
-          Organization Name (Optional)<span class="asterisk">*</span>
-        </label>
-        <input
-          id="org-name"
-          type="text"
-          class="cka-input-text"
-          value="${this.escapeHtml(this.existingOrgName)}"
-        />
-        
-        <p>
-          <span class="asterisk">*</span>
-          Enter the third-party organization to inform users the destination of the link.
-        </p>
+      <div class="cka-url-link-content">
+        <div class="form-group">
+          <label for="url-input">URL:</label>
+          <input 
+            type="text" 
+            id="url-input" 
+            class="cka-input-text" 
+            value="${urlInputValue}"
+            placeholder="Enter URL..." 
+          />
+        </div>
+        <div class="form-group">
+          <label for="org-name-input">Organization Name:</label>
+          <input 
+            type="text" 
+            id="org-name-input" 
+            class="cka-input-text" 
+            value="${orgNameValue}"
+            placeholder="Enter organization name..." 
+          />
+        </div>
       </div>
     `;
   }
 
-  renderContent(container: HTMLElement): void {
-    this.container = container;
-    container.innerHTML = this.getLinkContent(this.currentPage);
-
-    // Add event listeners for form inputs
-    const urlInput = container.querySelector('#url') as HTMLInputElement;
-    const orgNameInput = container.querySelector('#org-name') as HTMLInputElement;
+  public renderContent(container: HTMLElement): void {
+    // Add URL input listener
+    const urlInput = container.querySelector('#url-input') as HTMLInputElement;
+    const orgNameInput = container.querySelector('#org-name-input') as HTMLInputElement;
 
     if (urlInput) {
-      urlInput.addEventListener('input', (e) => {
-        this.existingHref = (e.target as HTMLInputElement).value;
+      urlInput.addEventListener('change', (e) => {
+        const url = (e.target as HTMLInputElement).value;
+        const title = orgNameInput?.value || url;
+        this.handleUrlSelection(url, title);
+        this.existingHref = url;
       });
     }
 
     if (orgNameInput) {
-      orgNameInput.addEventListener('input', (e) => {
-        this.existingOrgName = (e.target as HTMLInputElement).value;
+      orgNameInput.addEventListener('change', (e) => {
+        const orgName = (e.target as HTMLInputElement).value;
+        this.existingOrgName = orgName;
+        if (this.selectedLink) {
+          this.selectedLink.title = orgName;
+        }
       });
     }
   }
 
-  resetSearch(): void {
+  private handleUrlSelection(url: string, title: string): void {
+    const fullUrl = url.startsWith('http') ? url : `${this.baseUrl}${url}`;
+    this.selectedLink = { destination: fullUrl, title };
+  }
+
+  public resetSearch(): void {
+    this.selectedLink = null;
     this.existingHref = '';
     this.existingOrgName = '';
-    if (this.container) {
-      this.renderContent(this.container);
-    }
   }
 
   // Helper method to prevent XSS

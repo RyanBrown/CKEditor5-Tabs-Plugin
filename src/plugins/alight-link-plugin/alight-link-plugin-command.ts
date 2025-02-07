@@ -1,24 +1,9 @@
 // src/plugins/alight-link-plugin/alight-link-plugin-command.ts
 import type Editor from '@ckeditor/ckeditor5-core/src/editor/editor';
 import Command from '@ckeditor/ckeditor5-core/src/command';
-import CKAlightModalDialog, { DialogOptions } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
+import { CKAlightModalDialog } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import { ILinkManager } from './modal-content/ILinkManager';
-import { PredefinedLinkManager } from './modal-content/predefined-link';
-
-interface DialogButton {
-  label: string;
-  className: string;
-  onClick?: () => void;
-}
-
-interface CommandData {
-  title: string;
-  modalType?: 'predefinedLink' | 'publicWebsiteLink' | 'intranetLink' | 'existingDocumentLink' | 'newDocumentLink';
-  modalOptions?: DialogOptions;
-  buttons?: DialogButton[];
-  loadContent: () => Promise<string>;
-  manager?: ILinkManager;
-}
+import { CommandData, DialogButton } from './modal-content/types';
 
 export class AlightLinkPluginCommand extends Command {
   protected dialog: CKAlightModalDialog;
@@ -31,7 +16,16 @@ export class AlightLinkPluginCommand extends Command {
     this.manager = data.manager;
 
     this.dialog = new CKAlightModalDialog({
-      width: '600px', // Set the modal width
+      modal: true,
+      draggable: false,
+      resizable: false,
+      width: '600px',
+      position: 'center',
+      closeOnEscape: false,
+      closeOnClickOutside: false,
+      headerClass: '',
+      contentClass: '',
+      footerClass: '',
       ...data.modalOptions
     });
 
@@ -43,33 +37,52 @@ export class AlightLinkPluginCommand extends Command {
     footer.className = 'cka-dialog-footer-buttons';
 
     if (!this.data.buttons?.length) {
-      // If no buttons provided, create a simple Close button
-      const defaultButton = document.createElement('button');
-      defaultButton.className = 'cka-button cka-button-rounded cka-button-sm';
-      defaultButton.textContent = 'Close';
-      defaultButton.onclick = () => this.dialog.hide();
-      footer.appendChild(defaultButton);
-      this.dialog.setFooter(footer);
-      return;
-    }
-
-    // Create custom buttons based on modal type
-    if (this.data.modalType === 'predefinedLink') {
-      this.setupPredefinedLinkButtons(footer);
+      const defaultButtons: DialogButton[] = [
+        {
+          label: 'Close',
+          className: 'cka-button cka-button-rounded cka-button-sm',
+          variant: 'outlined',
+          position: 'left'
+        }
+      ];
+      this.setupDefaultButtons(footer, defaultButtons);
+    } else if (this.data.modalType === 'predefinedLink' || this.data.modalType === 'existingDocumentLink') {
+      this.setupLinkButtons(footer);
     } else {
-      // Handle other modal types
-      this.setupDefaultButtons(footer);
+      this.setupDefaultButtons(footer, this.data.buttons);
     }
 
     this.dialog.setFooter(footer);
   }
 
-  private setupPredefinedLinkButtons(footer: HTMLDivElement): void {
+  private setupDefaultButtons(footer: HTMLDivElement, buttons: DialogButton[]): void {
+    buttons.forEach(button => {
+      const btnElement = document.createElement('button');
+      btnElement.className = button.className;
+      btnElement.textContent = button.label;
+      btnElement.onclick = () => {
+        if (this.manager?.getSelectedLink) {
+          const selectedLink = this.manager.getSelectedLink();
+          if (selectedLink && 'destination' in selectedLink) {
+            this.insertLink(selectedLink.destination);
+          }
+        }
+        button.onClick?.();
+        this.dialog.hide();
+      };
+      footer.appendChild(btnElement);
+    });
+  }
+
+  private setupLinkButtons(footer: HTMLDivElement): void {
     // Cancel button
     const cancelButton = document.createElement('button');
     cancelButton.className = 'cka-button cka-button-rounded cka-button-outlined cka-button-sm';
     cancelButton.textContent = 'Cancel';
     cancelButton.onclick = () => {
+      if (this.manager) {
+        this.manager.resetSearch?.();
+      }
       this.dialog.hide();
     };
     footer.appendChild(cancelButton);
@@ -79,29 +92,13 @@ export class AlightLinkPluginCommand extends Command {
     continueButton.className = 'cka-button cka-button-rounded cka-button-sm';
     continueButton.textContent = 'Continue';
     continueButton.onclick = () => {
-      const predefinedManager = this.manager as PredefinedLinkManager;
-      const selectedLink = predefinedManager?.getSelectedLink();
-
-      if (selectedLink) {
+      const selectedLink = this.manager?.getSelectedLink?.();
+      if (selectedLink && 'destination' in selectedLink) {
         this.insertLink(selectedLink.destination);
       }
-
       this.dialog.hide();
     };
     footer.appendChild(continueButton);
-  }
-
-  private setupDefaultButtons(footer: HTMLDivElement): void {
-    this.data.buttons?.forEach(button => {
-      const btnElement = document.createElement('button');
-      btnElement.className = button.className;
-      btnElement.textContent = button.label;
-      btnElement.onclick = () => {
-        button.onClick?.();
-        this.dialog.hide();
-      };
-      footer.appendChild(btnElement);
-    });
   }
 
   private insertLink(destination: string): void {

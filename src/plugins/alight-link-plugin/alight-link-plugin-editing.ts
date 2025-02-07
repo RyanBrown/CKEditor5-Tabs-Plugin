@@ -5,6 +5,7 @@ import { ExistingDocumentLinkManager } from './modal-content/existing-document-l
 import { NewDocumentLinkManager } from './modal-content/new-document-link';
 import { PublicIntranetLinkManager } from './modal-content/public-intranet-link';
 import { PredefinedLinkManager } from './modal-content/predefined-link';
+import { CommandData, DialogButton } from './modal-content/types';
 
 export default class AlightLinkPluginEditing extends Plugin {
   // Use definite assignment assertion for all managers
@@ -33,31 +34,31 @@ export default class AlightLinkPluginEditing extends Plugin {
     this.intranetLinkManager = new PublicIntranetLinkManager('', true);
 
     // Command 1: Predefined Link
-    editor.commands.add(
-      'linkOption1',
-      new AlightLinkPluginCommand(editor, {
-        title: 'Choose a Predefined Link',
-        modalType: 'predefinedLink',
-        modalOptions: {
-          width: '90vw',
-          contentClass: 'cka-predefined-link-content'
+    const predefinedLinkCommand: CommandData = {
+      title: 'Choose a Predefined Link',
+      modalType: 'predefinedLink',
+      modalOptions: {
+        width: '90vw',
+        contentClass: 'cka-predefined-link-content'
+      },
+      buttons: [
+        {
+          label: 'Cancel',
+          className: 'cka-button cka-button-rounded cka-button-outlined cka-button-sm',
+          variant: 'outlined',
+          onClick: () => this.handleCancel()
         },
-        buttons: [
-          {
-            label: 'Cancel',
-            className: 'cka-button cka-button-rounded cka-button-outlined cka-button-sm',
-            onClick: () => this.handleCancel()
-          },
-          {
-            label: 'Continue',
-            className: 'cka-button cka-button-rounded cka-button-sm',
-            onClick: () => this.handleImageSelection()
-          }
-        ],
-        loadContent: async () => this.predefinedLinkManager.getLinkContent(1),
-        manager: this.predefinedLinkManager
-      })
-    );
+        {
+          label: 'Continue',
+          className: 'cka-button cka-button-rounded cka-button-sm',
+          onClick: () => this.handleImageSelection()
+        }
+      ],
+      loadContent: async () => this.predefinedLinkManager.getLinkContent(1),
+      manager: this.predefinedLinkManager
+    };
+
+    editor.commands.add('linkOption1', new AlightLinkPluginCommand(editor, predefinedLinkCommand));
 
     // Command 2: Public Website Link
     editor.commands.add(

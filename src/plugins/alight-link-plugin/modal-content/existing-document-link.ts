@@ -57,6 +57,8 @@ export class ExistingDocumentLinkManager implements ILinkManager {
     locale: []
   };
 
+  private selectedLink: { destination: string; title: string } | null = null;
+
   public getLinkContent(page: number): string {
     return this.buildContentForPage(page);
   }
@@ -83,6 +85,7 @@ export class ExistingDocumentLinkManager implements ILinkManager {
     };
     this.filteredDocsData = [...this.documentData.documentList];
     this.currentPage = 1;
+    this.selectedLink = null;
 
     // Reset both search inputs
     const mainSearchInput = document.querySelector('#search-input') as HTMLInputElement;
@@ -160,7 +163,7 @@ export class ExistingDocumentLinkManager implements ILinkManager {
     const documentsMarkup = currentPageData.length > 0
       ? currentPageData
         .map(doc => `
-          <div class="cka-document-item" data-doc-title="${doc.title}">
+          <div class="cka-document-item" data-doc-title="${doc.title}" data-doc-url="${doc.serverFilePath}">
             <div class="radio-container">
               <cka-radio-button name="document-selection" value="${doc.title}" label=""></cka-radio-button>
             </div>
@@ -319,13 +322,20 @@ export class ExistingDocumentLinkManager implements ILinkManager {
       item.addEventListener('click', event => {
         if ((event.target as HTMLElement).closest('cka-radio-button')) return;
         const docTitle = (event.currentTarget as HTMLElement).getAttribute('data-doc-title');
-        if (!docTitle) return;
+        const docUrl = (event.currentTarget as HTMLElement).getAttribute('data-doc-url');
+        if (!docTitle || !docUrl) return;
+
+        this.handleLinkSelection(docUrl, docTitle);
+
+        // Update radio button
         const radio = (event.currentTarget as HTMLElement).querySelector('cka-radio-button') as any;
         if (radio) {
           radio.checked = true;
           radio.value = docTitle;
           radio.dispatchEvent(new Event('change', { bubbles: true }));
           radio.dispatchEvent(new Event('input', { bubbles: true }));
+
+          // Uncheck other radio buttons
           container.querySelectorAll('cka-radio-button').forEach(otherRadio => {
             if (otherRadio !== radio) {
               (otherRadio as any).checked = false;
@@ -385,5 +395,13 @@ export class ExistingDocumentLinkManager implements ILinkManager {
         </ul>
       </div>
     `;
+  }
+
+  public getSelectedLink(): { destination: string; title: string } | null {
+    return this.selectedLink;
+  }
+
+  private handleLinkSelection(destination: string, title: string): void {
+    this.selectedLink = { destination, title };
   }
 }
