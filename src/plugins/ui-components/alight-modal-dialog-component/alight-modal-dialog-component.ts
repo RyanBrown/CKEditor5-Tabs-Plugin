@@ -1,7 +1,7 @@
 // src/plugins/ui-components/alight-modal-dialog-component/alight-modal-dialog-component.ts
 import './styles/alight-modal-dialog-component.scss';
 
-interface DialogOptions {
+export interface DialogOptions {
   modal?: boolean;
   draggable?: boolean;
   resizable?: boolean;
@@ -10,6 +10,7 @@ interface DialogOptions {
   height?: string;
   position?: 'center' | 'top' | 'bottom' | 'left' | 'right' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
   closeOnEscape?: boolean;
+  closeOnClickOutside?: boolean;
   overlayOpacity?: number;
   headerClass?: string;
   contentClass?: string;
@@ -21,7 +22,7 @@ interface Position {
   y: number;
 }
 
-interface Size {
+export interface Size {
   width: number;
   height: number;
 }
@@ -50,13 +51,14 @@ export class CKAlightModalDialog {
   constructor(options: DialogOptions = {}) {
     this.options = {
       modal: true,
-      draggable: true,
-      resizable: true,
-      maximizable: true,
+      draggable: false,
+      resizable: false,
+      maximizable: false,
       width: '50vw',
       height: 'auto',
       position: 'center',
       closeOnEscape: true,
+      closeOnClickOutside: false,
       overlayOpacity: 0.5,
       headerClass: '',
       contentClass: '',
@@ -79,7 +81,7 @@ export class CKAlightModalDialog {
   }
 
   private handleClickOutside(e: MouseEvent): void {
-    if (!this.visible || !this.options.modal) return;
+    if (!this.visible || !this.options.modal || !this.options.closeOnClickOutside) return;
 
     const target = e.target as HTMLElement;
     if (target && (target === this.overlay || target === this.container)) {

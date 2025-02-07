@@ -1,7 +1,7 @@
 // src/plugins/alight-link-plugin/alight-link-plugin-command.ts
 import type Editor from '@ckeditor/ckeditor5-core/src/editor/editor';
 import Command from '@ckeditor/ckeditor5-core/src/command';
-import CKAlightModalDialog from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
+import CKAlightModalDialog, { DialogOptions } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import { ILinkManager } from './modal-content/ILinkManager';
 import { PredefinedLinkManager } from './modal-content/predefined-link';
 
@@ -14,26 +14,7 @@ interface DialogButton {
 interface CommandData {
   title: string;
   modalType?: 'predefinedLink' | 'publicWebsiteLink' | 'intranetLink' | 'existingDocumentLink' | 'newDocumentLink';
-  modalOptions?: {
-    modal?: boolean;
-    draggable?: boolean;
-    resizable?: boolean;
-    width?: string;
-    position?:
-    | 'center'
-    | 'top'
-    | 'bottom'
-    | 'left'
-    | 'right'
-    | 'top-left'
-    | 'top-right'
-    | 'bottom-left'
-    | 'bottom-right';
-    closeOnEscape?: boolean;
-    headerClass?: string;
-    contentClass?: string;
-    footerClass?: string;
-  };
+  modalOptions?: DialogOptions;
   buttons?: DialogButton[];
   loadContent: () => Promise<string>;
   manager?: ILinkManager;
@@ -50,15 +31,7 @@ export class AlightLinkPluginCommand extends Command {
     this.manager = data.manager;
 
     this.dialog = new CKAlightModalDialog({
-      modal: true,
-      draggable: false,
-      resizable: false,
-      width: '600px',
-      position: 'center',
-      closeOnEscape: true,
-      headerClass: '',
-      contentClass: '',
-      footerClass: '',
+      width: '600px', // Set the modal width
       ...data.modalOptions
     });
 
