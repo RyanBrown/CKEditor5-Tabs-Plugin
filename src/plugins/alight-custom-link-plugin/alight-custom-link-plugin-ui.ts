@@ -20,6 +20,32 @@ import type { Range as ModelRange } from '@ckeditor/ckeditor5-engine';
 import editIcons from './assets/icon-pencil.svg';
 import unlinkIcon from './assets/icon-unlink.svg';
 
+// Helper: Get the linkHref from the current selection (if any).
+function getLinkHrefFromSelection(editor: Editor): string | null {
+  const model = editor.model;
+  const docSelection = model.document.selection;
+
+  if (docSelection.isCollapsed) {
+    return null;
+  }
+
+  const range = docSelection.getFirstRange();
+  if (!range) {
+    return null;
+  }
+
+  const node = range.start.nodeAfter;
+  if (node && 'hasAttribute' in node && typeof node.hasAttribute === 'function') {
+    if (node.hasAttribute('linkHref')) {
+      const linkHref = node.getAttribute('linkHref');
+      if (typeof linkHref === 'string') {
+        return linkHref;
+      }
+    }
+  }
+  return null;
+}
+
 export class AlightCustomLinkPluginUI extends Plugin {
   private balloon!: ContextualBalloon;
   private formView!: View;
@@ -42,7 +68,7 @@ export class AlightCustomLinkPluginUI extends Plugin {
       view.set({
         label: 'Alight Link',
         tooltip: true,
-        withText: true,
+        withText: true
       });
 
       view.on('execute', () => {
@@ -53,6 +79,7 @@ export class AlightCustomLinkPluginUI extends Plugin {
     });
   }
 
+  // Modified _showBalloon method in AlightCustomLinkPluginUI
   private _showBalloon(): void {
     const editor = this.editor as Editor;
     const model = editor.model;
@@ -67,26 +94,50 @@ export class AlightCustomLinkPluginUI extends Plugin {
       domRange = editor.editing.view.domConverter.viewRangeToDom(viewRange);
     }
 
-    const stackId = 'alightCustomLinkPluginStack';
+    // Get link href from selection
+    const currentHref = getLinkHrefFromSelection(editor) || '';
 
-    // If it's already showing this view, do nothing
-    if (this.balloon.visibleView === this.formView) {
+    // Update the preview once rendered
+    this.editor.ui.view.once('render', () => {
+      this._updatePreviewLink(currentHref);
+    });
+
+    // Remove any existing views first
+    if (this.balloon.hasView(this.formView)) {
+      this.balloon.remove(this.formView);
+    }
+
+    // Add the form view with the new position
+    this.balloon.add({
+      view: this.formView,
+      position: {
+        target: domRange || editor.ui.getEditableElement()
+      }
+    });
+
+    // Make this view visible
+    this.balloon.visibleView = this.formView;
+  }
+
+  // Update the preview link's href and text dynamically.
+  private _updatePreviewLink(linkUrl: string) {
+    if (!this.formView.element) {
       return;
     }
+    const previewLink = this.formView.element.querySelector(
+      'a.ck-link-actions__preview'
+    ) as HTMLAnchorElement | null;
 
-    // If formView is not in the balloon, add it
-    if (!this.balloon.hasView(this.formView)) {
-      this.balloon.add({
-        view: this.formView,
-        stackId,
-        position: {
-          target: domRange || undefined
-        }
-      });
+    if (previewLink) {
+      // Update the href
+      previewLink.href = linkUrl;
+
+      // Update the displayed text
+      const labelSpan = previewLink.querySelector('span.ck-button__label') as HTMLSpanElement | null;
+      if (labelSpan) {
+        labelSpan.textContent = linkUrl || 'No link selected';
+      }
     }
-
-    // Show the stack by ID
-    this.balloon.showStack(stackId);
   }
 
   private _createFormView(): View {
@@ -134,6 +185,7 @@ export class AlightCustomLinkPluginUI extends Plugin {
         tabindex: '-1'
       },
       children: [
+        // PREVIEW LINK (will be updated dynamically)
         {
           tag: 'a',
           attributes: {
@@ -143,7 +195,7 @@ export class AlightCustomLinkPluginUI extends Plugin {
             'aria-labelledby': 'ck-editor__aria-label',
             'data-cke-tooltip-text': 'Open link in new tab',
             'data-cke-tooltip-position': 's',
-            href: 'https://www.researchgate.net/publication/9440038_Language_and_TAT_content_in_bilinguals',
+            href: '',           // starts blank
             target: '_blank',
             rel: 'noopener noreferrer'
           },
@@ -155,8 +207,8 @@ export class AlightCustomLinkPluginUI extends Plugin {
                 id: 'ck-editor__aria-label'
               },
               children: [
-                // 'https://www.researchgate.net/publication/9440038_Language_and_TAT_content_in_bilinguals'
-                'My custom link url text...'
+                // We'll replace this text in _updatePreviewLink()
+                'No link selected'
               ]
             }
           ]
@@ -172,3 +224,4 @@ export class AlightCustomLinkPluginUI extends Plugin {
     return formView;
   }
 }
+
