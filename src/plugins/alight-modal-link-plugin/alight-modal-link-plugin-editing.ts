@@ -5,7 +5,6 @@ import { ExistingDocumentLinkManager } from './modal-content/existing-document-l
 import { NewDocumentLinkManager } from './modal-content/new-document-link';
 import { PublicIntranetLinkManager } from './modal-content/public-intranet-link';
 import { PredefinedLinkManager } from './modal-content/predefined-link';
-import { CommandData, DialogButton } from './modal-content/types';
 import type { Editor } from '@ckeditor/ckeditor5-core';
 
 // A CKEditor plugin that extends the editor with enhanced link functionality.
@@ -48,49 +47,73 @@ export default class AlightModalLinkPluginEditing extends Plugin {
     super(editor);
 
     // Initialize all link managers
-    this.predefinedLinkManager = new PredefinedLinkManager();
-    this.existingDocumentLinkManager = new ExistingDocumentLinkManager();
-    this.newDocumentLinkManager = new NewDocumentLinkManager();
-    this.publicWebsiteLinkManager = new PublicIntranetLinkManager('', false);
-    this.intranetLinkManager = new PublicIntranetLinkManager('', true);
+    this.predefinedLinkManager = new PredefinedLinkManager(editor);
+    this.existingDocumentLinkManager = new ExistingDocumentLinkManager(editor);
+    this.newDocumentLinkManager = new NewDocumentLinkManager(editor);
+    this.publicWebsiteLinkManager = new PublicIntranetLinkManager(editor, '', false);
+    this.intranetLinkManager = new PublicIntranetLinkManager(editor, '', true);
   }
 
   // Initialize the plugin by setting up schema, converters, commands,
   // and event listeners for the balloon panel
-  init() {
+  public init(): void {
     const editor = this.editor;
 
     this.setupSchema();
     this.setupConverters();
     this.setupCommands(editor);
 
-    // Add event listener to modify balloon panel classes dynamically
-    this.editor.ui.on('balloonPanel:show', (evt, data) => {
-      // Get the balloon panel DOM element
-      const balloonPanel = data.view.element;
-      const selectedLink = this.editor.editing.view.document.selection.getFirstPosition()?.parent;
-
-      if (selectedLink instanceof Element && balloonPanel) {
-        // Get the link type from data attribute
-        const linkType = selectedLink.getAttribute('data-link-type') || '';
-
-        // Remove previous link type classes
-        balloonPanel.classList.remove(
-          'predefined-link-balloon',
-          'existing-document-link-balloon',
-          'new-document-link-balloon',
-          'public-website-link-balloon',
-          'intranet-link-balloon'
-        );
-
-        // Add the new class based on link type
-        const className = this.getLinkClass(linkType);
-        if (className) {
-          balloonPanel.classList.add(className);
+    editor.model.document.selection.on('change:range', () => {
+      const selection = editor.model.document.selection;
+      if (selection.hasAttribute('linkHref')) {
+        const linkType = selection.getAttribute('linkType');
+        switch (linkType) {
+          case 'predefined':
+            this.predefinedLinkManager.showBalloon(selection);
+            break;
+          case 'existing-document':
+            this.existingDocumentLinkManager.showBalloon(selection);
+            break;
+          case 'new-document':
+            this.newDocumentLinkManager.showBalloon(selection);
+            break;
+          case 'public-website':
+            this.publicWebsiteLinkManager.showBalloon(selection);
+            break;
+          case 'intranet':
+            this.intranetLinkManager.showBalloon(selection);
+            break;
         }
-
-        console.log(`Applied class "${className}" to balloon panel.`);
       }
+
+      // Add event listener to modify balloon panel classes dynamically
+      this.editor.ui.on('balloonPanel:show', (evt, data) => {
+        // Get the balloon panel DOM element
+        const balloonPanel = data.view.element;
+        const selectedLink = this.editor.editing.view.document.selection.getFirstPosition()?.parent;
+
+        if (selectedLink instanceof Element && balloonPanel) {
+          // Get the link type from data attribute
+          const linkType = selectedLink.getAttribute('data-link-type') || '';
+
+          // Remove previous link type classes
+          balloonPanel.classList.remove(
+            'predefined-link-balloon',
+            'existing-document-link-balloon',
+            'new-document-link-balloon',
+            'public-website-link-balloon',
+            'intranet-link-balloon'
+          );
+
+          // Add the new class based on link type
+          const className = this.getLinkClass(linkType);
+          if (className) {
+            balloonPanel.classList.add(className);
+          }
+
+          console.log(`Applied class "${className}" to balloon panel.`);
+        }
+      });
     });
   }
 
@@ -168,6 +191,24 @@ export default class AlightModalLinkPluginEditing extends Plugin {
     }
   }
 
+  private getStandardButtons(onContinue: () => void) {
+    return [
+      {
+        label: 'Cancel',
+        variant: 'outlined' as const,
+        className: 'cka-button cka-button-rounded cka-button-outlined cka-button-sm',
+        closeOnClick: true
+      },
+      {
+        label: 'Continue',
+        variant: 'default' as const,
+        className: 'cka-button cka-button-rounded cka-button-sm',
+        closeOnClick: true,
+        onClick: onContinue
+      }
+    ];
+  }
+
   // Set up all link-related commands in the editor
   // Each command corresponds to a different type of link
   // @param editor - The CKEditor instance
@@ -197,34 +238,28 @@ export default class AlightModalLinkPluginEditing extends Plugin {
     }));
 
     // Command for intranet links
-    editor.commands.add(
-      'linkOption3',
-      new AlightModalLinkPluginCommand(editor, {
-        title: 'Intranet Link',
-        modalType: 'intranetLink',
-        buttons: this.getStandardButtons(() => this.handleIntranetLinkSelection()),
-        loadContent: async () => this.intranetLinkManager.getLinkContent(1),
-        manager: this.intranetLinkManager,
-        linkType: 'intranet'
-      })
-    );
+    editor.commands.add('linkOption3', new AlightModalLinkPluginCommand(editor, {
+      title: 'Intranet Link',
+      modalType: 'intranetLink',
+      buttons: this.getStandardButtons(() => this.handleIntranetLinkSelection()),
+      loadContent: async () => this.intranetLinkManager.getLinkContent(1),
+      manager: this.intranetLinkManager,
+      linkType: 'intranet'
+    }));
 
     // Command for existing document links
-    editor.commands.add(
-      'linkOption4',
-      new AlightModalLinkPluginCommand(editor, {
-        title: 'Existing Document Link',
-        modalType: 'existingDocumentLink',
-        modalOptions: {
-          width: '90vw',
-          contentClass: 'cka-existing-document-content'
-        },
-        buttons: this.getStandardButtons(() => this.handleExistingDocumentSelection()),
-        loadContent: async () => this.existingDocumentLinkManager.getLinkContent(1),
-        manager: this.existingDocumentLinkManager,
-        linkType: 'existing-document'
-      })
-    );
+    editor.commands.add('linkOption4', new AlightModalLinkPluginCommand(editor, {
+      title: 'Existing Document Link',
+      modalType: 'existingDocumentLink',
+      modalOptions: {
+        width: '90vw',
+        contentClass: 'cka-existing-document-content'
+      },
+      buttons: this.getStandardButtons(() => this.handleExistingDocumentSelection()),
+      loadContent: async () => this.existingDocumentLinkManager.getLinkContent(1),
+      manager: this.existingDocumentLinkManager,
+      linkType: 'existing-document'
+    }));
 
     // Command for new document links
     editor.commands.add('linkOption5', new AlightModalLinkPluginCommand(editor, {
@@ -249,31 +284,9 @@ export default class AlightModalLinkPluginEditing extends Plugin {
     }));
   }
 
-  // Get standard button configuration for modal dialogs
-  // @param onContinue - Callback function for the continue button
-  // @returns Array of button configurations
-  private getStandardButtons(onContinue: () => void): DialogButton[] {
-    return [
-      {
-        label: 'Cancel',
-        variant: 'outlined' as const,
-        className: 'cka-button cka-button-rounded cka-button-outlined cka-button-sm',
-        closeOnClick: true
-      },
-      {
-        label: 'Continue',
-        variant: 'default' as const,
-        className: 'cka-button cka-button-rounded cka-button-sm',
-        closeOnClick: true,
-        onClick: onContinue
-      }
-    ];
-  }
-
   // Handle selection of a predefined link
-  // TODO: Implement link selection logic
   private handlePredefinedLinkSelection(): void {
-    // Implementation
+    console.log('Predefined Link confirmed');
   }
 
   // Handle selection of an intranet link

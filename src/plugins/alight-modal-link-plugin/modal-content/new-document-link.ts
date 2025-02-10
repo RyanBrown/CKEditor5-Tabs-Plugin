@@ -1,23 +1,14 @@
-// src/plugins/alight-link-plugin/modal-content/new-document-link.ts
-
-// This file defines the NewDocumentLinkManager class which renders a document upload form
-// using innerHTML. It now leverages the custom card (<cka-card>), checkbox (<cka-checkbox>),
-// and select (<cka-light-select-menu>) components for rendering the UI.
-
-// Note: Since innerHTML is used, any event listeners attached directly to rendered HTML elements
-// will not persist when the HTML is re-parsed. We reattach event listeners in attachEventListeners().
-
-import { ILinkManager } from './ILinkManager';
+import { BalloonLinkManager, BalloonAction } from './ILinkManager';
+import editIcon from '../assets/icon-pencil.svg';
+import unlinkIcon from '../assets/icon-unlink.svg';
+import type { Editor } from '@ckeditor/ckeditor5-core';
 import { CKALightSelectMenu } from '../../ui-components/alight-select-menu-component/alight-select-menu-component';
-import '../../ui-components/alight-checkbox-component/alight-checkbox-component';
 
-export class NewDocumentLinkManager implements ILinkManager {
-  // Reference to the container element where the form is rendered.
+export class NewDocumentLinkManager extends BalloonLinkManager {
   private container: HTMLElement | null = null;
   private languageSelect: CKALightSelectMenu<{ value: string; label: string }> | null = null;
   private selectedLink: { destination: string; title: string } | null = null;
 
-  // Holds the state of the form data.
   private formData = {
     language: 'en',
     file: null as File | null,
@@ -30,16 +21,78 @@ export class NewDocumentLinkManager implements ILinkManager {
     showInSearch: true
   };
 
-  // Creates a form group with an optional title and wraps the provided content inside a container.
-  // @param title - The title of the form group.
-  // @param content - The HTML string for the group content.
-  // @returns A string representing the form group.
+  constructor(editor: Editor) {
+    super(editor);
+  }
+
+  override getEditActions(): BalloonAction[] {
+    return [
+      {
+        label: 'Edit New Document',
+        icon: editIcon,
+        execute: () => {
+          const link = this.getSelectedLink();
+          if (link) {
+            this.editor.execute('linkOption5');
+          }
+          this.hideBalloon();
+        }
+      },
+      {
+        label: 'Remove Link',
+        icon: unlinkIcon,
+        execute: () => {
+          this.editor.execute('unlink');
+          this.hideBalloon();
+        }
+      }
+    ];
+  }
+
+  override getLinkContent(page: number): string {
+    return this.createCardElementHTML(page);
+  }
+
+  override renderContent(container: HTMLElement): void {
+    this.container = container;
+    container.innerHTML = this.getLinkContent(1);
+    this.initializeLanguageSelect();
+    this.attachEventListeners();
+  }
+
+  override resetSearch(): void {
+    this.selectedLink = null;
+    if (this.languageSelect) {
+      this.languageSelect.destroy();
+      this.languageSelect = null;
+    }
+
+    this.formData = {
+      language: 'en',
+      file: null,
+      documentTitle: '',
+      searchTags: [],
+      description: '',
+      categories: [],
+      contentLibraryAccess: false,
+      worklifeLink: false,
+      showInSearch: true
+    };
+
+    if (this.container) {
+      this.renderContent(this.container);
+    }
+  }
+
+  override getSelectedLink(): { destination: string; title: string } | null {
+    return this.selectedLink;
+  }
+
   private createFormGroupHTML(title: string, content: string, errorMessage?: string): string {
     let groupHTML = '<div class="form-group">';
     if (title) {
       groupHTML += `<h3>${title}</h3>`;
     }
-    // Wrap content in a cka-card component
     groupHTML += `<div class="cka-card">
       <div class="form-group-content">
         ${content}
@@ -74,10 +127,8 @@ export class NewDocumentLinkManager implements ILinkManager {
       onChange: (selectedValue) => {
         if (selectedValue) {
           if (Array.isArray(selectedValue)) {
-            // If it's an array, take the first item's value property
             this.formData.language = selectedValue[0]?.value || 'en';
           } else {
-            // If it's a single object, take its value property
             this.formData.language = selectedValue.value;
           }
         } else {
@@ -172,28 +223,7 @@ export class NewDocumentLinkManager implements ILinkManager {
     return `<form novalidate>${formContent}</form>`;
   }
 
-  // Rest of the class implementation remains the same...
-  getLinkContent(page: number): string {
-    return this.createCardElementHTML(page);
-  }
-
-  // Renders the content into the provided container using innerHTML.
-  // Note: Using innerHTML means that event listeners added in the HTML string will not be preserved.
-  // You may need to use event delegation or reattach events after rendering.
-  // @param container - The container where the form will be rendered.
-  renderContent(container: HTMLElement): void {
-    this.container = container;
-    container.innerHTML = this.getLinkContent(1);
-
-    // Initialize select menu after the container is rendered
-    this.initializeLanguageSelect();
-
-    // Attach other event listeners
-    this.attachEventListeners();
-  }
-
   private attachEventListeners(): void {
-    // File input change event
     const fileInput = document.getElementById('file-input') as HTMLInputElement;
     if (fileInput) {
       fileInput.addEventListener('change', (e) => {
@@ -201,7 +231,6 @@ export class NewDocumentLinkManager implements ILinkManager {
       });
     }
 
-    // Title input events
     const titleInput = document.getElementById('title-input') as HTMLInputElement;
     const charCount = document.getElementById('char-count');
     if (titleInput && charCount) {
@@ -212,7 +241,6 @@ export class NewDocumentLinkManager implements ILinkManager {
       });
     }
 
-    // Tags input event
     const tagsInput = document.getElementById('tags-input') as HTMLInputElement;
     if (tagsInput) {
       tagsInput.addEventListener('input', () => {
@@ -223,7 +251,6 @@ export class NewDocumentLinkManager implements ILinkManager {
       });
     }
 
-    // Description textarea event
     const description = document.getElementById('description') as HTMLTextAreaElement;
     if (description) {
       description.addEventListener('input', () => {
@@ -231,57 +258,34 @@ export class NewDocumentLinkManager implements ILinkManager {
       });
     }
 
-    // Checkbox events
-    const contentLibraryCheckbox = document.getElementById('access-from-content-library-(optional)-checkbox');
-    if (contentLibraryCheckbox) {
-      contentLibraryCheckbox.addEventListener('change', (e: Event) => {
+    const checkboxes = {
+      contentLibrary: document.getElementById('access-from-content-library-(optional)-checkbox'),
+      worklife: document.getElementById('link-to-document-from-a-alight-worklife-link-(optional)-checkbox'),
+      searchResults: document.getElementById('show-in-search-results-(optional)-checkbox')
+    };
+
+    if (checkboxes.contentLibrary) {
+      checkboxes.contentLibrary.addEventListener('change', (e: Event) => {
         const customEvent = e as CustomEvent;
         this.formData.contentLibraryAccess = customEvent.detail;
       });
     }
-    const worklifeCheckbox = document.getElementById('link-to-document-from-a-alight-worklife-link-(optional)-checkbox');
-    if (worklifeCheckbox) {
-      worklifeCheckbox.addEventListener('change', (e: Event) => {
+
+    if (checkboxes.worklife) {
+      checkboxes.worklife.addEventListener('change', (e: Event) => {
         const customEvent = e as CustomEvent;
         this.formData.worklifeLink = customEvent.detail;
       });
     }
-    const searchResultsCheckbox = document.getElementById('show-in-search-results-(optional)-checkbox');
-    if (searchResultsCheckbox) {
-      searchResultsCheckbox.addEventListener('change', (e: Event) => {
+
+    if (checkboxes.searchResults) {
+      checkboxes.searchResults.addEventListener('change', (e: Event) => {
         const customEvent = e as CustomEvent;
         this.formData.showInSearch = customEvent.detail;
       });
     }
   }
 
-  resetSearch(): void {
-    this.selectedLink = null;
-    // Clean up existing select menu
-    if (this.languageSelect) {
-      this.languageSelect.destroy();
-      this.languageSelect = null;
-    }
-
-    this.formData = {
-      language: 'en',
-      file: null,
-      documentTitle: '',
-      searchTags: [],
-      description: '',
-      categories: [],
-      contentLibraryAccess: false,
-      worklifeLink: false,
-      showInSearch: true
-    };
-
-    if (this.container) {
-      this.renderContent(this.container);
-    }
-  }
-
-  // Validates the form data.
-  // @returns An object indicating whether the form is valid and an optional message.
   validateForm(): { isValid: boolean; message?: string } {
     if (!this.formData.file) {
       return { isValid: false, message: 'Please choose a file' };
@@ -292,13 +296,10 @@ export class NewDocumentLinkManager implements ILinkManager {
     return { isValid: true };
   }
 
-  // Returns a copy of the form data.
   getFormData() {
     return { ...this.formData };
   }
 
-  // Submits the form after validation.
-  // @returns True if submission is successful, false otherwise.
   submitForm(): boolean {
     const validation = this.validateForm();
     if (!validation.isValid) {
@@ -310,10 +311,6 @@ export class NewDocumentLinkManager implements ILinkManager {
 
     console.log('Form submitted with data:', this.formData);
     return true;
-  }
-
-  public getSelectedLink(): { destination: string; title: string } | null {
-    return this.selectedLink;
   }
 
   private handleDocumentCreation(destination: string, title: string): void {

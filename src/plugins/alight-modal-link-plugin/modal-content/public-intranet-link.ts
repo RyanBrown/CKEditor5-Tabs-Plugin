@@ -1,23 +1,47 @@
 // src/plugins/alight-link-plugin/modal-content/public-intranet-link.ts
-import { ILinkManager } from './ILinkManager';
+import { BalloonLinkManager, BalloonAction } from './ILinkManager';
+import editIcon from '../assets/icon-pencil.svg';
+import unlinkIcon from '../assets/icon-unlink.svg';
+import type { Editor } from '@ckeditor/ckeditor5-core';
 
-export class PublicIntranetLinkManager implements ILinkManager {
+export class PublicIntranetLinkManager extends BalloonLinkManager {
   private selectedLink: { destination: string; title: string } | null = null;
   private isIntranet: boolean;
   private baseUrl: string;
   private existingHref: string = '';
   private existingOrgName: string = '';
 
-  constructor(baseUrl: string, isIntranet: boolean) {
+  constructor(editor: Editor, baseUrl: string, isIntranet: boolean) {
+    super(editor);
     this.isIntranet = isIntranet;
     this.baseUrl = baseUrl;
   }
 
-  public getSelectedLink(): { destination: string; title: string } | null {
-    return this.selectedLink;
+  override getEditActions(): BalloonAction[] {
+    return [
+      {
+        label: 'Edit Link',
+        icon: editIcon,
+        execute: () => {
+          const link = this.getSelectedLink();
+          if (link) {
+            this.editor.execute(this.isIntranet ? 'linkOption3' : 'linkOption2');
+          }
+          this.hideBalloon();
+        }
+      },
+      {
+        label: 'Remove Link',
+        icon: unlinkIcon,
+        execute: () => {
+          this.editor.execute('unlink');
+          this.hideBalloon();
+        }
+      }
+    ];
   }
 
-  public getLinkContent(page: number): string {
+  override getLinkContent(page: number): string {
     const urlInputValue = this.existingHref || '';
     const orgNameValue = this.existingOrgName || '';
 
@@ -29,7 +53,7 @@ export class PublicIntranetLinkManager implements ILinkManager {
             type="text" 
             id="url-input" 
             class="cka-input-text" 
-            value="${urlInputValue}"
+            value="${this.escapeHtml(urlInputValue)}"
             placeholder="Enter URL..." 
           />
         </div>
@@ -39,7 +63,7 @@ export class PublicIntranetLinkManager implements ILinkManager {
             type="text" 
             id="org-name-input" 
             class="cka-input-text" 
-            value="${orgNameValue}"
+            value="${this.escapeHtml(orgNameValue)}"
             placeholder="Enter organization name..." 
           />
         </div>
@@ -47,8 +71,7 @@ export class PublicIntranetLinkManager implements ILinkManager {
     `;
   }
 
-  public renderContent(container: HTMLElement): void {
-    // Add URL input listener
+  override renderContent(container: HTMLElement): void {
     const urlInput = container.querySelector('#url-input') as HTMLInputElement;
     const orgNameInput = container.querySelector('#org-name-input') as HTMLInputElement;
 
@@ -72,18 +95,21 @@ export class PublicIntranetLinkManager implements ILinkManager {
     }
   }
 
-  private handleUrlSelection(url: string, title: string): void {
-    const fullUrl = url.startsWith('http') ? url : `${this.baseUrl}${url}`;
-    this.selectedLink = { destination: fullUrl, title };
-  }
-
-  public resetSearch(): void {
+  override resetSearch(): void {
     this.selectedLink = null;
     this.existingHref = '';
     this.existingOrgName = '';
   }
 
-  // Helper method to prevent XSS
+  override getSelectedLink(): { destination: string; title: string } | null {
+    return this.selectedLink;
+  }
+
+  private handleUrlSelection(url: string, title: string): void {
+    const fullUrl = url.startsWith('http') ? url : `${this.baseUrl}${url}`;
+    this.selectedLink = { destination: fullUrl, title };
+  }
+
   private escapeHtml(unsafe: string): string {
     return unsafe
       .replace(/&/g, "&amp;")
@@ -93,7 +119,6 @@ export class PublicIntranetLinkManager implements ILinkManager {
       .replace(/'/g, "&#039;");
   }
 
-  // Getters for form values
   getUrl(): string {
     return this.existingHref;
   }

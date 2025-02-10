@@ -1,7 +1,10 @@
 // src/plugins/alight-link-plugin/modal-content/existing-document-link.ts
 
+import { BalloonLinkManager, BalloonAction } from './ILinkManager';
+import editIcon from '../assets/icon-pencil.svg';
+import unlinkIcon from '../assets/icon-unlink.svg';
+import type { Editor } from '@ckeditor/ckeditor5-core';
 import existingDocumentLinkData from './json/existing-document-test-data.json';
-import { ILinkManager } from './ILinkManager';
 import { AlightOverlayPanel } from '../../ui-components/alight-overlay-panel-component/alight-overlay-panel';
 import { CKALightSelectMenu } from '../../ui-components/alight-select-menu-component/alight-select-menu-component';
 import '../../ui-components/alight-checkbox-component/alight-checkbox-component';
@@ -37,7 +40,7 @@ interface SelectedFilters {
   locale: string[];
 }
 
-export class ExistingDocumentLinkManager implements ILinkManager {
+export class ExistingDocumentLinkManager extends BalloonLinkManager {
   private overlayPanelConfig = {
     width: '600px',
     height: 'auto'
@@ -59,11 +62,39 @@ export class ExistingDocumentLinkManager implements ILinkManager {
 
   private selectedLink: { destination: string; title: string } | null = null;
 
-  public getLinkContent(page: number): string {
+  constructor(editor: Editor) {
+    super(editor);
+  }
+
+  override getEditActions(): BalloonAction[] {
+    return [
+      {
+        label: 'Edit Document Link',
+        icon: editIcon,
+        execute: () => {
+          const link = this.getSelectedLink();
+          if (link) {
+            this.editor.execute('linkOption4');
+          }
+          this.hideBalloon();
+        }
+      },
+      {
+        label: 'Remove Link',
+        icon: unlinkIcon,
+        execute: () => {
+          this.editor.execute('unlink');
+          this.hideBalloon();
+        }
+      }
+    ];
+  }
+
+  override getLinkContent(page: number): string {
     return this.buildContentForPage(page);
   }
 
-  public renderContent(container: HTMLElement): void {
+  override renderContent(container: HTMLElement): void {
     container.innerHTML = this.buildContentForPage(this.currentPage);
 
     const triggerEl = container.querySelector(`#${this.advancedSearchTriggerId}`) as HTMLButtonElement | null;
@@ -76,7 +107,7 @@ export class ExistingDocumentLinkManager implements ILinkManager {
     this.attachEventListeners(container);
   }
 
-  public resetSearch(): void {
+  override resetSearch(): void {
     this.currentSearchQuery = '';
     this.selectedFilters = {
       population: [],
@@ -110,6 +141,11 @@ export class ExistingDocumentLinkManager implements ILinkManager {
     }
   }
 
+  override getSelectedLink(): { destination: string; title: string } | null {
+    return this.selectedLink;
+  }
+
+  // Original helper methods remain the same
   private buildContentForPage(page: number): string {
     const totalItems = this.filteredDocsData.length;
     const totalPages = Math.ceil(totalItems / this.pageSize) || 1;
@@ -395,10 +431,6 @@ export class ExistingDocumentLinkManager implements ILinkManager {
         </ul>
       </div>
     `;
-  }
-
-  public getSelectedLink(): { destination: string; title: string } | null {
-    return this.selectedLink;
   }
 
   private handleLinkSelection(destination: string, title: string): void {
