@@ -29,7 +29,7 @@ export class AlightCustomModalLinkPluginCommand extends Command {
     this.data = data;
     this.balloon = editor.plugins.get('ContextualBalloon');
 
-    // Create dialog with correct options structure
+    // Create dialog with the given options
     this.dialog = new CKAlightModalDialog({
       modal: true,
       draggable: data.modalOptions?.draggable ?? true,
@@ -38,32 +38,41 @@ export class AlightCustomModalLinkPluginCommand extends Command {
       headerClass: 'ck-alight-modal-header',
       contentClass: 'ck-alight-modal-content',
       footerClass: 'ck-alight-modal-footer',
-      buttons: data.buttons?.map(btn => ({
-        label: btn.label,
-        className: btn.className,
-        position: 'right',
-        closeOnClick: false
-      })) || [],
+      buttons:
+        data.buttons?.map((btn) => ({
+          label: btn.label,
+          className: btn.className,
+          position: 'right',
+          closeOnClick: false
+        })) || [],
       defaultCloseButton: true
     });
 
-    // Set the title separately using the setTitle method
+    // Set the dialog title
     this.dialog.setTitle(data.title);
   }
 
+  /**
+   * Executes the link command.
+   * If `href` is provided, it applies the `customHref` attribute to the selection (or inserts a text node).
+   * If `href` is not provided, it shows the modal and loads its content.
+   */
   public override execute(href?: string): void {
     const model = this.editor.model;
     const selection = model.document.selection;
 
+    // If an href is supplied, we link the selection
     if (href) {
-      model.change(writer => {
+      model.change((writer) => {
         if (selection.isCollapsed) {
+          // Insert new text node with link
           const textNode = writer.createText(href, {
-            customHref: href,  // Now using customHref instead of customHref
+            customHref: href,
             alightCustomModalLink: true
           });
           model.insertContent(textNode, selection.getFirstPosition()!);
         } else {
+          // Apply link attributes to the selected range
           const ranges = [...selection.getRanges()];
           for (const range of ranges) {
             writer.setAttribute('customHref', href, range);
@@ -72,9 +81,9 @@ export class AlightCustomModalLinkPluginCommand extends Command {
         }
       });
     } else {
-      // If no href, show the modal and load content
+      // No href => show the modal UI and load the content
       this.dialog.setTitle(this.data.title);
-      this.data.loadContent().then(content => {
+      this.data.loadContent().then((content) => {
         this.dialog.setContent(content);
       });
       this.dialog.show();

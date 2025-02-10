@@ -2,38 +2,47 @@
 import { DocumentSelection, Selection } from '@ckeditor/ckeditor5-engine';
 import { Range } from '@ckeditor/ckeditor5-engine';
 
-// Returns the range of the selected link, if any
+/**
+ * Gets the range of the selected link (if any).
+ * We look for 'customHref' in the selection or in the node after the start.
+ */
 export function getSelectedLinkRange(selection: Selection | DocumentSelection): Range | null {
   const range = selection.getFirstRange();
   if (!range) {
     return null;
   }
 
-  // Check if the selection has the customHref attribute
+  // If the selection has the attribute, return its range
   if (selection.hasAttribute('customHref')) {
     return range;
   }
 
-  // Check if the range start position has customHref attribute
+  // Check node after the start
   const startNode = range.start.nodeAfter;
-  if (startNode && 'hasAttribute' in startNode &&
+  if (
+    startNode &&
+    'hasAttribute' in startNode &&
     typeof startNode.hasAttribute === 'function' &&
-    startNode.hasAttribute('customHref')) {
+    startNode.hasAttribute('customHref')
+  ) {
     return Range._createOn(startNode);
   }
 
-  // Check the parent node
+  // Check parent
   const parentNode = range.start.parent;
-  if (parentNode && 'hasAttribute' in parentNode &&
+  if (
+    parentNode &&
+    'hasAttribute' in parentNode &&
     typeof parentNode.hasAttribute === 'function' &&
-    parentNode.hasAttribute('customHref')) {
+    parentNode.hasAttribute('customHref')
+  ) {
     return Range._createOn(parentNode);
   }
 
   return null;
 }
 
-// Checks if the current selection contains a link
+// Returns true if the selection has the 'customHref' attribute (i.e., on a link).
 export function hasLinkAttribute(selection: Selection | DocumentSelection): boolean {
   // Check if the selection directly has the attribute
   if (selection.hasAttribute('customHref')) {
@@ -42,8 +51,7 @@ export function hasLinkAttribute(selection: Selection | DocumentSelection): bool
 
   // Check the parent node at the first position
   const node = selection.getFirstPosition()?.parent;
-  if (node && 'hasAttribute' in node &&
-    typeof node.hasAttribute === 'function') {
+  if (node && 'hasAttribute' in node && typeof node.hasAttribute === 'function') {
     return node.hasAttribute('customHref');
   }
 
