@@ -2,7 +2,7 @@
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
 import ToolBarIcon from './assets/icon-link.svg';
-import './styles/alight-population-plugin.scss';
+import './styles/alight-modal-link-plugin.scss';
 
 export default class AlightModalLinkPluginUI extends Plugin {
   init() {
