@@ -31,9 +31,31 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
     this.formView = this._createFormView(); // Create the form view that will be displayed in the balloon
     this._registerToolbarButton(); // Register the toolbar button
     this._setupSelectionChangeHandling(); // Set up handling of selection changes to force our custom balloon
+    this._setupClickOutsideHandler(); // New handler for click-away behavior
   }
 
-  // Shows the custom link balloon at the current selection position
+  // New method to handle clicks outside the balloon
+  private _setupClickOutsideHandler(): void {
+    const editor = this.editor as Editor;
+    const viewDocument = editor.editing.view.document;
+
+    this.listenTo(viewDocument, 'click', (evt, data) => {
+      const domEvent = data.domEvent as MouseEvent;
+      const clickedElement = domEvent.target as HTMLElement;
+
+      // Check if click was outside the balloon and not on a link
+      if (this.balloon.hasView(this.formView)) {
+        const balloonElement = this.balloon.view.element;
+        const isClickInBalloon = balloonElement?.contains(clickedElement);
+        const isClickOnLink = clickedElement.tagName === 'A';
+
+        if (!isClickInBalloon && !isClickOnLink) {
+          this.hideBalloon();
+        }
+      }
+    });
+  }
+
   public showBalloon(): void {
     const editor = this.editor as Editor;
     const selection = editor.model.document.selection;
@@ -256,9 +278,23 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
       tooltip: true
     });
 
-    // On click, execute the built-in 'unlink' command and hide the balloon
+    // Updated unlink handler to remove all link-related attributes
     unlinkButton.on('execute', () => {
-      editor.execute('unlink');
+      editor.model.change(writer => {
+        // Get the full range of the link
+        const selection = editor.model.document.selection;
+        const linkRange = getSelectedLinkRange(selection);
+
+        if (linkRange) {
+          // Remove all link-related attributes
+          writer.removeAttribute('customHref', linkRange);
+          writer.removeAttribute('alightCustomModalLink', linkRange);
+          writer.removeAttribute('organizationName', linkRange);
+
+          // Set the selection to the full range of the former link
+          writer.setSelection(linkRange);
+        }
+      });
       this.hideBalloon();
     });
 
