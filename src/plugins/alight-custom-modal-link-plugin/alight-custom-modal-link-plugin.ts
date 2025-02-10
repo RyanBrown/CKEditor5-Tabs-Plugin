@@ -10,28 +10,21 @@ import CKAlightModalDialog, {
   DialogButton
 } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 
-/**
- * The main plugin class that integrates the custom link functionality.
- * This plugin combines the editing and UI features for link handling.
- */
+// The main plugin class that integrates the custom link functionality.
+// This plugin combines the editing and UI features for link handling.
+
 export default class AlightCustomModalLinkPlugin extends Plugin {
-  /**
-   * Required plugins that must be loaded for this plugin to work.
-   */
+  // Required plugins that must be loaded for this plugin to work.
   public static get requires() {
     return [AlightCustomModalLinkPluginEditing, AlightCustomModalLinkPluginUI];
   }
 
-  /**
-   * The plugin name used for registration and retrieval.
-   */
+  // The plugin name used for registration and retrieval.
   public static get pluginName() {
     return 'AlightCustomModalLinkPlugin';
   }
 
-  /**
-   * Initializes the plugin functionality.
-   */
+  // Initializes the plugin functionality.
   public init(): void {
     const editor = this.editor;
 
@@ -42,9 +35,7 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
     this._registerToolbarButton();
   }
 
-  /**
-   * Sets up the handler for link clicks to show the balloon UI.
-   */
+  // Sets up the handler for link clicks to show the balloon UI.
   private _setupLinkClickHandler(): void {
     const editor = this.editor;
     const uiPlugin = editor.plugins.get(AlightCustomModalLinkPluginUI);
@@ -55,6 +46,12 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
 
       if (domTarget?.tagName === 'A') {
         const viewElement = editor.editing.view.domConverter.domToView(domTarget);
+
+        // Add null check and type guard for viewElement
+        if (!viewElement || !('is' in viewElement)) {
+          return;
+        }
+
         const modelElement = editor.editing.mapper.toModelElement(viewElement);
 
         if (modelElement) {
@@ -84,9 +81,7 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
     });
   }
 
-  /**
-   * Registers the toolbar button that opens the link modal dialog.
-   */
+  // Registers the toolbar button that opens the link modal dialog.
   private _registerToolbarButton(): void {
     const editor = this.editor;
 
@@ -111,9 +106,7 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
     });
   }
 
-  /**
-   * Shows the modal dialog for link insertion/editing.
-   */
+  // Shows the modal dialog for link insertion/editing.
   private _showLinkModal(): void {
     const editor = this.editor;
 
@@ -122,18 +115,6 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
       return;
     }
 
-    // Define the modal dialog buttons
-    const dialogButtons: DialogButton[] = [
-      {
-        label: 'Continue',
-        className: 'cka-continue-button',
-        variant: 'default',
-        position: 'right',
-        closeOnClick: false
-      }
-    ];
-
-    // Configure the modal dialog
     const dialogOptions: DialogOptions = {
       modal: true,
       draggable: true,
@@ -144,10 +125,19 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
       closeOnEscape: true,
       closeOnClickOutside: false,
       overlayOpacity: 0.5,
-      headerClass: '',
-      contentClass: '',
-      footerClass: '',
-      buttons: dialogButtons,
+      headerClass: 'ck-alight-modal-header',
+      contentClass: 'ck-alight-modal-content',
+      footerClass: 'ck-alight-modal-footer',
+      position: 'center',
+      buttons: [
+        {
+          label: 'Continue',
+          className: 'cka-continue-button',
+          variant: 'default',
+          position: 'right',
+          closeOnClick: false
+        }
+      ],
       defaultCloseButton: true
     };
 
@@ -160,7 +150,7 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
       <form id="custom-link-form" class="ck-form">
         <div class="ck-form-group">
           <label for="link-url" class="ck-label">
-            URL <span class="ck-required">*</span>
+            URL <span class="ck-required">//</span>
           </label>
           <input type="url" 
                  id="link-url" 
@@ -194,9 +184,7 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
     modalDialog.show();
   }
 
-  /**
-   * Handles the submission of the link modal form.
-   */
+  // Handles the submission of the link modal form.
   private _handleModalSubmit(modalDialog: CKAlightModalDialog): void {
     const contentElement = modalDialog.getContentElement();
     if (!contentElement) return;

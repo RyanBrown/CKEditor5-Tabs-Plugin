@@ -5,6 +5,7 @@ import { ButtonView, ContextualBalloon, View } from '@ckeditor/ckeditor5-ui';
 import { getSelectedLinkRange, hasLinkAttribute } from './alight-custom-modal-link-plugin-utils';
 import type { Editor } from '@ckeditor/ckeditor5-core';
 import type { Range } from '@ckeditor/ckeditor5-engine';
+import { BalloonPanelView } from '@ckeditor/ckeditor5-ui';
 import editIcon from './assets/icon-pencil.svg';
 import unlinkIcon from './assets/icon-unlink.svg';
 
@@ -59,16 +60,17 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
     const domRange = editor.editing.view.domConverter.viewRangeToDom(viewRange);
 
     if (domRange) {
-      // Add the form view to the balloon
+      const positions = BalloonPanelView.defaultPositions;
+
       this.balloon.add({
         view: this.formView,
         position: {
           target: domRange,
           positions: [
-            'arrow_n',
-            'arrow_s',
-            'arrow_e',
-            'arrow_w'
+            positions.northArrowSouth,
+            positions.southArrowNorth,
+            positions.eastArrowWest,
+            positions.westArrowEast
           ]
         }
       });
