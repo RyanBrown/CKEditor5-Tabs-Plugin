@@ -48,7 +48,8 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
     const editor = this.editor as Editor;
     const selection = editor.model.document.selection;
 
-    const modelRange = getSelectedLinkRange(selection) || selection.getFirstRange();
+    // Get the link range using our utility function
+    const modelRange = getSelectedLinkRange(selection);
     if (!modelRange) {
       return;
     }
@@ -101,10 +102,12 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
   private _setupSelectionChangeHandling(): void {
     const editor = this.editor as Editor;
 
-    // Listen to selection changes.
+    // Listen to selection changes
     this.listenTo(editor.model.document.selection, 'change:range', () => {
+      // Use setTimeout to ensure the selection is fully updated
       setTimeout(() => {
-        if (hasLinkAttribute(editor.model.document.selection)) {
+        const selection = editor.model.document.selection;
+        if (hasLinkAttribute(selection)) {
           if (!this.balloon.hasView(this.formView)) {
             this.showBalloon();
           }
@@ -114,12 +117,12 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
       }, 50);
     });
 
-    // Hide the balloon when the editor becomes read-only
+    // Hide the balloon when editor becomes read-only
     this.listenTo(editor, 'change:isReadOnly', () => {
       this.hideBalloon();
     });
 
-    // Hide the balloon when the editor loses focus
+    // Hide the balloon when editor loses focus
     this.listenTo(editor.ui.focusTracker, 'change:isFocused', (evt, name, isFocused) => {
       if (!isFocused) {
         this.hideBalloon();

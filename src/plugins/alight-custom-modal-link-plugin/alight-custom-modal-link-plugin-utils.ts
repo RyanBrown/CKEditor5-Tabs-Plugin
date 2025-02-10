@@ -9,24 +9,43 @@ export function getSelectedLinkRange(selection: Selection | DocumentSelection): 
     return null;
   }
 
+  // Check if the selection has the customHref attribute
   if (selection.hasAttribute('customHref')) {
     return range;
   }
 
   // Check if the range start position has customHref attribute
-  const node = range.start.nodeAfter;
-  if (node && 'hasAttribute' in node && typeof node.hasAttribute === 'function' && node.hasAttribute('customHref')) {
-    return range;
+  const startNode = range.start.nodeAfter;
+  if (startNode && 'hasAttribute' in startNode &&
+    typeof startNode.hasAttribute === 'function' &&
+    startNode.hasAttribute('customHref')) {
+    return Range._createOn(startNode);
   }
 
-  // If we get here, no link was found in the selection
+  // Check the parent node
+  const parentNode = range.start.parent;
+  if (parentNode && 'hasAttribute' in parentNode &&
+    typeof parentNode.hasAttribute === 'function' &&
+    parentNode.hasAttribute('customHref')) {
+    return Range._createOn(parentNode);
+  }
+
   return null;
 }
 
 // Checks if the current selection contains a link
 export function hasLinkAttribute(selection: Selection | DocumentSelection): boolean {
+  // Check if the selection directly has the attribute
+  if (selection.hasAttribute('customHref')) {
+    return true;
+  }
+
+  // Check the parent node at the first position
   const node = selection.getFirstPosition()?.parent;
-  return !!(node && 'hasAttribute' in node &&
-    typeof node.hasAttribute === 'function' &&
-    node.hasAttribute('customHref'));
+  if (node && 'hasAttribute' in node &&
+    typeof node.hasAttribute === 'function') {
+    return node.hasAttribute('customHref');
+  }
+
+  return false;
 }

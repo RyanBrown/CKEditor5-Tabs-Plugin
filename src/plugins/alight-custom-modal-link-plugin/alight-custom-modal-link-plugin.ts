@@ -1,10 +1,10 @@
 // src/plugins/alight-custom-modal-link-plugin/alight-custom-modal-link-plugin.ts
-
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { ButtonView } from '@ckeditor/ckeditor5-ui';
 import type { Editor } from '@ckeditor/ckeditor5-core';
 import { AlightCustomModalLinkPluginEditing } from './alight-custom-modal-link-plugin-editing';
 import { AlightCustomModalLinkPluginUI } from './alight-custom-modal-link-plugin-ui';
+import { hasLinkAttribute } from './alight-custom-modal-link-plugin-utils';
 import CKAlightModalDialog, {
   DialogOptions,
   DialogButton
@@ -45,25 +45,23 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
       const domTarget = data.domTarget as HTMLElement;
 
       if (domTarget?.tagName === 'A') {
+        evt.stop();
+        data.preventDefault();
+
         const viewNode = editor.editing.view.domConverter.domToView(domTarget);
 
         // Check if viewNode is an Element and has the required properties
-        if (!viewNode || !('is' in viewNode) || !(viewNode.is('element'))) {
+        if (!viewNode || !('is' in viewNode) || !viewNode.is('element')) {
           return;
         }
 
-        const viewElement = viewNode;
-
-        const modelElement = editor.editing.mapper.toModelElement(viewElement);
+        const modelElement = editor.editing.mapper.toModelElement(viewNode);
 
         if (modelElement) {
-          // Prevent default link behavior
-          evt.stop();
-          data.preventDefault();
-
-          // Select the link in the model
+          // Create a range on the entire link element
           editor.model.change(writer => {
-            writer.setSelection(writer.createRangeOn(modelElement));
+            const range = writer.createRangeOn(modelElement);
+            writer.setSelection(range);
           });
 
           // Show the balloon UI
@@ -72,13 +70,14 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
       }
     });
 
-    // Handle Enter key on links
-    editor.editing.view.document.on('enter', (evt, data) => {
+    // Handle selection changes
+    editor.model.document.selection.on('change:range', () => {
       const selection = editor.model.document.selection;
-      if (selection.hasAttribute('linkHref')) {
-        evt.stop();
-        data.preventDefault();
+
+      if (hasLinkAttribute(selection)) {
         uiPlugin.showBalloon();
+      } else {
+        uiPlugin.hideBalloon();
       }
     });
   }
@@ -156,30 +155,30 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
 
     // Create the form HTML
     const formHtml = `
-      <form id="custom-link-form" class="ck-form">
-        <div class="ck-form-group">
-          <label for="link-url" class="cka-input-label">
-            URL <span class="ck-required">*</span>
-          </label>
-          <input type="url" 
-                 id="link-url" 
-                 name="link-url" 
-                 class="cka-input-text"
-                 required 
-                 placeholder="https://" />
-        </div>
-        <div class="ck-form-group mt-2">
-          <label for="org-name" class="cka-input-label">
-            Organization (optional)
-          </label>
-          <input type="text" 
-                 id="org-name" 
-                 name="org-name" 
-                 class="cka-input-text"
-                 placeholder="Organization name" />
-        </div>
-      </form>
-    `;
+            <form id="custom-link-form" class="ck-form">
+                <div class="ck-form-group">
+                    <label for="link-url" class="cka-input-label">
+                        URL <span class="ck-required">*</span>
+                    </label>
+                    <input type="url" 
+                           id="link-url" 
+                           name="link-url" 
+                           class="cka-input-text"
+                           required 
+                           placeholder="https://" />
+                </div>
+                <div class="ck-form-group mt-2">
+                    <label for="org-name" class="cka-input-label">
+                        Organization (optional)
+                    </label>
+                    <input type="text" 
+                           id="org-name" 
+                           name="org-name" 
+                           class="cka-input-text"
+                           placeholder="Organization name" />
+                </div>
+            </form>
+        `;
     modalDialog.setContent(formHtml);
 
     // Handle the Continue button click
@@ -212,7 +211,7 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
     // Get organization value
     const orgValue = orgInput?.value?.trim() || '';
 
-    // Execute the link command
+    // Execute the link command with the URL
     this.editor.execute('alightCustomModalLinkPlugin', urlValue);
 
     // Store organization data if provided
@@ -229,5 +228,11 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
 
     // Close the modal
     modalDialog.hide();
+
+    // Show the balloon UI after link is created
+    const uiPlugin = this.editor.plugins.get(AlightCustomModalLinkPluginUI);
+    setTimeout(() => {
+      uiPlugin.showBalloon();
+    }, 100);
   }
 }
