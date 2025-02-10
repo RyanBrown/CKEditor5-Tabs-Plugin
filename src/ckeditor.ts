@@ -61,6 +61,7 @@ import TabsPlugin from './plugins/alight-tabs-plugin/alight-tabs-plugin';
 
 import AlightCustomLinkPlugin from './plugins/alight-custom-link-plugin/alight-custom-link-plugin';
 import AlightBalloonPlugin from './plugins/alight-balloon-plugin/alight-balloon-plugin-plugin';
+import AlightModalLinkPlugin from './plugins/alight-modal-link-plugin/alight-modal-link-plugin';
 
 // Import custom styles for headings, style definitions and custom plugins
 import './styles/styles.scss';
@@ -179,6 +180,7 @@ class Editor extends ClassicEditor {
         AlightPastePlugin,
         AlightPopulationPlugin,
         TabsPlugin,
+        AlightModalLinkPlugin,
     ];
 
     public static override defaultConfig: EditorConfig = {
@@ -235,7 +237,8 @@ class Editor extends ClassicEditor {
                 'alightPopulationPlugin',
                 'alightLinkPlugin',
                 'alightCustomLinkPlugin',
-                'alightBalloonPlugin'
+                'alightBalloonPlugin',
+                'alightModalLinkPlugin'
             ],
             shouldNotGroupWhenFull: true,
         },
