@@ -151,24 +151,24 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
     const formHtml = `
       <form id="custom-link-form" class="ck-form">
         <div class="ck-form-group">
-          <label for="link-url" class="ck-label">
-            URL <span class="ck-required">//</span>
+          <label for="link-url" class="cka-input-label">
+            URL <span class="ck-required">*</span>
           </label>
           <input type="url" 
                  id="link-url" 
                  name="link-url" 
-                 class="ck-input" 
+                 class="cka-input-text"
                  required 
                  placeholder="https://" />
         </div>
-        <div class="ck-form-group">
-          <label for="org-name" class="ck-label">
+        <div class="ck-form-group mt-2">
+          <label for="org-name" class="cka-input-label">
             Organization (optional)
           </label>
           <input type="text" 
                  id="org-name" 
                  name="org-name" 
-                 class="ck-input" 
+                 class="cka-input-text"
                  placeholder="Organization name" />
         </div>
       </form>
