@@ -17,6 +17,6 @@ export class AlightCustomModalLinkPluginEditing extends Plugin {
     // console.log('AlightCustomModalLinkPluginEditing#init()');
 
     // If you only want to rely on the built-in 'link' command, you can skip adding your own command.
-    this.editor.commands.add('alightCustomLinkPlugin', new AlightCustomModalLinkPluginCommand(this.editor));
+    this.editor.commands.add('alightCustomModalLinkPlugin', new AlightCustomModalLinkPluginCommand(this.editor));
   }
 }

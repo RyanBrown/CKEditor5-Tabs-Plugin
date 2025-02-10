@@ -11,14 +11,14 @@ export class AlightCustomModalLinkPluginCommand extends Command {
       if (selection.isCollapsed) {
         const textNode = writer.createText(href, {
           linkHref: href,
-          alightCustomLink: true  // Add custom attribute
+          alightCustomModalLink: true  // Add custom attribute
         });
         model.insertContent(textNode, selection.getFirstPosition()!);
       } else {
         const ranges = [...selection.getRanges()];
         for (const range of ranges) {
           writer.setAttribute('linkHref', href, range);
-          writer.setAttribute('alightCustomLink', true, range);  // Add custom attribute
+          writer.setAttribute('alightCustomModalLink', true, range);  // Add custom attribute
         }
       }
     });

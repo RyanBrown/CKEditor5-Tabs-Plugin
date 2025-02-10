@@ -206,7 +206,7 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
     const orgValue = orgInput?.value?.trim() || '';
 
     // Execute the link command
-    this.editor.execute('alightCustomLinkPlugin', urlValue);
+    this.editor.execute('alightCustomModalLinkPlugin', urlValue);
 
     // Store organization data if provided
     if (orgValue) {

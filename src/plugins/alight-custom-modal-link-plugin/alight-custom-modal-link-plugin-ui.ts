@@ -259,7 +259,7 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
       this.hideBalloon();
       const currentHref = editor.model.document.selection.getAttribute('linkHref');
       if (typeof currentHref === 'string') {
-        editor.execute('alightCustomLinkPlugin', currentHref);
+        editor.execute('alightCustomModalLinkPlugin', currentHref);
       }
     });
 
