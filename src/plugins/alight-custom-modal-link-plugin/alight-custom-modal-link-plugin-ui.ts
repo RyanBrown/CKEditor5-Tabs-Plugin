@@ -9,10 +9,15 @@ import editIcon from './assets/icon-pencil.svg';
 import unlinkIcon from './assets/icon-unlink.svg';
 import './styles/alight-custom-modal-link-plugin.scss';
 
-// The UI plugin responsible for:
-//  - Displaying the custom link balloon with preview, edit, and unlink actions.
-//  - Adding a toolbar button to show the balloon.
-//  - Controlling balloon visibility on selection changes and clicks outside.
+// **(NEW) Import the main plugin so we can call its "showLinkModal" method** 
+import AlightCustomModalLinkPlugin from './alight-custom-modal-link-plugin';
+
+/**
+ * The UI plugin responsible for:
+ *  - Displaying the custom link balloon with preview, edit, and unlink actions.
+ *  - Adding a toolbar button to show the balloon.
+ *  - Controlling balloon visibility on selection changes and clicks outside.
+ */
 export class AlightCustomModalLinkPluginUI extends Plugin {
   private balloon!: ContextualBalloon; // The balloon panel used to display link actions.
   private formView!: View;            // The form view displayed inside the balloon.
@@ -261,7 +266,7 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
     return formView;
   }
 
-  // Creates the "Edit link" button that re-opens the modal with the current link.
+  // **(MODIFIED) Creates the "Edit link" button that re-opens the modal with the current link data.**
   private _createEditButton(): ButtonView {
     const editor = this.editor as Editor;
     const t = editor.locale.t;
@@ -274,20 +279,24 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
       tooltip: true
     });
 
-    // On click => hide balloon, then execute the link command with the current href
+    // **When clicked => hide balloon, then show the modal with existing data.**
+    // In your _createEditButton() method:
     editButton.on('execute', () => {
       this.hideBalloon();
 
-      const currentHref = editor.model.document.selection.getAttribute('customHref');
-      if (typeof currentHref === 'string') {
-        editor.execute('alightCustomModalLinkPlugin', currentHref);
-      }
+      // Safely cast the attributes to string (or do a runtime check).
+      const currentHref = editor.model.document.selection.getAttribute('customHref') as string || '';
+      const currentOrg = editor.model.document.selection.getAttribute('organizationName') as string || '';
+
+      // Now currentHref and currentOrg are definitely strings
+      const mainPlugin = editor.plugins.get('AlightCustomModalLinkPlugin') as AlightCustomModalLinkPlugin;
+      mainPlugin.showLinkModal(currentHref, currentOrg);
     });
 
     return editButton;
   }
 
-  // Creates the "Unlink" button that removes all link attributes from the selection.
+  // **(MODIFIED) Creates the "Unlink" button that removes the entire link text.**
   private _createUnlinkButton(): ButtonView {
     const editor = this.editor as Editor;
     const t = editor.locale.t;
@@ -300,18 +309,18 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
       tooltip: true
     });
 
+    // **Now we remove the entire link range instead of just removing attributes.**
     unlinkButton.on('execute', () => {
       editor.model.change(writer => {
         const selection = editor.model.document.selection;
         const linkRange = getSelectedLinkRange(selection);
 
         if (linkRange) {
-          writer.removeAttribute('customHref', linkRange);
-          writer.removeAttribute('alightCustomModalLink', linkRange);
-          writer.removeAttribute('organizationName', linkRange);
+          // Remove the entire link range from the document
+          writer.remove(linkRange);
 
-          // Reset the selection to the previously linked text
-          writer.setSelection(linkRange);
+          // Reset the selection to the position where the link started
+          writer.setSelection(linkRange.start);
         }
       });
 

@@ -67,7 +67,7 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
             writer.setSelection(range);
           });
 
-          uiPlugin.showBalloon();// Show the balloon
+          uiPlugin.showBalloon(); // Show the balloon
         }
       }
     });
@@ -101,17 +101,21 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
         view.isEnabled = !editor.model.document.selection.isCollapsed;
       });
 
-      // Show our modal on click
-      view.on('execute', () => this._showLinkModal());
+      // Show our modal on click (for a new link)
+      view.on('execute', () => this.showLinkModal());
       return view;
     });
   }
 
-  // Shows a custom modal to collect link info, then applies `customHref`.
-  private _showLinkModal(): void {
+  /**
+   * **(RENAMED & UPDATED) Public method to show the link modal.**
+   * If `existingHref` and `existingOrg` are provided, they will be used
+   * to prefill the modal. Otherwise, it's treated as a new link insertion.
+   */
+  public showLinkModal(existingHref = '', existingOrg = ''): void {
     const editor = this.editor;
 
-    // If no text selected, do nothing
+    // If no text selected, do nothing (for new insertion)
     if (editor.model.document.selection.isCollapsed) {
       return;
     }
@@ -152,7 +156,7 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
 
     // Create the modal dialog
     const modalDialog = new CKAlightModalDialog(dialogOptions);
-    modalDialog.setTitle('Insert Custom Link');
+    modalDialog.setTitle(existingHref ? 'Edit Link' : 'Insert Custom Link');
 
     // Provide form HTML
     const formHtml = `
@@ -181,6 +185,21 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
       </form>
     `;
     modalDialog.setContent(formHtml);
+
+    // **(NEW) Prefill the modal after it's inserted into DOM**
+    setTimeout(() => {
+      const contentElement = modalDialog.getContentElement();
+      if (contentElement) {
+        const urlInput = contentElement.querySelector('#link-url') as HTMLInputElement;
+        const orgInput = contentElement.querySelector('#org-name') as HTMLInputElement;
+        if (urlInput && existingHref) {
+          urlInput.value = existingHref;
+        }
+        if (orgInput && existingOrg) {
+          orgInput.value = existingOrg;
+        }
+      }
+    }, 0);
 
     // Handle the "Continue" button
     modalDialog.on('buttonClick', (buttonLabel: string) => {
