@@ -8,9 +8,8 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { View, ButtonView, ContextualBalloon } from '@ckeditor/ckeditor5-ui';
 import type { Editor } from '@ckeditor/ckeditor5-core';
-import { ExistingDocumentLinkManager } from './existing-document-link';
-import editIcon from './../assets/icon-pencil.svg';
-import unlinkIcon from './../assets/icon-unlink.svg';
+import editIcon from '../../assets/icon-pencil.svg';
+import unlinkIcon from '../../assets/icon-unlink.svg';
 
 export interface BalloonAction {
   label: string;
@@ -75,7 +74,24 @@ export abstract class BalloonLinkManager implements ILinkManager {
   abstract renderContent(container: HTMLElement): void;
   abstract getSelectedLink(): { destination: string; title: string } | null;
   abstract resetSearch?(): void;
-  abstract getEditActions(): BalloonAction[]; // Made public
+  abstract getEditActions(): BalloonAction[];
+
+  protected getBalloonClassByLinkType(linkType: string): string {
+    switch (linkType) {
+      case 'predefined':
+        return 'predefined-link-balloon';
+      case 'existing-document':
+        return 'existing-document-link-balloon';
+      case 'new-document':
+        return 'new-document-link-balloon';
+      case 'public-website':
+        return 'public-website-link-balloon';
+      case 'intranet':
+        return 'intranet-link-balloon';
+      default:
+        return '';
+    }
+  }
 
   private createBalloonView(actions: BalloonAction[]): View {
     const formView = new View(this.editor.locale);
@@ -110,74 +126,5 @@ export abstract class BalloonLinkManager implements ILinkManager {
     });
 
     return formView;
-  }
-}
-
-export class PredefinedLinkManager extends BalloonLinkManager {
-  override getEditActions(): BalloonAction[] {
-    return [
-      {
-        label: 'Edit Predefined Link',
-        icon: editIcon,
-        execute: () => {
-          const link = this.getSelectedLink();
-          if (link) {
-            this.editor.execute('linkOption1');
-          }
-          this.hideBalloon();
-        }
-      },
-      {
-        label: 'Remove Link',
-        icon: unlinkIcon,
-        execute: () => {
-          this.editor.execute('unlink');
-          this.hideBalloon();
-        }
-      }
-    ];
-  }
-
-  getLinkContent(page: number): string {
-    // Implementation
-    return '';
-  }
-
-  renderContent(container: HTMLElement): void {
-    // Implementation
-  }
-
-  getSelectedLink(): { destination: string; title: string } | null {
-    // Implementation
-    return null;
-  }
-
-  resetSearch(): void {
-    // Implementation
-  }
-}
-
-export class AlightModalLinkPluginEditing extends Plugin {
-  public predefinedLinkManager!: PredefinedLinkManager;
-  public existingDocumentLinkManager!: ExistingDocumentLinkManager;
-
-  init(): void {
-    this.predefinedLinkManager = new PredefinedLinkManager(this.editor);
-    this.existingDocumentLinkManager = new ExistingDocumentLinkManager(this.editor);
-
-    this.editor.model.document.selection.on('change:range', () => {
-      const selection = this.editor.model.document.selection;
-      if (selection.hasAttribute('linkHref')) {
-        const linkType = selection.getAttribute('linkType');
-        switch (linkType) {
-          case 'predefined':
-            this.predefinedLinkManager.showBalloon(selection);
-            break;
-          case 'existing-document':
-            this.existingDocumentLinkManager.showBalloon(selection);
-            break;
-        }
-      }
-    });
   }
 }
