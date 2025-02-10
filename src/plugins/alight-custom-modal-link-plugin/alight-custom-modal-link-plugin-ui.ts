@@ -1,11 +1,10 @@
 // src/plugins/alight-custom-modal-link-plugin/alight-custom-modal-link-plugin-ui.ts
 
 import { Plugin } from '@ckeditor/ckeditor5-core';
-import { ButtonView, ContextualBalloon, View } from '@ckeditor/ckeditor5-ui';
+import { ButtonView, ContextualBalloon, View, BalloonPanelView } from '@ckeditor/ckeditor5-ui';
 import { getSelectedLinkRange, hasLinkAttribute } from './alight-custom-modal-link-plugin-utils';
 import type { Editor } from '@ckeditor/ckeditor5-core';
 import type { Range } from '@ckeditor/ckeditor5-engine';
-import { BalloonPanelView } from '@ckeditor/ckeditor5-ui';
 import editIcon from './assets/icon-pencil.svg';
 import unlinkIcon from './assets/icon-unlink.svg';
 
@@ -49,8 +48,14 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
   public showBalloon(): void {
     const editor = this.editor as Editor;
     const selection = editor.model.document.selection;
+    const contextualBalloon = editor.plugins.get('ContextualBalloon');
+    const linkUI = editor.plugins.get('LinkUI');
 
-    // Get the range for positioning – either the selected link range or the current selection
+    // Ensure linkUI exists and check if it has added a view to the contextual balloon
+    if (linkUI && contextualBalloon.visibleView && contextualBalloon.hasView(contextualBalloon.visibleView)) {
+      contextualBalloon.remove(contextualBalloon.visibleView);
+    }
+
     const modelRange = getSelectedLinkRange(selection) || selection.getFirstRange();
     if (!modelRange) {
       return;
@@ -63,12 +68,9 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
     if (domRange) {
       const positions = BalloonPanelView.defaultPositions;
 
-      // Add the form view with custom class in the balloon
-      const balloonClassName = 'my-modal-class';
-
       // Add a custom class to the form view element
       if (this.formView.element) {
-        this.formView.element.classList.add(balloonClassName);
+        this.formView.element.classList.add('my-modal-class');
       }
 
       // Add the form view to the balloon at the desired position
@@ -106,18 +108,26 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
   // automatically shows the custom balloon. Otherwise, it hides the balloon
   private _setupSelectionChangeHandling(): void {
     const editor = this.editor as Editor;
+    const linkCommand = editor.commands.get('link');
 
     // Listen to selection changes.
     this.listenTo(editor.model.document.selection, 'change:range', () => {
-      if (hasLinkAttribute(editor.model.document.selection)) {
-        // If a link is detected and the balloon is not already visible, show it
-        if (!this.balloon.hasView(this.formView)) {
-          this.showBalloon();
-        }
-      } else {
-        // Otherwise, hide the balloon
-        this.hideBalloon();
+      // Prevent overriding the built-in link balloon
+      if (linkCommand && linkCommand.value) {
+        return;
       }
+
+      // Delay opening balloon slightly to avoid race conditions
+      // setTimeout(() => {
+      //   if (!editor.commands.get('link').value && hasLinkAttribute(editor.model.document.selection)) {
+      //     if (!this.balloon.hasView(this.formView)) {
+      //       this.showBalloon();
+      //     }
+      //   } else {
+      //     // Otherwise, hide the balloon
+      //     this.hideBalloon();
+      //   }
+      // }, 50);
     });
 
     // Hide the balloon when the editor becomes read-only
@@ -200,24 +210,14 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
     formView.setTemplate({
       tag: 'div',
       attributes: {
-        class: [
-          'ck',
-          'ck-link-actions',
-          'ck-responsive-form'
-        ],
+        class: ['ck', 'ck-link-actions', 'ck-responsive-form'],
         tabindex: '-1'
       },
       children: [
-        // Link preview element
         {
           tag: 'a',
           attributes: {
-            class: [
-              'ck',
-              'ck-link-actions__preview',
-              'ck-button',
-              'ck-button_with-text'
-            ],
+            class: ['ck', 'ck-link-actions__preview', 'ck-button', 'ck-button_with-text'],
             href: '',
             target: '_blank',
             rel: 'noopener noreferrer'
@@ -225,26 +225,15 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
           children: [
             {
               tag: 'span',
-              attributes: {
-                class: ['ck', 'ck-button__label']
-              },
+              attributes: { class: ['ck', 'ck-button__label'] },
               children: ['']
             }
           ]
         },
-        // Container for action buttons
         {
           tag: 'div',
-          attributes: {
-            class: [
-              'ck',
-              'ck-link-actions__buttons'
-            ]
-          },
-          children: [
-            editButton,
-            unlinkButton
-          ]
+          attributes: { class: ['ck', 'ck-link-actions__buttons'] },
+          children: [editButton, unlinkButton]
         }
       ]
     });
