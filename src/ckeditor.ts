@@ -60,8 +60,7 @@ import AlightPopulationPlugin from './plugins/alight-population-plugin/alight-po
 import TabsPlugin from './plugins/alight-tabs-plugin/alight-tabs-plugin';
 
 import AlightCustomLinkPlugin from './plugins/alight-custom-link-plugin/alight-custom-link-plugin';
-
-
+import AlightBalloonPlugin from './plugins/alight-balloon-plugin/alight-balloon-plugin-plugin';
 
 // Import custom styles for headings, style definitions and custom plugins
 import './styles/styles.scss';
@@ -176,6 +175,7 @@ class Editor extends ClassicEditor {
         AlightImagePlugin,
         AlightLinkPlugin,
         AlightCustomLinkPlugin,
+        AlightBalloonPlugin,
         AlightPastePlugin,
         AlightPopulationPlugin,
         TabsPlugin,
@@ -234,7 +234,8 @@ class Editor extends ClassicEditor {
                 'alightImagePlugin',
                 'alightPopulationPlugin',
                 'alightLinkPlugin',
-                'alightCustomLinkPlugin'
+                'alightCustomLinkPlugin',
+                'alightBalloonPlugin'
             ],
             shouldNotGroupWhenFull: true,
         },
