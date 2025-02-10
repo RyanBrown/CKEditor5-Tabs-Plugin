@@ -6,15 +6,12 @@ import type { Editor } from '@ckeditor/ckeditor5-core';
 import type { Range } from '@ckeditor/ckeditor5-engine';
 import editIcon from './assets/icon-pencil.svg';
 import unlinkIcon from './assets/icon-unlink.svg';
+import './styles/alight-custom-modal-link-plugin.scss';
 
 // The UI plugin responsible for displaying the custom link balloon and handling UI interactions
 export class AlightCustomModalLinkPluginUI extends Plugin {
-
-  // The balloon panel used to display the link actions.
-  private balloon!: ContextualBalloon;
-
-  // The form view displayed inside the balloon.
-  private formView!: View;
+  private balloon!: ContextualBalloon; // The balloon panel used to display the link actions
+  private formView!: View; // The form view displayed inside the balloon
 
   // The plugin's name, used for registration and retrieval.
   public static get pluginName() {
@@ -30,17 +27,10 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
   public init(): void {
     const editor = this.editor as Editor;
 
-    // Get the contextual balloon instance
-    this.balloon = editor.plugins.get(ContextualBalloon);
-
-    // Create the form view that will be displayed in the balloon
-    this.formView = this._createFormView();
-
-    // Register the toolbar button
-    this._registerToolbarButton();
-
-    // Set up handling of selection changes to force our custom balloon
-    this._setupSelectionChangeHandling();
+    this.balloon = editor.plugins.get(ContextualBalloon); // Get the contextual balloon instance
+    this.formView = this._createFormView(); // Create the form view that will be displayed in the balloon
+    this._registerToolbarButton(); // Register the toolbar button
+    this._setupSelectionChangeHandling(); // Set up handling of selection changes to force our custom balloon
   }
 
   // Shows the custom link balloon at the current selection position
@@ -63,7 +53,7 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
 
       // Add a custom class to the form view element
       if (this.formView.element) {
-        this.formView.element.classList.add('my-modal-class');
+        this.formView.element.classList.add('cka-custom-balloon-content');
       }
 
       // Add the form view to the balloon at the desired position

@@ -19,8 +19,6 @@ export class AlightCustomModalLinkPluginEditing extends Plugin {
       title: 'Insert Link',
       modalOptions: {
         width: '400px',
-        draggable: true,
-        resizable: false
       },
       buttons: [
         {
@@ -54,8 +52,7 @@ export class AlightCustomModalLinkPluginEditing extends Plugin {
 
     editor.conversion.for('upcast').attributeToAttribute({
       view: {
-        name: 'a',
-        attributes: ['href']
+        name: 'a', attributes: ['href']
       },
       model: {
         key: 'customHref',

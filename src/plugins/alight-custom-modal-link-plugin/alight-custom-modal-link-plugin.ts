@@ -28,11 +28,8 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
   public init(): void {
     const editor = this.editor;
 
-    // Set up the link click handler for balloon display
-    this._setupLinkClickHandler();
-
-    // Register the toolbar button for the modal dialog
-    this._registerToolbarButton();
+    this._setupLinkClickHandler(); // Set up the link click handler for balloon display
+    this._registerToolbarButton(); // Register the toolbar button for the modal dialog
   }
 
   // Sets up the handler for link clicks to show the balloon UI.
@@ -64,8 +61,7 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
             writer.setSelection(range);
           });
 
-          // Show the balloon UI
-          uiPlugin.showBalloon();
+          uiPlugin.showBalloon(); // Show the balloon UI
         }
       }
     });
