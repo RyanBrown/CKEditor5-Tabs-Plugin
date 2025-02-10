@@ -80,9 +80,9 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
       });
 
       // Update the preview link in the balloon with the current URL
-      const linkHref = selection.getAttribute('customHref');
-      if (typeof linkHref === 'string') {
-        this._updatePreviewLink(linkHref);
+      const customHref = selection.getAttribute('customHref');
+      if (typeof customHref === 'string') {
+        this._updatePreviewLink(customHref);
       }
     }
   }
@@ -103,13 +103,15 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
 
     // Listen to selection changes.
     this.listenTo(editor.model.document.selection, 'change:range', () => {
-      if (hasLinkAttribute(editor.model.document.selection)) {
-        if (!this.balloon.hasView(this.formView)) {
-          this.showBalloon();
+      setTimeout(() => {
+        if (hasLinkAttribute(editor.model.document.selection)) {
+          if (!this.balloon.hasView(this.formView)) {
+            this.showBalloon();
+          }
+        } else {
+          this.hideBalloon();
         }
-      } else {
-        this.hideBalloon();
-      }
+      }, 50);
     });
 
     // Hide the balloon when the editor becomes read-only
@@ -239,7 +241,7 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
     // On click, hide the balloon and execute the custom link command (with the current URL)
     editButton.on('execute', () => {
       this.hideBalloon();
-      const currentHref = editor.model.document.selection.getAttribute('linkHref');
+      const currentHref = editor.model.document.selection.getAttribute('customHref');
       if (typeof currentHref === 'string') {
         editor.execute('alightCustomModalLinkPlugin', currentHref);
       }

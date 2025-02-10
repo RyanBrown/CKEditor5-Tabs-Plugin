@@ -1,6 +1,6 @@
 // src/plugins/alight-custom-modal-link-plugin/alight-custom-modal-link-plugin-editing.ts
 import { Plugin } from '@ckeditor/ckeditor5-core';
-import { AlightCustomModalLinkPluginCommand } from './alight-custom-modal-link-plugin-command';
+import { AlightCustomModalLinkPluginCommand, CommandData } from './alight-custom-modal-link-plugin-command';
 
 export class AlightCustomModalLinkPluginEditing extends Plugin {
   public static get requires() {
@@ -14,10 +14,37 @@ export class AlightCustomModalLinkPluginEditing extends Plugin {
   public init(): void {
     const editor = this.editor;
 
-    // Register the command
-    editor.commands.add('alightCustomModalLinkPlugin', new AlightCustomModalLinkPluginCommand(editor));
+    // Create proper CommandData object
+    const commandData: CommandData = {
+      title: 'Insert Link',
+      modalOptions: {
+        width: '400px',
+        draggable: true,
+        resizable: false
+      },
+      buttons: [
+        {
+          label: 'Insert',
+          className: 'ck-button-primary',
+          onClick: () => this.handleInsert()
+        }
+      ],
+      loadContent: async () => {
+        return `
+          <div class="ck-labeled-field-view">
+            <input type="text" class="ck-input-text" id="link-url" placeholder="https://" />
+          </div>
+        `;
+      }
+    };
 
-    // Downcast: Convert model attribute to view element <a>
+    // Register the command with proper data
+    editor.commands.add(
+      'alightCustomModalLinkPlugin',
+      new AlightCustomModalLinkPluginCommand(editor, commandData)
+    );
+
+    // Conversion setup
     editor.conversion.for('downcast').attributeToElement({
       model: 'customHref',
       view: (href, { writer }) => {
@@ -25,16 +52,19 @@ export class AlightCustomModalLinkPluginEditing extends Plugin {
       }
     });
 
-    // Upcast: Convert <a> elements in view to customHref in model
-    editor.conversion.for('upcast').elementToAttribute({
+    editor.conversion.for('upcast').attributeToAttribute({
       view: {
         name: 'a',
-        attributes: { href: true }
+        attributes: ['href']
       },
       model: {
         key: 'customHref',
         value: (viewElement: { getAttribute: (arg0: string) => any; }) => viewElement.getAttribute('href')
       }
     });
+  }
+
+  private handleInsert(): void {
+    // Implementation of insert handling
   }
 }

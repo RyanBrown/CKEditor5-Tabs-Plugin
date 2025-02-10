@@ -133,8 +133,15 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
       position: 'center',
       buttons: [
         {
+          label: 'Cancel',
+          className: 'cka-button cka-button-rounded cka-button-outline cka-button-sm',
+          variant: 'outlined',
+          position: 'left',
+          closeOnClick: true,
+        },
+        {
           label: 'Continue',
-          className: 'cka-continue-button',
+          className: 'cka-button cka-button-rounded cka-button-sm',
           variant: 'default',
           position: 'right',
           closeOnClick: false

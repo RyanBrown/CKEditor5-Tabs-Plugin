@@ -1,5 +1,4 @@
 // src/plugins/alight-custom-modal-link-plugin/alight-custom-modal-link-plugin-utils.ts
-
 import { DocumentSelection, Selection } from '@ckeditor/ckeditor5-engine';
 import { Range } from '@ckeditor/ckeditor5-engine';
 
@@ -10,16 +9,13 @@ export function getSelectedLinkRange(selection: Selection | DocumentSelection): 
     return null;
   }
 
-  // Check if the range has a linkHref attribute
-  const node = range.start.nodeAfter;
-  if (node && 'hasAttribute' in node && typeof node.hasAttribute === 'function') {
-    if (node.hasAttribute('linkHref')) {
-      return range;
-    }
+  if (selection.hasAttribute('customHref')) {
+    return range;
   }
 
-  // Also check if the range start position has linkHref attribute
-  if (selection.getAttribute('linkHref')) {
+  // Check if the range start position has customHref attribute
+  const node = range.start.nodeAfter;
+  if (node && 'hasAttribute' in node && typeof node.hasAttribute === 'function' && node.hasAttribute('customHref')) {
     return range;
   }
 
@@ -32,5 +28,5 @@ export function hasLinkAttribute(selection: Selection | DocumentSelection): bool
   const node = selection.getFirstPosition()?.parent;
   return !!(node && 'hasAttribute' in node &&
     typeof node.hasAttribute === 'function' &&
-    node.hasAttribute('linkHref'));
+    node.hasAttribute('customHref'));
 }
