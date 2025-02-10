@@ -9,6 +9,7 @@ import CKAlightModalDialog, {
   DialogOptions,
   DialogButton
 } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
+import { DocumentSelection } from '@ckeditor/ckeditor5-engine';
 
 /**
  * The main plugin that ties together:
@@ -255,3 +256,7 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
     }, 100);
   }
 }
+function getSelectedLinkRange(selection: DocumentSelection) {
+  throw new Error('Function not implemented.');
+}
+

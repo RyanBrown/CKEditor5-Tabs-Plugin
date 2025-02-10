@@ -17,23 +17,45 @@ export function getSelectedLinkRange(selection: Selection | DocumentSelection): 
     return range;
   }
 
-  // Check node after the start
+  // For a collapsed selection, check both nodeBefore and nodeAfter
+  if (range.isCollapsed) {
+    const pos = range.start;
+    const nodeBefore = pos.nodeBefore;
+    const nodeAfter = pos.nodeAfter;
+
+    // Check nodeBefore if it exists
+    if (
+      nodeBefore &&
+      'hasAttribute' in nodeBefore &&
+      nodeBefore.hasAttribute('customHref')
+    ) {
+      return Range._createOn(nodeBefore);
+    }
+
+    // If not found, check nodeAfter
+    if (
+      nodeAfter &&
+      'hasAttribute' in nodeAfter &&
+      nodeAfter.hasAttribute('customHref')
+    ) {
+      return Range._createOn(nodeAfter);
+    }
+  }
+
+  // Existing code:
   const startNode = range.start.nodeAfter;
   if (
     startNode &&
     'hasAttribute' in startNode &&
-    typeof startNode.hasAttribute === 'function' &&
     startNode.hasAttribute('customHref')
   ) {
     return Range._createOn(startNode);
   }
 
-  // Check parent
   const parentNode = range.start.parent;
   if (
     parentNode &&
     'hasAttribute' in parentNode &&
-    typeof parentNode.hasAttribute === 'function' &&
     parentNode.hasAttribute('customHref')
   ) {
     return Range._createOn(parentNode);
@@ -41,6 +63,7 @@ export function getSelectedLinkRange(selection: Selection | DocumentSelection): 
 
   return null;
 }
+
 
 // Returns true if the selection has the 'customHref' attribute (i.e., on a link).
 export function hasLinkAttribute(selection: Selection | DocumentSelection): boolean {
