@@ -1,5 +1,4 @@
 // src/plugins/alight-custom-modal-link-plugin/alight-custom-modal-link-plugin-ui.ts
-
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { ButtonView, ContextualBalloon, View, BalloonPanelView } from '@ckeditor/ckeditor5-ui';
 import { getSelectedLinkRange, hasLinkAttribute } from './alight-custom-modal-link-plugin-utils';
@@ -48,13 +47,6 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
   public showBalloon(): void {
     const editor = this.editor as Editor;
     const selection = editor.model.document.selection;
-    const contextualBalloon = editor.plugins.get('ContextualBalloon');
-    const linkUI = editor.plugins.get('LinkUI');
-
-    // Ensure linkUI exists and check if it has added a view to the contextual balloon
-    if (linkUI && contextualBalloon.visibleView && contextualBalloon.hasView(contextualBalloon.visibleView)) {
-      contextualBalloon.remove(contextualBalloon.visibleView);
-    }
 
     const modelRange = getSelectedLinkRange(selection) || selection.getFirstRange();
     if (!modelRange) {
@@ -88,7 +80,7 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
       });
 
       // Update the preview link in the balloon with the current URL
-      const linkHref = selection.getAttribute('linkHref');
+      const linkHref = selection.getAttribute('customHref');
       if (typeof linkHref === 'string') {
         this._updatePreviewLink(linkHref);
       }
@@ -108,26 +100,16 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
   // automatically shows the custom balloon. Otherwise, it hides the balloon
   private _setupSelectionChangeHandling(): void {
     const editor = this.editor as Editor;
-    const linkCommand = editor.commands.get('link');
 
     // Listen to selection changes.
     this.listenTo(editor.model.document.selection, 'change:range', () => {
-      // Prevent overriding the built-in link balloon
-      if (linkCommand && linkCommand.value) {
-        return;
+      if (hasLinkAttribute(editor.model.document.selection)) {
+        if (!this.balloon.hasView(this.formView)) {
+          this.showBalloon();
+        }
+      } else {
+        this.hideBalloon();
       }
-
-      // Delay opening balloon slightly to avoid race conditions
-      // setTimeout(() => {
-      //   if (!editor.commands.get('link').value && hasLinkAttribute(editor.model.document.selection)) {
-      //     if (!this.balloon.hasView(this.formView)) {
-      //       this.showBalloon();
-      //     }
-      //   } else {
-      //     // Otherwise, hide the balloon
-      //     this.hideBalloon();
-      //   }
-      // }, 50);
     });
 
     // Hide the balloon when the editor becomes read-only

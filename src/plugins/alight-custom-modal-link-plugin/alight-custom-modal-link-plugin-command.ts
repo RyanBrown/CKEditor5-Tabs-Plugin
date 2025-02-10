@@ -1,5 +1,4 @@
 // src/plugins/alight-custom-modal-link-plugin/alight-custom-modal-link-plugin-command.ts
-
 import { Command } from '@ckeditor/ckeditor5-core';
 
 export class AlightCustomModalLinkPluginCommand extends Command {
@@ -10,15 +9,15 @@ export class AlightCustomModalLinkPluginCommand extends Command {
     model.change(writer => {
       if (selection.isCollapsed) {
         const textNode = writer.createText(href, {
-          linkHref: href,
-          alightCustomModalLink: true  // Add custom attribute
+          customHref: href,  // Now using customHref instead of linkHref
+          alightCustomModalLink: true
         });
         model.insertContent(textNode, selection.getFirstPosition()!);
       } else {
         const ranges = [...selection.getRanges()];
         for (const range of ranges) {
-          writer.setAttribute('linkHref', href, range);
-          writer.setAttribute('alightCustomModalLink', true, range);  // Add custom attribute
+          writer.setAttribute('customHref', href, range);
+          writer.setAttribute('alightCustomModalLink', true, range);
         }
       }
     });
