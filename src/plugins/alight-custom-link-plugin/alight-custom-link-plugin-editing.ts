@@ -22,9 +22,9 @@ export class AlightCustomLinkPluginEditing extends Plugin {
   }
 
   public init(): void {
-    console.log('AlightCustomLinkPluginEditing#init()');
+    // console.log('AlightCustomLinkPluginEditing#init()');
 
     // If you only want to rely on the built-in 'link' command, you can skip adding your own command.
-    this.editor.commands.add('alightLink', new AlightCustomLinkPluginCommand(this.editor));
+    this.editor.commands.add('alightCustomLinkPlugin', new AlightCustomLinkPluginCommand(this.editor));
   }
 }

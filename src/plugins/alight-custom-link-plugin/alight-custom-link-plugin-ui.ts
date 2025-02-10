@@ -71,7 +71,7 @@ export class AlightCustomLinkPluginUI extends Plugin {
       const view = new ButtonView(locale);
 
       view.set({
-        label: 'Alight Link',
+        label: 'Alight Custom Link Plugin',
         tooltip: true,
         withText: true
       });
@@ -166,6 +166,7 @@ export class AlightCustomLinkPluginUI extends Plugin {
     });
     // If you want an action when clicked:
     editButton.on('execute', () => {
+      console.log('Edit button clicked');
       const currentHref = getLinkHrefFromSelection(editor);
       if (currentHref) {
         editor.execute('alightLink', currentHref);
@@ -183,6 +184,7 @@ export class AlightCustomLinkPluginUI extends Plugin {
     });
     // Action on click:
     unlinkButton.on('execute', () => {
+      console.log('Unlink button clicked');
       editor.execute('unlink');
       this._hideBalloon();
     });

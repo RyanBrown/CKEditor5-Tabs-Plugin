@@ -22,9 +22,9 @@ export class AlightBalloonPluginEditing extends Plugin {
   }
 
   public init(): void {
-    console.log('AlightBalloonPluginEditing#init()');
+    // console.log('AlightBalloonPluginEditing#init()');
 
     // If you only want to rely on the built-in 'link' command, you can skip adding your own command.
-    this.editor.commands.add('alightLink', new AlightBalloonPluginCommand(this.editor));
+    this.editor.commands.add('alightBalloonPlugin', new AlightBalloonPluginCommand(this.editor));
   }
 }
