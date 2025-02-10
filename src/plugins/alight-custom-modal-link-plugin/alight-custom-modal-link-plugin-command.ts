@@ -9,22 +9,22 @@ export class AlightCustomModalLinkPluginCommand extends Command {
 
     model.change(writer => {
       if (selection.isCollapsed) {
-        // If no text is selected, insert new linked text.
-        const textNode = writer.createText(href, { linkHref: href });
+        const textNode = writer.createText(href, {
+          linkHref: href,
+          alightCustomLink: true  // Add custom attribute
+        });
         model.insertContent(textNode, selection.getFirstPosition()!);
       } else {
-        // Turn the iterator into an array of Ranges
         const ranges = [...selection.getRanges()];
-        // Set linkHref on each selected range
         for (const range of ranges) {
           writer.setAttribute('linkHref', href, range);
+          writer.setAttribute('alightCustomLink', true, range);  // Add custom attribute
         }
       }
     });
   }
 
   public override refresh(): void {
-    // If you have custom logic to enable/disable the command, put it here.
     this.isEnabled = true;
   }
 }
