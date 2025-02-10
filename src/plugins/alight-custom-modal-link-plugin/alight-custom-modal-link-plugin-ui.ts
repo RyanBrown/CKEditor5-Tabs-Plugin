@@ -62,6 +62,14 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
     if (domRange) {
       const positions = BalloonPanelView.defaultPositions;
 
+      // Add custom class to the balloon panel
+      const panelView = this.balloon.panelView;
+      panelView.extendTemplate({
+        attributes: {
+          class: ['my-modal-class']
+        }
+      });
+
       this.balloon.add({
         view: this.formView,
         position: {
