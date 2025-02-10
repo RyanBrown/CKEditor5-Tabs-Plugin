@@ -9,8 +9,7 @@ import { BalloonPanelView } from '@ckeditor/ckeditor5-ui';
 import editIcon from './assets/icon-pencil.svg';
 import unlinkIcon from './assets/icon-unlink.svg';
 
-
-// The UI plugin responsible for displaying the link balloon and handling UI interactions.
+// The UI plugin responsible for displaying the custom link balloon and handling UI interactions
 export class AlightCustomModalLinkPluginUI extends Plugin {
 
   // The balloon panel used to display the link actions.
@@ -33,7 +32,7 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
   public init(): void {
     const editor = this.editor as Editor;
 
-    // Get the balloon from editor's plugins
+    // Get the contextual balloon instance
     this.balloon = editor.plugins.get(ContextualBalloon);
 
     // Create the form view that will be displayed in the balloon
@@ -42,20 +41,22 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
     // Register the toolbar button
     this._registerToolbarButton();
 
-    // Set up selection change handling
+    // Set up handling of selection changes to force our custom balloon
     this._setupSelectionChangeHandling();
   }
 
-  // Shows the link balloon at the current selection position.
+  // Shows the custom link balloon at the current selection position
   public showBalloon(): void {
     const editor = this.editor as Editor;
     const selection = editor.model.document.selection;
 
-    // Get the range for positioning (either link range or selection range)
+    // Get the range for positioning – either the selected link range or the current selection
     const modelRange = getSelectedLinkRange(selection) || selection.getFirstRange();
-    if (!modelRange) return;
+    if (!modelRange) {
+      return;
+    }
 
-    // Convert the model range to view and DOM ranges
+    // Convert the model range to view and then to DOM range
     const viewRange = editor.editing.mapper.toViewRange(modelRange);
     const domRange = editor.editing.view.domConverter.viewRangeToDom(viewRange);
 
@@ -65,11 +66,12 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
       // Add the form view with custom class in the balloon
       const balloonClassName = 'my-modal-class';
 
-      // Add the class to the form view's element
+      // Add a custom class to the form view element
       if (this.formView.element) {
         this.formView.element.classList.add(balloonClassName);
       }
 
+      // Add the form view to the balloon at the desired position
       this.balloon.add({
         view: this.formView,
         position: {
@@ -83,7 +85,7 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
         }
       });
 
-      // Update the preview link with current URL
+      // Update the preview link in the balloon with the current URL
       const linkHref = selection.getAttribute('linkHref');
       if (typeof linkHref === 'string') {
         this._updatePreviewLink(linkHref);
@@ -91,7 +93,7 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
     }
   }
 
-  // Hides the link balloon.
+  // Hides the custom link balloon
   public hideBalloon(): void {
     if (this.balloon.hasView(this.formView)) {
       this.balloon.remove(this.formView);
@@ -99,22 +101,31 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
   }
 
   // Sets up handling of selection changes.
+  // This method listens for changes in the document selection. If the selection
+  // contains a link (as determined by the presence of the link attribute), it
+  // automatically shows the custom balloon. Otherwise, it hides the balloon
   private _setupSelectionChangeHandling(): void {
     const editor = this.editor as Editor;
 
-    // Hide balloon when selection changes and doesn't contain a link
+    // Listen to selection changes.
     this.listenTo(editor.model.document.selection, 'change:range', () => {
-      if (!hasLinkAttribute(editor.model.document.selection)) {
+      if (hasLinkAttribute(editor.model.document.selection)) {
+        // If a link is detected and the balloon is not already visible, show it
+        if (!this.balloon.hasView(this.formView)) {
+          this.showBalloon();
+        }
+      } else {
+        // Otherwise, hide the balloon
         this.hideBalloon();
       }
     });
 
-    // Hide balloon when editor becomes read-only
+    // Hide the balloon when the editor becomes read-only
     this.listenTo(editor, 'change:isReadOnly', () => {
       this.hideBalloon();
     });
 
-    // Hide balloon when editor loses focus
+    // Hide the balloon when the editor loses focus
     this.listenTo(editor.ui.focusTracker, 'change:isFocused', (evt, name, isFocused) => {
       if (!isFocused) {
         this.hideBalloon();
@@ -122,7 +133,7 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
     });
   }
 
-  // Registers the toolbar button.
+  // Registers the toolbar button that can also trigger the custom balloon
   private _registerToolbarButton(): void {
     const editor = this.editor as Editor;
 
@@ -136,12 +147,12 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
         withText: true
       });
 
-      // Update button state based on selection
+      // Enable the button only when text is selected
       this.listenTo(editor.model.document.selection, 'change:range', () => {
         button.isEnabled = !editor.model.document.selection.isCollapsed;
       });
 
-      // Show balloon when button is clicked
+      // Show the balloon when the button is clicked
       button.on('execute', () => {
         this.showBalloon();
       });
@@ -150,40 +161,42 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
     });
   }
 
-
-  // Updates the preview link in the balloon with the current URL.
+  // Updates the preview link inside the balloon with the current URL
+  // @param linkUrl The URL to display.
   private _updatePreviewLink(linkUrl: string): void {
-    if (!this.formView.element) return;
+    if (!this.formView.element) {
+      return;
+    }
 
     const previewLink = this.formView.element.querySelector(
       'a.ck-link-actions__preview'
     ) as HTMLAnchorElement | null;
 
     if (previewLink) {
-      // Update href attribute
+      // Update the href attribute
       previewLink.href = linkUrl;
 
-      // Update displayed text
+      // Update the displayed text
       const labelSpan = previewLink.querySelector('span.ck-button__label');
       if (labelSpan) {
         labelSpan.textContent = linkUrl;
       }
 
-      // Update title attribute
+      // Update the title attribute
       previewLink.title = linkUrl;
     }
   }
 
-
-  // Creates the form view displayed in the balloon.
+  // Creates the form view that is displayed in the balloon
   private _createFormView(): View {
     const editor = this.editor as Editor;
     const formView = new View(editor.locale);
 
-    // Create edit and unlink buttons
+    // Create the edit and unlink buttons
     const editButton = this._createEditButton();
     const unlinkButton = this._createUnlinkButton();
 
+    // Set the template for the form view
     formView.setTemplate({
       tag: 'div',
       attributes: {
@@ -195,7 +208,7 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
         tabindex: '-1'
       },
       children: [
-        // Link preview
+        // Link preview element
         {
           tag: 'a',
           attributes: {
@@ -219,7 +232,7 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
             }
           ]
         },
-        // Action buttons container
+        // Container for action buttons
         {
           tag: 'div',
           attributes: {
@@ -239,7 +252,6 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
     return formView;
   }
 
-
   // Creates the edit button for the balloon.
   private _createEditButton(): ButtonView {
     const editor = this.editor as Editor;
@@ -253,14 +265,10 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
       tooltip: true
     });
 
+    // On click, hide the balloon and execute the custom link command (with the current URL)
     editButton.on('execute', () => {
-      // Hide the balloon first
       this.hideBalloon();
-
-      // Get current link URL
       const currentHref = editor.model.document.selection.getAttribute('linkHref');
-
-      // Execute custom link command with current URL
       if (typeof currentHref === 'string') {
         editor.execute('alightCustomLinkPlugin', currentHref);
       }
@@ -268,7 +276,6 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
 
     return editButton;
   }
-
 
   // Creates the unlink button for the balloon.
   private _createUnlinkButton(): ButtonView {
@@ -283,6 +290,7 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
       tooltip: true
     });
 
+    // On click, execute the built-in 'unlink' command and hide the balloon
     unlinkButton.on('execute', () => {
       editor.execute('unlink');
       this.hideBalloon();
