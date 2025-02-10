@@ -10,11 +10,12 @@
  * Key changes:
  *  - Using showView() instead of showStack() to avoid TS type errors.
  *  - Converting model range -> view range -> DOM range for balloon positioning.
+ *  - Improved link detection and balloon positioning.
  */
 
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { ButtonView, ContextualBalloon, View } from '@ckeditor/ckeditor5-ui';
-import { getSelectedLinkRange } from './alight-custom-link-plugin-utils';
+import { getSelectedLinkRange, hasLinkAttribute } from './alight-custom-link-plugin-utils';
 import type { Editor } from '@ckeditor/ckeditor5-core';
 import type { Range as ModelRange } from '@ckeditor/ckeditor5-engine';
 import editIcons from './assets/icon-pencil.svg';
@@ -25,24 +26,28 @@ function getLinkHrefFromSelection(editor: Editor): string | null {
   const model = editor.model;
   const docSelection = model.document.selection;
 
+  // First check the selection attributes
+  const linkHref = docSelection.getAttribute('linkHref');
+  if (typeof linkHref === 'string') {
+    return linkHref;
+  }
+
+  // Then check the first node if selection is collapsed
   if (docSelection.isCollapsed) {
-    return null;
-  }
+    const firstPosition = docSelection.getFirstPosition();
+    if (!firstPosition) return null;
 
-  const range = docSelection.getFirstRange();
-  if (!range) {
-    return null;
-  }
-
-  const node = range.start.nodeAfter;
-  if (node && 'hasAttribute' in node && typeof node.hasAttribute === 'function') {
-    if (node.hasAttribute('linkHref')) {
-      const linkHref = node.getAttribute('linkHref');
-      if (typeof linkHref === 'string') {
-        return linkHref;
+    const node = firstPosition.parent;
+    if (node && 'hasAttribute' in node && typeof node.hasAttribute === 'function') {
+      if (node.hasAttribute('linkHref')) {
+        const nodeLinkHref = node.getAttribute('linkHref');
+        if (typeof nodeLinkHref === 'string') {
+          return nodeLinkHref;
+        }
       }
     }
   }
+
   return null;
 }
 
@@ -75,48 +80,52 @@ export class AlightCustomLinkPluginUI extends Plugin {
         this._showBalloon();
       });
 
+      // Update button state based on selection
+      this.listenTo(editor.model.document.selection, 'change:range', () => {
+        view.isEnabled = !editor.model.document.selection.isCollapsed;
+      });
+
       return view;
+    });
+
+    // Hide the balloon when the selection changes without a link
+    this.listenTo(editor.model.document.selection, 'change:range', () => {
+      if (!hasLinkAttribute(editor.model.document.selection)) {
+        this._hideBalloon();
+      }
     });
   }
 
-  // Modified _showBalloon method in AlightCustomLinkPluginUI
-  private _showBalloon(): void {
-    const editor = this.editor as Editor;
-    const model = editor.model;
-    const docSelection = model.document.selection;
-
-    // Convert the model range -> view range -> dom range
-    const modelRange = getSelectedLinkRange(docSelection);
-    let domRange: Range | null = null;
-
-    if (modelRange) {
-      const viewRange = editor.editing.mapper.toViewRange(modelRange);
-      domRange = editor.editing.view.domConverter.viewRangeToDom(viewRange);
-    }
-
-    // Get link href from selection
-    const currentHref = getLinkHrefFromSelection(editor) || '';
-
-    // Update the preview once rendered
-    this.editor.ui.view.once('render', () => {
-      this._updatePreviewLink(currentHref);
-    });
-
-    // Remove any existing views first
+  private _hideBalloon(): void {
     if (this.balloon.hasView(this.formView)) {
       this.balloon.remove(this.formView);
     }
+  }
 
-    // Add the form view with the new position
-    this.balloon.add({
-      view: this.formView,
-      position: {
-        target: domRange || editor.ui.getEditableElement()
-      }
-    });
+  private _showBalloon(): void {
+    const editor = this.editor as Editor;
+    const selection = editor.model.document.selection;
 
-    // Make this view visible
-    this.balloon.visibleView = this.formView;
+    // Show balloon for both existing links and new selections
+    const modelRange = selection.getFirstRange();
+
+    if (!modelRange || modelRange.isCollapsed) {
+      this._hideBalloon();
+      return;
+    }
+
+    const viewRange = editor.editing.mapper.toViewRange(modelRange);
+    const domRange = editor.editing.view.domConverter.viewRangeToDom(viewRange);
+
+    if (domRange) {
+      this.balloon.add({
+        view: this.formView,
+        position: {
+          target: domRange
+        }
+      });
+      this.balloon.visibleView = this.formView;
+    }
   }
 
   // Update the preview link's href and text dynamically.
@@ -151,15 +160,17 @@ export class AlightCustomLinkPluginUI extends Plugin {
     const editButton = new ButtonView(locale);
     editButton.set({
       label: 'Edit link',
-      icon: editIcons,        // The inline SVG string
+      icon: editIcons,
       tooltip: true,
-      withText: false         // true to display text beside icon
+      withText: false
     });
     // If you want an action when clicked:
     editButton.on('execute', () => {
-      // For example, run the link command or open a custom UI:
-      console.log('Edit link clicked!');
-      // editor.execute( 'link' );
+      const currentHref = getLinkHrefFromSelection(editor);
+      if (currentHref) {
+        editor.execute('alightLink', currentHref);
+      }
+      this._hideBalloon();
     });
 
     // 3. Create "Unlink" button
@@ -172,8 +183,8 @@ export class AlightCustomLinkPluginUI extends Plugin {
     });
     // Action on click:
     unlinkButton.on('execute', () => {
-      console.log('Unlink clicked!');
-      // editor.execute( 'unlink' );
+      editor.execute('unlink');
+      this._hideBalloon();
     });
 
     // 4. Set the template so the formView is a simple <div> container
@@ -224,4 +235,3 @@ export class AlightCustomLinkPluginUI extends Plugin {
     return formView;
   }
 }
-
