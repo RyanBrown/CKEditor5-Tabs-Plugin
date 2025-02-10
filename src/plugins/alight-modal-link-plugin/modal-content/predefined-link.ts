@@ -90,6 +90,18 @@ export class PredefinedLinkManager extends BalloonLinkManager {
     ];
   }
 
+  // Override showBalloon() so that we can apply a custom balloon class for predefined links.
+  override showBalloon(selection: any): void {
+    // Call the parent method to position/show the default balloon.
+    super.showBalloon(selection);
+
+    // Once the balloon is shown, add the custom class.
+    const balloonPanel = this.balloon.view.element;
+    if (balloonPanel) {
+      balloonPanel.classList.add('predefined-link-balloon');
+    }
+  }
+
   public setDialog(dialog: CKAlightModalDialog): void {
     this.dialog = dialog;
   }
@@ -220,25 +232,25 @@ export class PredefinedLinkManager extends BalloonLinkManager {
     const linksMarkup = currentPageData.length > 0
       ? currentPageData
         .map(link => `
-          <div class="cka-link-item" data-link-name="${link.predefinedLinkName}">
-            <div class="radio-container">
-              <cka-radio-button name="link-selection" value="${link.predefinedLinkName}" 
-                ${this.selectedLink?.predefinedLinkName === link.predefinedLinkName ? 'initialvalue="true"' : ''}>
-              </cka-radio-button>
+            <div class="cka-link-item" data-link-name="${link.predefinedLinkName}">
+              <div class="radio-container">
+                <cka-radio-button name="link-selection" value="${link.predefinedLinkName}"
+                  ${this.selectedLink?.predefinedLinkName === link.predefinedLinkName ? 'initialvalue="true"' : ''}>
+                </cka-radio-button>
+              </div>
+              <ul>
+                <li><strong>${link.predefinedLinkName}</strong></li>
+                <li><strong>Description:</strong> ${link.predefinedLinkDescription}</li>
+                <li><strong>Base/Client Specific:</strong> ${link.baseOrClientSpecific}</li>
+                <li><strong>Page Type:</strong> ${link.pageType}</li>
+                <li><strong>Destination:</strong> ${link.destination}</li>
+                <li><strong>Domain:</strong> ${link.domain}</li>
+                <li><strong>Unique ID:</strong> ${link.uniqueId}</li>
+                <li><strong>Attribute Name:</strong> ${link.attributeName}</li>
+                <li><strong>Attribute Value:</strong> ${link.attributeValue}</li>
+              </ul>
             </div>
-            <ul>
-              <li><strong>${link.predefinedLinkName}</strong></li>
-              <li><strong>Description:</strong> ${link.predefinedLinkDescription}</li>
-              <li><strong>Base/Client Specific:</strong> ${link.baseOrClientSpecific}</li>
-              <li><strong>Page Type:</strong> ${link.pageType}</li>
-              <li><strong>Destination:</strong> ${link.destination}</li>
-              <li><strong>Domain:</strong> ${link.domain}</li>
-              <li><strong>Unique ID:</strong> ${link.uniqueId}</li>
-              <li><strong>Attribute Name:</strong> ${link.attributeName}</li>
-              <li><strong>Attribute Value:</strong> ${link.attributeValue}</li>
-            </ul>
-          </div>
-        `)
+          `)
         .join('')
       : '<p>No results found.</p>';
 
@@ -390,10 +402,6 @@ export class PredefinedLinkManager extends BalloonLinkManager {
         ) || null;
       });
     });
-
-    // Attach filter and pagination listeners
-    this.attachFilterListeners(container);
-    this.attachPaginationListeners(container);
   }
 
   private attachFilterListeners(container: HTMLElement): void {

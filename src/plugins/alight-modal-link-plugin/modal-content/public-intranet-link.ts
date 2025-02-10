@@ -25,6 +25,7 @@ export class PublicIntranetLinkManager extends BalloonLinkManager {
         execute: () => {
           const link = this.getSelectedLink();
           if (link) {
+            // Depending on intranet vs. public:
             this.editor.execute(this.isIntranet ? 'linkOption3' : 'linkOption2');
           }
           this.hideBalloon();
@@ -39,6 +40,21 @@ export class PublicIntranetLinkManager extends BalloonLinkManager {
         }
       }
     ];
+  }
+
+  // Override showBalloon() so we can apply custom balloon classes for intranet or public website links.
+  override showBalloon(selection: any): void {
+    // Call the parent method to position/show the default balloon.
+    super.showBalloon(selection);
+
+    // Once the balloon is shown, add the custom class.
+    const balloonPanel = this.balloon.view.element;
+    if (balloonPanel) {
+      // If it's intranet, use `.intranet-link-balloon`; otherwise `.public-website-link-balloon`.
+      balloonPanel.classList.add(
+        this.isIntranet ? 'intranet-link-balloon' : 'public-website-link-balloon'
+      );
+    }
   }
 
   override getLinkContent(page: number): string {

@@ -90,6 +90,18 @@ export class ExistingDocumentLinkManager extends BalloonLinkManager {
     ];
   }
 
+  // Override showBalloon() so that we can apply a custom balloon class for existing-document links.
+  override showBalloon(selection: any): void {
+    // Call the parent method to position/show the default balloon.
+    super.showBalloon(selection);
+
+    // Once the balloon is shown, add the custom class.
+    const balloonPanel = this.balloon.view.element;
+    if (balloonPanel) {
+      balloonPanel.classList.add('existing-document-link-balloon');
+    }
+  }
+
   override getLinkContent(page: number): string {
     return this.buildContentForPage(page);
   }
@@ -199,22 +211,22 @@ export class ExistingDocumentLinkManager extends BalloonLinkManager {
     const documentsMarkup = currentPageData.length > 0
       ? currentPageData
         .map(doc => `
-          <div class="cka-document-item" data-doc-title="${doc.title}" data-doc-url="${doc.serverFilePath}">
-            <div class="radio-container">
-              <cka-radio-button name="document-selection" value="${doc.title}" label=""></cka-radio-button>
+            <div class="cka-document-item" data-doc-title="${doc.title}" data-doc-url="${doc.serverFilePath}">
+              <div class="radio-container">
+                <cka-radio-button name="document-selection" value="${doc.title}" label=""></cka-radio-button>
+              </div>
+              <ul>
+                <li><strong>${doc.title}</strong></li>
+                <!--<li><strong>Description:</strong> ${doc.documentDescription}</li>-->
+                <li><strong>Population:</strong> ${doc.population}</li>
+                <li><strong>Language:</strong> ${doc.locale}</li>
+                <li><strong>File Type:</strong> ${doc.fileType}</li>
+                <!--<li><strong>File ID:</strong> ${doc.fileId}</li>
+                <li><strong>Last Updated:</strong> ${new Date(doc.lastUpdated).toLocaleDateString()}</li>
+                <li><strong>Updated By:</strong> ${doc.updatedBy}</li>-->
+              </ul>
             </div>
-            <ul>
-              <li><strong>${doc.title}</strong></li>
-              <!--<li><strong>Description:</strong> ${doc.documentDescription}</li>-->
-              <li><strong>Population:</strong> ${doc.population}</li>
-              <li><strong>Language:</strong> ${doc.locale}</li>
-              <li><strong>File Type:</strong> ${doc.fileType}</li>
-              <!--<li><strong>File ID:</strong> ${doc.fileId}</li>
-              <li><strong>Last Updated:</strong> ${new Date(doc.lastUpdated).toLocaleDateString()}</li>
-              <li><strong>Updated By:</strong> ${doc.updatedBy}</li>-->
-            </ul>
-          </div>
-        `)
+          `)
         .join('')
       : '<p>No results found.</p>';
 
