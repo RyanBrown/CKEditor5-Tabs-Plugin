@@ -45,12 +45,14 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
       const domTarget = data.domTarget as HTMLElement;
 
       if (domTarget?.tagName === 'A') {
-        const viewElement = editor.editing.view.domConverter.domToView(domTarget);
+        const viewNode = editor.editing.view.domConverter.domToView(domTarget);
 
-        // Add null check and type guard for viewElement
-        if (!viewElement || !('is' in viewElement)) {
+        // Check if viewNode is an Element and has the required properties
+        if (!viewNode || !('is' in viewNode) || !(viewNode.is('element'))) {
           return;
         }
+
+        const viewElement = viewNode;
 
         const modelElement = editor.editing.mapper.toModelElement(viewElement);
 
