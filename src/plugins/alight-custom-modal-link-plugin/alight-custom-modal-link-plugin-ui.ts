@@ -62,13 +62,13 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
     if (domRange) {
       const positions = BalloonPanelView.defaultPositions;
 
-      // Add custom class to the balloon panel
-      const panelView = this.balloon.panelView;
-      panelView.extendTemplate({
-        attributes: {
-          class: ['my-modal-class']
-        }
-      });
+      // Add the form view with custom class in the balloon
+      const balloonClassName = 'my-modal-class';
+
+      // Add the class to the form view's element
+      if (this.formView.element) {
+        this.formView.element.classList.add(balloonClassName);
+      }
 
       this.balloon.add({
         view: this.formView,
@@ -122,7 +122,6 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
     });
   }
 
-
   // Registers the toolbar button.
   private _registerToolbarButton(): void {
     const editor = this.editor as Editor;
@@ -131,10 +130,10 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
       const button = new ButtonView(locale);
 
       button.set({
-        label: 'Link',
+        label: 'My Link',
         icon: editIcon,
         tooltip: true,
-        withText: false
+        withText: true
       });
 
       // Update button state based on selection
