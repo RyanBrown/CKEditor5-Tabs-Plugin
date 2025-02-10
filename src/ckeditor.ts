@@ -59,7 +59,6 @@ import AlightPastePlugin from './plugins/alight-paste-plugin/alight-paste-plugin
 import AlightPopulationPlugin from './plugins/alight-population-plugin/alight-population-plugin';
 import TabsPlugin from './plugins/alight-tabs-plugin/alight-tabs-plugin';
 
-import AlightCustomLink from './plugins/alight-custom-link/alight-custom-link';
 import AlightCustomLinkPlugin from './plugins/alight-custom-link-plugin/alight-custom-link-plugin';
 
 
