@@ -30,7 +30,8 @@ export class AlightCustomModalLinkPluginEditing extends Plugin {
         {
           label: 'Insert',
           className: 'ck-button-primary',
-          onClick: () => this.handleInsert()
+          closeOnClick: false,
+          isPrimary: true
         }
       ],
       loadContent: async () => {

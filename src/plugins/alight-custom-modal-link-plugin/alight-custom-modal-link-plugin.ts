@@ -5,8 +5,7 @@ import type { Editor } from '@ckeditor/ckeditor5-core';
 import { AlightCustomModalLinkPluginEditing } from './alight-custom-modal-link-plugin-editing';
 import { AlightCustomModalLinkPluginUI } from './alight-custom-modal-link-plugin-ui';
 import { hasLinkAttribute } from './alight-custom-modal-link-plugin-utils';
-import CKAlightModalDialog, { DialogOptions } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
-import { Range } from '@ckeditor/ckeditor5-engine';
+import CKAlightModalDialog, { DialogOptions, DialogButton } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 
 // The main plugin that ties together:
 //  - Our editing plugin (schema, conversion, commands)
@@ -22,6 +21,32 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
   public static get pluginName() {
     return 'AlightCustomModalLinkPlugin';
   }
+
+  private readonly defaultButtons: Record<string, DialogButton> = {
+    cancel: {
+      label: 'Cancel',
+      className: 'cka-button cka-button-rounded cka-button-outline cka-button-sm',
+      variant: 'outlined',
+      position: 'left',
+      closeOnClick: true
+    },
+    continue: {
+      label: 'Continue',
+      className: 'cka-button cka-button-rounded cka-button-sm',
+      variant: 'default',
+      position: 'right',
+      closeOnClick: false,
+      isPrimary: true  // Enable Enter key submission
+    },
+    insert: {
+      label: 'Insert',
+      className: 'cka-button cka-button-rounded cka-button-sm',
+      variant: 'default',
+      position: 'right',
+      closeOnClick: false,
+      isPrimary: true  // Enable Enter key submission
+    }
+  };
 
   // Initializes the plugin functionality.
   public init(): void {
@@ -120,21 +145,12 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
       headerClass: 'ck-alight-modal-header',
       contentClass: 'ck-alight-modal-content',
       footerClass: 'ck-alight-modal-footer',
+      submitOnEnter: true,  // Enable Enter key submission
       buttons: [
+        this.defaultButtons.cancel,
         {
-          label: 'Cancel',
-          className: 'cka-button cka-button-rounded cka-button-outline cka-button-sm',
-          variant: 'outlined',
-          position: 'left',
-          closeOnClick: true
-        },
-        {
-          // If editing, label is 'Continue' or 'Update'; if inserting, label is 'Insert'
-          label: isEditing ? 'Continue' : 'Insert',
-          className: 'cka-button cka-button-rounded cka-button-sm',
-          variant: 'default',
-          position: 'right',
-          closeOnClick: false
+          ...this.defaultButtons[isEditing ? 'continue' : 'insert'],
+          label: isEditing ? 'Continue' : 'Insert'
         }
       ],
       defaultCloseButton: true
@@ -178,9 +194,9 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
     `;
     modalDialog.setContent(formHtml);
 
-    // Handle form submission
+    // Use the modal's event system
     modalDialog.on('buttonClick', (buttonLabel: string) => {
-      if (buttonLabel === 'Insert' || buttonLabel === 'Continue' || buttonLabel === 'Update') {
+      if (buttonLabel === 'Insert' || buttonLabel === 'Continue') {
         this._handleModalSubmit(modalDialog);
       }
     });

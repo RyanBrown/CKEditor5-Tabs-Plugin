@@ -10,11 +10,16 @@ export interface CommandData {
     width?: string;
     draggable?: boolean;
     resizable?: boolean;
+    submitOnEnter?: boolean;
   };
   buttons?: Array<{
     label: string;
     className: string;
-    onClick?: () => void;
+    variant?: 'default' | 'outlined' | 'text';
+    position?: 'left' | 'right';
+    closeOnClick?: boolean;
+    isPrimary?: boolean;
+    onClick?: () => void;  // Add this line to support onClick handlers
   }>;
   loadContent: () => Promise<string>;
 }
@@ -38,23 +43,43 @@ export class AlightCustomModalLinkPluginCommand extends Command {
       headerClass: 'ck-alight-modal-header',
       contentClass: 'ck-alight-modal-content',
       footerClass: 'ck-alight-modal-footer',
-      buttons:
-        data.buttons?.map((btn) => ({
-          label: btn.label,
-          className: btn.className,
-          position: 'right',
-          closeOnClick: false
-        })) || [],
+      submitOnEnter: data.modalOptions?.submitOnEnter ?? true,  // Enable Enter key by default
+      buttons: data.buttons?.map(btn => ({
+        label: btn.label,
+        className: btn.className,
+        variant: btn.variant || 'default',
+        position: btn.position || 'right',
+        closeOnClick: btn.closeOnClick ?? false,
+        isPrimary: btn.isPrimary ?? false
+      })) || [],
       defaultCloseButton: true
     });
 
     // Set the dialog title
     this.dialog.setTitle(data.title);
+
+    // Set up button event handling
+    this.setupDialogEvents();
   }
 
-  // Executes the link command.
-  // If `href` is provided, it applies the `customHref` attribute to the selection (or inserts a text node).
-  // If `href` is not provided, it shows the modal and loads its content.
+  private setupDialogEvents(): void {
+    this.dialog.on('buttonClick', (buttonLabel: string) => {
+      const selection = this.editor.model.document.selection;
+      const href = selection.getAttribute('customHref');
+
+      if (buttonLabel === 'Continue' || buttonLabel === 'Insert') {
+        const contentEl = this.dialog.getContentElement();
+        if (contentEl) {
+          const urlInput = contentEl.querySelector('#link-url') as HTMLInputElement;
+          if (urlInput && urlInput.value) {
+            this.execute(urlInput.value);
+            this.dialog.hide();
+          }
+        }
+      }
+    });
+  }
+
   public override execute(href?: string): void {
     const model = this.editor.model;
     const selection = model.document.selection;
