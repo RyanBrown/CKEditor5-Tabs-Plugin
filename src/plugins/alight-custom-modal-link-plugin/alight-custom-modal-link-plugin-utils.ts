@@ -2,13 +2,9 @@
 import { DocumentSelection, Selection } from '@ckeditor/ckeditor5-engine';
 import { Range, Position } from '@ckeditor/ckeditor5-engine';
 
-
-
-/**
- * Gets the range of the selected link (if any).
- * The key fix is to EXPAND the range in both directions
- * to cover all text nodes that have the 'customHref' attribute.
- */
+// Gets the range of the selected link (if any).
+// The key fix is to EXPAND the range in both directions
+// to cover all text nodes that have the 'customHref' attribute.
 export function getSelectedLinkRange(selection: Selection | DocumentSelection): Range | null {
   // If there's no link attribute in the selection, bail out
   const href = selection.getAttribute('customHref');

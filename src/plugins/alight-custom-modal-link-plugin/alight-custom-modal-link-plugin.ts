@@ -5,11 +5,8 @@ import type { Editor } from '@ckeditor/ckeditor5-core';
 import { AlightCustomModalLinkPluginEditing } from './alight-custom-modal-link-plugin-editing';
 import { AlightCustomModalLinkPluginUI } from './alight-custom-modal-link-plugin-ui';
 import { hasLinkAttribute } from './alight-custom-modal-link-plugin-utils';
-import CKAlightModalDialog, {
-  DialogOptions,
-  DialogButton
-} from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
-import { DocumentSelection } from '@ckeditor/ckeditor5-engine';
+import CKAlightModalDialog, { DialogOptions } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
+import { Range } from '@ckeditor/ckeditor5-engine';
 
 // The main plugin that ties together:
 //  - Our editing plugin (schema, conversion, commands)
@@ -29,7 +26,6 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
   // Initializes the plugin functionality.
   public init(): void {
     const editor = this.editor;
-
     this._setupLinkClickHandler(); // Set up the link click handler for balloon display
     this._registerToolbarButton(); // Register the toolbar button for the modal dialog
   }
@@ -40,10 +36,11 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
     const editor = this.editor;
     const uiPlugin = editor.plugins.get(AlightCustomModalLinkPluginUI);
 
-    // Handle clicks on links
+    // Handle clicks on <a> in the editing view
     editor.editing.view.document.on('click', (evt, data) => {
       const domTarget = data.domTarget as HTMLElement;
 
+      // If user clicked an <a>, prevent navigation and show balloon
       if (domTarget?.tagName === 'A') {
         evt.stop();
         data.preventDefault();
@@ -55,21 +52,22 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
           return;
         }
 
+        // Convert the <a> (in the view) to the corresponding model element
         const modelElement = editor.editing.mapper.toModelElement(viewNode);
-
         if (modelElement) {
-          // Select the entire link in the model
+          // Select the entire link element in the model
           editor.model.change((writer) => {
             const range = writer.createRangeOn(modelElement);
             writer.setSelection(range);
           });
 
-          uiPlugin.showBalloon(); // Show the balloon
+          // Show the balloon (old behavior => correct position)
+          uiPlugin.showBalloon();
         }
       }
     });
 
-    // Also respond to selection changes directly
+    // Also show or hide the balloon if the selection has or loses link attributes
     editor.model.document.selection.on('change:range', () => {
       const selection = editor.model.document.selection;
       if (hasLinkAttribute(selection)) {
@@ -80,13 +78,12 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
     });
   }
 
-  // Register a toolbar button that opens our custom modal (i.e., a second way to insert a link).
+  // Registers a toolbar button that opens our custom modal dialog for inserting a new link.
   private _registerToolbarButton(): void {
     const editor = this.editor;
 
     editor.ui.componentFactory.add('alightCustomModalLinkPlugin', (locale) => {
       const view = new ButtonView(locale);
-
       view.set({
         label: 'Insert Link via Modal',
         tooltip: true,
@@ -98,15 +95,14 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
         view.isEnabled = !editor.model.document.selection.isCollapsed;
       });
 
-      // Show our modal on click (for a new link)
+      // Show our modal on click
       view.on('execute', () => this.showLinkModal());
       return view;
     });
   }
 
-  // Public method to show the link modal.
-  // If `existingHref` and `existingOrg` are provided, they will be used
-  // to prefill the modal. Otherwise, it's treated as a new link insertion.
+  // Public method to show the link modal. If `existingHref` / `existingOrg` is provided,
+  // we assume this is an edit operation; otherwise it's a new link insertion.
   public showLinkModal(existingHref = '', existingOrg = ''): void {
     const editor = this.editor;
 
@@ -133,7 +129,8 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
           closeOnClick: true
         },
         {
-          label: isEditing ? 'Continue' : 'Insert',  // Different label based on mode
+          // If editing, label is 'Continue' or 'Update'; if inserting, label is 'Insert'
+          label: isEditing ? 'Continue' : 'Insert',
           className: 'cka-button cka-button-rounded cka-button-sm',
           variant: 'default',
           position: 'right',
@@ -143,43 +140,47 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
       defaultCloseButton: true
     };
 
-    // Create the modal dialog
+    // Create the modal
     const modalDialog = new CKAlightModalDialog(dialogOptions);
     modalDialog.setTitle(isEditing ? 'Edit Link' : 'Insert Custom Link');
 
-    // Create form with prefilled values if they exist
+    // Simple form with the link URL and optional org name
     const formHtml = `
-        <form id="custom-link-form" class="ck-form">
-            <div class="ck-form-group">
-                <label for="link-url" class="cka-input-label">
-                    URL <span class="ck-required">*</span>
-                </label>
-                <input type="url"
-                       id="link-url"
-                       name="link-url"
-                       class="cka-input-text"
-                       required
-                       value="${existingHref}"
-                       placeholder="https://" />
-            </div>
-            <div class="ck-form-group mt-2">
-                <label for="org-name" class="cka-input-label">
-                    Organization (optional)
-                </label>
-                <input type="text"
-                       id="org-name"
-                       name="org-name"
-                       class="cka-input-text"
-                       value="${existingOrg}"
-                       placeholder="Organization name" />
-            </div>
-        </form>
+      <form id="custom-link-form" class="ck-form">
+        <div class="ck-form-group">
+          <label for="link-url" class="cka-input-label">
+            URL <span class="ck-required">*</span>
+          </label>
+          <input
+            type="url"
+            id="link-url"
+            name="link-url"
+            class="cka-input-text"
+            required
+            value="${existingHref}"
+            placeholder="https://"
+          />
+        </div>
+        <div class="ck-form-group mt-2">
+          <label for="org-name" class="cka-input-label">
+            Organization (optional)
+          </label>
+          <input
+            type="text"
+            id="org-name"
+            name="org-name"
+            class="cka-input-text"
+            value="${existingOrg}"
+            placeholder="Organization name"
+          />
+        </div>
+      </form>
     `;
     modalDialog.setContent(formHtml);
 
     // Handle form submission
     modalDialog.on('buttonClick', (buttonLabel: string) => {
-      if (buttonLabel === 'Update' || buttonLabel === 'Insert') {
+      if (buttonLabel === 'Insert' || buttonLabel === 'Continue' || buttonLabel === 'Update') {
         this._handleModalSubmit(modalDialog);
       }
     });
@@ -188,12 +189,12 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
     modalDialog.show();
   }
 
-  // Reads the user input from the modal and applies it to the selection.
+  // Reads the user input and executes the custom link command to apply `customHref`.
   private _handleModalSubmit(modalDialog: CKAlightModalDialog): void {
     const contentElement = modalDialog.getContentElement();
     if (!contentElement) return;
 
-    // Get form inputs
+    // Gather form data
     const urlInput = contentElement.querySelector('#link-url') as HTMLInputElement;
     const orgInput = contentElement.querySelector('#org-name') as HTMLInputElement;
 
@@ -207,24 +208,22 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
     // Get organization value
     const orgValue = orgInput?.value?.trim() || '';
 
-    // Execute the custom link command to apply `customHref`
+    // Execute the link command
     this.editor.execute('alightCustomModalLinkPlugin', urlValue);
 
-    // Store organization name (optional, custom logic)
-    if (orgValue) {
-      const selection = this.editor.model.document.selection;
-      const range = selection.getFirstRange();
-      if (range) {
-        this.editor.model.change((writer) => {
-          writer.setAttribute('organizationName', orgValue, range);
-        });
-      }
+    // Optionally store organization name
+    const selection = this.editor.model.document.selection;
+    const range = selection.getFirstRange();
+    if (range && orgValue) {
+      this.editor.model.change(writer => {
+        writer.setAttribute('organizationName', orgValue, range);
+      });
     }
 
-    // Close the modal
+    // Close the dialog
     modalDialog.hide();
 
-    // Show the balloon
+    // Show the balloon for this new link
     const uiPlugin = this.editor.plugins.get(AlightCustomModalLinkPluginUI);
     setTimeout(() => {
       uiPlugin.showBalloon();

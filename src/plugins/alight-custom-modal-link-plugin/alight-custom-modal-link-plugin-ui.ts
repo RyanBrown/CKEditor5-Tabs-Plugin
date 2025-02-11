@@ -18,7 +18,7 @@ import AlightCustomModalLinkPlugin from './alight-custom-modal-link-plugin';
 //  - Controlling balloon visibility on selection changes and clicks outside.
 export class AlightCustomModalLinkPluginUI extends Plugin {
   private balloon!: ContextualBalloon; // The balloon panel used to display link actions.
-  private formView!: View;            // The form view displayed inside the balloon.
+  private formView!: View;             // The form view displayed inside the balloon.
 
   public static get pluginName() {
     return 'AlightCustomModalLinkPluginUI';
@@ -52,7 +52,6 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
     const editor = this.editor as Editor;
     const selection = editor.model.document.selection;
 
-    // Get the link range using our utility function
     const modelRange = getSelectedLinkRange(selection);
     if (!modelRange) {
       return;
@@ -92,13 +91,13 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
           }
         });
 
-        // Double-check the class is applied after adding the view
+        // Add custom class
         if (this.balloon.view && this.balloon.view.element) {
           this.balloon.view.element.classList.add('cka-custom-balloon-content');
         }
       }
 
-      // Update the preview link with the current href
+      // Update the preview link text
       const customHref = selection.getAttribute('customHref');
       if (typeof customHref === 'string') {
         this._updatePreviewLink(customHref);
@@ -155,7 +154,6 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
         const isClickInBalloon = balloonElement?.contains(clickedElement);
         const isClickOnLink = clickedElement.tagName === 'A';
 
-        // If the click was outside the balloon and not on a link => hide
         if (!isClickInBalloon && !isClickOnLink) {
           this.hideBalloon();
         }
@@ -197,7 +195,7 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
     });
   }
 
-  // Updates the preview link text inside the balloon to show the current customHref.
+  // Update the preview link text inside the balloon to show the current `customHref`.
   private _updatePreviewLink(linkUrl: string): void {
     if (!this.formView.element) {
       return;
@@ -222,7 +220,7 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
     }
   }
 
-  // Creates the balloon's form view (with link preview, Edit, and Unlink buttons).
+  // Creates the balloon's form view with preview + Edit + Unlink buttons.
   private _createFormView(): View {
     const editor = this.editor as Editor;
     const formView = new View(editor.locale);
@@ -239,16 +237,10 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
         tabindex: '-1'
       },
       children: [
-        // Link preview
         {
           tag: 'a',
           attributes: {
-            class: [
-              'ck',
-              'ck-link-actions__preview',
-              'ck-button',
-              'ck-button_with-text'
-            ],
+            class: ['ck', 'ck-link-actions__preview', 'ck-button', 'ck-button_with-text'],
             href: '',
             target: '_blank',
             rel: 'noopener noreferrer'
@@ -273,7 +265,7 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
     return formView;
   }
 
-  // Edit button re-opens the modal with existing link data
+  // Edit button => hide balloon, re-open our custom modal pre-filled with current values.
   private _createEditButton(): ButtonView {
     const editor = this.editor as Editor;
     const t = editor.locale.t;
@@ -286,7 +278,7 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
       tooltip: true
     });
 
-    // **When clicked => hide balloon, then show the modal with existing data.**
+    // When clicked => hide balloon, then show the modal with existing data
     editButton.on('execute', () => {
       this.hideBalloon();
 
@@ -297,18 +289,16 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
       const currentHref = selection.getAttribute('customHref') || '';
       const currentOrg = selection.getAttribute('organizationName') || '';
 
-      // Get the main plugin instance and show modal with existing values
+      // Show our custom modal for editing
       const mainPlugin = editor.plugins.get('AlightCustomModalLinkPlugin') as AlightCustomModalLinkPlugin;
-      mainPlugin.showLinkModal(
-        currentHref.toString(),  // Ensure string type
-        currentOrg.toString()    // Ensure string type
-      );
+      mainPlugin.showLinkModal(currentHref.toString(), currentOrg.toString());
     });
 
     return editButton;
   }
 
-  // Unlink button removes link attributes but keeps the text content
+  // The Unlink button => remove link attributes from the entire link text,
+  // not just the currently selected portion. This ensures the entire link is gone.
   private _createUnlinkButton(): ButtonView {
     const editor = this.editor as Editor;
     const t = editor.locale.t;
@@ -323,24 +313,27 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
 
     unlinkButton.on('execute', () => {
       editor.model.change(writer => {
-        // Here we use our utility to get the FULL link range:
+        // 1) We start with the *currently* selected portion
         const selection = editor.model.document.selection;
-        const range = getSelectedLinkRange(selection);
-
-        if (range) {
-          // Remove all link-related attributes from that entire range
-          writer.removeAttribute('customHref', range);
-          writer.removeAttribute('alightCustomModalLink', range);
-          writer.removeAttribute('organizationName', range);
-
-          // Also remove the attributes from the selection to prevent re-applying them
-          writer.removeSelectionAttribute('customHref');
-          writer.removeSelectionAttribute('alightCustomModalLink');
-          writer.removeSelectionAttribute('organizationName');
-
-          // Finally, reset the selection to that unlinked range
-          writer.setSelection(range);
+        // 2) Expand that selection across all text nodes that have `customHref`
+        const linkRange = this._expandLinkRange(selection);
+        if (!linkRange) {
+          return;
         }
+
+        // 3) Remove link attributes from that expanded range
+        writer.removeAttribute('customHref', linkRange);
+        writer.removeAttribute('alightCustomModalLink', linkRange);
+        writer.removeAttribute('organizationName', linkRange);
+
+        // 4) Also remove from the selection so it doesn't re-apply automatically
+        writer.removeSelectionAttribute('customHref');
+        writer.removeSelectionAttribute('alightCustomModalLink');
+        writer.removeSelectionAttribute('organizationName');
+
+        // (Optional) You might want to set selection back to linkRange, or
+        // place the selection after the linkRange, etc. We'll just do:
+        writer.setSelection(linkRange.end);
       });
 
       // Hide the balloon after unlinking
@@ -350,7 +343,45 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
     return unlinkButton;
   }
 
-  // Cleans up listeners and destroys the view on plugin teardown.
+  // Expand the selection across all text nodes with `customHref`,
+  // ensuring we remove attributes from the entire link.
+  private _expandLinkRange(selection: any) {
+    // If there's no link attribute, bail out
+    const href = selection.getAttribute('customHref');
+    if (!href) {
+      return null;
+    }
+
+    // Get the first range in the selection
+    const firstRange = selection.getFirstRange();
+    if (!firstRange) {
+      return null;
+    }
+
+    let start = firstRange.start;
+    let end = firstRange.end;
+
+    // Expand backward
+    while (
+      start.nodeBefore &&
+      start.nodeBefore.hasAttribute &&
+      start.nodeBefore.hasAttribute('customHref')
+    ) {
+      start = start.getShiftedBy(-1);
+    }
+
+    // Expand forward
+    while (
+      end.nodeAfter &&
+      end.nodeAfter.hasAttribute &&
+      end.nodeAfter.hasAttribute('customHref')
+    ) {
+      end = end.getShiftedBy(1);
+    }
+
+    return this.editor.model.createRange(start, end);
+  }
+
   public override destroy(): void {
     super.destroy();
     if (this.formView) {
