@@ -19,6 +19,7 @@ import AlightCustomModalLinkPlugin from './alight-custom-modal-link-plugin';
 export class AlightCustomModalLinkPluginUI extends Plugin {
   private balloon!: ContextualBalloon; // The balloon panel used to display link actions.
   private formView!: View;             // The form view displayed inside the balloon.
+  private _storedRange: Range | null = null; // Track the last range that was stored
 
   public static get pluginName() {
     return 'AlightCustomModalLinkPluginUI';
@@ -155,6 +156,11 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
         const isClickOnLink = clickedElement.tagName === 'A';
 
         if (!isClickInBalloon && !isClickOnLink) {
+          const selection = editor.model.document.selection;
+          const range = selection.getFirstRange();
+          if (range) {
+            this._storedRange = range;
+          }
           this.hideBalloon();
         }
       }
@@ -190,7 +196,17 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
     // Hide the balloon when the editor loses focus
     this.listenTo(editor.ui.focusTracker, 'change:isFocused', (evt, name, isFocused) => {
       if (!isFocused) {
+        const selection = editor.model.document.selection;
+        const range = selection.getFirstRange();
+        if (range) {
+          this._storedRange = range;
+        }
         this.hideBalloon();
+      } else if (this._storedRange) {
+        editor.model.change(writer => {
+          writer.setSelection(this._storedRange);
+        });
+        this._storedRange = null;
       }
     });
   }
@@ -318,8 +334,11 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
         // 2) Expand that selection across all text nodes that have `customHref`
         const linkRange = this._expandLinkRange(selection);
         if (!linkRange) {
+          console.log('No link range found');
           return;
         }
+
+        console.log('Link range found', linkRange);
 
         // 3) Remove link attributes from that expanded range
         writer.removeAttribute('customHref', linkRange);
