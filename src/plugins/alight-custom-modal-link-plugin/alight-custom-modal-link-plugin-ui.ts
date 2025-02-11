@@ -329,30 +329,26 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
 
     unlinkButton.on('execute', () => {
       editor.model.change(writer => {
-        // 1) We start with the *currently* selected portion
+        // Get the current selection
         const selection = editor.model.document.selection;
-        // 2) Expand that selection across all text nodes that have `customHref`
-        const linkRange = this._expandLinkRange(selection);
-        if (!linkRange) {
+
+        // Get the full range of the link
+        const range = getSelectedLinkRange(selection);
+
+        if (!range) {
           console.log('No link range found');
           return;
         }
 
-        console.log('Link range found', linkRange);
+        console.log('Link range found', range);
 
-        // 3) Remove link attributes from that expanded range
-        writer.removeAttribute('customHref', linkRange);
-        writer.removeAttribute('alightCustomModalLink', linkRange);
-        writer.removeAttribute('organizationName', linkRange);
+        // Remove all link-related attributes from the range
+        writer.removeAttribute('customHref', range);
+        writer.removeAttribute('linkHref', range);
+        writer.removeAttribute('organizationName', range);
 
-        // 4) Also remove from the selection so it doesn't re-apply automatically
-        writer.removeSelectionAttribute('customHref');
-        writer.removeSelectionAttribute('alightCustomModalLink');
-        writer.removeSelectionAttribute('organizationName');
-
-        // (Optional) You might want to set selection back to linkRange, or
-        // place the selection after the linkRange, etc. We'll just do:
-        writer.setSelection(linkRange.end);
+        // Update the selection to match the range
+        writer.setSelection(range);
       });
 
       // Hide the balloon after unlinking
