@@ -126,6 +126,29 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
     });
   }
 
+  private _setupInputValidation(modalDialog: CKAlightModalDialog): void {
+    const contentElement = modalDialog.getContentElement();
+    if (!contentElement) return;
+
+    const urlInput = contentElement.querySelector('#link-url') as HTMLInputElement;
+    const errorMessage = contentElement.querySelector('#error-message') as HTMLDivElement;
+    const urlFormGroup = urlInput?.closest('.ck-form-group') as HTMLDivElement;
+
+    urlInput?.addEventListener('input', () => {
+      const urlValue = urlInput.value.trim();
+
+      // Clear error state when user starts typing
+      urlFormGroup?.classList.remove('has-error');
+      errorMessage?.classList.remove('visible');
+
+      // Optional: Show error immediately if URL becomes empty after typing
+      if (!urlValue) {
+        urlFormGroup?.classList.add('has-error');
+        errorMessage?.classList.add('visible');
+      }
+    });
+  }
+
   // Public method to show the link modal. If `existingHref` / `existingOrg` is provided,
   // we assume this is an edit operation; otherwise it's a new link insertion.
   public showLinkModal(existingHref = '', existingOrg = ''): void {
@@ -174,10 +197,13 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
             class="cka-input-text"
             required
             value="${existingHref}"
-            placeholder="https://"
+            placeholder="https://example.com"
           />
+          <div class="error-message" id="error-message">
+            Please enter a valid URL.
+          </div>
         </div>
-        <div class="ck-form-group mt-2">
+        <div class="ck-form-group mt-3">
           <label for="org-name" class="cka-input-label">
             Organization (optional)
           </label>
@@ -193,6 +219,9 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
       </form>
     `;
     modalDialog.setContent(formHtml);
+
+    // Set up input validation
+    this._setupInputValidation(modalDialog);
 
     // Use the modal's event system
     modalDialog.on('buttonClick', (buttonLabel: string) => {
@@ -210,14 +239,32 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
     const contentElement = modalDialog.getContentElement();
     if (!contentElement) return;
 
-    // Gather form data
+    // Get form elements
     const urlInput = contentElement.querySelector('#link-url') as HTMLInputElement;
     const orgInput = contentElement.querySelector('#org-name') as HTMLInputElement;
+    const errorMessage = contentElement.querySelector('#error-message') as HTMLDivElement;
+    const urlFormGroup = urlInput?.closest('.ck-form-group') as HTMLDivElement;
+
+    // Clear previous error state
+    urlFormGroup?.classList.remove('has-error');
+    errorMessage?.classList.remove('visible');
 
     // Validate URL
     const urlValue = urlInput?.value?.trim();
     if (!urlValue) {
-      alert('URL is required.');
+      // Show error message
+      urlFormGroup?.classList.add('has-error');
+      errorMessage?.classList.add('visible');
+      return;
+    }
+
+    // Additional URL validation if needed
+    try {
+      new URL(urlValue); // Basic URL validation
+    } catch (e) {
+      // Show error message for invalid URL format
+      urlFormGroup?.classList.add('has-error');
+      errorMessage?.classList.add('visible');
       return;
     }
 
