@@ -36,10 +36,8 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
     this._registerToolbarButton(); // Register the toolbar button for the modal dialog
   }
 
-  /**
-   * When a user clicks on an <a> tag in the editing view,
-   * we select that link in the model and show the balloon UI.
-   */
+  // When a user clicks on an <a> tag in the editing view,
+  // we select that link in the model and show the balloon UI.
   private _setupLinkClickHandler(): void {
     const editor = this.editor;
     const uiPlugin = editor.plugins.get(AlightCustomModalLinkPluginUI);
@@ -108,11 +106,9 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
     });
   }
 
-  /**
-   * **(RENAMED & UPDATED) Public method to show the link modal.**
-   * If `existingHref` and `existingOrg` are provided, they will be used
-   * to prefill the modal. Otherwise, it's treated as a new link insertion.
-   */
+  // Public method to show the link modal.
+  // If `existingHref` and `existingOrg` are provided, they will be used
+  // to prefill the modal. Otherwise, it's treated as a new link insertion.
   public showLinkModal(existingHref = '', existingOrg = ''): void {
     const editor = this.editor;
 
@@ -187,7 +183,7 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
     `;
     modalDialog.setContent(formHtml);
 
-    // **(NEW) Prefill the modal after it's inserted into DOM**
+    // Prefill the modal after it's inserted into DOM**
     setTimeout(() => {
       const contentElement = modalDialog.getContentElement();
       if (contentElement) {

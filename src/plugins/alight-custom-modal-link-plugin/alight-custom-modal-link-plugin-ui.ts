@@ -9,7 +9,7 @@ import editIcon from './assets/icon-pencil.svg';
 import unlinkIcon from './assets/icon-unlink.svg';
 import './styles/alight-custom-modal-link-plugin.scss';
 
-// **(NEW) Import the main plugin so we can call its "showLinkModal" method** 
+// Import the main plugin so we can call its "showLinkModal" method if needed
 import AlightCustomModalLinkPlugin from './alight-custom-modal-link-plugin';
 
 /**
@@ -69,9 +69,25 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
       // Default positions for the balloon
       const positions = BalloonPanelView.defaultPositions;
 
-      // If the balloon doesn't already contain the formView, add it
-      if (!this.balloon.hasView(this.formView)) {
-        // Add a custom class to the balloon content
+      /**
+       * ----------------------------------------------
+       *   KEY CHANGE: Re-position if formView exists
+       * ----------------------------------------------
+       */
+      if (this.balloon.hasView(this.formView)) {
+        // If balloon already has the formView, just update its position
+        this.balloon.updatePosition({
+          target: domRange,
+          positions: [
+            positions.northArrowSouth,
+            positions.southArrowNorth,
+            positions.eastArrowWest,
+            positions.westArrowEast
+          ]
+        });
+      } else {
+        // Otherwise, add the formView for the first time
+        // Add a custom class to the balloon content if needed
         if (this.formView.element) {
           this.formView.element.classList.add('cka-custom-balloon-content');
         }
@@ -90,7 +106,7 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
         });
       }
 
-      // Always update the preview link (even if the balloon was already open)
+      // Always update the preview link (even if the balloon was already there)
       const customHref = selection.getAttribute('customHref');
       if (typeof customHref === 'string') {
         this._updatePreviewLink(customHref);
@@ -266,7 +282,7 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
     return formView;
   }
 
-  // **(MODIFIED) Creates the "Edit link" button that re-opens the modal with the current link data.**
+  // Edit button re-opens the modal with existing link data
   private _createEditButton(): ButtonView {
     const editor = this.editor as Editor;
     const t = editor.locale.t;
@@ -285,8 +301,8 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
       this.hideBalloon();
 
       // Safely cast the attributes to string (or do a runtime check).
-      const currentHref = editor.model.document.selection.getAttribute('customHref') as string || '';
-      const currentOrg = editor.model.document.selection.getAttribute('organizationName') as string || '';
+      const currentHref = (editor.model.document.selection.getAttribute('customHref') as string) || '';
+      const currentOrg = (editor.model.document.selection.getAttribute('organizationName') as string) || '';
 
       // Now currentHref and currentOrg are definitely strings
       const mainPlugin = editor.plugins.get('AlightCustomModalLinkPlugin') as AlightCustomModalLinkPlugin;
@@ -296,7 +312,7 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
     return editButton;
   }
 
-  // **(MODIFIED) Creates the "Unlink" button that removes the entire link text.**
+  // Unlink button removes link attributes but keeps text
   private _createUnlinkButton(): ButtonView {
     const editor = this.editor as Editor;
     const t = editor.locale.t;
@@ -309,18 +325,18 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
       tooltip: true
     });
 
-    // **Now we remove the entire link range instead of just removing attributes.**
     unlinkButton.on('execute', () => {
       editor.model.change(writer => {
         const selection = editor.model.document.selection;
         const linkRange = getSelectedLinkRange(selection);
 
         if (linkRange) {
-          // Remove the entire link range from the document
-          writer.remove(linkRange);
+          writer.removeAttribute('customHref', linkRange);
+          writer.removeAttribute('alightCustomModalLink', linkRange);
+          writer.removeAttribute('organizationName', linkRange);
 
-          // Reset the selection to the position where the link started
-          writer.setSelection(linkRange.start);
+          // Re-select the unlinked text
+          writer.setSelection(linkRange);
         }
       });
 

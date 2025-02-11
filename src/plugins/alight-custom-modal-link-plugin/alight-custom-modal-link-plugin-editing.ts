@@ -5,10 +5,8 @@ import {
   CommandData
 } from './alight-custom-modal-link-plugin-command';
 
-/**
- * The editing part of the Alight custom link plugin.
- * It sets up the schema, conversion, and the custom command to insert/edit links.
- */
+// The editing part of the Alight custom link plugin.
+// It sets up the schema, conversion, and the custom command to insert/edit links.
 export class AlightCustomModalLinkPluginEditing extends Plugin {
   public static get requires() {
     // We explicitly do NOT depend on the default LinkEditing plugin
@@ -73,10 +71,8 @@ export class AlightCustomModalLinkPluginEditing extends Plugin {
     });
   }
 
-  /**
-   * This is called when the user clicks the "Insert" button in the modal.
-   * Replace it with your own logic as needed.
-   */
+  // This is called when the user clicks the "Insert" button in the modal.
+  // Replace it with your own logic as needed.
   private handleInsert(): void {
     // Implementation of how the plugin might handle the "Insert" action
     // (e.g., you might fetch the input field's value from the modal and call execute(href))
