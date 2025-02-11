@@ -287,7 +287,6 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
     });
 
     // **When clicked => hide balloon, then show the modal with existing data.**
-    // In your _createEditButton() method:
     editButton.on('execute', () => {
       this.hideBalloon();
 
@@ -324,21 +323,22 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
 
     unlinkButton.on('execute', () => {
       editor.model.change(writer => {
+        // Here we use our utility to get the FULL link range:
         const selection = editor.model.document.selection;
         const range = getSelectedLinkRange(selection);
 
         if (range) {
-          // Remove all link-related attributes from the range
+          // Remove all link-related attributes from that entire range
           writer.removeAttribute('customHref', range);
           writer.removeAttribute('alightCustomModalLink', range);
           writer.removeAttribute('organizationName', range);
 
-          // Remove attributes from selection to prevent them being re-applied
+          // Also remove the attributes from the selection to prevent re-applying them
           writer.removeSelectionAttribute('customHref');
           writer.removeSelectionAttribute('alightCustomModalLink');
           writer.removeSelectionAttribute('organizationName');
 
-          // Set the selection to the range where we removed attributes
+          // Finally, reset the selection to that unlinked range
           writer.setSelection(range);
         }
       });

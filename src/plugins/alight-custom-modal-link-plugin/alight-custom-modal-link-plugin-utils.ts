@@ -1,70 +1,47 @@
 // src/plugins/alight-custom-modal-link-plugin/alight-custom-modal-link-plugin-utils.ts
 import { DocumentSelection, Selection } from '@ckeditor/ckeditor5-engine';
-import { Range } from '@ckeditor/ckeditor5-engine';
+import { Range, Position } from '@ckeditor/ckeditor5-engine';
 
 
-// Gets the range of the selected link (if any).
-// We look for 'customHref' in the selection or in the node after the start.
+
+/**
+ * Gets the range of the selected link (if any).
+ * The key fix is to EXPAND the range in both directions
+ * to cover all text nodes that have the 'customHref' attribute.
+ */
 export function getSelectedLinkRange(selection: Selection | DocumentSelection): Range | null {
-  const range = selection.getFirstRange();
-  if (!range) {
+  // If there's no link attribute in the selection, bail out
+  const href = selection.getAttribute('customHref');
+  if (!href) {
     return null;
   }
 
-  // If the selection has the attribute, return its range
-  if (selection.hasAttribute('customHref')) {
-    return range;
+  // Get the first range in the selection
+  const firstRange = selection.getFirstRange();
+  if (!firstRange) {
+    return null;
   }
 
-  // For a collapsed selection, check both nodeBefore and nodeAfter
-  if (range.isCollapsed) {
-    const pos = range.start;
-    const nodeBefore = pos.nodeBefore;
-    const nodeAfter = pos.nodeAfter;
+  // We'll expand from its start/end positions as long as adjacent nodes have 'customHref'.
+  let start = firstRange.start;
+  let end = firstRange.end;
 
-    // Check nodeBefore if it exists
-    if (
-      nodeBefore &&
-      'hasAttribute' in nodeBefore &&
-      nodeBefore.hasAttribute('customHref')
-    ) {
-      return Range._createOn(nodeBefore);
-    }
-
-    // If not found, check nodeAfter
-    if (
-      nodeAfter &&
-      'hasAttribute' in nodeAfter &&
-      nodeAfter.hasAttribute('customHref')
-    ) {
-      return Range._createOn(nodeAfter);
-    }
+  // Move backward while the nodeBefore has 'customHref'
+  while (start.nodeBefore && 'hasAttribute' in start.nodeBefore && start.nodeBefore.hasAttribute('customHref')) {
+    start = new Position(start.root, start.path.slice());
+    start = start.getShiftedBy(-1);
   }
 
-  // Existing code:
-  const startNode = range.start.nodeAfter;
-  if (
-    startNode &&
-    'hasAttribute' in startNode &&
-    startNode.hasAttribute('customHref')
-  ) {
-    return Range._createOn(startNode);
+  // Move forward while the nodeAfter has 'customHref'
+  while (end.nodeAfter && 'hasAttribute' in end.nodeAfter && end.nodeAfter.hasAttribute('customHref')) {
+    end = new Position(end.root, end.path.slice());
+    end = end.getShiftedBy(1);
   }
 
-  const parentNode = range.start.parent;
-  if (
-    parentNode &&
-    'hasAttribute' in parentNode &&
-    parentNode.hasAttribute('customHref')
-  ) {
-    return Range._createOn(parentNode);
-  }
-
-  return null;
+  return new Range(start, end);
 }
 
-
-// Returns true if the selection has the 'customHref' attribute (i.e., on a link).
+// Returns `true` if the selection has the 'customHref' attribute (i.e., is within a link).
 export function hasLinkAttribute(selection: Selection | DocumentSelection): boolean {
   // Check if the selection directly has the attribute
   if (selection.hasAttribute('customHref')) {

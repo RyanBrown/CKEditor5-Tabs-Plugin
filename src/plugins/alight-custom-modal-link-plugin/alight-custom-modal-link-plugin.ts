@@ -231,5 +231,3 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
     }, 100);
   }
 }
-
-
