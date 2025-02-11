@@ -11,12 +11,10 @@ import CKAlightModalDialog, {
 } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import { DocumentSelection } from '@ckeditor/ckeditor5-engine';
 
-/**
- * The main plugin that ties together:
- *  - Our editing plugin (schema, conversion, commands)
- *  - Our UI plugin (balloon form, toolbar button)
- *  - The custom modal for inserting the link
- */
+// The main plugin that ties together:
+//  - Our editing plugin (schema, conversion, commands)
+//  - Our UI plugin (balloon form, toolbar button)
+//  - The custom modal for inserting the link
 export default class AlightCustomModalLinkPlugin extends Plugin {
   // We do not rely on the default CKEditor link plugin at all.
   public static get requires() {
@@ -112,26 +110,20 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
   public showLinkModal(existingHref = '', existingOrg = ''): void {
     const editor = this.editor;
 
-    // If no text selected, do nothing (for new insertion)
-    if (editor.model.document.selection.isCollapsed) {
+    // For editing, don't check if selection is collapsed
+    const isEditing = !!existingHref;
+    if (!isEditing && editor.model.document.selection.isCollapsed) {
       return;
     }
 
-    // Define the modal's options
     const dialogOptions: DialogOptions = {
       modal: true,
       draggable: true,
       resizable: false,
-      maximizable: false,
       width: '400px',
-      height: 'auto',
-      closeOnEscape: true,
-      closeOnClickOutside: false,
-      overlayOpacity: 0.5,
       headerClass: 'ck-alight-modal-header',
       contentClass: 'ck-alight-modal-content',
       footerClass: 'ck-alight-modal-footer',
-      position: 'center',
       buttons: [
         {
           label: 'Cancel',
@@ -141,7 +133,7 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
           closeOnClick: true
         },
         {
-          label: 'Continue',
+          label: isEditing ? 'Continue' : 'Insert',  // Different label based on mode
           className: 'cka-button cka-button-rounded cka-button-sm',
           variant: 'default',
           position: 'right',
@@ -153,54 +145,41 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
 
     // Create the modal dialog
     const modalDialog = new CKAlightModalDialog(dialogOptions);
-    modalDialog.setTitle(existingHref ? 'Edit Link' : 'Insert Custom Link');
+    modalDialog.setTitle(isEditing ? 'Edit Link' : 'Insert Custom Link');
 
-    // Provide form HTML
+    // Create form with prefilled values if they exist
     const formHtml = `
-      <form id="custom-link-form" class="ck-form">
-          <div class="ck-form-group">
-              <label for="link-url" class="cka-input-label">
-                  URL <span class="ck-required">*</span>
-              </label>
-              <input type="url"
-                     id="link-url"
-                     name="link-url"
-                     class="cka-input-text"
-                     required
-                     placeholder="https://" />
-          </div>
-          <div class="ck-form-group mt-2">
-              <label for="org-name" class="cka-input-label">
-                  Organization (optional)
-              </label>
-              <input type="text"
-                     id="org-name"
-                     name="org-name"
-                     class="cka-input-text"
-                     placeholder="Organization name" />
-          </div>
-      </form>
+        <form id="custom-link-form" class="ck-form">
+            <div class="ck-form-group">
+                <label for="link-url" class="cka-input-label">
+                    URL <span class="ck-required">*</span>
+                </label>
+                <input type="url"
+                       id="link-url"
+                       name="link-url"
+                       class="cka-input-text"
+                       required
+                       value="${existingHref}"
+                       placeholder="https://" />
+            </div>
+            <div class="ck-form-group mt-2">
+                <label for="org-name" class="cka-input-label">
+                    Organization (optional)
+                </label>
+                <input type="text"
+                       id="org-name"
+                       name="org-name"
+                       class="cka-input-text"
+                       value="${existingOrg}"
+                       placeholder="Organization name" />
+            </div>
+        </form>
     `;
     modalDialog.setContent(formHtml);
 
-    // Prefill the modal after it's inserted into DOM**
-    setTimeout(() => {
-      const contentElement = modalDialog.getContentElement();
-      if (contentElement) {
-        const urlInput = contentElement.querySelector('#link-url') as HTMLInputElement;
-        const orgInput = contentElement.querySelector('#org-name') as HTMLInputElement;
-        if (urlInput && existingHref) {
-          urlInput.value = existingHref;
-        }
-        if (orgInput && existingOrg) {
-          orgInput.value = existingOrg;
-        }
-      }
-    }, 0);
-
-    // Handle the "Continue" button
+    // Handle form submission
     modalDialog.on('buttonClick', (buttonLabel: string) => {
-      if (buttonLabel === 'Continue') {
+      if (buttonLabel === 'Update' || buttonLabel === 'Insert') {
         this._handleModalSubmit(modalDialog);
       }
     });

@@ -49,6 +49,7 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
 
   // Shows the balloon if there's a link in the current selection.
   // Adds a check so we don't try to add the same view again if it's already there.
+  // Update the showBalloon method to consistently apply the class
   public showBalloon(): void {
     const editor = this.editor as Editor;
     const selection = editor.model.document.selection;
@@ -67,7 +68,11 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
       // Default positions for the balloon
       const positions = BalloonPanelView.defaultPositions;
 
-      // If the balloon is already showing our form view, just update position
+      // Always ensure the custom class is applied to the balloon panel
+      if (this.balloon.view && this.balloon.view.element) {
+        this.balloon.view.element.classList.add('cka-custom-balloon-content');
+      }
+
       if (this.balloon.hasView(this.formView)) {
         // If balloon already has the formView, just update its position
         this.balloon.updatePosition({
@@ -293,13 +298,19 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
     editButton.on('execute', () => {
       this.hideBalloon();
 
-      // Safely cast the attributes to string (or do a runtime check).
-      const currentHref = (editor.model.document.selection.getAttribute('customHref') as string) || '';
-      const currentOrg = (editor.model.document.selection.getAttribute('organizationName') as string) || '';
+      // Get the current selection
+      const selection = editor.model.document.selection;
 
-      // Now currentHref and currentOrg are definitely strings
+      // Safely get the current attributes
+      const currentHref = selection.getAttribute('customHref') || '';
+      const currentOrg = selection.getAttribute('organizationName') || '';
+
+      // Get the main plugin instance and show modal with existing values
       const mainPlugin = editor.plugins.get('AlightCustomModalLinkPlugin') as AlightCustomModalLinkPlugin;
-      mainPlugin.showLinkModal(currentHref, currentOrg);
+      mainPlugin.showLinkModal(
+        currentHref.toString(),  // Ensure string type
+        currentOrg.toString()    // Ensure string type
+      );
     });
 
     return editButton;
@@ -321,25 +332,25 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
     unlinkButton.on('execute', () => {
       editor.model.change(writer => {
         const selection = editor.model.document.selection;
+        const range = getSelectedLinkRange(selection);
 
-        // Remove link attributes from all ranges in the selection:
-        for (const range of selection.getRanges()) {
+        if (range) {
+          // Remove all link-related attributes from the range
           writer.removeAttribute('customHref', range);
           writer.removeAttribute('alightCustomModalLink', range);
           writer.removeAttribute('organizationName', range);
+
+          // Remove attributes from selection to prevent them being re-applied
+          writer.removeSelectionAttribute('customHref');
+          writer.removeSelectionAttribute('alightCustomModalLink');
+          writer.removeSelectionAttribute('organizationName');
+
+          // Set the selection to the range where we removed attributes
+          writer.setSelection(range);
         }
-
-        // Also remove them from the *selection* itself,
-        // so they don't get re-applied if the user types immediately:
-        writer.removeSelectionAttribute('customHref');
-        writer.removeSelectionAttribute('alightCustomModalLink');
-        writer.removeSelectionAttribute('organizationName');
-
-        // Optionally re-select the same text, though not strictly required:
-        writer.setSelection(selection.getFirstRange());
       });
 
-      // Finally, hide the balloon.
+      // Hide the balloon after unlinking
       this.hideBalloon();
     });
 
