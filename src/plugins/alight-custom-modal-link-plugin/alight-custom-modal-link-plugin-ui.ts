@@ -47,9 +47,7 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
     this._setupClickOutsideHandler();
   }
 
-  // Shows the balloon if there's a link in the current selection.
-  // Adds a check so we don't try to add the same view again if it's already there.
-  // Update the showBalloon method to consistently apply the class
+  // Update the showBalloon method in AlightCustomModalLinkPluginUI class
   public showBalloon(): void {
     const editor = this.editor as Editor;
     const selection = editor.model.document.selection;
@@ -68,11 +66,6 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
       // Default positions for the balloon
       const positions = BalloonPanelView.defaultPositions;
 
-      // Always ensure the custom class is applied to the balloon panel
-      if (this.balloon.view && this.balloon.view.element) {
-        this.balloon.view.element.classList.add('cka-custom-balloon-content');
-      }
-
       if (this.balloon.hasView(this.formView)) {
         // If balloon already has the formView, just update its position
         this.balloon.updatePosition({
@@ -85,12 +78,7 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
           ]
         });
       } else {
-        // Otherwise, add the formView for the first time
-        // Add a custom class to the balloon content if needed
-        if (this.formView.element) {
-          this.formView.element.classList.add('cka-custom-balloon-content');
-        }
-
+        // Add the formView to the balloon
         this.balloon.add({
           view: this.formView,
           position: {
@@ -103,6 +91,11 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
             ]
           }
         });
+
+        // Double-check the class is applied after adding the view
+        if (this.balloon.view && this.balloon.view.element) {
+          this.balloon.view.element.classList.add('cka-custom-balloon-content');
+        }
       }
 
       // Update the preview link with the current href

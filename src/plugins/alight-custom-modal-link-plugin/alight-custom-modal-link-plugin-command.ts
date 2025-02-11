@@ -52,11 +52,9 @@ export class AlightCustomModalLinkPluginCommand extends Command {
     this.dialog.setTitle(data.title);
   }
 
-  /**
-   * Executes the link command.
-   * If `href` is provided, it applies the `customHref` attribute to the selection (or inserts a text node).
-   * If `href` is not provided, it shows the modal and loads its content.
-   */
+  // Executes the link command.
+  // If `href` is provided, it applies the `customHref` attribute to the selection (or inserts a text node).
+  // If `href` is not provided, it shows the modal and loads its content.
   public override execute(href?: string): void {
     const model = this.editor.model;
     const selection = model.document.selection;
