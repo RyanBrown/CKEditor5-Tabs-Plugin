@@ -258,21 +258,25 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
       return;
     }
 
-    // Additional URL validation if needed
-    try {
-      new URL(urlValue); // Basic URL validation
-    } catch (e) {
+    // URL validation that ignores protocol
+    const urlPattern = /^(?:https?:\/\/)?(?:[\w-]+\.)+[a-z]{2,}(?:\/[^\s]*)?$/i;
+    if (!urlPattern.test(urlValue)) {
       // Show error message for invalid URL format
       urlFormGroup?.classList.add('has-error');
       errorMessage?.classList.add('visible');
       return;
     }
 
+    // Ensure URL has a protocol for actual usage
+    const finalUrl = urlValue.startsWith('http://') || urlValue.startsWith('https://')
+      ? urlValue
+      : `https://${urlValue}`;
+
     // Get organization value
     const orgValue = orgInput?.value?.trim() || '';
 
-    // Execute the link command
-    this.editor.execute('alightCustomModalLinkPlugin', urlValue);
+    // Execute the link command with the properly formatted URL
+    this.editor.execute('alightCustomModalLinkPlugin', finalUrl);
 
     // Optionally store organization name
     const selection = this.editor.model.document.selection;
