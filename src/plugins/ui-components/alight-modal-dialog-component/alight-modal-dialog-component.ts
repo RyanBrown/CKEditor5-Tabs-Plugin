@@ -7,6 +7,7 @@ export interface DialogButton {
   variant?: 'default' | 'outlined' | 'text';
   position?: 'left' | 'right';
   closeOnClick?: boolean;
+  isPrimary?: boolean;  // New property to mark the primary/submit button
 }
 
 export interface DialogOptions {
@@ -25,6 +26,7 @@ export interface DialogOptions {
   footerClass?: string;
   buttons?: DialogButton[];
   defaultCloseButton?: boolean;
+  submitOnEnter?: boolean;  // New option to enable/disable Enter key submission
 }
 
 interface Position {
@@ -45,7 +47,9 @@ export class CKAlightModalDialog {
   private initialSize: Size = { width: 0, height: 0 };
   private boundHandleEscape: (e: KeyboardEvent) => void;
   private boundHandleClickOutside: (e: MouseEvent) => void;
+  private boundHandleKeyDown: (e: KeyboardEvent) => void;  // New bound handler for keydown
   private eventListeners: Map<string, Function[]> = new Map();
+  private primaryButton: HTMLButtonElement | null = null;  // Store reference to primary button
 
   // Initialize with ! to tell TypeScript these will be set in constructor
   private container!: HTMLDivElement;
@@ -72,12 +76,14 @@ export class CKAlightModalDialog {
       footerClass: '',
       buttons: [],
       defaultCloseButton: true,
+      submitOnEnter: true,  // Enable by default
       ...options
     };
 
     // Bind event handlers to maintain correct 'this' context
     this.boundHandleEscape = this.handleEscape.bind(this);
     this.boundHandleClickOutside = this.handleClickOutside.bind(this);
+    this.boundHandleKeyDown = this.handleKeyDown.bind(this);
 
     this.createDialog();
     this.setupEventListeners();
@@ -102,6 +108,22 @@ export class CKAlightModalDialog {
     if (e.key === 'Escape' && this.visible && this.options.closeOnEscape) {
       this.hide();
       this.emit('close');
+    }
+  }
+
+  private handleKeyDown(e: KeyboardEvent): void {
+    if (e.key === 'Enter' && this.visible && this.options.submitOnEnter && this.primaryButton) {
+      // Prevent form submission if the event originated from a textarea or contenteditable
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName.toLowerCase() === 'textarea' ||
+        target.getAttribute('contenteditable') === 'true'
+      ) {
+        return;
+      }
+
+      e.preventDefault();
+      this.primaryButton.click();
     }
   }
 
@@ -201,6 +223,10 @@ export class CKAlightModalDialog {
     if (config.variant) {
       className += ` cka-button-${config.variant}`;
     }
+    if (config.isPrimary) {
+      className += ' cka-button-primary';
+      this.primaryButton = button;  // Store reference to primary button
+    }
     button.className = className;
     button.textContent = config.label;
     button.onclick = () => {
@@ -245,6 +271,11 @@ export class CKAlightModalDialog {
     // Click outside
     if (this.options.modal) {
       document.addEventListener('mousedown', this.boundHandleClickOutside);
+    }
+
+    // Enter key submission
+    if (this.options.submitOnEnter) {
+      document.addEventListener('keydown', this.boundHandleKeyDown);
     }
   }
 
@@ -369,13 +400,15 @@ export class CKAlightModalDialog {
     if (this.options.modal) {
       document.removeEventListener('mousedown', this.boundHandleClickOutside);
     }
+    if (this.options.submitOnEnter) {
+      document.removeEventListener('keydown', this.boundHandleKeyDown);
+    }
 
     // Remove elements
     this.overlay.remove();
     this.container.remove();
   }
 
-  // Rest of the methods remain the same...
   public setContent(content: string | Node): void {
     this.contentEl.innerHTML = '';  // Clear existing content
 
