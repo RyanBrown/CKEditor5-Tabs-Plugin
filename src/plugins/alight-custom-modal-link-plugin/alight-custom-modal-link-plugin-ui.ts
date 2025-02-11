@@ -12,12 +12,10 @@ import './styles/alight-custom-modal-link-plugin.scss';
 // Import the main plugin so we can call its "showLinkModal" method if needed
 import AlightCustomModalLinkPlugin from './alight-custom-modal-link-plugin';
 
-/**
- * The UI plugin responsible for:
- *  - Displaying the custom link balloon with preview, edit, and unlink actions.
- *  - Adding a toolbar button to show the balloon.
- *  - Controlling balloon visibility on selection changes and clicks outside.
- */
+// The UI plugin responsible for:
+//  - Displaying the custom link balloon with preview, edit, and unlink actions.
+//  - Adding a toolbar button to show the balloon.
+//  - Controlling balloon visibility on selection changes and clicks outside.
 export class AlightCustomModalLinkPluginUI extends Plugin {
   private balloon!: ContextualBalloon; // The balloon panel used to display link actions.
   private formView!: View;            // The form view displayed inside the balloon.
@@ -69,11 +67,7 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
       // Default positions for the balloon
       const positions = BalloonPanelView.defaultPositions;
 
-      /**
-       * ----------------------------------------------
-       *   KEY CHANGE: Re-position if formView exists
-       * ----------------------------------------------
-       */
+      // If the balloon is already showing our form view, just update position
       if (this.balloon.hasView(this.formView)) {
         // If balloon already has the formView, just update its position
         this.balloon.updatePosition({
@@ -106,7 +100,7 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
         });
       }
 
-      // Always update the preview link (even if the balloon was already there)
+      // Update the preview link with the current href
       const customHref = selection.getAttribute('customHref');
       if (typeof customHref === 'string') {
         this._updatePreviewLink(customHref);
@@ -122,7 +116,6 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
   }
 
   // Registers a toolbar button for our link plugin UI.
-  // Clicking it will attempt to show the balloon (if there's a selection).
   private _registerToolbarButton(): void {
     const editor = this.editor as Editor;
 
@@ -312,7 +305,7 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
     return editButton;
   }
 
-  // Unlink button removes link attributes but keeps text
+  // Unlink button removes link attributes but keeps the text content
   private _createUnlinkButton(): ButtonView {
     const editor = this.editor as Editor;
     const t = editor.locale.t;
@@ -328,18 +321,25 @@ export class AlightCustomModalLinkPluginUI extends Plugin {
     unlinkButton.on('execute', () => {
       editor.model.change(writer => {
         const selection = editor.model.document.selection;
-        const linkRange = getSelectedLinkRange(selection);
 
-        if (linkRange) {
-          writer.removeAttribute('customHref', linkRange);
-          writer.removeAttribute('alightCustomModalLink', linkRange);
-          writer.removeAttribute('organizationName', linkRange);
-
-          // Re-select the unlinked text
-          writer.setSelection(linkRange);
+        // Remove link attributes from all ranges in the selection:
+        for (const range of selection.getRanges()) {
+          writer.removeAttribute('customHref', range);
+          writer.removeAttribute('alightCustomModalLink', range);
+          writer.removeAttribute('organizationName', range);
         }
+
+        // Also remove them from the *selection* itself,
+        // so they don't get re-applied if the user types immediately:
+        writer.removeSelectionAttribute('customHref');
+        writer.removeSelectionAttribute('alightCustomModalLink');
+        writer.removeSelectionAttribute('organizationName');
+
+        // Optionally re-select the same text, though not strictly required:
+        writer.setSelection(selection.getFirstRange());
       });
 
+      // Finally, hide the balloon.
       this.hideBalloon();
     });
 

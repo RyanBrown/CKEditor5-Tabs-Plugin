@@ -252,7 +252,5 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
     }, 100);
   }
 }
-function getSelectedLinkRange(selection: DocumentSelection) {
-  throw new Error('Function not implemented.');
-}
+
 
