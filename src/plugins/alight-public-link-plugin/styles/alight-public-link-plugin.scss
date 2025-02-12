@@ -60,15 +60,15 @@
   align-items: center;
   padding: 8px;
 
-  .alight-link-url-preview {
-    max-width: 200px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    margin-right: 8px;
-    color: #666;
-    font-size: 12px;
-  }
+  // .alight-link-url-preview {
+  //   max-width: 200px;
+  //   overflow: hidden;
+  //   text-overflow: ellipsis;
+  //   white-space: nowrap;
+  //   margin-right: 8px;
+  //   color: #666;
+  //   font-size: 12px;
+  // }
 
   .ck-button {
     margin-left: 4px;
@@ -89,5 +89,16 @@
     &:hover {
       color: #005fa3;
     }
+  }
+}
+
+.error-message {
+  color: var(--error);
+  display: none;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+
+  &.visible {
+    display: block;
   }
 }

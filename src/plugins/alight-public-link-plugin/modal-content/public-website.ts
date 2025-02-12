@@ -8,6 +8,10 @@ interface PublicLinkData {
 export function createPublicLinkModalContent(initialValue?: string, initialOrgName?: string): HTMLElement {
   const container = document.createElement('div');
 
+  // Validate initial URL if provided
+  const showError = initialValue ? !isValidUrl(initialValue) : false;
+  const errorClass = showError ? 'invalid' : '';
+
   const formContent = `
         <form id="public-link-form" class="ck-form">
             <div class="ck-form-group">
@@ -19,7 +23,7 @@ export function createPublicLinkModalContent(initialValue?: string, initialOrgNa
                     type="url" 
                     id="link-url" 
                     name="url" 
-                    class="cka-input-text" 
+                    class="cka-input-text ${errorClass} block" 
                     required
                     value="${initialValue || ''}"
                     placeholder="https://example.com"
@@ -27,7 +31,7 @@ export function createPublicLinkModalContent(initialValue?: string, initialOrgNa
                 <div 
                     class="error-message" 
                     id="url-error" 
-                    style="display: none; color: red; font-size: 12px; margin-top: 4px;"
+                    style="display: ${showError ? 'block' : 'none'};"
                 >
                     Please enter a valid URL.
                 </div>
@@ -41,7 +45,7 @@ export function createPublicLinkModalContent(initialValue?: string, initialOrgNa
                     type="text" 
                     id="org-name" 
                     name="displayText" 
-                    class="cka-input-text"
+                    class="cka-input-text block"
                     value="${initialOrgName || ''}"
                     placeholder="Organization name"
                 />
@@ -59,6 +63,15 @@ export function createPublicLinkModalContent(initialValue?: string, initialOrgNa
   setupFormValidation(container);
 
   return container;
+}
+
+function isValidUrl(value: string): boolean {
+  try {
+    const url = new URL(value.trim());
+    return ['http:', 'https:'].includes(url.protocol);
+  } catch {
+    return false;
+  }
 }
 
 function setupFormValidation(container: HTMLElement): void {
@@ -100,12 +113,12 @@ function validateUrl(input: HTMLInputElement, errorElement: HTMLElement): boolea
 }
 
 function showError(input: HTMLInputElement, errorElement: HTMLElement, message: string): void {
-  input.classList.add('is-invalid');
+  input.classList.add('invalid');
   errorElement.textContent = message;
   errorElement.style.display = 'block';
 }
 
 function hideError(input: HTMLInputElement, errorElement: HTMLElement): void {
-  input.classList.remove('is-invalid');
+  input.classList.remove('invalid');
   errorElement.style.display = 'none';
 }

@@ -18,6 +18,10 @@
   padding: mixins.toRem(9) mixins.toRem(16);
   transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
 
+  &.block {
+    width: 100%;
+  }
+
   &:enabled {
     &:hover {
       border-color: var(--neutral-black);
@@ -28,6 +32,12 @@
       box-shadow: var(--focus-state);
       outline-offset: 0;
       outline: none;
+    }
+
+    &.invalid,
+    &.invalid:hover,
+    &.invalid:focus {
+      border-color: var(--error);
     }
   }
 
