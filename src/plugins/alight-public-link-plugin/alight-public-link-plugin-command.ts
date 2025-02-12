@@ -1,61 +1,61 @@
 // src/plugins/alight-public-link-plugin/alight-public-link-plugin-command.ts
 import { Command } from '@ckeditor/ckeditor5-core';
+import type { Editor } from '@ckeditor/ckeditor5-core';
+import { findAttributeRange } from '@ckeditor/ckeditor5-typing';
+import { type Range } from '@ckeditor/ckeditor5-engine';
 
-interface LinkCommandOptions {
-  url: string;
-  displayText?: string;
-}
+export default class AlightPublicLinkCommand extends Command {
+  declare value: string | undefined;
 
-export default class AlightPublicLinkPluginCommand extends Command {
-  override refresh(): void {
-    // Enable command when there is a text selection
-    const selection = this.editor.model.document.selection;
-    this.isEnabled = !selection.isCollapsed;
-  }
+  constructor(editor: Editor) {
+    super(editor);
 
-  override execute(options: LinkCommandOptions): void {
-    const { url, displayText } = options;
-    const editor = this.editor;
-    const model = editor.model;
-    const selection = model.document.selection;
-
-    model.change(writer => {
-      // Store the original selection for later use
-      const ranges = Array.from(selection.getRanges());
-
-      // Apply the link attribute to the selected text
-      for (const range of ranges) {
-        writer.setAttribute('linkHref', url, range);
-        if (displayText) {
-          writer.setAttribute('displayText', displayText, range);
-        }
-      }
+    // Refresh command state when selection changes
+    this.listenTo(editor.model.document.selection, 'change:range', () => {
+      this.refresh();
     });
   }
 
-  removeLink(): void {
-    const editor = this.editor;
-    const model = editor.model;
+  refresh(): void {
+    const model = this.editor.model;
+    const selection = model.document.selection;
+
+    // Command is enabled only when there's text selection
+    this.isEnabled = model.schema.checkAttributeInSelection(selection, 'alightPublicLinkPlugin');
+
+    // Set current value based on selection
+    if (selection.hasAttribute('alightPublicLinkPlugin')) {
+      this.value = selection.getAttribute('alightPublicLinkPlugin');
+    } else {
+      this.value = undefined;
+    }
+  }
+
+  execute(href?: string): void {
+    const model = this.editor.model;
     const selection = model.document.selection;
 
     model.change(writer => {
-      const ranges = Array.from(selection.getRanges());
+      // If no href provided, remove the link
+      if (!href) {
+        writer.removeSelectionAttribute('alightPublicLinkPlugin');
+        return;
+      }
+
+      // Get the range where we'll apply the link
+      const ranges = selection.isCollapsed
+        ? [findAttributeRange(
+          selection.getFirstPosition()!,
+          'alightPublicLinkPlugin',
+          selection.getAttribute('alightPublicLinkPlugin'),
+          model
+        )]
+        : model.schema.getValidRanges(selection.getRanges(), 'alightPublicLinkPlugin');
+
+      // Apply link to all valid ranges
       for (const range of ranges) {
-        writer.removeAttribute('linkHref', range);
-        writer.removeAttribute('displayText', range);
+        writer.setAttribute('alightPublicLinkPlugin', href, range);
       }
     });
-  }
-
-  // Get current link attributes for editing
-  getCurrentLinkAttributes(): LinkCommandOptions | null {
-    const selection = this.editor.model.document.selection;
-
-    if (!selection) return null;
-
-    return {
-      url: selection.getAttribute('linkHref') as string || '',
-      displayText: selection.getAttribute('displayText') as string || ''
-    };
   }
 }

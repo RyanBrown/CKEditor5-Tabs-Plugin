@@ -1,108 +1,43 @@
 // src/plugins/alight-public-link-plugin/modal-content/public-website.ts
-import { isValidUrl, sanitizeUrl } from '../alight-public-link-plugin-utils';
+export function createPublicLinkModalContent(initialValue?: string): HTMLElement {
+  const container = document.createElement('div');
+  container.className = 'public-link-form';
 
-interface PublicWebsiteFormData {
-  href?: string;
-  orgName?: string;
-}
-
-function createFormHTML(data: PublicWebsiteFormData = {}): string {
-  const { href = '', orgName = '' } = data;
-
-  return `
-    <form id="public-link-form" class="ck-form public-link-form">
-      <div class="ck-form-group">
-        <label for="link-url" class="cka-input-label">
-          URL <span class="ck-required">*</span>
-        </label>
-        <input
-          type="url"
-          id="link-url"
-          name="url"
-          class="cka-input-text"
-          required
-          value="${href}"
-          placeholder="https://example.com"
-        />
-        <div class="error-message" id="url-error" style="display: none; color: red; font-size: 12px; margin-top: 4px;">
-          Please enter a valid URL.
+  const formContent = `
+        <div class="form-group">
+            <label for="url">Website URL</label>
+            <input 
+                type="url" 
+                name="url" 
+                id="url" 
+                class="form-control" 
+                placeholder="https://"
+                value="${initialValue || ''}"
+                required
+            />
+            <div class="form-help">
+                Enter the full URL including http:// or https://
+            </div>
         </div>
-      </div>
-      <div class="ck-form-group mt-3">
-        <label for="org-name" class="cka-input-label">
-          Organization Name (optional)*
-        </label>
-        <input
-          type="text"
-          id="org-name"
-          name="displayText"
-          class="cka-input-text"
-          value="${orgName}"
-          placeholder="Organization name"
-        />
-      </div>
+    `;
 
-      <p class="mt-5 mb-0">
-        *Enter the third-party organization to inform users the destination of the link.
-      </p>
-    </form>
-  `;
+  container.innerHTML = formContent;
+
+  // Add validation
+  const input = container.querySelector('input[name="url"]') as HTMLInputElement;
+  input.addEventListener('input', () => {
+    const isValid = isValidUrl(input.value);
+    input.classList.toggle('is-invalid', !isValid);
+  });
+
+  return container;
 }
 
-function setupFormValidation(container: HTMLElement) {
-  const form = container.querySelector('#public-link-form') as HTMLFormElement;
-  const urlInput = form.querySelector('#link-url') as HTMLInputElement;
-  const errorElement = form.querySelector('#url-error') as HTMLDivElement;
-  const submitButton = container.querySelector('button.cka-button-primary') as HTMLButtonElement;
-
-  function validateUrl(input: HTMLInputElement): boolean {
-    const url = input.value.trim();
-
-    if (!url) {
-      errorElement.textContent = 'URL is required.';
-      errorElement.style.display = 'block';
-      input.classList.add('error');
-      submitButton.disabled = true;
-      return false;
-    }
-
-    try {
-      const urlToValidate = url.startsWith('http') ? url : 'https://' + url;
-      new URL(urlToValidate);
-
-      errorElement.style.display = 'none';
-      input.classList.remove('error');
-      submitButton.disabled = false;
-      return true;
-    } catch {
-      errorElement.textContent = 'Please enter a valid URL.';
-      errorElement.style.display = 'block';
-      input.classList.add('error');
-      submitButton.disabled = true;
-      return false;
-    }
+function isValidUrl(url: string): boolean {
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
   }
-
-  urlInput.addEventListener('input', () => validateUrl(urlInput));
-  urlInput.addEventListener('change', () => validateUrl(urlInput));
-
-  if (urlInput.value) {
-    validateUrl(urlInput);
-  }
-
-  return {
-    validate: () => validateUrl(urlInput)
-  };
-}
-
-export function getPublicWebsiteContent(data: PublicWebsiteFormData = {}): {
-  html: string;
-  setup: (container: HTMLElement) => {
-    validate: () => boolean;
-  };
-} {
-  return {
-    html: createFormHTML(data),
-    setup: setupFormValidation
-  };
 }

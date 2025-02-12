@@ -1,118 +1,59 @@
-// alight-public-link-plugin-editing.ts
+// src/plugins/alight-public-link-plugin/alight-public-link-plugin-editing.ts
 import { Plugin } from '@ckeditor/ckeditor5-core';
+import { type Editor } from '@ckeditor/ckeditor5-core';
 import { Link } from '@ckeditor/ckeditor5-link';
-import { Element } from '@ckeditor/ckeditor5-engine';
-import AlightPublicLinkPluginCommand from './alight-public-link-plugin-command';
+import AlightPublicLinkCommand from './alight-public-link-plugin-command';
 
-export default class AlightPublicLinkPluginEditing extends Plugin {
+export default class AlightPublicLinkEditing extends Plugin {
   public static get pluginName() {
-    return 'AlightPublicLinkPluginEditing' as const;
+    return 'AlightPublicLinkEditing' as const;
   }
 
   public static get requires() {
-    return [Link] as const;
+    return [Link];
   }
 
-  init(): void {
+  public init(): void {
     const editor = this.editor;
+    this._defineConverters();
+    this._defineCommands();
+  }
 
-    // Register the command
-    editor.commands.add('alightPublicLinkPlugin', new AlightPublicLinkPluginCommand(editor));
+  private _defineConverters(): void {
+    const editor = this.editor;
+    const conversion = editor.conversion;
 
-    // Define schema
-    editor.model.schema.extend('$text', {
-      allowAttributes: ['displayText']
-    });
-
-    // Define conversion for displayText
-    editor.conversion.for('downcast').attributeToElement({
-      model: 'displayText',
-      view: (value, conversionApi) => {
-        const { writer } = conversionApi;
-
-        // Skip conversion if no value
-        if (!value) {
-          return null;
-        }
-
-        const element = writer.createAttributeElement('span', {
-          'data-display-text': value
-        }, {
-          priority: 5
+    // Conversion from model to view
+    conversion.for('downcast').attributeToElement({
+      model: 'alightPublicLinkPlugin',
+      view: (value, { writer }) => {
+        return writer.createAttributeElement('a', {
+          href: value,
+          class: 'public-link',
+          target: '_blank',
+          rel: 'noopener noreferrer'
         });
-
-        return element;
       }
     });
 
-    editor.conversion.for('upcast').elementToAttribute({
+    // Conversion from view to model
+    conversion.for('upcast').elementToAttribute({
       view: {
-        name: 'span',
+        name: 'a',
         attributes: {
-          'data-display-text': true
+          href: true,
+          class: 'public-link'
         }
       },
       model: {
-        key: 'displayText',
-        value: (viewElement: Element) => {
-          if (!viewElement) return null;
-          return viewElement.getAttribute('data-display-text') || null;
-        }
+        key: 'alightPublicLinkPlugin',
+        value: (viewElement: { getAttribute: (arg0: string) => any; }) => viewElement.getAttribute('href')
       }
     });
-
-    // Subscribe to link plugin's conversion
-    this._setupLinkIntegration();
   }
 
-  private _setupLinkIntegration(): void {
+  private _defineCommands(): void {
     const editor = this.editor;
-    const linkCommand = editor.commands.get('link');
-
-    // Update link command to handle our custom attributes
-    if (linkCommand) {
-      const originalExecute = linkCommand.execute;
-      linkCommand.execute = (href: string) => {
-        const selection = editor.model.document.selection;
-
-        editor.model.change(writer => {
-          // Execute original link command
-          originalExecute.call(linkCommand, href);
-
-          // If selection has displayText, update it
-          if (selection.hasAttribute('displayText')) {
-            const ranges = selection.getRanges();
-            for (const range of ranges) {
-              const displayText = selection.getAttribute('displayText');
-              if (displayText) {
-                writer.setAttribute('displayText', displayText, range);
-              }
-            }
-          }
-        });
-      };
-    }
-
-    // Ensure our attribute is preserved when link is applied
-    editor.conversion.for('downcast').add(dispatcher => {
-      dispatcher.on('attribute:linkHref', (evt, data, conversionApi) => {
-        const { item, attributeNewValue } = data;
-        const { writer, mapper } = conversionApi;
-
-        if (!attributeNewValue) {
-          return;
-        }
-
-        const viewElement = mapper.toViewElement(item);
-        if (!viewElement) {
-          return;
-        }
-
-        const displayText = 'displayText';
-        if (displayText) {
-          writer.setAttribute('data-display-text', displayText, viewElement);
-        }
-      }, { priority: 'low' });
-    });
+    editor.commands.add('alightPublicLinkPlugin', new AlightPublicLinkCommand(editor));
   }
 }
