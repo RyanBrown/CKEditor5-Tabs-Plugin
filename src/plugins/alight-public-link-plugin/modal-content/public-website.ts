@@ -8,10 +8,6 @@ interface PublicLinkData {
 export function createPublicLinkModalContent(initialValue?: string, initialOrgName?: string): HTMLElement {
   const container = document.createElement('div');
 
-  // Validate initial URL if provided
-  const showError = initialValue ? !isValidUrl(initialValue) : false;
-  const errorClass = showError ? 'invalid' : '';
-
   const formContent = `
         <form id="public-link-form" class="ck-form">
             <div class="ck-form-group">
@@ -23,7 +19,7 @@ export function createPublicLinkModalContent(initialValue?: string, initialOrgNa
                     type="url" 
                     id="link-url" 
                     name="url" 
-                    class="cka-input-text ${errorClass} block" 
+                    class="cka-input-text block" 
                     required
                     value="${initialValue || ''}"
                     placeholder="https://example.com"
@@ -31,7 +27,7 @@ export function createPublicLinkModalContent(initialValue?: string, initialOrgNa
                 <div 
                     class="error-message" 
                     id="url-error" 
-                    style="display: ${showError ? 'block' : 'none'};"
+                    style="display: none;"
                 >
                     Please enter a valid URL.
                 </div>
@@ -58,10 +54,6 @@ export function createPublicLinkModalContent(initialValue?: string, initialOrgNa
     `;
 
   container.innerHTML = formContent;
-
-  // Add validation
-  setupFormValidation(container);
-
   return container;
 }
 
@@ -74,26 +66,17 @@ function isValidUrl(value: string): boolean {
   }
 }
 
-function setupFormValidation(container: HTMLElement): void {
-  const form = container.querySelector('#public-link-form') as HTMLFormElement;
+export function validateForm(form: HTMLFormElement): boolean {
   const urlInput = form.querySelector('#link-url') as HTMLInputElement;
   const urlError = form.querySelector('#url-error') as HTMLDivElement;
+  const value = urlInput.value.trim();
 
-  urlInput.addEventListener('input', () => {
-    validateUrl(urlInput, urlError);
-  });
-
-  urlInput.addEventListener('blur', () => {
-    validateUrl(urlInput, urlError);
-  });
-}
-
-function validateUrl(input: HTMLInputElement, errorElement: HTMLElement): boolean {
-  const value = input.value.trim();
+  // Reset previous validation state
+  hideError(urlInput, urlError);
 
   // Empty check - required field
   if (!value) {
-    showError(input, errorElement, 'URL is required.');
+    showError(urlInput, urlError, 'URL is required.');
     return false;
   }
 
@@ -101,13 +84,12 @@ function validateUrl(input: HTMLInputElement, errorElement: HTMLElement): boolea
   try {
     const url = new URL(value);
     if (!['http:', 'https:'].includes(url.protocol)) {
-      showError(input, errorElement, 'URL must start with http:// or https://');
+      showError(urlInput, urlError, 'URL must start with http:// or https://');
       return false;
     }
-    hideError(input, errorElement);
     return true;
   } catch {
-    showError(input, errorElement, 'Please enter a valid URL.');
+    showError(urlInput, urlError, 'Please enter a valid URL.');
     return false;
   }
 }

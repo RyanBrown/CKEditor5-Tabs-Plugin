@@ -4,7 +4,7 @@ import { ButtonView, ContextualBalloon, View, BalloonPanelView } from '@ckeditor
 import { LinkUI } from '@ckeditor/ckeditor5-link';
 import { ClickObserver } from '@ckeditor/ckeditor5-engine';
 import { CKAlightModalDialog } from './../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
-import { createPublicLinkModalContent } from './modal-content/public-website';
+import { createPublicLinkModalContent, validateForm } from './modal-content/public-website';
 import type AlightPublicLinkCommand from './alight-public-link-plugin-command';
 import toolBarIcon from './assets/icon-link.svg';
 import './styles/alight-public-link-plugin.scss';
@@ -167,7 +167,6 @@ export default class AlightPublicLinkUI extends Plugin {
   }
 
   // Shows the modal dialog for link editing
-  // Update the modal button click handler in _showModal method
   private _showModal(initialValue?: LinkAttributes): void {
     const editor = this.editor;
     const command = editor.commands.get('alightPublicLinkPlugin') as AlightPublicLinkCommand;
@@ -197,25 +196,35 @@ export default class AlightPublicLinkUI extends Plugin {
             variant: 'default',
             position: 'right',
             isPrimary: true,
-            shape: 'round'
+            shape: 'round',
+            closeOnClick: false // Prevent automatic closing
           }
         ]
       });
 
       // Handle modal button clicks
       this._modalDialog.on('buttonClick', (label: string) => {
+        if (label === 'Cancel') {
+          this._modalDialog?.hide();
+          return;
+        }
+
         if (label === 'Continue') {
           const form = this._modalDialog?.element?.querySelector('#public-link-form') as HTMLFormElement;
-          const urlInput = form?.querySelector('#link-url') as HTMLInputElement;
-          const orgNameInput = form?.querySelector('#org-name') as HTMLInputElement;
+          const isValid = validateForm(form);
 
-          if (urlInput && urlInput.value) {
+          if (isValid) {
+            const urlInput = form?.querySelector('#link-url') as HTMLInputElement;
+            const orgNameInput = form?.querySelector('#org-name') as HTMLInputElement;
+
             const linkData: LinkAttributes = {
               url: urlInput.value,
               orgName: orgNameInput?.value || undefined
             };
             command.execute(linkData);
+            this._modalDialog?.hide(); // Only close if validation passes
           }
+          // If validation fails, modal stays open
         }
       });
     }
