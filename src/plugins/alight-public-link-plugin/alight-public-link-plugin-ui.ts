@@ -107,9 +107,7 @@ export default class AlightPublicLinkUI extends Plugin {
     });
   }
 
-
   // Creates the actions view displayed in the balloon
-
   private _createActionsView(): ActionsView {
     const editor = this.editor;
     const actionsView = new ActionsView(editor.locale);
@@ -187,23 +185,23 @@ export default class AlightPublicLinkUI extends Plugin {
       this._modalDialog = new CKAlightModalDialog({
         title: 'Link to a Public Link',
         modal: true,
-        width: '400px',
+        width: '500px',
         height: 'auto',
         closeOnEscape: true,
         closeOnClickOutside: true,
         buttons: [
           {
             label: 'Cancel',
-            className: 'cka-button',
             variant: 'outlined',
-            position: 'left'
+            position: 'left',
+            shape: 'round'
           },
           {
             label: 'Continue',
-            className: 'cka-button',
             variant: 'default',
             position: 'right',
-            isPrimary: true
+            isPrimary: true,
+            shape: 'round'
           }
         ]
       });

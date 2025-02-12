@@ -4,11 +4,12 @@ import { FocusTracker, KeystrokeHandler } from '@ckeditor/ckeditor5-utils';
 
 export interface DialogButton {
   label: string;
-  className: string;
+  className?: string;
   variant?: 'default' | 'outlined' | 'text';
   position?: 'left' | 'right';
   closeOnClick?: boolean;
   isPrimary?: boolean;
+  shape?: 'round' | 'default';
 }
 
 export interface DialogOptions {
@@ -217,16 +218,32 @@ export class CKAlightModalDialog {
     this.setFooter(footer);
   }
 
+  // Update the createButton method in CKAlightModalDialog class
   private createButton(config: DialogButton): HTMLButtonElement {
     const button = document.createElement('button');
-    let className = config.className;
+    let className = 'cka-button';  // Set base class by default
+
+    // Add custom className if provided
+    if (config.className) {
+      className += ` ${config.className}`;
+    }
+
+    // Add variant class if specified
     if (config.variant) {
       className += ` cka-button-${config.variant}`;
     }
+
+    // Add primary class if specified
     if (config.isPrimary) {
       className += ' cka-button-primary';
       this.primaryButton = button;
     }
+
+    // Only add rounded class if specifically set to round
+    if (config.shape === 'round') {
+      className += ' cka-button-rounded';
+    }
+
     button.className = className;
     button.textContent = config.label;
     button.onclick = () => {
