@@ -1,0 +1,36 @@
+// styles/alight-public-link-plugin.scss
+.public-link {
+  color: #2271b1;
+  text-decoration: underline;
+
+  &:hover {
+    color: #135e96;
+  }
+}
+
+.public-link-form {
+  padding: 1rem;
+
+  .form-group {
+    margin-bottom: 1rem;
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+
+      &:focus {
+        outline: none;
+        border-color: #2271b1;
+        box-shadow: 0 0 0 1px #2271b1;
+      }
+    }
+  }
+}

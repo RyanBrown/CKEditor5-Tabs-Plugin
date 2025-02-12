@@ -1,5 +1,6 @@
 // src/plugins/ui-components/alight-modal-dialog-component/alight-modal-dialog-component.ts
 import './styles/alight-modal-dialog-component.scss';
+import { FocusTracker, KeystrokeHandler } from '@ckeditor/ckeditor5-utils';
 
 export interface DialogButton {
   label: string;
@@ -7,10 +8,11 @@ export interface DialogButton {
   variant?: 'default' | 'outlined' | 'text';
   position?: 'left' | 'right';
   closeOnClick?: boolean;
-  isPrimary?: boolean;  // New property to mark the primary/submit button
+  isPrimary?: boolean;
 }
 
 export interface DialogOptions {
+  title?: string;
   modal?: boolean;
   draggable?: boolean;
   resizable?: boolean;
@@ -26,7 +28,7 @@ export interface DialogOptions {
   footerClass?: string;
   buttons?: DialogButton[];
   defaultCloseButton?: boolean;
-  submitOnEnter?: boolean;  // New option to enable/disable Enter key submission
+  submitOnEnter?: boolean;
 }
 
 interface Position {
@@ -47,9 +49,11 @@ export class CKAlightModalDialog {
   private initialSize: Size = { width: 0, height: 0 };
   private boundHandleEscape: (e: KeyboardEvent) => void;
   private boundHandleClickOutside: (e: MouseEvent) => void;
-  private boundHandleKeyDown: (e: KeyboardEvent) => void;  // New bound handler for keydown
+  private boundHandleKeyDown: (e: KeyboardEvent) => void;
   private eventListeners: Map<string, Function[]> = new Map();
-  private primaryButton: HTMLButtonElement | null = null;  // Store reference to primary button
+  private primaryButton: HTMLButtonElement | null = null;
+  private focusTracker: FocusTracker;
+  private keystrokes: KeystrokeHandler;
 
   // Initialize with ! to tell TypeScript these will be set in constructor
   private container!: HTMLDivElement;
@@ -60,7 +64,11 @@ export class CKAlightModalDialog {
   private footer!: HTMLDivElement;
 
   constructor(options: DialogOptions = {}) {
+    this.focusTracker = new FocusTracker();
+    this.keystrokes = new KeystrokeHandler();
+
     this.options = {
+      title: '',
       modal: true,
       draggable: false,
       resizable: false,
@@ -76,7 +84,7 @@ export class CKAlightModalDialog {
       footerClass: '',
       buttons: [],
       defaultCloseButton: true,
-      submitOnEnter: true,  // Enable by default
+      submitOnEnter: true,
       ...options
     };
 
@@ -87,21 +95,10 @@ export class CKAlightModalDialog {
 
     this.createDialog();
     this.setupEventListeners();
-  }
 
-  public on(event: string, callback: Function): void {
-    if (!this.eventListeners.has(event)) {
-      this.eventListeners.set(event, []);
+    if (this.options.title) {
+      this.setTitle(this.options.title);
     }
-    this.eventListeners.get(event)?.push(callback);
-  }
-
-  public emit(event: string, data?: any): void {
-    this.eventListeners.get(event)?.forEach(callback => callback(data));
-  }
-
-  public getContentElement(): HTMLElement | null {
-    return this.contentEl || null;
   }
 
   private handleEscape(e: KeyboardEvent): void {
@@ -156,7 +153,7 @@ export class CKAlightModalDialog {
           <span class="cka-dialog-title"></span>
           <div class="cka-dialog-header-icons">
             ${this.options.maximizable ? '<button class="cka-dialog-maximize" aria-label="Maximize"><i class="cka-maximize-icon"></i></button>' : ''}
-            <button class="cka-dialog-close" aria-label="Close"><i class="cka-close-icon"></i></button>
+            ${this.options.defaultCloseButton ? '<button class="cka-dialog-close" aria-label="Close"><i class="cka-close-icon"></i></button>' : ''}
           </div>
         </div>
         <div class="cka-dialog-content ${this.options.contentClass}"></div>
@@ -185,6 +182,9 @@ export class CKAlightModalDialog {
 
     this.setupButtons(this.options.buttons);
     this.hide();
+
+    // Setup focus tracking
+    this.focusTracker.add(this.dialog);
   }
 
   private setupButtons(buttons?: DialogButton[]): void {
@@ -225,7 +225,7 @@ export class CKAlightModalDialog {
     }
     if (config.isPrimary) {
       className += ' cka-button-primary';
-      this.primaryButton = button;  // Store reference to primary button
+      this.primaryButton = button;
     }
     button.className = className;
     button.textContent = config.label;
@@ -242,7 +242,10 @@ export class CKAlightModalDialog {
     // Close button
     const closeBtn = this.container.querySelector('.cka-dialog-close');
     if (closeBtn) {
-      closeBtn.addEventListener('click', () => this.hide());
+      closeBtn.addEventListener('click', () => {
+        this.hide();
+        this.emit('close');
+      });
     }
 
     // Maximize button
@@ -277,6 +280,9 @@ export class CKAlightModalDialog {
     if (this.options.submitOnEnter) {
       document.addEventListener('keydown', this.boundHandleKeyDown);
     }
+
+    // Setup keystroke handling
+    this.keystrokes.listenTo(this.dialog);
   }
 
   private setupDragging(): void {
@@ -379,21 +385,21 @@ export class CKAlightModalDialog {
     this.dialog.style.top = '50%';
     this.dialog.style.left = '50%';
 
-    // Trigger show event
-    this.container.dispatchEvent(new CustomEvent('show'));
+    this.emit('show');
+    this.focus();
   }
 
   public hide(): void {
     this.visible = false;
     this.overlay.style.display = 'none';
     this.container.style.display = 'none';
-
-    // Trigger hide event
-    this.container.dispatchEvent(new CustomEvent('hide'));
+    this.emit('hide');
   }
 
   public destroy(): void {
-    // Remove event listeners
+    this.focusTracker.destroy();
+    this.keystrokes.destroy();
+
     if (this.options.closeOnEscape) {
       document.removeEventListener('keydown', this.boundHandleEscape);
     }
@@ -472,6 +478,33 @@ export class CKAlightModalDialog {
 
   public isMaximized(): boolean {
     return this.maximized;
+  }
+
+  // Additional methods from ModalView
+  public focus(): void {
+    this.dialog?.focus();
+  }
+
+  // Event handling methods
+  public on(event: string, callback: Function): void {
+    if (!this.eventListeners.has(event)) {
+      this.eventListeners.set(event, []);
+    }
+    this.eventListeners.get(event)?.push(callback);
+  }
+
+  public emit(event: string, data?: any): void {
+    this.eventListeners.get(event)?.forEach(callback => callback(data));
+  }
+
+  // Getter for the dialog element
+  public get element(): HTMLElement | null {
+    return this.dialog || null;
+  }
+
+  // Getter for the content element
+  public getContentElement(): HTMLElement | null {
+    return this.contentEl || null;
   }
 }
 
