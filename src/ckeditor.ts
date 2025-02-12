@@ -66,6 +66,7 @@ import AlightModalLinkPlugin from './plugins/alight-modal-link-plugin/alight-mod
 // Import custom styles for headings, style definitions and custom plugins
 import './styles/styles.scss';
 import AlightCustomModalLinkPlugin from './plugins/alight-custom-modal-link-plugin/alight-custom-modal-link-plugin';
+import AlightPublicLinkPlugin from './plugins/alight-public-link-plugin/alight-public-link-plugin';
 
 const LICENSE_KEY =
     'eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3NDcxODA3OTksImp0aSI6IjAwN2YzMTI1LTkyYTgtNDc0MS05NDNiLWViM2M3NjhjN2RhNiIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsic2giLCJkcnVwYWwiXSwid2hpdGVMYWJlbCI6dHJ1ZSwiZmVhdHVyZXMiOlsiRFJVUCIsIkRPIiwiRlAiLCJTQyIsIlRPQyIsIlRQTCIsIlBPRSIsIkNDIiwiTUYiXSwidmMiOiJjYjM3ZmEyOCJ9.pfNUO8YBnKbw1V6HXgFb9PZRMzfErUsssTFcQ83EftEDV-tFn_pPPmFpkaRb9Fjzj02osXclT6aKGsmyihJazg';
@@ -182,7 +183,8 @@ class Editor extends ClassicEditor {
         AlightPopulationPlugin,
         TabsPlugin,
         AlightModalLinkPlugin,
-        AlightCustomModalLinkPlugin
+        AlightCustomModalLinkPlugin,
+        AlightPublicLinkPlugin
     ];
 
     public static override defaultConfig: EditorConfig = {
@@ -241,7 +243,8 @@ class Editor extends ClassicEditor {
                 // 'alightCustomLinkPlugin',
                 // 'alightBalloonPlugin',
                 // 'alightModalLinkPlugin',
-                'alightCustomModalLinkPlugin'
+                'alightCustomModalLinkPlugin',
+                'alightPublicLinkPlugin'
             ],
             shouldNotGroupWhenFull: true,
         },

@@ -1,12 +1,12 @@
 // src/plugins/alight-public-link-plugin/alight-public-link-plugin-command.ts
 import { Command } from '@ckeditor/ckeditor5-core';
-import type { Editor } from '@ckeditor/ckeditor5-core';
+import { Editor } from '@ckeditor/ckeditor5-core';
 interface LinkCommandOptions {
   url: string;
   displayText?: string;
 }
 
-export default class AlightPublicLinkPluginCommand extends Command {
+export class AlightPublicLinkPluginCommand extends Command {
   override refresh(): void {
     const model = this.editor.model;
     const selection = model.document.selection;
