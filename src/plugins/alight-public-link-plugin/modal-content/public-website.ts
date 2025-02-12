@@ -13,7 +13,6 @@ export function createPublicLinkModalContent(initialValue?: string, initialOrgNa
             <div class="ck-form-group">
                 <label for="link-url" class="cka-input-label">
                     URL
-                    <span class="ck-required">*</span>
                 </label>
                 <input 
                     type="url" 

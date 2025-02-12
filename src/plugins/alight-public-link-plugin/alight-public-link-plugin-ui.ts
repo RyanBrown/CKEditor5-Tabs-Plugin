@@ -122,9 +122,7 @@ export default class AlightPublicLinkUI extends Plugin {
     return actionsView;
   }
 
-
   // Shows the balloon with link actions
-
   private _showBalloon(targetElement: any): void {
     if (!this._balloon || !this._actionsView) return;
 
@@ -146,9 +144,7 @@ export default class AlightPublicLinkUI extends Plugin {
     }
   }
 
-
   // Hides the balloon
-
   private _hideBalloon(): void {
     if (this._balloon && this._actionsView && this._balloon.hasView(this._actionsView)) {
       this._balloon.remove(this._actionsView);
@@ -184,6 +180,7 @@ export default class AlightPublicLinkUI extends Plugin {
         height: 'auto',
         closeOnEscape: true,
         closeOnClickOutside: true,
+        contentClass: 'public-link-content',
         buttons: [
           {
             label: 'Cancel',

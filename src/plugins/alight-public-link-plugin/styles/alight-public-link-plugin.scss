@@ -1,97 +1,6 @@
 // src/plugins/alight-public-link-plugin/styles/alight-public-link-plugin.scss
 @use './../../../styles/mixins' as mixins;
 
-.public-link-form {
-  padding: 1rem;
-
-  .form-group {
-    margin-bottom: 1rem;
-  }
-
-  label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-  }
-
-  input {
-    width: 100%;
-    padding: 0.5rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 14px;
-
-    &:focus {
-      outline: none;
-      border-color: #0077cc;
-      box-shadow: 0 0 0 2px rgba(0, 119, 204, 0.2);
-    }
-
-    &.is-invalid {
-      border-color: #dc3545;
-
-      &:focus {
-        box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.25);
-      }
-    }
-  }
-
-  .form-help {
-    margin-top: 0.25rem;
-    font-size: 12px;
-    color: #6c757d;
-  }
-}
-
-// Style for links in the editor
-.ck-content .public-link {
-  color: #0077cc;
-  text-decoration: underline;
-
-  &:hover {
-    color: #005fa3;
-  }
-}
-
-// src/plugins/alight-public-link-plugin/styles/alight-public-link-plugin.scss
-.alight-link-actions {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  padding: 8px;
-
-  // .alight-link-url-preview {
-  //   max-width: 200px;
-  //   overflow: hidden;
-  //   text-overflow: ellipsis;
-  //   white-space: nowrap;
-  //   margin-right: 8px;
-  //   color: #666;
-  //   font-size: 12px;
-  // }
-
-  .ck-button {
-    margin-left: 4px;
-
-    &:hover {
-      background-color: #f0f0f0;
-    }
-  }
-}
-
-// Style for links in the editor
-.ck-content {
-  a[class*="public-link"] {
-    color: #0077cc;
-    text-decoration: underline;
-    cursor: pointer;
-
-    &:hover {
-      color: #005fa3;
-    }
-  }
-}
-
 .error-message {
   color: var(--error);
   display: none;
@@ -101,4 +10,8 @@
   &.visible {
     display: block;
   }
+}
+
+.public-link-content {
+  padding: var(--spacing-xl) var(--spacing-xl) 0;
 }
