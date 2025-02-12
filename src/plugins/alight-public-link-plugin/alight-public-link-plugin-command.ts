@@ -6,7 +6,7 @@ interface LinkCommandOptions {
   displayText?: string;
 }
 
-export class AlightPublicLinkPluginCommand extends Command {
+export default class AlightPublicLinkPluginCommand extends Command {
   override refresh(): void {
     const model = this.editor.model;
     const selection = model.document.selection;

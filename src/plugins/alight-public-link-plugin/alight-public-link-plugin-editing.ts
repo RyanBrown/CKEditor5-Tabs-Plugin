@@ -2,9 +2,10 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { Link } from '@ckeditor/ckeditor5-link';
 import { Element } from '@ckeditor/ckeditor5-engine';
-import { AlightPublicLinkPluginCommand } from './alight-public-link-plugin-command';
+import AlightPublicLinkPluginCommand from './alight-public-link-plugin-command';
 import { safeGetAttribute } from './alight-public-link-plugin-utils';
-export class AlightPublicLinkPluginEditing extends Plugin {
+
+export default class AlightPublicLinkPluginEditing extends Plugin {
   public static get pluginName() {
     return 'AlightPublicLinkPluginEditing' as const;
   }

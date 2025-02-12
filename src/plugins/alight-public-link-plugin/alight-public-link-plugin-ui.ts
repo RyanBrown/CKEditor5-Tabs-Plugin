@@ -6,11 +6,11 @@ import { getPublicWebsiteContent } from './modal-content/public-website';
 import { Command } from '@ckeditor/ckeditor5-core';
 import { Locale } from '@ckeditor/ckeditor5-utils';
 import { safeGetAttribute } from './alight-public-link-plugin-utils';
-import { AlightPublicLinkPluginCommand } from './alight-public-link-plugin-command';
+import AlightPublicLinkPluginCommand from './alight-public-link-plugin-command';
 import toolBarIcon from './assets/icon-link.svg';
 import './styles/alight-public-link-plugin.scss';
 
-export class AlightPublicLinkPluginUI extends Plugin {
+export default class AlightPublicLinkPluginUI extends Plugin {
   private _balloon: ContextualBalloon;
   private _balloonToolbar: any;
 
