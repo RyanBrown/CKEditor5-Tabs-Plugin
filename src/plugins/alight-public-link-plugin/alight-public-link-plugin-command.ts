@@ -4,8 +4,13 @@ import type { Editor } from '@ckeditor/ckeditor5-core';
 import { findAttributeRange } from '@ckeditor/ckeditor5-typing';
 import { type Range } from '@ckeditor/ckeditor5-engine';
 
+interface LinkAttributes {
+  url: string;
+  orgName?: string;
+}
+
 export default class AlightPublicLinkCommand extends Command {
-  declare value: string | undefined;
+  declare value: LinkAttributes | undefined;
 
   constructor(editor: Editor) {
     super(editor);
@@ -25,34 +30,87 @@ export default class AlightPublicLinkCommand extends Command {
 
     // Set current value based on selection
     const attributeValue = selection.getAttribute('alightPublicLinkPlugin');
-    this.value = typeof attributeValue === 'string' ? attributeValue : undefined;
+    if (typeof attributeValue === 'object' && attributeValue !== null) {
+      this.value = attributeValue as LinkAttributes;
+    } else {
+      this.value = undefined;
+    }
   }
 
-  override execute(href?: string): void {
+  override execute(linkData?: { url: string; orgName?: string }): void {
     const model = this.editor.model;
     const selection = model.document.selection;
 
     model.change(writer => {
-      // If no href provided, remove the link
-      if (!href) {
-        writer.removeSelectionAttribute('alightPublicLinkPlugin');
+      // If no link data provided, remove the link and org name
+      if (!linkData) {
+        this._removeLink(writer);
         return;
       }
 
-      // Get the range where we'll apply the link
-      const ranges = selection.isCollapsed
-        ? [findAttributeRange(
-          selection.getFirstPosition()!,
+      const { url, orgName } = linkData;
+      const attributes = { url, orgName };
+
+      if (selection.isCollapsed) {
+        const position = selection.getFirstPosition()!;
+        const range = findAttributeRange(
+          position,
           'alightPublicLinkPlugin',
           selection.getAttribute('alightPublicLinkPlugin'),
           model
-        )]
-        : model.schema.getValidRanges(selection.getRanges(), 'alightPublicLinkPlugin');
+        );
+        writer.setAttribute('alightPublicLinkPlugin', attributes, range);
+      } else {
+        const ranges = model.schema.getValidRanges(selection.getRanges(), 'alightPublicLinkPlugin');
 
-      // Apply link to all valid ranges
-      for (const range of ranges) {
-        writer.setAttribute('alightPublicLinkPlugin', href, range);
+        // For each valid range, append org name and set attributes
+        for (const range of ranges) {
+          this._appendOrgName(writer, range, orgName);
+          writer.setAttribute('alightPublicLinkPlugin', attributes, range);
+        }
       }
     });
+  }
+
+  private _removeLink(writer: any): void {
+    const model = this.editor.model;
+    const selection = model.document.selection;
+    const ranges = selection.isCollapsed
+      ? [findAttributeRange(
+        selection.getFirstPosition()!,
+        'alightPublicLinkPlugin',
+        selection.getAttribute('alightPublicLinkPlugin'),
+        model
+      )]
+      : selection.getRanges();
+
+    // Remove both the link attribute and any appended org name
+    for (const range of ranges) {
+      this._removeOrgName(writer, range);
+      writer.removeAttribute('alightPublicLinkPlugin', range);
+    }
+  }
+
+  private _appendOrgName(writer: any, range: Range, orgName?: string): void {
+    if (!orgName) return;
+
+    const endPosition = range.end;
+    const text = writer.createText(` (${orgName})`);
+    writer.insert(text, endPosition);
+    writer.setSelection(range);
+  }
+
+  private _removeOrgName(writer: any, range: Range): void {
+    const value = this.value;
+    if (!value?.orgName) return;
+
+    const orgNameSuffix = ` (${value.orgName})`;
+    const text = Array.from(range.getItems()).map(item => item.data).join('');
+
+    if (text.endsWith(orgNameSuffix)) {
+      const start = writer.createPositionAt(range.end.parent, range.end.offset - orgNameSuffix.length);
+      const end = writer.createPositionAt(range.end.parent, range.end.offset);
+      writer.remove(writer.createRange(start, end));
+    }
   }
 }

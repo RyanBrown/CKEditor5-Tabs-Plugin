@@ -160,9 +160,7 @@ export default class AlightPublicLinkUI extends Plugin {
     }
   }
 
-
   // Gets the balloon position data
-
   private _getBalloonPositionData(targetElement: any) {
     const editor = this.editor;
     const positions = BalloonPanelView.defaultPositions;
@@ -173,14 +171,17 @@ export default class AlightPublicLinkUI extends Plugin {
     };
   }
 
-
   // Shows the modal dialog for link editing
-
+  // Update the modal button click handler in _showModal method
   private _showModal(initialValue?: string): void {
     const editor = this.editor;
     const command = editor.commands.get('alightPublicLinkPlugin') as AlightPublicLinkCommand;
 
-    // Create modal if it doesn't exist
+    // Get initial values
+    const currentLink = command.value;
+    const initialUrl = currentLink?.url || initialValue || '';
+    const initialOrgName = currentLink?.orgName || '';
+
     if (!this._modalDialog) {
       this._modalDialog = new CKAlightModalDialog({
         title: 'Link to a Public Link',
@@ -209,16 +210,23 @@ export default class AlightPublicLinkUI extends Plugin {
       // Handle modal button clicks
       this._modalDialog.on('buttonClick', (label: string) => {
         if (label === 'Continue') {
-          const linkInput = this._modalDialog?.element?.querySelector('input[name="url"]') as HTMLInputElement;
-          if (linkInput && linkInput.value) {
-            command.execute(linkInput.value);
+          const form = this._modalDialog?.element?.querySelector('#public-link-form') as HTMLFormElement;
+          const urlInput = form?.querySelector('#link-url') as HTMLInputElement;
+          const orgNameInput = form?.querySelector('#org-name') as HTMLInputElement;
+
+          if (urlInput && urlInput.value) {
+            const linkData = {
+              url: urlInput.value,
+              orgName: orgNameInput?.value || undefined
+            };
+            command.execute(linkData);
           }
         }
       });
     }
 
     // Set modal content and show it
-    const content = createPublicLinkModalContent(initialValue);
+    const content = createPublicLinkModalContent(initialUrl, initialOrgName);
     this._modalDialog.setContent(content);
     this._modalDialog.show();
   }

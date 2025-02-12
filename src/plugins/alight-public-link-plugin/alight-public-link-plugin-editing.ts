@@ -25,11 +25,17 @@ export default class AlightPublicLinkEditing extends Plugin {
 
     // Conversion from model to view
     conversion.for('downcast').attributeToElement({
-      model: 'alightPublicLinkPlugin',
-      view: (value, { writer }) => {
+      model: {
+        key: 'alightPublicLinkPlugin',
+        name: '$text'
+      },
+      view: (modelAttributeValue, { writer }) => {
+        if (!modelAttributeValue) return;
+
+        const linkData = modelAttributeValue as { url: string; orgName?: string };
+
         return writer.createAttributeElement('a', {
-          href: value,
-          // class: 'public-link',
+          href: linkData.url,
           target: '_blank',
           rel: 'noopener noreferrer'
         });
@@ -41,13 +47,15 @@ export default class AlightPublicLinkEditing extends Plugin {
       view: {
         name: 'a',
         attributes: {
-          href: true,
-          // class: 'public-link'
+          href: true
         }
       },
       model: {
         key: 'alightPublicLinkPlugin',
-        value: (viewElement: { getAttribute: (arg0: string) => any; }) => viewElement.getAttribute('href')
+        value: (viewElement: { getAttribute: (arg0: string) => any; }) => ({
+          url: viewElement.getAttribute('href'),
+          // The org name will be handled separately by the command
+        })
       }
     });
   }
