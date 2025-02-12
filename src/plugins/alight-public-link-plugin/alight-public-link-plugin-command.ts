@@ -2,9 +2,9 @@
 import { Command } from '@ckeditor/ckeditor5-core';
 import type { Editor } from '@ckeditor/ckeditor5-core';
 import { findAttributeRange } from '@ckeditor/ckeditor5-typing';
-import { type Range } from '@ckeditor/ckeditor5-engine';
+import { type Range, type Item, Text } from '@ckeditor/ckeditor5-engine';
 
-interface LinkAttributes {
+export interface LinkAttributes {
   url: string;
   orgName?: string;
 }
@@ -37,7 +37,7 @@ export default class AlightPublicLinkCommand extends Command {
     }
   }
 
-  override execute(linkData?: { url: string; orgName?: string }): void {
+  override execute(linkData?: LinkAttributes): void {
     const model = this.editor.model;
     const selection = model.document.selection;
 
@@ -105,7 +105,10 @@ export default class AlightPublicLinkCommand extends Command {
     if (!value?.orgName) return;
 
     const orgNameSuffix = ` (${value.orgName})`;
-    const text = Array.from(range.getItems()).map(item => item.data).join('');
+    const text = Array.from(range.getItems())
+      .filter((item): item is Text => item instanceof Text)
+      .map(item => item.data)
+      .join('');
 
     if (text.endsWith(orgNameSuffix)) {
       const start = writer.createPositionAt(range.end.parent, range.end.offset - orgNameSuffix.length);

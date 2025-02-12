@@ -1,11 +1,6 @@
 // src/plugins/alight-public-link-plugin/alight-public-link-plugin-ui.ts
 import { Plugin } from '@ckeditor/ckeditor5-core';
-import {
-  ButtonView,
-  ContextualBalloon,
-  View,
-  BalloonPanelView
-} from '@ckeditor/ckeditor5-ui';
+import { ButtonView, ContextualBalloon, View, BalloonPanelView } from '@ckeditor/ckeditor5-ui';
 import { LinkUI } from '@ckeditor/ckeditor5-link';
 import { ClickObserver } from '@ckeditor/ckeditor5-engine';
 import { CKAlightModalDialog } from './../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
@@ -14,11 +9,10 @@ import type AlightPublicLinkCommand from './alight-public-link-plugin-command';
 import toolBarIcon from './assets/icon-link.svg';
 import './styles/alight-public-link-plugin.scss';
 import { getSelectedLinkElement } from './alight-public-link-plugin-utils';
-
+import type { LinkAttributes } from './alight-public-link-plugin-command';
 
 // The UI component of the public link plugin.
 // Handles the toolbar button, modal dialog, and contextual balloon.
-///
 export default class AlightPublicLinkUI extends Plugin {
   // Reference to the modal dialog instance
   private _modalDialog?: CKAlightModalDialog;
@@ -135,9 +129,10 @@ export default class AlightPublicLinkUI extends Plugin {
     if (!this._balloon || !this._actionsView) return;
 
     const command = this.editor.commands.get('alightPublicLinkPlugin') as AlightPublicLinkCommand;
+    const linkUrl = command.value?.url || '';
 
     // Update the URL display in the balloon
-    this._actionsView.updateLinkDisplay(command.value || '');
+    this._actionsView.updateLinkDisplay(linkUrl);
 
     if (this._balloon.hasView(this._actionsView)) {
       // If the balloon is already visible, just update its position
@@ -173,14 +168,14 @@ export default class AlightPublicLinkUI extends Plugin {
 
   // Shows the modal dialog for link editing
   // Update the modal button click handler in _showModal method
-  private _showModal(initialValue?: string): void {
+  private _showModal(initialValue?: LinkAttributes): void {
     const editor = this.editor;
     const command = editor.commands.get('alightPublicLinkPlugin') as AlightPublicLinkCommand;
 
     // Get initial values
     const currentLink = command.value;
-    const initialUrl = currentLink?.url || initialValue || '';
-    const initialOrgName = currentLink?.orgName || '';
+    const initialUrl = currentLink?.url || initialValue?.url || '';
+    const initialOrgName = currentLink?.orgName || initialValue?.orgName || '';
 
     if (!this._modalDialog) {
       this._modalDialog = new CKAlightModalDialog({
@@ -215,7 +210,7 @@ export default class AlightPublicLinkUI extends Plugin {
           const orgNameInput = form?.querySelector('#org-name') as HTMLInputElement;
 
           if (urlInput && urlInput.value) {
-            const linkData = {
+            const linkData: LinkAttributes = {
               url: urlInput.value,
               orgName: orgNameInput?.value || undefined
             };
