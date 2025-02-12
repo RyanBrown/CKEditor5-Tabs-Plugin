@@ -19,18 +19,3 @@ export function sanitizeUrl(url: string): string {
   }
   return url;
 }
-
-// Safe attribute getter helper function
-export function safeGetAttribute(item: any, attributeName: string): string | null {
-  if (!item) return null;
-
-  if (item.is && item.is('element')) {
-    return item.getAttribute(attributeName) || null;
-  }
-
-  if (item.getAttribute) {
-    return item.getAttribute(attributeName) || null;
-  }
-
-  return null;
-}

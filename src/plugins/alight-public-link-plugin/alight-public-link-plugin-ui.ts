@@ -3,32 +3,22 @@ import { Plugin } from '@ckeditor/ckeditor5-core';
 import { ContextualBalloon, ButtonView } from '@ckeditor/ckeditor5-ui';
 import { CKAlightModalDialog } from './../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import { getPublicWebsiteContent } from './modal-content/public-website';
-import { Command } from '@ckeditor/ckeditor5-core';
-import { Locale } from '@ckeditor/ckeditor5-utils';
-import { safeGetAttribute } from './alight-public-link-plugin-utils';
-import AlightPublicLinkPluginCommand from './alight-public-link-plugin-command';
+
 import toolBarIcon from './assets/icon-link.svg';
 import './styles/alight-public-link-plugin.scss';
 
 export default class AlightPublicLinkPluginUI extends Plugin {
-  private _balloon: ContextualBalloon;
+  private _balloon!: ContextualBalloon;
   private _balloonToolbar: any;
-
-  public static get pluginName() {
-    return 'AlightPublicLinkPluginUI' as const;
-  }
 
   public static get requires() {
     return [ContextualBalloon] as const;
   }
 
-  constructor(editor: any) {
-    super(editor);
-    this._balloon = editor.plugins.get(ContextualBalloon);
-    this._balloonToolbar = editor.ui.view.createCollection();
-  }
-
   init(): void {
+    this._balloon = this.editor.plugins.get(ContextualBalloon);
+    this._balloonToolbar = this.editor.ui.view.createCollection();
+
     this._createToolbarButton();
     this._createBalloonToolbar();
     this._enableBalloonActivators();
@@ -37,11 +27,10 @@ export default class AlightPublicLinkPluginUI extends Plugin {
   private _createToolbarButton(): void {
     const editor = this.editor;
     const t = editor.t;
+    const command = editor.commands.get('alightPublicLinkPlugin');
 
-    // Register UI component
-    editor.ui.componentFactory.add('alightPublicLinkPlugin', (locale: Locale) => {
+    editor.ui.componentFactory.add('alightPublicLinkPlugin', locale => {
       const button = new ButtonView(locale);
-      const command = editor.commands.get('alightPublicLinkPlugin') as Command;
 
       button.set({
         label: t('Insert Public Link'),
@@ -51,7 +40,8 @@ export default class AlightPublicLinkPluginUI extends Plugin {
       });
 
       // Bind button state to command state
-      button.bind('isEnabled').to(command);
+      button.bind('isEnabled').to(command, 'isEnabled');
+
       button.on('execute', () => this._showLinkModal());
 
       return button;
@@ -69,7 +59,10 @@ export default class AlightPublicLinkPluginUI extends Plugin {
       icon: 'pencil',
       tooltip: true
     });
-    editButton.on('execute', () => this._showLinkModal());
+    editButton.on('execute', () => {
+      this._hideBalloon();
+      this._showLinkModal(true);
+    });
 
     // Create unlink button
     const unlinkButton = new ButtonView(editor.locale);
@@ -78,7 +71,11 @@ export default class AlightPublicLinkPluginUI extends Plugin {
       icon: 'unlink',
       tooltip: true
     });
-    unlinkButton.on('execute', () => this._unlink());
+    unlinkButton.on('execute', () => {
+      const command = editor.commands.get('alightPublicLinkPlugin');
+      command.removeLink();
+      this._hideBalloon();
+    });
 
     this._balloonToolbar.add(editButton);
     this._balloonToolbar.add(unlinkButton);
@@ -88,10 +85,21 @@ export default class AlightPublicLinkPluginUI extends Plugin {
     const editor = this.editor;
     const viewDocument = editor.editing.view.document;
 
+    // Show balloon on link click
     this.listenTo(viewDocument, 'click', () => {
       const selection = editor.model.document.selection;
-      if (selection && selection.hasAttribute('linkHref')) {
+
+      if (selection.hasAttribute('linkHref')) {
         this._showBalloon();
+      }
+    });
+
+    // Hide balloon when selection changes
+    this.listenTo(editor.model.document, 'change:data', () => {
+      const selection = editor.model.document.selection;
+
+      if (!selection.hasAttribute('linkHref')) {
+        this._hideBalloon();
       }
     });
   }
@@ -103,19 +111,16 @@ export default class AlightPublicLinkPluginUI extends Plugin {
     if (!range) return;
 
     const viewRange = this.editor.editing.mapper.toViewRange(range);
-    if (!viewRange) return;
 
-    if (!this._balloon.hasView(this._balloonToolbar)) {
-      this._balloon.add({
-        view: this._balloonToolbar,
-        position: {
-          target: () => {
-            const domRange = this.editor.editing.view.domConverter.viewRangeToDom(viewRange);
-            return domRange || null;
-          }
+    this._balloon.add({
+      view: this._balloonToolbar,
+      position: {
+        target: () => {
+          const domRange = this.editor.editing.view.domConverter.viewRangeToDom(viewRange);
+          return domRange || null;
         }
-      });
-    }
+      }
+    });
   }
 
   private _hideBalloon(): void {
@@ -124,28 +129,21 @@ export default class AlightPublicLinkPluginUI extends Plugin {
     }
   }
 
-  private _unlink(): void {
-    const editor = this.editor;
-    const command = editor.commands.get('alightPublicLinkPlugin') as AlightPublicLinkPluginCommand;
+  private _showLinkModal(isEdit: boolean = false): void {
+    const command = this.editor.commands.get('alightPublicLinkPlugin');
+    let currentValues = { url: '', displayText: '' };
 
-    if (command) {
-      command.removeLink();
-      this._hideBalloon();
+    if (isEdit) {
+      currentValues = command.getCurrentLinkAttributes() || currentValues;
     }
-  }
-
-  private _showLinkModal(): void {
-    const selection = this.editor.model.document.selection;
-    const existingUrl = selection ? safeGetAttribute(selection.getFirstPosition()?.parent, 'linkHref') : null;
-    const existingDisplayText = selection ? safeGetAttribute(selection.getFirstPosition()?.parent, 'displayText') : null;
 
     const formContent = getPublicWebsiteContent({
-      href: existingUrl || '',
-      orgName: existingDisplayText || ''
+      href: currentValues.url,
+      orgName: currentValues.displayText
     });
 
     const dialog = new CKAlightModalDialog({
-      title: existingUrl ? 'Edit Link' : 'Insert Link',
+      title: isEdit ? 'Edit Public Link' : 'Insert Public Link',
       width: '500px',
       modal: true,
       buttons: [
@@ -156,7 +154,7 @@ export default class AlightPublicLinkPluginUI extends Plugin {
           position: 'left'
         },
         {
-          label: 'Save',
+          label: isEdit ? 'Update' : 'Insert',
           className: 'cka-button cka-button-primary',
           variant: 'default',
           position: 'right',
@@ -167,27 +165,21 @@ export default class AlightPublicLinkPluginUI extends Plugin {
 
     dialog.setContent(formContent.html);
 
-    // Set up form validation after content is added to DOM
     const dialogElement = dialog.getContentElement();
     if (!dialogElement) return;
 
     const formValidator = formContent.setup(dialogElement);
 
     dialog.on('buttonClick', (label: string) => {
-      if (label === 'Save') {
+      if (label === 'Update' || label === 'Insert') {
         const form = dialogElement.querySelector('form');
         if (form && formValidator.validate()) {
           const formData = new FormData(form);
-          const url = formData.get('url') as string;
-          const displayText = formData.get('displayText') as string;
-
-          const command = this.editor.commands.get('alightPublicLinkPlugin') as AlightPublicLinkPluginCommand;
-          if (command) {
-            command.execute({ url, displayText });
-          }
-
+          command.execute({
+            url: formData.get('url') as string,
+            displayText: formData.get('displayText') as string
+          });
           dialog.hide();
-          this._showBalloon();
         }
       } else if (label === 'Cancel') {
         dialog.hide();

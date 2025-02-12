@@ -3,7 +3,6 @@ import { Plugin } from '@ckeditor/ckeditor5-core';
 import { Link } from '@ckeditor/ckeditor5-link';
 import { Element } from '@ckeditor/ckeditor5-engine';
 import AlightPublicLinkPluginCommand from './alight-public-link-plugin-command';
-import { safeGetAttribute } from './alight-public-link-plugin-utils';
 
 export default class AlightPublicLinkPluginEditing extends Plugin {
   public static get pluginName() {
@@ -109,7 +108,7 @@ export default class AlightPublicLinkPluginEditing extends Plugin {
           return;
         }
 
-        const displayText = safeGetAttribute(item, 'displayText');
+        const displayText = 'displayText';
         if (displayText) {
           writer.setAttribute('data-display-text', displayText, viewElement);
         }
