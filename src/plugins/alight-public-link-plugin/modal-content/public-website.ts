@@ -21,7 +21,7 @@ export function createPublicLinkModalContent(initialValue?: string, initialOrgNa
                     class="cka-input-text block" 
                     required
                     value="${initialValue || ''}"
-                    placeholder="https://example.com"
+                    placeholder="example.com"
                 />
                 <div 
                     class="error-message" 
@@ -56,19 +56,36 @@ export function createPublicLinkModalContent(initialValue?: string, initialOrgNa
   return container;
 }
 
-function isValidUrl(value: string): boolean {
-  try {
-    const url = new URL(value.trim());
-    return ['http:', 'https:'].includes(url.protocol);
-  } catch {
-    return false;
+function normalizeUrl(value: string): string {
+  const trimmedValue = value.trim();
+
+  // If it already has a protocol, leave it as is
+  if (trimmedValue.startsWith('http://') || trimmedValue.startsWith('https://')) {
+    return trimmedValue;
   }
+
+  // Remove any accidental protocol fragments if user partially typed them
+  const cleanValue = trimmedValue
+    .replace(/^(http:|https:|http|https|\/\/)/i, '')
+    .replace(/^\/+/, '');
+
+  // Add https:// protocol
+  return `https://${cleanValue}`;
 }
+
+// function isValidUrl(value: string): boolean {
+//   try {
+//     const url = new URL(value);
+//     return ['http:', 'https:'].includes(url.protocol);
+//   } catch {
+//     return false;
+//   }
+// }
 
 export function validateForm(form: HTMLFormElement): boolean {
   const urlInput = form.querySelector('#link-url') as HTMLInputElement;
   const urlError = form.querySelector('#url-error') as HTMLDivElement;
-  const value = urlInput.value.trim();
+  let value = urlInput.value.trim();
 
   // Reset previous validation state
   hideError(urlInput, urlError);
@@ -79,13 +96,19 @@ export function validateForm(form: HTMLFormElement): boolean {
     return false;
   }
 
-  // URL format check
+  // Normalize URL (add https:// if missing)
+  value = normalizeUrl(value);
+
+  // Check if it's a valid URL
   try {
     const url = new URL(value);
     if (!['http:', 'https:'].includes(url.protocol)) {
-      showError(urlInput, urlError, 'URL must start with http:// or https://');
+      showError(urlInput, urlError, 'Invalid URL format.');
       return false;
     }
+
+    // Update input with normalized URL
+    urlInput.value = value;
     return true;
   } catch {
     showError(urlInput, urlError, 'Please enter a valid URL.');
