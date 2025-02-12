@@ -34,7 +34,7 @@ export function createPublicLinkModalContent(initialValue?: string, initialOrgNa
             
             <div class="ck-form-group mt-3">
                 <label for="org-name" class="cka-input-label">
-                    Organization Name (optional)*
+                    Organization Name (optional)
                 </label>
                 <input 
                     type="text" 
@@ -46,8 +46,8 @@ export function createPublicLinkModalContent(initialValue?: string, initialOrgNa
                 />
             </div>
             
-            <p class="mt-5 mb-0">
-                *Enter the third-party organization to inform users the destination of the link.
+            <p class="note-text">
+                Organization Name (optional): Specify the third-party organization to inform users about the link's destination.
             </p>
         </form>
     `;
