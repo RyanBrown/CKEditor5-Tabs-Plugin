@@ -16,7 +16,7 @@ export default class AlightPublicLinkCommand extends Command {
     });
   }
 
-  refresh(): void {
+  override refresh(): void {
     const model = this.editor.model;
     const selection = model.document.selection;
 
@@ -24,14 +24,11 @@ export default class AlightPublicLinkCommand extends Command {
     this.isEnabled = model.schema.checkAttributeInSelection(selection, 'alightPublicLinkPlugin');
 
     // Set current value based on selection
-    if (selection.hasAttribute('alightPublicLinkPlugin')) {
-      this.value = selection.getAttribute('alightPublicLinkPlugin');
-    } else {
-      this.value = undefined;
-    }
+    const attributeValue = selection.getAttribute('alightPublicLinkPlugin');
+    this.value = typeof attributeValue === 'string' ? attributeValue : undefined;
   }
 
-  execute(href?: string): void {
+  override execute(href?: string): void {
     const model = this.editor.model;
     const selection = model.document.selection;
 

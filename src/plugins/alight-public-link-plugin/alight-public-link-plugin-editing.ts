@@ -29,7 +29,7 @@ export default class AlightPublicLinkEditing extends Plugin {
       view: (value, { writer }) => {
         return writer.createAttributeElement('a', {
           href: value,
-          class: 'public-link',
+          // class: 'public-link',
           target: '_blank',
           rel: 'noopener noreferrer'
         });
@@ -42,7 +42,7 @@ export default class AlightPublicLinkEditing extends Plugin {
         name: 'a',
         attributes: {
           href: true,
-          class: 'public-link'
+          // class: 'public-link'
         }
       },
       model: {

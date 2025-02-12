@@ -1,4 +1,6 @@
 // src/plugins/alight-public-link-plugin/styles/alight-public-link-plugin.scss
+@use './../../../styles/mixins' as mixins;
+
 .public-link-form {
   padding: 1rem;
 

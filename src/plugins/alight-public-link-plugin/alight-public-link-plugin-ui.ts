@@ -5,6 +5,8 @@ import { LinkUI } from '@ckeditor/ckeditor5-link';
 import { CKAlightModalDialog } from './../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import { createPublicLinkModalContent } from './modal-content/public-website';
 import type AlightPublicLinkCommand from './alight-public-link-plugin-command';
+import toolBarIcon from './assets/icon-link.svg';
+import './styles/alight-public-link-plugin.scss';
 
 export default class AlightPublicLinkUI extends Plugin {
   private _modalDialog?: CKAlightModalDialog;
@@ -28,8 +30,9 @@ export default class AlightPublicLinkUI extends Plugin {
 
       button.set({
         label: t('Insert public link'),
-        icon: '<svg>...</svg>', // Add your icon SVG
-        tooltip: true
+        icon: toolBarIcon,
+        tooltip: true,
+        withText: true,
       });
 
       // Bind button state to command state
@@ -55,10 +58,8 @@ export default class AlightPublicLinkUI extends Plugin {
     // Create modal if it doesn't exist
     if (!this._modalDialog) {
       this._modalDialog = new CKAlightModalDialog({
-        title: 'Insert Public Link',
+        title: 'Link to a Public Link',
         modal: true,
-        draggable: true,
-        resizable: true,
         width: '400px',
         height: 'auto',
         closeOnEscape: true,
@@ -71,7 +72,7 @@ export default class AlightPublicLinkUI extends Plugin {
             position: 'left'
           },
           {
-            label: 'Insert',
+            label: 'Continue',
             className: 'cka-button',
             variant: 'default',
             position: 'right',
@@ -82,7 +83,7 @@ export default class AlightPublicLinkUI extends Plugin {
 
       // Handle modal events
       this._modalDialog.on('buttonClick', (label: string) => {
-        if (label === 'Insert') {
+        if (label === 'Continue') {
           const linkInput = this._modalDialog?.element?.querySelector('input[name="url"]') as HTMLInputElement;
           if (linkInput && linkInput.value) {
             command.execute(linkInput.value);
