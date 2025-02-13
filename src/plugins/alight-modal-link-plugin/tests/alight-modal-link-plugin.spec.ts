@@ -1,1 +1,0 @@
-// src/plugins/alight-modal-link-plugin/tests/alight-modal-link-plugin.spec.ts

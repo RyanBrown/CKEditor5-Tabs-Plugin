@@ -59,14 +59,11 @@ import AlightPastePlugin from './plugins/alight-paste-plugin/alight-paste-plugin
 import AlightPopulationPlugin from './plugins/alight-population-plugin/alight-population-plugin';
 import TabsPlugin from './plugins/alight-tabs-plugin/alight-tabs-plugin';
 
-import AlightCustomLinkPlugin from './plugins/alight-custom-link-plugin/alight-custom-link-plugin';
-import AlightBalloonPlugin from './plugins/alight-balloon-plugin/alight-balloon-plugin-plugin';
-import AlightModalLinkPlugin from './plugins/alight-modal-link-plugin/alight-modal-link-plugin';
+import AlightCustomModalLinkPlugin from './plugins/alight-custom-modal-link-plugin/alight-custom-modal-link-plugin';
+import AlightPublicLinkPlugin from './plugins/alight-public-link-plugin/alight-public-link-plugin';
 
 // Import custom styles for headings, style definitions and custom plugins
 import './styles/styles.scss';
-import AlightCustomModalLinkPlugin from './plugins/alight-custom-modal-link-plugin/alight-custom-modal-link-plugin';
-import AlightPublicLinkPlugin from './plugins/alight-public-link-plugin/alight-public-link-plugin';
 
 const LICENSE_KEY =
     'eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3NDcxODA3OTksImp0aSI6IjAwN2YzMTI1LTkyYTgtNDc0MS05NDNiLWViM2M3NjhjN2RhNiIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsic2giLCJkcnVwYWwiXSwid2hpdGVMYWJlbCI6dHJ1ZSwiZmVhdHVyZXMiOlsiRFJVUCIsIkRPIiwiRlAiLCJTQyIsIlRPQyIsIlRQTCIsIlBPRSIsIkNDIiwiTUYiXSwidmMiOiJjYjM3ZmEyOCJ9.pfNUO8YBnKbw1V6HXgFb9PZRMzfErUsssTFcQ83EftEDV-tFn_pPPmFpkaRb9Fjzj02osXclT6aKGsmyihJazg';
@@ -177,12 +174,9 @@ class Editor extends ClassicEditor {
         AlightCopyPlugin,
         AlightImagePlugin,
         AlightLinkPlugin,
-        AlightCustomLinkPlugin,
-        AlightBalloonPlugin,
         AlightPastePlugin,
         AlightPopulationPlugin,
         TabsPlugin,
-        AlightModalLinkPlugin,
         AlightCustomModalLinkPlugin,
         AlightPublicLinkPlugin
     ];
@@ -240,9 +234,6 @@ class Editor extends ClassicEditor {
                 'alightImagePlugin',
                 'alightPopulationPlugin',
                 'alightLinkPlugin',
-                // 'alightCustomLinkPlugin',
-                // 'alightBalloonPlugin',
-                // 'alightModalLinkPlugin',
                 'alightCustomModalLinkPlugin',
                 'alightPublicLinkPlugin'
             ],
