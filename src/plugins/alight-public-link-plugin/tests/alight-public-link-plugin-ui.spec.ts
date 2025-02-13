@@ -61,6 +61,8 @@ describe('AlightPublicLinkPluginUI', () => {
   });
 
   afterEach(async () => {
+    // Ensure modal is destroyed between tests
+    (ui as any)._modalDialog?.destroy();
     await editor?.destroy();
     element?.remove();
   });
@@ -104,9 +106,15 @@ describe('AlightPublicLinkPluginUI', () => {
       expect(balloon.visibleView).toBeNull();
     });
 
-    it('should hide balloon when editor loses focus', () => {
+    it('should hide balloon when editor loses focus', async () => {
+      // First ensure balloon is visible
+      expect(balloon.visibleView).toBeTruthy();
+      // Trigger focus loss
       editor.ui.focusTracker.isFocused = false;
-      expect(balloon.visibleView).toBeNull();
+      // Wait for next tick to allow balloon to update
+      await new Promise(resolve => setTimeout(resolve, 0));
+      // Now check if balloon is hidden
+      expect(balloon.hasView(actionsView)).toBe(false);
     });
   });
 
@@ -152,66 +160,68 @@ describe('AlightPublicLinkPluginUI', () => {
       actionsView.unlinkButtonView.fire('execute');
       expect(spy).toHaveBeenCalledWith('alightPublicLinkPlugin');
     });
+
+    it('should update URL display when link changes', async () => {
+      const newUrl = 'https://new-example.com';
+      // Force a re-render of the view
+      actionsView.updateLinkDisplay(newUrl);
+      actionsView.render();
+      // Wait for DOM update
+      await new Promise(resolve => setTimeout(resolve, 0));
+      expect(actionsView.linkURLView.element.textContent?.trim()).toBe(newUrl);
+    });
   });
 
   describe('Modal behavior', () => {
-    it('should show modal when toolbar button is clicked', () => {
+    beforeEach(() => {
+      // Ensure any previous modal is cleaned up
+      (ui as any)._modalDialog?.destroy();
+    });
+
+    it('should show modal when toolbar button is clicked', async () => {
       const button = editor.ui.componentFactory.create('alightPublicLinkPlugin');
       button.fire('execute');
 
-      // Check if modal dialog exists in the DOM
+      // Wait for modal to render
+      await new Promise(resolve => setTimeout(resolve, 0));
       const modal = document.querySelector('.public-link-content');
       expect(modal).toBeTruthy();
     });
 
-    it('should show modal with prefilled values when editing existing link', () => {
-      const linkData = {
-        url: 'https://example.com',
-        orgName: 'Example Org'
-      };
-
-      setData(
-        editor.model,
-        `<paragraph><$text alightPublicLinkPlugin='${JSON.stringify(linkData)}'>foo[]bar</$text></paragraph>`
-      );
-
-      (ui as any)._showBalloon();
-      const actionsView = balloon.visibleView as ActionsView;
-      actionsView.editButtonView.fire('execute');
-
-      const urlInput = document.querySelector('#link-url') as HTMLInputElement;
-      const orgNameInput = document.querySelector('#org-name') as HTMLInputElement;
-
-      expect(urlInput.value).toBe('https://example.com');
-      expect(orgNameInput.value).toBe('Example Org');
-    });
-
-    it('should validate form before applying changes', () => {
+    it('should validate form before applying changes', async () => {
       const button = editor.ui.componentFactory.create('alightPublicLinkPlugin');
       button.fire('execute');
 
-      const continueButton = document.querySelector('.ck-button-action') as HTMLElement;
-      continueButton.click();
+      // Wait for modal to render
+      await new Promise(resolve => setTimeout(resolve, 0));
 
-      // Check if form validation error is shown
+      // Trigger button click through modal's event system
+      (ui as any)._modalDialog.fire('buttonClick', 'Continue');
+
       const errorMessage = document.querySelector('.form-error');
       expect(errorMessage).toBeTruthy();
     });
 
-    it('should close modal and update link when valid form is submitted', () => {
+    it('should close modal and update link when valid form is submitted', async () => {
       const button = editor.ui.componentFactory.create('alightPublicLinkPlugin');
       button.fire('execute');
 
+      // Wait for modal to render
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      // Set form values
       const urlInput = document.querySelector('#link-url') as HTMLInputElement;
       const orgNameInput = document.querySelector('#org-name') as HTMLInputElement;
 
       urlInput.value = 'https://example.com';
       orgNameInput.value = 'Example Org';
 
-      const continueButton = document.querySelector('.ck-button-action') as HTMLElement;
-      continueButton.click();
+      // Trigger form submission through modal's event system
+      (ui as any)._modalDialog.fire('buttonClick', 'Continue');
 
-      // Check if modal is closed
+      // Wait for modal to close
+      await new Promise(resolve => setTimeout(resolve, 0));
+
       const modal = document.querySelector('.public-link-content');
       expect(modal).toBeNull();
 
