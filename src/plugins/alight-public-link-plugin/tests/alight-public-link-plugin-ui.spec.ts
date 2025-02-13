@@ -110,14 +110,11 @@ describe('AlightPublicLinkPluginUI', () => {
     it('should hide balloon when editor loses focus', async () => {
       expect(balloon.visibleView).toBeTruthy();
 
-      // Create a new range outside the link
-      const newRange = editor.model.createRange(
-        editor.model.createPositionFromPath([0, 0], 0),
-        editor.model.createPositionFromPath([0, 0], 0)
-      );
-
+      // Move selection to end of paragraph
       editor.model.change((writer: any) => {
-        writer.setSelection(newRange);
+        const paragraph = editor.model.document.getRoot().getChild(0);
+        const position = writer.createPositionAt(paragraph, 'end');
+        writer.setSelection(position);
       });
 
       editor.ui.focusTracker.isFocused = false;
@@ -214,12 +211,16 @@ describe('AlightPublicLinkPluginUI', () => {
       // Wait for modal to render
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      // Find and click the continue button directly
-      const continueButton = document.querySelector('.ck-button-action') as HTMLElement;
-      continueButton?.click();
+      // Simulate form submission with empty fields
+      const form = document.querySelector('#public-link-form') as HTMLFormElement;
+      if (form) {
+        const event = new Event('submit');
+        form.dispatchEvent(event);
+      }
 
       await new Promise(resolve => setTimeout(resolve, 50));
 
+      // After invalid submission, error message should be visible
       const errorMessage = document.querySelector('.form-error');
       expect(errorMessage).toBeTruthy();
     });
@@ -231,7 +232,7 @@ describe('AlightPublicLinkPluginUI', () => {
       // Wait for modal to render
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      // Set form values
+      // Fill in form fields
       const urlInput = document.querySelector('#link-url') as HTMLInputElement;
       const orgNameInput = document.querySelector('#org-name') as HTMLInputElement;
 
@@ -239,21 +240,23 @@ describe('AlightPublicLinkPluginUI', () => {
         urlInput.value = 'https://example.com';
         orgNameInput.value = 'Example Org';
 
-        // Find and click the continue button directly
-        const continueButton = document.querySelector('.ck-button-action') as HTMLElement;
-        continueButton?.click();
+        // Submit the form
+        const form = document.querySelector('#public-link-form') as HTMLFormElement;
+        const event = new Event('submit', { cancelable: true });
+        form.dispatchEvent(event);
 
         await new Promise(resolve => setTimeout(resolve, 50));
 
-        const modal = document.querySelector('.public-link-content');
-        expect(modal).toBeNull();
-
-        // Check if link was updated
         const command = editor.commands.get('alightPublicLinkPlugin');
         expect(command.value).toEqual({
           url: 'https://example.com',
           orgName: 'Example Org'
         });
+
+        // Wait for modal to close and check if it's gone
+        await new Promise(resolve => setTimeout(resolve, 100));
+        const modal = document.querySelector('.public-link-content');
+        expect(modal).toBeNull();
       }
     });
   });

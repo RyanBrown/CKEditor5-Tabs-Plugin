@@ -18,8 +18,19 @@ export default class AlightPublicLinkPluginEditing extends Plugin {
   // Initialize the plugin by defining converters and commands
   public init(): void {
     const editor = this.editor;
+    this._defineSchema();
     this._defineConverters();
     this._defineCommands();
+  }
+
+  // Define the schema for the plugin
+  private _defineSchema(): void {
+    const schema = this.editor.model.schema;
+
+    // Register the alightPublicLinkPlugin attribute
+    schema.extend('$text', {
+      allowAttributes: ['alightPublicLinkPlugin']
+    });
   }
 
   // Define model-to-view and view-to-model conversion
@@ -37,30 +48,40 @@ export default class AlightPublicLinkPluginEditing extends Plugin {
         if (!modelAttributeValue) return; // If no attribute value, return undefined
 
         const linkData = modelAttributeValue as { url: string; orgName?: string };
-
-        // Create an <a> element with appropriate attributes
-        return writer.createAttributeElement('a', {
+        const attributes: Record<string, string> = {
           href: linkData.url, // Set href attribute
           target: '_blank', // Open in a new tab
           rel: 'noopener noreferrer' // Security attributes
-        });
+        };
+
+        // Add orgName as data attribute if present
+        if (linkData.orgName) {
+          attributes['data-org-name'] = linkData.orgName;
+        }
+
+        return writer.createAttributeElement('a', attributes);
       }
     });
 
     // Define conversion for upcasting (view to model)
     conversion.for('upcast').elementToAttribute({
       view: {
-        name: 'a', // Target <a> elements in the view
+        name: 'a',
         attributes: {
-          href: true // Ensure href attribute exists
+          href: true
         }
       },
       model: {
         key: 'alightPublicLinkPlugin', // Store the attribute in the model
-        value: (viewElement: { getAttribute: (arg0: string) => any; }) => ({
-          url: viewElement.getAttribute('href'), // Extract the href attribute
-          // The org name will be handled separately by the command
-        })
+        value: (viewElement: { getAttribute: (arg0: string) => any; }) => {
+          const href = viewElement.getAttribute('href');
+          const orgName = viewElement.getAttribute('data-org-name');
+
+          return {
+            url: href,
+            ...(orgName ? { orgName } : {})
+          };
+        }
       }
     });
   }
