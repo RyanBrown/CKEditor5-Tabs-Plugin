@@ -48,14 +48,16 @@ export default class AlightPublicLinkPluginEditing extends Plugin {
         if (!modelAttributeValue) return; // If no attribute value, return undefined
 
         const linkData = modelAttributeValue as { url: string; orgName?: string };
-        return writer.createAttributeElement('a', {
+        const linkElement = writer.createAttributeElement('a', {
           href: linkData.url, // Set href attribute
-          'target': '_blank', // Open in a new tab
-          'rel': 'noopener noreferrer', // Security attributes
+          target: '_blank', // Open in a new tab
+          rel: 'noopener noreferrer', // Security attributes
           ...(linkData.orgName ? { 'data-org-name': linkData.orgName } : {})
         }, {
           priority: 5
         });
+
+        return linkElement;
       }
     });
 

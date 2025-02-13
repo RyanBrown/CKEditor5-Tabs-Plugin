@@ -53,7 +53,12 @@ export default class AlightPublicLinkPluginUI extends Plugin {
     // Add toolbar button
     editor.ui.componentFactory.add('alightPublicLinkPlugin', locale => {
       const button = new ButtonView(locale);
-      const command = editor.commands.get('alightPublicLinkPlugin') as AlightPublicLinkPluginCommand;
+      const command = editor.commands.get('alightPublicLinkPlugin');
+
+      if (!command) {
+        console.warn('AlightPublicLinkPlugin command not found');
+        return button;
+      }
 
       button.set({
         label: t('Insert public link'),
@@ -123,8 +128,8 @@ export default class AlightPublicLinkPluginUI extends Plugin {
 
     // Show balloon on selection change if link is selected
     this.listenTo(editor.model.document.selection, 'change:range', () => {
-      const command = editor.commands.get('alightPublicLinkPlugin') as AlightPublicLinkPluginCommand;
-      if (command.value) {
+      const command = editor.commands.get('alightPublicLinkPlugin');
+      if (command?.value) {
         this._showBalloon();
       } else {
         this._hideBalloon();

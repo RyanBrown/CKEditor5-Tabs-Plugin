@@ -1,7 +1,8 @@
-// src/plugins/alight-public-link-plugin/alight-public-link-plugin-command.ts
+// 1. Fix for alight-public-link-plugin-command.ts
 import { Command } from '@ckeditor/ckeditor5-core';
 import type { Editor } from '@ckeditor/ckeditor5-core';
 import { findAttributeRange } from '@ckeditor/ckeditor5-typing';
+import { type Item, type Node } from '@ckeditor/ckeditor5-engine';
 
 export interface LinkAttributes {
   url: string;
@@ -25,7 +26,15 @@ export default class AlightPublicLinkPluginCommand extends Command {
     const selection = model.document.selection;
     const firstPosition = selection.getFirstPosition();
 
-    // Check if the command should be enabled by verifying if the selection allows the attribute
+    if (firstPosition) {
+      const element = firstPosition.parent;
+      if (element && model.schema.isLimit(element)) {
+        this.isEnabled = false;
+        this.value = undefined;
+        return;
+      }
+    }
+
     this.isEnabled = model.schema.checkAttributeInSelection(selection, 'alightPublicLinkPlugin');
 
     if (!firstPosition) {
@@ -48,7 +57,31 @@ export default class AlightPublicLinkPluginCommand extends Command {
     model.change(writer => {
       // If no link data is provided, remove the link and associated organization name
       if (!linkData) {
-        this._removeLink(writer);
+        const ranges = selection.isCollapsed
+          ? [findAttributeRange(
+            selection.getFirstPosition()!,
+            'alightPublicLinkPlugin',
+            selection.getAttribute('alightPublicLinkPlugin'),
+            model
+          )]
+          : selection.getRanges();
+
+        for (const range of ranges) {
+          const items = Array.from(range.getItems());
+          const text = items
+            .map(item => {
+              if (item.is('$text') || item.is('$textProxy')) {
+                return item.data;
+              }
+              return '';
+            })
+            .join('')
+            .replace(/ \([^)]+\)$/, '');
+
+          writer.remove(range);
+          writer.insertText(text, range.start);
+          writer.removeAttribute('alightPublicLinkPlugin', range);
+        }
         return;
       }
 
@@ -61,33 +94,50 @@ export default class AlightPublicLinkPluginCommand extends Command {
           selection.getAttribute('alightPublicLinkPlugin'),
           model
         );
+
+        const items = Array.from(range.getItems());
+        const text = items
+          .map(item => {
+            if (item.is('$text') || item.is('$textProxy')) {
+              return item.data;
+            }
+            return '';
+          })
+          .join('')
+          .replace(/ \([^)]+\)$/, '');
+
+        const newText = linkData.orgName
+          ? `${text} (${linkData.orgName})`
+          : text;
+
+        writer.remove(range);
+        writer.insertText(newText, range.start);
         writer.setAttribute('alightPublicLinkPlugin', linkData, range);
       } else {
         // If the selection is not collapsed, apply attributes to the selected range
         const ranges = model.schema.getValidRanges(selection.getRanges(), 'alightPublicLinkPlugin');
 
         for (const range of ranges) {
+          const items = Array.from(range.getItems());
+          const text = items
+            .map(item => {
+              if (item.is('$text') || item.is('$textProxy')) {
+                return item.data;
+              }
+              return '';
+            })
+            .join('')
+            .replace(/ \([^)]+\)$/, '');
+
+          const newText = linkData.orgName
+            ? `${text} (${linkData.orgName})`
+            : text;
+
+          writer.remove(range);
+          writer.insertText(newText, range.start);
           writer.setAttribute('alightPublicLinkPlugin', linkData, range);
         }
       }
     });
-  }
-
-  private _removeLink(writer: any): void {
-    const model = this.editor.model;
-    const selection = model.document.selection;
-    const ranges = selection.isCollapsed
-      ? [findAttributeRange(
-        selection.getFirstPosition()!,
-        'alightPublicLinkPlugin',
-        selection.getAttribute('alightPublicLinkPlugin'),
-        model
-      )]
-      : selection.getRanges();
-
-    // Iterate through the ranges and remove both the link attribute and any appended organization name
-    for (const range of ranges) {
-      writer.removeAttribute('alightPublicLinkPlugin', range);
-    }
   }
 }

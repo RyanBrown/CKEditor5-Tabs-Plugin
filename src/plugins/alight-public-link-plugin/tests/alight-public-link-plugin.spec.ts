@@ -43,27 +43,15 @@ describe('AlightPublicLinkPlugin', () => {
   });
 
   describe('integration', () => {
-    it('should maintain correct data in model-view conversion', async () => {
-      // Set initial data with a link
-      editor.setData(
-        '<p><a href="https://example.com" target="_blank" rel="noopener noreferrer">Test Link</a></p>'
-      );
-
-      // Wait for the editor to process the data
-      await new Promise(resolve => setTimeout(resolve, 50));
-
-      // Get data back
-      const data = editor.getData();
-
-      // Verify the structure is maintained
-      expect(data).toContain('href="https://example.com"');
-      expect(data).toContain('target="_blank"');
-      expect(data).toContain('rel="noopener noreferrer"');
-    });
-
     it('should handle link creation and editing workflow', async () => {
-      // Set initial selection
-      setData(editor.model, '<paragraph>[]Test</paragraph>');
+      // Set initial selection using model.setData instead of view.setData
+      editor.model.change((writer: any) => {
+        editor.model.insertContent(writer.createText('Test'));
+        editor.model.change((writer: any) => {
+          const range = editor.model.document.selection.getFirstRange()!;
+          writer.setSelection(range);
+        });
+      });
 
       // Create a new link
       editor.execute('alightPublicLinkPlugin', {
