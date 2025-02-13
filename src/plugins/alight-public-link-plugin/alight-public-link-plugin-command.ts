@@ -15,7 +15,7 @@ export default class AlightPublicLinkCommand extends Command {
   constructor(editor: Editor) {
     super(editor);
 
-    // Refresh command state when selection changes
+    // Refresh the command state whenever the selection range changes
     this.listenTo(editor.model.document.selection, 'change:range', () => {
       this.refresh();
     });
@@ -25,15 +25,15 @@ export default class AlightPublicLinkCommand extends Command {
     const model = this.editor.model;
     const selection = model.document.selection;
 
-    // Command is enabled only when there's text selection
+    // Check if the command should be enabled by verifying if the selection allows the attribute
     this.isEnabled = model.schema.checkAttributeInSelection(selection, 'alightPublicLinkPlugin');
 
-    // Set current value based on selection
+    // Retrieve the current attribute value from the selection
     const attributeValue = selection.getAttribute('alightPublicLinkPlugin');
     if (typeof attributeValue === 'object' && attributeValue !== null) {
-      this.value = attributeValue as LinkAttributes;
+      this.value = attributeValue as LinkAttributes; // Store the link attributes if valid
     } else {
-      this.value = undefined;
+      this.value = undefined; // Reset the value if no valid attributes are found
     }
   }
 
@@ -42,7 +42,7 @@ export default class AlightPublicLinkCommand extends Command {
     const selection = model.document.selection;
 
     model.change(writer => {
-      // If no link data provided, remove the link and org name
+      // If no link data is provided, remove the link and associated organization name
       if (!linkData) {
         this._removeLink(writer);
         return;
@@ -52,6 +52,7 @@ export default class AlightPublicLinkCommand extends Command {
       const attributes = { url, orgName };
 
       if (selection.isCollapsed) {
+        // If the selection is collapsed, find the range of the current link and update it
         const position = selection.getFirstPosition()!;
         const range = findAttributeRange(
           position,
@@ -61,10 +62,11 @@ export default class AlightPublicLinkCommand extends Command {
         );
         writer.setAttribute('alightPublicLinkPlugin', attributes, range);
       } else {
+        // If the selection is not collapsed, apply attributes to the selected range
         const ranges = model.schema.getValidRanges(selection.getRanges(), 'alightPublicLinkPlugin');
 
-        // For each valid range, append org name and set attributes
         for (const range of ranges) {
+          // Append the organization name and set the attributes
           this._appendOrgName(writer, range, orgName);
           writer.setAttribute('alightPublicLinkPlugin', attributes, range);
         }
@@ -84,7 +86,7 @@ export default class AlightPublicLinkCommand extends Command {
       )]
       : selection.getRanges();
 
-    // Remove both the link attribute and any appended org name
+    // Iterate through the ranges and remove both the link attribute and any appended organization name
     for (const range of ranges) {
       this._removeOrgName(writer, range);
       writer.removeAttribute('alightPublicLinkPlugin', range);
@@ -92,28 +94,32 @@ export default class AlightPublicLinkCommand extends Command {
   }
 
   private _appendOrgName(writer: any, range: Range, orgName?: string): void {
-    if (!orgName) return;
+    if (!orgName) return; // If no organization name is provided, return early
 
-    const endPosition = range.end;
-    const text = writer.createText(` (${orgName})`);
-    writer.insert(text, endPosition);
-    writer.setSelection(range);
+    const endPosition = range.end; // Get the end position of the selected range
+    const text = writer.createText(` (${orgName})`); // Create a text node with the org name in parentheses
+    writer.insert(text, endPosition); // Insert the text at the end position
+    writer.setSelection(range); // Keep the selection unchanged
   }
 
   private _removeOrgName(writer: any, range: Range): void {
     const value = this.value;
-    if (!value?.orgName) return;
+    if (!value?.orgName) return; // If there is no stored organization name, return early
 
-    const orgNameSuffix = ` (${value.orgName})`;
+    const orgNameSuffix = ` (${value.orgName})`; // Define the expected suffix format
+
+    // Retrieve the text content of the range
     const text = Array.from(range.getItems())
       .filter((item): item is Text => item instanceof Text)
       .map(item => item.data)
       .join('');
 
+    // Check if the text ends with the organization name suffix
     if (text.endsWith(orgNameSuffix)) {
+      // Create positions to remove the suffix from the end of the range
       const start = writer.createPositionAt(range.end.parent, range.end.offset - orgNameSuffix.length);
       const end = writer.createPositionAt(range.end.parent, range.end.offset);
-      writer.remove(writer.createRange(start, end));
+      writer.remove(writer.createRange(start, end)); // Remove the text range containing the suffix
     }
   }
 }

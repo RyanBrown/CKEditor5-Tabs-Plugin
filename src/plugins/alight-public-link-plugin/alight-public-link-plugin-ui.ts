@@ -13,10 +13,10 @@ import './styles/alight-public-link-plugin.scss';
 // The UI component of the public link plugin.
 // Handles the toolbar button, modal dialog, and contextual balloon.
 export default class AlightPublicLinkPluginUI extends Plugin {
-  private _balloon?: ContextualBalloon;
-  private _actionsView?: ActionsView;
-  private _modalDialog?: CKAlightModalDialog;
-  private _storedRange: any = null;
+  private _balloon?: ContextualBalloon; // Holds the reference to the contextual balloon instance
+  private _actionsView?: ActionsView; // Holds the reference to the actions view displayed in the balloon
+  private _modalDialog?: CKAlightModalDialog; // Holds the reference to the modal dialog
+  private _storedRange: any = null; // Stores the selection range when losing focus
 
   // Plugin dependencies
   public static get requires() {
@@ -36,15 +36,16 @@ export default class AlightPublicLinkPluginUI extends Plugin {
     this._balloon = editor.plugins.get(ContextualBalloon);
     // Create actions view for the balloon
     this._actionsView = this._createActionsView();
-    // Add click observer
+    // Add click observer for handling link clicks
     editor.editing.view.addObserver(ClickObserver);
 
+    // Setup toolbar button, click handling, and balloon handling
     this._setupToolbarButton();
     this._setupClickHandling();
     this._setupBalloonHandling();
   }
 
-  // Sets up the toolbar button
+  // Sets up the toolbar button for inserting a public link
   private _setupToolbarButton(): void {
     const editor = this.editor;
     const t = editor.t;
@@ -65,7 +66,7 @@ export default class AlightPublicLinkPluginUI extends Plugin {
       button.bind('isEnabled').to(command);
       button.bind('isOn').to(command, 'value', value => !!value);
 
-      // Handle button click
+      // Handle button click to show the modal
       button.on('execute', () => {
         this._showModal();
       });
@@ -74,7 +75,7 @@ export default class AlightPublicLinkPluginUI extends Plugin {
     });
   }
 
-  // Sets up click handling for links
+  // Sets up click handling for detecting and interacting with links
   private _setupClickHandling(): void {
     const editor = this.editor;
 
@@ -83,14 +84,17 @@ export default class AlightPublicLinkPluginUI extends Plugin {
       const domEvent = data.domEvent as MouseEvent;
       const domElement = domEvent.target as HTMLElement;
 
+      // Check if the clicked element is a link
       if (domElement.tagName === 'A') {
         evt.stop();
         data.preventDefault();
 
+        // Convert DOM element to CKEditor view element
         const viewElement = editor.editing.view.domConverter.domToView(domElement);
         if (viewElement && viewElement.is('element')) {
           const modelElement = editor.editing.mapper.toModelElement(viewElement);
           if (modelElement) {
+            // Set selection on the clicked link
             editor.model.change(writer => {
               writer.setSelection(writer.createRangeOn(modelElement));
             });
@@ -100,6 +104,7 @@ export default class AlightPublicLinkPluginUI extends Plugin {
       }
     });
 
+    // Hide the balloon when editor loses focus
     this.listenTo(editor.ui.focusTracker, 'change:isFocused', (evt, name, isFocused) => {
       if (!isFocused) {
         const selection = editor.model.document.selection;
@@ -112,6 +117,7 @@ export default class AlightPublicLinkPluginUI extends Plugin {
     });
   }
 
+  // Sets up balloon handling for showing the link actions
   private _setupBalloonHandling(): void {
     const editor = this.editor;
 
@@ -278,22 +284,24 @@ export default class AlightPublicLinkPluginUI extends Plugin {
 
 // The view displayed in the balloon
 class ActionsView extends View {
-  public readonly editButtonView: ButtonView;
-  public readonly unlinkButtonView: ButtonView;
-  public readonly linkURLView: View;
-  private _urlText: string = '';
+  public readonly editButtonView: ButtonView; // Button for editing the link
+  public readonly unlinkButtonView: ButtonView; // Button for unlinking the link
+  public readonly linkURLView: View; // View displaying the link URL
+  private _urlText: string = ''; // Stores the displayed URL text
 
   constructor(locale: any) {
     super(locale);
 
+    // Initialize buttons and URL preview
     this.editButtonView = this._createButton('Edit link', editIcon);
     this.unlinkButtonView = this._createButton('Unlink', unlinkIcon);
     this.linkURLView = this._createURLPreview();
 
+    // Set the template for the actions view container
     this.setTemplate({
       tag: 'div',
       attributes: {
-        class: ['ck', 'alight-link-actions'],
+        class: ['ck', 'ck-link-actions', 'alight-link-actions'],
       },
       children: [
         this.linkURLView,
@@ -309,7 +317,7 @@ class ActionsView extends View {
     this.linkURLView.setTemplate({
       tag: 'div',
       attributes: {
-        class: ['ck', 'alight-link-url-preview'],
+        class: ['ck', 'updateLinkDisplay', 'ck-link-actions__preview', 'alight-link-url-preview'],
       },
       children: [
         {
@@ -319,7 +327,7 @@ class ActionsView extends View {
     });
   }
 
-  // Creates a button view
+  // Creates a button view with an icon and label
   private _createButton(label: string, icon: string): ButtonView {
     const button = new ButtonView(this.locale);
 
@@ -339,7 +347,7 @@ class ActionsView extends View {
     view.setTemplate({
       tag: 'div',
       attributes: {
-        class: ['ck', 'alight-link-url-preview'],
+        class: ['ck', '_createURLPreview', 'alight-link-url-preview'],
       },
       children: [
         {
