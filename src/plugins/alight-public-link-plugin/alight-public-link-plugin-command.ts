@@ -9,7 +9,7 @@ export interface LinkAttributes {
   orgName?: string;
 }
 
-export default class AlightPublicLinkCommand extends Command {
+export default class AlightPublicLinkPluginCommand extends Command {
   declare value: LinkAttributes | undefined;
 
   constructor(editor: Editor) {

@@ -2,12 +2,12 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { type Editor } from '@ckeditor/ckeditor5-core';
 import { Link } from '@ckeditor/ckeditor5-link';
-import AlightPublicLinkCommand from './alight-public-link-plugin-command';
+import AlightPublicLinkPluginCommand from './alight-public-link-plugin-command';
 
-export default class AlightPublicLinkEditing extends Plugin {
+export default class AlightPublicLinkPluginEditing extends Plugin {
   // Define the plugin name for CKEditor
   public static get pluginName() {
-    return 'AlightPublicLinkEditing' as const;
+    return 'AlightPublicLinkPluginEditing' as const;
   }
 
   // Declare dependencies for this plugin
@@ -68,6 +68,6 @@ export default class AlightPublicLinkEditing extends Plugin {
   // Define the command associated with the plugin
   private _defineCommands(): void {
     const editor = this.editor;
-    editor.commands.add('alightPublicLinkPlugin', new AlightPublicLinkCommand(editor));
+    editor.commands.add('alightPublicLinkPlugin', new AlightPublicLinkPluginCommand(editor));
   }
 }

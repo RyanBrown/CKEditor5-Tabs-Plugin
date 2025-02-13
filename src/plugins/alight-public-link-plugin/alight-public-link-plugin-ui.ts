@@ -4,7 +4,7 @@ import { ButtonView, ContextualBalloon, View, BalloonPanelView } from '@ckeditor
 import { ClickObserver } from '@ckeditor/ckeditor5-engine';
 import { CKAlightModalDialog } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import { createPublicLinkModalContent, validateForm } from './modal-content/public-website';
-import type AlightPublicLinkCommand from './alight-public-link-plugin-command';
+import type AlightPublicLinkPluginCommand from './alight-public-link-plugin-command';
 import toolBarIcon from './assets/icon-link.svg';
 import editIcon from './assets/icon-pencil.svg';
 import unlinkIcon from './assets/icon-unlink.svg';
@@ -53,7 +53,7 @@ export default class AlightPublicLinkPluginUI extends Plugin {
     // Add toolbar button
     editor.ui.componentFactory.add('alightPublicLinkPlugin', locale => {
       const button = new ButtonView(locale);
-      const command = editor.commands.get('alightPublicLinkPlugin') as AlightPublicLinkCommand;
+      const command = editor.commands.get('alightPublicLinkPlugin') as AlightPublicLinkPluginCommand;
 
       button.set({
         label: t('Insert public link'),
@@ -123,7 +123,7 @@ export default class AlightPublicLinkPluginUI extends Plugin {
 
     // Show balloon on selection change if link is selected
     this.listenTo(editor.model.document.selection, 'change:range', () => {
-      const command = editor.commands.get('alightPublicLinkPlugin') as AlightPublicLinkCommand;
+      const command = editor.commands.get('alightPublicLinkPlugin') as AlightPublicLinkPluginCommand;
       if (command.value) {
         this._showBalloon();
       } else {
@@ -136,7 +136,7 @@ export default class AlightPublicLinkPluginUI extends Plugin {
   private _createActionsView(): ActionsView {
     const editor = this.editor;
     const actionsView = new ActionsView(editor.locale);
-    const command = editor.commands.get('alightPublicLinkPlugin') as AlightPublicLinkCommand;
+    const command = editor.commands.get('alightPublicLinkPlugin') as AlightPublicLinkPluginCommand;
 
     // Handle edit button click
     actionsView.editButtonView.on('execute', () => {
@@ -157,7 +157,7 @@ export default class AlightPublicLinkPluginUI extends Plugin {
   private _showBalloon(): void {
     if (!this._balloon || !this._actionsView) return;
 
-    const command = this.editor.commands.get('alightPublicLinkPlugin') as AlightPublicLinkCommand;
+    const command = this.editor.commands.get('alightPublicLinkPlugin') as AlightPublicLinkPluginCommand;
     const linkUrl = command.value?.url || '';
 
     // Update URL display in balloon
@@ -210,7 +210,7 @@ export default class AlightPublicLinkPluginUI extends Plugin {
 
   private _showModal(initialValue?: { url: string; orgName?: string }): void {
     const editor = this.editor;
-    const command = editor.commands.get('alightPublicLinkPlugin') as AlightPublicLinkCommand;
+    const command = editor.commands.get('alightPublicLinkPlugin') as AlightPublicLinkPluginCommand;
 
     const initialUrl = initialValue?.url || '';
     const initialOrgName = initialValue?.orgName || '';
