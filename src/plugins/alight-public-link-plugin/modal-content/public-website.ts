@@ -132,7 +132,7 @@ export function validateForm(form: HTMLFormElement): boolean {
     // If valid, update the input field with the normalized URL
     urlInput.value = value;
     return true;
-  } catch {
+  } catch (error) { // Added error parameter to catch block to satisfy the parser
     showError(urlInput, urlError, 'Please enter a valid URL.');
     return false;
   }
