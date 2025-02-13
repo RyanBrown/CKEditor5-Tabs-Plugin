@@ -48,22 +48,18 @@ export default class AlightPublicLinkPluginEditing extends Plugin {
         if (!modelAttributeValue) return; // If no attribute value, return undefined
 
         const linkData = modelAttributeValue as { url: string; orgName?: string };
-        const attributes: Record<string, string> = {
+        return writer.createAttributeElement('a', {
           href: linkData.url, // Set href attribute
-          target: '_blank', // Open in a new tab
-          rel: 'noopener noreferrer' // Security attributes
-        };
-
-        // Add orgName as data attribute if present
-        if (linkData.orgName) {
-          attributes['data-org-name'] = linkData.orgName;
-        }
-
-        return writer.createAttributeElement('a', attributes);
+          'target': '_blank', // Open in a new tab
+          'rel': 'noopener noreferrer', // Security attributes
+          ...(linkData.orgName ? { 'data-org-name': linkData.orgName } : {})
+        }, {
+          priority: 5
+        });
       }
     });
 
-    // Define conversion for upcasting (view to model)
+    // Upcast converter (view to model)
     conversion.for('upcast').elementToAttribute({
       view: {
         name: 'a',
@@ -72,16 +68,11 @@ export default class AlightPublicLinkPluginEditing extends Plugin {
         }
       },
       model: {
-        key: 'alightPublicLinkPlugin', // Store the attribute in the model
-        value: (viewElement: { getAttribute: (arg0: string) => any; }) => {
-          const href = viewElement.getAttribute('href');
-          const orgName = viewElement.getAttribute('data-org-name');
-
-          return {
-            url: href,
-            ...(orgName ? { orgName } : {})
-          };
-        }
+        key: 'alightPublicLinkPlugin',
+        value: (viewElement: { getAttribute: (arg0: string) => any; }) => ({
+          url: viewElement.getAttribute('href'),
+          orgName: viewElement.getAttribute('data-org-name')
+        })
       }
     });
   }

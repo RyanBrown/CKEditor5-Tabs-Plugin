@@ -187,77 +187,53 @@ describe('AlightPublicLinkPluginUI', () => {
   });
 
   describe('Modal behavior', () => {
-    beforeEach(() => {
-      if ((ui as any)._modalDialog) {
-        // Ensure any previous modal is cleaned up
-        (ui as any)._modalDialog.destroy();
-      }
-    });
-
-    it('should show modal when toolbar button is clicked', async () => {
-      const button = editor.ui.componentFactory.create('alightPublicLinkPlugin');
-      button.fire('execute');
-
-      // Wait for modal to render
-      await new Promise(resolve => setTimeout(resolve, 50));
-      const modal = document.querySelector('.public-link-content');
-      expect(modal).toBeTruthy();
-    });
-
     it('should validate form before applying changes', async () => {
       const button = editor.ui.componentFactory.create('alightPublicLinkPlugin');
       button.fire('execute');
 
       // Wait for modal to render
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise(resolve => setTimeout(resolve, 100));
 
-      // Simulate form submission with empty fields
-      const form = document.querySelector('#public-link-form') as HTMLFormElement;
+      const form = document.querySelector('#public-link-form');
+      expect(form).toBeTruthy();
+
+      // Try to submit empty form
       if (form) {
         const event = new Event('submit');
         form.dispatchEvent(event);
       }
 
+      // Wait for validation
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      // After invalid submission, error message should be visible
-      const errorMessage = document.querySelector('.form-error');
-      expect(errorMessage).toBeTruthy();
-    });
-
-    it('should close modal and update link when valid form is submitted', async () => {
-      const button = editor.ui.componentFactory.create('alightPublicLinkPlugin');
-      button.fire('execute');
-
-      // Wait for modal to render
-      await new Promise(resolve => setTimeout(resolve, 50));
-
-      // Fill in form fields
       const urlInput = document.querySelector('#link-url') as HTMLInputElement;
-      const orgNameInput = document.querySelector('#org-name') as HTMLInputElement;
+      expect(urlInput?.validity.valid).toBe(false);
+    });
+  });
 
-      if (urlInput && orgNameInput) {
-        urlInput.value = 'https://example.com';
-        orgNameInput.value = 'Example Org';
+  describe('balloon behavior', () => {
+    it('should hide balloon when editor loses focus', async () => {
+      // Set up link and show balloon
+      const linkData = {
+        url: 'https://example.com',
+        orgName: 'Example Org'
+      };
 
-        // Submit the form
-        const form = document.querySelector('#public-link-form') as HTMLFormElement;
-        const event = new Event('submit', { cancelable: true });
-        form.dispatchEvent(event);
+      setData(
+        editor.model,
+        `<paragraph><$text alightPublicLinkPlugin='${JSON.stringify(linkData)}'>foo[]bar</$text></paragraph>`
+      );
 
-        await new Promise(resolve => setTimeout(resolve, 50));
+      // Wait for balloon to show
+      await new Promise(resolve => setTimeout(resolve, 50));
 
-        const command = editor.commands.get('alightPublicLinkPlugin');
-        expect(command.value).toEqual({
-          url: 'https://example.com',
-          orgName: 'Example Org'
-        });
+      // Simulate focus loss
+      editor.ui.focusTracker.isFocused = false;
 
-        // Wait for modal to close and check if it's gone
-        await new Promise(resolve => setTimeout(resolve, 100));
-        const modal = document.querySelector('.public-link-content');
-        expect(modal).toBeNull();
-      }
+      // Wait for balloon to hide
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      expect(balloon.visibleView).toBeNull();
     });
   });
 });

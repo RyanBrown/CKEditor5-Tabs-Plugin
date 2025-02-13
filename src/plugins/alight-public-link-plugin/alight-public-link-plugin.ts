@@ -11,7 +11,7 @@ export default class AlightPublicLinkPlugin extends Plugin {
   // Specifies the required plugins that this plugin depends on.
   // These plugins must be loaded for this plugin to function properly.
   public static get requires() {
-    return [AlightPublicLinkPluginEditing, AlightPublicLinkPluginUI, AlightPublicLinkPluginCommand, Link];
+    return [AlightPublicLinkPluginEditing, AlightPublicLinkPluginUI, Link] as const;
   }
 
   // Defines the unique plugin name used to reference it within CKEditor.
