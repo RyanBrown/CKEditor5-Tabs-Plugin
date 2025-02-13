@@ -41,6 +41,22 @@ describe('AlightPublicLinkPluginUI', () => {
     // Don't call ui.init() or render() as they're already done by ClassicEditor.create()
     ui = editor.plugins.get('AlightPublicLinkPluginUI');
     balloon = editor.plugins.get('ContextualBalloon');
+
+    // Add some content with a link to initialize the editor
+    const linkData = {
+      url: 'https://example.com',
+      orgName: 'Example Org'
+    };
+
+    setData(
+      editor.model,
+      `<paragraph><$text alightPublicLinkPlugin='${JSON.stringify(linkData)}'>foo[]bar</$text></paragraph>`
+    );
+
+    // Force the balloon to show
+    (ui as any)._showBalloon();
+
+    // Now we can safely get the actionsView
     actionsView = balloon.visibleView as ActionsView;
   });
 
@@ -73,34 +89,30 @@ describe('AlightPublicLinkPluginUI', () => {
 
   describe('balloon behavior', () => {
     it('should show balloon when link is selected', () => {
-      const linkData = {
-        url: 'https://example.com',
-        orgName: 'Example Org'
-      };
-
-      setData(
-        editor.model,
-        `<paragraph><$text alightPublicLinkPlugin='${JSON.stringify(linkData)}'>foo[]bar</$text></paragraph>`
-      );
-
       expect(balloon.visibleView).toBeTruthy();
     });
 
     it('should hide balloon when selection moves outside link', () => {
-      const linkData = {
-        url: 'https://example.com',
-        orgName: 'Example Org'
-      };
-
       setData(
         editor.model,
-        `<paragraph><$text alightPublicLinkPlugin='${JSON.stringify(linkData)}'>foo</$text>[]bar</paragraph>`
+        `<paragraph><$text alightPublicLinkPlugin='${JSON.stringify({
+          url: 'https://example.com',
+          orgName: 'Example Org'
+        })}'>foo</$text>[]bar</paragraph>`
       );
 
       expect(balloon.visibleView).toBeNull();
     });
 
     it('should hide balloon when editor loses focus', () => {
+      editor.ui.focusTracker.isFocused = false;
+      expect(balloon.visibleView).toBeNull();
+    });
+  });
+
+  describe('ActionsView', () => {
+    beforeEach(() => {
+      // Ensure we have a visible ActionsView before each test
       const linkData = {
         url: 'https://example.com',
         orgName: 'Example Org'
@@ -111,13 +123,10 @@ describe('AlightPublicLinkPluginUI', () => {
         `<paragraph><$text alightPublicLinkPlugin='${JSON.stringify(linkData)}'>foo[]bar</$text></paragraph>`
       );
 
-      editor.ui.focusTracker.isFocused = false;
-
-      expect(balloon.visibleView).toBeNull();
+      (ui as any)._showBalloon();
+      actionsView = balloon.visibleView as ActionsView;
     });
-  });
 
-  describe('ActionsView', () => {
     it('should render edit button', () => {
       expect(actionsView.editButtonView).toBeTruthy();
       expect(actionsView.editButtonView).toBeInstanceOf(ButtonView);
@@ -166,8 +175,8 @@ describe('AlightPublicLinkPluginUI', () => {
         `<paragraph><$text alightPublicLinkPlugin='${JSON.stringify(linkData)}'>foo[]bar</$text></paragraph>`
       );
 
-      const balloon = editor.plugins.get('ContextualBalloon');
-      const actionsView = balloon.visibleView;
+      (ui as any)._showBalloon();
+      const actionsView = balloon.visibleView as ActionsView;
       actionsView.editButtonView.fire('execute');
 
       const urlInput = document.querySelector('#link-url') as HTMLInputElement;
