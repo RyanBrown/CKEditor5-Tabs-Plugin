@@ -6,8 +6,7 @@ export function getSelectedLinkElement(editor: Editor): Element | null {
   const view = editor.editing.view;
   const selection = view.document.selection;
 
-  const selectedElement = selection.getSelectedElement()
-    || selection.getFirstPosition()?.parent;
+  const selectedElement = selection.getSelectedElement() || selection.getFirstPosition()?.parent;
 
   if (!selectedElement) {
     return null;
@@ -28,4 +27,13 @@ export function getSelectedLinkElement(editor: Editor): Element | null {
   }
 
   return null;
+}
+
+export function hasLinkAttribute(selection: any): boolean {
+  return selection.hasAttribute('alightPublicLinkPlugin');
+}
+
+export function getLinkAttributeValue(selection: any): { url: string; orgName?: string } | undefined {
+  const value = selection.getAttribute('alightPublicLinkPlugin');
+  return value as { url: string; orgName?: string } | undefined;
 }

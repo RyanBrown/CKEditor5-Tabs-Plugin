@@ -1,34 +1,31 @@
 // src/plugins/alight-public-link-plugin/alight-public-link-plugin-ui.ts
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { ButtonView, ContextualBalloon, View, BalloonPanelView } from '@ckeditor/ckeditor5-ui';
-import { LinkUI } from '@ckeditor/ckeditor5-link';
 import { ClickObserver } from '@ckeditor/ckeditor5-engine';
-import { CKAlightModalDialog } from './../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
+import { CKAlightModalDialog } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import { createPublicLinkModalContent, validateForm } from './modal-content/public-website';
 import type AlightPublicLinkCommand from './alight-public-link-plugin-command';
 import toolBarIcon from './assets/icon-link.svg';
+import editIcon from './assets/icon-pencil.svg';
+import unlinkIcon from './assets/icon-unlink.svg';
 import './styles/alight-public-link-plugin.scss';
-import { getSelectedLinkElement } from './alight-public-link-plugin-utils';
-import type { LinkAttributes } from './alight-public-link-plugin-command';
 
 // The UI component of the public link plugin.
 // Handles the toolbar button, modal dialog, and contextual balloon.
-export default class AlightPublicLinkUI extends Plugin {
-  // Reference to the modal dialog instance
-  private _modalDialog?: CKAlightModalDialog;
-  // Reference to the contextual balloon plugin instance
+export default class AlightPublicLinkPluginUI extends Plugin {
   private _balloon?: ContextualBalloon;
-  // Reference to the actions view displayed in the balloon
   private _actionsView?: ActionsView;
+  private _modalDialog?: CKAlightModalDialog;
+  private _storedRange: any = null;
 
   // Plugin dependencies
   public static get requires() {
-    return [LinkUI, ContextualBalloon];
+    return [ContextualBalloon];
   }
 
   // Plugin name
   public static get pluginName() {
-    return 'AlightPublicLinkUI' as const;
+    return 'AlightPublicLinkPluginUI' as const;
   }
 
   // Initializes the plugin
@@ -37,14 +34,14 @@ export default class AlightPublicLinkUI extends Plugin {
 
     // Get the balloon plugin instance
     this._balloon = editor.plugins.get(ContextualBalloon);
-    // Create the actions view for the balloon
+    // Create actions view for the balloon
     this._actionsView = this._createActionsView();
-    // Add click observer to the editing view
+    // Add click observer
     editor.editing.view.addObserver(ClickObserver);
 
     this._setupToolbarButton();
     this._setupClickHandling();
-    this._handleBalloonEditing();
+    this._setupBalloonHandling();
   }
 
   // Sets up the toolbar button
@@ -69,7 +66,7 @@ export default class AlightPublicLinkUI extends Plugin {
       button.bind('isOn').to(command, 'value', value => !!value);
 
       // Handle button click
-      this.listenTo(button, 'execute', () => {
+      button.on('execute', () => {
         this._showModal();
       });
 
@@ -82,20 +79,48 @@ export default class AlightPublicLinkUI extends Plugin {
     const editor = this.editor;
 
     // Handle clicks in the editor
-    this.listenTo(editor.editing.view.document, 'click', () => {
-      const command = editor.commands.get('alightPublicLinkPlugin') as AlightPublicLinkCommand;
-      const selectedElement = getSelectedLinkElement(editor);
+    this.listenTo(editor.editing.view.document, 'click', (evt, data) => {
+      const domEvent = data.domEvent as MouseEvent;
+      const domElement = domEvent.target as HTMLElement;
 
-      if (selectedElement) {
-        this._showBalloon(selectedElement);
-      } else {
-        this._hideBalloon();
+      if (domElement.tagName === 'A') {
+        evt.stop();
+        data.preventDefault();
+
+        const viewElement = editor.editing.view.domConverter.domToView(domElement);
+        if (viewElement && viewElement.is('element')) {
+          const modelElement = editor.editing.mapper.toModelElement(viewElement);
+          if (modelElement) {
+            editor.model.change(writer => {
+              writer.setSelection(writer.createRangeOn(modelElement));
+            });
+            this._showBalloon();
+          }
+        }
       }
     });
 
-    // Handle editor focus changes
-    this.listenTo(editor.ui, 'update', () => {
-      if (!editor.ui.focusTracker.isFocused) {
+    this.listenTo(editor.ui.focusTracker, 'change:isFocused', (evt, name, isFocused) => {
+      if (!isFocused) {
+        const selection = editor.model.document.selection;
+        const range = selection.getFirstRange();
+        if (range) {
+          this._storedRange = range;
+        }
+        this._hideBalloon();
+      }
+    });
+  }
+
+  private _setupBalloonHandling(): void {
+    const editor = this.editor;
+
+    // Show balloon on selection change if link is selected
+    this.listenTo(editor.model.document.selection, 'change:range', () => {
+      const command = editor.commands.get('alightPublicLinkPlugin') as AlightPublicLinkCommand;
+      if (command.value) {
+        this._showBalloon();
+      } else {
         this._hideBalloon();
       }
     });
@@ -123,23 +148,49 @@ export default class AlightPublicLinkUI extends Plugin {
   }
 
   // Shows the balloon with link actions
-  private _showBalloon(targetElement: any): void {
+  private _showBalloon(): void {
     if (!this._balloon || !this._actionsView) return;
 
     const command = this.editor.commands.get('alightPublicLinkPlugin') as AlightPublicLinkCommand;
     const linkUrl = command.value?.url || '';
 
-    // Update the URL display in the balloon
+    // Update URL display in balloon
     this._actionsView.updateLinkDisplay(linkUrl);
 
+    const positions = BalloonPanelView.defaultPositions;
+    const selection = this.editor.model.document.selection;
+    const range = selection.getFirstRange();
+
+    if (!range) return;
+
+    // Convert model position to view position for balloon placement
+    const viewRange = this.editor.editing.mapper.toViewRange(range);
+    const domRange = this.editor.editing.view.domConverter.viewRangeToDom(viewRange);
+
+    if (!domRange) return;
+
     if (this._balloon.hasView(this._actionsView)) {
-      // If the balloon is already visible, just update its position
-      this._balloon.updatePosition(this._getBalloonPositionData(targetElement));
+      this._balloon.updatePosition({
+        target: domRange,
+        positions: [
+          positions.northArrowSouth,
+          positions.southArrowNorth,
+          positions.eastArrowWest,
+          positions.westArrowEast
+        ]
+      });
     } else {
-      // Add the view to the balloon
       this._balloon.add({
         view: this._actionsView,
-        position: this._getBalloonPositionData(targetElement)
+        position: {
+          target: domRange,
+          positions: [
+            positions.northArrowSouth,
+            positions.southArrowNorth,
+            positions.eastArrowWest,
+            positions.westArrowEast
+          ]
+        }
       });
     }
   }
@@ -151,26 +202,12 @@ export default class AlightPublicLinkUI extends Plugin {
     }
   }
 
-  // Gets the balloon position data
-  private _getBalloonPositionData(targetElement: any) {
-    const editor = this.editor;
-    const positions = BalloonPanelView.defaultPositions;
-
-    return {
-      target: editor.editing.view.domConverter.mapViewToDom(targetElement),
-      positions: Array.isArray(positions) ? positions : Object.values(positions)
-    };
-  }
-
-  // Shows the modal dialog for link editing
-  private _showModal(initialValue?: LinkAttributes): void {
+  private _showModal(initialValue?: { url: string; orgName?: string }): void {
     const editor = this.editor;
     const command = editor.commands.get('alightPublicLinkPlugin') as AlightPublicLinkCommand;
 
-    // Get initial values
-    const currentLink = command.value;
-    const initialUrl = currentLink?.url || initialValue?.url || '';
-    const initialOrgName = currentLink?.orgName || initialValue?.orgName || '';
+    const initialUrl = initialValue?.url || '';
+    const initialOrgName = initialValue?.orgName || '';
 
     if (!this._modalDialog) {
       this._modalDialog = new CKAlightModalDialog({
@@ -194,7 +231,7 @@ export default class AlightPublicLinkUI extends Plugin {
             position: 'right',
             isPrimary: true,
             shape: 'round',
-            closeOnClick: false // Prevent automatic closing
+            closeOnClick: false
           }
         ]
       });
@@ -214,11 +251,10 @@ export default class AlightPublicLinkUI extends Plugin {
             const urlInput = form?.querySelector('#link-url') as HTMLInputElement;
             const orgNameInput = form?.querySelector('#org-name') as HTMLInputElement;
 
-            const linkData: LinkAttributes = {
+            command.execute({
               url: urlInput.value,
               orgName: orgNameInput?.value || undefined
-            };
-            command.execute(linkData);
+            });
             this._modalDialog?.hide(); // Only close if validation passes
           }
           // If validation fails, modal stays open
@@ -230,19 +266,6 @@ export default class AlightPublicLinkUI extends Plugin {
     const content = createPublicLinkModalContent(initialUrl, initialOrgName);
     this._modalDialog.setContent(content);
     this._modalDialog.show();
-  }
-
-  // Handles balloon editing integration
-  private _handleBalloonEditing(): void {
-    const editor = this.editor;
-    const linkUI = editor.plugins.get(LinkUI);
-
-    // Override the actionsView's edit button click handler
-    this.listenTo(linkUI, 'edit', (evt, data) => {
-      evt.stop();
-      const command = editor.commands.get('alightPublicLinkPlugin') as AlightPublicLinkCommand;
-      this._showModal(command.value);
-    });
   }
 
   // Destroys the plugin
@@ -263,8 +286,8 @@ class ActionsView extends View {
   constructor(locale: any) {
     super(locale);
 
-    this.editButtonView = this._createButton('Edit link', '📝');
-    this.unlinkButtonView = this._createButton('Unlink', '🔗');
+    this.editButtonView = this._createButton('Edit link', editIcon);
+    this.unlinkButtonView = this._createButton('Unlink', unlinkIcon);
     this.linkURLView = this._createURLPreview();
 
     this.setTemplate({

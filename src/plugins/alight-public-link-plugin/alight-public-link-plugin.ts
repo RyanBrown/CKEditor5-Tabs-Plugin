@@ -2,11 +2,11 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { Link } from '@ckeditor/ckeditor5-link';
 import AlightPublicLinkEditing from './alight-public-link-plugin-editing';
-import AlightPublicLinkUI from './alight-public-link-plugin-ui';
+import AlightPublicLinkPluginUI from './alight-public-link-plugin-ui';
 
 export default class AlightPublicLinkPlugin extends Plugin {
   public static get requires() {
-    return [AlightPublicLinkEditing, AlightPublicLinkUI, Link];
+    return [AlightPublicLinkEditing, AlightPublicLinkPluginUI, Link];
   }
 
   public static get pluginName() {
