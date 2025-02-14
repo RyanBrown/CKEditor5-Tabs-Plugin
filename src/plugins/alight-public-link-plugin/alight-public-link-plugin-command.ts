@@ -1,4 +1,4 @@
-// 1. Fix for alight-public-link-plugin-command.ts
+// src/plugins/alight-public-link-plugin/alight-public-link-plugin-command.ts
 import { Command } from '@ckeditor/ckeditor5-core';
 import type { Editor } from '@ckeditor/ckeditor5-core';
 import { findAttributeRange } from '@ckeditor/ckeditor5-typing';
