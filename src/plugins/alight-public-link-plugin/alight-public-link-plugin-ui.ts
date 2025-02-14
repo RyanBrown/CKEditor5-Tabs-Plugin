@@ -61,7 +61,7 @@ export default class AlightPublicLinkPluginUI extends Plugin {
       }
 
       button.set({
-        label: t('Insert public link'),
+        label: t('Public Link'),
         icon: toolBarIcon,
         tooltip: true,
         withText: true,

@@ -61,7 +61,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
       }
 
       button.set({
-        label: t('Insert predefined link'),
+        label: t('Predefined Link'),
         icon: toolBarIcon,
         tooltip: true,
         withText: true,
