@@ -61,6 +61,7 @@ import TabsPlugin from './plugins/alight-tabs-plugin/alight-tabs-plugin';
 
 import AlightCustomModalLinkPlugin from './plugins/alight-custom-modal-link-plugin/alight-custom-modal-link-plugin';
 import AlightPublicLinkPlugin from './plugins/alight-public-link-plugin/alight-public-link-plugin';
+import AlightPredefinedLinkPlugin from './plugins/alight-predefined-link-plugin/alight-predefined-link-plugin';
 
 // Import custom styles for headings, style definitions and custom plugins
 import './styles/styles.scss';
@@ -178,7 +179,8 @@ class Editor extends ClassicEditor {
         AlightPopulationPlugin,
         TabsPlugin,
         AlightCustomModalLinkPlugin,
-        AlightPublicLinkPlugin
+        AlightPublicLinkPlugin,
+        AlightPredefinedLinkPlugin
     ];
 
     public static override defaultConfig: EditorConfig = {
@@ -235,7 +237,8 @@ class Editor extends ClassicEditor {
                 'alightPopulationPlugin',
                 'alightLinkPlugin',
                 // 'alightCustomModalLinkPlugin',
-                'alightPublicLinkPlugin'
+                'alightPublicLinkPlugin',
+                'alightPredefinedLinkPlugin'
             ],
             shouldNotGroupWhenFull: true,
         },
