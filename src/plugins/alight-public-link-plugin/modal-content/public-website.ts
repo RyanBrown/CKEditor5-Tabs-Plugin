@@ -53,6 +53,40 @@ export function createPublicLinkModalContent(initialValue?: string, initialOrgNa
                     placeholder="Organization name"
                 />
             </div>
+
+            <div>
+              <h3 class="cka-link-type-heading">Choose a Link Type</h3>
+
+              <ul class="cka-radio-group">
+                <li>
+                  <div class="radio-container">
+                    <cka-radio-button 
+                      name="link-type" 
+                      value="external" 
+                      label="External link"
+                    ></cka-radio-button>
+                  </div>
+                </li>
+                <li>
+                  <div class="radio-container">
+                    <cka-radio-button 
+                      name="link-type" 
+                      value="internal" 
+                      label="Internal Link"
+                    ></cka-radio-button>
+                  </div>
+                </li>
+                <li>
+                  <div class="radio-container">
+                    <cka-radio-button 
+                      name="link-type" 
+                      value="email" 
+                      label="Email Link"
+                    ></cka-radio-button>
+                  </div>
+                </li>
+              </ul>
+            </div>
             
             <p class="note-text">
                 Organization Name (optional): Specify the third-party organization to inform users about the link's destination.
@@ -87,15 +121,6 @@ function normalizeUrl(value: string): string {
   // Add default protocol
   return `https://${cleanValue}`;
 }
-
-// function isValidUrl(value: string): boolean {
-//   try {
-//     const url = new URL(value);
-//     return ['http:', 'https:'].includes(url.protocol);
-//   } catch {
-//     return false;
-//   }
-// }
 
 /**
  * Validates the form input by checking if a valid URL is provided.
