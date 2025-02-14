@@ -1,7 +1,6 @@
 // src/plugins/alight-copy-plugin/alight-copy-plugin-command.ts
 import { Editor } from '@ckeditor/ckeditor5-core';
 import Command from '@ckeditor/ckeditor5-core/src/command';
-import { Notification } from '@ckeditor/ckeditor5-ui';
 import { DocumentSelection } from '@ckeditor/ckeditor5-engine';
 
 export default class alightCopyPluginPluginCommand extends Command {
@@ -73,20 +72,20 @@ export default class alightCopyPluginPluginCommand extends Command {
         document.body.removeChild(tempContainer);
       }
 
-      // Show success notification
-      const notification = this.editor.plugins.get('Notification') as any;
-      notification.show('Content copied with styles!', {
-        type: 'success',
-        namespace: 'alightCopyPlugin'
+      // Show success notification using the correct API
+      const notification = this.editor.plugins.get('Notification');
+      notification.showSuccess('Content copied with styles!', {
+        namespace: 'alightCopyPlugin',
+        title: 'Success'
       });
     } catch (error) {
       console.error('Error copying content:', error);
 
-      // Show error notification
-      const notification = this.editor.plugins.get('Notification') as any;
-      notification.show('Failed to copy content. Please try again.', {
-        type: 'error',
-        namespace: 'alightCopyPlugin'
+      // Show error notification using the correct API
+      const notification = this.editor.plugins.get('Notification');
+      notification.showWarning('Failed to copy content. Please try again.', {
+        namespace: 'alightCopyPlugin',
+        title: 'Error'
       });
     }
   }
