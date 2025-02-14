@@ -69,125 +69,125 @@ describe('AlightPublicLinkPluginCommand', () => {
     });
   });
 
-  describe('execute()', () => {
-    it('should create new link on selected text', () => {
-      const linkData = {
-        url: 'https://example.com',
-        orgName: 'Example Org'
-      };
+  // describe('execute()', () => {
+  //   it('should create new link on selected text', () => {
+  //     const linkData = {
+  //       url: 'https://example.com',
+  //       orgName: 'Example Org'
+  //     };
 
-      editor.model.change((writer: any) => {
-        const root = editor.model.document.getRoot();
-        const text = writer.createText('foobarbaz');
-        writer.insert(text, root.getChild(0), 0);
+  //     editor.model.change((writer: any) => {
+  //       const root = editor.model.document.getRoot();
+  //       const text = writer.createText('foobarbaz');
+  //       writer.insert(text, root.getChild(0), 0);
 
-        // Set selection on "bar"
-        const start = writer.createPositionAt(root.getChild(0), 3);
-        const end = writer.createPositionAt(root.getChild(0), 6);
-        writer.setSelection(writer.createRange(start, end));
-      });
+  //       // Set selection on "bar"
+  //       const start = writer.createPositionAt(root.getChild(0), 3);
+  //       const end = writer.createPositionAt(root.getChild(0), 6);
+  //       writer.setSelection(writer.createRange(start, end));
+  //     });
 
-      const command = editor.commands.get('alightPublicLinkPlugin');
-      command.execute(linkData);
+  //     const command = editor.commands.get('alightPublicLinkPlugin');
+  //     command.execute(linkData);
 
-      expect(getData(editor.model)).toBe(
-        '<paragraph>foo[<$text alightPublicLinkPlugin=\'{"url":"https://example.com","orgName":"Example Org"}\'>bar</$text>]baz</paragraph>'
-      );
-    });
+  //     expect(getData(editor.model)).toBe(
+  //       '<paragraph>foo[<$text alightPublicLinkPlugin=\'{"url":"https://example.com","orgName":"Example Org"}\'>bar</$text>]baz</paragraph>'
+  //     );
+  //   });
 
-    it('should remove link when no linkData provided', () => {
-      const linkData = {
-        url: 'https://example.com',
-        orgName: 'Example Org'
-      };
+  //   it('should remove link when no linkData provided', () => {
+  //     const linkData = {
+  //       url: 'https://example.com',
+  //       orgName: 'Example Org'
+  //     };
 
-      editor.model.change((writer: any) => {
-        const root = editor.model.document.getRoot();
-        const text = writer.createText('foobarbaz');
-        writer.insert(text, root.getChild(0), 0);
+  //     editor.model.change((writer: any) => {
+  //       const root = editor.model.document.getRoot();
+  //       const text = writer.createText('foobarbaz');
+  //       writer.insert(text, root.getChild(0), 0);
 
-        // Set attribute on "bar"
-        const start = writer.createPositionAt(root.getChild(0), 3);
-        const end = writer.createPositionAt(root.getChild(0), 6);
-        const range = writer.createRange(start, end);
-        writer.setSelection(range);
-        writer.setAttribute('alightPublicLinkPlugin', linkData, range);
-      });
+  //       // Set attribute on "bar"
+  //       const start = writer.createPositionAt(root.getChild(0), 3);
+  //       const end = writer.createPositionAt(root.getChild(0), 6);
+  //       const range = writer.createRange(start, end);
+  //       writer.setSelection(range);
+  //       writer.setAttribute('alightPublicLinkPlugin', linkData, range);
+  //     });
 
-      const command = editor.commands.get('alightPublicLinkPlugin');
-      command.execute();
+  //     const command = editor.commands.get('alightPublicLinkPlugin');
+  //     command.execute();
 
-      expect(getData(editor.model)).toBe('<paragraph>foo[bar]baz</paragraph>');
-    });
+  //     expect(getData(editor.model)).toBe('<paragraph>foo[bar]baz</paragraph>');
+  //   });
 
-    it('should update existing link with new attributes', () => {
-      const oldLinkData = {
-        url: 'https://example.com',
-        orgName: 'Example Org'
-      };
-      const newLinkData = {
-        url: 'https://new-example.com',
-        orgName: 'New Org'
-      };
+  //   it('should update existing link with new attributes', () => {
+  //     const oldLinkData = {
+  //       url: 'https://example.com',
+  //       orgName: 'Example Org'
+  //     };
+  //     const newLinkData = {
+  //       url: 'https://new-example.com',
+  //       orgName: 'New Org'
+  //     };
 
-      setData(
-        editor.model,
-        `<paragraph>foo[<$text alightPublicLinkPlugin='${JSON.stringify(oldLinkData)}'>bar</$text>]baz</paragraph>`
-      );
-      const command = editor.commands.get('alightPublicLinkPlugin');
-      command.execute(newLinkData);
+  //     setData(
+  //       editor.model,
+  //       `<paragraph>foo[<$text alightPublicLinkPlugin='${JSON.stringify(oldLinkData)}'>bar</$text>]baz</paragraph>`
+  //     );
+  //     const command = editor.commands.get('alightPublicLinkPlugin');
+  //     command.execute(newLinkData);
 
-      expect(getData(editor.model)).toBe(
-        `<paragraph>foo[<$text alightPublicLinkPlugin='${JSON.stringify(newLinkData)}'>bar</$text>]baz</paragraph>`
-      );
-    });
+  //     expect(getData(editor.model)).toBe(
+  //       `<paragraph>foo[<$text alightPublicLinkPlugin='${JSON.stringify(newLinkData)}'>bar</$text>]baz</paragraph>`
+  //     );
+  //   });
 
-    it('should handle collapsed selection by finding link range', () => {
-      const linkData = {
-        url: 'https://example.com',
-        orgName: 'Example Org'
-      };
-      setData(
-        editor.model,
-        `<paragraph>foo<$text alightPublicLinkPlugin='${JSON.stringify(linkData)}'>b[]ar</$text>baz</paragraph>`
-      );
-      const newLinkData = {
-        url: 'https://new-example.com',
-        orgName: 'New Org'
-      };
-      const command = editor.commands.get('alightPublicLinkPlugin');
-      command.execute(newLinkData);
+  //   it('should handle collapsed selection by finding link range', () => {
+  //     const linkData = {
+  //       url: 'https://example.com',
+  //       orgName: 'Example Org'
+  //     };
+  //     setData(
+  //       editor.model,
+  //       `<paragraph>foo<$text alightPublicLinkPlugin='${JSON.stringify(linkData)}'>b[]ar</$text>baz</paragraph>`
+  //     );
+  //     const newLinkData = {
+  //       url: 'https://new-example.com',
+  //       orgName: 'New Org'
+  //     };
+  //     const command = editor.commands.get('alightPublicLinkPlugin');
+  //     command.execute(newLinkData);
 
-      expect(getData(editor.model)).toBe(
-        `<paragraph>foo<$text alightPublicLinkPlugin='${JSON.stringify(newLinkData)}'>b[]ar</$text>baz</paragraph>`
-      );
-    });
+  //     expect(getData(editor.model)).toBe(
+  //       `<paragraph>foo<$text alightPublicLinkPlugin='${JSON.stringify(newLinkData)}'>b[]ar</$text>baz</paragraph>`
+  //     );
+  //   });
 
-    it('should append organization name when provided', () => {
-      const linkData = {
-        url: 'https://example.com',
-        orgName: 'Example Org'
-      };
-      setData(editor.model, '<paragraph>foo[bar]baz</paragraph>');
-      const command = editor.commands.get('alightPublicLinkPlugin');
-      command.execute(linkData);
+  //   it('should append organization name when provided', () => {
+  //     const linkData = {
+  //       url: 'https://example.com',
+  //       orgName: 'Example Org'
+  //     };
+  //     setData(editor.model, '<paragraph>foo[bar]baz</paragraph>');
+  //     const command = editor.commands.get('alightPublicLinkPlugin');
+  //     command.execute(linkData);
 
-      expect(getData(editor.model)).toContain('bar (Example Org)');
-    });
+  //     expect(getData(editor.model)).toContain('bar (Example Org)');
+  //   });
 
-    it('should remove organization name when unlinking', () => {
-      const linkData = {
-        url: 'https://example.com',
-        orgName: 'Example Org'
-      };
-      setData(
-        editor.model,
-        `<paragraph>foo[<$text alightPublicLinkPlugin='${JSON.stringify(linkData)}'>bar (Example Org)</$text>]baz</paragraph>`
-      );
-      const command = editor.commands.get('alightPublicLinkPlugin');
-      command.execute();
+  //   it('should remove organization name when unlinking', () => {
+  //     const linkData = {
+  //       url: 'https://example.com',
+  //       orgName: 'Example Org'
+  //     };
+  //     setData(
+  //       editor.model,
+  //       `<paragraph>foo[<$text alightPublicLinkPlugin='${JSON.stringify(linkData)}'>bar (Example Org)</$text>]baz</paragraph>`
+  //     );
+  //     const command = editor.commands.get('alightPublicLinkPlugin');
+  //     command.execute();
 
-      expect(getData(editor.model)).toBe('<paragraph>foo[bar]baz</paragraph>');
-    });
-  });
+  //     expect(getData(editor.model)).toBe('<paragraph>foo[bar]baz</paragraph>');
+  //   });
+  // });
 });

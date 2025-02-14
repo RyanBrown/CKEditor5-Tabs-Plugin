@@ -306,7 +306,7 @@ class ActionsView extends View {
     this.setTemplate({
       tag: 'div',
       attributes: {
-        class: ['ck', 'ck-link-actions', 'alight-link-actions'],
+        class: ['ck', 'ck-link-actions', 'ck-responsive-form', 'alight-link-actions'],
       },
       children: [
         this.linkURLView,

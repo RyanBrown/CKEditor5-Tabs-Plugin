@@ -108,26 +108,16 @@ describe('AlightPublicLinkPluginUI', () => {
     });
 
     it('should hide balloon when editor loses focus', async () => {
-      // Move selection to end of paragraph
-      editor.model.change((writer: any) => {
-        // Clear the editor content first
-        writer.remove(writer.createRangeIn(editor.model.document.getRoot()));
+      // Set up link and show balloon
+      const linkData = {
+        url: 'https://example.com',
+        orgName: 'Example Org'
+      };
 
-        // Add new content with a link
-        const text = writer.createText('foobarbaz');
-        writer.insert(text, editor.model.document.getRoot().getChild(0), 0);
-
-        const start = writer.createPositionAt(editor.model.document.getRoot().getChild(0), 3);
-        const end = writer.createPositionAt(editor.model.document.getRoot().getChild(0), 6);
-        const range = writer.createRange(start, end);
-
-        writer.setAttribute('alightPublicLinkPlugin', {
-          url: 'https://example.com',
-          orgName: 'Example Org'
-        }, range);
-
-        writer.setSelection(range);
-      });
+      setData(
+        editor.model,
+        `<paragraph><$text alightPublicLinkPlugin='${JSON.stringify(linkData)}'>foo[]bar</$text></paragraph>`
+      );
 
       // Wait for balloon to show
       await new Promise(resolve => setTimeout(resolve, 50));
@@ -224,32 +214,6 @@ describe('AlightPublicLinkPluginUI', () => {
 
       const urlInput = document.querySelector('#link-url') as HTMLInputElement;
       expect(urlInput?.validity.valid).toBe(false);
-    });
-  });
-
-  describe('balloon behavior', () => {
-    it('should hide balloon when editor loses focus', async () => {
-      // Set up link and show balloon
-      const linkData = {
-        url: 'https://example.com',
-        orgName: 'Example Org'
-      };
-
-      setData(
-        editor.model,
-        `<paragraph><$text alightPublicLinkPlugin='${JSON.stringify(linkData)}'>foo[]bar</$text></paragraph>`
-      );
-
-      // Wait for balloon to show
-      await new Promise(resolve => setTimeout(resolve, 50));
-
-      // Simulate focus loss
-      editor.ui.focusTracker.isFocused = false;
-
-      // Wait for balloon to hide
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      expect(balloon.visibleView).toBeNull();
     });
   });
 });

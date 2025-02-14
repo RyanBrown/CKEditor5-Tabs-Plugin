@@ -234,7 +234,7 @@ class Editor extends ClassicEditor {
                 'alightImagePlugin',
                 'alightPopulationPlugin',
                 'alightLinkPlugin',
-                'alightCustomModalLinkPlugin',
+                // 'alightCustomModalLinkPlugin',
                 'alightPublicLinkPlugin'
             ],
             shouldNotGroupWhenFull: true,
