@@ -1,0 +1,1 @@
+// src/plugins/alight-paste-plugin/alight-paste-plugin-command.ts

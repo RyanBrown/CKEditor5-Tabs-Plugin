@@ -1,8 +1,8 @@
+// src/plugins/alight-paste-plugin/alight-paste-plugin.ts
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
 import { Locale } from '@ckeditor/ckeditor5-utils';
 import ToolBarIcon from './assets/icon-paste.svg';
-import './styles/alight-paste-plugin.scss';
 
 export default class AlightPastePlugin extends Plugin {
   init() {
