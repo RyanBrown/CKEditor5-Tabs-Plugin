@@ -1,31 +1,41 @@
 // src/plugins/alight-paste-plugin/alight-paste-plugin.ts
-import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
-import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
-import { Locale } from '@ckeditor/ckeditor5-utils';
+import { Editor, Plugin } from '@ckeditor/ckeditor5-core';
+import { ButtonView } from '@ckeditor/ckeditor5-ui';
 import ToolBarIcon from './assets/icon-paste.svg';
+import AlightPastePluginCommand from './alight-paste-plugin-command';
 
 export default class AlightPastePlugin extends Plugin {
-  init() {
+  static get pluginName(): string {
+    return 'AlightPastePlugin';
+  }
+
+  constructor(editor: Editor) {
+    super(editor);
+  }
+
+  init(): void {
     const editor = this.editor;
     const t = editor.t;
 
-    // Add a new toolbar button named 'alertButton'.
-    editor.ui.componentFactory.add('alightPastePlugin', (locale: Locale) => {
-      const buttonView = new ButtonView(locale);
+    // Register the paste command
+    editor.commands.add('alightPastePlugin', new AlightPastePluginCommand(editor));
 
-      buttonView.set({
+    // Add the toolbar button
+    editor.ui.componentFactory.add('alightPastePlugin', locale => {
+      const button = new ButtonView(locale);
+
+      button.set({
+        label: t('Paste with Styles'),
         icon: ToolBarIcon,
-        label: t('Alight Paste'),
-        tooltip: true,
-        withText: false,
+        tooltip: true
       });
 
-      // Add the click event listener.
-      buttonView.on('execute', () => {
-        alert(t('Hello! This is the "Paste" plugin.'));
+      // Execute command on button click
+      button.on('execute', () => {
+        editor.execute('alightPastePlugin');
       });
 
-      return buttonView;
+      return button;
     });
   }
 }
