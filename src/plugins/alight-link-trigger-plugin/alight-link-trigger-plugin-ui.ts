@@ -8,7 +8,8 @@ import {
 } from '@ckeditor/ckeditor5-ui';
 import { Collection } from '@ckeditor/ckeditor5-utils';
 import type { LinkTriggerItem } from './alight-link-trigger-plugin-utils';
-import icon from '../assets/icon-link.svg';
+import ToolBarIcon from '../assets/icon-link.svg';
+import './styles/alight-link-trigger-plugin.scss';
 
 export default class AlightLinkTriggerUI extends Plugin {
   init(): void {
@@ -22,8 +23,9 @@ export default class AlightLinkTriggerUI extends Plugin {
       // Configure dropdown
       dropdown.buttonView.set({
         label: t('Choose Link Type'),
-        icon,
-        tooltip: true
+        icon: ToolBarIcon,
+        tooltip: true,
+        withText: true,
       });
 
       // Add items to dropdown
