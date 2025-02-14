@@ -1,15 +1,6 @@
 // src/plugins/ui-components/alight-radio-component/styles/alight-radio-component.scss
 @use './../../../../styles/mixins' as mixins;
 
-// Variables
-$radio-primary-color: #007ad9;
-$radio-hover-color: #005bb5;
-$radio-text-color: #333;
-$radio-disabled-color: #a8a8a8;
-$radio-background-color: var(--neutral-white);
-$radio-focus-shadow: rgba(0, 122, 217, 0.3);
-$radio-disabled-background-color: #f5f5f5;
-
 // Reset default styles for the custom element
 cka-radio-button {
   display: inline-block;
@@ -19,7 +10,7 @@ cka-radio-button {
 // Main radio button container
 .cka-radio-button {
   align-items: center;
-  color: $radio-text-color;
+  color: var(--neutral-black);
   cursor: pointer;
   display: flex;
   font-size: 1rem;
@@ -39,68 +30,76 @@ cka-radio-button {
 
   // Custom radio icon
   .cka-radio-icon {
-    background-color: $radio-background-color;
+    background-color: var(--neutral-white);
     border-radius: 50%;
-    border: 2px solid $radio-primary-color;
+    border: 2px solid var(--gray-400);
     box-sizing: border-box;
-    height: 1.2rem;
+    height: mixins.toRem(20);
     left: 0;
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
     transition: border-color 0.3s, background-color 0.3s;
-    width: 1.2rem;
+    width: mixins.toRem(20);
 
     // Inner circle for checked state
     &::after {
+      background-color: var(--primary);
+      border-radius: 50%;
       content: "";
+      height: mixins.toRem(12);
+      left: 50%;
+      opacity: 0;
       position: absolute;
       top: 50%;
-      left: 50%;
       transform: translate(-50%, -50%) scale(0);
-      width: 0.6rem;
-      height: 0.6rem;
-      background-color: $radio-primary-color;
-      border-radius: 50%;
       transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
-      opacity: 0;
+      width: mixins.toRem(12);
     }
   }
 
   // Checked state
-  .cka-radio-input:checked+.cka-radio-icon::after {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 1;
+  .cka-radio-input:checked {
+    +.cka-radio-icon {
+      background-color: var(--primary);
+      border-color: var(--primary);
+
+      &::after {
+        background-color: var(--neutral-white);
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+    }
   }
 
   // Hover effects
   &:hover {
     .cka-radio-icon {
-      border-color: $radio-hover-color;
+      border-color: var(--primary);
     }
 
     .label-text {
-      color: $radio-hover-color;
+      color: var(--primary);
     }
   }
 
   // Focus styles for accessibility
   .cka-radio-input:focus+.cka-radio-icon {
-    box-shadow: 0 0 0 3px $radio-focus-shadow;
+    box-shadow: 0 0 0 3px rgba(0, 122, 217, 0.3);
   }
 
   // Disabled state
   &.disabled {
-    color: $radio-disabled-color;
+    color: var(--gray-500);
     cursor: not-allowed;
 
     .cka-radio-icon {
-      background-color: $radio-disabled-background-color;
-      border-color: $radio-disabled-color;
+      background-color: var(--neutral-athens-gray);
+      border-color: var(--gray-500);
     }
 
     .cka-radio-input:checked+.cka-radio-icon::after {
-      background-color: $radio-disabled-color;
+      background-color: var(--gray-500);
     }
   }
 
