@@ -38,44 +38,40 @@ export default class alightCopyPluginPluginCommand extends Command {
 
   private async _copyToClipboard(content: string): Promise<void> {
     try {
-      // Create a temporary container to preserve styling
-      const tempContainer = document.createElement('div');
-      tempContainer.style.position = 'absolute';
-      tempContainer.style.left = '-9999px';
-      tempContainer.innerHTML = content;
-      document.body.appendChild(tempContainer);
+      // Try using the modern Clipboard API first
+      const type = 'text/html';
+      const blob = new Blob([content], { type });
+      const data = [new ClipboardItem({ [type]: blob })];
 
-      // Create a range and selection
-      const range = document.createRange();
-      range.selectNodeContents(tempContainer);
+      try {
+        await navigator.clipboard.write(data);
+      } catch (clipboardError) {
+        // Fallback for browsers that don't support clipboard.write()
+        const tempContainer = document.createElement('div');
+        tempContainer.style.position = 'absolute';
+        tempContainer.style.left = '-9999px';
+        tempContainer.innerHTML = content;
+        document.body.appendChild(tempContainer);
 
-      const selection = window.getSelection();
-      if (selection) {
-        selection.removeAllRanges();
-        selection.addRange(range);
+        // Create a range and selection
+        const range = document.createRange();
+        range.selectNodeContents(tempContainer);
 
-        // Copy the content using Clipboard API
-        await navigator.clipboard.writeText(tempContainer.innerHTML);
+        const selection = window.getSelection();
+        if (selection) {
+          selection.removeAllRanges();
+          selection.addRange(range);
 
-        // Create a new clipboard event
-        const clipboardEvent = new ClipboardEvent('copy', {
-          bubbles: true,
-          cancelable: true,
-        });
+          // Try the execCommand as a fallback
+          document.execCommand('copy');
 
-        // Set the clipboard data
-        const clipboardData = (clipboardEvent as any).clipboardData || window.clipboardData;
-        if (clipboardData) {
-          clipboardData.setData('text/html', content);
+          // Clean up selection
+          selection.removeAllRanges();
         }
 
-        document.dispatchEvent(clipboardEvent);
-
-        // Clean up
-        selection.removeAllRanges();
+        // Clean up container
+        document.body.removeChild(tempContainer);
       }
-
-      document.body.removeChild(tempContainer);
 
       // Show success notification
       const notification = this.editor.plugins.get('Notification') as any;
@@ -90,7 +86,7 @@ export default class alightCopyPluginPluginCommand extends Command {
       const notification = this.editor.plugins.get('Notification') as any;
       notification.show('Failed to copy content. Please try again.', {
         type: 'error',
-        namespace: 'alightCopyPluginPlugin'
+        namespace: 'alightCopyPlugin'
       });
     }
   }
