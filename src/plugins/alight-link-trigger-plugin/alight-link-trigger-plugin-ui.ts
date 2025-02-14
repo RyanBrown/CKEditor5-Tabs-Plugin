@@ -1,18 +1,23 @@
 // src/plugins/alight-link-trigger-plugin/alight-link-trigger-plugin-ui.ts
 import { Plugin } from '@ckeditor/ckeditor5-core';
-import { DropdownButtonView, Model, createDropdown, addListToDropdown } from '@ckeditor/ckeditor5-ui';
+import {
+  DropdownButtonView,
+  createDropdown,
+  addListToDropdown,
+  type ListDropdownItemDefinition
+} from '@ckeditor/ckeditor5-ui';
 import { Collection } from '@ckeditor/ckeditor5-utils';
+import type { LinkTriggerItem } from './alight-link-trigger-plugin-utils';
 import icon from '../assets/icon-link.svg';
-import './styles/alight-link-trigger-plugin.scss';
 
 export default class AlightLinkTriggerUI extends Plugin {
-  init() {
+  init(): void {
     const editor = this.editor;
     const t = editor.t;
 
     editor.ui.componentFactory.add('alightLinkTrigger', locale => {
       const dropdown = createDropdown(locale);
-      const items = editor.config.get('alightLinkTrigger.items') || [];
+      const items = editor.config.get('alightLinkTrigger.items') as LinkTriggerItem[] || [];
 
       // Configure dropdown
       dropdown.buttonView.set({
@@ -22,15 +27,16 @@ export default class AlightLinkTriggerUI extends Plugin {
       });
 
       // Add items to dropdown
-      const itemDefinitions = new Collection();
-      items.forEach((item: any) => {
-        const definition = {
+      const itemDefinitions = new Collection<ListDropdownItemDefinition>();
+
+      items.forEach((item: LinkTriggerItem) => {
+        const definition: ListDropdownItemDefinition = {
           type: 'button',
-          model: new Model({
+          model: {
             label: item.label,
             id: item.id,
             withText: true
-          })
+          }
         };
         itemDefinitions.add(definition);
       });
@@ -38,7 +44,7 @@ export default class AlightLinkTriggerUI extends Plugin {
       addListToDropdown(dropdown, itemDefinitions);
 
       // Handle item selection
-      dropdown.on('execute', (eventInfo: any) => {
+      dropdown.on('execute', eventInfo => {
         const { id } = eventInfo.source;
         editor.execute('alightLinkTrigger', id);
       });
