@@ -43,7 +43,6 @@ export class AlightPopulationPluginCommand extends Command {
       resizable: false,
       width: '600px',
       position: 'center',
-      closeOnEscape: true,
       ...data.modalOptions
     });
 

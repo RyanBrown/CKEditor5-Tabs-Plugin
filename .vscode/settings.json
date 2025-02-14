@@ -9,6 +9,7 @@
         "maximizable",
         "noopener",
         "noreferrer",
+        "Predefinded",
         "virtualtesteditor"
     ],
 }

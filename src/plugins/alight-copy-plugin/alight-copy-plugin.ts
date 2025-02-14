@@ -1,31 +1,48 @@
-import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
-import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
-import { Locale } from '@ckeditor/ckeditor5-utils';
+// src/plugins/alight-copy-plugin/alight-copy-plugin.ts
+import { Editor, Plugin } from '@ckeditor/ckeditor5-core';
+import { ButtonView } from '@ckeditor/ckeditor5-ui';
 import ToolBarIcon from './assets/icon-copy.svg';
 import './styles/alight-copy-plugin.scss';
+import AlightCopyPluginCommand from './alight-copy-plugin-command';
 
 export default class AlightCopyPlugin extends Plugin {
-  init() {
+  static get pluginName(): string {
+    return 'AlightCopyPlugin';
+  }
+
+  constructor(editor: Editor) {
+    super(editor);
+  }
+
+  init(): void {
     const editor = this.editor;
     const t = editor.t;
 
-    // Add a new toolbar button named 'alertButton'.
-    editor.ui.componentFactory.add('alightCopyPlugin', (locale: Locale) => {
-      const buttonView = new ButtonView(locale);
+    // Register the AlightCopyPlugin command
+    editor.commands.add('alightCopyPlugin', new AlightCopyPluginCommand(editor));
 
-      buttonView.set({
+    // Add the toolbar button
+    editor.ui.componentFactory.add('alightCopyPlugin', locale => {
+      const button = new ButtonView(locale);
+
+      button.set({
+        label: t('Copy with Styles'),
         icon: ToolBarIcon,
-        label: t('Alight Copy'),
-        tooltip: true,
-        withText: false,
+        tooltip: true
       });
 
-      // Add the click event listener.
-      buttonView.on('execute', () => {
-        alert(t('Hello! This is the "Copy" plugin.'));
+      // Bind button state to command state
+      const command = editor.commands.get('alightCopyPlugin');
+      if (command) {
+        button.bind('isEnabled').to(command);
+      }
+
+      // Execute command on button click
+      button.on('execute', () => {
+        editor.execute('alightCopyPlugin');
       });
 
-      return buttonView;
+      return button;
     });
   }
 }

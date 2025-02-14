@@ -1,5 +1,5 @@
 // // src/plugins/alight-predefined-link-plugin/modal-content/tests/public-website.spec.ts
-// import { createPublicLinkModalContent, validateForm } from '../public-website';
+// import { PredefinedLinkModalContent, validateForm } from '../public-website';
 
 // describe('Public Website Modal Content', () => {
 //   let container: HTMLElement;
@@ -9,9 +9,9 @@
 //     document.body.innerHTML = '';
 //   });
 
-//   describe('createPublicLinkModalContent', () => {
+//   describe('PredefinedLinkModalContent', () => {
 //     it('should create a form with required elements', () => {
-//       container = createPublicLinkModalContent();
+//       container = PredefinedLinkModalContent();
 //       form = container.querySelector('#predefined-link-form') as HTMLFormElement;
 
 //       expect(form).toBeTruthy();
@@ -36,7 +36,7 @@
 //       const initialUrl = 'https://example.com';
 //       const initialOrgName = 'Test Org';
 
-//       container = createPublicLinkModalContent(initialUrl, initialOrgName);
+//       container = PredefinedLinkModalContent(initialUrl, initialOrgName);
 //       form = container.querySelector('#predefined-link-form') as HTMLFormElement;
 
 //       const urlInput = form.querySelector('#link-url') as HTMLInputElement;
@@ -47,7 +47,7 @@
 //     });
 
 //     it('should handle undefined initial values', () => {
-//       container = createPublicLinkModalContent(undefined, undefined);
+//       container = PredefinedLinkModalContent(undefined, undefined);
 //       form = container.querySelector('#predefined-link-form') as HTMLFormElement;
 
 //       const urlInput = form.querySelector('#link-url') as HTMLInputElement;
@@ -61,7 +61,7 @@
 //       const maliciousUrl = '<script>alert("xss")</script>';
 //       const maliciousOrgName = '<img src="x" onerror="alert(1)">';
 
-//       container = createPublicLinkModalContent(maliciousUrl, maliciousOrgName);
+//       container = PredefinedLinkModalContent(maliciousUrl, maliciousOrgName);
 
 //       // Check that the values are properly escaped
 //       const urlInput = container.querySelector('#link-url') as HTMLInputElement;
@@ -76,7 +76,7 @@
 
 //   describe('validateForm', () => {
 //     beforeEach(() => {
-//       container = createPublicLinkModalContent();
+//       container = PredefinedLinkModalContent();
 //       form = container.querySelector('#predefined-link-form') as HTMLFormElement;
 //       document.body.appendChild(container);
 //     });

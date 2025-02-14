@@ -226,8 +226,6 @@ export default class AlightPublicLinkPluginUI extends Plugin {
         modal: true,
         width: '500px',
         height: 'auto',
-        closeOnEscape: true,
-        closeOnClickOutside: true,
         contentClass: 'public-link-content',
         buttons: [
           {

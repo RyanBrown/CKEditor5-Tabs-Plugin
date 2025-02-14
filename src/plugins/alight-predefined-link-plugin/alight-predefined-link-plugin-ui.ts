@@ -3,7 +3,7 @@ import { Plugin } from '@ckeditor/ckeditor5-core';
 import { ButtonView, ContextualBalloon, View, BalloonPanelView } from '@ckeditor/ckeditor5-ui';
 import { ClickObserver } from '@ckeditor/ckeditor5-engine';
 import { CKAlightModalDialog } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
-import { createPublicLinkModalContent, validateForm } from './modal-content/predefind-link';
+import { PredefinedLinkModalContent } from './modal-content/predefined-link-modal-content';
 import type AlightPredefinedLinkPluginCommand from './alight-predefined-link-plugin-command';
 import toolBarIcon from './assets/icon-link.svg';
 import editIcon from './assets/icon-pencil.svg';
@@ -213,6 +213,8 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
     }
   }
 
+  // alight-predefined-link-plugin-ui.ts
+
   private _showModal(initialValue?: { url: string; orgName?: string }): void {
     const editor = this.editor;
     const command = editor.commands.get('alightPredefinedLinkPlugin') as AlightPredefinedLinkPluginCommand;
@@ -224,10 +226,9 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
       this._modalDialog = new CKAlightModalDialog({
         title: 'Predefined Link',
         modal: true,
-        width: '500px',
+        width: '80vw',
         height: 'auto',
-        closeOnEscape: true,
-        closeOnClickOutside: true,
+        closeOnClickOutside: false,
         contentClass: 'predefined-link-content',
         buttons: [
           {
@@ -255,35 +256,45 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
         }
 
         if (label === 'Continue') {
-          const form = this._modalDialog?.element?.querySelector('#predefined-link-form') as HTMLFormElement;
-          const isValid = validateForm(form);
-
-          if (isValid) {
-            const urlInput = form?.querySelector('#link-url') as HTMLInputElement;
-            const orgNameInput = form?.querySelector('#org-name') as HTMLInputElement;
-
+          const selectedLink = this.linkManager?.getSelectedLink();
+          if (selectedLink) {  // Proper null check
             command.execute({
-              url: urlInput.value,
-              orgName: orgNameInput?.value || undefined
+              url: selectedLink.destination,
+              orgName: selectedLink.title
             });
-            this._modalDialog?.hide(); // Only close if validation passes
+            this._modalDialog?.hide();
           }
-          // If validation fails, modal stays open
         }
       });
     }
 
-    // Set modal content and show it
-    const content = createPublicLinkModalContent(initialUrl, initialOrgName);
-    this._modalDialog.setContent(content);
+    // Create container for the content
+    const contentContainer = document.createElement('div');
+    contentContainer.className = 'cka-predefined-link-content';
+
+    // Create and initialize the link manager
+    this.linkManager = new PredefinedLinkModalContent();
+    this.linkManager.setDialog(this._modalDialog);
+
+    // Set the container as the modal content
+    this._modalDialog.setContent(contentContainer);
+
+    // Render the content into the container
+    this.linkManager.renderContent(contentContainer);
+
+    // Show the modal
     this._modalDialog.show();
   }
 
-  // Destroys the plugin
+  // Add property to class
+  private linkManager: PredefinedLinkModalContent | null = null;
+
+  // Update destroy method
   public override destroy(): void {
     super.destroy();
     this._modalDialog?.destroy();
     this._actionsView?.destroy();
+    this.linkManager = null;
   }
 }
 

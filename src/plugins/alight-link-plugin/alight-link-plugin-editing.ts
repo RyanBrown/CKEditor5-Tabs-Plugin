@@ -4,7 +4,7 @@ import { AlightLinkPluginCommand } from './alight-link-plugin-command';
 import { ExistingDocumentLinkManager } from './modal-content/existing-document-link';
 import { NewDocumentLinkManager } from './modal-content/new-document-link';
 import { PublicIntranetLinkManager } from './modal-content/public-intranet-link';
-import { PredefinedLinkManager } from './modal-content/predefined-link';
+import { PredefinedLinkModalContent } from './modal-content/predefined-link';
 import { CommandData, DialogButton } from './modal-content/types';
 import type { Editor } from '@ckeditor/ckeditor5-core';
 
@@ -14,7 +14,7 @@ import type { Editor } from '@ckeditor/ckeditor5-core';
 
 export default class AlightLinkPluginEditing extends Plugin {
   // Link managers for different types of links
-  private predefinedLinkManager: PredefinedLinkManager;
+  private PredefinedLinkModalContent: PredefinedLinkModalContent;
   private existingDocumentLinkManager: ExistingDocumentLinkManager;
   private newDocumentLinkManager: NewDocumentLinkManager;
   private publicWebsiteLinkManager: PublicIntranetLinkManager;
@@ -48,7 +48,7 @@ export default class AlightLinkPluginEditing extends Plugin {
     super(editor);
 
     // Initialize all link managers
-    this.predefinedLinkManager = new PredefinedLinkManager();
+    this.PredefinedLinkModalContent = new PredefinedLinkModalContent();
     this.existingDocumentLinkManager = new ExistingDocumentLinkManager();
     this.newDocumentLinkManager = new NewDocumentLinkManager();
     this.publicWebsiteLinkManager = new PublicIntranetLinkManager('', false);
@@ -181,8 +181,8 @@ export default class AlightLinkPluginEditing extends Plugin {
         contentClass: 'cka-predefined-link-content'
       },
       buttons: this.getStandardButtons(() => this.handlePredefinedLinkSelection()),
-      loadContent: async () => this.predefinedLinkManager.getLinkContent(1),
-      manager: this.predefinedLinkManager,
+      loadContent: async () => this.PredefinedLinkModalContent.getLinkContent(1),
+      manager: this.PredefinedLinkModalContent,
       linkType: 'predefined'
     }));
 
