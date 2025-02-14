@@ -58,7 +58,7 @@ describe('AlightPublicLinkPluginEditing', () => {
     it('should convert view link to model link', () => {
       // Set editor data with an HTML link
       editor.setData(
-        '<p><a href="https://example.com" data-org-name="Example Org">foo</a></p>'
+        '<p><a href="https://example.com" data-org-name="Example Org" target="_blank" rel="noopener noreferrer">foo</a></p>'
       );
 
       // Get the model data

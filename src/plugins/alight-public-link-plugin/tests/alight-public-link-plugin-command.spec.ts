@@ -75,12 +75,23 @@ describe('AlightPublicLinkPluginCommand', () => {
         url: 'https://example.com',
         orgName: 'Example Org'
       };
-      setData(editor.model, '<paragraph>foo[bar]baz</paragraph>');
+
+      editor.model.change((writer: any) => {
+        const root = editor.model.document.getRoot();
+        const text = writer.createText('foobarbaz');
+        writer.insert(text, root.getChild(0), 0);
+
+        // Set selection on "bar"
+        const start = writer.createPositionAt(root.getChild(0), 3);
+        const end = writer.createPositionAt(root.getChild(0), 6);
+        writer.setSelection(writer.createRange(start, end));
+      });
+
       const command = editor.commands.get('alightPublicLinkPlugin');
       command.execute(linkData);
 
       expect(getData(editor.model)).toBe(
-        `<paragraph>foo[<$text alightPublicLinkPlugin='${JSON.stringify(linkData)}'>bar</$text>]baz</paragraph>`
+        '<paragraph>foo[<$text alightPublicLinkPlugin=\'{"url":"https://example.com","orgName":"Example Org"}\'>bar</$text>]baz</paragraph>'
       );
     });
 
@@ -89,10 +100,20 @@ describe('AlightPublicLinkPluginCommand', () => {
         url: 'https://example.com',
         orgName: 'Example Org'
       };
-      setData(
-        editor.model,
-        `<paragraph>foo[<$text alightPublicLinkPlugin='${JSON.stringify(linkData)}'>bar</$text>]baz</paragraph>`
-      );
+
+      editor.model.change((writer: any) => {
+        const root = editor.model.document.getRoot();
+        const text = writer.createText('foobarbaz');
+        writer.insert(text, root.getChild(0), 0);
+
+        // Set attribute on "bar"
+        const start = writer.createPositionAt(root.getChild(0), 3);
+        const end = writer.createPositionAt(root.getChild(0), 6);
+        const range = writer.createRange(start, end);
+        writer.setSelection(range);
+        writer.setAttribute('alightPublicLinkPlugin', linkData, range);
+      });
+
       const command = editor.commands.get('alightPublicLinkPlugin');
       command.execute();
 

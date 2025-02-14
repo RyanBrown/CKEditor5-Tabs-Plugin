@@ -44,13 +44,14 @@ describe('AlightPublicLinkPlugin', () => {
 
   describe('integration', () => {
     it('should handle link creation and editing workflow', async () => {
-      // Set initial selection using model.setData instead of view.setData
       editor.model.change((writer: any) => {
-        editor.model.insertContent(writer.createText('Test'));
-        editor.model.change((writer: any) => {
-          const range = editor.model.document.selection.getFirstRange()!;
-          writer.setSelection(range);
-        });
+        const root = editor.model.document.getRoot();
+        const text = writer.createText('Test');
+        writer.insert(text, root.getChild(0), 0);
+
+        // Set selection on entire text
+        const range = writer.createRangeOn(text);
+        writer.setSelection(range);
       });
 
       // Create a new link
