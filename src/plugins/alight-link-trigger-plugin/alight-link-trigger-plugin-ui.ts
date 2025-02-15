@@ -1,57 +1,42 @@
-// src/plugins/alight-link-trigger-plugin/alight-link-trigger-plugin-ui.ts
+// alight-link-trigger-plugin-ui.ts
+
 import { Plugin } from '@ckeditor/ckeditor5-core';
-import {
-  DropdownButtonView,
-  createDropdown,
-  addListToDropdown,
-  type ListDropdownItemDefinition
-} from '@ckeditor/ckeditor5-ui';
-import { Collection } from '@ckeditor/ckeditor5-utils';
-import type { LinkTriggerItem } from './alight-link-trigger-plugin-utils';
-import ToolBarIcon from '../assets/icon-link.svg';
-import './styles/alight-link-trigger-plugin.scss';
+import linkIcon from '@ckeditor/ckeditor5-core/theme/icons/link.svg'; // <-- default icon import
+
+import { ButtonView } from '@ckeditor/ckeditor5-ui';
 
 export default class AlightLinkTriggerUI extends Plugin {
-  init(): void {
+  public static get pluginName() {
+    return 'AlightLinkTriggerUI';
+  }
+
+  public init(): void {
+    console.log('AlightLinkTriggerUI#init called');
+
     const editor = this.editor;
     const t = editor.t;
 
+    // Register a new button for "alightLinkTrigger".
     editor.ui.componentFactory.add('alightLinkTrigger', locale => {
-      const dropdown = createDropdown(locale);
-      const items = editor.config.get('alightLinkTrigger.items') as LinkTriggerItem[] || [];
+      const command = editor.commands.get('alightLinkTrigger');
+      const buttonView = new ButtonView(locale);
 
-      // Configure dropdown
-      dropdown.buttonView.set({
-        label: t('Choose Link Type'),
-        icon: ToolBarIcon,
-        tooltip: true,
-        withText: true,
+      buttonView.set({
+        label: t('Link'),
+        icon: linkIcon,
+        tooltip: true
       });
 
-      // Add items to dropdown
-      const itemDefinitions = new Collection<ListDropdownItemDefinition>();
+      // Bind button state to command.
+      buttonView.bind('isOn', 'isEnabled').to(command, 'value', 'isEnabled');
 
-      items.forEach((item: LinkTriggerItem) => {
-        const definition: ListDropdownItemDefinition = {
-          type: 'button',
-          model: {
-            label: item.label,
-            id: item.id,
-            withText: true
-          }
-        };
-        itemDefinitions.add(definition);
+      // Execute the command when the button is clicked.
+      this.listenTo(buttonView, 'execute', () => {
+        editor.execute('alightLinkTrigger');
+        editor.editing.view.focus();
       });
 
-      addListToDropdown(dropdown, itemDefinitions);
-
-      // Handle item selection
-      dropdown.on('execute', eventInfo => {
-        const { id } = eventInfo.source;
-        editor.execute('alightLinkTrigger', id);
-      });
-
-      return dropdown;
+      return buttonView;
     });
   }
 }

@@ -1,23 +1,21 @@
-// src/plugins/alight-link-trigger-plugin/alight-link-trigger-plugin-command.ts
-import { Command } from '@ckeditor/ckeditor5-core';
-import type { LinkTriggerItem } from './alight-link-trigger-plugin-utils';
+// alight-link-trigger-plugin-command.ts
+
+import { Command, Editor } from '@ckeditor/ckeditor5-core';
 
 export default class AlightLinkTriggerCommand extends Command {
-  override execute(itemId: string): void {
-    const config = this.editor.config.get('alightLinkTrigger.items') as LinkTriggerItem[];
-
-    if (!Array.isArray(config)) {
-      return;
-    }
-
-    const item = config.find((item) => item.id === itemId);
-
-    if (item && item.trigger) {
-      item.trigger(this.editor);
-    }
+  constructor(editor: Editor) {
+    super(editor);
   }
 
-  override refresh(): void {
+  // The method that executes when the command is called.
+  public override execute(): void {
+    // Command logic, e.g. insert a link, open a dialog, etc.
+    console.log('AlightLinkTriggerCommand executed!');
+  }
+
+  // Called automatically by CKEditor to refresh button states, etc.
+  public override refresh(): void {
+    // E.g., enable/disable based on editor state
     this.isEnabled = true;
   }
 }

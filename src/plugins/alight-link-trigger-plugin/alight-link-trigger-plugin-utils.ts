@@ -1,43 +1,41 @@
-//  src/plugins/alight-link-trigger-plugin/alight-link-trigger-plugin-utils.ts
-import type { Editor } from '@ckeditor/ckeditor5-core';
+// alight-link-trigger-plugin-ui.ts
 
-export interface LinkTriggerItem {
-  id: string;
-  label: string;
-  trigger: (editor: Editor) => void;
+import { Plugin } from '@ckeditor/ckeditor5-core';
+import linkIcon from '@ckeditor/ckeditor5-core/theme/icons/link.svg'; // Or a custom icon
+import { ButtonView } from '@ckeditor/ckeditor5-ui';
+
+export default class AlightLinkTriggerUI extends Plugin {
+  public static get pluginName() {
+    return 'AlightLinkTriggerUI';
+  }
+
+  public init(): void {
+    console.log('AlightLinkTriggerUI#init called');
+
+    const editor = this.editor;
+    const t = editor.t;
+
+    // The "alightLinkTrigger" button will be registered among the editor UI components.
+    editor.ui.componentFactory.add('alightLinkTrigger', locale => {
+      const command = editor.commands.get('alightLinkTrigger');
+      const buttonView = new ButtonView(locale);
+
+      buttonView.set({
+        label: t('Link'),
+        icon: linkIcon,
+        tooltip: true
+      });
+
+      // Bind button state to command
+      buttonView.bind('isOn', 'isEnabled').to(command, 'value', 'isEnabled');
+
+      // Execute the command.
+      this.listenTo(buttonView, 'execute', () => {
+        editor.execute('alightLinkTrigger');
+        editor.editing.view.focus();
+      });
+
+      return buttonView;
+    });
+  }
 }
-
-export interface AlightLinkTriggerConfig {
-  items: LinkTriggerItem[];
-}
-
-// // Example configuration in ckeditor.ts
-// const editorConfig = {
-//   plugins: [AlightLinkTriggerPlugin],
-//   toolbar: {
-//     items: [
-//       // ... other items
-//       'alightLinkTrigger'
-//     ]
-//   },
-//   alightLinkTrigger: {
-//     items: [
-//       {
-//         id: 'customLink1',
-//         label: 'Custom Link 1',
-//         trigger: (editor: Editor) => {
-//           // Custom action for link type 1
-//           console.log('Custom link 1 triggered');
-//         }
-//       },
-//       {
-//         id: 'customLink2',
-//         label: 'Custom Link 2',
-//         trigger: (editor: Editor) => {
-//           // Custom action for link type 2
-//           console.log('Custom link 2 triggered');
-//         }
-//       }
-//     ]
-//   }
-// };
