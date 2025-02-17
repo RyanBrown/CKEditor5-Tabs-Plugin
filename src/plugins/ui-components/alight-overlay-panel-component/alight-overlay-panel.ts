@@ -1,11 +1,11 @@
 // src/plugins/ui-components/alight-overlay-panel-component/alight-overlay-panel.ts
-
 import { AlightPositionManager, PositionConfig } from '../alight-ui-component-utils/alight-position-manager';
 import './styles/alight-overlay-panel.scss';
 
 interface PanelConfig extends PositionConfig {
   width?: string;
   height?: string;
+  closeOnEsc?: boolean; // Add this line
 }
 
 export class AlightOverlayPanel {
@@ -17,10 +17,12 @@ export class AlightOverlayPanel {
   // Store the trigger element.
   private _trigger: HTMLElement | null = null;
   private positionManager: AlightPositionManager;
+  private _keydownHandler: (event: KeyboardEvent) => void;
 
   // The constructor now accepts either a string (selector) or an HTMLElement.
   constructor(trigger: string | HTMLElement, config?: PanelConfig) {
     this.positionManager = AlightPositionManager.getInstance();
+    this._keydownHandler = this.handleKeydown.bind(this);
 
     if (typeof trigger === 'string') {
       // Remove any leading '#' and look up the element.
@@ -32,6 +34,17 @@ export class AlightOverlayPanel {
       document.addEventListener('DOMContentLoaded', () => this.initialize(config));
     } else {
       this.initialize(config);
+    }
+  }
+
+  // Add new method
+  private handleKeydown(event: KeyboardEvent): void {
+    if (this.currentPanel) {
+      const panelId = this.currentPanel.getAttribute('data-id');
+      const config = panelId ? this.configs.get(panelId) : undefined;
+      if (event.key === 'Escape' && (config?.closeOnEsc ?? true)) {
+        this.hidePanel(this.currentPanel);
+      }
     }
   }
 
@@ -60,10 +73,11 @@ export class AlightOverlayPanel {
       const panelConfig: PanelConfig = {
         position: 'bottom',
         offset: 4,
-        followTrigger: false, // Set to false to prevent scroll following
+        followTrigger: false,
         constrainToViewport: true,
         autoFlip: true,
         alignment: 'start',
+        closeOnEsc: true, // Add default value
         width: panel.getAttribute('data-width') || defaultConfig?.width,
         height: panel.getAttribute('data-height') || defaultConfig?.height,
         ...defaultConfig
@@ -84,8 +98,20 @@ export class AlightOverlayPanel {
       btn.addEventListener('click', (event: Event) => this.hide(event));
     });
 
+    // Add keydown listener
+    document.addEventListener('keydown', this._keydownHandler);
     // Global event listeners.
     document.addEventListener('click', (event: Event) => this.handleClickOutside(event));
+  }
+
+
+  // Update destroy/cleanup
+  public destroy(): void {
+    document.removeEventListener('keydown', this._keydownHandler);
+    // Clean up other event listeners and resources
+    this.panels.clear();
+    this.configs.clear();
+    this.currentPanel = null;
   }
 
   // Applies width and height settings.
