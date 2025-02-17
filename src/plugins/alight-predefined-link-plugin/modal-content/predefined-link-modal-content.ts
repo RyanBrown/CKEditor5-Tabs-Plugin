@@ -13,8 +13,8 @@ export class PredefinedLinkModalContent implements ILinkManager {
   private paginationManager: PaginationManager;
 
   constructor() {
-    this.searchManager = new SearchManager(this.predefinedLinksData, this.handleSearchResults);
     this.paginationManager = new PaginationManager(this.handlePageChange);
+    this.searchManager = new SearchManager(this.predefinedLinksData, this.handleSearchResults, this.paginationManager);
   }
 
   public getSelectedLink(): { destination: string; title: string } | null {

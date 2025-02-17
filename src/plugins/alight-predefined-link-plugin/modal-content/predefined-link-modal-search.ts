@@ -1,23 +1,27 @@
 // src/plugins/alight-predefined-link-plugin/modal-content/search.ts
 import { AlightOverlayPanel } from '../../ui-components/alight-overlay-panel-component/alight-overlay-panel';
+import { PaginationManager } from './predefined-link-modal-pagination';
 import { PredefinedLink, SelectedFilters } from './predefined-link-modal-types';
 
 export class SearchManager {
   private currentSearchQuery = '';
   private overlayPanel: AlightOverlayPanel | null = null;
   private readonly advancedSearchTriggerId = 'advanced-search-trigger';
+  private paginationManager: PaginationManager; // Store PaginationManager
 
   private selectedFilters: SelectedFilters = {
     baseOrClientSpecific: [],
     pageType: [],
     domain: []
   };
-  paginationManager: any;
 
   constructor(
     private predefinedLinksData: PredefinedLink[],
-    private onSearch: (filteredData: PredefinedLink[]) => void
-  ) { }
+    private onSearch: (filteredData: PredefinedLink[]) => void,
+    paginationManager: PaginationManager // Accept PaginationManager
+  ) {
+    this.paginationManager = paginationManager; // Store it for later use
+  }
 
   public initialize(container: HTMLElement): void {
     const searchContainer = container.querySelector('#search-container-root');
