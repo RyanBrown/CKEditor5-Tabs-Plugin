@@ -108,12 +108,10 @@ export class PredefinedLinkModalContent implements ILinkManager {
       : '<p>No results found.</p>';
 
     // Pagination container
-    const paginationMarkup = `<div id="pagination-container"></div>`
-      : '';
+    const paginationMarkup = `<div id="pagination-container"></div>`;
 
     return `
       ${searchContainerMarkup}
-      ${advancedSearchPanelMarkup}
       <div id="links-container" class="cka-links-container">
         ${linksMarkup}
       </div>
@@ -184,57 +182,5 @@ export class PredefinedLinkModalContent implements ILinkManager {
         ) || null;
       });
     });
-  }
-
-  private generateMarkup(currentPageData: PredefinedLink[], page: number, totalPages: number): string {
-    // Search container markup
-    const searchContainerMarkup = `
-        <div class="cka-search-container">
-            <input type="text" id="search-input" class="cka-search-input" placeholder="Search links...">
-            <button id="${this.advancedSearchTriggerId}" class="cka-button cka-button-text">
-                Advanced Search
-            </button>
-        </div>
-    `;
-
-    // Links markup
-    const linksMarkup = currentPageData.length > 0
-      ? currentPageData.map(link => `
-            <div class="cka-link-item">
-                <h3>${link.predefinedLinkName}</h3>
-                <p>${link.predefinedLinkDescription}</p>
-                <ul>
-                    <li><strong>Base/Client Specific:</strong> ${link.baseOrClientSpecific}</li>
-                    <li><strong>Page Type:</strong> ${link.pageType}</li>
-                    <li><strong>Destination:</strong> ${link.destination}</li>
-                    <li><strong>Domain:</strong> ${link.domain}</li>
-                    <li><strong>Unique ID:</strong> ${link.uniqueId}</li>
-                    <li><strong>Attribute Name:</strong> ${link.attributeName}</li>
-                    <li><strong>Attribute Value:</strong> ${link.attributeValue}</li>
-                </ul>
-            </div>
-        `).join('')
-      : '<p>No results found.</p>';
-
-    // Pagination markup
-    const paginationMarkup = totalPages > 1
-      ? `
-            <article id="pagination" class="cka-pagination">
-                <button id="first-page" class="first pagination-btn cka-button cka-button-text" data-page="1" ${page === 1 ? 'disabled' : ''}>First</button>
-                <button id="prev-page" class="previous pagination-btn cka-button cka-button-text" data-page="${page - 1}" ${page === 1 ? 'disabled' : ''}>Previous</button>
-                <div id="page-select-container" class="cka-select-menu-wrap"></div>
-                <button id="next-page" class="next pagination-btn cka-button cka-button-text" data-page="${page + 1}" ${page === totalPages ? 'disabled' : ''}>Next</button>
-                <button id="last-page" class="last pagination-btn cka-button cka-button-text" data-page="${totalPages}" ${page === totalPages ? 'disabled' : ''}>Last</button>
-            </article>
-        `
-      : '';
-
-    return `
-        ${searchContainerMarkup}
-        <div id="links-container" class="cka-links-container">
-            ${linksMarkup}
-        </div>
-        ${paginationMarkup}
-    `;
   }
 }

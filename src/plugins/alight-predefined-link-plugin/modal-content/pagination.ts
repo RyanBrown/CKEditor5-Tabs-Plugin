@@ -1,4 +1,3 @@
-
 // src/plugins/alight-predefined-link-plugin/modal-content/pagination.ts
 import { CKALightSelectMenu } from '../../ui-components/alight-select-menu-component/alight-select-menu-component';
 
