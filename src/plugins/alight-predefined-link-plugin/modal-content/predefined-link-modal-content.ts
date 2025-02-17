@@ -26,6 +26,8 @@ export class PredefinedLinkModalContent implements ILinkManager {
   }
 
   private handleSearchResults = (filteredData: PredefinedLink[]): void => {
+    console.log('Search results updated:', filteredData.length, 'items'); // Debugging log
+
     this.filteredLinksData = filteredData;
 
     // Maintain selected link if still in filtered results, otherwise clear selection
@@ -33,12 +35,13 @@ export class PredefinedLinkModalContent implements ILinkManager {
       this.selectedLink = null;
     }
 
-    // Reset to first page after search
+    // Reset pagination
     this.paginationManager.setPage(1, filteredData.length);
 
-    // Re-render the content with updated results
+    // Re-render the UI
     const container = document.querySelector('.cka-predefined-link-content') as HTMLElement;
     if (container) {
+      console.log('Re-rendering content'); // Debugging log
       this.renderContent(container);
     }
   };

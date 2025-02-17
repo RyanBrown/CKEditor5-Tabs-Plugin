@@ -122,6 +122,8 @@ export class SearchManager {
   }
 
   public reset(): void {
+    console.log('Resetting search and filters'); // Debugging log
+
     this.currentSearchQuery = '';
     this.selectedFilters = {
       baseOrClientSpecific: [],
@@ -147,7 +149,8 @@ export class SearchManager {
       });
     }
 
-    // Update filtered data & pagination
+    console.log('Filters reset, updating results'); // Debugging log
+
     this.updateFilteredData();
   }
 
@@ -175,16 +178,15 @@ export class SearchManager {
   }
 
   private updateFilteredData(): void {
+    console.log('Updating search results with filters:', this.selectedFilters, 'Search Query:', this.currentSearchQuery); // Debugging log
+
     const filteredData = this.predefinedLinksData.filter(link => {
-      // Convert to lowercase for case-insensitive search
       const query = this.currentSearchQuery.toLowerCase();
 
-      // Check if search query matches the link name or description
       const searchMatch = !query ||
         link.predefinedLinkName.toLowerCase().includes(query) ||
         link.predefinedLinkDescription.toLowerCase().includes(query);
 
-      // Filter by advanced search selections
       const baseOrClientSpecificMatch =
         this.selectedFilters.baseOrClientSpecific.length === 0 ||
         this.selectedFilters.baseOrClientSpecific.includes(link.baseOrClientSpecific);
@@ -197,17 +199,19 @@ export class SearchManager {
         this.selectedFilters.domain.length === 0 ||
         this.selectedFilters.domain.includes(link.domain);
 
-      // Return true only if all conditions match
       return searchMatch && baseOrClientSpecificMatch && pageTypeMatch && domainMatch;
     });
 
-    // Update search results
+    console.log('Filtered Data:', filteredData); // Debugging log
+
     this.onSearch(filteredData);
 
-    // Reset pagination to page 1 after filtering
-    const container = document.querySelector('.cka-predefined-link-content');
-    if (container) {
+    // Reset pagination to first page after filtering
+    if (this.paginationManager) {
+      console.log('Resetting pagination to page 1');
       this.paginationManager.setPage(1, filteredData.length);
+    } else {
+      console.error("PaginationManager is undefined in SearchManager!");
     }
   }
 
@@ -257,19 +261,26 @@ export class SearchManager {
     const applyFiltersBtn = container.querySelector('#apply-advanced-search');
     if (applyFiltersBtn) {
       applyFiltersBtn.addEventListener('click', () => {
-        this.updateFilteredData();
+        console.log('Apply Filters button clicked'); // Debugging log
+        this.updateFilteredData(); // Apply search
         this.closeOverlayPanel();
       });
+    } else {
+      console.warn('Apply Filters button not found in DOM');
     }
 
     // Clear Filters button
     const clearFiltersBtn = container.querySelector('#clear-advanced-search');
     if (clearFiltersBtn) {
       clearFiltersBtn.addEventListener('click', () => {
-        this.reset();
+        console.log('Clear Filters button clicked'); // Debugging log
+        this.reset(); // Clear search
         this.closeOverlayPanel();
       });
+    } else {
+      console.warn('Clear Filters button not found in DOM');
     }
+
 
     // Main search button
     const searchBtn = container.querySelector('#search-btn');
