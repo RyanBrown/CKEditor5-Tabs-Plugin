@@ -10,9 +10,9 @@ interface PanelConfig extends PositionConfig {
   minWidth?: string;
   width?: string;
   closeOnEsc?: boolean;
-  onOpen?: () => void;   // Add callback for open event
-  onClose?: () => void;  // Add callback for close event
-  overlayPanelClass?: string; // Add the new property
+  onOpen?: () => void;
+  onClose?: () => void;
+  overlayPanelClass?: string;
 }
 
 type EventCallback = () => void;
@@ -126,11 +126,17 @@ export class AlightOverlayPanel {
         height: panel.getAttribute('data-height') || defaultConfig?.height,
         onOpen: defaultConfig?.onOpen,
         onClose: defaultConfig?.onClose,
+        overlayPanelClass: defaultConfig?.overlayPanelClass, // Add the new property
         ...defaultConfig
       };
 
       this.configs.set(panelId, panelConfig);
       this.applyConfig(panel, panelConfig);
+
+      // Apply custom class if provided
+      if (panelConfig.overlayPanelClass) {
+        panel.classList.add(...panelConfig.overlayPanelClass.split(' '));
+      }
 
       this._trigger.addEventListener('click', (event: Event) => this.toggle(event));
     } else {
@@ -164,20 +170,21 @@ export class AlightOverlayPanel {
   // Rest of the methods remain the same...
   private applyConfig(panel: HTMLDivElement, config: PanelConfig): void {
     // Handle all dimension properties
-    const dimensionProps = {
-      width: config.width,
-      height: config.height,
-      maxWidth: config.maxWidth,
-      maxHeight: config.maxHeight,
-      minWidth: config.minWidth,
-      minHeight: config.minHeight
+    const dimensionProps: Record<string, string | undefined> = {
+      'width': config.width,
+      'height': config.height,
+      'max-width': config.maxWidth,
+      'max-height': config.maxHeight,
+      'min-width': config.minWidth,
+      'min-height': config.minHeight
     };
 
     // Apply each dimension property if it exists
     Object.entries(dimensionProps).forEach(([prop, value]) => {
       if (value !== undefined) {
-        const styleKey = prop as keyof CSSStyleDeclaration;
-        panel.style[styleKey] = typeof value === 'number' ? `${value}px` : value;
+        panel.style.setProperty(prop,
+          typeof value === 'number' ? `${value}px` : value
+        );
       }
     });
   }
@@ -205,7 +212,7 @@ export class AlightOverlayPanel {
     const config = this.configs.get(panelId);
 
     if (config) {
-      panel.style.display = 'block';
+      panel.style.display = 'flex';
 
       // Force a layout recalculation
       panel.getBoundingClientRect();
@@ -276,7 +283,19 @@ export class AlightOverlayPanel {
     const panel = this.panels.get(panelId);
     if (panel) {
       const currentConfig = this.configs.get(panelId) || {};
+
+      // Handle custom class changes
+      if (currentConfig.overlayPanelClass) {
+        panel.classList.remove(...currentConfig.overlayPanelClass.split(' '));
+      }
+
       const newConfig = { ...currentConfig, ...config };
+
+      // Apply new custom classes if provided
+      if (newConfig.overlayPanelClass) {
+        panel.classList.add(...newConfig.overlayPanelClass.split(' '));
+      }
+
       this.configs.set(panelId, newConfig);
       this.applyConfig(panel, newConfig);
 
