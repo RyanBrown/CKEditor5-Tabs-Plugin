@@ -1,6 +1,6 @@
 // src/plugins/alight-predefined-link-plugin/modal-content/search.ts
 import { AlightOverlayPanel } from '../../ui-components/alight-overlay-panel-component/alight-overlay-panel';
-import { PredefinedLink, SelectedFilters } from './types';
+import { PredefinedLink, SelectedFilters } from './predefined-link-modal-types';
 
 export class SearchManager {
   private currentSearchQuery = '';

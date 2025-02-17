@@ -44,10 +44,9 @@ ul.cka-radio-group {
 
 
 
-.cka-link-item,
-.cka-document-item {
+.cka-link-item {
   align-items: center;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid var(--gray-400);
   display: flex;
   padding: 1rem;
   transition: background-color 0.15s;
@@ -82,28 +81,6 @@ ul.checkbox-list {
     padding: 0 5px;
   }
 }
-
-// .cka-pagination {
-//   align-items: center;
-//   background-color: var(--neutral-white);
-//   border-top: 1px solid #ccc;
-//   bottom: 0;
-//   display: flex;
-//   justify-content: center;
-//   padding: var(--spacing-xl) var(--spacing-xl) 0;
-//   position: sticky;
-//   width: 100%;
-//   z-index: 3;
-
-//   .cka-select-menu-wrap {
-//     display: inline-flex;
-
-//     .cka-select {
-//       color: var(--gray-700);
-//       min-width: 100px;
-//     }
-//   }
-// }
 
 .cka-predefined-link-content {
   flex: 1;

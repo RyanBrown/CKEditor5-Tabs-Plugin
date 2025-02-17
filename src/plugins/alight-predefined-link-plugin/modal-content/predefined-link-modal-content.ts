@@ -1,9 +1,8 @@
 // src/plugins/alight-predefined-link-plugin/modal-content/predefined-link-modal-content.ts
-import { CkAlightModalDialog, DialogButton } from '../../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
-import { ILinkManager } from './ILinkManager';
-import { PredefinedLink } from './types';
-import { SearchManager } from './search';
-import { PaginationManager } from './pagination';
+import { ILinkManager } from './predefined-link-modal-ILinkManager';
+import { PredefinedLink } from './predefined-link-modal-types';
+import { SearchManager } from './predefined-link-modal-search';
+import { PaginationManager } from './predefined-link-modal-pagination';
 import predefinedLinksData from './json/predefined-test-data.json';
 import './../styles/alight-predefined-link-plugin.scss';
 export class PredefinedLinkModalContent implements ILinkManager {
