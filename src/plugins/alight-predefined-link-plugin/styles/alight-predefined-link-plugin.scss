@@ -41,3 +41,73 @@ ul.cka-radio-group {
     list-style: none;
   }
 }
+
+
+
+.cka-link-item,
+.cka-document-item {
+  align-items: center;
+  border-bottom: 1px solid #ccc;
+  display: flex;
+  padding: 1rem;
+  transition: background-color 0.15s;
+
+  &:hover {
+    background-color: #fafafa;
+    cursor: pointer;
+  }
+
+  &:last-of-type {
+    border-bottom: none;
+    padding-bottom: 1.25rem;
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+}
+
+ul.checkbox-list {
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  li {
+    box-sizing: border-box;
+    flex: 0 0 50%;
+    padding: 0 5px;
+  }
+}
+
+// .cka-pagination {
+//   align-items: center;
+//   background-color: var(--neutral-white);
+//   border-top: 1px solid #ccc;
+//   bottom: 0;
+//   display: flex;
+//   justify-content: center;
+//   padding: var(--spacing-xl) var(--spacing-xl) 0;
+//   position: sticky;
+//   width: 100%;
+//   z-index: 3;
+
+//   .cka-select-menu-wrap {
+//     display: inline-flex;
+
+//     .cka-select {
+//       color: var(--gray-700);
+//       min-width: 100px;
+//     }
+//   }
+// }
+
+.cka-predefined-link-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+  position: relative;
+}

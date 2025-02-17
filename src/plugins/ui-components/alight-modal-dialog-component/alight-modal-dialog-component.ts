@@ -154,15 +154,15 @@ export class CkAlightModalDialog {
     // Create dialog content
     const content = `
       <div class="cka-dialog" style="width: ${this.options.width}; height: ${this.options.height};">
-        <div class="cka-dialog-header ${this.options.draggable ? 'draggable' : ''} ${this.options.headerClass}">
+        <header class="cka-dialog-header ${this.options.draggable ? 'draggable' : ''} ${this.options.headerClass}">
           <span class="cka-dialog-title"></span>
           <div class="cka-dialog-header-icons">
             ${this.options.maximizable ? '<button class="cka-dialog-maximize" aria-label="Maximize"><i class="cka-maximize-icon"></i></button>' : ''}
             ${this.options.defaultCloseButton ? '<button class="cka-dialog-close" aria-label="Close"><i class="cka-close-icon"></i></button>' : ''}
           </div>
-        </div>
-        <div class="cka-dialog-content ${this.options.contentClass}"></div>
-        <div class="cka-dialog-footer ${this.options.footerClass}"></div>
+        </header>
+        <main class="cka-dialog-content ${this.options.contentClass}"></main>
+        <footer class="cka-dialog-footer ${this.options.footerClass}"></footer>
         ${this.options.resizable ? '<div class="cka-resizer"></div>' : ''}
       </div>
     `;

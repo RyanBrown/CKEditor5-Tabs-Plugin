@@ -6,12 +6,7 @@ import { CkAlightModalDialog } from "../../ui-components/alight-modal-dialog-com
  * This allows the command to work with any manager interchangeably.
  */
 export interface ILinkManager {
-  // Returns the currently selected link or null if none selected
   getSelectedLink(): { destination: string; title: string } | null;
-  // Sets the modal dialog reference
-  setDialog(dialog: CkAlightModalDialog): void;
-  // Renders content into the provided container
   renderContent(container: HTMLElement): void;
-  // Resets search and filter state
   resetSearch(): void;
 }

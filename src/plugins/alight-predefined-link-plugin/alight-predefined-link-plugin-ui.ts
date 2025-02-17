@@ -213,23 +213,18 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
     }
   }
 
-  // alight-predefined-link-plugin-ui.ts
-
   private _showModal(initialValue?: { url: string; orgName?: string }): void {
     const editor = this.editor;
     const command = editor.commands.get('alightPredefinedLinkPlugin') as AlightPredefinedLinkPluginCommand;
 
-    const initialUrl = initialValue?.url || '';
-    const initialOrgName = initialValue?.orgName || '';
-
     if (!this._modalDialog) {
       this._modalDialog = new CkAlightModalDialog({
-        title: 'Predefined Link',
+        title: 'Select Predefined Link',
         modal: true,
         width: '80vw',
         height: 'auto',
         closeOnClickOutside: false,
-        contentClass: 'predefined-link-content',
+        contentClass: 'cka-predefined-link-content',
         buttons: [
           {
             label: 'Cancel',
@@ -259,7 +254,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
 
         if (label === 'Continue') {
           const selectedLink = this.linkManager?.getSelectedLink();
-          if (selectedLink) {  // Proper null check
+          if (selectedLink) {
             command.execute({
               url: selectedLink.destination,
               orgName: selectedLink.title
@@ -270,22 +265,18 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
       });
     }
 
-    // Create container for the content
-    const contentContainer = document.createElement('div');
-    contentContainer.className = 'cka-predefined-link-content';
-
     // Create and initialize the link manager
     this.linkManager = new PredefinedLinkModalContent();
-    this.linkManager.setDialog(this._modalDialog);
 
-    // Set the container as the modal content
-    this._modalDialog.setContent(contentContainer);
-
-    // Render the content into the container
-    this.linkManager.renderContent(contentContainer);
-
-    // Show the modal
+    // Show the modal first
     this._modalDialog.show();
+
+    // Get the content container after modal is shown
+    const contentContainer = this._modalDialog.element?.querySelector('.cka-predefined-link-content');
+    if (contentContainer) {
+      // Render the content into the container
+      this.linkManager.renderContent(contentContainer as HTMLElement);
+    }
   }
 
   // Add property to class

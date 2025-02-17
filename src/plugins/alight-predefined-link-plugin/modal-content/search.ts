@@ -30,7 +30,6 @@ export class SearchManager {
   private getSearchMarkup(): string {
     // Basic search container
     const searchContainerMarkup = `
-      <div id="search-container" class="cka-search-container">
         <div class="cka-search-input-container">
           <input 
             type="text" 
@@ -53,7 +52,6 @@ export class SearchManager {
         <button id="search-btn" class="cka-button cka-button-rounded cka-button-outlined">
           Search
         </button>
-      </div>
       ${this.getAdvancedSearchPanelMarkup()}
     `;
 
