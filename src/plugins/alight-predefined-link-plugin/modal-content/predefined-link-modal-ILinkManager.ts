@@ -1,4 +1,4 @@
-// src/plugins/alight-link-plugin/modal-content/ILinkManager.ts
+// src/plugins/alight-predefined-link-plugin/modal-content/predefined-link-modal-ILinkManager.ts
 
 // Minimal interface that both managers implement.
 // This allows the command to work with any manager interchangeably.

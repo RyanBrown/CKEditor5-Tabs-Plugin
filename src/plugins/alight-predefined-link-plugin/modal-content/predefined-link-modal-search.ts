@@ -1,4 +1,4 @@
-// src/plugins/alight-predefined-link-plugin/modal-content/search.ts
+// src/plugins/alight-predefined-link-plugin/modal-content/predefined-link-modal-search.ts
 import { AlightOverlayPanel } from '../../ui-components/alight-overlay-panel-component/alight-overlay-panel';
 import { PaginationManager } from './predefined-link-modal-pagination';
 import { PredefinedLink, SelectedFilters } from './predefined-link-modal-types';

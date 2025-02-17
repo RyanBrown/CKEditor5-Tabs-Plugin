@@ -1,4 +1,4 @@
-// src/plugins/alight-predefined-link-plugin/modal-content/types.ts
+// src/plugins/alight-predefined-link-plugin/modal-content/predefined-link-modal-types.ts
 export interface PredefinedLink {
   predefinedLinkName: string;
   predefinedLinkDescription: string;
