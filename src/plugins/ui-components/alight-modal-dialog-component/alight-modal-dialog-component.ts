@@ -157,8 +157,8 @@ export class CkAlightModalDialog {
         <header class="cka-dialog-header ${this.options.draggable ? 'draggable' : ''} ${this.options.headerClass}">
           <span class="cka-dialog-title"></span>
           <div class="cka-dialog-header-icons">
-            ${this.options.maximizable ? '<button class="cka-dialog-maximize" aria-label="Maximize"><i class="cka-maximize-icon"></i></button>' : ''}
-            ${this.options.defaultCloseButton ? '<button class="cka-dialog-close" aria-label="Close"><i class="cka-close-icon"></i></button>' : ''}
+            ${this.options.maximizable ? '<button class="cka-dialog-maximize" aria-label="Maximize"><i class="fa-regular fa-arrows-maximize"></i></button>' : ''}
+            ${this.options.defaultCloseButton ? '<button class="cka-dialog-close" aria-label="Close"><i class="fa-regular fa-xmark"></i></button>' : ''}
           </div>
         </header>
         <main class="cka-dialog-content ${this.options.contentClass}"></main>

@@ -10,6 +10,12 @@ export class CkAlightCheckbox extends HTMLElement {
 
   constructor() {
     super();
+    this._initializeElement();
+  }
+
+  // Made public for testing
+  public _initializeElement(): void {
+    const labelContent = this.textContent?.trim() || '';
     this.innerHTML = `
       <label class="cka-checkbox cka-component" tabindex="0" role="checkbox" aria-checked="false">
         <div class="cka-checkbox-box">
@@ -17,9 +23,7 @@ export class CkAlightCheckbox extends HTMLElement {
             <path d="M4.86 7.52L3.25 5.91l-.99.99 2.6 2.6 5.49-5.49-.99-.99z"></path>
           </svg>
         </div>
-        <span class="cka-checkbox-label">
-          ${this.textContent || ''}
-        </span>
+        <span class="cka-checkbox-label">${labelContent}</span>
       </label>
     `;
 
@@ -65,8 +69,15 @@ export class CkAlightCheckbox extends HTMLElement {
   }
 
   connectedCallback(): void {
-    if (!this.hasAttribute('tabindex')) {
-      this.setAttribute('tabindex', '0');
+    if (!this._container || !this._box) {
+      this._initializeElement();
+    }
+
+    if (this._container) {
+      this._container.addEventListener('click', this._onClick);
+      this._container.addEventListener('keydown', this._onKeyDown);
+      this._container.addEventListener('focus', this._onFocus);
+      this._container.addEventListener('blur', this._onBlur);
     }
 
     if (this.hasAttribute('initialvalue')) {
@@ -75,13 +86,6 @@ export class CkAlightCheckbox extends HTMLElement {
 
     if (this.hasAttribute('disabled')) {
       this.disabled = true;
-    }
-
-    if (this._container) {
-      this._container.addEventListener('click', this._onClick);
-      this._container.addEventListener('keydown', this._onKeyDown);
-      this._container.addEventListener('focus', this._onFocus);
-      this._container.addEventListener('blur', this._onBlur);
     }
 
     this._updateRendering();
@@ -97,7 +101,9 @@ export class CkAlightCheckbox extends HTMLElement {
   }
 
   attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void {
-    if (name === 'initialvalue' && oldValue !== newValue && newValue !== null) {
+    if (oldValue === newValue) return;
+
+    if (name === 'initialvalue' && newValue !== null) {
       this.checked = newValue.toLowerCase() === 'true';
     }
     if (name === 'disabled') {
@@ -105,35 +111,39 @@ export class CkAlightCheckbox extends HTMLElement {
     }
   }
 
-  private _onClick(event: Event): void {
+  // Made public for testing
+  public _onClick(event: Event): void {
     if (!this.disabled) {
       event.preventDefault();
       event.stopPropagation();
       this.checked = !this.checked;
-      this._container?.focus();
     }
   }
 
-  private _onKeyDown(event: KeyboardEvent): void {
+  // Made public for testing
+  public _onKeyDown(event: KeyboardEvent): void {
     if (!this.disabled && (event.key === ' ' || event.key === 'Enter')) {
       event.preventDefault();
       this.checked = !this.checked;
     }
   }
 
-  private _onFocus(): void {
+  // Made public for testing
+  public _onFocus(): void {
     if (!this.disabled) {
       this._focused = true;
       this._updateRendering();
     }
   }
 
-  private _onBlur(): void {
+  // Made public for testing
+  public _onBlur(): void {
     this._focused = false;
     this._updateRendering();
   }
 
-  private _updateRendering(): void {
+  // Made public for testing
+  public _updateRendering(): void {
     if (!this._container || !this._box) return;
 
     // Update container
@@ -144,7 +154,7 @@ export class CkAlightCheckbox extends HTMLElement {
     // Update checkbox box
     this._box.classList.toggle('cka-highlight', this._checked);
 
-    // Update attributes
+    // Update host element attributes
     if (this._checked) {
       this.setAttribute('checked', '');
     } else {
@@ -153,12 +163,10 @@ export class CkAlightCheckbox extends HTMLElement {
 
     if (this._disabled) {
       this.setAttribute('disabled', '');
-      this.removeAttribute('tabindex');
+      this._container.removeAttribute('tabindex');
     } else {
       this.removeAttribute('disabled');
-      if (!this.hasAttribute('tabindex')) {
-        this.setAttribute('tabindex', '0');
-      }
+      this._container.setAttribute('tabindex', '0');
     }
   }
 }
