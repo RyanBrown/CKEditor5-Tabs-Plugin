@@ -14,8 +14,8 @@ export class SearchManager {
   };
 
   constructor(
-    private predefinedLinksData: PredefinedLink[],
-    private onSearch: (filteredData: PredefinedLink[]) => void
+    private data: any[],
+    private onSearchResults: (results: any[]) => void
   ) { }
 
   public initialize(container: HTMLElement): void {
@@ -61,9 +61,9 @@ export class SearchManager {
   }
 
   private getAdvancedSearchPanelMarkup(): string {
-    const baseOrClientSpecificOptions = Array.from(new Set(this.predefinedLinksData.map(item => item.baseOrClientSpecific))).sort();
-    const pageTypeOptions = Array.from(new Set(this.predefinedLinksData.map(item => item.pageType))).sort();
-    const domainOptions = Array.from(new Set(this.predefinedLinksData.map(item => item.domain))).sort();
+    const baseOrClientSpecificOptions = Array.from(new Set(this.data.map(item => item.baseOrClientSpecific))).sort();
+    const pageTypeOptions = Array.from(new Set(this.data.map(item => item.pageType))).sort();
+    const domainOptions = Array.from(new Set(this.data.map(item => item.domain))).sort();
 
     return `
       <div class="cka-overlay-panel" data-id="advanced-search-panel">
@@ -116,6 +116,7 @@ export class SearchManager {
         </ul>
       </div>
     `;
+  }
 
   public reset(): void {
     this.currentSearchQuery = '';
@@ -151,7 +152,7 @@ export class SearchManager {
   }
 
   private updateFilteredData(): void {
-    const filteredData = this.predefinedLinksData.filter(link => {
+    const filteredData = this.data.filter(link => {
       const searchMatch = !this.currentSearchQuery || [
         link.predefinedLinkName,
         link.predefinedLinkDescription
@@ -172,7 +173,7 @@ export class SearchManager {
       return searchMatch && baseOrClientSpecificMatch && pageTypeMatch && domainMatch;
     });
 
-    this.onSearch(filteredData);
+    this.onSearchResults(filteredData);
   }
 
   private attachSearchEventListeners(container: HTMLElement): void {
