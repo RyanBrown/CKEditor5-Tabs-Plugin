@@ -24,12 +24,36 @@ export class SearchManager {
   }
 
   public initialize(container: HTMLElement): void {
+    console.log('Initializing SearchManager...');
+
     const searchContainer = container.querySelector('#search-container-root');
-    if (searchContainer) {
-      searchContainer.innerHTML = this.getSearchMarkup();
+    if (!searchContainer) {
+      console.warn('Search container not found! Waiting for DOM...');
+      setTimeout(() => this.initialize(container), 100);
+      return;
+    }
+
+    console.log('Injecting search UI...');
+    searchContainer.innerHTML = this.getSearchMarkup();
+
+    // 🛑 Force DOM reflow to ensure UI updates before attaching events
+    searchContainer.getBoundingClientRect();
+
+    setTimeout(() => {
+      console.log('Checking if Apply/Clear buttons exist after injecting HTML...');
+      const applyFiltersBtn = container.querySelector('#apply-advanced-search');
+      const clearFiltersBtn = container.querySelector('#clear-advanced-search');
+
+      if (!applyFiltersBtn || !clearFiltersBtn) {
+        console.warn('Buttons STILL not found, re-rendering...');
+        this.initialize(container); // Retry injecting UI
+        return;
+      }
+
+      console.log('Buttons found, attaching event listeners.');
       this.setupOverlayPanel(container);
       this.attachSearchEventListeners(container);
-    }
+    }, 50);
   }
 
   private getSearchMarkup(): string {
@@ -216,24 +240,37 @@ export class SearchManager {
   }
 
   private attachSearchEventListeners(container: HTMLElement): void {
-    // Search inputs
-    const searchInputs = container.querySelectorAll('input[type="text"]');
-    searchInputs.forEach(input => {
-      input.addEventListener('input', (e: Event) => {
-        const value = (e.target as HTMLInputElement).value;
-        this.currentSearchQuery = value;
+    // Wait until the search container is actually in the DOM
+    const searchContainer = container.querySelector('#search-container-root');
+    if (!searchContainer) {
+      console.error('Search container not found in DOM! Cannot attach event listeners.');
+      return;
+    }
 
-        // Sync both input fields (normal & advanced search)
-        searchInputs.forEach(otherInput => {
-          if (otherInput !== e.target) {
-            (otherInput as HTMLInputElement).value = value;
-          }
+    // Delay event listener attachment slightly to ensure buttons are available
+    setTimeout(() => {
+      const applyFiltersBtn = container.querySelector('#apply-advanced-search');
+      if (applyFiltersBtn) {
+        applyFiltersBtn.addEventListener('click', () => {
+          console.log('Apply Filters button clicked');
+          this.updateFilteredData();
+          this.closeOverlayPanel();
         });
+      } else {
+        console.warn('Apply Filters button not found in DOM after timeout');
+      }
 
-        // Trigger search update
-        this.updateFilteredData();
-      });
-    });
+      const clearFiltersBtn = container.querySelector('#clear-advanced-search');
+      if (clearFiltersBtn) {
+        clearFiltersBtn.addEventListener('click', () => {
+          console.log('Clear Filters button clicked');
+          this.reset();
+          this.closeOverlayPanel();
+        });
+      } else {
+        console.warn('Clear Filters button not found in DOM after timeout');
+      }
+    }, 100); // Small delay to allow DOM rendering
 
     // Checkboxes
     const checkboxes = container.querySelectorAll('cka-checkbox');
