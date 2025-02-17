@@ -7,10 +7,12 @@
   box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.2), 0 4px 5px 0 rgba(0, 0, 0, 0.14), 0 1px 10px 0 rgba(0, 0, 0, 0.12);
   display: none;
   font-size: 14px;
+  height: 100%;
   max-height: 90vh;
   min-width: 400px;
   overflow: hidden;
   position: absolute;
+  width: 100%;
 
   header {
     align-items: center;
@@ -29,14 +31,17 @@
   main {
     overflow: auto;
     padding: 1rem;
+    height: 100%;
   }
 
   footer {
     border-top: 1px solid #ccc;
+    bottom: 0;
     display: flex;
     gap: 1rem;
     justify-content: flex-start;
     padding: 1rem;
+    position: sticky;
   }
 
   &.cka-active {
@@ -60,6 +65,7 @@
     padding: 1rem;
     overflow-y: auto;
     flex: 1;
+    height: 100%;
   }
 
   .cka-overlay-footer {
