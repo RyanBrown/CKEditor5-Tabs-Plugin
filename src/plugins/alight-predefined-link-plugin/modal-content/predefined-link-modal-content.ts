@@ -102,6 +102,7 @@ export class PredefinedLinkModalContent implements ILinkManager {
   }
 
   // Resets all search/filter state to defaults
+  // Resets all search/filter state to defaults
   public resetSearch(): void {
     this.currentSearchQuery = '';
     this.selectedLink = null;
@@ -113,26 +114,29 @@ export class PredefinedLinkModalContent implements ILinkManager {
     this.filteredLinksData = [...this.predefinedLinksData];
     this.currentPage = 1;
 
-    // Reset both search inputs
-    const mainSearchInput = document.querySelector('#search-input') as HTMLInputElement;
-    const advancedSearchInput = document.querySelector('#advanced-search-input') as HTMLInputElement;
-
-    if (mainSearchInput) {
-      mainSearchInput.value = '';
-    }
-    if (advancedSearchInput) {
-      advancedSearchInput.value = '';
-    }
-
-    // Reset all checkboxes in both main and overlay panels
-    document.querySelectorAll('cka-checkbox').forEach(checkbox => {
-      (checkbox as any).checked = false;
-    });
-
-    // Re-render to update the view
+    // Reset UI elements if they exist
     const container = document.querySelector('.cka-predefined-link-content');
-    if (container instanceof HTMLElement) {
-      this.renderContent(container);
+    if (container) {
+      // Reset main search input
+      const mainSearchInput = container.querySelector('#search-input') as HTMLInputElement;
+      if (mainSearchInput) {
+        mainSearchInput.value = '';
+      }
+
+      // Reset advanced search input
+      const advancedSearchInput = container.querySelector('#advanced-search-input') as HTMLInputElement;
+      if (advancedSearchInput) {
+        advancedSearchInput.value = '';
+      }
+
+      // Reset all checkboxes
+      const checkboxes = container.querySelectorAll('cka-checkbox');
+      checkboxes.forEach(checkbox => {
+        (checkbox as any).checked = false;
+      });
+
+      // Re-render content
+      this.renderContent(container as HTMLElement);
     }
   }
 
@@ -183,7 +187,7 @@ export class PredefinedLinkModalContent implements ILinkManager {
             ${this.createCheckboxList(domainOptions, 'domain', 'Domain')}
           </div>
           <div class="form-group">
-            <input type="text" id="advanced-search-input" placeholder="Search by link name..." />
+            <input type="text" id="advanced-search-input" placeholder="Search by link name..." value="${this.currentSearchQuery}" />
           </div>
         </main>
         <footer>
@@ -242,80 +246,109 @@ export class PredefinedLinkModalContent implements ILinkManager {
     `;
   }
 
-  // Recomputes the filtered list and resets to page 1
-  private applyFilters(): void {
-    this.filteredLinksData = this.predefinedLinksData.filter(link => {
-      const nameMatch =
-        !this.currentSearchQuery ||
-        link.predefinedLinkName.toLowerCase().includes(this.currentSearchQuery.toLowerCase());
-      const baseOrClientSpecificMatch =
-        this.selectedFilters.baseOrClientSpecific.length === 0 ||
-        this.selectedFilters.baseOrClientSpecific.includes(link.baseOrClientSpecific);
-      const pageTypeMatch =
-        this.selectedFilters.pageType.length === 0 ||
-        this.selectedFilters.pageType.includes(link.pageType);
-      const domainMatch =
-        this.selectedFilters.domain.length === 0 ||
-        this.selectedFilters.domain.includes(link.domain);
-      return nameMatch && baseOrClientSpecificMatch && pageTypeMatch && domainMatch;
-    });
-    this.currentPage = 1;
-  }
-
-  // Attaches all event listeners
   private attachEventListeners(container: HTMLElement): void {
-    // Search input handlers
-    const searchInput = container.querySelector('#search-input') as HTMLInputElement;
-    const searchBtn = container.querySelector('#search-btn') as HTMLButtonElement;
-    const resetSearchBtn = container.querySelector('#reset-search-btn') as HTMLButtonElement;
+    // Handle main search input
+    const mainSearchInput = container.querySelector('#search-input') as HTMLInputElement;
+    if (mainSearchInput) {
+      mainSearchInput.addEventListener('input', () => {
+        this.currentSearchQuery = mainSearchInput.value;
+      });
+    }
 
-    // Main search functionality
-    searchBtn?.addEventListener('click', () => {
-      this.currentSearchQuery = searchInput?.value || '';
-      this.applyFilters();
-      this.renderContent(container);
-    });
-
-    searchInput?.addEventListener('keydown', (e: KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        searchBtn?.click();
-      }
-    });
-
-    resetSearchBtn?.addEventListener('click', () => {
-      this.resetSearch();
-    });
-
-    // Advanced search functionality
+    // Handle advanced search input
     const advancedSearchInput = container.querySelector('#advanced-search-input') as HTMLInputElement;
-    const applyAdvancedSearchBtn = container.querySelector('#apply-advanced-search') as HTMLButtonElement;
-    const clearAdvancedSearchBtn = container.querySelector('#clear-advanced-search') as HTMLButtonElement;
-
-    applyAdvancedSearchBtn?.addEventListener('click', () => {
-      if (advancedSearchInput) {
+    if (advancedSearchInput) {
+      advancedSearchInput.addEventListener('input', () => {
         this.currentSearchQuery = advancedSearchInput.value;
-      }
+        if (mainSearchInput) {
+          mainSearchInput.value = this.currentSearchQuery;
+        }
+      });
+    }
 
-      // Update the main search input to match
-      if (searchInput) {
-        searchInput.value = this.currentSearchQuery;
-      }
+    // Handle checkboxes in the advanced search panel
+    const checkboxes = container.querySelectorAll('cka-checkbox');
+    checkboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', event => {
+        const target = event.target as HTMLInputElement;
+        if (!target) return;
 
-      this.applyFilters();
-      this.renderContent(container);
+        const filterType = target.dataset.filterType as keyof SelectedFilters;
+        const value = target.dataset.value;
 
-      // Close the overlay panel
-      const overlayPanel = container.querySelector('.cka-overlay-panel');
-      if (overlayPanel) {
-        const closeBtn = overlayPanel.querySelector('.cka-close-btn') as HTMLButtonElement;
-        closeBtn?.click();
-      }
+        if (!filterType || !value) return;
+
+        if (target.checked) {
+          if (!this.selectedFilters[filterType].includes(value)) {
+            this.selectedFilters[filterType].push(value);
+          }
+        } else {
+          this.selectedFilters[filterType] = this.selectedFilters[filterType].filter(v => v !== value);
+        }
+
+        // Log the current state of filters (for debugging)
+        console.log('Current filters:', this.selectedFilters);
+      });
     });
 
-    clearAdvancedSearchBtn?.addEventListener('click', () => {
-      this.resetSearch();
-    });
+    // Handle apply filters button
+    const applyFiltersBtn = container.querySelector('#apply-advanced-search');
+    if (applyFiltersBtn) {
+      applyFiltersBtn.addEventListener('click', () => {
+        // Update search query from advanced search input
+        if (advancedSearchInput) {
+          this.currentSearchQuery = advancedSearchInput.value;
+          if (mainSearchInput) {
+            mainSearchInput.value = this.currentSearchQuery;
+          }
+        }
+
+        this.applyFilters();
+        this.renderContent(container);
+
+        // Close the overlay panel
+        const overlayPanel = container.querySelector('.cka-overlay-panel');
+        if (overlayPanel) {
+          const closeBtn = overlayPanel.querySelector('.cka-close-btn') as HTMLButtonElement;
+          closeBtn?.click();
+        }
+      });
+    }
+
+    // Handle clear filters button
+    const clearFiltersBtn = container.querySelector('#clear-advanced-search');
+    if (clearFiltersBtn) {
+      clearFiltersBtn.addEventListener('click', () => {
+        this.resetSearch();
+
+        // Update UI to reflect reset
+        if (advancedSearchInput) {
+          advancedSearchInput.value = '';
+        }
+        if (mainSearchInput) {
+          mainSearchInput.value = '';
+        }
+
+        // Reset all checkboxes
+        checkboxes.forEach(checkbox => {
+          (checkbox as any).checked = false;
+        });
+
+        this.renderContent(container);
+      });
+    }
+
+    // Handle main search button
+    const searchBtn = container.querySelector('#search-btn');
+    if (searchBtn) {
+      searchBtn.addEventListener('click', () => {
+        if (mainSearchInput) {
+          this.currentSearchQuery = mainSearchInput.value;
+        }
+        this.applyFilters();
+        this.renderContent(container);
+      });
+    }
 
     // Link selection
     const linkItems = container.querySelectorAll('.cka-link-item');
@@ -341,7 +374,8 @@ export class PredefinedLinkModalContent implements ILinkManager {
           // Uncheck other radio buttons
           container.querySelectorAll('cka-radio-button').forEach(otherRadio => {
             if (otherRadio !== radio) {
-              (otherRadio as any).checked = false;
+              (otherRadio as any).checked = false
+
             }
           });
         }
@@ -362,27 +396,39 @@ export class PredefinedLinkModalContent implements ILinkManager {
       });
     });
 
-    // Attach filter and pagination listeners
-    this.attachFilterListeners(container);
+    // Attach pagination listeners
     this.attachPaginationListeners(container);
   }
 
-  private attachFilterListeners(container: HTMLElement): void {
-    const checkboxes = container.querySelectorAll('cka-checkbox');
-    checkboxes.forEach(checkbox => {
-      checkbox.addEventListener('change', event => {
-        const target = event.target as HTMLInputElement;
-        if (!target) return;
-        const filterType = target.dataset.filterType as keyof SelectedFilters;
-        const value = target.dataset.value;
-        if (!filterType || !value) return;
-        if (target.checked) {
-          this.selectedFilters[filterType].push(value);
-        } else {
-          this.selectedFilters[filterType] = this.selectedFilters[filterType].filter(v => v !== value);
-        }
-      });
+  private applyFilters(): void {
+    this.filteredLinksData = this.predefinedLinksData.filter(link => {
+      // Check if the link name or description matches the search query
+      const searchMatch = !this.currentSearchQuery ||
+        link.predefinedLinkName.toLowerCase().includes(this.currentSearchQuery.toLowerCase()) ||
+        link.predefinedLinkDescription.toLowerCase().includes(this.currentSearchQuery.toLowerCase());
+
+      // Check if the link matches all selected filters
+      const baseOrClientSpecificMatch =
+        this.selectedFilters.baseOrClientSpecific.length === 0 ||
+        this.selectedFilters.baseOrClientSpecific.includes(link.baseOrClientSpecific);
+
+      const pageTypeMatch =
+        this.selectedFilters.pageType.length === 0 ||
+        this.selectedFilters.pageType.includes(link.pageType);
+
+      const domainMatch =
+        this.selectedFilters.domain.length === 0 ||
+        this.selectedFilters.domain.includes(link.domain);
+
+      // Return true only if all conditions are met
+      return searchMatch && baseOrClientSpecificMatch && pageTypeMatch && domainMatch;
     });
+
+    // Reset to first page whenever filters are applied
+    this.currentPage = 1;
+
+    // Log filtered results (for debugging)
+    console.log('Filtered results:', this.filteredLinksData.length);
   }
 
   private attachPaginationListeners(container: HTMLElement): void {
