@@ -50,6 +50,7 @@ export class PredefinedLinkModalContent implements ILinkManager {
   private currentPage = 1;
   private readonly pageSize = 5;
   private readonly advancedSearchTriggerId = 'advanced-search-trigger';
+  private overlayPanel: AlightOverlayPanel | null = null;
 
   // Selected filters
   private selectedFilters: SelectedFilters = {
@@ -74,35 +75,47 @@ export class PredefinedLinkModalContent implements ILinkManager {
     };
   }
 
-  // Returns raw HTML for a particular page of data
-  public getLinkContent(page: number): string {
-    return this.buildContentForPage(page);
-  }
-
-  // Renders the HTML into the container, then sets up the overlay panel,
-  // pagination, and event handlers
-  public renderContent(container: HTMLElement): void {
-    // Insert the HTML into the container
-    container.innerHTML = this.buildContentForPage(this.currentPage);
-
-    // Setup overlay panel for advanced search
-    const triggerEl = container.querySelector(`#${this.advancedSearchTriggerId}`) as HTMLButtonElement | null;
-    if (triggerEl) {
-      new AlightOverlayPanel(triggerEl, this.overlayPanelConfig);
-    } else {
-      console.error(`Trigger button with ID "#${this.advancedSearchTriggerId}" not found in container.`);
+  private closeOverlayPanel(): void {
+    const container = document.querySelector('.cka-predefined-link-content');
+    if (container) {
+      const overlayPanel = container.querySelector('.cka-overlay-panel');
+      if (overlayPanel) {
+        const closeBtn = overlayPanel.querySelector('.cka-close-btn') as HTMLButtonElement;
+        if (closeBtn) {
+          closeBtn.click();
+        }
+      }
     }
-
-    // Initialize pagination
-    const totalPages = Math.ceil(this.filteredLinksData.length / this.pageSize);
-    this.initializePageSelect(container, this.currentPage, totalPages);
-
-    // Attach all event handlers
-    this.attachEventListeners(container);
   }
 
-  // Resets all search/filter state to defaults
-  // Resets all search/filter state to defaults
+  private updateFilteredData(): void {
+    this.filteredLinksData = this.predefinedLinksData.filter(link => {
+      // Check search query match
+      const searchMatch = !this.currentSearchQuery || [
+        link.predefinedLinkName,
+        link.predefinedLinkDescription
+      ].some(field => field.toLowerCase().includes(this.currentSearchQuery.toLowerCase()));
+
+      // Check filter matches
+      const baseOrClientSpecificMatch =
+        this.selectedFilters.baseOrClientSpecific.length === 0 ||
+        this.selectedFilters.baseOrClientSpecific.includes(link.baseOrClientSpecific);
+
+      const pageTypeMatch =
+        this.selectedFilters.pageType.length === 0 ||
+        this.selectedFilters.pageType.includes(link.pageType);
+
+      const domainMatch =
+        this.selectedFilters.domain.length === 0 ||
+        this.selectedFilters.domain.includes(link.domain);
+
+      return searchMatch && baseOrClientSpecificMatch && pageTypeMatch && domainMatch;
+    });
+
+    // Reset to first page when filters change
+    this.currentPage = 1;
+  }
+
   public resetSearch(): void {
     this.currentSearchQuery = '';
     this.selectedLink = null;
@@ -117,22 +130,16 @@ export class PredefinedLinkModalContent implements ILinkManager {
     // Reset UI elements if they exist
     const container = document.querySelector('.cka-predefined-link-content');
     if (container) {
-      // Reset main search input
-      const mainSearchInput = container.querySelector('#search-input') as HTMLInputElement;
-      if (mainSearchInput) {
-        mainSearchInput.value = '';
-      }
+      // Reset search inputs
+      const inputs = container.querySelectorAll('input[type="text"]') as NodeListOf<HTMLInputElement>;
+      inputs.forEach(input => {
+        input.value = '';
+      });
 
-      // Reset advanced search input
-      const advancedSearchInput = container.querySelector('#advanced-search-input') as HTMLInputElement;
-      if (advancedSearchInput) {
-        advancedSearchInput.value = '';
-      }
-
-      // Reset all checkboxes
-      const checkboxes = container.querySelectorAll('cka-checkbox');
+      // Reset checkboxes
+      const checkboxes = container.querySelectorAll('cka-checkbox') as NodeListOf<any>;
       checkboxes.forEach(checkbox => {
-        (checkbox as any).checked = false;
+        checkbox.checked = false;
       });
 
       // Re-render content
@@ -140,9 +147,142 @@ export class PredefinedLinkModalContent implements ILinkManager {
     }
   }
 
-  // PRIVATE HELPERS
+  public renderContent(container: HTMLElement): void {
+    // Update filtered data before rendering
+    this.updateFilteredData();
 
-  // Generates the HTML for a given page
+    // Insert HTML
+    container.innerHTML = this.buildContentForPage(this.currentPage);
+
+    // Setup overlay panel
+    const triggerEl = container.querySelector(`#${this.advancedSearchTriggerId}`);
+    if (triggerEl) {
+      this.overlayPanel = new AlightOverlayPanel(triggerEl as HTMLElement, this.overlayPanelConfig);
+    }
+
+    // Initialize pagination
+    const totalPages = Math.ceil(this.filteredLinksData.length / this.pageSize);
+    this.initializePageSelect(container, this.currentPage, totalPages);
+
+    // Attach event listeners
+    this.attachEventListeners(container);
+  }
+
+  private attachEventListeners(container: HTMLElement): void {
+    // Search inputs
+    const searchInputs = container.querySelectorAll('input[type="text"]');
+    searchInputs.forEach(input => {
+      input.addEventListener('input', (e: Event) => {
+        const value = (e.target as HTMLInputElement).value;
+        this.currentSearchQuery = value;
+
+        // Sync other search input if it exists
+        searchInputs.forEach(otherInput => {
+          if (otherInput !== e.target) {
+            (otherInput as HTMLInputElement).value = value;
+          }
+        });
+      });
+    });
+
+    // Checkboxes
+    const checkboxes = container.querySelectorAll('cka-checkbox');
+    checkboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', (e: Event) => {
+        const target = e.target as HTMLInputElement;
+        const filterType = target.dataset.filterType as keyof SelectedFilters;
+        const value = target.dataset.value;
+
+        if (filterType && value) {
+          if (target.checked) {
+            if (!this.selectedFilters[filterType].includes(value)) {
+              this.selectedFilters[filterType].push(value);
+            }
+          } else {
+            this.selectedFilters[filterType] = this.selectedFilters[filterType].filter(v => v !== value);
+          }
+        }
+      });
+    });
+
+    // Apply Filters button
+    const applyFiltersBtn = container.querySelector('#apply-advanced-search');
+    if (applyFiltersBtn) {
+      applyFiltersBtn.addEventListener('click', () => {
+        this.updateFilteredData();
+        this.renderContent(container);
+        this.closeOverlayPanel();
+      });
+    }
+
+    // Clear Filters button
+    const clearFiltersBtn = container.querySelector('#clear-advanced-search');
+    if (clearFiltersBtn) {
+      clearFiltersBtn.addEventListener('click', () => {
+        this.resetSearch();
+        this.closeOverlayPanel();
+      });
+    }
+
+    // Main search button
+    const searchBtn = container.querySelector('#search-btn');
+    if (searchBtn) {
+      searchBtn.addEventListener('click', () => {
+        this.updateFilteredData();
+        this.renderContent(container);
+      });
+    }
+
+    // Reset search button
+    const resetSearchBtn = container.querySelector('#reset-search-btn');
+    if (resetSearchBtn) {
+      resetSearchBtn.addEventListener('click', () => {
+        this.resetSearch();
+      });
+    }
+
+    // Link selection
+    container.querySelectorAll('.cka-link-item').forEach(item => {
+      item.addEventListener('click', (e: Event) => {
+        if ((e.target as HTMLElement).closest('cka-radio-button')) return;
+
+        const linkName = (e.currentTarget as HTMLElement).dataset.linkName;
+        if (!linkName) return;
+
+        this.selectedLink = this.predefinedLinksData.find(
+          link => link.predefinedLinkName === linkName
+        ) || null;
+
+        // Update radio buttons
+        const radio = (e.currentTarget as HTMLElement).querySelector('cka-radio-button') as any;
+        if (radio) {
+          radio.checked = true;
+          container.querySelectorAll('cka-radio-button').forEach(otherRadio => {
+            if (otherRadio !== radio) {
+              (otherRadio as any).checked = false;
+            }
+          });
+        }
+      });
+    });
+
+    // Radio button change handlers
+    container.querySelectorAll('cka-radio-button').forEach(radio => {
+      radio.addEventListener('change', (e: Event) => {
+        const target = e.target as HTMLInputElement;
+        if (!target.checked) return;
+
+        const linkName = target.value;
+        this.selectedLink = this.predefinedLinksData.find(
+          link => link.predefinedLinkName === linkName
+        ) || null;
+      });
+    });
+
+    // Attach pagination listeners
+    this.attachPaginationListeners(container);
+  }
+
   private buildContentForPage(page: number): string {
     // Clamp the requested page
     const totalItems = this.filteredLinksData.length;
@@ -246,191 +386,6 @@ export class PredefinedLinkModalContent implements ILinkManager {
     `;
   }
 
-  private attachEventListeners(container: HTMLElement): void {
-    // Handle main search input
-    const mainSearchInput = container.querySelector('#search-input') as HTMLInputElement;
-    if (mainSearchInput) {
-      mainSearchInput.addEventListener('input', () => {
-        this.currentSearchQuery = mainSearchInput.value;
-      });
-    }
-
-    // Handle advanced search input
-    const advancedSearchInput = container.querySelector('#advanced-search-input') as HTMLInputElement;
-    if (advancedSearchInput) {
-      advancedSearchInput.addEventListener('input', () => {
-        this.currentSearchQuery = advancedSearchInput.value;
-        if (mainSearchInput) {
-          mainSearchInput.value = this.currentSearchQuery;
-        }
-      });
-    }
-
-    // Handle checkboxes in the advanced search panel
-    const checkboxes = container.querySelectorAll('cka-checkbox');
-    checkboxes.forEach(checkbox => {
-      checkbox.addEventListener('change', event => {
-        const target = event.target as HTMLInputElement;
-        if (!target) return;
-
-        const filterType = target.dataset.filterType as keyof SelectedFilters;
-        const value = target.dataset.value;
-
-        if (!filterType || !value) return;
-
-        if (target.checked) {
-          if (!this.selectedFilters[filterType].includes(value)) {
-            this.selectedFilters[filterType].push(value);
-          }
-        } else {
-          this.selectedFilters[filterType] = this.selectedFilters[filterType].filter(v => v !== value);
-        }
-
-        // Log the current state of filters (for debugging)
-        console.log('Current filters:', this.selectedFilters);
-      });
-    });
-
-    // Handle apply filters button
-    const applyFiltersBtn = container.querySelector('#apply-advanced-search');
-    if (applyFiltersBtn) {
-      applyFiltersBtn.addEventListener('click', () => {
-        // Update search query from advanced search input
-        if (advancedSearchInput) {
-          this.currentSearchQuery = advancedSearchInput.value;
-          if (mainSearchInput) {
-            mainSearchInput.value = this.currentSearchQuery;
-          }
-        }
-
-        this.applyFilters();
-        this.renderContent(container);
-
-        // Close the overlay panel
-        const overlayPanel = container.querySelector('.cka-overlay-panel');
-        if (overlayPanel) {
-          const closeBtn = overlayPanel.querySelector('.cka-close-btn') as HTMLButtonElement;
-          closeBtn?.click();
-        }
-      });
-    }
-
-    // Handle clear filters button
-    const clearFiltersBtn = container.querySelector('#clear-advanced-search');
-    if (clearFiltersBtn) {
-      clearFiltersBtn.addEventListener('click', () => {
-        this.resetSearch();
-
-        // Update UI to reflect reset
-        if (advancedSearchInput) {
-          advancedSearchInput.value = '';
-        }
-        if (mainSearchInput) {
-          mainSearchInput.value = '';
-        }
-
-        // Reset all checkboxes
-        checkboxes.forEach(checkbox => {
-          (checkbox as any).checked = false;
-        });
-
-        this.renderContent(container);
-      });
-    }
-
-    // Handle main search button
-    const searchBtn = container.querySelector('#search-btn');
-    if (searchBtn) {
-      searchBtn.addEventListener('click', () => {
-        if (mainSearchInput) {
-          this.currentSearchQuery = mainSearchInput.value;
-        }
-        this.applyFilters();
-        this.renderContent(container);
-      });
-    }
-
-    // Link selection
-    const linkItems = container.querySelectorAll('.cka-link-item');
-    linkItems.forEach(item => {
-      item.addEventListener('click', event => {
-        if ((event.target as HTMLElement).closest('cka-radio-button')) return;
-        const linkName = (event.currentTarget as HTMLElement).getAttribute('data-link-name');
-        if (!linkName) return;
-
-        // Update selected link
-        this.selectedLink = this.predefinedLinksData.find(
-          link => link.predefinedLinkName === linkName
-        ) || null;
-
-        // Update radio button
-        const radio = (event.currentTarget as HTMLElement).querySelector('cka-radio-button') as any;
-        if (radio) {
-          radio.checked = true;
-          radio.value = linkName;
-          radio.dispatchEvent(new Event('change', { bubbles: true }));
-          radio.dispatchEvent(new Event('input', { bubbles: true }));
-
-          // Uncheck other radio buttons
-          container.querySelectorAll('cka-radio-button').forEach(otherRadio => {
-            if (otherRadio !== radio) {
-              (otherRadio as any).checked = false
-
-            }
-          });
-        }
-      });
-    });
-
-    // Radio button change listeners
-    const radioButtons = container.querySelectorAll('cka-radio-button');
-    radioButtons.forEach(radio => {
-      radio.addEventListener('change', (event) => {
-        const target = event.target as HTMLInputElement;
-        if (!target || !target.checked) return;
-
-        const linkName = target.value;
-        this.selectedLink = this.predefinedLinksData.find(
-          link => link.predefinedLinkName === linkName
-        ) || null;
-      });
-    });
-
-    // Attach pagination listeners
-    this.attachPaginationListeners(container);
-  }
-
-  private applyFilters(): void {
-    this.filteredLinksData = this.predefinedLinksData.filter(link => {
-      // Check if the link name or description matches the search query
-      const searchMatch = !this.currentSearchQuery ||
-        link.predefinedLinkName.toLowerCase().includes(this.currentSearchQuery.toLowerCase()) ||
-        link.predefinedLinkDescription.toLowerCase().includes(this.currentSearchQuery.toLowerCase());
-
-      // Check if the link matches all selected filters
-      const baseOrClientSpecificMatch =
-        this.selectedFilters.baseOrClientSpecific.length === 0 ||
-        this.selectedFilters.baseOrClientSpecific.includes(link.baseOrClientSpecific);
-
-      const pageTypeMatch =
-        this.selectedFilters.pageType.length === 0 ||
-        this.selectedFilters.pageType.includes(link.pageType);
-
-      const domainMatch =
-        this.selectedFilters.domain.length === 0 ||
-        this.selectedFilters.domain.includes(link.domain);
-
-      // Return true only if all conditions are met
-      return searchMatch && baseOrClientSpecificMatch && pageTypeMatch && domainMatch;
-    });
-
-    // Reset to first page whenever filters are applied
-    this.currentPage = 1;
-
-    // Log filtered results (for debugging)
-    console.log('Filtered results:', this.filteredLinksData.length);
-  }
-
   private attachPaginationListeners(container: HTMLElement): void {
     const paginationDiv = container.querySelector('#pagination');
     paginationDiv?.addEventListener('click', e => {
@@ -484,18 +439,16 @@ export class PredefinedLinkModalContent implements ILinkManager {
       <div class="filter-section">
         <h4>${title}</h4>
         <ul class="checkbox-list">
-          ${options
-        .map(option => {
-          const checked = this.selectedFilters[filterType].includes(option) ? 'initialvalue="true"' : '';
-          return `
-                <li>
-                  <cka-checkbox data-filter-type="${filterType}" data-value="${option}" ${checked}>
-                    ${option}
-                  </cka-checkbox>
-                </li>
-              `;
-        })
-        .join('')}
+          ${options.map(option => {
+      const checked = this.selectedFilters[filterType].includes(option) ? 'initialvalue="true"' : '';
+      return `
+              <li>
+                <cka-checkbox data-filter-type="${filterType}" data-value="${option}" ${checked}>
+                  ${option}
+                </cka-checkbox>
+              </li>
+            `;
+    }).join('')}
         </ul>
       </div>
     `;
