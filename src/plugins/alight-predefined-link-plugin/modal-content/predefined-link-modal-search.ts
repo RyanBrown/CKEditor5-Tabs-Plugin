@@ -31,6 +31,7 @@ export class SearchManager {
       console.error('Search container not found');
       return;
     }
+
     // First, inject the HTML
     this.injectSearchUI(searchContainer as HTMLElement);
 
@@ -141,10 +142,13 @@ export class SearchManager {
   private async setupOverlayPanel(container: HTMLElement): Promise<void> {
     const triggerEl = container.querySelector(`#${this.advancedSearchTriggerId}`);
     if (triggerEl) {
-      this.overlayPanel = new AlightOverlayPanel(triggerEl as HTMLElement, {});
-      this.overlayPanel.on('open', () => {
-        // Re-attach event listeners when the panel opens
-        this.attachAdvancedSearchEventListeners(container);
+      this.overlayPanel = new AlightOverlayPanel(triggerEl as HTMLElement, {
+        width: '600px',
+        height: 'auto',
+        onOpen: () => {
+          // Re-attach event listeners when the panel opens
+          this.attachAdvancedSearchEventListeners(container);
+        }
       });
     }
   }
@@ -163,11 +167,6 @@ export class SearchManager {
       applyFiltersBtn.parentNode?.replaceChild(newApplyBtn, applyFiltersBtn);
       newApplyBtn.addEventListener('click', () => {
         console.log('Apply Filters clicked');
-        // Update search query from advanced search input
-        const advancedSearchInput = panel.querySelector('#advanced-search-input') as HTMLInputElement;
-        if (advancedSearchInput) {
-          this.currentSearchQuery = advancedSearchInput.value;
-        }
         this.updateFilteredData();
         this.closeOverlayPanel();
       });
@@ -205,18 +204,6 @@ export class SearchManager {
         }
       });
     });
-
-    // Advanced search input enter key handler
-    const advancedSearchInput = panel.querySelector('#advanced-search-input') as HTMLInputElement;
-    if (advancedSearchInput) {
-      advancedSearchInput.addEventListener('keypress', (e: KeyboardEvent) => {
-        if (e.key === 'Enter') {
-          this.currentSearchQuery = advancedSearchInput.value;
-          this.updateFilteredData();
-          this.closeOverlayPanel();
-        }
-      });
-    }
   }
 
   private attachSearchEventListeners(container: HTMLElement): void {
@@ -240,7 +227,7 @@ export class SearchManager {
       });
     }
 
-    // Search input enter key handler
+    // Search input
     const searchInput = container.querySelector('#search-input') as HTMLInputElement;
     if (searchInput) {
       searchInput.addEventListener('keypress', (e: KeyboardEvent) => {
