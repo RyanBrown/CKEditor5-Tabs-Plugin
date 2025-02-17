@@ -3,10 +3,22 @@ import { AlightPositionManager, PositionConfig } from '../alight-ui-component-ut
 import './styles/alight-overlay-panel.scss';
 
 interface PanelConfig extends PositionConfig {
-  width?: string;
   height?: string;
-  closeOnEsc?: boolean; // Add this line
+  maxHeight?: string;
+  maxWidth?: string;
+  minHeight?: string;
+  minWidth?: string;
+  width?: string;
+  closeOnEsc?: boolean;
+  onOpen?: () => void;   // Add callback for open event
+  onClose?: () => void;  // Add callback for close event
+  overlayPanelClass?: string; // Add the new property
 }
+
+type EventCallback = () => void;
+type EventMap = {
+  [key: string]: EventCallback[];
+};
 
 export class AlightOverlayPanel {
   // Map of panel IDs to their DOM element.
@@ -18,6 +30,8 @@ export class AlightOverlayPanel {
   private _trigger: HTMLElement | null = null;
   private positionManager: AlightPositionManager;
   private _keydownHandler: (event: KeyboardEvent) => void;
+  private eventListeners: EventMap = {};  // Add event listeners storage
+
 
   // The constructor now accepts either a string (selector) or an HTMLElement.
   constructor(trigger: string | HTMLElement, config?: PanelConfig) {
@@ -37,7 +51,37 @@ export class AlightOverlayPanel {
     }
   }
 
-  // Add new method
+  // Add event listener method
+  public on(eventName: string, callback: EventCallback): void {
+    if (!this.eventListeners[eventName]) {
+      this.eventListeners[eventName] = [];
+    }
+    this.eventListeners[eventName].push(callback);
+  }
+
+  // Remove event listener method
+  public off(eventName: string, callback: EventCallback): void {
+    if (this.eventListeners[eventName]) {
+      this.eventListeners[eventName] = this.eventListeners[eventName].filter(
+        cb => cb !== callback
+      );
+    }
+  }
+
+  // Trigger event method
+  private trigger(eventName: string): void {
+    if (this.eventListeners[eventName]) {
+      this.eventListeners[eventName].forEach(callback => callback());
+    }
+  }
+
+  // Add close method
+  public close(): void {
+    if (this.currentPanel) {
+      this.hidePanel(this.currentPanel);
+    }
+  }
+
   private handleKeydown(event: KeyboardEvent): void {
     if (this.currentPanel) {
       const panelId = this.currentPanel.getAttribute('data-id');
@@ -77,9 +121,11 @@ export class AlightOverlayPanel {
         constrainToViewport: true,
         autoFlip: true,
         alignment: 'start',
-        closeOnEsc: true, // Add default value
+        closeOnEsc: true,
         width: panel.getAttribute('data-width') || defaultConfig?.width,
         height: panel.getAttribute('data-height') || defaultConfig?.height,
+        onOpen: defaultConfig?.onOpen,
+        onClose: defaultConfig?.onClose,
         ...defaultConfig
       };
 
@@ -112,19 +158,30 @@ export class AlightOverlayPanel {
     this.panels.clear();
     this.configs.clear();
     this.currentPanel = null;
+    this.eventListeners = {};  // Clear event listeners
   }
 
-  // Applies width and height settings.
+  // Rest of the methods remain the same...
   private applyConfig(panel: HTMLDivElement, config: PanelConfig): void {
-    if (config.width) {
-      panel.style.width = typeof config.width === 'number' ? `${config.width}px` : config.width;
-    }
-    if (config.height) {
-      panel.style.height = typeof config.height === 'number' ? `${config.height}px` : config.height;
-    }
+    // Handle all dimension properties
+    const dimensionProps = {
+      width: config.width,
+      height: config.height,
+      maxWidth: config.maxWidth,
+      maxHeight: config.maxHeight,
+      minWidth: config.minWidth,
+      minHeight: config.minHeight
+    };
+
+    // Apply each dimension property if it exists
+    Object.entries(dimensionProps).forEach(([prop, value]) => {
+      if (value !== undefined) {
+        const styleKey = prop as keyof CSSStyleDeclaration;
+        panel.style[styleKey] = typeof value === 'number' ? `${value}px` : value;
+      }
+    });
   }
 
-  // Toggles the panel open or closed.
   private toggle(event: Event): void {
     event.stopPropagation();
     const button = event.currentTarget as HTMLButtonElement;
@@ -160,6 +217,10 @@ export class AlightOverlayPanel {
           followTrigger: false // Ensure panel doesn't follow scroll
         });
         panel.classList.add('cka-active');
+
+        // Trigger open event and callback
+        this.trigger('open');
+        config.onOpen?.();
       });
 
       this.currentPanel = panel;
@@ -187,8 +248,14 @@ export class AlightOverlayPanel {
     }
     const panelId = panel.getAttribute('data-id');
     if (panelId) {
+      const config = this.configs.get(panelId);
       this.positionManager.unregister(panelId);
+
+      // Trigger close event and callback
+      this.trigger('close');
+      config?.onClose?.();
     }
+
     panel.classList.remove('cka-active');
     panel.style.display = 'none';
     if (this.currentPanel === panel) {

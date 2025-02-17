@@ -7,7 +7,7 @@ export class SearchManager {
   private currentSearchQuery = '';
   private overlayPanel: AlightOverlayPanel | null = null;
   private readonly advancedSearchTriggerId = 'advanced-search-trigger';
-  private paginationManager: PaginationManager; // Store PaginationManager
+  private paginationManager: PaginationManager;
 
   private selectedFilters: SelectedFilters = {
     baseOrClientSpecific: [],
@@ -18,9 +18,9 @@ export class SearchManager {
   constructor(
     private predefinedLinksData: PredefinedLink[],
     private onSearch: (filteredData: PredefinedLink[]) => void,
-    paginationManager: PaginationManager // Accept PaginationManager
+    paginationManager: PaginationManager
   ) {
-    this.paginationManager = paginationManager; // Store it for later use
+    this.paginationManager = paginationManager;
   }
 
   public initialize(container: HTMLElement): void {
@@ -28,32 +28,25 @@ export class SearchManager {
 
     const searchContainer = container.querySelector('#search-container-root');
     if (!searchContainer) {
-      console.warn('Search container not found! Waiting for DOM...');
-      setTimeout(() => this.initialize(container), 100);
+      console.error('Search container not found');
       return;
     }
+    // First, inject the HTML
+    this.injectSearchUI(searchContainer as HTMLElement);
 
+    // Then initialize the overlay panel
+    this.setupOverlayPanel(container);
+
+    // Finally attach event listeners
+    this.attachSearchEventListeners(container);
+  }
+
+  private injectSearchUI(searchContainer: HTMLElement): void {
     console.log('Injecting search UI...');
     searchContainer.innerHTML = this.getSearchMarkup();
 
-    // 🛑 Force DOM reflow to ensure UI updates before attaching events
+    // Force a reflow to ensure the DOM is updated
     searchContainer.getBoundingClientRect();
-
-    setTimeout(() => {
-      console.log('Checking if Apply/Clear buttons exist after injecting HTML...');
-      const applyFiltersBtn = container.querySelector('#apply-advanced-search');
-      const clearFiltersBtn = container.querySelector('#clear-advanced-search');
-
-      if (!applyFiltersBtn || !clearFiltersBtn) {
-        console.warn('Buttons STILL not found, re-rendering...');
-        this.initialize(container); // Retry injecting UI
-        return;
-      }
-
-      console.log('Buttons found, attaching event listeners.');
-      this.setupOverlayPanel(container);
-      this.attachSearchEventListeners(container);
-    }, 50);
   }
 
   private getSearchMarkup(): string {
@@ -145,8 +138,160 @@ export class SearchManager {
     `;
   }
 
+  private async setupOverlayPanel(container: HTMLElement): Promise<void> {
+    const triggerEl = container.querySelector(`#${this.advancedSearchTriggerId}`);
+    if (triggerEl) {
+      this.overlayPanel = new AlightOverlayPanel(triggerEl as HTMLElement, {});
+      this.overlayPanel.on('open', () => {
+        // Re-attach event listeners when the panel opens
+        this.attachAdvancedSearchEventListeners(container);
+      });
+    }
+  }
+
+  private attachAdvancedSearchEventListeners(container: HTMLElement): void {
+    const panel = container.querySelector('.cka-overlay-panel');
+    if (!panel) return;
+
+    // Attach listeners to buttons in the advanced search panel
+    const applyFiltersBtn = panel.querySelector('#apply-advanced-search');
+    const clearFiltersBtn = panel.querySelector('#clear-advanced-search');
+
+    if (applyFiltersBtn) {
+      // Remove existing listeners before adding new ones
+      const newApplyBtn = applyFiltersBtn.cloneNode(true);
+      applyFiltersBtn.parentNode?.replaceChild(newApplyBtn, applyFiltersBtn);
+      newApplyBtn.addEventListener('click', () => {
+        console.log('Apply Filters clicked');
+        // Update search query from advanced search input
+        const advancedSearchInput = panel.querySelector('#advanced-search-input') as HTMLInputElement;
+        if (advancedSearchInput) {
+          this.currentSearchQuery = advancedSearchInput.value;
+        }
+        this.updateFilteredData();
+        this.closeOverlayPanel();
+      });
+    }
+
+    if (clearFiltersBtn) {
+      // Remove existing listeners before adding new ones
+      const newClearBtn = clearFiltersBtn.cloneNode(true);
+      clearFiltersBtn.parentNode?.replaceChild(newClearBtn, clearFiltersBtn);
+      newClearBtn.addEventListener('click', () => {
+        console.log('Clear Filters clicked');
+        this.reset();
+        this.closeOverlayPanel();
+      });
+    }
+
+    // Attach checkbox listeners
+    const checkboxes = panel.querySelectorAll('cka-checkbox');
+    checkboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', (e: Event) => {
+        const target = e.target as HTMLInputElement;
+        const filterType = target.dataset.filterType as keyof SelectedFilters;
+        const value = target.dataset.value;
+
+        if (filterType && value) {
+          if (target.checked) {
+            if (!this.selectedFilters[filterType].includes(value)) {
+              this.selectedFilters[filterType].push(value);
+            }
+          } else {
+            this.selectedFilters[filterType] = this.selectedFilters[filterType].filter(
+              v => v !== value
+            );
+          }
+        }
+      });
+    });
+
+    // Advanced search input enter key handler
+    const advancedSearchInput = panel.querySelector('#advanced-search-input') as HTMLInputElement;
+    if (advancedSearchInput) {
+      advancedSearchInput.addEventListener('keypress', (e: KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          this.currentSearchQuery = advancedSearchInput.value;
+          this.updateFilteredData();
+          this.closeOverlayPanel();
+        }
+      });
+    }
+  }
+
+  private attachSearchEventListeners(container: HTMLElement): void {
+    // Main search button
+    const searchBtn = container.querySelector('#search-btn');
+    if (searchBtn) {
+      searchBtn.addEventListener('click', () => {
+        const searchInput = container.querySelector('#search-input') as HTMLInputElement;
+        if (searchInput) {
+          this.currentSearchQuery = searchInput.value;
+        }
+        this.updateFilteredData();
+      });
+    }
+
+    // Reset search button
+    const resetSearchBtn = container.querySelector('#reset-search-btn');
+    if (resetSearchBtn) {
+      resetSearchBtn.addEventListener('click', () => {
+        this.reset();
+      });
+    }
+
+    // Search input enter key handler
+    const searchInput = container.querySelector('#search-input') as HTMLInputElement;
+    if (searchInput) {
+      searchInput.addEventListener('keypress', (e: KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          this.currentSearchQuery = searchInput.value;
+          this.updateFilteredData();
+        }
+      });
+    }
+  }
+
+  private updateFilteredData(): void {
+    console.log('Updating search results with filters:', this.selectedFilters, 'Search Query:', this.currentSearchQuery);
+
+    const filteredData = this.predefinedLinksData.filter(link => {
+      const query = this.currentSearchQuery.toLowerCase();
+
+      const searchMatch = !query ||
+        link.predefinedLinkName.toLowerCase().includes(query) ||
+        link.predefinedLinkDescription.toLowerCase().includes(query);
+
+      const baseOrClientSpecificMatch =
+        this.selectedFilters.baseOrClientSpecific.length === 0 ||
+        this.selectedFilters.baseOrClientSpecific.includes(link.baseOrClientSpecific);
+
+      const pageTypeMatch =
+        this.selectedFilters.pageType.length === 0 ||
+        this.selectedFilters.pageType.includes(link.pageType);
+
+      const domainMatch =
+        this.selectedFilters.domain.length === 0 ||
+        this.selectedFilters.domain.includes(link.domain);
+
+      return searchMatch && baseOrClientSpecificMatch && pageTypeMatch && domainMatch;
+    });
+
+    console.log('Filtered Data:', filteredData);
+
+    this.onSearch(filteredData);
+
+    // Reset pagination to first page after filtering
+    if (this.paginationManager) {
+      console.log('Resetting pagination to page 1');
+      this.paginationManager.setPage(1, filteredData.length);
+    } else {
+      console.error("PaginationManager is undefined in SearchManager!");
+    }
+  }
+
   public reset(): void {
-    console.log('Resetting search and filters'); // Debugging log
+    console.log('Resetting search and filters');
 
     this.currentSearchQuery = '';
     this.selectedFilters = {
@@ -173,166 +318,13 @@ export class SearchManager {
       });
     }
 
-    console.log('Filters reset, updating results'); // Debugging log
-
+    console.log('Filters reset, updating results');
     this.updateFilteredData();
   }
 
-  private setupOverlayPanel(container: HTMLElement): void {
-    const triggerEl = container.querySelector(`#${this.advancedSearchTriggerId}`);
-    if (triggerEl) {
-      this.overlayPanel = new AlightOverlayPanel(triggerEl as HTMLElement, {
-        width: '600px',
-        height: 'auto'
-      });
-    }
-  }
-
   private closeOverlayPanel(): void {
-    const container = document.querySelector('.cka-predefined-link-content');
-    if (container) {
-      const overlayPanel = container.querySelector('.cka-overlay-panel');
-      if (overlayPanel) {
-        const closeBtn = overlayPanel.querySelector('.cka-close-btn') as HTMLButtonElement;
-        if (closeBtn) {
-          closeBtn.click();
-        }
-      }
-    }
-  }
-
-  private updateFilteredData(): void {
-    console.log('Updating search results with filters:', this.selectedFilters, 'Search Query:', this.currentSearchQuery); // Debugging log
-
-    const filteredData = this.predefinedLinksData.filter(link => {
-      const query = this.currentSearchQuery.toLowerCase();
-
-      const searchMatch = !query ||
-        link.predefinedLinkName.toLowerCase().includes(query) ||
-        link.predefinedLinkDescription.toLowerCase().includes(query);
-
-      const baseOrClientSpecificMatch =
-        this.selectedFilters.baseOrClientSpecific.length === 0 ||
-        this.selectedFilters.baseOrClientSpecific.includes(link.baseOrClientSpecific);
-
-      const pageTypeMatch =
-        this.selectedFilters.pageType.length === 0 ||
-        this.selectedFilters.pageType.includes(link.pageType);
-
-      const domainMatch =
-        this.selectedFilters.domain.length === 0 ||
-        this.selectedFilters.domain.includes(link.domain);
-
-      return searchMatch && baseOrClientSpecificMatch && pageTypeMatch && domainMatch;
-    });
-
-    console.log('Filtered Data:', filteredData); // Debugging log
-
-    this.onSearch(filteredData);
-
-    // Reset pagination to first page after filtering
-    if (this.paginationManager) {
-      console.log('Resetting pagination to page 1');
-      this.paginationManager.setPage(1, filteredData.length);
-    } else {
-      console.error("PaginationManager is undefined in SearchManager!");
-    }
-  }
-
-  private attachSearchEventListeners(container: HTMLElement): void {
-    // Wait until the search container is actually in the DOM
-    const searchContainer = container.querySelector('#search-container-root');
-    if (!searchContainer) {
-      console.error('Search container not found in DOM! Cannot attach event listeners.');
-      return;
-    }
-
-    // Delay event listener attachment slightly to ensure buttons are available
-    setTimeout(() => {
-      const applyFiltersBtn = container.querySelector('#apply-advanced-search');
-      if (applyFiltersBtn) {
-        applyFiltersBtn.addEventListener('click', () => {
-          console.log('Apply Filters button clicked');
-          this.updateFilteredData();
-          this.closeOverlayPanel();
-        });
-      } else {
-        console.warn('Apply Filters button not found in DOM after timeout');
-      }
-
-      const clearFiltersBtn = container.querySelector('#clear-advanced-search');
-      if (clearFiltersBtn) {
-        clearFiltersBtn.addEventListener('click', () => {
-          console.log('Clear Filters button clicked');
-          this.reset();
-          this.closeOverlayPanel();
-        });
-      } else {
-        console.warn('Clear Filters button not found in DOM after timeout');
-      }
-    }, 100); // Small delay to allow DOM rendering
-
-    // Checkboxes
-    const checkboxes = container.querySelectorAll('cka-checkbox');
-    checkboxes.forEach(checkbox => {
-      checkbox.addEventListener('change', (e: Event) => {
-        const target = e.target as HTMLInputElement;
-        const filterType = target.dataset.filterType as keyof SelectedFilters;
-        const value = target.dataset.value;
-
-        if (filterType && value) {
-          if (target.checked) {
-            if (!this.selectedFilters[filterType].includes(value)) {
-              this.selectedFilters[filterType].push(value);
-            }
-          } else {
-            this.selectedFilters[filterType] = this.selectedFilters[filterType].filter(
-              v => v !== value
-            );
-          }
-        }
-      });
-    });
-
-    // Apply Filters button
-    const applyFiltersBtn = container.querySelector('#apply-advanced-search');
-    if (applyFiltersBtn) {
-      applyFiltersBtn.addEventListener('click', () => {
-        console.log('Apply Filters button clicked'); // Debugging log
-        this.updateFilteredData(); // Apply search
-        this.closeOverlayPanel();
-      });
-    } else {
-      console.warn('Apply Filters button not found in DOM');
-    }
-
-    // Clear Filters button
-    const clearFiltersBtn = container.querySelector('#clear-advanced-search');
-    if (clearFiltersBtn) {
-      clearFiltersBtn.addEventListener('click', () => {
-        console.log('Clear Filters button clicked'); // Debugging log
-        this.reset(); // Clear search
-        this.closeOverlayPanel();
-      });
-    } else {
-      console.warn('Clear Filters button not found in DOM');
-    }
-
-
-    // Main search button
-    const searchBtn = container.querySelector('#search-btn');
-    if (searchBtn) {
-      searchBtn.addEventListener('click', () => {
-        this.updateFilteredData();
-      });
-    }
-
-    // Reset search button
-    const resetSearchBtn = container.querySelector('#reset-search-btn');
-    if (resetSearchBtn) {
-      resetSearchBtn.addEventListener('click', () => {
-        this.reset();
-      });
+    if (this.overlayPanel) {
+      this.overlayPanel.close();
     }
   }
 
@@ -344,4 +336,3 @@ export class SearchManager {
     return { ...this.selectedFilters };
   }
 }
-
