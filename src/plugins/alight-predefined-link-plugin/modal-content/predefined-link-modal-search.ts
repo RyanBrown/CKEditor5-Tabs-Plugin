@@ -12,6 +12,7 @@ export class SearchManager {
     pageType: [],
     domain: []
   };
+  paginationManager: any;
 
   constructor(
     private predefinedLinksData: PredefinedLink[],
@@ -123,6 +124,26 @@ export class SearchManager {
       pageType: [],
       domain: []
     };
+
+    // Clear search inputs in UI
+    const container = document.querySelector('.cka-predefined-link-content');
+    if (container) {
+      const searchInputs = container.querySelectorAll('input[type="text"]');
+      searchInputs.forEach(input => {
+        if (input instanceof HTMLInputElement) {
+          input.value = '';
+        }
+      });
+
+      const checkboxes = container.querySelectorAll('cka-checkbox');
+      checkboxes.forEach(checkbox => {
+        if (checkbox instanceof HTMLInputElement) {
+          checkbox.checked = false;
+        }
+      });
+    }
+
+    // Update filtered data & pagination
     this.updateFilteredData();
   }
 
@@ -151,11 +172,15 @@ export class SearchManager {
 
   private updateFilteredData(): void {
     const filteredData = this.predefinedLinksData.filter(link => {
-      const searchMatch = !this.currentSearchQuery || [
-        link.predefinedLinkName,
-        link.predefinedLinkDescription
-      ].some(field => field.toLowerCase().includes(this.currentSearchQuery.toLowerCase()));
+      // Convert to lowercase for case-insensitive search
+      const query = this.currentSearchQuery.toLowerCase();
 
+      // Check if search query matches the link name or description
+      const searchMatch = !query ||
+        link.predefinedLinkName.toLowerCase().includes(query) ||
+        link.predefinedLinkDescription.toLowerCase().includes(query);
+
+      // Filter by advanced search selections
       const baseOrClientSpecificMatch =
         this.selectedFilters.baseOrClientSpecific.length === 0 ||
         this.selectedFilters.baseOrClientSpecific.includes(link.baseOrClientSpecific);
@@ -168,10 +193,18 @@ export class SearchManager {
         this.selectedFilters.domain.length === 0 ||
         this.selectedFilters.domain.includes(link.domain);
 
+      // Return true only if all conditions match
       return searchMatch && baseOrClientSpecificMatch && pageTypeMatch && domainMatch;
     });
 
+    // Update search results
     this.onSearch(filteredData);
+
+    // Reset pagination to page 1 after filtering
+    const container = document.querySelector('.cka-predefined-link-content');
+    if (container) {
+      this.paginationManager.setPage(1, filteredData.length);
+    }
   }
 
   private attachSearchEventListeners(container: HTMLElement): void {
@@ -182,11 +215,15 @@ export class SearchManager {
         const value = (e.target as HTMLInputElement).value;
         this.currentSearchQuery = value;
 
+        // Sync both input fields (normal & advanced search)
         searchInputs.forEach(otherInput => {
           if (otherInput !== e.target) {
             (otherInput as HTMLInputElement).value = value;
           }
         });
+
+        // Trigger search update
+        this.updateFilteredData();
       });
     });
 

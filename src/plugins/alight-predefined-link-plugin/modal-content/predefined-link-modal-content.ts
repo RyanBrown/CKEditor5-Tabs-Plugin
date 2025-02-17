@@ -27,12 +27,20 @@ export class PredefinedLinkModalContent implements ILinkManager {
 
   private handleSearchResults = (filteredData: PredefinedLink[]): void => {
     this.filteredLinksData = filteredData;
-    // Maintain selected link if it exists in filtered data
-    if (this.selectedLink && !filteredData.find(link => link.predefinedLinkName === this.selectedLink?.predefinedLinkName)) {
+
+    // Maintain selected link if still in filtered results, otherwise clear selection
+    if (this.selectedLink && !filteredData.some(link => link.predefinedLinkName === this.selectedLink?.predefinedLinkName)) {
       this.selectedLink = null;
     }
+
+    // Reset to first page after search
     this.paginationManager.setPage(1, filteredData.length);
-    this.renderContent(document.querySelector('.cka-predefined-link-content') as HTMLElement);
+
+    // Re-render the content with updated results
+    const container = document.querySelector('.cka-predefined-link-content') as HTMLElement;
+    if (container) {
+      this.renderContent(container);
+    }
   };
 
   private handlePageChange = (page: number): void => {
