@@ -66,6 +66,12 @@ import AlightPredefinedLinkPlugin from './plugins/alight-predefined-link-plugin/
 // Import custom styles for headings, style definitions and custom plugins
 import './styles/styles.scss';
 
+// import fontawesome
+const script = document.createElement('script');
+script.src = 'https://kit.fontawesome.com/019f6c532e.js';
+script.crossOrigin = 'anonymous';
+document.head.appendChild(script);
+
 export const LICENSE_KEY =
     'eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3NDcxODA3OTksImp0aSI6IjAwN2YzMTI1LTkyYTgtNDc0MS05NDNiLWViM2M3NjhjN2RhNiIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsic2giLCJkcnVwYWwiXSwid2hpdGVMYWJlbCI6dHJ1ZSwiZmVhdHVyZXMiOlsiRFJVUCIsIkRPIiwiRlAiLCJTQyIsIlRPQyIsIlRQTCIsIlBPRSIsIkNDIiwiTUYiXSwidmMiOiJjYjM3ZmEyOCJ9.pfNUO8YBnKbw1V6HXgFb9PZRMzfErUsssTFcQ83EftEDV-tFn_pPPmFpkaRb9Fjzj02osXclT6aKGsmyihJazg';
 

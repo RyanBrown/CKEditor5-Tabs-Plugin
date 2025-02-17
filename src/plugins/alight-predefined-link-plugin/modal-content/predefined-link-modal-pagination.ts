@@ -91,7 +91,7 @@ export class PaginationManager {
           ${this.currentPage === 1 ? 'disabled' : ''}
           aria-label="First page"
         >
-          First
+          <i class="fa-solid fa-chevrons-left"></i>
         </button>
         <button 
           id="prev-page" 
@@ -100,7 +100,7 @@ export class PaginationManager {
           ${this.currentPage === 1 ? 'disabled' : ''}
           aria-label="Previous page"
         >
-          Previous
+          <i class="fa-solid fa-chevron-left"></i>
         </button>
         <div id="page-select-container" class="cka-select-menu-wrap" role="navigation"></div>
         <button 
@@ -110,7 +110,7 @@ export class PaginationManager {
           ${this.currentPage === totalPages ? 'disabled' : ''}
           aria-label="Next page"
         >
-          Next
+          <i class="fa-solid fa-chevron-right"></i>
         </button>
         <button 
           id="last-page" 
@@ -119,7 +119,7 @@ export class PaginationManager {
           ${this.currentPage === totalPages ? 'disabled' : ''}
           aria-label="Last page"
         >
-          Last
+          <i class="fa-solid fa-chevrons-right"></i>
         </button>
       </article>
     `;

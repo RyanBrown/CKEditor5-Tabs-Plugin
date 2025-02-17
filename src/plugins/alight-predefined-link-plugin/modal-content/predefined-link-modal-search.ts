@@ -45,7 +45,7 @@ export class SearchManager {
           placeholder="Search by link name..." 
           value="${this.currentSearchQuery}"
         />
-        <button id="reset-search-btn" class="cka-button cka-button-rounded cka-button-text">Reset</button>
+        <button id="reset-search-btn" class="cka-button cka-button-rounded cka-button-text"><i class="fa-light fa-xmark"></i></button>
         <button id="${this.advancedSearchTriggerId}" 
                 class="cka-button cka-button-rounded cka-button-text"
                 data-panel-id="advanced-search-panel">
