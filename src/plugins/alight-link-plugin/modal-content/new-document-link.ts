@@ -8,13 +8,13 @@
 // will not persist when the HTML is re-parsed. We reattach event listeners in attachEventListeners().
 
 import { ILinkManager } from './ILinkManager';
-import { CKALightSelectMenu } from '../../ui-components/alight-select-menu-component/alight-select-menu-component';
+import { CkAlightSelectMenu } from '../../ui-components/alight-select-menu-component/alight-select-menu-component';
 import '../../ui-components/alight-checkbox-component/alight-checkbox-component';
 
 export class NewDocumentLinkManager implements ILinkManager {
   // Reference to the container element where the form is rendered.
   private container: HTMLElement | null = null;
-  private languageSelect: CKALightSelectMenu<{ value: string; label: string }> | null = null;
+  private languageSelect: CkAlightSelectMenu<{ value: string; label: string }> | null = null;
   private selectedLink: { destination: string; title: string } | null = null;
 
   // Holds the state of the form data.
@@ -61,7 +61,7 @@ export class NewDocumentLinkManager implements ILinkManager {
     const container = document.getElementById('language-select-container');
     if (!container) return;
 
-    this.languageSelect = new CKALightSelectMenu({
+    this.languageSelect = new CkAlightSelectMenu({
       options: [
         { value: 'en', label: 'English (default)' },
         { value: 'fr', label: 'French' },

@@ -1,7 +1,7 @@
 // src/plugins/alight-image-plugin/alight-image-plugin-command.ts
 import type Editor from '@ckeditor/ckeditor5-core/src/editor/editor';
 import Command from '@ckeditor/ckeditor5-core/src/command';
-import CKAlightModalDialog from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
+import CkAlightModalDialog from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import { renderContent } from './modal-content/existing-image';
 
 interface DialogButton {
@@ -29,13 +29,13 @@ interface CommandData {
 }
 
 export class AlightImagePluginCommand extends Command {
-  private dialog: CKAlightModalDialog;
+  private dialog: CkAlightModalDialog;
   private data: CommandData;
 
   constructor(editor: Editor, data: CommandData) {
     super(editor);
     this.data = data;
-    this.dialog = new CKAlightModalDialog({
+    this.dialog = new CkAlightModalDialog({
       modal: true,
       draggable: false,
       resizable: false,

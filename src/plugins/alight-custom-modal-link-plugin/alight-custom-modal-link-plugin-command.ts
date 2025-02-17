@@ -1,6 +1,6 @@
 // src/plugins/alight-custom-modal-link-plugin/alight-custom-modal-link-plugin-command.ts
 import { Command } from '@ckeditor/ckeditor5-core';
-import CKAlightModalDialog from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
+import CkAlightModalDialog from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import { ContextualBalloon } from '@ckeditor/ckeditor5-ui';
 
 export interface CommandData {
@@ -18,6 +18,7 @@ export interface CommandData {
     variant?: 'default' | 'outlined' | 'text';
     position?: 'left' | 'right';
     closeOnClick?: boolean;
+    disabled?: boolean;
     isPrimary?: boolean;
     onClick?: () => void;  // Add this line to support onClick handlers
   }>;
@@ -25,7 +26,7 @@ export interface CommandData {
 }
 
 export class AlightCustomModalLinkPluginCommand extends Command {
-  private dialog: CKAlightModalDialog;
+  private dialog: CkAlightModalDialog;
   private data: CommandData;
   private balloon: ContextualBalloon;
 
@@ -35,7 +36,7 @@ export class AlightCustomModalLinkPluginCommand extends Command {
     this.balloon = editor.plugins.get('ContextualBalloon');
 
     // Create dialog with the given options
-    this.dialog = new CKAlightModalDialog({
+    this.dialog = new CkAlightModalDialog({
       modal: true,
       draggable: data.modalOptions?.draggable ?? true,
       resizable: data.modalOptions?.resizable ?? false,
@@ -49,6 +50,7 @@ export class AlightCustomModalLinkPluginCommand extends Command {
         className: btn.className,
         variant: btn.variant || 'default',
         position: btn.position || 'right',
+        disabled: btn.disabled ?? false,
         closeOnClick: btn.closeOnClick ?? false,
         isPrimary: btn.isPrimary ?? false
       })) || [],

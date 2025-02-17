@@ -1,7 +1,7 @@
 // src/plugins/alight-population-plugin/alight-population-plugin-command.ts
 import type Editor from '@ckeditor/ckeditor5-core/src/editor/editor';
 import Command from '@ckeditor/ckeditor5-core/src/command';
-import CKAlightModalDialog from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
+import CkAlightModalDialog from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import type { ArrayOrItem } from '@ckeditor/ckeditor5-utils';
 
 interface DialogButton {
@@ -30,14 +30,14 @@ interface SystemPopulationsCommandParam {
 }
 
 export class AlightPopulationPluginCommand extends Command {
-  private dialog: CKAlightModalDialog;
+  private dialog: CkAlightModalDialog;
   private data: CommandData;
   public readonly isAccessAllowed: boolean = true;
 
   constructor(editor: Editor, data: CommandData) {
     super(editor);
     this.data = data;
-    this.dialog = new CKAlightModalDialog({
+    this.dialog = new CkAlightModalDialog({
       modal: true,
       draggable: false,
       resizable: false,

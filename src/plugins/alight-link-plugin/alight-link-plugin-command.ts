@@ -1,12 +1,12 @@
 // src/plugins/alight-link-plugin/alight-link-plugin-command.ts
 import type Editor from '@ckeditor/ckeditor5-core/src/editor/editor';
 import Command from '@ckeditor/ckeditor5-core/src/command';
-import { CKAlightModalDialog } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
+import { CkAlightModalDialog } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import { ILinkManager } from './modal-content/ILinkManager';
 import { CommandData, DialogButton } from './modal-content/types';
 
 export class AlightLinkPluginCommand extends Command {
-  protected dialog: CKAlightModalDialog;
+  protected dialog: CkAlightModalDialog;
   protected data: CommandData;
   protected manager?: ILinkManager;
 
@@ -15,7 +15,7 @@ export class AlightLinkPluginCommand extends Command {
     this.data = data;
     this.manager = data.manager;
 
-    this.dialog = new CKAlightModalDialog({
+    this.dialog = new CkAlightModalDialog({
       width: '600px', // set the custom modal width
       ...data.modalOptions
     });

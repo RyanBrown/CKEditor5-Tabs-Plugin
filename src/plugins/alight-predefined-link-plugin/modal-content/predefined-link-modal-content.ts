@@ -1,16 +1,17 @@
 // src/plugins/alight-predefined-link-plugin/modal-content/predefined-link-modal-content.ts
-import { CKAlightModalDialog } from '../../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
+import { CkAlightModalDialog, DialogOptions, DialogButton } from '../../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import { ILinkManager } from './ILinkManager';
 import { PredefinedLink } from './types';
 import { SearchManager } from './search';
 import { PaginationManager } from './pagination';
 import predefinedLinksData from './json/predefined-test-data.json';
+import './../styles/alight-predefined-link-plugin.scss';
 
 export class PredefinedLinkModalContent implements ILinkManager {
   private selectedLink: PredefinedLink | null = null;
   private predefinedLinksData: PredefinedLink[] = predefinedLinksData.predefinedLinksDetails;
   private filteredLinksData: PredefinedLink[] = [...this.predefinedLinksData];
-  private dialog?: CKAlightModalDialog;
+  private dialog?: CkAlightModalDialog;
   private searchManager: SearchManager;
   private paginationManager: PaginationManager;
 
@@ -19,8 +20,40 @@ export class PredefinedLinkModalContent implements ILinkManager {
     this.paginationManager = new PaginationManager(this.handlePageChange);
   }
 
-  public setDialog(dialog: CKAlightModalDialog): void {
+  public setDialog(dialog: CkAlightModalDialog): void {
     this.dialog = dialog;
+
+    if (this.dialog) {
+      const buttons: DialogButton[] = [
+        {
+          label: 'Cancel',
+          variant: 'outlined',
+          position: 'right',
+          closeOnClick: true,
+          disabled: false
+        },
+        {
+          label: 'Insert Link',
+          position: 'right',
+          isPrimary: true,
+          closeOnClick: false,
+          disabled: false
+        }
+      ];
+
+      const options: DialogOptions = {
+        title: 'Select Predefined Link',
+        width: '800px',
+        height: 'auto',
+        buttons,
+        modal: true,
+        draggable: false,
+        closeOnEscape: true,
+        closeOnClickOutside: false
+      } as Required<DialogOptions>;
+
+      (this.dialog as any).options = options;
+    }
   }
 
   public getSelectedLink(): { destination: string; title: string } | null {
@@ -29,6 +62,17 @@ export class PredefinedLinkModalContent implements ILinkManager {
       destination: this.selectedLink.destination,
       title: this.selectedLink.predefinedLinkName
     };
+  }
+  private updateDialogState(): void {
+    if (this.dialog) {
+      const buttons = (this.dialog as any).options.buttons;
+      if (buttons) {
+        const insertButton = buttons.find((btn: DialogButton) => btn.label === 'Insert Link');
+        if (insertButton) {
+          insertButton.disabled = !this.selectedLink;
+        }
+      }
+    }
   }
 
   private handleSearchResults = (filteredData: PredefinedLink[]): void => {
@@ -45,6 +89,7 @@ export class PredefinedLinkModalContent implements ILinkManager {
     this.searchManager.reset();
     this.selectedLink = null;
     this.filteredLinksData = [...this.predefinedLinksData];
+    this.updateDialogState();
 
     const container = document.querySelector('.cka-predefined-link-content');
     if (container) {
@@ -66,15 +111,6 @@ export class PredefinedLinkModalContent implements ILinkManager {
     const endIndex = Math.min(startIndex + pageSize, this.filteredLinksData.length);
     const currentPageData = this.filteredLinksData.slice(startIndex, endIndex);
 
-    // Get unique filter options
-    const baseOrClientSpecificOptions = Array.from(new Set(this.predefinedLinksData.map(item => item.baseOrClientSpecific))).sort();
-    const pageTypeOptions = Array.from(new Set(this.predefinedLinksData.map(item => item.pageType))).sort();
-    const domainOptions = Array.from(new Set(this.predefinedLinksData.map(item => item.domain))).sort();
-
-    const currentSearchQuery = this.searchManager.getCurrentSearchQuery();
-    const selectedFilters = this.searchManager.getSelectedFilters();
-
-    // Basic search container
     // Search container
     const searchContainerMarkup = `<div id="search-container-root"></div>`;
 
@@ -119,31 +155,6 @@ export class PredefinedLinkModalContent implements ILinkManager {
     `;
   }
 
-  private createCheckboxList(
-    options: string[],
-    filterType: string,
-    title: string,
-    selectedFilters: Record<string, string[]>
-  ): string {
-    return `
-      <div class="filter-section">
-        <h4>${title}</h4>
-        <ul class="checkbox-list">
-          ${options.map(option => {
-      const checked = selectedFilters[filterType].includes(option) ? 'initialvalue="true"' : '';
-      return `
-              <li>
-                <cka-checkbox data-filter-type="${filterType}" data-value="${option}" ${checked}>
-                  ${option}
-                </cka-checkbox>
-              </li>
-            `;
-    }).join('')}
-        </ul>
-      </div>
-    `;
-  }
-
   private attachLinkSelectionListeners(container: HTMLElement): void {
     // Link item click handlers
     container.querySelectorAll('.cka-link-item').forEach(item => {
@@ -156,6 +167,7 @@ export class PredefinedLinkModalContent implements ILinkManager {
         this.selectedLink = this.predefinedLinksData.find(
           link => link.predefinedLinkName === linkName
         ) || null;
+        this.updateDialogState();
 
         // Update radio buttons
         const radio = (e.currentTarget as HTMLElement).querySelector('cka-radio-button') as any;
@@ -180,6 +192,7 @@ export class PredefinedLinkModalContent implements ILinkManager {
         this.selectedLink = this.predefinedLinksData.find(
           link => link.predefinedLinkName === linkName
         ) || null;
+        this.updateDialogState();
       });
     });
   }

@@ -1,8 +1,8 @@
 // src/plugins/alight-link-plugin/modal-content/predefined-link.ts
 
 import predefinedLinksData from './json/predefined-test-data.json';
-import { CKAlightModalDialog } from '../../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
-import { CKALightSelectMenu } from '../../ui-components/alight-select-menu-component/alight-select-menu-component';
+import { CkAlightModalDialog } from '../../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
+import { CkAlightSelectMenu } from '../../ui-components/alight-select-menu-component/alight-select-menu-component';
 import { AlightOverlayPanel } from '../../ui-components/alight-overlay-panel-component/alight-overlay-panel';
 import '../../ui-components/alight-checkbox-component/alight-checkbox-component';
 import '../../ui-components/alight-radio-component/alight-radio-component';
@@ -58,10 +58,10 @@ export class PredefinedLinkModalContent implements ILinkManager {
     domain: []
   };
 
-  private dialog?: CKAlightModalDialog;
+  private dialog?: CkAlightModalDialog;
 
   // Add method to set dialog reference
-  public setDialog(dialog: CKAlightModalDialog): void {
+  public setDialog(dialog: CkAlightModalDialog): void {
     this.dialog = dialog;
   }
 
@@ -411,7 +411,7 @@ export class PredefinedLinkModalContent implements ILinkManager {
       value: i + 1
     }));
 
-    const pageSelect = new CKALightSelectMenu({
+    const pageSelect = new CkAlightSelectMenu({
       options: pageOptions,
       value: pageNum,
       placeholder: `Page ${pageNum} of ${totalPages}`,

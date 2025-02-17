@@ -3,7 +3,7 @@
 import existingDocumentLinkData from './json/existing-document-test-data.json';
 import { ILinkManager } from './ILinkManager';
 import { AlightOverlayPanel } from '../../ui-components/alight-overlay-panel-component/alight-overlay-panel';
-import { CKALightSelectMenu } from '../../ui-components/alight-select-menu-component/alight-select-menu-component';
+import { CkAlightSelectMenu } from '../../ui-components/alight-select-menu-component/alight-select-menu-component';
 import '../../ui-components/alight-checkbox-component/alight-checkbox-component';
 import '../../ui-components/alight-radio-component/alight-radio-component';
 
@@ -355,7 +355,7 @@ export class ExistingDocumentLinkManager implements ILinkManager {
       value: i + 1
     }));
 
-    const pageSelect = new CKALightSelectMenu({
+    const pageSelect = new CkAlightSelectMenu({
       options: pageOptions,
       value: pageNum,
       placeholder: `Page ${pageNum} of ${totalPages}`,

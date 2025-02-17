@@ -19,7 +19,7 @@ interface SelectConfig<T> extends PositionConfig {
   value?: T[keyof T] | T[keyof T][] | null;
 }
 
-export class CKALightSelectMenu<T extends SelectOption> {
+export class CkAlightSelectMenu<T extends SelectOption> {
   [x: string]: any;
   private element: HTMLDivElement = document.createElement('div');
   private dropdownElement: HTMLDivElement = document.createElement('div');

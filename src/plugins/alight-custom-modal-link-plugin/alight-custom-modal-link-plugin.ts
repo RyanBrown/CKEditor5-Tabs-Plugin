@@ -5,7 +5,7 @@ import type { Editor } from '@ckeditor/ckeditor5-core';
 import { AlightCustomModalLinkPluginEditing } from './alight-custom-modal-link-plugin-editing';
 import { AlightCustomModalLinkPluginUI } from './alight-custom-modal-link-plugin-ui';
 import { hasLinkAttribute } from './alight-custom-modal-link-plugin-utils';
-import CKAlightModalDialog, { DialogOptions, DialogButton } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
+import CkAlightModalDialog, { DialogOptions, DialogButton } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 
 // The main plugin that ties together:
 //  - Our editing plugin (schema, conversion, commands)
@@ -28,7 +28,8 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
       className: 'cka-button cka-button-rounded cka-button-outline cka-button-sm',
       variant: 'outlined',
       position: 'left',
-      closeOnClick: true
+      closeOnClick: true,
+      disabled: false
     },
     continue: {
       label: 'Continue',
@@ -36,6 +37,7 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
       variant: 'default',
       position: 'right',
       closeOnClick: false,
+      disabled: false,
       isPrimary: true  // Enable Enter key submission
     },
     insert: {
@@ -44,6 +46,7 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
       variant: 'default',
       position: 'right',
       closeOnClick: false,
+      disabled: false,
       isPrimary: true  // Enable Enter key submission
     }
   };
@@ -126,7 +129,7 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
     });
   }
 
-  private _setupInputValidation(modalDialog: CKAlightModalDialog): void {
+  private _setupInputValidation(modalDialog: CkAlightModalDialog): void {
     const contentElement = modalDialog.getContentElement();
     if (!contentElement) return;
 
@@ -180,7 +183,7 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
     };
 
     // Create the modal
-    const modalDialog = new CKAlightModalDialog(dialogOptions);
+    const modalDialog = new CkAlightModalDialog(dialogOptions);
     modalDialog.setTitle(isEditing ? 'Edit Link' : 'Insert Custom Link');
 
     // Simple form with the link URL and optional org name
@@ -235,7 +238,7 @@ export default class AlightCustomModalLinkPlugin extends Plugin {
   }
 
   // Reads the user input and executes the custom link command to apply `customHref`.
-  private _handleModalSubmit(modalDialog: CKAlightModalDialog): void {
+  private _handleModalSubmit(modalDialog: CkAlightModalDialog): void {
     const contentElement = modalDialog.getContentElement();
     if (!contentElement) return;
 

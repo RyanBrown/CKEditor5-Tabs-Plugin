@@ -1,5 +1,5 @@
 // src/plugins/alight-predefined-link-plugin/modal-content/pagination.ts
-import { CKALightSelectMenu } from '../../ui-components/alight-select-menu-component/alight-select-menu-component';
+import { CkAlightSelectMenu } from '../../ui-components/alight-select-menu-component/alight-select-menu-component';
 
 export class PaginationManager {
   private currentPage = 1;
@@ -105,7 +105,7 @@ export class PaginationManager {
       value: i + 1
     }));
 
-    const pageSelect = new CKALightSelectMenu({
+    const pageSelect = new CkAlightSelectMenu({
       options: pageOptions,
       value: pageNum,
       placeholder: `Page ${pageNum} of ${totalPages}`,

@@ -3,6 +3,7 @@ import './styles/alight-modal-dialog-component.scss';
 import { FocusTracker, KeystrokeHandler } from '@ckeditor/ckeditor5-utils';
 
 export interface DialogButton {
+  disabled: boolean;
   label: string;
   className?: string;
   variant?: 'default' | 'outlined' | 'text';
@@ -42,7 +43,10 @@ export interface Size {
   height: number;
 }
 
-export class CKAlightModalDialog {
+export class CkAlightModalDialog {
+  setProps(arg0: { title: string; width: string; height: string; okButtonText: string; cancelButtonText: string; okDisabled: boolean; onOk: () => { destination: string; title: string; } | null; }) {
+    throw new Error('Method not implemented.');
+  }
   private options: Required<DialogOptions>;
   private visible: boolean = false;
   private maximized: boolean = false;
@@ -218,7 +222,7 @@ export class CKAlightModalDialog {
     this.setFooter(footer);
   }
 
-  // Update the createButton method in CKAlightModalDialog class
+  // Update the createButton method in CkAlightModalDialog class
   private createButton(config: DialogButton): HTMLButtonElement {
     const button = document.createElement('button');
     let className = 'cka-button';  // Set base class by default
@@ -525,4 +529,4 @@ export class CKAlightModalDialog {
   }
 }
 
-export default CKAlightModalDialog;
+export default CkAlightModalDialog;

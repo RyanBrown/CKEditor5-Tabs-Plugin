@@ -1,7 +1,7 @@
 // src/plugins/ui-components/alight-radio-component/alight-radio-component.ts
 import './styles/alight-radio-component.scss';
 
-export class CKAlightRadioButton extends HTMLElement {
+export class CkAlightRadioButton extends HTMLElement {
   private radioInput: HTMLInputElement;
   private wrapper: HTMLLabelElement;
 
@@ -65,7 +65,7 @@ export class CKAlightRadioButton extends HTMLElement {
           document.querySelectorAll(`cka-radio-button input[name="${name}"]`).forEach(input => {
             if (input !== this.radioInput && input instanceof HTMLInputElement) {
               input.checked = false;
-              (input.closest('cka-radio-button') as CKAlightRadioButton)?.removeAttribute('checked');
+              (input.closest('cka-radio-button') as CkAlightRadioButton)?.removeAttribute('checked');
             }
           });
         }
@@ -123,7 +123,7 @@ export class CKAlightRadioButton extends HTMLElement {
         document.querySelectorAll(`cka-radio-button input[name="${name}"]`).forEach(input => {
           if (input !== this.radioInput && input instanceof HTMLInputElement) {
             input.checked = false;
-            (input.closest('cka-radio-button') as CKAlightRadioButton)?.removeAttribute('checked');
+            (input.closest('cka-radio-button') as CkAlightRadioButton)?.removeAttribute('checked');
           }
         });
       }
@@ -152,4 +152,4 @@ export class CKAlightRadioButton extends HTMLElement {
 }
 
 // Define the custom element
-customElements.define('cka-radio-button', CKAlightRadioButton);
+customElements.define('cka-radio-button', CkAlightRadioButton);

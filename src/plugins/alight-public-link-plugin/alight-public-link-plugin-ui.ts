@@ -2,7 +2,7 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { ButtonView, ContextualBalloon, View, BalloonPanelView } from '@ckeditor/ckeditor5-ui';
 import { ClickObserver } from '@ckeditor/ckeditor5-engine';
-import { CKAlightModalDialog } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
+import { CkAlightModalDialog } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import { createPublicLinkModalContent, validateForm } from './modal-content/public-website';
 import type AlightPublicLinkPluginCommand from './alight-public-link-plugin-command';
 import toolBarIcon from './assets/icon-link.svg';
@@ -15,7 +15,7 @@ import './styles/alight-public-link-plugin.scss';
 export default class AlightPublicLinkPluginUI extends Plugin {
   private _balloon?: ContextualBalloon; // Holds the reference to the contextual balloon instance
   private _actionsView?: ActionsView; // Holds the reference to the actions view displayed in the balloon
-  private _modalDialog?: CKAlightModalDialog; // Holds the reference to the modal dialog
+  private _modalDialog?: CkAlightModalDialog; // Holds the reference to the modal dialog
   private _storedRange: any = null; // Stores the selection range when losing focus
 
   // Plugin dependencies
@@ -221,7 +221,7 @@ export default class AlightPublicLinkPluginUI extends Plugin {
     const initialOrgName = initialValue?.orgName || '';
 
     if (!this._modalDialog) {
-      this._modalDialog = new CKAlightModalDialog({
+      this._modalDialog = new CkAlightModalDialog({
         title: 'Link to a Public Link',
         modal: true,
         width: '500px',
@@ -232,7 +232,8 @@ export default class AlightPublicLinkPluginUI extends Plugin {
             label: 'Cancel',
             variant: 'outlined',
             position: 'left',
-            shape: 'round'
+            shape: 'round',
+            disabled: false
           },
           {
             label: 'Continue',
@@ -240,7 +241,8 @@ export default class AlightPublicLinkPluginUI extends Plugin {
             position: 'right',
             isPrimary: true,
             shape: 'round',
-            closeOnClick: false
+            closeOnClick: false,
+            disabled: false
           }
         ]
       });
