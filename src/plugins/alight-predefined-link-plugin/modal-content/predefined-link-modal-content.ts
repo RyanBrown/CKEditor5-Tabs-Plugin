@@ -209,9 +209,17 @@ export class PredefinedLinkModalContent implements ILinkManager {
     const applyFiltersBtn = container.querySelector('#apply-advanced-search');
     if (applyFiltersBtn) {
       applyFiltersBtn.addEventListener('click', () => {
+        console.log('Apply Filters clicked');
+        console.log('Current search query:', this.currentSearchQuery);
+        console.log('Current filters:', this.selectedFilters);
+
         this.updateFilteredData();
+        console.log('Filtered data count:', this.filteredLinksData.length);
+
         this.renderContent(container);
         this.closeOverlayPanel();
+
+        console.log('Filters applied and content updated');
       });
     }
 
@@ -219,8 +227,17 @@ export class PredefinedLinkModalContent implements ILinkManager {
     const clearFiltersBtn = container.querySelector('#clear-advanced-search');
     if (clearFiltersBtn) {
       clearFiltersBtn.addEventListener('click', () => {
+        console.log('Clear Filters clicked');
+        console.log('Previous search query:', this.currentSearchQuery);
+        console.log('Previous filters:', this.selectedFilters);
+
         this.resetSearch();
+        console.log('After reset - search query:', this.currentSearchQuery);
+        console.log('After reset - filters:', this.selectedFilters);
+        console.log('After reset - filtered data count:', this.filteredLinksData.length);
+
         this.closeOverlayPanel();
+        console.log('Filters cleared and content reset');
       });
     }
 
