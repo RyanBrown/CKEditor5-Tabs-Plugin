@@ -44,7 +44,6 @@ export class ContentManager implements LinkManager {
       return;
     }
 
-    // Cleanup previous instance if it exists
     if (this.languageSelect) {
       this.languageSelect.destroy();
     }
@@ -80,6 +79,7 @@ export class ContentManager implements LinkManager {
     return `
       <h3>Document & Title</h3>
       ${this.createCardHTML(`
+        <label for="file-input">Upload Document (5MB Limit)</label>
         <input 
           accept="${acceptedFileTypes}"
           class="cka-input-file"
@@ -128,10 +128,10 @@ export class ContentManager implements LinkManager {
         </span>
 
         <textarea 
-          rows="5" 
-          cols="30"
           class="cka-textarea"
+          cols="30"
           required
+          rows="5" 
         >${this.formData.description}</textarea>
         <div class="error-message">Enter a description to continue.</div>
 
@@ -320,7 +320,22 @@ export class ContentManager implements LinkManager {
   }
 
   getFormData() {
-    return { ...this.formData };
+    // Create a clean copy of the form data
+    const formDataCopy = {
+      language: this.formData.language,
+      file: this.formData.file,
+      documentTitle: this.formData.documentTitle.trim(),
+      searchTags: this.formData.searchTags,
+      description: this.formData.description.trim(),
+      categories: this.formData.categories,
+      contentLibraryAccess: this.formData.contentLibraryAccess,
+      worklifeLink: this.formData.worklifeLink,
+      showInSearch: this.formData.showInSearch
+    };
+
+    // Verify all values are properly set
+    console.log('Form data being submitted:', formDataCopy);
+    return formDataCopy;
   }
 
   getSelectedLink(): { destination: string; title: string } | null {
