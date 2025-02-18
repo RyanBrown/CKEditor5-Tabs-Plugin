@@ -10,11 +10,9 @@ export class CkAlightCheckbox extends HTMLElement {
 
   constructor() {
     super();
-    this._initializeElement();
   }
 
-  // Made public for testing
-  public _initializeElement(): void {
+  initializeElement(): void {
     const labelContent = this.textContent?.trim() || '';
     this.innerHTML = `
       <label class="cka-checkbox cka-component" tabindex="0" role="checkbox" aria-checked="false">
@@ -36,6 +34,29 @@ export class CkAlightCheckbox extends HTMLElement {
     this._onKeyDown = this._onKeyDown.bind(this);
     this._onFocus = this._onFocus.bind(this);
     this._onBlur = this._onBlur.bind(this);
+
+    // Set up event listeners if already connected
+    if (this.isConnected) {
+      this.setupEventListeners();
+    }
+  }
+
+  private setupEventListeners(): void {
+    if (this._container) {
+      this._container.addEventListener('click', this._onClick);
+      this._container.addEventListener('keydown', this._onKeyDown);
+      this._container.addEventListener('focus', this._onFocus);
+      this._container.addEventListener('blur', this._onBlur);
+    }
+  }
+
+  private removeEventListeners(): void {
+    if (this._container) {
+      this._container.removeEventListener('click', this._onClick);
+      this._container.removeEventListener('keydown', this._onKeyDown);
+      this._container.removeEventListener('focus', this._onFocus);
+      this._container.removeEventListener('blur', this._onBlur);
+    }
   }
 
   static get observedAttributes(): string[] {
@@ -69,16 +90,12 @@ export class CkAlightCheckbox extends HTMLElement {
   }
 
   connectedCallback(): void {
+    // Initialize if not already initialized
     if (!this._container || !this._box) {
-      this._initializeElement();
+      this.initializeElement();
     }
 
-    if (this._container) {
-      this._container.addEventListener('click', this._onClick);
-      this._container.addEventListener('keydown', this._onKeyDown);
-      this._container.addEventListener('focus', this._onFocus);
-      this._container.addEventListener('blur', this._onBlur);
-    }
+    this.setupEventListeners();
 
     if (this.hasAttribute('initialvalue')) {
       this.checked = this.getAttribute('initialvalue')?.toLowerCase() === 'true';
@@ -92,12 +109,7 @@ export class CkAlightCheckbox extends HTMLElement {
   }
 
   disconnectedCallback(): void {
-    if (this._container) {
-      this._container.removeEventListener('click', this._onClick);
-      this._container.removeEventListener('keydown', this._onKeyDown);
-      this._container.removeEventListener('focus', this._onFocus);
-      this._container.removeEventListener('blur', this._onBlur);
-    }
+    this.removeEventListeners();
   }
 
   attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void {
@@ -111,8 +123,7 @@ export class CkAlightCheckbox extends HTMLElement {
     }
   }
 
-  // Made public for testing
-  public _onClick(event: Event): void {
+  _onClick(event: Event): void {
     if (!this.disabled) {
       event.preventDefault();
       event.stopPropagation();
@@ -120,30 +131,26 @@ export class CkAlightCheckbox extends HTMLElement {
     }
   }
 
-  // Made public for testing
-  public _onKeyDown(event: KeyboardEvent): void {
+  _onKeyDown(event: KeyboardEvent): void {
     if (!this.disabled && (event.key === ' ' || event.key === 'Enter')) {
       event.preventDefault();
       this.checked = !this.checked;
     }
   }
 
-  // Made public for testing
-  public _onFocus(): void {
+  _onFocus(): void {
     if (!this.disabled) {
       this._focused = true;
       this._updateRendering();
     }
   }
 
-  // Made public for testing
-  public _onBlur(): void {
+  _onBlur(): void {
     this._focused = false;
     this._updateRendering();
   }
 
-  // Made public for testing
-  public _updateRendering(): void {
+  _updateRendering(): void {
     if (!this._container || !this._box) return;
 
     // Update container

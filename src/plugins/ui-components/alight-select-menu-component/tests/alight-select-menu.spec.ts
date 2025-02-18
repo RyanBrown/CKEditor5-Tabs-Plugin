@@ -1,1 +1,0 @@
-// src/plugins/ui-components/alight-select-menu-component/tests/alight-select-menu.spec.ts
