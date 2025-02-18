@@ -16,10 +16,12 @@ export default class AlightLinkParentPluginUI extends Plugin {
 
   static get requires() {
     return [
-      'AlightPublicLinkPluginUI',
+      'AlightPredefinedLinkPlugin',
       'AlightPredefinedLinkPluginUI',
       'AlightPublicLinkPlugin',
-      'AlightPredefinedLinkPlugin'
+      'AlightPublicLinkPluginUI',
+      'AlightNewDocumentLinkPlugin',
+      'AlightNewDocumentLinkPluginUI',
     ];
   }
 
@@ -50,11 +52,13 @@ export default class AlightLinkParentPluginUI extends Plugin {
     // Bind dropdown state to command availability
     const publicCommand = this.editor.commands.get('alightPublicLinkPlugin');
     const predefinedCommand = this.editor.commands.get('alightPredefinedLinkPlugin');
-    if (publicCommand && predefinedCommand) {
+    const newDocumentCommand = this.editor.commands.get('alightNewDocumentLinkPlugin');
+    if (publicCommand && predefinedCommand && newDocumentCommand) {
       dropdown.bind('isEnabled').to(
         publicCommand, 'isEnabled',
         predefinedCommand, 'isEnabled',
-        (publicEnabled, predefinedEnabled) => publicEnabled || predefinedEnabled
+        newDocumentCommand, 'isEnabled',
+        (publicEnabled, predefinedEnabled, newDocumentEnabled) => publicEnabled || predefinedEnabled || newDocumentEnabled
       );
     }
 
@@ -79,7 +83,8 @@ export default class AlightLinkParentPluginUI extends Plugin {
     // Define child plugins
     const childPlugins = [
       { label: 'Public Link', command: 'alightPublicLinkPlugin', pluginName: 'AlightPublicLinkPluginUI' },
-      { label: 'Predefined Link', command: 'alightPredefinedLinkPlugin', pluginName: 'AlightPredefinedLinkPluginUI' }
+      { label: 'Predefined Link', command: 'alightPredefinedLinkPlugin', pluginName: 'AlightPredefinedLinkPluginUI' },
+      { label: 'New Document', command: 'alightNewDocumentLinkPlugin', pluginName: 'AlightNewDocumentLinkPluginUI' }
     ];
 
     // Create and add child plugin buttons
