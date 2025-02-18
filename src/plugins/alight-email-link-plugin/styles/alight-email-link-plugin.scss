@@ -1,4 +1,4 @@
-// src/plugins/alight-generic-link-plugin/styles/alight-generic-link-plugin.scss
+// src/plugins/alight-email-link-plugin/styles/alight-email-link-plugin.scss
 @use './../../../styles/mixins' as mixins;
 
 .error-message {
@@ -10,6 +10,10 @@
   &.visible {
     display: block;
   }
+}
+
+.email-link-content {
+  padding: var(--spacing-xl) var(--spacing-xl) 0;
 }
 
 .note-text {

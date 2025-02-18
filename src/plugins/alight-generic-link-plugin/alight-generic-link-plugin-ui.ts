@@ -1,18 +1,18 @@
-// src/plugins/alight-predefined-link-plugin/alight-predefined-link-plugin-ui.ts
+// src/plugins/alight-generic-link-plugin/alight-generic-link-plugin-ui.ts
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { ButtonView, ContextualBalloon, View, BalloonPanelView } from '@ckeditor/ckeditor5-ui';
 import { ClickObserver } from '@ckeditor/ckeditor5-engine';
 import { CkAlightModalDialog } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
-import { ContentManager } from './modal-content/predefined-link-modal-ContentManager';
-import type AlightPredefinedLinkPluginCommand from './alight-predefined-link-plugin-command';
+import { ContentManager, validateForm } from './modal-content/alight-generic-link-plugin-modal-ContentManager';
+import type AlightGenericLinkPluginCommand from './alight-generic-link-plugin-command';
 import toolBarIcon from './assets/icon-link.svg';
 import editIcon from './assets/icon-pencil.svg';
 import unlinkIcon from './assets/icon-unlink.svg';
-import './styles/alight-predefined-link-plugin.scss';
+import './styles/alight-generic-link-plugin.scss';
 
 // The UI component of the public link plugin.
 // Handles the toolbar button, modal dialog, and contextual balloon.
-export default class AlightPredefinedLinkPluginUI extends Plugin {
+export default class AlightGenericLinkPluginUI extends Plugin {
   private _balloon?: ContextualBalloon; // Holds the reference to the contextual balloon instance
   private _actionsView?: ActionsView; // Holds the reference to the actions view displayed in the balloon
   private _modalDialog?: CkAlightModalDialog; // Holds the reference to the modal dialog
@@ -25,7 +25,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
 
   // Plugin name
   public static get pluginName() {
-    return 'AlightPredefinedLinkPluginUI' as const;
+    return 'AlightGenericLinkPluginUI' as const;
   }
 
   // Initializes the plugin
@@ -51,17 +51,17 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
     const t = editor.t;
 
     // Add toolbar button
-    editor.ui.componentFactory.add('alightPredefinedLinkPlugin', locale => {
+    editor.ui.componentFactory.add('alightGenericLinkPlugin', locale => {
       const button = new ButtonView(locale);
-      const command = editor.commands.get('alightPredefinedLinkPlugin');
+      const command = editor.commands.get('alightGenericLinkPlugin');
 
       if (!command) {
-        console.warn('AlightPredefinedLinkPlugin command not found');
+        console.warn('AlightGenericLinkPlugin command not found');
         return button;
       }
 
       button.set({
-        label: t('Predefined Link'),
+        label: t('Generic Link'),
         icon: toolBarIcon,
         tooltip: true,
         withText: true,
@@ -128,7 +128,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
 
     // Show balloon on selection change if link is selected
     this.listenTo(editor.model.document.selection, 'change:range', () => {
-      const command = editor.commands.get('alightPredefinedLinkPlugin');
+      const command = editor.commands.get('alightGenericLinkPlugin');
       if (command?.value) {
         this._showBalloon();
       } else {
@@ -141,7 +141,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
   private _createActionsView(): ActionsView {
     const editor = this.editor;
     const actionsView = new ActionsView(editor.locale);
-    const command = editor.commands.get('alightPredefinedLinkPlugin') as AlightPredefinedLinkPluginCommand;
+    const command = editor.commands.get('alightGenericLinkPlugin') as AlightGenericLinkPluginCommand;
 
     // Handle edit button click
     actionsView.editButtonView.on('execute', () => {
@@ -151,7 +151,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
 
     // Handle unlink button click
     actionsView.unlinkButtonView.on('execute', () => {
-      editor.execute('alightPredefinedLinkPlugin');
+      editor.execute('alightGenericLinkPlugin');
       this._hideBalloon();
     });
 
@@ -162,7 +162,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
   private _showBalloon(): void {
     if (!this._balloon || !this._actionsView) return;
 
-    const command = this.editor.commands.get('alightPredefinedLinkPlugin') as AlightPredefinedLinkPluginCommand;
+    const command = this.editor.commands.get('alightGenericLinkPlugin') as AlightGenericLinkPluginCommand;
     const linkUrl = command.value?.url || '';
 
     // Update URL display in balloon
@@ -213,20 +213,22 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
     }
   }
 
-  // In AlightPredefinedLinkPluginUI class, change the _showModal method to:
+  // In AlightGenericLinkPluginUI class, change the _showModal method to:
 
   public _showModal(initialValue?: { url: string; orgName?: string }): void {
     const editor = this.editor;
-    const command = editor.commands.get('alightPredefinedLinkPlugin') as AlightPredefinedLinkPluginCommand;
+    const command = editor.commands.get('alightGenericLinkPlugin') as AlightGenericLinkPluginCommand;
+
+    const initialUrl = initialValue?.url || '';
+    const initialOrgName = initialValue?.orgName || '';
 
     if (!this._modalDialog) {
       this._modalDialog = new CkAlightModalDialog({
-        title: 'Select Predefined Link',
+        title: 'Create a Link',
         modal: true,
-        width: '80vw',
+        width: '500px',
         height: 'auto',
-        closeOnClickOutside: false,
-        contentClass: 'cka-predefined-link-content',
+        contentClass: 'generic-link-content',
         buttons: [
           {
             label: 'Cancel',
@@ -255,11 +257,16 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
         }
 
         if (label === 'Continue') {
-          const selectedLink = this.linkManager?.getSelectedLink();
-          if (selectedLink) {
+          const form = this._modalDialog?.element?.querySelector('#generic-link-form') as HTMLFormElement;
+          const isValid = validateForm(form);
+
+          if (isValid) {
+            const urlInput = form?.querySelector('#link-url') as HTMLInputElement;
+            const orgNameInput = form?.querySelector('#org-name') as HTMLInputElement;
+
             command.execute({
-              url: selectedLink.destination,
-              orgName: selectedLink.title
+              url: urlInput.value,
+              orgName: orgNameInput?.value || undefined
             });
             this._modalDialog?.hide();
           }
@@ -267,29 +274,17 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
       });
     }
 
-    // Create and initialize the link manager
-    this.linkManager = new ContentManager();
-
-    // Show the modal first
+    // Set modal content and show it
+    const content = ContentManager(initialUrl, initialOrgName);
+    this._modalDialog.setContent(content);
     this._modalDialog.show();
-
-    // Get the content container after modal is shown
-    const contentContainer = this._modalDialog.element?.querySelector('.cka-predefined-link-content');
-    if (contentContainer) {
-      // Render the content into the container
-      this.linkManager.renderContent(contentContainer as HTMLElement);
-    }
   }
 
-  // Add property to class
-  private linkManager: ContentManager | null = null;
-
-  // Update destroy method
+  // Destroys the plugin
   public override destroy(): void {
     super.destroy();
     this._modalDialog?.destroy();
     this._actionsView?.destroy();
-    this.linkManager = null;
   }
 }
 

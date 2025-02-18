@@ -49,12 +49,16 @@ describe('AlightLinkParentPluginUI', () => {
   describe('requires', () => {
     it('should return required plugins', () => {
       expect(AlightLinkParentPluginUI.requires).toEqual([
-        'AlightPredefinedLinkPlugin',
-        'AlightPredefinedLinkPluginUI',
-        'AlightPublicLinkPlugin',
-        'AlightPublicLinkPluginUI',
+        'AlightExistingDocumentLinkPlugin',
+        'AlightExistingDocumentLinkPluginUI',
         'AlightNewDocumentLinkPlugin',
         'AlightNewDocumentLinkPluginUI',
+        'AlightPredefinedLinkPlugin',
+        'AlightPredefinedLinkPluginUI',
+        'AlightGenericLinkPlugin',
+        'AlightGenericLinkPluginUI',
+        'AlightEmailLinkPlugin',
+        'AlightEmailLinkPluginUI',
       ]);
     });
   });
@@ -116,8 +120,8 @@ describe('AlightLinkParentPluginUI', () => {
 
     it('should create list items for each child plugin', () => {
       const items = Array.from(listView.items);
-      // Header + separator + 2 plugin items
-      expect(items.length).toBe(5);
+      // Header + separator + X plugin items
+      expect(items.length).toBe(7);
     });
 
     it('should execute child plugin command on button click', () => {
@@ -127,7 +131,7 @@ describe('AlightLinkParentPluginUI', () => {
       button.fire('execute');
 
       expect(dropdown.isOpen).toBeFalse();
-      expect(editor.plugins.get).toHaveBeenCalledWith('AlightPublicLinkPluginUI');
+      expect(editor.plugins.get).toHaveBeenCalledWith('AlightGenericLinkPluginUI');
       expect(editor.plugins.get()._showModal).toHaveBeenCalled();
     });
 
@@ -150,7 +154,7 @@ describe('AlightLinkParentPluginUI', () => {
       const predefinedCommand = { isEnabled: false };
 
       editor.commands.get.and.callFake((command: string) => {
-        if (command === 'alightPublicLinkPlugin') return publicCommand;
+        if (command === 'AlightGenericLinkPlugin') return publicCommand;
         if (command === 'alightPredefinedLinkPlugin') return predefinedCommand;
         return null;
       });

@@ -1,4 +1,8 @@
 // src/plugins/alight-link-parent-plugin/alight-link-parent-plugin.ts
+/**
+ * A CKEditor plugin that provides a dropdown menu for different types of link insertions.
+ * This parent plugin coordinates multiple child link plugins (email, document, generic, etc.).
+ */
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 import { createDropdown, DropdownView } from '@ckeditor/ckeditor5-ui';
 import ListView from '@ckeditor/ckeditor5-ui/src/list/listview';
@@ -10,18 +14,24 @@ import ToolBarIcon from './assets/icon-link.svg';
 import { Locale } from '@ckeditor/ckeditor5-utils';
 
 export default class AlightLinkParentPluginUI extends Plugin {
+  // Define the plugin name for CKEditor registration
   static get pluginName() {
     return 'AlightLinkParentPluginUI';
   }
 
+  // Specify the required child plugins that this parent plugin depends on
   static get requires() {
     return [
-      'AlightPredefinedLinkPlugin',
-      'AlightPredefinedLinkPluginUI',
-      'AlightPublicLinkPlugin',
-      'AlightPublicLinkPluginUI',
+      'AlightEmailLinkPlugin',
+      'AlightEmailLinkPluginUI',
+      'AlightExistingDocumentLinkPlugin',
+      'AlightExistingDocumentLinkPluginUI',
+      'AlightGenericLinkPlugin',
+      'AlightGenericLinkPluginUI',
       'AlightNewDocumentLinkPlugin',
       'AlightNewDocumentLinkPluginUI',
+      'AlightPredefinedLinkPlugin',
+      'AlightPredefinedLinkPluginUI',
     ];
   }
 
@@ -29,6 +39,7 @@ export default class AlightLinkParentPluginUI extends Plugin {
     const editor = this.editor;
     const t = editor.t;
 
+    // Register the dropdown component factory
     editor.ui.componentFactory.add('alightLinkParentPlugin', (locale) => {
       const dropdown = createDropdown(locale);
       dropdown.panelView.children.add(this._createListView(locale, dropdown));
@@ -40,6 +51,8 @@ export default class AlightLinkParentPluginUI extends Plugin {
   private _configureDropdown(dropdown: DropdownView) {
     const t = this.editor.t;
     const buttonView = dropdown.buttonView;
+
+    // Configure the dropdown button appearance
     buttonView.set({
       icon: ToolBarIcon,
       label: t('Parent Link'),
@@ -47,26 +60,35 @@ export default class AlightLinkParentPluginUI extends Plugin {
       withText: true
     });
 
+    // Add custom CSS class for styling
     dropdown.set({ class: 'ck-dropdown ck-alight-link-dropdown' });
 
-    // Bind dropdown state to command availability
-    const publicCommand = this.editor.commands.get('alightPublicLinkPlugin');
-    const predefinedCommand = this.editor.commands.get('alightPredefinedLinkPlugin');
+    // Get all child plugin commands
+    const emailCommand = this.editor.commands.get('alightEmailLinkPlugin');
+    const existingDocumentCommand = this.editor.commands.get('alightExistingDocumentLinkPlugin');
+    const genericCommand = this.editor.commands.get('alightGenericLinkPlugin');
     const newDocumentCommand = this.editor.commands.get('alightNewDocumentLinkPlugin');
-    if (publicCommand && predefinedCommand && newDocumentCommand) {
+    const predefinedCommand = this.editor.commands.get('alightPredefinedLinkPlugin');
+
+    // Bind dropdown enablement to the availability of any child command
+    if (genericCommand && predefinedCommand && newDocumentCommand && existingDocumentCommand && emailCommand) {
       dropdown.bind('isEnabled').to(
-        publicCommand, 'isEnabled',
-        predefinedCommand, 'isEnabled',
+        emailCommand, 'isEnabled',
+        existingDocumentCommand, 'isEnabled',
+        genericCommand, 'isEnabled',
         newDocumentCommand, 'isEnabled',
-        (publicEnabled, predefinedEnabled, newDocumentEnabled) => publicEnabled || predefinedEnabled || newDocumentEnabled
+        predefinedCommand, 'isEnabled',
+        (genericEnabled, predefinedEnabled, existingDocumentEnabled, newDocumentEnabled, emailEnabled) =>
+          genericEnabled || predefinedEnabled || existingDocumentEnabled || newDocumentEnabled || emailEnabled
       );
     }
 
+    // Return focus to editor when dropdown closes
     dropdown.on('change:isOpen', () => {
       if (!dropdown.isOpen) this.editor.editing.view.focus();
     });
 
-    // Improve keyboard navigation
+    // Add keyboard navigation support
     dropdown.keystrokes.set('arrowdown', (data: any, cancel: () => void) => {
       if (dropdown.isOpen) {
         dropdown.panelView.focus();
@@ -75,19 +97,30 @@ export default class AlightLinkParentPluginUI extends Plugin {
     });
   }
 
+  /**
+   * Create the list view containing all link type options
+   * @param locale - The locale for internationalization
+   * @param dropdown - The parent dropdown view
+   * @returns ListView containing all link type options
+   */
   private _createListView(locale: Locale | undefined, dropdown: DropdownView): ListView {
     const listView = new ListView(locale);
+
+    // Add header and separator
     listView.items.add(this._createHeaderView(locale));
     listView.items.add(new ListSeparatorView(locale));
 
-    // Define child plugins
+    // Define available link types and their configurations
+    // The order of the list is set here
     const childPlugins = [
-      { label: 'Public Link', command: 'alightPublicLinkPlugin', pluginName: 'AlightPublicLinkPluginUI' },
+      { label: 'Generic Link', command: 'AlightGenericLinkPlugin', pluginName: 'AlightGenericLinkPluginUI' },
       { label: 'Predefined Link', command: 'alightPredefinedLinkPlugin', pluginName: 'AlightPredefinedLinkPluginUI' },
-      { label: 'New Document', command: 'alightNewDocumentLinkPlugin', pluginName: 'AlightNewDocumentLinkPluginUI' }
+      { label: 'Email Link', command: 'alightEmailLinkPlugin', pluginName: 'AlightEmailLinkPluginUI' },
+      { label: 'Existing Document', command: 'alightExistingDocumentLinkPlugin', pluginName: 'AlightExistingDocumentLinkPluginUI' },
+      { label: 'New Document', command: 'alightNewDocumentLinkPlugin', pluginName: 'AlightNewDocumentLinkPluginUI' },
     ];
 
-    // Create and add child plugin buttons
+    // Create list items for each link type
     childPlugins.forEach((plugin) => {
       listView.items.add(this._createListItem(locale, plugin, dropdown));
     });
@@ -95,9 +128,16 @@ export default class AlightLinkParentPluginUI extends Plugin {
     return listView;
   }
 
+  /**
+   * Create the header view for the dropdown
+   * @param locale - The locale for internationalization
+   * @returns View containing the header
+   */
   private _createHeaderView(locale: Locale | undefined): View {
     const t = this.editor.t;
     const headerView = new View(locale);
+
+    // Configure header template with styling
     headerView.setTemplate({
       tag: 'div',
       attributes: {
@@ -109,13 +149,21 @@ export default class AlightLinkParentPluginUI extends Plugin {
     return headerView;
   }
 
+  /**
+   * Create a list item for a specific link type
+   * @param locale - The locale for internationalization
+   * @param item - Configuration object for the link type
+   * @param dropdown - The parent dropdown view
+   * @returns ListItemView containing the link type button
+   */
   private _createListItem(locale: Locale | undefined, item: { label: string; command: string; pluginName: string }, dropdown: DropdownView): ListItemView {
     const listItem = new ListItemView(locale);
     const button = new ButtonView(locale);
 
+    // Configure button appearance
     button.set({ label: item.label, withText: true });
 
-    // Execute child plugin command on click
+    // Handle button click by showing the appropriate modal
     button.on('execute', () => {
       dropdown.isOpen = false;
       const command = this.editor.commands.get(item.command);

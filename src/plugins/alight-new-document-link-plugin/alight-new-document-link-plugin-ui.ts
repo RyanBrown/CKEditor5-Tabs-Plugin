@@ -2,14 +2,14 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { ButtonView } from '@ckeditor/ckeditor5-ui';
 import { CkAlightModalDialog } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
-import { NewDocumentLinkManager } from './modal-content/new-document-link';
+import { ContentManager } from './modal-content/alight-new-document-link-plugin-modal-ContentManager';
 import { EventInfo } from '@ckeditor/ckeditor5-utils';
 import toolBarIcon from './assets/icon-link.svg';
 import './styles/alight-new-document-link-plugin.scss';
 
 export default class AlightNewDocumentLinkPluginUI extends Plugin {
   private _modalDialog?: CkAlightModalDialog;
-  private _formManager?: NewDocumentLinkManager;
+  private _formManager?: ContentManager;
 
   public static get pluginName() {
     return 'AlightNewDocumentLinkPluginUI' as const;
@@ -46,7 +46,7 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
   }
 
   private _initializeFormManager(): void {
-    this._formManager = new NewDocumentLinkManager();
+    this._formManager = new ContentManager();
   }
 
   private _showModal(): void {

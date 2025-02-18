@@ -4,6 +4,7 @@ import type { Locale } from '@ckeditor/ckeditor5-utils';
 import type { TemplateDefinition } from '@ckeditor/ckeditor5-ui/src/template';
 import type { BaseEvent } from '@ckeditor/ckeditor5-utils/src/emittermixin';
 import { AlightUIBaseComponent } from '../alight-ui-base-component/alight-ui-base-component';
+import './styles/alight-radio-component.scss';
 
 interface RadioButtonProperties {
   value: string;

@@ -30,7 +30,7 @@ interface PredefinedLink {
 }
 
 // Manages all logic for Predefined Links (filters, search, pagination)
-export class PredefinedLinkModalContent implements LinkManager {
+export class ContentManager implements LinkManager {
   // Overlay panel configuration
   private overlayPanelConfig = {
     width: '600px',

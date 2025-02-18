@@ -1,1 +1,1 @@
-// src/plugins/alight-public-link-plugin/tests/alight-public-link-plugin-editing.spec.ts
+// src/plugins/alight-generic-link-plugin/tests/alight-generic-link-plugin-editing.spec.ts
