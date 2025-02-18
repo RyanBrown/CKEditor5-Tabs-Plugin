@@ -40,13 +40,14 @@ ul.cka-radio-group {
 
 
 .cka-choose-categories-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-m);
+  border: 1px solid var(--gray-400);
+  display: grid;
+  gap: var(--spacing-l);
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  padding: var(--spacing-l);
 
   li {
     display: inline-flex;
     list-style: none;
-    flex: 0 1 auto;
   }
 }
