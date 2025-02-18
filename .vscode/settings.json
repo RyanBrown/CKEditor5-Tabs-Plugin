@@ -2,6 +2,7 @@
     "editor.insertSpaces": true,
     "editor.tabSize": 2,
     "cSpell.words": [
+        "arrowdown",
         "buttonview",
         "classiceditor",
         "fontawesome",
@@ -16,6 +17,7 @@
         "noreferrer",
         "Positionable",
         "Predefinded",
+        "Toggleable",
         "virtualtesteditor"
     ],
 }

@@ -213,7 +213,9 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
     }
   }
 
-  private _showModal(initialValue?: { url: string; orgName?: string }): void {
+  // In AlightPredefinedLinkPluginUI class, change the _showModal method to:
+
+  public _showModal(initialValue?: { url: string; orgName?: string }): void {
     const editor = this.editor;
     const command = editor.commands.get('alightPredefinedLinkPlugin') as AlightPredefinedLinkPluginCommand;
 

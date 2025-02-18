@@ -213,7 +213,9 @@ export default class AlightPublicLinkPluginUI extends Plugin {
     }
   }
 
-  private _showModal(initialValue?: { url: string; orgName?: string }): void {
+  // In AlightPublicLinkPluginUI class, change the _showModal method to:
+
+  public _showModal(initialValue?: { url: string; orgName?: string }): void {
     const editor = this.editor;
     const command = editor.commands.get('alightPublicLinkPlugin') as AlightPublicLinkPluginCommand;
 
@@ -266,9 +268,8 @@ export default class AlightPublicLinkPluginUI extends Plugin {
               url: urlInput.value,
               orgName: orgNameInput?.value || undefined
             });
-            this._modalDialog?.hide(); // Only close if validation passes
+            this._modalDialog?.hide();
           }
-          // If validation fails, modal stays open
         }
       });
     }
