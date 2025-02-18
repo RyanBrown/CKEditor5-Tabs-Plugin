@@ -3,7 +3,7 @@ import { Plugin } from '@ckeditor/ckeditor5-core';
 import { ButtonView, ContextualBalloon, View, BalloonPanelView } from '@ckeditor/ckeditor5-ui';
 import { ClickObserver } from '@ckeditor/ckeditor5-engine';
 import { CkAlightModalDialog } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
-import { PredefinedLinkModalContent } from './modal-content/alight-existing-document-link-plugin-modal-content';
+import { ContentManager } from './modal-content/alight-existing-document-link-plugin-modal-ContentManager';
 import type AlightExistingDocumentLinkPluginCommand from './alight-existing-document-link-plugin-command';
 import toolBarIcon from './assets/icon-link.svg';
 import editIcon from './assets/icon-pencil.svg';
@@ -61,7 +61,7 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
       }
 
       button.set({
-        label: t('Predefined Link'),
+        label: t('Existing Document Link'),
         icon: toolBarIcon,
         tooltip: true,
         withText: true,
@@ -221,12 +221,12 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
 
     if (!this._modalDialog) {
       this._modalDialog = new CkAlightModalDialog({
-        title: 'Select Predefined Link',
+        title: 'Select Existing Document Link',
         modal: true,
         width: '80vw',
         height: 'auto',
         closeOnClickOutside: false,
-        contentClass: 'cka-predefined-link-content',
+        contentClass: 'cka-existing-document-link-content',
         buttons: [
           {
             label: 'Cancel',
@@ -268,13 +268,13 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
     }
 
     // Create and initialize the link manager
-    this.linkManager = new PredefinedLinkModalContent();
+    this.linkManager = new ContentManager();
 
     // Show the modal first
     this._modalDialog.show();
 
     // Get the content container after modal is shown
-    const contentContainer = this._modalDialog.element?.querySelector('.cka-predefined-link-content');
+    const contentContainer = this._modalDialog.element?.querySelector('.cka-existing-document-link-content');
     if (contentContainer) {
       // Render the content into the container
       this.linkManager.renderContent(contentContainer as HTMLElement);
@@ -282,7 +282,7 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
   }
 
   // Add property to class
-  private linkManager: PredefinedLinkModalContent | null = null;
+  private linkManager: ContentManager | null = null;
 
   // Update destroy method
   public override destroy(): void {

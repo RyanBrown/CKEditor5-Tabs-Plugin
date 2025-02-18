@@ -1,4 +1,4 @@
-// src/plugins/alight-predefined-link-plugin/alight-predefined-link-plugin-command.ts
+// src/plugins/alight-existing-document-link-plugin/alight-existing-document-link-plugin-command.ts
 import { Command } from '@ckeditor/ckeditor5-core';
 import type { Editor } from '@ckeditor/ckeditor5-core';
 import { findAttributeRange } from '@ckeditor/ckeditor5-typing';

@@ -1,19 +1,25 @@
-// src/plugins/alight-predefined-link-plugin/modal-content/predefined-link-modal-types.ts
-export interface PredefinedLink {
-  predefinedLinkName: string;
-  predefinedLinkDescription: string;
-  baseOrClientSpecific: string;
-  pageType: string;
-  destination: string;
-  domain: string;
-  uniqueId: string;
-  attributeName: string;
-  attributeValue: string;
+// src/plugins/alight-existing-document-link-plugin/modal-content/alight-existing-document-link-plugin-modal-types.ts
+export interface DocumentLink {
+  serverFilePath: string;
+  title: string;
+  fileId: string;
+  fileType: string;
+  population: string;
+  locale: string;
+  lastUpdated: number;
+  updatedBy: string;
+  upointLink: string;
+  documentDescription: string;
+  expiryDate: string;
 }
 
-export interface SelectedFilters {
-  [key: string]: string[];
-  baseOrClientSpecific: string[];
-  pageType: string[];
-  domain: string[];
+export interface DocumentResponse {
+  responseStatus: string;
+  branchName: string;
+  documentList: DocumentLink[];
+}
+
+export interface LinkSelection {
+  destination: string;
+  title: string;
 }

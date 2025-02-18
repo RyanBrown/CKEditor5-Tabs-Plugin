@@ -63,7 +63,7 @@ import AlightLinkParentPlugin from './plugins/alight-link-parent-plugin/alight-l
 import AlightPredefinedLinkPlugin from './plugins/alight-predefined-link-plugin/alight-predefined-link-plugin';
 import AlightPublicLinkPlugin from './plugins/alight-public-link-plugin/alight-public-link-plugin';
 import AlightNewDocumentLinkPlugin from './plugins/alight-new-document-link-plugin/alight-new-document-link-plugin';
-
+import AlightExistingDocumentLinkPlugin from './plugins/alight-existing-document-link-plugin/alight-existing-document-link-plugin';
 // Import custom styles for headings, style definitions and custom plugins
 import './styles/styles.scss';
 
@@ -189,6 +189,7 @@ class Editor extends ClassicEditor {
     AlightPublicLinkPlugin,
     AlightPredefinedLinkPlugin,
     AlightNewDocumentLinkPlugin,
+    AlightExistingDocumentLinkPlugin,
   ];
 
   public static override defaultConfig: EditorConfig = {
@@ -248,6 +249,7 @@ class Editor extends ClassicEditor {
         'alightPredefinedLinkPlugin',
         'alightPublicLinkPlugin',
         'alightNewDocumentLinkPlugin',
+        'alightExistingDocumentLinkPlugin'
       ],
       shouldNotGroupWhenFull: true,
     },

@@ -1,7 +1,13 @@
-// src/plugins/alight-predefined-link-plugin/modal-content/predefined-link-modal-search.ts
+// src/plugins/alight-existing-document-link-plugin/modal-content/alight-existing-document-link-plugin-modal-search.ts
 import { AlightOverlayPanel } from '../../ui-components/alight-overlay-panel-component/alight-overlay-panel';
-import { PaginationManager } from './alight-existing-document-link-plugin-modal-pagination';
-import { PredefinedLink, SelectedFilters } from './alight-existing-document-link-plugin-modal-types';
+import { PaginationManager } from './alight-existing-document-link-plugin-modal-PaginationManager';
+import { DocumentLink } from './alight-existing-document-link-plugin-modal-types';
+
+interface SelectedFilters {
+  population: string[];
+  fileType: string[];
+  locale: string[];
+}
 
 export class SearchManager {
   private currentSearchQuery = '';
@@ -10,14 +16,14 @@ export class SearchManager {
   private searchInput: HTMLInputElement | null = null;
 
   private selectedFilters: SelectedFilters = {
-    baseOrClientSpecific: [],
-    pageType: [],
-    domain: []
+    population: [],
+    fileType: [],
+    locale: []
   };
 
   constructor(
-    private predefinedLinksData: PredefinedLink[],
-    private onSearch: (filteredData: PredefinedLink[]) => void,
+    private documentData: DocumentLink[],
+    private onSearch: (filteredData: DocumentLink[]) => void,
     private paginationManager: PaginationManager
   ) { }
 
@@ -35,14 +41,13 @@ export class SearchManager {
   }
 
   private injectSearchUI(searchContainer: HTMLElement): void {
-    // Basic search UI
     searchContainer.innerHTML = `
       <div class="cka-search-input-container">
         <input 
           type="text" 
           id="search-input" 
           class="cka-search-input" 
-          placeholder="Search by link name..." 
+          placeholder="Search by document title..." 
           value="${this.currentSearchQuery}"
         />
         <button id="reset-search-btn" class="cka-button cka-button-rounded cka-button-text"><i class="fa-regular fa-xmark"></i></button>
@@ -76,15 +81,15 @@ export class SearchManager {
   }
 
   private createAdvancedSearchFilters(): string {
-    const baseOrClientSpecificOptions = Array.from(new Set(this.predefinedLinksData.map(item => item.baseOrClientSpecific))).sort();
-    const pageTypeOptions = Array.from(new Set(this.predefinedLinksData.map(item => item.pageType))).sort();
-    const domainOptions = Array.from(new Set(this.predefinedLinksData.map(item => item.domain))).sort();
+    const populationOptions = Array.from(new Set(this.documentData.map(item => item.population))).sort();
+    const fileTypeOptions = Array.from(new Set(this.documentData.map(item => item.fileType))).sort();
+    const localeOptions = Array.from(new Set(this.documentData.map(item => item.locale))).sort();
 
     return `
       <div class="search-filters">
-        ${this.createFilterSection('Base/Client Specific', 'baseOrClientSpecific', baseOrClientSpecificOptions)}
-        ${this.createFilterSection('Page Type', 'pageType', pageTypeOptions)}
-        ${this.createFilterSection('Domain', 'domain', domainOptions)}
+        ${this.createFilterSection('Population', 'population', populationOptions)}
+        ${this.createFilterSection('File Type', 'fileType', fileTypeOptions)}
+        ${this.createFilterSection('Locale', 'locale', localeOptions)}
       </div>
     `;
   }
@@ -127,27 +132,23 @@ export class SearchManager {
   }
 
   private setupEventListeners(container: HTMLElement): void {
-    // Basic search functionality
     container.querySelector('#search-btn')?.addEventListener('click', () => this.performSearch());
     container.querySelector('#reset-search-btn')?.addEventListener('click', () => this.reset());
   }
 
   private setupAdvancedSearchListeners(container: HTMLElement): void {
-    // Handle the apply filters button click
     document.querySelectorAll('#apply-filters').forEach(button => {
       button.addEventListener('click', () => {
         this.applyFilters();
       });
     });
 
-    // Handle the clear filters button click
     document.querySelectorAll('#clear-filters').forEach(button => {
       button.addEventListener('click', () => {
         this.clearFilters();
       });
     });
 
-    // Setup checkbox listeners for all checkboxes in the document
     document.querySelectorAll('cka-checkbox').forEach(checkbox => {
       this.setupSingleCheckboxListener(checkbox);
     });
@@ -170,8 +171,6 @@ export class SearchManager {
     });
   }
 
-  // Removed setupCheckboxListeners as it's now handled in setupSingleCheckboxListener
-
   private performSearch(): void {
     this.currentSearchQuery = this.searchInput?.value || '';
     this.updateFilteredData();
@@ -179,12 +178,11 @@ export class SearchManager {
 
   private clearFilters(): void {
     this.selectedFilters = {
-      baseOrClientSpecific: [],
-      pageType: [],
-      domain: []
+      population: [],
+      fileType: [],
+      locale: []
     };
 
-    // Update all checkboxes in the document
     document.querySelectorAll('cka-checkbox').forEach(checkbox => {
       (checkbox as any).checked = false;
     });
@@ -196,17 +194,18 @@ export class SearchManager {
   }
 
   private updateFilteredData(): void {
-    const filteredData = this.predefinedLinksData.filter(link => {
+    const filteredData = this.documentData.filter(doc => {
       const matchesSearch = !this.currentSearchQuery ||
-        link.predefinedLinkName.toLowerCase().includes(this.currentSearchQuery.toLowerCase());
+        doc.title.toLowerCase().includes(this.currentSearchQuery.toLowerCase()) ||
+        doc.documentDescription.toLowerCase().includes(this.currentSearchQuery.toLowerCase());
 
       const matchesFilters =
-        (this.selectedFilters.baseOrClientSpecific.length === 0 ||
-          this.selectedFilters.baseOrClientSpecific.includes(link.baseOrClientSpecific)) &&
-        (this.selectedFilters.pageType.length === 0 ||
-          this.selectedFilters.pageType.includes(link.pageType)) &&
-        (this.selectedFilters.domain.length === 0 ||
-          this.selectedFilters.domain.includes(link.domain));
+        (this.selectedFilters.population.length === 0 ||
+          this.selectedFilters.population.includes(doc.population)) &&
+        (this.selectedFilters.fileType.length === 0 ||
+          this.selectedFilters.fileType.includes(doc.fileType)) &&
+        (this.selectedFilters.locale.length === 0 ||
+          this.selectedFilters.locale.includes(doc.locale));
 
       return matchesSearch && matchesFilters;
     });
@@ -221,9 +220,9 @@ export class SearchManager {
     }
     this.currentSearchQuery = '';
     this.selectedFilters = {
-      baseOrClientSpecific: [],
-      pageType: [],
-      domain: []
+      population: [],
+      fileType: [],
+      locale: []
     };
     this.updateFilteredData();
   }

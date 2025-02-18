@@ -1,4 +1,4 @@
-// src/plugins/alight-predefined-link-plugin/alight-predefined-link-plugin-utils.ts
+// src/plugins/alight-existing-document-link-plugin/alight-existing-document-link-plugin-utils.ts
 import type { Editor } from '@ckeditor/ckeditor5-core';
 import { type Element } from '@ckeditor/ckeditor5-engine';
 

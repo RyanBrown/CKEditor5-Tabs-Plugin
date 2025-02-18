@@ -1,4 +1,4 @@
-// src/plugins/alight-public-link-plugin/styles/alight-public-link-plugin.scss
+// src/plugins/alight-existing-document-link-plugin/styles/alight-existing-document-link-plugin.scss
 @use './../../../styles/mixins' as mixins;
 
 .error-message {
@@ -42,8 +42,6 @@ ul.cka-radio-group {
   }
 }
 
-
-
 .cka-link-item {
   align-items: center;
   border-bottom: 1px solid var(--gray-400);
@@ -82,7 +80,7 @@ ul.checkbox-list {
   }
 }
 
-.cka-predefined-link-content {
+.cka-existing-document-link-content {
   flex: 1;
   overflow-y: auto;
   padding: 0;

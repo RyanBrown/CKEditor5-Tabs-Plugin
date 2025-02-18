@@ -1,4 +1,4 @@
-// src/plugins/alight-predefined-link-plugin/alight-predefined-link-plugin.ts
+// src/plugins/alight-existing-document-link-plugin/alight-existing-document-link-plugin.ts
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { Link } from '@ckeditor/ckeditor5-link';
 import AlightExistingDocumentLinkPluginEditing from './alight-existing-document-link-plugin-editing';

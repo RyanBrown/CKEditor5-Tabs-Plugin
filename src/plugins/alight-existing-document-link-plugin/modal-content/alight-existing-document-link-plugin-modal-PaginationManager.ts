@@ -1,4 +1,4 @@
-// src/plugins/alight-predefined-link-plugin/modal-content/predefined-link-modal-pagination.ts
+// src/plugins/alight-existing-document-link-plugin/modal-content/alight-existing-document-link-plugin-modal-pagination.ts
 import { CkAlightSelectMenu } from '../../ui-components/alight-select-menu-component/alight-select-menu-component';
 
 export class PaginationManager {
@@ -67,7 +67,7 @@ export class PaginationManager {
       this.onPageChange(this.currentPage);
 
       // Update UI elements if container exists
-      const container = document.querySelector('.cka-predefined-link-content');
+      const container = document.querySelector('.cka-existing-document-link-content');
       if (container) {
         this.updateButtonStates(container as HTMLElement, this.currentPage, totalPages);
         this.updatePageSelect(container as HTMLElement, this.currentPage, totalPages);

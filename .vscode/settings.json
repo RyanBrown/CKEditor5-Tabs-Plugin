@@ -18,6 +18,7 @@
         "Positionable",
         "Predefinded",
         "Toggleable",
+        "upoint",
         "virtualtesteditor"
     ],
 }

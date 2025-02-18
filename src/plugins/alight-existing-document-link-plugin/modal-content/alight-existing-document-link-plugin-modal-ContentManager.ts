@@ -1,15 +1,15 @@
-// src/plugins/alight-predefined-link-plugin/modal-content/predefined-link-modal-content.ts
+// src/plugins/alight-existing-document-link-plugin/modal-content/alight-existing-document-link-plugin-modal-ContentManager.ts
 import { LinkManager } from './alight-existing-document-link-plugin-modal-LinkManager';
-import { PredefinedLink } from './alight-existing-document-link-plugin-modal-types';
-import { SearchManager } from './alight-existing-document-link-plugin-modal-search';
-import { PaginationManager } from './alight-existing-document-link-plugin-modal-pagination';
-import predefinedLinksData from './json/predefined-test-data.json';
+import { DocumentLink } from './alight-existing-document-link-plugin-modal-types';
+import { SearchManager } from './alight-existing-document-link-plugin-modal-SearchManager';
+import { PaginationManager } from './alight-existing-document-link-plugin-modal-PaginationManager';
+import existingDocumentLinksData from './json/existing-document-test-data.json';
 import './../styles/alight-existing-document-link-plugin.scss';
 
-export class PredefinedLinkModalContent implements LinkManager {
-  private selectedLink: PredefinedLink | null = null;
-  private predefinedLinksData: PredefinedLink[] = predefinedLinksData.predefinedLinksDetails;
-  private filteredLinksData: PredefinedLink[] = [...this.predefinedLinksData];
+export class ContentManager implements LinkManager {
+  private selectedLink: DocumentLink | null = null;
+  private existingDocumentLinks: DocumentLink[] = existingDocumentLinksData.documentList;
+  private filteredLinks: DocumentLink[] = [...this.existingDocumentLinks];
   private searchManager: SearchManager;
   private paginationManager: PaginationManager;
   private container: HTMLElement | null = null;
@@ -17,7 +17,7 @@ export class PredefinedLinkModalContent implements LinkManager {
   constructor() {
     this.paginationManager = new PaginationManager(this.handlePageChange.bind(this));
     this.searchManager = new SearchManager(
-      this.predefinedLinksData,
+      this.existingDocumentLinks,
       this.handleSearchResults.bind(this),
       this.paginationManager
     );
@@ -26,18 +26,18 @@ export class PredefinedLinkModalContent implements LinkManager {
   public getSelectedLink(): { destination: string; title: string } | null {
     if (!this.selectedLink) return null;
     return {
-      destination: this.selectedLink.destination,
-      title: this.selectedLink.predefinedLinkName
+      destination: this.selectedLink.serverFilePath,
+      title: this.selectedLink.title
     };
   }
 
-  private handleSearchResults = (filteredData: PredefinedLink[]): void => {
+  private handleSearchResults = (filteredData: DocumentLink[]): void => {
     console.log('Search results updated:', filteredData.length, 'items');
 
-    this.filteredLinksData = filteredData;
+    this.filteredLinks = filteredData;
 
     // Maintain selected link if still in filtered results, otherwise clear selection
-    if (this.selectedLink && !filteredData.some(link => link.predefinedLinkName === this.selectedLink?.predefinedLinkName)) {
+    if (this.selectedLink && !filteredData.some(link => link.title === this.selectedLink?.title)) {
       this.selectedLink = null;
     }
 
@@ -57,7 +57,7 @@ export class PredefinedLinkModalContent implements LinkManager {
   public resetSearch(): void {
     this.searchManager.reset();
     this.selectedLink = null;
-    this.filteredLinksData = [...this.predefinedLinksData];
+    this.filteredLinks = [...this.existingDocumentLinks];
 
     if (this.container) {
       this.renderContent(this.container);
@@ -77,14 +77,14 @@ export class PredefinedLinkModalContent implements LinkManager {
     this.searchManager.initialize(container);
 
     // Then initialize pagination
-    this.paginationManager.initialize(container, this.filteredLinksData.length);
+    this.paginationManager.initialize(container, this.filteredLinks.length);
 
     // Finally attach link selection listeners
     this.attachLinkSelectionListeners(container);
 
     // Ensure radio buttons reflect current selection
     if (this.selectedLink) {
-      const selectedRadio = container.querySelector(`cka-radio-button[value="${this.selectedLink.predefinedLinkName}"]`) as any;
+      const selectedRadio = container.querySelector(`cka-radio-button[value="${this.selectedLink.title}"]`) as any;
       if (selectedRadio) {
         selectedRadio.checked = true;
       }
@@ -95,8 +95,8 @@ export class PredefinedLinkModalContent implements LinkManager {
     const currentPage = this.paginationManager.getCurrentPage();
     const pageSize = this.paginationManager.getPageSize();
     const startIndex = (currentPage - 1) * pageSize;
-    const endIndex = Math.min(startIndex + pageSize, this.filteredLinksData.length);
-    const currentPageData = this.filteredLinksData.slice(startIndex, endIndex);
+    const endIndex = Math.min(startIndex + pageSize, this.filteredLinks.length);
+    const currentPageData = this.filteredLinks.slice(startIndex, endIndex);
 
     // Search container
     const searchContainerMarkup = `<div id="search-container-root" class="cka-search-container"></div>`;
@@ -104,7 +104,7 @@ export class PredefinedLinkModalContent implements LinkManager {
     // Links list
     const linksMarkup = currentPageData.length > 0
       ? currentPageData
-        .map(link => this.buildLinkItemMarkup(link))
+        .map((link: DocumentLink) => this.buildLinkItemMarkup(link))
         .join('')
       : '<p>No results found.</p>';
 
@@ -120,29 +120,23 @@ export class PredefinedLinkModalContent implements LinkManager {
     `;
   }
 
-  private buildLinkItemMarkup(link: PredefinedLink): string {
-    const isSelected = this.selectedLink?.predefinedLinkName === link.predefinedLinkName;
+  private buildLinkItemMarkup(link: DocumentLink): string {
+    const isSelected = this.selectedLink?.title === link.title;
 
     return `
-      <div class="cka-link-item ${isSelected ? 'selected' : ''}" data-link-name="${link.predefinedLinkName}">
+      <div class="cka-link-item ${isSelected ? 'selected' : ''}" data-link-name="${link.title}">
         <div class="radio-container">
-          <cka-radio-button 
-            name="link-selection" 
-            value="${link.predefinedLinkName}" 
-            ${isSelected ? 'checked' : ''}
-          >
-          </cka-radio-button>
+          <cka-radio-button name="linkument-selection" value="${link.title}" label=""></cka-radio-button>
         </div>
         <ul>
-          <li><strong>${link.predefinedLinkName}</strong></li>
-          <li><strong>Description:</strong> ${link.predefinedLinkDescription}</li>
-          <li><strong>Base/Client Specific:</strong> ${link.baseOrClientSpecific}</li>
-          <li><strong>Page Type:</strong> ${link.pageType}</li>
-          <li><strong>Destination:</strong> ${link.destination}</li>
-          <li><strong>Domain:</strong> ${link.domain}</li>
-          <li><strong>Unique ID:</strong> ${link.uniqueId}</li>
-          <li><strong>Attribute Name:</strong> ${link.attributeName}</li>
-          <li><strong>Attribute Value:</strong> ${link.attributeValue}</li>
+          <li><strong>${link.title}</strong></li>
+          <!--<li><strong>Description:</strong> ${link.documentDescription}</li>-->
+          <li><strong>Population:</strong> ${link.population}</li>
+          <li><strong>Language:</strong> ${link.locale}</li>
+          <li><strong>File Type:</strong> ${link.fileType}</li>
+          <!--<li><strong>File ID:</strong> ${link.fileId}</li>
+          <li><strong>Last Updated:</strong> ${new Date(link.lastUpdated).toLocaleDateString()}</li>
+          <li><strong>Updated By:</strong> ${link.updatedBy}</li>-->
         </ul>
       </div>
     `;
@@ -181,12 +175,12 @@ export class PredefinedLinkModalContent implements LinkManager {
   }
 
   private handleLinkSelection(linkName: string, linkItem: HTMLElement): void {
-    this.selectedLink = this.predefinedLinksData.find(
-      link => link.predefinedLinkName === linkName
+    this.selectedLink = this.existingDocumentLinks.find(
+      link => link.title === linkName
     ) || null;
 
     // Update selected state visually
-    const container = linkItem.closest('.cka-predefined-link-content');
+    const container = linkItem.closest('.cka-existing-document-link-content');
     if (container) {
       container.querySelectorAll('.cka-link-item').forEach(item => {
         item.classList.remove('selected');
