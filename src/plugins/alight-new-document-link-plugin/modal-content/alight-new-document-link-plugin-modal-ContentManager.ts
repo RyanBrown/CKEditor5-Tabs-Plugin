@@ -136,6 +136,25 @@ export class ContentManager implements LinkManager {
         <div class="error-message">Enter a description to continue.</div>
 
         <a class="linkStyle">Choose Categories</a>
+        <div>
+          <ul class="cka-choose-categories-list">
+            <li>
+              <cka-checkbox id="contentLibraryAccess">
+                Access from 
+              </cka-checkbox>
+            </li>
+            <li>
+              <cka-checkbox id="contentLibraryAccess">
+                Access from Content Library
+              </cka-checkbox>
+            </li>
+            <li>
+              <cka-checkbox id="contentLibraryAccess">
+                Access from Content
+              </cka-checkbox>
+            </li>
+          </ul>
+        </div>
         <div class="control-footer">
           <strong>Note:</strong> Categories apply to both search and Content Library.
         </div>
@@ -179,7 +198,27 @@ export class ContentManager implements LinkManager {
     const fileInput = this.container.querySelector('input[type="file"]');
     if (fileInput) {
       fileInput.addEventListener('change', (e) => {
-        this.formData.file = (e.target as HTMLInputElement).files?.[0] || null;
+        const file = (e.target as HTMLInputElement).files?.[0];
+        const errorMessages = fileInput.parentElement?.querySelectorAll('.error-message');
+
+        // Reset error messages
+        errorMessages?.forEach(msg => msg.classList.remove('visible'));
+
+        if (file) {
+          // Check file size (5MB = 5 * 1024 * 1024 bytes)
+          const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+          if (file.size > maxSize) {
+            this.formData.file = null;
+            errorMessages?.[1]?.classList.add('visible');
+            (e.target as HTMLInputElement).value = ''; // Clear the file input
+          } else {
+            this.formData.file = file;
+          }
+        } else {
+          this.formData.file = null;
+          errorMessages?.[0]?.classList.add('visible');
+        }
+
         this.updateSubmitButtonState();
       });
     }
@@ -278,6 +317,11 @@ export class ContentManager implements LinkManager {
   validateForm(): { isValid: boolean; message?: string } {
     if (!this.formData.file) {
       return { isValid: false, message: 'Please choose a file' };
+    }
+
+    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+    if (this.formData.file.size > maxSize) {
+      return { isValid: false, message: 'File size must be less than 5MB' };
     }
     if (!this.formData.documentTitle.trim()) {
       return { isValid: false, message: 'Please enter a document title' };

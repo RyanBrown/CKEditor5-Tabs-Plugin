@@ -37,3 +37,16 @@ ul.cka-radio-group {
     list-style: none;
   }
 }
+
+
+.cka-choose-categories-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-m);
+
+  li {
+    display: inline-flex;
+    list-style: none;
+    flex: 0 1 auto;
+  }
+}
