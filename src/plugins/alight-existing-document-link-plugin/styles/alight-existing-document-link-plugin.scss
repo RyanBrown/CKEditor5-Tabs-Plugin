@@ -12,10 +12,6 @@
   }
 }
 
-.public-link-content {
-  padding: var(--spacing-xl) var(--spacing-xl) 0;
-}
-
 .note-text {
   font-size: mixins.toRem(14);
   margin: 2rem 0 0;
@@ -83,6 +79,6 @@ ul.checkbox-list {
 .cka-existing-document-link-content {
   flex: 1;
   overflow-y: auto;
-  padding: 0;
+  padding: 0 !important;
   position: relative;
 }

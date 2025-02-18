@@ -1,4 +1,4 @@
-// src/plugins/alight-predefined-link-plugin/alight-predefined-link-plugin-ui.ts
+// src/plugins/alight-existing-document-link-plugin/alight-existing-document-link-plugin-ui.ts
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { ButtonView, ContextualBalloon, View, BalloonPanelView } from '@ckeditor/ckeditor5-ui';
 import { ClickObserver } from '@ckeditor/ckeditor5-engine';
