@@ -1,7 +1,7 @@
 // src/plugins/alight-link-plugin/modal-content/public-intranet-link.ts
-import { ILinkManager } from './ILinkManager';
+import { LinkManager } from './LinkManager';
 
-export class PublicIntranetLinkManager implements ILinkManager {
+export class PublicIntranetLinkManager implements LinkManager {
   private selectedLink: { destination: string; title: string } | null = null;
   private isIntranet: boolean;
   private baseUrl: string;

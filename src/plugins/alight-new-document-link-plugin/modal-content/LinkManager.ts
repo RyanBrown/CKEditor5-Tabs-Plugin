@@ -1,6 +1,6 @@
-// src/plugins/alight-new-document-link-plugin/interfaces/ILinkManager.ts
+// src/plugins/alight-new-document-link-plugin/interfaces/LinkManager.ts
 
-export interface ILinkManager {
+export interface LinkManager {
   // Returns the raw HTML string for a given page of data.
   getLinkContent(page: number): string;
 

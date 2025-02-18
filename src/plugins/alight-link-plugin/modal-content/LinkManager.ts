@@ -1,10 +1,10 @@
-// src/plugins/alight-link-plugin/modal-content/ILinkManager.ts
+// src/plugins/alight-link-plugin/modal-content/LinkManager.ts
 
 /**
  * Minimal interface that both managers implement.
  * This allows the command to work with any manager interchangeably.
  */
-export interface ILinkManager {
+export interface LinkManager {
   // Returns the raw HTML string for a given page of data.
   getLinkContent(page: number): string;
 

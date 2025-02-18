@@ -2,13 +2,13 @@
 import type Editor from '@ckeditor/ckeditor5-core/src/editor/editor';
 import Command from '@ckeditor/ckeditor5-core/src/command';
 import { CkAlightModalDialog } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
-import { ILinkManager } from './modal-content/ILinkManager';
+import { LinkManager } from './modal-content/LinkManager';
 import { CommandData, DialogButton } from './modal-content/types';
 
 export class AlightLinkPluginCommand extends Command {
   protected dialog: CkAlightModalDialog;
   protected data: CommandData;
-  protected manager?: ILinkManager;
+  protected manager?: LinkManager;
 
   constructor(editor: Editor, data: CommandData) {
     super(editor);

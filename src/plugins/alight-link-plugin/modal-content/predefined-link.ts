@@ -6,7 +6,7 @@ import { CkAlightSelectMenu } from '../../ui-components/alight-select-menu-compo
 import { AlightOverlayPanel } from '../../ui-components/alight-overlay-panel-component/alight-overlay-panel';
 import '../../ui-components/alight-checkbox-component/alight-checkbox-component';
 import '../../ui-components/alight-radio-component/alight-radio-component';
-import { ILinkManager } from './ILinkManager';
+import { LinkManager } from './LinkManager';
 
 // Interface for selected filters
 interface SelectedFilters {
@@ -30,7 +30,7 @@ interface PredefinedLink {
 }
 
 // Manages all logic for Predefined Links (filters, search, pagination)
-export class PredefinedLinkModalContent implements ILinkManager {
+export class PredefinedLinkModalContent implements LinkManager {
   // Overlay panel configuration
   private overlayPanelConfig = {
     width: '600px',

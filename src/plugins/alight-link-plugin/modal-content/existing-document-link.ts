@@ -1,7 +1,7 @@
 // src/plugins/alight-link-plugin/modal-content/existing-document-link.ts
 
 import existingDocumentLinkData from './json/existing-document-test-data.json';
-import { ILinkManager } from './ILinkManager';
+import { LinkManager } from './LinkManager';
 import { AlightOverlayPanel } from '../../ui-components/alight-overlay-panel-component/alight-overlay-panel';
 import { CkAlightSelectMenu } from '../../ui-components/alight-select-menu-component/alight-select-menu-component';
 import '../../ui-components/alight-checkbox-component/alight-checkbox-component';
@@ -37,7 +37,7 @@ interface SelectedFilters {
   locale: string[];
 }
 
-export class ExistingDocumentLinkManager implements ILinkManager {
+export class ExistingDocumentLinkManager implements LinkManager {
   private overlayPanelConfig = {
     width: '600px',
     height: 'auto'

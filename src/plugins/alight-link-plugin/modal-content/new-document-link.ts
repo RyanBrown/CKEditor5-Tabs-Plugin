@@ -7,11 +7,11 @@
 // Note: Since innerHTML is used, any event listeners attached directly to rendered HTML elements
 // will not persist when the HTML is re-parsed. We reattach event listeners in attachEventListeners().
 
-import { ILinkManager } from './ILinkManager';
+import { LinkManager } from './LinkManager';
 import { CkAlightSelectMenu } from '../../ui-components/alight-select-menu-component/alight-select-menu-component';
 import '../../ui-components/alight-checkbox-component/alight-checkbox-component';
 
-export class NewDocumentLinkManager implements ILinkManager {
+export class NewDocumentLinkManager implements LinkManager {
   // Reference to the container element where the form is rendered.
   private container: HTMLElement | null = null;
   private languageSelect: CkAlightSelectMenu<{ value: string; label: string }> | null = null;

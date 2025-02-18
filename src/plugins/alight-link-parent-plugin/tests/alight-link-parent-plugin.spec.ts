@@ -49,10 +49,12 @@ describe('AlightLinkParentPluginUI', () => {
   describe('requires', () => {
     it('should return required plugins', () => {
       expect(AlightLinkParentPluginUI.requires).toEqual([
-        'AlightPublicLinkPluginUI',
+        'AlightPredefinedLinkPlugin',
         'AlightPredefinedLinkPluginUI',
         'AlightPublicLinkPlugin',
-        'AlightPredefinedLinkPlugin'
+        'AlightPublicLinkPluginUI',
+        'AlightNewDocumentLinkPlugin',
+        'AlightNewDocumentLinkPluginUI',
       ]);
     });
   });
@@ -115,7 +117,7 @@ describe('AlightLinkParentPluginUI', () => {
     it('should create list items for each child plugin', () => {
       const items = Array.from(listView.items);
       // Header + separator + 2 plugin items
-      expect(items.length).toBe(4);
+      expect(items.length).toBe(5);
     });
 
     it('should execute child plugin command on button click', () => {

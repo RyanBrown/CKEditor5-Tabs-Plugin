@@ -1,12 +1,12 @@
 // src/plugins/alight-predefined-link-plugin/modal-content/predefined-link-modal-content.ts
-import { ILinkManager } from './alight-existing-document-link-plugin-modal-ILinkManager';
+import { LinkManager } from './alight-existing-document-link-plugin-modal-LinkManager';
 import { PredefinedLink } from './alight-existing-document-link-plugin-modal-types';
 import { SearchManager } from './alight-existing-document-link-plugin-modal-search';
 import { PaginationManager } from './alight-existing-document-link-plugin-modal-pagination';
 import predefinedLinksData from './json/predefined-test-data.json';
-import './../styles/alight-predefined-link-plugin.scss';
+import './../styles/alight-existing-document-link-plugin.scss';
 
-export class PredefinedLinkModalContent implements ILinkManager {
+export class PredefinedLinkModalContent implements LinkManager {
   private selectedLink: PredefinedLink | null = null;
   private predefinedLinksData: PredefinedLink[] = predefinedLinksData.predefinedLinksDetails;
   private filteredLinksData: PredefinedLink[] = [...this.predefinedLinksData];

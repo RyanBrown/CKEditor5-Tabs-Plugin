@@ -8,7 +8,7 @@ import type AlightExistingDocumentLinkPluginCommand from './alight-existing-docu
 import toolBarIcon from './assets/icon-link.svg';
 import editIcon from './assets/icon-pencil.svg';
 import unlinkIcon from './assets/icon-unlink.svg';
-import './styles/alight-predefined-link-plugin.scss';
+import './styles/alight-existing-document-link-plugin.scss';
 
 // The UI component of the public link plugin.
 // Handles the toolbar button, modal dialog, and contextual balloon.
