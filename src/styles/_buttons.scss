@@ -14,6 +14,11 @@
   line-height: mixins.toRem(21);
   transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
 
+  &.cka-button-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
   &:enabled {
     &:hover {
       background: var(--primary-hover);
