@@ -6,6 +6,7 @@ import '../../ui-components/alight-radio-component/alight-radio-component';
 export class ContentManager implements LinkManager {
   private container: HTMLElement | null = null;
   private selectedLink: { destination: string; title: string } | null = null;
+  private languageSelect: CkAlightSelectMenu<{ value: string; label: string }> | null = null;
 
   private formData = {
     language: 'en',
@@ -20,28 +21,65 @@ export class ContentManager implements LinkManager {
   };
 
   private createCardHTML(content: string): string {
-    return `<div class="card">${content}</div>`;
+    return `<article class="cka-card">${content}</article>`;
   }
 
   private createLanguageSelectHTML(): string {
     return `
       <h3>Language</h3>
       ${this.createCardHTML(`
-        <select>
-          <option value="en">English (default)</option>
-          <option value="fr">French</option>
-          <option value="es">Spanish</option>
-        </select>
-        <div class="error-message">Choose a language to continue.</div>
+          <label for="language-select">Language</label>
+          <div id="language-select-container"></div>
+          <div class="error-message">Choose a language to continue.</div>
       `)}
     `;
+  }
+
+  private initializeLanguageSelect(): void {
+    const container = document.getElementById('language-select-container');
+    if (!container) {
+      console.warn('Language select container not found');
+      return;
+    }
+
+    // Cleanup previous instance if it exists
+    if (this.languageSelect) {
+      this.languageSelect.destroy();
+    }
+
+    try {
+      this.languageSelect = new CkAlightSelectMenu({
+        options: [
+          { value: 'en', label: 'English (default)' },
+          { value: 'fr', label: 'French' },
+          { value: 'es', label: 'Spanish' }
+        ],
+        placeholder: 'Select language',
+        value: this.formData.language,
+        optionLabel: 'label',
+        optionValue: 'value',
+        onChange: (selectedValue) => {
+          if (selectedValue && typeof selectedValue === 'string') {
+            this.formData.language = selectedValue;
+          } else {
+            this.formData.language = 'en';
+          }
+        }
+      });
+      this.languageSelect.mount(container);
+    } catch (error) {
+      console.error('Error initializing language select:', error);
+    }
   }
 
   private createFileInputHTML(): string {
     return `
       <h3>Document & Title</h3>
       ${this.createCardHTML(`
-        <input type="file" placeholder="No file chosen" 
+        <input
+          type="file"
+          placeholder="No file chosen"
+          class="cka-file-input"
           accept=".doc, .docx, .xls, .xlsx, .xlsm, .ppt, .pptx, .pdf" />
         <p>
           <em class="control-footer">
@@ -50,9 +88,14 @@ export class ContentManager implements LinkManager {
         </p>
         <div class="error-message">Choose a file.</div>
         <div class="error-message">Choose a file less than 5MB.</div>
-      `)}
-      ${this.createCardHTML(`
-        <input type="text" name="documentTitle" maxlength="250" value="${this.formData.documentTitle}" />
+
+        <input
+          type="text"
+          name="documentTitle"
+          class="cka-input-text"
+          maxlength="250"
+          value="${this.formData.documentTitle}" 
+        />
         <span class="control-footer">250 characters remaining</span>
         <div class="control-footer">
           <strong>Note:</strong> Special characters such as (\\, ], :, >, /, <, [, |, ?, ", *, comma) are not allowed.
@@ -67,7 +110,11 @@ export class ContentManager implements LinkManager {
     return `
       <h3>Search Criteria</h3>
       ${this.createCardHTML(`
-        <input type="text" placeholder="Use , for separator" value="${this.formData.searchTags.join(', ')}" />
+        <input
+          type="text"
+          class="cka-input-text"
+          placeholder="Use , for separator" value="${this.formData.searchTags.join(', ')}"
+        />
         <span class="control-footer">
           Add search tags to improve the relevancy of search results. 
           Type your one-word search tag and then press Enter.
@@ -76,12 +123,10 @@ export class ContentManager implements LinkManager {
         <div class="control-footer">
           <strong>Note:</strong> Special characters such as (&, #, @, +, /, %, >, <, [, ], \\) are not allowed.
         </div>
-      `)}
-      ${this.createCardHTML(`
+
         <textarea rows="5" cols="30">${this.formData.description}</textarea>
         <div class="error-message">Enter a description to continue.</div>
-      `)}
-      ${this.createCardHTML(`
+
         <a class="linkStyle">Choose Categories</a>
         <div class="control-footer">
           <strong>Note:</strong> Categories apply to both search and Content Library.
@@ -145,19 +190,16 @@ export class ContentManager implements LinkManager {
   renderContent(container: HTMLElement): void {
     this.container = container;
     container.innerHTML = this.createFormHTML();
-    this.attachEventListeners();
+
+    // Initialize the language select after the form is rendered
+    requestAnimationFrame(() => {
+      this.initializeLanguageSelect();
+      this.attachEventListeners();
+    });
   }
 
   private attachEventListeners(): void {
     if (!this.container) return;
-
-    // Language select
-    const languageSelect = this.container.querySelector('select');
-    if (languageSelect) {
-      languageSelect.addEventListener('change', (e) => {
-        this.formData.language = (e.target as HTMLSelectElement).value;
-      });
-    }
 
     // File input
     const fileInput = this.container.querySelector('input[type="file"]');
@@ -224,6 +266,13 @@ export class ContentManager implements LinkManager {
 
   resetSearch(): void {
     this.selectedLink = null;
+
+    // Clean up the language select
+    if (this.languageSelect) {
+      this.languageSelect.destroy();
+      this.languageSelect = null;
+    }
+
     this.formData = {
       language: 'en',
       file: null,
