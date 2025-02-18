@@ -54,8 +54,8 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
       this._modalDialog = new CkAlightModalDialog({
         title: 'Create a New Document',
         modal: true,
-        width: '500px',
-        height: 'auto',
+        // width: '500px',
+        // height: 'auto',
         contentClass: 'new-document-content',
         buttons: [
           {

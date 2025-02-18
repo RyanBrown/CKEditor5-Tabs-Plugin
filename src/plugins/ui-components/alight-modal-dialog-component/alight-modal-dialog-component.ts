@@ -78,7 +78,7 @@ export class CkAlightModalDialog {
       draggable: false,
       resizable: false,
       maximizable: false,
-      width: '50vw',
+      width: '100%',
       height: 'auto',
       position: 'center',
       closeOnEscape: true,
