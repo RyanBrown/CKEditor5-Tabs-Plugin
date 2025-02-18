@@ -1,14 +1,14 @@
 // src/plugins/alight-generic-link-plugin/modal-content/public-website.ts
 interface PublicLinkData {
-  url?: string;
+  email?: string;
   orgName?: string;
 }
 
 /**
  * Creates and returns an HTML form element to collect public link information.
- * This form includes fields for a URL and an optional organization name.
+ * This form includes fields for an email address and an optional organization name.
  *
- * @param initialValue - The initial value for the URL input field.
+ * @param initialValue - The initial value for the email input field.
  * @param initialOrgName - The initial value for the organization name input field.
  * @returns A container div element containing the form.
  */
@@ -19,27 +19,27 @@ export function ContentManager(initialValue?: string, initialOrgName?: string): 
   const formContent = `
       <form id="generic-link-form" class="ck-form">
         <div class="ck-form-group">
-          <label for="link-url" class="cka-input-label">
-            URL
+          <label for="link-email" class="cka-input-label">
+            Email Address
           </label>
           <input 
-            type="url" 
-            id="link-url" 
-            name="url" 
+            type="email" 
+            id="link-email" 
+            name="email" 
             class="cka-input-text block" 
             required
             value="${initialValue || ''}"
-            placeholder="example.com"
+            placeholder="user@example.com"
           />
           <div 
             class="error-message" 
-            id="url-error" 
+            id="email-error" 
             style="display: none;"
           >
-            Please enter a valid URL.
+            Please enter a valid email address.
           </div>
         </div>
-          
+
         <div class="ck-form-group mt-3">
           <label for="org-name" class="cka-input-label">
             Organization Name (optional)
@@ -54,42 +54,8 @@ export function ContentManager(initialValue?: string, initialOrgName?: string): 
           />
         </div>
 
-        <div>
-          <h3 class="cka-link-type-heading">Choose a Link Type</h3>
-
-          <ul class="cka-radio-group">
-            <li>
-              <div class="radio-container">
-                <cka-radio-button 
-                  name="link-type" 
-                  value="external" 
-                  label="External link"
-                ></cka-radio-button>
-              </div>
-            </li>
-            <li>
-              <div class="radio-container">
-                <cka-radio-button 
-                  name="link-type" 
-                  value="internal" 
-                  label="Internal Link"
-                ></cka-radio-button>
-              </div>
-            </li>
-            <li>
-              <div class="radio-container">
-                <cka-radio-button 
-                  name="link-type" 
-                  value="email" 
-                  label="Email Link"
-                ></cka-radio-button>
-              </div>
-            </li>
-          </ul>
-        </div>
-          
         <p class="note-text">
-          Organization Name (optional): Specify the third-party organization to inform users about the link's destination.
+          Organization Name (optional): Specify the third-party organization to inform users about the email's origin.
         </p>
       </form>
   `;
@@ -99,68 +65,44 @@ export function ContentManager(initialValue?: string, initialOrgName?: string): 
 }
 
 /**
- * Normalizes a given URL by ensuring it has a proper protocol.
- * If no protocol is provided, it defaults to 'https://'.
+ * Validates an email address using a regular expression.
+ * This checks for basic email format requirements.
  *
- * @param value - The input URL string.
- * @returns A properly formatted URL string.
+ * @param email - The email address to validate.
+ * @returns A boolean indicating whether the email is valid.
  */
-function normalizeUrl(value: string): string {
-  const trimmedValue = value.trim();
-
-  // If it already has a protocol, return as is
-  if (trimmedValue.startsWith('http://') || trimmedValue.startsWith('https://')) {
-    return trimmedValue;
-  }
-
-  // Remove any accidental protocol fragments if user partially typed them
-  const cleanValue = trimmedValue
-    .replace(/^(http:|https:|http|https|\/\/)/i, '')
-    .replace(/^\/+/, '');
-
-  // Add default protocol
-  return `https://${cleanValue}`;
+function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
 }
 
 /**
- * Validates the form input by checking if a valid URL is provided.
- * Normalizes the URL if necessary and updates the input field accordingly.
+ * Validates the form input by checking if a valid email address is provided.
  *
- * @param form - The HTML form element containing the URL input field.
+ * @param form - The HTML form element containing the email input field.
  * @returns A boolean indicating whether the form is valid.
  */
 export function validateForm(form: HTMLFormElement): boolean {
-  const urlInput = form.querySelector('#link-url') as HTMLInputElement;
-  const urlError = form.querySelector('#url-error') as HTMLDivElement;
-  let value = urlInput.value.trim();
+  const emailInput = form.querySelector('#link-email') as HTMLInputElement;
+  const emailError = form.querySelector('#email-error') as HTMLDivElement;
+  const value = emailInput.value.trim();
 
   // Reset any previous error messages
-  hideError(urlInput, urlError);
+  hideError(emailInput, emailError);
 
-  // Check if the URL field is empty (it's required)
+  // Check if the email field is empty (it's required)
   if (!value) {
-    showError(urlInput, urlError, 'URL is required.');
+    showError(emailInput, emailError, 'Email address is required.');
     return false;
   }
 
-  // Normalize the URL input
-  value = normalizeUrl(value);
-
-  // Validate the URL format
-  try {
-    const url = new URL(value);
-    if (!['http:', 'https:'].includes(url.protocol)) {
-      showError(urlInput, urlError, 'Invalid URL format.');
-      return false;
-    }
-
-    // If valid, update the input field with the normalized URL
-    urlInput.value = value;
-    return true;
-  } catch (error) { // Added error parameter to catch block to satisfy the parser
-    showError(urlInput, urlError, 'Please enter a valid URL.');
+  // Validate the email format
+  if (!isValidEmail(value)) {
+    showError(emailInput, emailError, 'Please enter a valid email address.');
     return false;
   }
+
+  return true;
 }
 
 /**
