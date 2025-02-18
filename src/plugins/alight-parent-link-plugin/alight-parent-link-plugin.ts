@@ -1,4 +1,4 @@
-// src/plugins/alight-link-parent-plugin/alight-link-parent-plugin.ts
+// src/plugins/alight-parent-link-plugin/alight-parent-link-plugin.ts
 /**
  * A CKEditor plugin that provides a dropdown menu for different types of link insertions.
  * This parent plugin coordinates multiple child link plugins (email, document, generic, etc.).
@@ -13,10 +13,10 @@ import View from '@ckeditor/ckeditor5-ui/src/view';
 import ToolBarIcon from './assets/icon-link.svg';
 import { Locale } from '@ckeditor/ckeditor5-utils';
 
-export default class AlightLinkParentPluginUI extends Plugin {
+export default class AlightParentLinkPluginUI extends Plugin {
   // Define the plugin name for CKEditor registration
   static get pluginName() {
-    return 'AlightLinkParentPluginUI';
+    return 'AlightParentLinkPluginUI';
   }
 
   // Specify the required child plugins that this parent plugin depends on
@@ -40,7 +40,7 @@ export default class AlightLinkParentPluginUI extends Plugin {
     const t = editor.t;
 
     // Register the dropdown component factory
-    editor.ui.componentFactory.add('alightLinkParentPlugin', (locale) => {
+    editor.ui.componentFactory.add('alightParentLinkPlugin', (locale) => {
       const dropdown = createDropdown(locale);
       dropdown.panelView.children.add(this._createListView(locale, dropdown));
       this._configureDropdown(dropdown);

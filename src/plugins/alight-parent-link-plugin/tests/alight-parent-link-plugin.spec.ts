@@ -1,11 +1,11 @@
-// src/plugins/alight-link-parent-plugin/tests/alight-link-parent-plugin.spec .ts
-import AlightLinkParentPluginUI from './../alight-link-parent-plugin';
+// src/plugins/alight-parent-link-plugin/tests/alight-parent-link-plugin.spec.ts
+import AlightParentLinkPluginUI from '../alight-parent-link-plugin';
 import { Editor } from '@ckeditor/ckeditor5-core';
 import { DropdownView } from '@ckeditor/ckeditor5-ui';
 import { Locale } from '@ckeditor/ckeditor5-utils';
 
-describe('AlightLinkParentPluginUI', () => {
-  let plugin: AlightLinkParentPluginUI;
+describe('AlightParentLinkPluginUI', () => {
+  let plugin: AlightParentLinkPluginUI;
   let editor: any;
   let dropdown: DropdownView;
 
@@ -36,19 +36,19 @@ describe('AlightLinkParentPluginUI', () => {
     };
 
     // Initialize plugin
-    plugin = new AlightLinkParentPluginUI(editor);
+    plugin = new AlightParentLinkPluginUI(editor);
     plugin.init();
   });
 
   describe('pluginName', () => {
     it('should return correct plugin name', () => {
-      expect(AlightLinkParentPluginUI.pluginName).toBe('AlightLinkParentPluginUI');
+      expect(AlightParentLinkPluginUI.pluginName).toBe('AlightParentLinkPluginUI');
     });
   });
 
   describe('requires', () => {
     it('should return required plugins', () => {
-      expect(AlightLinkParentPluginUI.requires).toEqual([
+      expect(AlightParentLinkPluginUI.requires).toEqual([
         'AlightEmailLinkPlugin',
         'AlightEmailLinkPluginUI',
         'AlightExistingDocumentLinkPlugin',
@@ -66,7 +66,7 @@ describe('AlightLinkParentPluginUI', () => {
   describe('init()', () => {
     it('should register component factory', () => {
       expect(editor.ui.componentFactory.add).toHaveBeenCalledWith(
-        'alightLinkParentPlugin',
+        'alightParentLinkPlugin',
         jasmine.any(Function)
       );
     });
