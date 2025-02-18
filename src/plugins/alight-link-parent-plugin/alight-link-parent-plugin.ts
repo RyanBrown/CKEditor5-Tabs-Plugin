@@ -26,145 +26,94 @@ export default class AlightLinkParentPluginUI extends Plugin {
   init() {
     const editor = this.editor;
     const t = editor.t;
-    // Debug: Log available plugins and commands
-    console.log('Available plugins:', Array.from(editor.plugins));
-    console.log('Available commands:', Array.from(editor.commands.names()));
 
     editor.ui.componentFactory.add('alightLinkParentPlugin', (locale) => {
-      const dropdown = this._createDropdown(locale);
-      const listView = this._createListView(locale, dropdown);
-
-      // Add ListView to dropdown panel
-      dropdown.panelView.children.add(listView);
-
-      // Configure dropdown behavior
-      this._configureDropdownBehavior(dropdown);
-
+      const dropdown = createDropdown(locale);
+      dropdown.panelView.children.add(this._createListView(locale, dropdown));
+      this._configureDropdown(dropdown);
       return dropdown;
     });
   }
 
-  private _createDropdown(locale: Locale | undefined) {
+  private _configureDropdown(dropdown: DropdownView) {
     const t = this.editor.t;
-    const dropdown = createDropdown(locale);
-
-    // Configure dropdown
-    dropdown.set({
-      class: 'ck-dropdown ck-alight-link-dropdown',
-      // panelPosition: 'sw'
-    });
-
-    // Configure button
     const buttonView = dropdown.buttonView;
     buttonView.set({
       icon: ToolBarIcon,
       label: t('Parent Link'),
       tooltip: true,
-      withText: true,
+      withText: true
     });
 
-    // Bind dropdown enabled state to command availability
-    const publicLinkCommand = this.editor.commands.get('alightPublicLinkPlugin');
-    const predefinedLinkCommand = this.editor.commands.get('alightPredefinedLinkPlugin');
-    if (publicLinkCommand && predefinedLinkCommand) {
+    dropdown.set({ class: 'ck-dropdown ck-alight-link-dropdown' });
+
+    // Bind dropdown state to command availability
+    const publicCommand = this.editor.commands.get('alightPublicLinkPlugin');
+    const predefinedCommand = this.editor.commands.get('alightPredefinedLinkPlugin');
+    if (publicCommand && predefinedCommand) {
       dropdown.bind('isEnabled').to(
-        publicLinkCommand,
-        'isEnabled',
-        predefinedLinkCommand,
-        'isEnabled',
+        publicCommand, 'isEnabled',
+        predefinedCommand, 'isEnabled',
         (publicEnabled, predefinedEnabled) => publicEnabled || predefinedEnabled
       );
     }
 
-    return dropdown;
+    dropdown.on('change:isOpen', () => {
+      if (!dropdown.isOpen) this.editor.editing.view.focus();
+    });
+
+    // Improve keyboard navigation
+    dropdown.keystrokes.set('arrowdown', (data: any, cancel: () => void) => {
+      if (dropdown.isOpen) {
+        dropdown.panelView.focus();
+        cancel();
+      }
+    });
   }
 
-  private _createListView(locale: Locale | undefined, dropdown: DropdownView) {
-    const t = this.editor.t;
+  private _createListView(locale: Locale | undefined, dropdown: DropdownView): ListView {
     const listView = new ListView(locale);
-
-    // Add header
-    const headerView = this._createHeaderView(locale);
-    listView.items.add(headerView);
+    listView.items.add(this._createHeaderView(locale));
     listView.items.add(new ListSeparatorView(locale));
 
     // Define child plugins
     const childPlugins = [
-      {
-        label: t('Public Link'),
-        command: 'alightPublicLinkPlugin',
-        pluginName: 'AlightPublicLinkPluginUI',
-        // icon: ToolBarIcon
-      },
-      {
-        label: t('Predefined Link'),
-        command: 'alightPredefinedLinkPlugin',
-        pluginName: 'AlightPredefinedLinkPluginUI',
-        // icon: ToolBarIcon
-      }
+      { label: 'Public Link', command: 'alightPublicLinkPlugin', pluginName: 'AlightPublicLinkPluginUI' },
+      { label: 'Predefined Link', command: 'alightPredefinedLinkPlugin', pluginName: 'AlightPredefinedLinkPluginUI' }
     ];
 
-    // Add plugin options
-    childPlugins.forEach(item => {
-      const listItem = this._createListItem(locale, item, dropdown);
-      listView.items.add(listItem);
+    // Create and add child plugin buttons
+    childPlugins.forEach((plugin) => {
+      listView.items.add(this._createListItem(locale, plugin, dropdown));
     });
 
     return listView;
   }
 
-  private _createHeaderView(locale: Locale | undefined) {
+  private _createHeaderView(locale: Locale | undefined): View {
     const t = this.editor.t;
     const headerView = new View(locale);
-
     headerView.setTemplate({
       tag: 'div',
       attributes: {
-        class: ['ck', 'ck-dropdown__header'].join(' '),
+        class: 'ck ck-dropdown__header',
         style: 'padding: 2px 16px 4px; font-weight: 700; color: var(--ck-color-dropdown-header-text)'
       },
-      children: [
-        {
-          text: t('Choose Link Type')
-        }
-      ]
+      children: [{ text: t('Choose Link Type') }]
     });
-
     return headerView;
   }
 
-  private _createListItem(
-    locale: Locale | undefined,
-    item: {
-      label: string;
-      command: string;
-      pluginName: string;
-      icon: any;
-    },
-    dropdown: DropdownView
-  ) {
+  private _createListItem(locale: Locale | undefined, item: { label: string; command: string; pluginName: string }, dropdown: DropdownView): ListItemView {
     const listItem = new ListItemView(locale);
-    listItem.set({
-      // class: ['ck', 'ck-list__item'].join(' ')
-    });
-
     const button = new ButtonView(locale);
-    button.set({
-      label: item.label,
-      icon: item.icon,
-      withText: true,
-      // class: ['ck', 'ck-button', 'ck-button-action'].join(' '),
-      isToggleable: false
-    });
 
-    // Bind event directly to execute command and show modal
+    button.set({ label: item.label, withText: true });
+
+    // Execute child plugin command on click
     button.on('execute', () => {
-      const command = this.editor.commands.get(item.command);
-      console.log('Button clicked, command:', item.command);
-      console.log('Plugin name:', item.pluginName);
-
       dropdown.isOpen = false;
-
+      const command = this.editor.commands.get(item.command);
       if (command) {
         try {
           const plugin = this.editor.plugins.get(item.pluginName);
@@ -179,33 +128,11 @@ export default class AlightLinkParentPluginUI extends Plugin {
       }
     });
 
-    // Bind button state to command state
+    // Bind button state to command availability
     const command = this.editor.commands.get(item.command);
-    if (command) {
-      button.bind('isEnabled').to(command);
-    }
+    if (command) button.bind('isEnabled').to(command);
 
     listItem.children.add(button);
     return listItem;
-  }
-
-  private _configureDropdownBehavior(dropdown: DropdownView) {
-    dropdown.on('change:isOpen', () => {
-      if (!dropdown.isOpen) {
-        this.editor.editing.view.focus();
-      }
-    });
-
-    // Handle keyboard navigation
-    dropdown.keystrokes.set('arrowdown', (data: any, cancel: () => void) => {
-      if (dropdown.isOpen) {
-        dropdown.panelView.focus();
-        cancel();
-      }
-    });
-  }
-
-  override destroy() {
-    super.destroy();
   }
 }
