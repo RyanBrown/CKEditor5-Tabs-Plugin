@@ -1,56 +1,57 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
-import { ButtonView, createDropdown, addListToDropdown, DropdownButtonView, DropdownView } from '@ckeditor/ckeditor5-ui';
+import { DropdownButtonView, DropdownView, SplitButtonView, createDropdown, ButtonView, View } from '@ckeditor/ckeditor5-ui';
 import { Collection } from '@ckeditor/ckeditor5-utils';
+import Model from '@ckeditor/ckeditor5-ui/src/model';
+import ToolBarIcon from './assets/icon-link.svg';
+
 
 export default class AlightLinkParentPlugin extends Plugin {
-  static get pluginName() {
-    return 'AlightLinkParentPlugin';
+  static get requires() {
+    return ['AlightPublicLinkPlugin', 'AlightPredefinedLinkPlugin'];
   }
 
   init() {
     const editor = this.editor;
     const t = editor.t;
 
-    const childPlugins = [
-      { name: 'AlightPublicLinkPlugin', label: t('Public Link'), command: 'alightPublicLinkPlugin' },
-      { name: 'AlightPredefinedLinkPlugin', label: t('Predefined Link'), command: 'alightPredefinedLinkPlugin' }
-    ];
-
-    editor.ui.componentFactory.add('alightLinkParentPlugin', (locale) => {
+    // Create a dropdown button
+    editor.ui.componentFactory.add('alightLinkParentPlugin', locale => {
       const dropdown = createDropdown(locale);
-      const dropdownButton = dropdown.buttonView;
-      dropdownButton.set({
-        label: t('Parent Plugin'),
-        withText: true,
-        tooltip: true
-      });
+      const items = new Collection();
 
-      const itemCollection = new Collection();
+      // Define child plugins & their commands
+      const childPlugins = [
+        { name: 'AlightPublicLinkPlugin', label: t('Public Link'), command: 'alightPublicLinkPlugin' },
+        { name: 'AlightPredefinedLinkPlugin', label: t('Predefined Link'), command: 'alightPredefinedLinkPlugin' }
+      ];
 
-      childPlugins.forEach(child => {
+      childPlugins.forEach(plugin => {
         const button = new ButtonView(locale);
         button.set({
-          label: child.label,
+          label: plugin.label,
           withText: true
         });
 
         button.on('execute', () => {
-          editor.execute(child.command);
+          editor.execute(plugin.command);
           editor.editing.view.focus();
         });
 
-        itemCollection.add({ type: 'button', model: button });
+        items.add(button);
       });
 
-      const listDropdownItems = new Collection();
-      itemCollection.forEach(item => {
-        listDropdownItems.add({
-          type: 'button',
-          model: item.model
-        });
+      // Configure dropdown button
+      dropdown.buttonView.set({
+        icon: ToolBarIcon,
+        label: 'Parent Dropdown',
+        tooltip: true,
+        withText: true
       });
 
-      addListToDropdown(dropdown, listDropdownItems);
+      // Add buttons to dropdown panel
+      items.forEach(button => {
+        dropdown.panelView.children.add(button as any as View<HTMLElement>);
+      });
 
       return dropdown;
     });
