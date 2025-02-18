@@ -28,9 +28,8 @@ export class ContentManager implements LinkManager {
     return `
       <h3>Language</h3>
       ${this.createCardHTML(`
-          <label for="language-select">Language</label>
-          <div id="language-select-container"></div>
-          <div class="error-message">Choose a language to continue.</div>
+        <div id="language-select-container"></div>
+        <div class="error-message">Choose a language to continue.</div>
       `)}
     `;
   }
@@ -73,28 +72,32 @@ export class ContentManager implements LinkManager {
   }
 
   private createFileInputHTML(): string {
+    const acceptedFileTypes = '.doc,.docx,.xls,.xlsx,.xlsm,.ppt,.pptx,.pdf';
+    const supportedFileTypes = ['doc', 'docx', 'xls', 'xlsx', 'xlsm', 'ppt', 'pptx', 'pdf'];
+
     return `
       <h3>Document & Title</h3>
       ${this.createCardHTML(`
-        <input
-          type="file"
-          placeholder="No file chosen"
-          class="cka-file-input"
-          accept=".doc, .docx, .xls, .xlsx, .xlsm, .ppt, .pptx, .pdf" />
+        <input 
+          accept="${acceptedFileTypes}"
+          class="cka-input-file"
+          placeholder="No file chosen" 
+          type="file" 
+        />
         <p>
           <em class="control-footer">
-            <strong>Supported file types:</strong> .doc, .docx, .xls, .xlsx, .xlsm, .ppt, .pptx, .pdf
+            <strong>Supported file types:</strong> ${supportedFileTypes.join(', ')}
           </em>
         </p>
         <div class="error-message">Choose a file.</div>
         <div class="error-message">Choose a file less than 5MB.</div>
 
         <input
-          type="text"
-          name="documentTitle"
           class="cka-input-text"
           maxlength="250"
-          value="${this.formData.documentTitle}" 
+          name="documentTitle"
+          type="text"
+          value="${this.formData.documentTitle}"
         />
         <span class="control-footer">250 characters remaining</span>
         <div class="control-footer">
@@ -111,9 +114,9 @@ export class ContentManager implements LinkManager {
       <h3>Search Criteria</h3>
       ${this.createCardHTML(`
         <input
-          type="text"
           class="cka-input-text"
           placeholder="Use , for separator" value="${this.formData.searchTags.join(', ')}"
+          type="text"
         />
         <span class="control-footer">
           Add search tags to improve the relevancy of search results. 
