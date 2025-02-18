@@ -56,8 +56,12 @@ export default class AlightLinkParentPluginUI extends Plugin {
         button.set({ label: item.label, withText: true });
 
         button.on('execute', () => {
-          editor.execute(item.command);
-          editor.editing.view.focus();
+          if (editor.commands.get(item.command)) {
+            editor.execute(item.command);
+            editor.editing.view.focus();
+          } else {
+            console.warn(`Command "${item.command}" is not registered.`);
+          }
         });
 
         listItem.children.add(button);
