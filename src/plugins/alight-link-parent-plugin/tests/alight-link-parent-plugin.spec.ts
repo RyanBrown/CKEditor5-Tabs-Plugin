@@ -49,16 +49,16 @@ describe('AlightLinkParentPluginUI', () => {
   describe('requires', () => {
     it('should return required plugins', () => {
       expect(AlightLinkParentPluginUI.requires).toEqual([
+        'AlightEmailLinkPlugin',
+        'AlightEmailLinkPluginUI',
         'AlightExistingDocumentLinkPlugin',
         'AlightExistingDocumentLinkPluginUI',
+        'AlightGenericLinkPlugin',
+        'AlightGenericLinkPluginUI',
         'AlightNewDocumentLinkPlugin',
         'AlightNewDocumentLinkPluginUI',
         'AlightPredefinedLinkPlugin',
         'AlightPredefinedLinkPluginUI',
-        'AlightGenericLinkPlugin',
-        'AlightGenericLinkPluginUI',
-        'AlightEmailLinkPlugin',
-        'AlightEmailLinkPluginUI',
       ]);
     });
   });
