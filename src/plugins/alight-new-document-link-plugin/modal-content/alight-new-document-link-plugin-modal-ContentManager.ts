@@ -15,6 +15,7 @@ export class ContentManager implements LinkManager {
   private searchTagsChips: CkAlightChipsMenu | null = null;
   private formValidator: FormValidator;
   private formSubmissionHandler: FormSubmissionHandler;
+  private hasUserInteracted = false;
 
   private formData = {
     language: 'en',
@@ -61,7 +62,7 @@ export class ContentManager implements LinkManager {
             accept="${acceptedFileTypes}"
             class="cka-input-file"
             id="file-input"
-            placeholder="No file chosen" 
+            name="file"
             type="file" 
             required
           />
@@ -190,6 +191,7 @@ export class ContentManager implements LinkManager {
       onChange: (selectedValue) => {
         if (selectedValue && typeof selectedValue === 'string') {
           this.formData.language = selectedValue;
+          this.hasUserInteracted = true;
           this.validateAndUpdateField('language', selectedValue);
         }
       }
@@ -198,6 +200,8 @@ export class ContentManager implements LinkManager {
   }
 
   private validateAndUpdateField(fieldName: string, value: any): void {
+    if (!this.hasUserInteracted) return;
+
     const validation = this.formValidator.validateField(fieldName, value);
 
     if (!this.container) return;
@@ -224,12 +228,9 @@ export class ContentManager implements LinkManager {
     this.updateSubmitButtonState();
   }
 
-  private hasUserInteracted = false;
-
   public validateForm(): ValidationResult {
     const validation = this.formValidator.validateForm(this.formData);
 
-    // Only show validation errors if user has interacted with the form
     if (this.hasUserInteracted && !validation.isValid && validation.errors && this.container) {
       // Clear all existing error messages first
       this.container.querySelectorAll('.error-message').forEach(msg => {
@@ -249,27 +250,10 @@ export class ContentManager implements LinkManager {
     return validation;
   }
 
-  public async submitForm(): Promise<any> {
-    const validation = this.validateForm();
-
-    if (!validation.isValid) {
-      // Don't throw error, just return early since errors are displayed in UI
-      return;
-    }
-
-    const result = await this.formSubmissionHandler.submitForm(this.formData);
-
-    if (!result.success) {
-      throw new Error(result.error || 'Failed to submit form');
-    }
-
-    return result.data;
-  }
-
   private updateSubmitButtonState(): void {
     if (!this.modalDialog) return;
 
-    const validation = this.validateForm();
+    const validation = this.formValidator.validateForm(this.formData);
     const submitButton = this.modalDialog.element?.querySelector('.cka-button-primary');
 
     if (submitButton) {
@@ -281,7 +265,7 @@ export class ContentManager implements LinkManager {
   private attachEventListeners(): void {
     if (!this.container) return;
 
-    // Add this handler for first interaction
+    // Add form interaction listeners
     const form = this.container.querySelector('form');
     if (form) {
       form.addEventListener('change', () => {
@@ -292,6 +276,40 @@ export class ContentManager implements LinkManager {
       });
     }
 
+    // File input
+    const fileInput = this.container.querySelector('#file-input');
+    if (fileInput instanceof HTMLInputElement) {
+      console.log('Attaching file input listener');
+
+      fileInput.addEventListener('change', (e) => {
+        console.log('File input change event triggered');
+        const input = e.target as HTMLInputElement;
+        const file = input.files?.[0];
+        console.log('Selected file:', file);
+
+        // Update the wrapper text to show selected filename
+        const wrapper = input.closest('.cka-file-input-wrapper');
+        if (wrapper) {
+          wrapper.setAttribute('data-text', file ? file.name : 'No file chosen');
+        }
+
+        this.formData.file = file || null;
+        this.hasUserInteracted = true;
+        this.validateAndUpdateField('file', file);
+
+        // Update button state after file selection
+        this.updateSubmitButtonState();
+      });
+
+      // Add click handler to ensure file input is clickable
+      const wrapper = fileInput.closest('.cka-file-input-wrapper');
+      if (wrapper) {
+        wrapper.addEventListener('click', () => {
+          fileInput.click();
+        });
+      }
+    }
+
     // Initialize search tags chips
     const searchTagsContainer = this.container.querySelector('#search-tags-chips');
     if (!searchTagsContainer) {
@@ -300,19 +318,16 @@ export class ContentManager implements LinkManager {
     }
 
     try {
-      // Create a unique ID for the container if it doesn't have one
       if (!searchTagsContainer.id) {
         searchTagsContainer.id = 'search-tags-' + Date.now();
       }
 
       this.searchTagsChips = new CkAlightChipsMenu(searchTagsContainer.id);
 
-      // Set initial chips if there are any
       if (this.formData.searchTags.length > 0) {
         this.searchTagsChips.setChips(this.formData.searchTags);
       }
 
-      // Add event listeners for chips
       searchTagsContainer.addEventListener('add', (e: Event) => {
         const customEvent = e as CustomEvent;
         if (!this.formData.searchTags.includes(customEvent.detail)) {
@@ -332,21 +347,12 @@ export class ContentManager implements LinkManager {
       console.warn('Failed to initialize search tags:', error);
     }
 
-    // File input
-    const fileInput = this.container.querySelector('#file-input');
-    if (fileInput instanceof HTMLInputElement) {
-      fileInput.addEventListener('change', (e) => {
-        const file = (e.target as HTMLInputElement).files?.[0];
-        this.formData.file = file || null;
-        this.validateAndUpdateField('file', file);
-      });
-    }
-
     // Title input
     const titleInput = this.container.querySelector('#document-title');
     if (titleInput instanceof HTMLInputElement) {
       titleInput.addEventListener('input', (e) => {
         this.formData.documentTitle = (e.target as HTMLInputElement).value;
+        this.hasUserInteracted = true;
         this.validateAndUpdateField('documentTitle', this.formData.documentTitle);
         this.updateCharacterCount(titleInput);
       });
@@ -357,6 +363,7 @@ export class ContentManager implements LinkManager {
     if (description instanceof HTMLTextAreaElement) {
       description.addEventListener('input', (e) => {
         this.formData.description = (e.target as HTMLTextAreaElement).value;
+        this.hasUserInteracted = true;
         this.validateAndUpdateField('description', this.formData.description);
       });
     }
@@ -387,6 +394,7 @@ export class ContentManager implements LinkManager {
     const checkbox = this.container?.querySelector(`#${id}`) as CkAlightCheckbox;
     if (checkbox) {
       checkbox.addEventListener('change', (e: Event) => {
+        this.hasUserInteracted = true;
         const customEvent = e as CustomEvent;
         if (value) {
           // Handle array-based checkboxes (like categories)
@@ -423,24 +431,47 @@ export class ContentManager implements LinkManager {
   public renderContent(container: HTMLElement): void {
     this.container = container;
     container.innerHTML = `
-    ${this.createLanguageSelectHTML()}
-    ${this.createFileInputHTML()}
-    ${this.createSearchCriteriaHTML()}
-    ${this.createCheckboxGroupHTML()}
-    <p class="mt-4"><b>Note:</b> Updates will not be reflected in Alight Worklife search results in QA/QC until tomorrow.</p>
-  `;
+      <form novalidate>
+        ${this.createLanguageSelectHTML()}
+        ${this.createFileInputHTML()}
+        ${this.createSearchCriteriaHTML()}
+        ${this.createCheckboxGroupHTML()}
+        <p class="mt-4"><b>Note:</b> Updates will not be reflected in Alight Worklife search results in QA/QC until tomorrow.</p>
+      </form>
+    `;
+
+    // Initially hide all error messages
+    container.querySelectorAll('.error-message').forEach(msg => {
+      msg.classList.remove('visible');
+    });
 
     requestAnimationFrame(() => {
       this.initializeLanguageSelect();
       this.attachEventListeners();
 
-      // Only update submit button state without showing validation errors
+      // Initialize submit button state without showing validation errors
       const submitButton = this.modalDialog?.element?.querySelector('.cka-button-primary');
       if (submitButton) {
         submitButton.disabled = true;
         submitButton.classList.add('cka-button-disabled');
       }
     });
+  }
+
+  public async submitForm(): Promise<any> {
+    const validation = this.validateForm();
+
+    if (!validation.isValid) {
+      return;
+    }
+
+    const result = await this.formSubmissionHandler.submitForm(this.formData);
+
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to submit form');
+    }
+
+    return result.data;
   }
 
   public resetForm(): void {
@@ -456,6 +487,8 @@ export class ContentManager implements LinkManager {
       worklifeLink: false,
       showInSearch: true
     };
+
+    this.hasUserInteracted = false;
 
     // Reset UI components
     if (this.languageSelect) {
@@ -500,7 +533,7 @@ export class ContentManager implements LinkManager {
           description.value = '';
         }
 
-        // Reset checkboxes - use setAttribute instead of setValue
+        // Reset checkboxes
         const checkboxes = this.container.querySelectorAll('cka-checkbox') as NodeListOf<HTMLElement>;
         checkboxes.forEach(checkbox => {
           if (checkbox.id === 'showInSearch') {
@@ -533,7 +566,11 @@ export class ContentManager implements LinkManager {
     }
 
     // Update submit button state
-    this.updateSubmitButtonState();
+    const submitButton = this.modalDialog?.element?.querySelector('.cka-button-primary');
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.classList.add('cka-button-disabled');
+    }
   }
 
   public getFormData(): any {
