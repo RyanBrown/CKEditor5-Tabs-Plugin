@@ -107,11 +107,11 @@
   width: 16px;
 
   &:hover {
-    color: #343a40;
+    color: rgba($color: var(--neutral-white), $alpha: 0.5);
   }
 
   &:focus {
     outline: none;
-    color: #343a40;
+    color: rgba($color: var(--neutral-white), $alpha: 0.5);
   }
 }

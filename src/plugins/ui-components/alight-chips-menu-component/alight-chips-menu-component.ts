@@ -77,11 +77,32 @@ export class CkAlightChipsMenu {
   }
 
   private handleKeyDown(event: KeyboardEvent): void {
-    if (event.key === 'Enter' && this.inputElement?.value.trim()) {
-      event.preventDefault();
-      this.addChip(this.inputElement.value.trim());
-      this.inputElement.value = '';
+    if (this.inputElement) {
+      if (event.key === 'Enter' && this.inputElement.value.trim()) {
+        event.preventDefault();
+        this.processInputValue(this.inputElement.value);
+        this.inputElement.value = '';
+      } else if (event.key === ',' && this.inputElement.value.trim()) {
+        event.preventDefault();
+        this.processInputValue(this.inputElement.value);
+        this.inputElement.value = '';
+      }
     }
+  }
+
+  private processInputValue(value: string): void {
+    // Split by commas and filter out empty strings
+    const chips = value
+      .split(',')
+      .map(text => text.trim())
+      .filter(text => text.length > 0);
+
+    // Add each chip
+    chips.forEach(chip => {
+      if (!this.chips.includes(chip)) {
+        this.addChip(chip);
+      }
+    });
   }
 
   public addChip(text: string): void {
