@@ -54,10 +54,6 @@
   min-width: 120px;
   outline: none;
   padding: mixins.toRem(9) mixins.toRem(16);
-
-  &::placeholder {
-    color: #6c757d;
-  }
 }
 
 .cka-chip {
@@ -107,11 +103,11 @@
   width: 16px;
 
   &:hover {
-    color: rgba($color: var(--neutral-white), $alpha: 0.5);
+    color: rgba(#ffffff, 0.5);
   }
 
   &:focus {
+    color: rgba(#ffffff, 0.5);
     outline: none;
-    color: rgba($color: var(--neutral-white), $alpha: 0.5);
   }
 }

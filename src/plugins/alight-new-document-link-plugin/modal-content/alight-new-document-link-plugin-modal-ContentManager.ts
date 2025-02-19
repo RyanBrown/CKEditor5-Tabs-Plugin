@@ -136,8 +136,9 @@ export class ContentManager implements LinkManager {
       ${this.createCardHTML(`
         <label for="searchTags" class="cka-input-label">Search Tags (optional)</label>
         <div id="search-tags-chips" class="cka-width-half"></div>
-        <span class="cka-control-footer">
+        <span class="cka-control-footer cka-width-half">
           Add search tags to improve the relevancy of search results. 
+          Use commas to separate multiple tags.
           Type your tag and press Enter to add it.
         </span>
 

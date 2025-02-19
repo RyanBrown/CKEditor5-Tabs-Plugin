@@ -45,7 +45,7 @@ export class CkAlightChipsMenu {
     this.container.innerHTML = `
       <div class="cka-chips-container">
         <div class="cka-chips-list"></div>
-        <input type="text" class="cka-chips-input" placeholder="Type and press Enter">
+        <input type="text" class="cka-chips-input" placeholder="Type and press Enter...">
       </div>
     `;
 
@@ -79,10 +79,6 @@ export class CkAlightChipsMenu {
   private handleKeyDown(event: KeyboardEvent): void {
     if (this.inputElement) {
       if (event.key === 'Enter' && this.inputElement.value.trim()) {
-        event.preventDefault();
-        this.processInputValue(this.inputElement.value);
-        this.inputElement.value = '';
-      } else if (event.key === ',' && this.inputElement.value.trim()) {
         event.preventDefault();
         this.processInputValue(this.inputElement.value);
         this.inputElement.value = '';
