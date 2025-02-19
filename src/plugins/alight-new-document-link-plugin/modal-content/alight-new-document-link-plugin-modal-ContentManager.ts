@@ -433,7 +433,7 @@ export class ContentManager implements LinkManager {
     return '';
   }
 
-  public resetSearch(): void {
+  public resetForm(): void {
     // Reset form data to initial state
     this.formData = {
       language: 'en',

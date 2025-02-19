@@ -8,7 +8,7 @@ export interface LinkManager {
   renderContent(container: HTMLElement): void;
 
   // Resets internal filters, pagination, etc.
-  resetSearch(): void;
+  resetForm(): void;
 
   // Returns the selected link.
   getSelectedLink(): { destination: string; title: string } | null;

@@ -85,7 +85,7 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
         if (this._isSubmitting) return; // Prevent multiple submissions
 
         if (label === 'Clear') {
-          this._formManager?.resetSearch();
+          this._formManager?.resetForm();
           return;
         }
 
@@ -101,7 +101,7 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
           return false;
         }
         // Reset form state when modal is closed
-        this._formManager?.resetSearch();
+        this._formManager?.resetForm();
         return true;
       });
     }
@@ -169,8 +169,13 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
       const notification = this.editor.plugins.get(Notification);
       notification.showSuccess('Document uploaded successfully');
 
-      // Close modal
-      this._modalDialog.hide();
+      // Reset the form
+      this._formManager.resetForm();
+
+      // Close modal after a short delay to ensure reset is complete
+      setTimeout(() => {
+        this._modalDialog?.hide();
+      }, 100);
 
     } catch (error) {
       // Show error using the notification system
