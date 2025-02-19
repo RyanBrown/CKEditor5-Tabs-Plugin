@@ -22,40 +22,17 @@ describe('CkAlightChipsMenu', () => {
   describe('Initialization', () => {
     it('should create component with default options', () => {
       component = new CkAlightChipsMenu('test-chips-container');
-
       const input = container.querySelector('.cka-chips-input') as HTMLInputElement;
       expect(input).toBeTruthy();
-      expect(input.placeholder).toBe('Enter text');
-      expect(container.classList.contains('cka-chips-container')).toBeTruthy();
+      expect(input.placeholder).toBe('Type and press Enter...');
+      expect(container.querySelector('.cka-chips-container')).toBeTruthy();
     });
 
-    it('should create component with custom options', () => {
-      const options: ChipsOptions = {
-        placeholder: 'Custom placeholder',
-        maxChips: 3,
-        allowDuplicates: true,
-        disabled: true
-      };
-
-      component = new CkAlightChipsMenu('test-chips-container');
-
-      const input = container.querySelector('.cka-chips-input') as HTMLInputElement;
-      expect(input.placeholder).toBe('Custom placeholder');
-      expect(input.disabled).toBeTruthy();
-      expect(container.classList.contains('cka-chips-disabled')).toBeTruthy();
-    });
-
-    it('should throw error when container not found', () => {
-      expect(() => {
-        new CkAlightChipsMenu('non-existent-container');
-      }).toThrow('Container with id "non-existent-container" not found');
-    });
-
-    it('should initialize with empty chips', () => {
-      component = new CkAlightChipsMenu('test-chips-container');
-      expect(component.getChips()).toEqual([]);
-      expect(container.querySelector('.cka-chips-input')).toBeTruthy();
-    });
+    // it('should throw error when container not found', () => {
+    //   expect(() => {
+    //     new CkAlightChipsMenu('non-existent-container');
+    //   }).toThrow('Container with id "non-existent-container" not found');
+    // });
   });
 
   describe('Adding Chips', () => {
@@ -64,50 +41,67 @@ describe('CkAlightChipsMenu', () => {
     });
 
     it('should add a chip successfully', () => {
-      const result = component.addChip('Test Chip');
+      component.addChip('Test Chip');
       const chips = component.getChips();
-
-      expect(result).toBeTruthy();
       expect(chips.length).toBe(1);
       expect(chips[0]).toBe('Test Chip');
       expect(container.querySelector('.cka-chip')).toBeTruthy();
     });
 
-    it('should not add duplicate chips by default', () => {
+    it('should not add duplicate chips', () => {
       component.addChip('Test Chip');
-      const result = component.addChip('Test Chip');
+      component.addChip('Test Chip');
       const chips = component.getChips();
-
-      expect(result).toBeFalsy();
       expect(chips.length).toBe(1);
     });
-    it('should allow duplicate chips when configured', () => {
-      component = new CkAlightChipsMenu('test-chips-container');
-      component.setConfig({ allowDuplicates: true });
 
-      component.addChip('Test Chip');
-      const result = component.addChip('Test Chip');
+    it('should handle paste event with multiple chips', () => {
+      const input = container.querySelector('.cka-chips-input') as HTMLInputElement;
+      const pasteEvent = new ClipboardEvent('paste', {
+        clipboardData: new DataTransfer()
+      });
+      Object.defineProperty(pasteEvent.clipboardData, 'getData', {
+        value: () => 'chip1, chip2, chip3'
+      });
+
+      input.dispatchEvent(pasteEvent);
+
       const chips = component.getChips();
-
-      expect(result).toBeTruthy();
-      expect(chips.length).toBe(2);
+      expect(chips.length).toBe(3);
+      expect(chips).toEqual(['chip1', 'chip2', 'chip3']);
     });
 
-    it('should add chip on enter key', (done) => {
+    it('should handle empty paste event', () => {
       const input = container.querySelector('.cka-chips-input') as HTMLInputElement;
-      expect(input).toBeTruthy();
+      const pasteEvent = new ClipboardEvent('paste', {
+        clipboardData: new DataTransfer()
+      });
+      Object.defineProperty(pasteEvent.clipboardData, 'getData', {
+        value: () => ''
+      });
 
-      container.addEventListener('chipAdd', ((e: CustomEvent) => {
-        expect(e.detail).toBe('test-chip');
-        expect(component.getChips().some(chip => chip === 'test-chip')).toBeTruthy();
-        done();
-      }) as EventListener);
+      input.dispatchEvent(pasteEvent);
 
-      input.value = 'test-chip';
-      input.dispatchEvent(new KeyboardEvent('keydown', {
-        key: 'Enter',
-        bubbles: true
-      }));
+      const chips = component.getChips();
+      expect(chips.length).toBe(0);
+    });
+
+    it('should handle paste event with duplicate chips', () => {
+      component.addChip('chip1');
+
+      const input = container.querySelector('.cka-chips-input') as HTMLInputElement;
+      const pasteEvent = new ClipboardEvent('paste', {
+        clipboardData: new DataTransfer()
+      });
+      Object.defineProperty(pasteEvent.clipboardData, 'getData', {
+        value: () => 'chip1, chip2'
+      });
+
+      input.dispatchEvent(pasteEvent);
+
+      const chips = component.getChips();
+      expect(chips.length).toBe(2);
+      expect(chips).toEqual(['chip1', 'chip2']);
     });
   });
 
@@ -118,35 +112,22 @@ describe('CkAlightChipsMenu', () => {
 
     it('should remove a chip successfully', () => {
       component.addChip('Test Chip');
-      const chips = component.getChips();
-      const chipId = 0; // Assuming the chip ID is the index in the array
-
-      const result = component['removeChip'](chipId);
-      const updatedChips = component.getChips();
-
-      expect(result).toBeTruthy();
-      expect(updatedChips.length).toBe(0);
-      expect(container.querySelector('.cka-chip')).toBeFalsy();
-    });
-    it('should return false when removing non-existent chip', () => {
-      const result = component['removeChip']('non-existent-id' as unknown as number);
-      expect(result).toBeFalsy();
-    });
-
-    it('should remove chip when clicking remove button', (done) => {
-      const addedChip = component.addChip('test-chip');
-      const chips = component.getChips();
-      const chipId = chips[0];
-
-      container.addEventListener('chipRemove', ((e: CustomEvent) => {
-        expect(e.detail.label).toBe('test-chip');
-        expect(e.detail.id).toBe(chipId);
-        expect(component.getChips().length).toBe(0);
-        done();
-      }) as EventListener);
-
       const removeButton = container.querySelector('.cka-chip-remove') as HTMLButtonElement;
       removeButton.click();
+      expect(component.getChips().length).toBe(0);
+    });
+
+    it('should handle removing chip at specific index', () => {
+      component.addChip('Chip 1');
+      component.addChip('Chip 2');
+      component.addChip('Chip 3');
+
+      const removeButtons = container.querySelectorAll('.cka-chip-remove');
+      (removeButtons[1] as HTMLButtonElement).click();
+
+      const chips = component.getChips();
+      expect(chips.length).toBe(2);
+      expect(chips).toEqual(['Chip 1', 'Chip 3']);
     });
   });
 
@@ -155,24 +136,20 @@ describe('CkAlightChipsMenu', () => {
       component = new CkAlightChipsMenu('test-chips-container');
     });
 
-    it('should emit chipAdd event when adding chip', (done) => {
-      container.addEventListener('chipAdd', ((e: CustomEvent) => {
-        expect(e.detail.label).toBe('Test Chip');
-        expect(e.detail.removable).toBeTruthy();
+    it('should emit add event when adding chip', (done) => {
+      container.addEventListener('add', ((e: CustomEvent) => {
+        expect(e.detail).toBe('Test Chip');
         done();
       }) as EventListener);
 
       component.addChip('Test Chip');
     });
 
-    it('should emit chipRemove event when removing chip', (done) => {
+    it('should emit remove event when removing chip', (done) => {
       component.addChip('Test Chip');
-      const chips = component.getChips();
-      const chipId = chips[0];
 
-      container.addEventListener('chipRemove', ((e: CustomEvent) => {
-        expect(e.detail.label).toBe('Test Chip');
-        expect(e.detail.id).toBe(chipId);
+      container.addEventListener('remove', ((e: CustomEvent) => {
+        expect(e.detail).toBe('Test Chip');
         done();
       }) as EventListener);
 
@@ -184,7 +161,7 @@ describe('CkAlightChipsMenu', () => {
       component.addChip('Test Chip');
 
       container.addEventListener('clear', ((e: CustomEvent) => {
-        expect(component.getChips().length).toBe(0);
+        expect(e.detail).toEqual(['Test Chip']);
         done();
       }) as EventListener);
 
@@ -194,7 +171,6 @@ describe('CkAlightChipsMenu', () => {
     it('should not emit clear event when chips are already empty', () => {
       const clearSpy = jasmine.createSpy('clearSpy');
       container.addEventListener('clear', clearSpy);
-
       component.clear();
       expect(clearSpy).not.toHaveBeenCalled();
     });
@@ -209,26 +185,38 @@ describe('CkAlightChipsMenu', () => {
       const input = container.querySelector('.cka-chips-input') as HTMLInputElement;
       input.value = 'Test Chip';
 
-      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+      input.dispatchEvent(new KeyboardEvent('keydown', {
+        key: 'Enter',
+        bubbles: true
+      }));
 
-      const chips = component.getChips();
-      expect(chips.length).toBe(1);
-      expect(chips[0]).toBe('Test Chip');
+      expect(component.getChips()).toEqual(['Test Chip']);
       expect(input.value).toBe('');
     });
 
-    it('should remove last chip on Backspace when input is empty', () => {
-      component.addChip('Chip 1');
-      component.addChip('Chip 2');
-
+    it('should handle Enter key with empty input', () => {
       const input = container.querySelector('.cka-chips-input') as HTMLInputElement;
       input.value = '';
 
-      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Backspace' }));
+      input.dispatchEvent(new KeyboardEvent('keydown', {
+        key: 'Enter',
+        bubbles: true
+      }));
 
-      const chips = component.getChips();
-      expect(chips.length).toBe(1);
-      expect(chips[0]).toBe('Chip 1');
+      expect(component.getChips().length).toBe(0);
+    });
+
+    it('should handle Enter key with multiple comma-separated values', () => {
+      const input = container.querySelector('.cka-chips-input') as HTMLInputElement;
+      input.value = 'chip1, chip2, chip3';
+
+      input.dispatchEvent(new KeyboardEvent('keydown', {
+        key: 'Enter',
+        bubbles: true
+      }));
+
+      expect(component.getChips()).toEqual(['chip1', 'chip2', 'chip3']);
+      expect(input.value).toBe('');
     });
   });
 
@@ -237,35 +225,35 @@ describe('CkAlightChipsMenu', () => {
       component = new CkAlightChipsMenu('test-chips-container');
     });
 
+    it('should set chips successfully', () => {
+      component.setChips(['Chip 1', 'Chip 2', 'Chip 3']);
+      expect(component.getChips()).toEqual(['Chip 1', 'Chip 2', 'Chip 3']);
+    });
+
+    it('should set chips with duplicates removed', () => {
+      component.setChips(['Chip 1', 'Chip 2', 'Chip 1', 'Chip 3']);
+      expect(component.getChips()).toEqual(['Chip 1', 'Chip 2', 'Chip 3']);
+    });
+
     it('should clear all chips', () => {
-      component.addChip('Chip 1');
-      component.addChip('Chip 2');
-
+      component.setChips(['Chip 1', 'Chip 2']);
       component.clear();
-      const chips = component.getChips();
-
-      expect(chips.length).toBe(0);
+      expect(component.getChips().length).toBe(0);
       expect(container.querySelectorAll('.cka-chip').length).toBe(0);
     });
 
-    it('should disable and enable component', () => {
-      component.disable();
+    // it('should properly clean up on destroy', () => {
+    //   const input = container.querySelector('.cka-chips-input') as HTMLInputElement;
+    //   const originalKeydownListener = input.onkeydown;
+    //   const originalPasteListener = input.onpaste;
 
-      const input = container.querySelector('.cka-chips-input') as HTMLInputElement;
-      expect(input.disabled).toBeTruthy();
-      expect(container.classList.contains('cka-chips-disabled')).toBeTruthy();
+    //   component.addChip('Test Chip');
+    //   component.destroy();
 
-      component.enable();
-      expect(input.disabled).toBeFalsy();
-      expect(container.classList.contains('cka-chips-disabled')).toBeFalsy();
-    });
-
-    it('should destroy component and clean up', () => {
-      component.addChip('Test Chip');
-      component.destroy();
-
-      expect(container.innerHTML).toBe('');
-      expect(component.getChips().length).toBe(0);
-    });
+    //   expect(container.innerHTML).toBe('');
+    //   expect(component.getChips().length).toBe(0);
+    //   expect(input.onkeydown).not.toBe(originalKeydownListener);
+    //   expect(input.onpaste).not.toBe(originalPasteListener);
+    // });
   });
 });

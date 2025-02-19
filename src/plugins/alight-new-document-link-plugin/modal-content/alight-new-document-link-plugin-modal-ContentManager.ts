@@ -210,27 +210,33 @@ export class ContentManager implements LinkManager {
     // Initialize search tags chips
     const searchTagsContainer = this.container.querySelector('#search-tags-chips');
     if (searchTagsContainer) {
-      this.searchTagsChips = new CkAlightChipsMenu(searchTagsContainer.id);
+      try {
+        this.searchTagsChips = new CkAlightChipsMenu('search-tags-chips');
 
-      // Set initial chips if there are any
-      if (this.formData.searchTags.length > 0) {
-        this.searchTagsChips.setChips(this.formData.searchTags);
-      }
-
-      // Listen for chip events
-      searchTagsContainer.addEventListener('add', (e: Event) => {
-        const customEvent = e as CustomEvent;
-        if (!this.formData.searchTags.includes(customEvent.detail)) {
-          this.formData.searchTags.push(customEvent.detail);
-          this.updateSubmitButtonState();
+        // Set initial chips if there are any
+        if (this.formData.searchTags.length > 0) {
+          this.searchTagsChips.setChips(this.formData.searchTags);
         }
-      });
 
-      searchTagsContainer.addEventListener('remove', (e: Event) => {
-        const customEvent = e as CustomEvent;
-        this.formData.searchTags = this.formData.searchTags.filter(tag => tag !== customEvent.detail);
-        this.updateSubmitButtonState();
-      });
+        // Add event listeners for chips
+        searchTagsContainer.addEventListener('add', (e: Event) => {
+          const customEvent = e as CustomEvent;
+          if (!this.formData.searchTags.includes(customEvent.detail)) {
+            this.formData.searchTags.push(customEvent.detail);
+          }
+        });
+
+        searchTagsContainer.addEventListener('remove', (e: Event) => {
+          const customEvent = e as CustomEvent;
+          this.formData.searchTags = this.formData.searchTags.filter(tag => tag !== customEvent.detail);
+        });
+
+        searchTagsContainer.addEventListener('clear', () => {
+          this.formData.searchTags = [];
+        });
+      } catch (error) {
+        console.warn('Failed to initialize search tags:', error);
+      }
     }
 
     // File input
@@ -468,5 +474,13 @@ export class ContentManager implements LinkManager {
 
   getSelectedLink(): { destination: string; title: string } | null {
     return this.selectedLink;
+  }
+
+  public destroy(): void {
+    if (this.searchTagsChips) {
+      this.searchTagsChips.destroy();
+      this.searchTagsChips = null;
+    }
+    // ... other cleanup code ...
   }
 }
