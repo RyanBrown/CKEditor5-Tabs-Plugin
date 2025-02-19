@@ -138,7 +138,7 @@ export class ContentManager implements LinkManager {
           rows="5" 
           placeholder="Enter description"
         >${this.formData.description}</textarea>
-        <div class="error-message block">Enter a description to continue.</div>
+        <div class="error-message">Enter a description to continue.</div>
 
         <label for="categories" class="cka-input-label">Categories (optional)</label>
         <a class="block">Choose Categories</a>
