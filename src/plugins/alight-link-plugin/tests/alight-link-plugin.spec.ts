@@ -1,1 +1,0 @@
-// src/plugins/alight-link-plugin/tests/alight-link-plugin.spec.ts
