@@ -4,7 +4,7 @@
 .cka-select {
   display: inline-block;
   font-family: var(--font-family-base);
-  font-size: 14px;
+  font-size: 1rem;
   line-height: 1.4;
   position: relative;
   width: 100%;
@@ -17,7 +17,6 @@
   .cka-select-button {
     align-items: center;
     background: var(--neutral-white);
-    // border: 1px solid #ced4da;
     border: 1px solid var(--neutral-dove-gray);
     border-radius: 0;
     cursor: pointer;

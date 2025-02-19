@@ -116,7 +116,7 @@ export class ContentManager implements LinkManager {
           name="documentTitle"
           type="text"
           value="${this.formData.documentTitle}"
-          placeholder="Enter document title"
+          placeholder="Enter document title..."
           required
         />
         <span class="cka-control-footer block">250 characters remaining</span>
@@ -150,13 +150,13 @@ export class ContentManager implements LinkManager {
           cols="30"
           required
           rows="5" 
-          placeholder="Enter description"
+          placeholder="Enter description..."
         >${this.formData.description}</textarea>
-        <div class="error-message">Enter a description to continue.</div>
+        <div class="error-message block">Enter a description to continue.</div>
 
-        <label for="categories" class="cka-input-label mt-3">Categories (optional)</label>
-        <a class="block">Choose Categories</a>
-        <div class="cka-categories-wrapper">
+        <label for="categories" class="cka-input-label">Categories (optional)</label>
+        <a href="#" class="block cka-categories-toggle">Choose Categories</a>
+        <div class="cka-categories-wrapper hidden">
           <ul class="cka-choose-categories-list">
             ${mockCategories.map(category => `
               <li>
@@ -314,6 +314,17 @@ export class ContentManager implements LinkManager {
         });
       }
     });
+
+    // Add categories toggle functionality
+    const toggleButton = this.container.querySelector('.cka-categories-toggle');
+    const categoriesWrapper = this.container.querySelector('.cka-categories-wrapper');
+
+    if (toggleButton && categoriesWrapper) {
+      toggleButton.addEventListener('click', (e: Event) => {
+        e.preventDefault();
+        categoriesWrapper.classList.toggle('hidden');
+      });
+    }
   }
 
   private updateCharacterCount(input: HTMLInputElement): void {

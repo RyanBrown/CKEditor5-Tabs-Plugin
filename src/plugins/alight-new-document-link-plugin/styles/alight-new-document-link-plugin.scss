@@ -6,6 +6,8 @@
   display: grid;
   gap: var(--spacing-l);
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  max-height: mixins.toRem(242);
+  overflow-y: auto;
   padding: var(--spacing-l);
 
   li {
@@ -36,5 +38,12 @@
   &:focus,
   &:focus-within {
     border-color: var(--primary);
+  }
+}
+
+// Checkbox categories toggle
+.cka-categories-wrapper {
+  &.hidden {
+    display: none;
   }
 }

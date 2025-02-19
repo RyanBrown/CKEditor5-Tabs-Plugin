@@ -73,3 +73,8 @@
   font-size: mixins.toRem(14);
   margin: 2rem 0 0;
 }
+
+::placeholder {
+  color: var(--gray-500);
+  font-weight: var(--font-weight-normal);
+}
