@@ -1,4 +1,4 @@
-// styles.scss
+// src/plugins/ui-components/alight-chips-menu-component/styles/alight-chips-menu-component.scss
 .cka-chips-container {
   display: inline-block;
   width: 100%;
@@ -29,7 +29,7 @@
   background-color: #fff;
   transition: border-color 0.15s ease -in -out;
 
-  &: focus-within {
+  &:focus-within {
     border-color: #80bdff;
     outline: 0;
     box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);

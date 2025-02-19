@@ -13,179 +13,123 @@ export interface ChipsOptions {
   allowDuplicates?: boolean;
   disabled?: boolean;
 }
+
 export class CkAlightChipsMenu {
-  private container!: HTMLElement;
-  private input!: HTMLInputElement;
-  private chipsList!: HTMLElement;
-  private chips: ChipItem[] = [];
-  private options: ChipsOptions;
-
-  constructor(containerId: string, options: ChipsOptions = {}) {
-    this.options = {
-      placeholder: 'Enter text',
-      maxChips: Infinity,
-      allowDuplicates: false,
-      disabled: false,
-      ...options
-    };
-
-    this.initialize(containerId);
-    this.setupEventListeners();
+  setConfig(arg0: { allowDuplicates: boolean; }) {
+    throw new Error('Method not implemented.');
   }
+  disable() {
+    throw new Error('Method not implemented.');
+  }
+  enable() {
+    throw new Error('Method not implemented.');
+  }
+  private container: HTMLElement;
+  private chips: string[] = [];
+  private inputElement: HTMLInputElement | null = null;
+  private boundHandleKeyDown: (event: KeyboardEvent) => void;
 
-  private initialize(containerId: string): void {
-    // Get or create container
-    const existingContainer = document.getElementById(containerId);
-    if (!existingContainer) {
+  constructor(containerId: string) {
+    const container = document.getElementById(containerId);
+    if (!container) {
       throw new Error(`Container with id "${containerId}" not found`);
     }
-    this.container = existingContainer;
-    this.container.classList.add('cka-chips-container');
+    this.container = container;
+    this.boundHandleKeyDown = this.handleKeyDown.bind(this);
+    this.initialize();
+  }
 
-    // Create input wrapper
-    const inputWrapper = document.createElement('div');
-    inputWrapper.classList.add('cka-chips-input-wrapper');
+  private initialize(): void {
+    this.container.innerHTML = `
+      <div class="cka-chips-container">
+        <div class="cka-chips-list"></div>
+        <input type="text" class="cka-chips-input" placeholder="Type and press Enter">
+      </div>
+    `;
 
-    // Create chips list
-    this.chipsList = document.createElement('div');
-    this.chipsList.classList.add('cka-chips-list');
-
-    // Create input
-    this.input = document.createElement('input');
-    this.input.type = 'text';
-    this.input.classList.add('cka-chips-input');
-    this.input.placeholder = this.options.placeholder || '';
-    this.input.setAttribute('aria-label', 'Add chip');
-
-    if (this.options.disabled) {
-      this.disable();
+    this.inputElement = this.container.querySelector('.cka-chips-input');
+    if (this.inputElement) {
+      this.inputElement.addEventListener('keydown', this.boundHandleKeyDown);
     }
-
-    // Append elements
-    inputWrapper.appendChild(this.chipsList);
-    inputWrapper.appendChild(this.input);
-    this.container.appendChild(inputWrapper);
   }
 
-  private setupEventListeners(): void {
-    // Input events
-    this.input.addEventListener('keydown', (e: KeyboardEvent) => {
-      if (e.key === 'Enter' && this.input.value.trim()) {
-        e.preventDefault();
-        this.addChip(this.input.value.trim());
-        this.input.value = '';
-      } else if (e.key === 'Backspace' && !this.input.value && this.chips.length > 0) {
-        this.removeChip(this.chips[this.chips.length - 1].id);
-      }
-    });
-
-    // Focus management
-    this.container.addEventListener('click', () => {
-      if (!this.options.disabled) {
-        this.input.focus();
-      }
-    });
+  private handleKeyDown(event: KeyboardEvent): void {
+    if (event.key === 'Enter' && this.inputElement?.value.trim()) {
+      event.preventDefault();
+      this.addChip(this.inputElement.value.trim());
+      this.inputElement.value = '';
+    }
   }
 
-  public addChip(label: string): boolean {
-    if (this.options.disabled) return false;
-    if (this.chips.length >= (this.options.maxChips || Infinity)) return false;
-    if (!this.options.allowDuplicates && this.chips.some(chip => chip.label === label)) return false;
-
-    const chip: ChipItem = {
-      id: `chip-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      label,
-      removable: true
-    };
-
-    this.chips.push(chip);
-    this.renderChip(chip);
-    this.dispatchEvent('chipAdd', chip);
-    return true;
+  public addChip(text: string): void {
+    if (!this.chips.includes(text)) {
+      this.chips.push(text);
+      this.renderChips();
+      this.dispatchEvent('add', text);
+    }
   }
 
-  public removeChip(chipId: string): boolean {
-    const index = this.chips.findIndex(chip => chip.id === chipId);
-    if (index === -1) return false;
-
-    const chip = this.chips[index];
+  private removeChip(index: number): void {
+    const removedChip = this.chips[index];
     this.chips.splice(index, 1);
-
-    const chipElement = this.chipsList.querySelector(`[data-chip-id="${chipId}"]`);
-    if (chipElement) {
-      chipElement.remove();
-    }
-
-    this.dispatchEvent('chipRemove', chip);
-    return true;
+    this.renderChips();
+    this.dispatchEvent('remove', removedChip);
   }
 
-  private renderChip(chip: ChipItem): void {
-    const chipElement = document.createElement('div');
-    chipElement.classList.add('cka-chip');
-    chipElement.setAttribute('data-chip-id', chip.id);
-    chipElement.setAttribute('role', 'button');
-    chipElement.setAttribute('tabindex', '0');
+  private renderChips(): void {
+    const chipsList = this.container.querySelector('.cka-chips-list');
+    if (chipsList) {
+      chipsList.innerHTML = this.chips.map((chip, index) => `
+        <div class="cka-chip">
+          <span>${chip}</span>
+          <button type="button" class="cka-chip-remove" data-index="${index}">&times;</button>
+        </div>
+      `).join('');
 
-    const labelElement = document.createElement('span');
-    labelElement.textContent = chip.label;
-    labelElement.classList.add('cka-chip-label');
-
-    chipElement.appendChild(labelElement);
-
-    if (chip.removable) {
-      const removeButton = document.createElement('button');
-      removeButton.classList.add('cka-chip-remove');
-      removeButton.setAttribute('aria-label', `Remove ${chip.label}`);
-      removeButton.innerHTML = '×';
-
-      removeButton.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.removeChip(chip.id);
+      // Add event listeners to remove buttons
+      chipsList.querySelectorAll('.cka-chip-remove').forEach(button => {
+        button.addEventListener('click', (e) => {
+          const index = parseInt((e.target as HTMLElement).dataset.index || '0', 10);
+          this.removeChip(index);
+        });
       });
-
-      chipElement.appendChild(removeButton);
     }
-
-    this.chipsList.appendChild(chipElement);
   }
 
-  private dispatchEvent(eventName: string, detail: any): void {
-    const event = new CustomEvent(eventName, {
+  private dispatchEvent(type: string, detail: any): void {
+    const event = new CustomEvent(type, {
       detail,
-      bubbles: true
+      bubbles: true,
+      cancelable: true
     });
     this.container.dispatchEvent(event);
   }
 
-  public getChips(): ChipItem[] {
-    return [...this.chips];
-  }
-
   public clear(): void {
-    this.chips = [];
-    this.chipsList.innerHTML = '';
-    this.dispatchEvent('clear', null);
-  }
-
-  public disable(): void {
-    this.options.disabled = true;
-    this.input.disabled = true;
-    this.container.classList.add('cka-chips-disabled');
-  }
-
-  public enable(): void {
-    this.options.disabled = false;
-    this.input.disabled = false;
-    this.container.classList.remove('cka-chips-disabled');
+    if (this.chips.length > 0) {
+      const oldChips = [...this.chips];
+      this.chips = [];
+      this.renderChips();
+      this.dispatchEvent('clear', oldChips);
+    }
   }
 
   public destroy(): void {
-    this.clear();
+    if (this.inputElement) {
+      this.inputElement.removeEventListener('keydown', this.boundHandleKeyDown);
+    }
+    this.chips = [];
     this.container.innerHTML = '';
-    // Remove event listeners
-    this.input.removeEventListener('keydown', () => { });
-    this.container.removeEventListener('click', () => { });
+    this.inputElement = null;
+  }
+
+  public getChips(): string[] {
+    return [...this.chips];
+  }
+
+  public setChips(chips: string[]): void {
+    this.chips = [...new Set(chips)]; // Ensure uniqueness
+    this.renderChips();
   }
 }
 
