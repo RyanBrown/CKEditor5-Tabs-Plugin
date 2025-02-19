@@ -10,9 +10,6 @@ export interface LinkManager {
   // Resets internal filters, pagination, etc.
   resetForm(): void;
 
-  // Returns the selected link.
-  getSelectedLink(): { destination: string; title: string } | null;
-
   // Validates the form data
   validateForm(): { isValid: boolean; message?: string };
 

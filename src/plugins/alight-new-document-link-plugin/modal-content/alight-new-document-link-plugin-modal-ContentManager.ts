@@ -10,7 +10,6 @@ import { mockCategories } from './mock/categories';
 
 export class ContentManager implements LinkManager {
   private container: HTMLElement | null = null;
-  private selectedLink: { destination: string; title: string } | null = null;
   private languageSelect: CkAlightSelectMenu<{ value: string; label: string }> | null = null;
   private modalDialog: any = null;
   private searchTagsChips: CkAlightChipsMenu | null = null;
@@ -514,10 +513,6 @@ export class ContentManager implements LinkManager {
     this.updateSubmitButtonState();
   }
 
-  public getSelectedLink(): { destination: string; title: string } | null {
-    return this.selectedLink;
-  }
-
   public getFormData(): any {
     // Create a clean copy of the form data
     const formDataCopy = {
@@ -562,7 +557,6 @@ export class ContentManager implements LinkManager {
 
     // Clear references
     this.container = null;
-    this.selectedLink = null;
     this.modalDialog = null;
   }
 }
