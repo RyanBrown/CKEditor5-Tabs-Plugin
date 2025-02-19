@@ -1,5 +1,4 @@
 // src/plugins/alight-new-document-link-plugin/modal-content/alight-new-document-link-plugin-modal-ContentManager.ts
-
 import { LinkManager } from './interfaces/alight-new-document-link-plugin-modal-LinkManager';
 import { FormValidator, ValidationResult } from '../modal-content/validation/form-validation';
 import { FormSubmissionHandler } from '../modal-content/submission/form-submission';
@@ -238,7 +237,7 @@ export class ContentManager implements LinkManager {
 
       // Show new error messages
       Object.entries(validation.errors).forEach(([field, message]) => {
-        const errorElement = this.container.querySelector(`.${field}-error`);
+        const errorElement = this.container?.querySelector(`.${field}-error`);
         if (errorElement) {
           errorElement.textContent = message;
           errorElement.classList.add('visible');
@@ -283,13 +282,25 @@ export class ContentManager implements LinkManager {
 
     // Initialize search tags chips
     const searchTagsContainer = this.container.querySelector('#search-tags-chips');
-    if (searchTagsContainer) {
-      this.searchTagsChips = new CkAlightChipsMenu('search-tags-chips');
+    if (!searchTagsContainer) {
+      console.warn('Search tags container not found');
+      return;
+    }
 
+    try {
+      // Create a unique ID for the container if it doesn't have one
+      if (!searchTagsContainer.id) {
+        searchTagsContainer.id = 'search-tags-' + Date.now();
+      }
+
+      this.searchTagsChips = new CkAlightChipsMenu(searchTagsContainer.id);
+
+      // Set initial chips if there are any
       if (this.formData.searchTags.length > 0) {
         this.searchTagsChips.setChips(this.formData.searchTags);
       }
 
+      // Add event listeners for chips
       searchTagsContainer.addEventListener('add', (e: Event) => {
         const customEvent = e as CustomEvent;
         if (!this.formData.searchTags.includes(customEvent.detail)) {
@@ -305,6 +316,8 @@ export class ContentManager implements LinkManager {
       searchTagsContainer.addEventListener('clear', () => {
         this.formData.searchTags = [];
       });
+    } catch (error) {
+      console.warn('Failed to initialize search tags:', error);
     }
 
     // File input
