@@ -15,18 +15,6 @@ export interface ChipsOptions {
 }
 
 export class CkAlightChipsMenu {
-  clearChips() {
-    throw new Error('Method not implemented.');
-  }
-  setConfig(arg0: { allowDuplicates: boolean; }) {
-    throw new Error('Method not implemented.');
-  }
-  disable() {
-    throw new Error('Method not implemented.');
-  }
-  enable() {
-    throw new Error('Method not implemented.');
-  }
   private container: HTMLElement;
   private chips: string[] = [];
   private inputElement: HTMLInputElement | null = null;
@@ -125,14 +113,16 @@ export class CkAlightChipsMenu {
       chipsList.innerHTML = this.chips.map((chip, index) => `
         <div class="cka-chip">
           <span>${chip}</span>
-          <button type="button" class="cka-chip-remove" data-index="${index}"><i class="fa-solid fa-xmark"></i></button>
+          <button type="button" class="cka-chip-remove" data-index="${index}" title="Remove Tag">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
         </div>
       `).join('');
 
       // Add event listeners to remove buttons
       chipsList.querySelectorAll('.cka-chip-remove').forEach(button => {
         button.addEventListener('click', (e) => {
-          const index = parseInt((e.target as HTMLElement).dataset.index || '0', 10);
+          const index = parseInt((button as HTMLElement).dataset.index || '0', 10);
           this.removeChip(index);
         });
       });
@@ -155,6 +145,34 @@ export class CkAlightChipsMenu {
       this.renderChips();
       this.dispatchEvent('clear', oldChips);
     }
+  }
+
+  public clearChips(): void {
+    this.clear();
+  }
+
+  public setConfig(config: { allowDuplicates: boolean }): void {
+    if (typeof config.allowDuplicates === 'boolean') {
+      // If allowDuplicates is false, ensure current chips are unique
+      if (!config.allowDuplicates) {
+        this.chips = [...new Set(this.chips)];
+        this.renderChips();
+      }
+    }
+  }
+
+  public disable(): void {
+    if (this.inputElement) {
+      this.inputElement.disabled = true;
+    }
+    this.container.classList.add('cka-chips-disabled');
+  }
+
+  public enable(): void {
+    if (this.inputElement) {
+      this.inputElement.disabled = false;
+    }
+    this.container.classList.remove('cka-chips-disabled');
   }
 
   public destroy(): void {

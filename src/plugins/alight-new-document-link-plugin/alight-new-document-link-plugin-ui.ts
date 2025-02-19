@@ -54,6 +54,7 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
     this._formManager = new ContentManager();
   }
 
+  // In alight-new-document-link-plugin-ui.ts
   private _showModal(): void {
     if (!this._modalDialog) {
       this._modalDialog = new CkAlightModalDialog({
@@ -64,45 +65,41 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
           {
             label: 'Clear',
             variant: 'outlined',
-            position: 'left',
             shape: 'round',
-            disabled: false
           },
           {
             label: 'Submit',
             variant: 'default',
-            position: 'right',
             isPrimary: true,
             shape: 'round',
-            closeOnClick: false,
+            closeOnClick: false,  // Keep this false to handle closing manually
             disabled: true // Initially disabled until form is valid
           }
         ]
       });
 
+      // Properly connect button clicks to form submission
       this._modalDialog.on('buttonClick', async (label: string) => {
-        if (this._isSubmitting) return; // Prevent multiple submissions
+        if (this._isSubmitting) return;
 
         if (label === 'Clear') {
           this._formManager?.resetForm();
           return;
         }
 
-        if (label === 'Submit') {
-          await this._handleFormSubmission();
+        if (label === 'Submit' && this._formManager) {
+          // Validate form before submission
+          const validation = this._formManager.validateForm();
+          if (validation.isValid) {
+            await this._handleFormSubmission();
+          }
         }
       });
 
-      // Handle modal close
-      this._modalDialog.on('close', () => {
-        if (this._isSubmitting) {
-          // Prevent closing during submission
-          return false;
-        }
-        // Reset form state when modal is closed
-        this._formManager?.resetForm();
-        return true;
-      });
+      // Set up form manager reference to modal for button state updates
+      if (this._formManager) {
+        this._formManager.setModalDialog(this._modalDialog);
+      }
     }
 
     // Set modal content using form manager

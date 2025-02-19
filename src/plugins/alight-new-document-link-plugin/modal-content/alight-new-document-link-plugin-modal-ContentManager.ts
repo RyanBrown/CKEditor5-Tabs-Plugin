@@ -41,7 +41,7 @@ export class ContentManager implements LinkManager {
     return `
       <h3 class="sub-title">Language</h3>
       ${this.createCardHTML(`
-        <label for="language-select" class="cka-input-label">Language</label>
+        <label for="language-select-container" class="cka-input-label">Language</label>
         <div id="language-select-container" class="cka-width-half"></div>
         <div class="error-message">Choose a language to continue.</div>
       `)}
@@ -98,7 +98,7 @@ export class ContentManager implements LinkManager {
     return `
       <h3 class="sub-title">Search Criteria</h3>
       ${this.createCardHTML(`
-        <label for="searchTags" class="cka-input-label">Search Tags (optional)</label>
+        <label for="search-tags-chips" class="cka-input-label">Search Tags (optional)</label>
         <div id="search-tags-chips" class="cka-width-half"></div>
         <span class="cka-control-footer cka-width-half">
           Add search tags to improve the relevancy of search results. 
@@ -118,7 +118,7 @@ export class ContentManager implements LinkManager {
         <div class="error-message description-error">Enter a description to continue.</div>
 
         <label for="categories" class="cka-input-label mt-4">Categories (optional)</label>
-        <a href="#" class="block cka-categories-toggle">Choose Categories</a>
+        <a href="#" class="cka-categories-toggle">Choose Categories</a>
         <div class="cka-categories-wrapper hidden">
           <ul class="cka-choose-categories-list">
             ${mockCategories.map(category => `
@@ -442,65 +442,77 @@ export class ContentManager implements LinkManager {
 
     // Reset UI components
     if (this.languageSelect) {
-      this.languageSelect.setValue('en');
+      try {
+        this.languageSelect.setValue('en');
+      } catch (error) {
+        console.warn('Error resetting language select:', error);
+      }
     }
 
     if (this.searchTagsChips) {
-      this.searchTagsChips.clearChips();
+      try {
+        this.searchTagsChips.clearChips();
+      } catch (error) {
+        console.warn('Error clearing search tags:', error);
+      }
     }
 
     // Reset form element values
     if (this.container) {
-      // Reset file input
-      const fileInput = this.container.querySelector('input[type="file"]') as HTMLInputElement;
-      if (fileInput) {
-        fileInput.value = '';
-        const wrapper = fileInput.closest('.cka-file-input-wrapper');
-        if (wrapper) {
-          wrapper.setAttribute('data-text', 'No file chosen');
+      try {
+        // Reset file input
+        const fileInput = this.container.querySelector('input[type="file"]') as HTMLInputElement;
+        if (fileInput) {
+          fileInput.value = '';
+          const wrapper = fileInput.closest('.cka-file-input-wrapper');
+          if (wrapper) {
+            wrapper.setAttribute('data-text', 'No file chosen');
+          }
         }
-      }
 
-      // Reset text inputs
-      const titleInput = this.container.querySelector('#document-title') as HTMLInputElement;
-      if (titleInput) {
-        titleInput.value = '';
-        this.updateCharacterCount(titleInput);
-      }
-
-      // Reset textarea
-      const description = this.container.querySelector('#description') as HTMLTextAreaElement;
-      if (description) {
-        description.value = '';
-      }
-
-      // Reset checkboxes
-      const checkboxes = this.container.querySelectorAll('cka-checkbox') as NodeListOf<CkAlightCheckbox>;
-      checkboxes.forEach(checkbox => {
-        if (checkbox.id === 'showInSearch') {
-          checkbox.setValue(true);
-        } else {
-          checkbox.setValue(false);
+        // Reset text inputs
+        const titleInput = this.container.querySelector('#document-title') as HTMLInputElement;
+        if (titleInput) {
+          titleInput.value = '';
+          this.updateCharacterCount(titleInput);
         }
-      });
 
-      // Hide categories wrapper
-      const categoriesWrapper = this.container.querySelector('.cka-categories-wrapper');
-      if (categoriesWrapper) {
-        categoriesWrapper.classList.add('hidden');
+        // Reset textarea
+        const description = this.container.querySelector('#description') as HTMLTextAreaElement;
+        if (description) {
+          description.value = '';
+        }
+
+        // Reset checkboxes - use setAttribute instead of setValue
+        const checkboxes = this.container.querySelectorAll('cka-checkbox') as NodeListOf<HTMLElement>;
+        checkboxes.forEach(checkbox => {
+          if (checkbox.id === 'showInSearch') {
+            checkbox.setAttribute('checked', 'true');
+          } else {
+            checkbox.removeAttribute('checked');
+          }
+        });
+
+        // Hide categories wrapper
+        const categoriesWrapper = this.container.querySelector('.cka-categories-wrapper');
+        if (categoriesWrapper) {
+          categoriesWrapper.classList.add('hidden');
+        }
+
+        // Reset error messages
+        const errorMessages = this.container.querySelectorAll('.error-message');
+        errorMessages.forEach(message => {
+          message.classList.remove('visible');
+        });
+
+        // Reset input error states
+        const inputs = this.container.querySelectorAll('.cka-input-text, .cka-textarea');
+        inputs.forEach(input => {
+          input.classList.remove('error');
+        });
+      } catch (error) {
+        console.warn('Error resetting form elements:', error);
       }
-
-      // Reset error messages
-      const errorMessages = this.container.querySelectorAll('.error-message');
-      errorMessages.forEach(message => {
-        message.classList.remove('visible');
-      });
-
-      // Reset input error states
-      const inputs = this.container.querySelectorAll('.cka-input-text, .cka-textarea');
-      inputs.forEach(input => {
-        input.classList.remove('error');
-      });
     }
 
     // Update submit button state

@@ -231,14 +231,12 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
           {
             label: 'Cancel',
             variant: 'outlined',
-            position: 'left',
             shape: 'round',
             disabled: false
           },
           {
             label: 'Continue',
             variant: 'default',
-            position: 'right',
             isPrimary: true,
             shape: 'round',
             closeOnClick: false,

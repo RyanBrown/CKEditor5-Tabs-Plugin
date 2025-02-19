@@ -3,11 +3,10 @@ import './styles/alight-modal-dialog-component.scss';
 import { FocusTracker, KeystrokeHandler } from '@ckeditor/ckeditor5-utils';
 
 export interface DialogButton {
-  disabled: boolean;
+  disabled?: boolean;
   label: string;
   className?: string;
   variant?: 'default' | 'outlined' | 'text';
-  position?: 'left' | 'right';
   closeOnClick?: boolean;
   isPrimary?: boolean;
   shape?: 'round' | 'default';
@@ -23,6 +22,7 @@ export interface DialogOptions {
   height?: string;
   position?: 'center' | 'top' | 'bottom' | 'left' | 'right' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
   closeOnEscape?: boolean;
+  closeOnClick?: boolean;
   closeOnClickOutside?: boolean;
   overlayOpacity?: number;
   headerClass?: string;
@@ -73,7 +73,7 @@ export class CkAlightModalDialog {
     this.keystrokes = new KeystrokeHandler();
 
     this.options = {
-      title: '',
+      title: 'button',
       modal: true,
       draggable: false,
       resizable: false,
@@ -82,6 +82,7 @@ export class CkAlightModalDialog {
       height: 'auto',
       position: 'center',
       closeOnEscape: true,
+      closeOnClick: false,
       closeOnClickOutside: false,
       overlayOpacity: 0.5,
       headerClass: '',
@@ -193,31 +194,24 @@ export class CkAlightModalDialog {
   }
 
   private setupButtons(buttons?: DialogButton[]): void {
+    if (!buttons || buttons.length === 0) {
+      return;
+    }
+
     const footer = document.createElement('div');
     footer.className = 'cka-dialog-footer-buttons';
 
-    if (buttons?.length) {
-      const leftButtons = buttons.filter(btn => btn.position === 'left');
-      const rightButtons = buttons.filter(btn => btn.position !== 'left');
+    // Create and append each button
+    buttons.forEach(buttonConfig => {
+      const button = this.createButton(buttonConfig);
 
-      if (leftButtons.length) {
-        const leftGroup = document.createElement('div');
-        leftGroup.className = 'cka-dialog-footer-left';
-        leftButtons.forEach(buttonConfig => {
-          leftGroup.appendChild(this.createButton(buttonConfig));
-        });
-        footer.appendChild(leftGroup);
+      // If button is disabled, set the attribute
+      if (buttonConfig.disabled) {
+        button.disabled = true;
       }
 
-      if (rightButtons.length) {
-        const rightGroup = document.createElement('div');
-        rightGroup.className = 'cka-dialog-footer-right';
-        rightButtons.forEach(buttonConfig => {
-          rightGroup.appendChild(this.createButton(buttonConfig));
-        });
-        footer.appendChild(rightGroup);
-      }
-    }
+      footer.appendChild(button);
+    });
 
     this.setFooter(footer);
   }
