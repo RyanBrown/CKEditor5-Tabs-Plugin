@@ -161,9 +161,9 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
 
       const result = await this._formManager.submitForm();
 
-      // Fire success event
+      // Fire success event with form data
       const eventInfo = new EventInfo(this, 'newDocumentFormSubmit');
-      this.editor.editing.view.document.fire(eventInfo, { formData: result });
+      this.editor.editing.view.document.fire(eventInfo, { detail: { formData: result } });
 
       // Show success feedback using the notification system
       const notification = this.editor.plugins.get(Notification);

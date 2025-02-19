@@ -24,8 +24,13 @@ export default class AlightNewDocumentLinkPlugin extends Plugin {
     // Listen for form submission events
     this.listenTo(editor.editing.view.document, 'newDocumentFormSubmit', (evt, data) => {
       // Handle the form submission data
-      console.log('Form submitted with data:', data.detail);
-      // You can add your custom handling logic here
+      console.log('Form submitted with data:', data.detail.formData);
+
+      // Fire a command to update the editor content if needed
+      editor.execute('alightNewDocumentLinkPlugin', {
+        url: data.detail.formData.url,
+        title: data.detail.formData.documentTitle
+      });
     });
   }
 }
