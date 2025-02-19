@@ -135,33 +135,57 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
         clearButton.disabled = true;
       }
 
+      // Get form validation result
+      const validation = this._formManager.validateForm();
+
+      if (!validation.isValid) {
+        // Show field-level error messages
+        const formContainer = this._modalDialog.element?.querySelector('.new-document-content');
+        if (formContainer) {
+          // Clear any existing error messages
+          formContainer.querySelectorAll('.error-message').forEach(msg => {
+            msg.classList.remove('visible');
+          });
+
+          // Show specific error messages
+          Object.entries(validation.errors || {}).forEach(([field, message]) => {
+            const errorElement = formContainer.querySelector(`.${field}-error`);
+            if (errorElement) {
+              errorElement.textContent = message;
+              errorElement.classList.add('visible');
+            }
+          });
+        }
+        return;
+      }
+
       const result = await this._formManager.submitForm();
 
       // Fire success event
       const eventInfo = new EventInfo(this, 'newDocumentFormSubmit');
       this.editor.editing.view.document.fire(eventInfo, { formData: result });
 
-      // Show success feedback
-      this._showNotification('success', 'Document uploaded successfully');
+      // Show success feedback using the notification system
+      const notification = this.editor.plugins.get(Notification);
+      notification.showSuccess('Document uploaded successfully');
 
       // Close modal
       this._modalDialog.hide();
 
     } catch (error) {
-      // Show error notification
-      this._showNotification('error', error instanceof Error ? error.message : 'An unexpected error occurred');
-
-      // Re-enable form submission if there's an error
-      if (submitButton instanceof HTMLButtonElement) {
-        submitButton.disabled = false;
-      }
+      // Show error using the notification system
+      const notification = this.editor.plugins.get(Notification);
+      notification.showWarning(
+        error instanceof Error ? error.message : 'An unexpected error occurred'
+      );
 
     } finally {
       this._isSubmitting = false;
 
       // Re-enable buttons
-      if (submitButton) {
+      if (submitButton instanceof HTMLButtonElement) {
         submitButton.classList.remove('loading');
+        submitButton.disabled = false;
       }
       if (clearButton instanceof HTMLButtonElement) {
         clearButton.disabled = false;

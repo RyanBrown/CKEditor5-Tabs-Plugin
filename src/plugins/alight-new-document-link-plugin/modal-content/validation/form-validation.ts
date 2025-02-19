@@ -1,137 +1,88 @@
 // src/plugins/alight-new-document-link-plugin/validation/form-validator.ts
 
-export interface ValidationRule {
-  validate: (value: any) => boolean;
-  message: string;
-}
-
-export interface FieldValidation {
-  rules: ValidationRule[];
-  required?: boolean;
-  customValidator?: (value: any) => { isValid: boolean; message?: string } | undefined;
-}
-
-export interface ValidationSchema {
-  [key: string]: FieldValidation;
+export interface ValidationErrors {
+  [key: string]: string;
 }
 
 export interface ValidationResult {
   isValid: boolean;
-  errors: { [key: string]: string };
-  firstError?: string;
+  errors?: ValidationErrors;
 }
 
-export const FILE_SIZE_LIMIT = 5 * 1024 * 1024; // 5MB in bytes
-
-// Reusable validation rules
-export const ValidationRules = {
-  required: (fieldName: string): ValidationRule => ({
-    validate: (value: any) => {
-      if (value === null || value === undefined) return false;
-      if (typeof value === 'string') return value.trim().length > 0;
-      if (value instanceof File) return true;
-      return !!value;
-    },
-    message: `${fieldName} is required`
-  }),
-
-  maxLength: (length: number): ValidationRule => ({
-    validate: (value: string) => !value || value.length <= length,
-    message: `Maximum length is ${length} characters`
-  }),
-
-  fileSize: (): ValidationRule => ({
-    validate: (file: File) => file.size <= FILE_SIZE_LIMIT,
-    message: 'File size must be less than 5MB'
-  }),
-
-  noSpecialChars: (): ValidationRule => ({
-    validate: (value: string) => !/[\\[\]:><\/\|\?"*,]/.test(value),
-    message: 'Special characters are not allowed'
-  })
-};
-
-// Form validation schema
-export const documentFormSchema: ValidationSchema = {
-  language: {
-    required: true,
-    rules: [ValidationRules.required('Language')]
-  },
-  file: {
-    required: true,
-    rules: [
-      ValidationRules.required('File'),
-      ValidationRules.fileSize()
-    ]
-  },
-  documentTitle: {
-    required: true,
-    rules: [
-      ValidationRules.required('Document title'),
-      ValidationRules.maxLength(250),
-      ValidationRules.noSpecialChars()
-    ]
-  },
-  description: {
-    required: true,
-    rules: [
-      ValidationRules.required('Description'),
-      ValidationRules.maxLength(1000)
-    ]
-  }
-};
-
 export class FormValidator {
-  private schema: ValidationSchema;
-
-  constructor(schema: ValidationSchema) {
-    this.schema = schema;
-  }
-
-  validateField(fieldName: string, value: any): { isValid: boolean; message?: string } {
-    const fieldValidation = this.schema[fieldName];
-    if (!fieldValidation) return { isValid: true };
-
-    // Check required field
-    if (fieldValidation.required && !ValidationRules.required(fieldName).validate(value)) {
-      return { isValid: false, message: ValidationRules.required(fieldName).message };
-    }
-
-    // Check all validation rules
-    for (const rule of fieldValidation.rules) {
-      if (!rule.validate(value)) {
-        return { isValid: false, message: rule.message };
-      }
-    }
-
-    // Run custom validator if provided
-    if (fieldValidation.customValidator) {
-      const customValidation = fieldValidation.customValidator(value);
-      if (customValidation && !customValidation.isValid) {
-        return customValidation;
-      }
-    }
-
-    return { isValid: true };
-  }
-
   validateForm(formData: any): ValidationResult {
-    const errors: { [key: string]: string } = {};
-    let isValid = true;
+    const errors: ValidationErrors = {};
 
-    for (const [fieldName, fieldValidation] of Object.entries(this.schema)) {
-      const validation = this.validateField(fieldName, formData[fieldName]);
+    // Language validation
+    if (!formData.language) {
+      errors['language'] = 'Please select a language';
+    }
 
-      if (!validation.isValid) {
-        isValid = false;
-        errors[fieldName] = validation.message || `Invalid ${fieldName}`;
-      }
+    // File validation
+    if (!formData.file) {
+      errors['file'] = 'Please choose a file';
+    } else if (formData.file.size > 5 * 1024 * 1024) {
+      errors['file'] = 'File size must be less than 5MB';
+    }
+
+    // Document title validation
+    if (!formData.documentTitle?.trim()) {
+      errors['title'] = 'Please enter a document title';
+    } else if (formData.documentTitle.length > 250) {
+      errors['title'] = 'Title must be less than 250 characters';
+    } else if (/[\\[\]:><\/\|\?"*,]/.test(formData.documentTitle)) {
+      errors['title'] = 'Title contains invalid characters';
+    }
+
+    // Description validation
+    if (!formData.description?.trim()) {
+      errors['description'] = 'Please enter a description';
     }
 
     return {
-      isValid,
-      errors,
-      firstError: Object.values(errors)[0]
+      isValid: Object.keys(errors).length === 0,
+      errors: Object.keys(errors).length > 0 ? errors : undefined
+    };
+  }
+
+  validateField(fieldName: string, value: any): ValidationResult {
+    const errors: ValidationErrors = {};
+
+    switch (fieldName) {
+      case 'language':
+        if (!value) {
+          errors[fieldName] = 'Please select a language';
+        }
+        break;
+
+      case 'file':
+        if (!value) {
+          errors[fieldName] = 'Please choose a file';
+        } else if (value.size > 5 * 1024 * 1024) {
+          errors[fieldName] = 'File size must be less than 5MB';
+        }
+        break;
+
+      case 'documentTitle':
+        if (!value?.trim()) {
+          errors[fieldName] = 'Please enter a document title';
+        } else if (value.length > 250) {
+          errors[fieldName] = 'Title must be less than 250 characters';
+        } else if (/[\\[\]:><\/\|\?"*,]/.test(value)) {
+          errors[fieldName] = 'Title contains invalid characters';
+        }
+        break;
+
+      case 'description':
+        if (!value?.trim()) {
+          errors[fieldName] = 'Please enter a description';
+        }
+        break;
+    }
+
+    return {
+      isValid: Object.keys(errors).length === 0,
+      errors: Object.keys(errors).length > 0 ? errors : undefined
     };
   }
 }

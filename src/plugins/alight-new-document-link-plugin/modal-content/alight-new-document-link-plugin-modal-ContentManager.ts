@@ -1,7 +1,7 @@
 // src/plugins/alight-new-document-link-plugin/modal-content/alight-new-document-link-plugin-modal-ContentManager.ts
 
 import { LinkManager } from './interfaces/alight-new-document-link-plugin-modal-LinkManager';
-import { FormValidator, documentFormSchema } from '../modal-content/validation/form-validation';
+import { FormValidator, ValidationResult } from '../modal-content/validation/form-validation';
 import { FormSubmissionHandler } from '../modal-content/submission/form-submission';
 import { CkAlightSelectMenu } from '../../ui-components/alight-select-menu-component/alight-select-menu-component';
 import { CkAlightCheckbox } from '../../ui-components/alight-checkbox-component/alight-checkbox-component';
@@ -31,7 +31,7 @@ export class ContentManager implements LinkManager {
   };
 
   constructor() {
-    this.formValidator = new FormValidator(documentFormSchema);
+    this.formValidator = new FormValidator();
     this.formSubmissionHandler = new FormSubmissionHandler();
   }
 
@@ -201,21 +201,69 @@ export class ContentManager implements LinkManager {
 
   private validateAndUpdateField(fieldName: string, value: any): void {
     const validation = this.formValidator.validateField(fieldName, value);
-    const element = this.container?.querySelector(`[name="${fieldName}"]`);
-    const errorMessage = this.container?.querySelector(`.${fieldName}-error`);
 
-    if (element) {
-      element.classList.toggle('error', !validation.isValid);
+    if (!this.container) return;
+
+    // Find the input element
+    const inputElement = this.container.querySelector(`[name="${fieldName}"]`);
+
+    // Find the error message element
+    const errorElement = this.container.querySelector(`.${fieldName}-error`);
+
+    if (inputElement) {
+      inputElement.classList.toggle('error', !validation.isValid);
     }
 
-    if (errorMessage) {
-      errorMessage.classList.toggle('visible', !validation.isValid);
-      if (!validation.isValid && validation.message) {
-        errorMessage.textContent = validation.message;
+    if (errorElement) {
+      if (!validation.isValid && validation.errors?.[fieldName]) {
+        errorElement.textContent = validation.errors[fieldName];
+        errorElement.classList.add('visible');
+      } else {
+        errorElement.classList.remove('visible');
       }
     }
 
     this.updateSubmitButtonState();
+  }
+
+
+  public validateForm(): ValidationResult {
+    const validation = this.formValidator.validateForm(this.formData);
+
+    if (!validation.isValid && validation.errors && this.container) {
+      // Clear all existing error messages first
+      this.container.querySelectorAll('.error-message').forEach(msg => {
+        msg.classList.remove('visible');
+      });
+
+      // Show new error messages
+      Object.entries(validation.errors).forEach(([field, message]) => {
+        const errorElement = this.container.querySelector(`.${field}-error`);
+        if (errorElement) {
+          errorElement.textContent = message;
+          errorElement.classList.add('visible');
+        }
+      });
+    }
+
+    return validation;
+  }
+
+  public async submitForm(): Promise<any> {
+    const validation = this.validateForm();
+
+    if (!validation.isValid) {
+      // Don't throw error, just return early since errors are displayed in UI
+      return;
+    }
+
+    const result = await this.formSubmissionHandler.submitForm(this.formData);
+
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to submit form');
+    }
+
+    return result.data;
   }
 
   private updateSubmitButtonState(): void {
@@ -364,29 +412,6 @@ export class ContentManager implements LinkManager {
       this.attachEventListeners();
       this.updateSubmitButtonState();
     });
-  }
-
-  public validateForm(): { isValid: boolean; message?: string } {
-    const validation = this.formValidator.validateForm(this.formData);
-    return {
-      isValid: validation.isValid,
-      message: validation.firstError
-    };
-  }
-
-  public async submitForm(): Promise<any> {
-    const validation = this.validateForm();
-    if (!validation.isValid) {
-      throw new Error(validation.message);
-    }
-
-    const result = await this.formSubmissionHandler.submitForm(this.formData);
-
-    if (!result.success) {
-      throw new Error(result.error || 'Failed to submit form');
-    }
-
-    return result.data;
   }
 
   public getLinkContent(page: number): string {
