@@ -13,3 +13,15 @@
     list-style: none;
   }
 }
+
+.sub-title {
+  font-size: mixins.toRem(22);
+  font-weight: var(--font-weight-normal);
+  margin-bottom: 1rem
+}
+
+.cka-control-footer {
+  display: block;
+  font-size: mixins.toRem(14);
+  margin-top: 1rem;
+}

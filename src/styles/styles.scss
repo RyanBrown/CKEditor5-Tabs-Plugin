@@ -240,3 +240,39 @@ $spacing-values: (
 @include generate-spacing-classes('b', $spacing-values, 'p');
 @include generate-spacing-classes('l', $spacing-values, 'p');
 @include generate-spacing-classes('r', $spacing-values, 'p');
+
+
+
+
+
+// Display helper classes
+.block {
+  display: block;
+}
+
+.inline {
+  display: inline;
+}
+
+.inline-block {
+  display: inline-block;
+}
+
+.flex {
+  display: flex;
+}
+
+
+// Text helper classes
+.text-center {
+  text-align: center;
+}
+
+// Width helper classes
+.cka-width-full {
+  width: 100%;
+}
+
+.cka-width-half {
+  width: 50%;
+}

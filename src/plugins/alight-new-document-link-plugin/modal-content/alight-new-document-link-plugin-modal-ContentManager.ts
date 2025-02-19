@@ -28,10 +28,10 @@ export class ContentManager implements LinkManager {
 
   private createLanguageSelectHTML(): string {
     return `
-      <h3>Language</h3>
+      <h3 class="sub-title">Language</h3>
       ${this.createCardHTML(`
         <label for="language-select">Language</label>
-        <div id="language-select-container"></div>
+        <div id="language-select-container" class="cka-width-half"></div>
         <div class="error-message">Choose a language to continue.</div>
       `)}
     `;
@@ -77,18 +77,18 @@ export class ContentManager implements LinkManager {
     const supportedFileTypes = ['doc', 'docx', 'xls', 'xlsx', 'xlsm', 'ppt', 'pptx', 'pdf'];
 
     return `
-      <h3>Document & Title</h3>
+      <h3 class="sub-title">Document & Title</h3>
       ${this.createCardHTML(`
-        <label for="file-input">Upload Document (5MB Limit)</label>
+        <label for="file-input" class="block">Upload Document (5MB Limit)</label>
         <input 
           accept="${acceptedFileTypes}"
-          class="cka-input-file"
+          class="cka-input-file cka-width-half"
           placeholder="No file chosen" 
           type="file" 
           required
         />
         <p>
-          <em class="control-footer">
+          <em class="cka-control-footer">
             <strong>Supported file types:</strong> ${supportedFileTypes.join(', ')}
           </em>
         </p>
@@ -96,15 +96,15 @@ export class ContentManager implements LinkManager {
         <div class="error-message">Choose a file less than 5MB.</div>
 
         <input
-          class="cka-input-text"
+          class="cka-input-text cka-width-half"
           maxlength="250"
           name="documentTitle"
           type="text"
           value="${this.formData.documentTitle}"
           required
         />
-        <span class="control-footer">250 characters remaining</span>
-        <div class="control-footer">
+        <span class="cka-control-footer block">250 characters remaining</span>
+        <div class="cka-control-footer">
           <strong>Note:</strong> Special characters such as (\\, ], :, >, /, <, [, |, ?, ", *, comma) are not allowed.
         </div>
         <div class="error-message">Enter title to continue.</div>
@@ -114,28 +114,31 @@ export class ContentManager implements LinkManager {
 
   private createSearchCriteriaHTML(): string {
     return `
-      <h3>Search Criteria</h3>
+      <h3 class="sub-title">Search Criteria</h3>
       ${this.createCardHTML(`
+        <label for="searchTags">Search Tags (optional)</label>
         <input
-          class="cka-input-text"
+          class="cka-input-text cka-width-half"
           placeholder="Use , for separator" 
           value="${this.formData.searchTags.join(', ')}"
           type="text"
         />
-        <span class="control-footer">
+        <span class="cka-control-footer">
           Add search tags to improve the relevancy of search results. 
           Type your one-word search tag and then press Enter.
         </span>
 
+        <label for="description">Description</label>
         <textarea 
-          class="cka-textarea"
+          class="cka-textarea cka-width-half"
           cols="30"
           required
           rows="5" 
         >${this.formData.description}</textarea>
-        <div class="error-message">Enter a description to continue.</div>
+        <div class="error-message block">Enter a description to continue.</div>
 
-        <a class="linkStyle">Choose Categories</a>
+        <label for="categories" class="block">Categories (optional)</label>
+        <a class="linkStyle block">Choose Categories</a>
         <div>
           <ul class="cka-choose-categories-list">
             <li>
@@ -155,7 +158,7 @@ export class ContentManager implements LinkManager {
             </li>
           </ul>
         </div>
-        <div class="control-footer">
+        <div class="cka-control-footer">
           <strong>Note:</strong> Categories apply to both search and Content Library.
         </div>
       `)}
@@ -164,26 +167,26 @@ export class ContentManager implements LinkManager {
 
   private createCheckboxGroupHTML(): string {
     return `
-      <h3>Content Library</h3>
+      <h3 class="sub-title">Content Library</h3>
       ${this.createCardHTML(`
         <cka-checkbox id="contentLibraryAccess">
           Access from Content Library (optional)
         </cka-checkbox>
       `)}
 
-      <h3>Alight Worklife Link</h3>
+      <h3 class="sub-title">Alight Worklife Link</h3>
       ${this.createCardHTML(`
         <cka-checkbox id="worklifeLink">
           Link to Document From a Alight Worklife Link (optional)
         </cka-checkbox>
       `)}
 
-      <h3>Search Results</h3>
+      <h3 class="sub-title">Search Results</h3>
       ${this.createCardHTML(`
         <cka-checkbox id="showInSearch" initialvalue="true">
           Show in Search Results (optional)
         </cka-checkbox>
-        <div class="control-footer">
+        <div class="cka-control-footer">
           If this document matches a user's search criteria, checking this box makes it
           eligible to appear in the search results.
         </div>
