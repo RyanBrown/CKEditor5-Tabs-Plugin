@@ -30,7 +30,7 @@ export class ContentManager implements LinkManager {
     return `
       <h3 class="sub-title">Language</h3>
       ${this.createCardHTML(`
-        <label for="language-select">Language</label>
+        <label for="language-select" class="cka-input-label">Language</label>
         <div id="language-select-container" class="cka-width-half"></div>
         <div class="error-message">Choose a language to continue.</div>
       `)}
@@ -79,7 +79,7 @@ export class ContentManager implements LinkManager {
     return `
       <h3 class="sub-title">Document & Title</h3>
       ${this.createCardHTML(`
-        <label for="file-input" class="block">Upload Document (5MB Limit)</label>
+        <label for="file-input" class="cka-input-label">Upload Document (5MB Limit)</label>
         <input 
           accept="${acceptedFileTypes}"
           class="cka-input-file cka-width-half"
@@ -101,6 +101,7 @@ export class ContentManager implements LinkManager {
           name="documentTitle"
           type="text"
           value="${this.formData.documentTitle}"
+          placeholder="Enter document title"
           required
         />
         <span class="cka-control-footer block">250 characters remaining</span>
@@ -116,7 +117,7 @@ export class ContentManager implements LinkManager {
     return `
       <h3 class="sub-title">Search Criteria</h3>
       ${this.createCardHTML(`
-        <label for="searchTags">Search Tags (optional)</label>
+        <label for="searchTags" class="cka-input-label">Search Tags (optional)</label>
         <input
           class="cka-input-text cka-width-half"
           placeholder="Use , for separator" 
@@ -128,16 +129,17 @@ export class ContentManager implements LinkManager {
           Type your one-word search tag and then press Enter.
         </span>
 
-        <label for="description">Description</label>
+        <label for="description" class="cka-input-label">Description</label>
         <textarea 
           class="cka-textarea cka-width-half"
           cols="30"
           required
           rows="5" 
+          placeholder="Enter description"
         >${this.formData.description}</textarea>
         <div class="error-message block">Enter a description to continue.</div>
 
-        <label for="categories" class="block">Categories (optional)</label>
+        <label for="categories" class="cka-input-label">Categories (optional)</label>
         <a class="linkStyle block">Choose Categories</a>
         <div>
           <ul class="cka-choose-categories-list">
