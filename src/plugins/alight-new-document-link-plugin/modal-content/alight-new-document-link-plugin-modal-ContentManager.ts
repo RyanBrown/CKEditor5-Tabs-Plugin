@@ -1,6 +1,7 @@
 import { LinkManager } from './alight-new-document-link-plugin-modal-LinkManager';
 import { CkAlightSelectMenu } from '../../ui-components/alight-select-menu-component/alight-select-menu-component';
 import { CkAlightCheckbox } from '../../ui-components/alight-checkbox-component/alight-checkbox-component';
+import { CkAlightChipsMenu } from '../../ui-components/alight-chips-menu-component/alight-chips-menu-component';
 import '../../ui-components/alight-checkbox-component/alight-checkbox-component';
 import '../../ui-components/alight-radio-component/alight-radio-component';
 import { mockCategories, type Category } from './mock/categories';
@@ -10,6 +11,7 @@ export class ContentManager implements LinkManager {
   private selectedLink: { destination: string; title: string } | null = null;
   private languageSelect: CkAlightSelectMenu<{ value: string; label: string }> | null = null;
   private modalDialog: any = null;
+  private searchTagsChips: CkAlightChipsMenu | null = null;
 
   private formData = {
     language: 'en',
@@ -133,15 +135,10 @@ export class ContentManager implements LinkManager {
       <h3 class="sub-title">Search Criteria</h3>
       ${this.createCardHTML(`
         <label for="searchTags" class="cka-input-label">Search Tags (optional)</label>
-        <input
-          class="cka-input-text cka-width-half"
-          placeholder="Use , for separator" 
-          value="${this.formData.searchTags.join(', ')}"
-          type="text"
-        />
+        <div id="search-tags-chips" class="cka-width-half"></div>
         <span class="cka-control-footer">
           Add search tags to improve the relevancy of search results. 
-          Type your one-word search tag and then press Enter.
+          Type your tag and press Enter to add it.
         </span>
 
         <label for="description" class="cka-input-label">Description</label>
@@ -154,7 +151,7 @@ export class ContentManager implements LinkManager {
         >${this.formData.description}</textarea>
         <div class="error-message">Enter a description to continue.</div>
 
-        <label for="categories" class="cka-input-label">Categories (optional)</label>
+        <label for="categories" class="cka-input-label mt-3">Categories (optional)</label>
         <a href="#" class="block cka-categories-toggle">Choose Categories</a>
         <div class="cka-categories-wrapper hidden">
           <ul class="cka-choose-categories-list">
@@ -208,6 +205,32 @@ export class ContentManager implements LinkManager {
 
   private attachEventListeners(): void {
     if (!this.container) return;
+
+    // Initialize search tags chips
+    const searchTagsContainer = this.container.querySelector('#search-tags-chips');
+    if (searchTagsContainer) {
+      this.searchTagsChips = new CkAlightChipsMenu(searchTagsContainer.id);
+
+      // Set initial chips if there are any
+      if (this.formData.searchTags.length > 0) {
+        this.searchTagsChips.setChips(this.formData.searchTags);
+      }
+
+      // Listen for chip events
+      searchTagsContainer.addEventListener('add', (e: Event) => {
+        const customEvent = e as CustomEvent;
+        if (!this.formData.searchTags.includes(customEvent.detail)) {
+          this.formData.searchTags.push(customEvent.detail);
+          this.updateSubmitButtonState();
+        }
+      });
+
+      searchTagsContainer.addEventListener('remove', (e: Event) => {
+        const customEvent = e as CustomEvent;
+        this.formData.searchTags = this.formData.searchTags.filter(tag => tag !== customEvent.detail);
+        this.updateSubmitButtonState();
+      });
+    }
 
     // File input
     const fileInput = this.container.querySelector('input[type="file"]');
@@ -399,6 +422,11 @@ export class ContentManager implements LinkManager {
     if (this.languageSelect) {
       this.languageSelect.destroy();
       this.languageSelect = null;
+    }
+
+    if (this.searchTagsChips) {
+      this.searchTagsChips.destroy();
+      this.searchTagsChips = null;
     }
 
     this.formData = {

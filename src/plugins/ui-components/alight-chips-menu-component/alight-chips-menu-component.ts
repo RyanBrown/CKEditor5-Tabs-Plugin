@@ -82,7 +82,7 @@ export class CkAlightChipsMenu {
       chipsList.innerHTML = this.chips.map((chip, index) => `
         <div class="cka-chip">
           <span>${chip}</span>
-          <button type="button" class="cka-chip-remove" data-index="${index}">&times;</button>
+          <button type="button" class="cka-chip-remove" data-index="${index}"><i class="fa-solid fa-xmark"></i></button>
         </div>
       `).join('');
 

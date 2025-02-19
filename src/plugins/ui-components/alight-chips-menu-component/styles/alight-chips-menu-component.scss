@@ -1,8 +1,12 @@
 // src/plugins/ui-components/alight-chips-menu-component/styles/alight-chips-menu-component.scss
+@use './../../../../styles/mixins' as mixins;
+
 .cka-chips-container {
-  display: inline-block;
+  border: 1px solid var(--neutral-dove-gray);
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-family-base);
   width: 100%;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
   &.cka-chips-disabled {
     opacity: 0.6;
@@ -19,37 +23,37 @@
 }
 
 .cka-chips-input-wrapper {
+  align-items: center;
+  background-color: var(--neutral-white);
+  border-radius: 0;
+  border: 1px solid #ced4da;
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
   min-height: 40px;
   padding: 4px 8px;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  background-color: #fff;
-  transition: border-color 0.15s ease -in -out;
+  transition: border-color 0.15s ease-in-out;
 
   &:focus-within {
     border-color: #80bdff;
-    outline: 0;
     box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    outline: 0;
   }
 }
 
 .cka-chips-list {
-  display: flex;
+  // display: flex;
   flex-wrap: wrap;
   gap: 4px;
   margin-right: 4px;
 }
 
 .cka-chips-input {
-  flex: 1;
-  min-width: 120px;
   border: none;
+  flex: 1;
+  font-size: var(--font-size-base);
+  min-width: 120px;
   outline: none;
-  padding: 4px;
-  font-size: 14px;
+  padding: mixins.toRem(9) mixins.toRem(16);
 
   &::placeholder {
     color: #6c757d;
@@ -57,44 +61,50 @@
 }
 
 .cka-chip {
-  display: inline-flex;
   align-items: center;
-  padding: 4px 8px;
-  background-color: #e9ecef;
-  border-radius: 16px;
-  font-size: 14px;
-  line-height: 1.5;
+  background-color: var(--primary);
+  border-radius: var(--border-radius-base);
+  color: var(--neutral-white);
   cursor: default;
-  transition: background-color 0.15s ease -in -out;
+  display: inline-flex;
+  font-size: var(--font-size-base);
+  margin: mixins.toRem(4) 0 mixins.toRem(4) mixins.toRem(4);
+  padding: mixins.toRem(2) mixins.toRem(12);
+  transition: background-color 0.15s ease-in-out;
 
-  &:hover {
-    background-color: #dee2e6;
+  span {
+    padding-right: .5rem
   }
 
-  &:focus {
-    outline: none;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-  }
+  // &:hover {
+  //   background-color: #dee2e6;
+  // }
+
+  // &:focus {
+  //   outline: none;
+  //   box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  // }
 }
 
 .cka-chip-label {
-  margin-right: 4px;
+  margin-right: mixins.toRem(5);
+  line-height: 1;
 }
 
 .cka-chip-remove {
-  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 16px;
-  height: 16px;
-  padding: 0;
-  border: none;
   background: none;
-  color: #6c757d;
-  font-size: 16px;
-  line-height: 1;
+  border: none;
+  color: var(--neutral-white);
   cursor: pointer;
-  transition: color 0.15s ease -in -out;
+  display: inline-flex;
+  font-size: 16px;
+  height: 16px;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+  transition: color 0.15s ease-in-out;
+  width: 16px;
 
   &:hover {
     color: #343a40;
