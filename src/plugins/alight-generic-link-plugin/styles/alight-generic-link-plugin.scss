@@ -1,43 +1,6 @@
 // src/plugins/alight-generic-link-plugin/styles/alight-generic-link-plugin.scss
 @use './../../../styles/mixins' as mixins;
 
-.error-message {
-  color: var(--error);
-  display: none;
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
-
-  &.visible {
-    display: block;
-  }
-}
-
 .generic-link-content {
   padding: var(--spacing-xl) var(--spacing-xl) 0;
-}
-
-.note-text {
-  font-size: mixins.toRem(14);
-  margin: 2rem 0 0;
-}
-
-
-.cka-link-type-heading {
-  border-bottom: 1px solid var(--gray-400);
-  font-size: mixins.toRem(18);
-  font-weight: var(--font-weight-normal);
-  margin-bottom: var(--spacing-m);
-  padding-bottom: var(--spacing-m);
-}
-
-ul.cka-radio-group {
-  display: flex;
-  flex-direction: column;
-  margin: 0;
-  padding: 0;
-
-  li {
-    display: flex;
-    list-style: none;
-  }
 }

@@ -93,7 +93,7 @@ export class SearchManager {
     return `
       <div class="filter-section">
         <h4>${title}</h4>
-        <ul class="checkbox-list">
+        <ul class="cka-checkbox-list">
           ${options.map(option => `
             <li>
               <cka-checkbox 

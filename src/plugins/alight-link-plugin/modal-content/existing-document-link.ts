@@ -379,7 +379,7 @@ export class ExistingDocumentLinkManager implements LinkManager {
     return `
       <div class="filter-section">
         <h4>${title}</h4>
-        <ul class="checkbox-list">
+        <ul class="cka-checkbox-list">
           ${options
         .map(option => {
           const checked = this.selectedFilters[filterType].includes(option) ? 'initialvalue="true"' : '';

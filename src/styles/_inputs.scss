@@ -56,3 +56,20 @@
     padding: mixins.toRem(20) mixins.toRem(20);
   }
 }
+
+// Validation classes
+.error-message {
+  color: var(--error);
+  display: none;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+
+  &.visible {
+    display: block;
+  }
+}
+
+.note-text {
+  font-size: mixins.toRem(14);
+  margin: 2rem 0 0;
+}
