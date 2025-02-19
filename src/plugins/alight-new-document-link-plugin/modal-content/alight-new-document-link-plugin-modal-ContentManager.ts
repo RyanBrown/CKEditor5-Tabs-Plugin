@@ -93,7 +93,7 @@ export class ContentManager implements LinkManager {
       <h3 class="sub-title">Document & Title</h3>
       ${this.createCardHTML(`
         <label for="file-input" class="cka-input-label">Upload Document (5MB Limit)</label>
-        <div class="cka-file-input-wrapper" data-text="No file chosen">
+        <div class="cka-file-input-wrapper cka-width-half" data-text="No file chosen">
           <input 
             accept="${acceptedFileTypes}"
             class="cka-input-file"
@@ -102,11 +102,11 @@ export class ContentManager implements LinkManager {
             required
           />
         </div>
-        <p>
-          <em class="cka-control-footer">
+        <div class="cka-control-footer">
+          <em>
             <strong>Supported file types:</strong> ${supportedFileTypes.join(', ')}
           </em>
-        </p>
+        </div>
         <div class="error-message">Choose a file.</div>
         <div class="error-message">Choose a file less than 5MB.</div>
 
@@ -154,7 +154,7 @@ export class ContentManager implements LinkManager {
         >${this.formData.description}</textarea>
         <div class="error-message">Enter a description to continue.</div>
 
-        <label for="categories" class="cka-input-label">Categories (optional)</label>
+        <label for="categories" class="cka-input-label mt-3">Categories (optional)</label>
         <a class="block">Choose Categories</a>
         <div class="cka-categories-wrapper">
           <ul class="cka-choose-categories-list">
