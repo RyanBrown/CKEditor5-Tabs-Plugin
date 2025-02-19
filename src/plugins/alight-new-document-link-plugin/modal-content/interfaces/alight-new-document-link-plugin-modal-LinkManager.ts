@@ -1,4 +1,4 @@
-// src/plugins/alight-new-document-link-plugin/interfaces/LinkManager.ts
+// src/plugins/alight-new-document-link-plugin/modal-content/interfaces/alight-new-document-link-plugin-modal-LinkManager.ts
 
 export interface LinkManager {
   // Returns the raw HTML string for a given page of data.

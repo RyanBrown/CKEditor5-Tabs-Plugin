@@ -1,4 +1,4 @@
-// src/plugins/alight-new-document-link-plugin/validation/form-validator.ts
+// src/plugins/alight-new-document-link-plugin/modal-content/validation/form-validation.ts
 
 export interface ValidationErrors {
   [key: string]: string;

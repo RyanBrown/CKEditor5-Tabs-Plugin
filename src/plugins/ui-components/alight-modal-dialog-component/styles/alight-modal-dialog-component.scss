@@ -144,3 +144,7 @@ $cka-dialog-border-radius: 0;
   padding: 24px;
   text-align: center;
 }
+
+.cka-dialog-close {
+  font-size: mixins.toRem(20);
+}

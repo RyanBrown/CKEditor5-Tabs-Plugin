@@ -1,4 +1,4 @@
-// src/plugins/alight-new-document-link-plugin/submission/form-submission-handler.ts
+// src/plugins/alight-new-document-link-plugin/modal-content/submission/form-submission.ts
 
 export interface SubmissionResult {
   success: boolean;
@@ -12,17 +12,39 @@ export class FormSubmissionHandler {
 
   constructor(private readonly debounceTime: number = 1000) { }
 
-  private async mockApiCall(formData: any): Promise<SubmissionResult> {
+  private async mockApiCall(formData: FormData): Promise<SubmissionResult> {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    // Mock success response
+    // Convert FormData to a plain object for response
+    const responseData: { [key: string]: any } = {
+      id: `doc-${Date.now()}`
+    };
+
+    // Extract all form data
+    formData.forEach((value, key) => {
+      if (value instanceof File) {
+        responseData[key] = {
+          name: value.name,
+          size: value.size,
+          type: value.type
+        };
+      } else if (key === 'searchTags' || key === 'categories') {
+        // Parse JSON strings back to arrays
+        try {
+          responseData[key] = JSON.parse(value as string);
+        } catch {
+          responseData[key] = [];
+        }
+      } else {
+        responseData[key] = value;
+      }
+    });
+
+    // Mock success response with all form data
     return {
       success: true,
-      data: {
-        id: `doc-${Date.now()}`,
-        ...formData
-      }
+      data: responseData
     };
   }
 
@@ -55,7 +77,7 @@ export class FormSubmissionHandler {
           submission.append(key, value);
         } else if (Array.isArray(value)) {
           submission.append(key, JSON.stringify(value));
-        } else {
+        } else if (value !== null && value !== undefined) {
           submission.append(key, String(value));
         }
       });
