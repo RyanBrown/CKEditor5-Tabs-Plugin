@@ -93,13 +93,15 @@ export class ContentManager implements LinkManager {
       <h3 class="sub-title">Document & Title</h3>
       ${this.createCardHTML(`
         <label for="file-input" class="cka-input-label">Upload Document (5MB Limit)</label>
-        <input 
-          accept="${acceptedFileTypes}"
-          class="cka-input-file cka-width-half"
-          placeholder="No file chosen" 
-          type="file" 
-          required
-        />
+        <div class="cka-file-input-wrapper" data-text="No file chosen">
+          <input 
+            accept="${acceptedFileTypes}"
+            class="cka-input-file"
+            placeholder="No file chosen" 
+            type="file" 
+            required
+          />
+        </div>
         <p>
           <em class="cka-control-footer">
             <strong>Supported file types:</strong> ${supportedFileTypes.join(', ')}

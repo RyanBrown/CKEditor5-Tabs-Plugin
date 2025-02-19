@@ -17,7 +17,8 @@
   .cka-select-button {
     align-items: center;
     background: var(--neutral-white);
-    border: 1px solid #ced4da;
+    // border: 1px solid #ced4da;
+    border: 1px solid var(--neutral-dove-gray);
     border-radius: 0;
     cursor: pointer;
     display: flex;

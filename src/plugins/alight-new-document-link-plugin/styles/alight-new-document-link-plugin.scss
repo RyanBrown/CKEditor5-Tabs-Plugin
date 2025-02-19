@@ -25,3 +25,93 @@
   font-size: mixins.toRem(14);
   margin-top: 1rem;
 }
+
+
+// Container styles
+.cka-file-input-wrapper {
+  align-items: center;
+  display: flex;
+  min-height: mixins.toRem(58);
+  padding: mixins.toRem(10) mixins.toRem(16);
+  position: relative;
+  width: 50%; // For cka-width-half class
+
+  // Custom styled button
+  &::before {
+    content: 'Choose File';
+    position: absolute;
+    right: 1rem;
+    top: .5rem;
+    // height: 100%;
+    padding: mixins.toRem(10) mixins.toRem(16);
+    background: var(--primary);
+    color: var(--neutral-white);
+    border-radius: 0;
+    display: flex;
+    align-items: center;
+    z-index: 1;
+  }
+
+  // Custom styled input look
+  &::after {
+    content: attr(data-text);
+    position: absolute;
+    left: 0;
+    top: 0;
+    // height: 100%;
+    // width: calc(100% - 100px); // Adjust based on button width
+    width: calc(100% - 34px); // Adjust based on button width
+    // padding: mixins.toRem(10) mixins.toRem(12);
+    padding: 1rem;
+    background: var(--neutral-white);
+    border: 1px solid var(--neutral-dove-gray);
+    border-radius: 0;
+    color: var(--gray-700);
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  // Hover state
+  &:hover {
+    &::before {
+      background: var(--primary-hover);
+    }
+  }
+}
+
+// Hide the default file input
+.cka-input-file {
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  cursor: pointer;
+  z-index: 2;
+
+  // Focus state
+  &:focus+.cka-file-input-wrapper::before {
+    outline: 2px solid #4f46e5;
+    outline-offset: 2px;
+  }
+
+  // Disabled state
+  &:disabled+.cka-file-input-wrapper {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  // Required state
+  &:required+.cka-file-input-wrapper::after {
+    border-color: #4f46e5;
+  }
+
+  // File type validation styling
+  &:invalid+.cka-file-input-wrapper::after {
+    border-color: var(--error);
+  }
+}
