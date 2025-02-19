@@ -3,6 +3,7 @@ import { CkAlightSelectMenu } from '../../ui-components/alight-select-menu-compo
 import { CkAlightCheckbox } from '../../ui-components/alight-checkbox-component/alight-checkbox-component';
 import '../../ui-components/alight-checkbox-component/alight-checkbox-component';
 import '../../ui-components/alight-radio-component/alight-radio-component';
+import { mockCategories, type Category } from './mockData';
 
 export class ContentManager implements LinkManager {
   private container: HTMLElement | null = null;
@@ -141,26 +142,7 @@ export class ContentManager implements LinkManager {
 
         <label for="categories" class="cka-input-label">Categories (optional)</label>
         <a class="linkStyle block">Choose Categories</a>
-        <div>
-          <ul class="cka-choose-categories-list">
-            <li>
-              <cka-checkbox id="contentLibraryAccess">
-                Access from 
-              </cka-checkbox>
-            </li>
-            <li>
-              <cka-checkbox id="contentLibraryAccess">
-                Access from Content Library
-              </cka-checkbox>
-            </li>
-            <li>
-              <cka-checkbox id="contentLibraryAccess">
-                Access from Content
-              </cka-checkbox>
-            </li>
-          </ul>
-        </div>
-        <div class="cka-control-footer">
+        <div class="control-footer">
           <strong>Note:</strong> Categories apply to both search and Content Library.
         </div>
       `)}
