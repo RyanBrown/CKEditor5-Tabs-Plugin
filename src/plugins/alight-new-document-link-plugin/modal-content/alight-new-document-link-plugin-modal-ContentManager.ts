@@ -3,7 +3,7 @@ import { CkAlightSelectMenu } from '../../ui-components/alight-select-menu-compo
 import { CkAlightCheckbox } from '../../ui-components/alight-checkbox-component/alight-checkbox-component';
 import '../../ui-components/alight-checkbox-component/alight-checkbox-component';
 import '../../ui-components/alight-radio-component/alight-radio-component';
-import { mockCategories, type Category } from './mockData';
+import { mockCategories, type Category } from './mock/categories';
 
 export class ContentManager implements LinkManager {
   private container: HTMLElement | null = null;
@@ -141,8 +141,22 @@ export class ContentManager implements LinkManager {
         <div class="error-message block">Enter a description to continue.</div>
 
         <label for="categories" class="cka-input-label">Categories (optional)</label>
-        <a class="linkStyle block">Choose Categories</a>
-        <div class="control-footer">
+        <a class="block">Choose Categories</a>
+        <div class="cka-categories-wrapper">
+          <ul class="cka-choose-categories-list">
+            ${mockCategories.map(category => `
+              <li>
+                <cka-checkbox 
+                  id="category-${category.id}"
+                  ${this.formData.categories.includes(category.id) ? 'initialvalue="true"' : ''}
+                >
+                  ${category.label}
+                </cka-checkbox>
+              </li>
+            `).join('')}
+          </ul>
+        </div>
+        <div class="cka-control-footer">
           <strong>Note:</strong> Categories apply to both search and Content Library.
         </div>
       `)}
@@ -257,6 +271,24 @@ export class ContentManager implements LinkManager {
         this.updateSubmitButtonState();
       });
     }
+
+    // Add category checkbox listeners
+    mockCategories.forEach(category => {
+      const checkbox = this.container?.querySelector(`#category-${category.id}`);
+      if (checkbox && checkbox instanceof CkAlightCheckbox) {
+        checkbox.addEventListener('change', (e: Event) => {
+          const customEvent = e as CustomEvent;
+          if (customEvent.detail) {
+            if (!this.formData.categories.includes(category.id)) {
+              this.formData.categories.push(category.id);
+            }
+          } else {
+            this.formData.categories = this.formData.categories.filter(id => id !== category.id);
+          }
+          this.updateSubmitButtonState();
+        });
+      }
+    });
   }
 
   private updateCharacterCount(input: HTMLInputElement): void {
