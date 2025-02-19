@@ -15,6 +15,9 @@ export interface ChipsOptions {
 }
 
 export class CkAlightChipsMenu {
+  clearChips() {
+    throw new Error('Method not implemented.');
+  }
   setConfig(arg0: { allowDuplicates: boolean; }) {
     throw new Error('Method not implemented.');
   }

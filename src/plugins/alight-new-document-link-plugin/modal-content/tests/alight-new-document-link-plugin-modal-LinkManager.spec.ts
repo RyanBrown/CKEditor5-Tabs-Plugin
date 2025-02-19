@@ -1,5 +1,5 @@
 // src/plugins/alight-new-document-link-plugin/modal-content/tests/alight-new-document-link-plugin-modal-LinkManager.spec.ts
-import { LinkManager } from '../alight-new-document-link-plugin-modal-LinkManager';
+import { LinkManager } from '../interfaces/alight-new-document-link-plugin-modal-LinkManager';
 
 describe('LinkManager', () => {
   let linkManager: LinkManager;

@@ -2,6 +2,9 @@
 import './styles/alight-checkbox-component.scss';
 
 export class CkAlightCheckbox extends HTMLElement {
+  setValue(arg0: boolean) {
+    throw new Error('Method not implemented.');
+  }
   private _checked: boolean = false;
   private _disabled: boolean = false;
   private _focused: boolean = false;
