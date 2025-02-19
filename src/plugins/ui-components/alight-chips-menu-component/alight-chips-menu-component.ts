@@ -28,6 +28,7 @@ export class CkAlightChipsMenu {
   private chips: string[] = [];
   private inputElement: HTMLInputElement | null = null;
   private boundHandleKeyDown: (event: KeyboardEvent) => void;
+  private boundHandlePaste: (event: ClipboardEvent) => void;
 
   constructor(containerId: string) {
     const container = document.getElementById(containerId);
@@ -36,6 +37,7 @@ export class CkAlightChipsMenu {
     }
     this.container = container;
     this.boundHandleKeyDown = this.handleKeyDown.bind(this);
+    this.boundHandlePaste = this.handlePaste.bind(this);
     this.initialize();
   }
 
@@ -50,6 +52,27 @@ export class CkAlightChipsMenu {
     this.inputElement = this.container.querySelector('.cka-chips-input');
     if (this.inputElement) {
       this.inputElement.addEventListener('keydown', this.boundHandleKeyDown);
+      this.inputElement.addEventListener('paste', this.boundHandlePaste);
+    }
+  }
+
+  private handlePaste(event: ClipboardEvent): void {
+    event.preventDefault();
+    const pastedText = event.clipboardData?.getData('text');
+
+    if (pastedText) {
+      // Split by commas and filter out empty strings
+      const chips = pastedText
+        .split(',')
+        .map(text => text.trim())
+        .filter(text => text.length > 0);
+
+      // Add each chip
+      chips.forEach(chip => {
+        if (!this.chips.includes(chip)) {
+          this.addChip(chip);
+        }
+      });
     }
   }
 
@@ -117,6 +140,7 @@ export class CkAlightChipsMenu {
   public destroy(): void {
     if (this.inputElement) {
       this.inputElement.removeEventListener('keydown', this.boundHandleKeyDown);
+      this.inputElement.removeEventListener('paste', this.boundHandlePaste);
     }
     this.chips = [];
     this.container.innerHTML = '';
@@ -132,21 +156,3 @@ export class CkAlightChipsMenu {
     this.renderChips();
   }
 }
-
-
-// // usage-example.ts
-// // Example of how to use the component
-// const chipsComponent = new CkAlightChipsMenu('chips-container', {
-//   placeholder: 'Add tags...',
-//   maxChips: 5,
-//   allowDuplicates: false
-// });
-
-// // Event listeners
-// document.getElementById('chips-container')?.addEventListener('chipAdd', (e: CustomEvent) => {
-//   console.log('Chip added:', e.detail);
-// });
-
-// document.getElementById('chips-container')?.addEventListener('chipRemove', (e: CustomEvent) => {
-//   console.log('Chip removed:', e.detail);
-// });
