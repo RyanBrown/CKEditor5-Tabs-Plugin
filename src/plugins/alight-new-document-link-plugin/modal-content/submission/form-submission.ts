@@ -13,39 +13,57 @@ export class FormSubmissionHandler {
   constructor(private readonly debounceTime: number = 1000) { }
 
   private async mockApiCall(formData: FormData): Promise<SubmissionResult> {
+    // Log raw FormData
+    console.log('Raw FormData entries:');
+    for (const [key, value] of formData.entries()) {
+      console.log(`${key}:`, value);
+    }
+
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    // Convert FormData to a plain object for response
-    const responseData: { [key: string]: any } = {
-      id: `doc-${Date.now()}`
-    };
+    try {
+      // Convert FormData to a plain object for response
+      const responseData: { [key: string]: any } = {
+        id: `doc-${Date.now()}`,
+        url: `https://example.com/documents/doc-${Date.now()}`,
+        status: 'success'
+      };
 
-    // Extract all form data
-    formData.forEach((value, key) => {
-      if (value instanceof File) {
-        responseData[key] = {
-          name: value.name,
-          size: value.size,
-          type: value.type
-        };
-      } else if (key === 'searchTags' || key === 'categories') {
-        // Parse JSON strings back to arrays
-        try {
-          responseData[key] = JSON.parse(value as string);
-        } catch {
-          responseData[key] = [];
+      // Extract all form data
+      formData.forEach((value, key) => {
+        if (value instanceof File) {
+          responseData[key] = {
+            name: value.name,
+            size: value.size,
+            type: value.type,
+            uploadDate: new Date().toISOString()
+          };
+        } else if (key === 'searchTags' || key === 'categories') {
+          try {
+            responseData[key] = JSON.parse(value as string);
+          } catch {
+            responseData[key] = [];
+          }
+        } else {
+          responseData[key] = value;
         }
-      } else {
-        responseData[key] = value;
-      }
-    });
+      });
 
-    // Mock success response with all form data
-    return {
-      success: true,
-      data: responseData
-    };
+      // Log the processed response data
+      console.log('Processed response data:', responseData);
+
+      return {
+        success: true,
+        data: responseData
+      };
+    } catch (error) {
+      console.error('Error in mockApiCall:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to process form data'
+      };
+    }
   }
 
   private resetSubmitState(): void {
@@ -57,6 +75,9 @@ export class FormSubmissionHandler {
   }
 
   public async submitForm(formData: any): Promise<SubmissionResult> {
+    // Log the incoming form data
+    console.log('Submitting form data:', formData);
+
     // Prevent duplicate submissions
     if (this.isSubmitting) {
       return {
@@ -85,6 +106,9 @@ export class FormSubmissionHandler {
       // Submit the form data
       const result = await this.mockApiCall(submission);
 
+      // Log the final result
+      console.log('Form submission result:', result);
+
       // Set a timeout to prevent rapid resubmission
       this.submitTimeout = window.setTimeout(() => {
         this.resetSubmitState();
@@ -92,6 +116,7 @@ export class FormSubmissionHandler {
 
       return result;
     } catch (error) {
+      console.error('Error in submitForm:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'An unexpected error occurred'

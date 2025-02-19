@@ -4,7 +4,6 @@ import { Plugin } from '@ckeditor/ckeditor5-core';
 import { ButtonView } from '@ckeditor/ckeditor5-ui';
 import { CkAlightModalDialog } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import { ContentManager } from './modal-content/alight-new-document-link-plugin-modal-ContentManager';
-import { EventInfo } from '@ckeditor/ckeditor5-utils';
 import { Notification } from '@ckeditor/ckeditor5-ui';
 import toolBarIcon from './assets/icon-link.svg';
 import './styles/alight-new-document-link-plugin.scss';
@@ -138,6 +137,9 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
       // Get form validation result
       const validation = this._formManager.validateForm();
 
+      // Log the form data before submission
+      console.log('Form data before submission:', this._formManager.getFormData());
+
       if (!validation.isValid) {
         // Show field-level error messages
         const formContainer = this._modalDialog.element?.querySelector('.new-document-content');
@@ -161,9 +163,8 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
 
       const result = await this._formManager.submitForm();
 
-      // Fire success event with form data
-      const eventInfo = new EventInfo(this, 'newDocumentFormSubmit');
-      this.editor.editing.view.document.fire(eventInfo, { detail: { formData: result } });
+      // Log the submission result
+      console.log('Form submission result:', result);
 
       // Show success feedback using the notification system
       const notification = this.editor.plugins.get(Notification);
@@ -178,6 +179,9 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
       }, 100);
 
     } catch (error) {
+      // Log any errors
+      console.error('Form submission error:', error);
+
       // Show error using the notification system
       const notification = this.editor.plugins.get(Notification);
       notification.showWarning(
@@ -195,16 +199,6 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
       if (clearButton instanceof HTMLButtonElement) {
         clearButton.disabled = false;
       }
-    }
-  }
-
-  private _showNotification(type: 'success' | 'error', message: string): void {
-    const notification = this.editor.plugins.get(Notification);
-
-    if (type === 'success') {
-      notification.showSuccess(message);
-    } else {
-      notification.showWarning(message);
     }
   }
 

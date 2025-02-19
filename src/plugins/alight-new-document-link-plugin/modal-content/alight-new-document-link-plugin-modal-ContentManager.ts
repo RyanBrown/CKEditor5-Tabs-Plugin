@@ -426,12 +426,6 @@ export class ContentManager implements LinkManager {
     });
   }
 
-  public getLinkContent(page: number): string {
-    // This method is not used in the current implementation
-    // but is required by the LinkManager interface
-    return '';
-  }
-
   public resetForm(): void {
     // Reset form data to initial state
     this.formData = {
