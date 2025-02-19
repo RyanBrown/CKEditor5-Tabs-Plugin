@@ -224,11 +224,13 @@ export class ContentManager implements LinkManager {
     this.updateSubmitButtonState();
   }
 
+  private hasUserInteracted = false;
 
   public validateForm(): ValidationResult {
     const validation = this.formValidator.validateForm(this.formData);
 
-    if (!validation.isValid && validation.errors && this.container) {
+    // Only show validation errors if user has interacted with the form
+    if (this.hasUserInteracted && !validation.isValid && validation.errors && this.container) {
       // Clear all existing error messages first
       this.container.querySelectorAll('.error-message').forEach(msg => {
         msg.classList.remove('visible');
@@ -278,6 +280,17 @@ export class ContentManager implements LinkManager {
 
   private attachEventListeners(): void {
     if (!this.container) return;
+
+    // Add this handler for first interaction
+    const form = this.container.querySelector('form');
+    if (form) {
+      form.addEventListener('change', () => {
+        this.hasUserInteracted = true;
+      });
+      form.addEventListener('input', () => {
+        this.hasUserInteracted = true;
+      });
+    }
 
     // Initialize search tags chips
     const searchTagsContainer = this.container.querySelector('#search-tags-chips');
@@ -410,19 +423,23 @@ export class ContentManager implements LinkManager {
   public renderContent(container: HTMLElement): void {
     this.container = container;
     container.innerHTML = `
-      <form novalidate>
-        ${this.createLanguageSelectHTML()}
-        ${this.createFileInputHTML()}
-        ${this.createSearchCriteriaHTML()}
-        ${this.createCheckboxGroupHTML()}
-        <p class="mt-4"><b>Note:</b> Updates will not be reflected in Alight Worklife search results in QA/QC until tomorrow.</p>
-      </form>
-    `;
+    ${this.createLanguageSelectHTML()}
+    ${this.createFileInputHTML()}
+    ${this.createSearchCriteriaHTML()}
+    ${this.createCheckboxGroupHTML()}
+    <p class="mt-4"><b>Note:</b> Updates will not be reflected in Alight Worklife search results in QA/QC until tomorrow.</p>
+  `;
 
     requestAnimationFrame(() => {
       this.initializeLanguageSelect();
       this.attachEventListeners();
-      this.updateSubmitButtonState();
+
+      // Only update submit button state without showing validation errors
+      const submitButton = this.modalDialog?.element?.querySelector('.cka-button-primary');
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.classList.add('cka-button-disabled');
+      }
     });
   }
 
