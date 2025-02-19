@@ -63,7 +63,19 @@ export class ContentManager implements LinkManager {
         onChange: (selectedValue) => {
           if (selectedValue && typeof selectedValue === 'string') {
             this.formData.language = selectedValue;
+
+            // Handle error message visibility
+            const errorMessage = container.parentElement?.querySelector('.error-message');
+            if (errorMessage) {
+              errorMessage.classList.remove('visible');
+            }
+
             this.updateSubmitButtonState();
+          } else {
+            const errorMessage = container.parentElement?.querySelector('.error-message');
+            if (errorMessage) {
+              errorMessage.classList.add('visible');
+            }
           }
         }
       });
@@ -239,6 +251,17 @@ export class ContentManager implements LinkManager {
     if (description) {
       description.addEventListener('input', (e) => {
         this.formData.description = (e.target as HTMLTextAreaElement).value;
+
+        // Handle error message visibility
+        const errorMessage = description.parentElement?.querySelector('.error-message');
+        if (errorMessage) {
+          if (!this.formData.description.trim()) {
+            errorMessage.classList.add('visible');
+          } else {
+            errorMessage.classList.remove('visible');
+          }
+        }
+
         this.updateSubmitButtonState();
       });
     }
