@@ -19,8 +19,7 @@ import type ViewElement from '@ckeditor/ckeditor5-engine/src/view/element';
 
 /**
  * The UI component of the email link plugin.
- * It handles the toolbar button and the modal dialog.
- * This version extends the default LinkUI actions view by waiting for it to be available.
+ * It handles the toolbar button, modal dialog, and extends default link click behavior.
  */
 export default class AlightEmailLinkPluginUI extends Plugin {
   // Holds the reference to the modal dialog.
@@ -41,22 +40,79 @@ export default class AlightEmailLinkPluginUI extends Plugin {
   }
 
   /**
-   * Initializes the plugin by setting up the toolbar button and click handling.
+   * Initializes the plugin by setting up the toolbar button, extending the default click handling,
+   * and listening to selection changes.
    */
   public init(): void {
     const editor = this.editor;
-    // Add click observer for handling link clicks.
+
+    // Add the click observer.
     editor.editing.view.addObserver(ClickObserver);
+
+    // Extend the default link click handling (if available).
+    this._extendDefaultClickHandler();
+
     // Setup the toolbar button.
     this._setupToolbarButton();
-    // Attach a selection change listener to attempt extending the default actions view
-    // once a link is selected (and hence the actions view is created).
+
+    // Listen to selection changes to extend default actions view and display the balloon when a link is selected.
     editor.model.document.selection.on('change:range', () => {
       const linkElement = getSelectedLinkElement(editor);
       if (linkElement) {
+        console.log('[AlightEmailLinkPluginUI] Link selected via default handling.');
         this._extendDefaultActionsView();
+
+        // Force the default LinkUI balloon to show.
+        const linkUI: any = editor.plugins.get('LinkUI');
+        if (linkUI && typeof linkUI.showActions === 'function') {
+          linkUI.showActions();
+        }
       }
     });
+  }
+
+  /**
+   * Extends the default click handling of the LinkUI plugin by wrapping its internal _handleLinkClick method.
+   * This approach leverages the default behavior and adds your custom logic.
+   */
+  private _extendDefaultClickHandler(): void {
+    const editor = this.editor;
+    const linkUI: any = editor.plugins.get('LinkUI');
+
+    // Add a click handler for email links
+    this.editor.editing.view.document.on('click', (evt, data) => {
+      // Check if clicked element is a link
+      const domEvent = data.domEvent;
+      const target = domEvent.target as HTMLElement;
+
+      if (target.tagName.toLowerCase() === 'a' && target.classList.contains('email-link')) {
+        // Prevent default link behavior
+        domEvent.preventDefault();
+
+        // Show the balloon
+        if (linkUI && typeof linkUI.showActions === 'function') {
+          // Force selection update to ensure proper balloon positioning
+          const viewElement = data.target;
+          const modelElement = editor.editing.mapper.toModelElement(viewElement);
+
+          if (modelElement) {
+            editor.model.change(writer => {
+              writer.setSelection(modelElement, 'on');
+            });
+          }
+
+          linkUI.showActions();
+        }
+      }
+    });
+
+    // Keep original click handler functionality if it exists
+    if (linkUI && typeof linkUI._handleLinkClick === 'function') {
+      const originalClickHandler = linkUI._handleLinkClick.bind(linkUI);
+      linkUI._handleLinkClick = (evt: any, data: any) => {
+        originalClickHandler(evt, data);
+      };
+    }
   }
 
   /**
@@ -97,7 +153,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
   /**
    * Extends the default LinkUI actions view by assigning custom functions to its buttons.
    * This method checks if the default actions view is available and, if so, overrides its
-   * button behaviors. If the actions view is still undefined, it will do nothing.
+   * button behaviors.
    */
   private _extendDefaultActionsView(): void {
     const editor = this.editor;
@@ -105,7 +161,6 @@ export default class AlightEmailLinkPluginUI extends Plugin {
 
     // Check if the default actions view is available.
     if (!linkUI || !linkUI.actionsView) {
-      // It might not be ready yet, so exit gracefully.
       return;
     }
 
