@@ -1,63 +1,49 @@
 // src/plugins/alight-email-link-plugin/alight-email-link-plugin-editing.ts
 import { Plugin } from '@ckeditor/ckeditor5-core';
-import { type Editor } from '@ckeditor/ckeditor5-core';
 import { Link } from '@ckeditor/ckeditor5-link';
 import AlightEmailLinkPluginCommand from './alight-email-link-plugin-command';
 
 export default class AlightEmailLinkPluginEditing extends Plugin {
-  // Define the plugin name for CKEditor
   public static get pluginName() {
     return 'AlightEmailLinkPluginEditing' as const;
   }
 
-  // Declare dependencies for this plugin
   public static get requires() {
-    return [Link];
+    return [Link] as const;
   }
 
-  // Initialize the plugin by defining converters and commands
   public init(): void {
-    const editor = this.editor;
     this._defineSchema();
     this._defineConverters();
     this._defineCommands();
   }
 
-  // Define the schema for the plugin
   private _defineSchema(): void {
-    const schema = this.editor.model.schema;
-
-    // Register the alightEmailLinkPlugin attribute
-    schema.extend('$text', {
+    this.editor.model.schema.extend('$text', {
       allowAttributes: ['alightEmailLinkPlugin']
     });
   }
 
-  // Define model-to-view and view-to-model conversion
   private _defineConverters(): void {
-    const editor = this.editor;
-    const conversion = editor.conversion;
+    const conversion = this.editor.conversion;
 
-    // Define conversion for downcasting (model to view)
+    // Downcast converter (model to view)
     conversion.for('downcast').attributeToElement({
       model: {
-        key: 'alightEmailLinkPlugin', // Model attribute key
-        name: '$text' // Applied to text nodes
+        key: 'alightEmailLinkPlugin',
+        name: '$text'
       },
       view: (modelAttributeValue, { writer }) => {
-        if (!modelAttributeValue) return; // If no attribute value, return undefined
+        if (!modelAttributeValue) return;
 
-        const linkData = modelAttributeValue as { url: string; orgName?: string };
-        const linkElement = writer.createAttributeElement('a', {
-          href: linkData.url, // Set href attribute
-          target: '_blank', // Open in a new tab
-          rel: 'noopener noreferrer', // Security attributes
-          ...(linkData.orgName ? { 'data-org-name': linkData.orgName } : {})
+        const linkData = modelAttributeValue as { email: string; orgName?: string };
+        return writer.createAttributeElement('a', {
+          href: `mailto:${linkData.email}`,
+          'data-org-name': linkData.orgName || '',
+          class: 'email-link'
         }, {
           priority: 5
         });
-
-        return linkElement;
       }
     });
 
@@ -66,22 +52,20 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
       view: {
         name: 'a',
         attributes: {
-          href: true
+          href: /^mailto:/
         }
       },
       model: {
         key: 'alightEmailLinkPlugin',
-        value: (viewElement: { getAttribute: (arg0: string) => any; }) => ({
-          url: viewElement.getAttribute('href'),
+        value: (viewElement: Element) => ({
+          email: viewElement.getAttribute('href')?.replace(/^mailto:/, ''),
           orgName: viewElement.getAttribute('data-org-name')
         })
       }
     });
   }
 
-  // Define the command associated with the plugin
   private _defineCommands(): void {
-    const editor = this.editor;
-    editor.commands.add('alightEmailLinkPlugin', new AlightEmailLinkPluginCommand(editor));
+    this.editor.commands.add('alightEmailLinkPlugin', new AlightEmailLinkPluginCommand(this.editor));
   }
 }

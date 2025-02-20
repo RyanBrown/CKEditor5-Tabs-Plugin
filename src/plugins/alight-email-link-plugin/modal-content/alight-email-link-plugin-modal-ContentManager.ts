@@ -1,4 +1,4 @@
-// src/plugins/alight-email-link-plugin/modal-content/public-website.ts
+// src/plugins/alight-email-link-plugin/modal-content/alight-email-link-plugin-modal-content-manager.ts
 
 export function ContentManager(initialValue?: string, initialOrgName?: string): HTMLElement {
   const container = document.createElement('div');

@@ -161,7 +161,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     if (!this._balloon || !this._actionsView) return;
 
     const command = this.editor.commands.get('alightEmailLinkPlugin') as AlightEmailLinkPluginCommand;
-    const linkUrl = command.value?.url || '';
+    const linkUrl = command.value?.email || '';
 
     // Update URL display in balloon
     this._actionsView.updateLinkDisplay(linkUrl);
@@ -213,11 +213,11 @@ export default class AlightEmailLinkPluginUI extends Plugin {
 
   // In AlightEmailLinkPluginUI class, change the _showModal method to:
 
-  public _showModal(initialValue?: { url: string; orgName?: string }): void {
+  public _showModal(initialValue?: { email: string; orgName?: string }): void {
     const editor = this.editor;
     const command = editor.commands.get('alightEmailLinkPlugin') as AlightEmailLinkPluginCommand;
 
-    const initialUrl = initialValue?.url || '';
+    const initialEmail = initialValue?.email || '';
     const initialOrgName = initialValue?.orgName || '';
 
     if (!this._modalDialog) {
@@ -257,11 +257,11 @@ export default class AlightEmailLinkPluginUI extends Plugin {
           const isValid = validateForm(form);
 
           if (isValid) {
-            const urlInput = form?.querySelector('#link-url') as HTMLInputElement;
+            const emailInput = form?.querySelector('#link-email') as HTMLInputElement;
             const orgNameInput = form?.querySelector('#org-name') as HTMLInputElement;
 
             command.execute({
-              url: urlInput.value,
+              email: emailInput.value,
               orgName: orgNameInput?.value || undefined
             });
             this._modalDialog?.hide();
@@ -271,7 +271,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     }
 
     // Set modal content and show it
-    const content = ContentManager(initialUrl, initialOrgName);
+    const content = ContentManager(initialEmail, initialOrgName);
     this._modalDialog.setContent(content);
     this._modalDialog.show();
   }
