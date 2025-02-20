@@ -1,5 +1,4 @@
 // src/plugins/alight-new-document-link-plugin/alight-new-document-link-plugin-ui.ts
-
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { ButtonView } from '@ckeditor/ckeditor5-ui';
 import { CkAlightModalDialog } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
@@ -7,7 +6,6 @@ import { ContentManager } from './modal-content/alight-new-document-link-plugin-
 import { Notification } from '@ckeditor/ckeditor5-ui';
 import toolBarIcon from './assets/icon-link.svg';
 import './styles/alight-new-document-link-plugin.scss';
-
 export default class AlightNewDocumentLinkPluginUI extends Plugin {
   private _modalDialog?: CkAlightModalDialog;
   private _formManager?: ContentManager;

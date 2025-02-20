@@ -7,9 +7,14 @@ module.exports = async function (config) {
 
   const testWebpackConfig = {
     mode: 'development',
-    devtool: 'inline-source-map',
+    // Use eval for faster source maps in test
+    devtool: 'eval',
     resolve: {
-      extensions: ['.ts', '.js', '.json']
+      extensions: ['.ts', '.js', '.json'],
+      // Add cache for faster resolution
+      cache: true,
+      // Restrict lookup to direct dependencies
+      modules: ['node_modules']
     },
     module: {
       rules: [
@@ -17,21 +22,37 @@ module.exports = async function (config) {
         {
           test: /\.ts$/,
           include: path.resolve(__dirname, 'src'),
-          exclude: [/\.spec\.ts$/],
+          exclude: [/\.spec\.ts$/, /node_modules/],
           enforce: 'post',
-          loader: 'coverage-istanbul-loader',
-          options: { esModules: true }
+          use: {
+            loader: 'coverage-istanbul-loader',
+            options: {
+              esModules: true,
+              // Cache the transformed files
+              cacheDirectory: true
+            }
+          }
         }
       ]
     },
     plugins: webpackConfig.plugins.filter(
       plugin => !(plugin instanceof TerserWebpackPlugin)
-    )
+    ),
+    // Add cache configuration
+    cache: {
+      type: 'memory'
+    },
+    // Optimize performance settings
+    optimization: {
+      removeAvailableModules: false,
+      removeEmptyChunks: false,
+      splitChunks: false,
+    }
   };
 
   config.set({
     basePath: '',
-    frameworks: ['jasmine'],
+    frameworks: ['jasmine', 'webpack'],
     files: [
       { pattern: 'src/plugins/**/tests/**/*.spec.ts', type: 'module' }
     ],
@@ -39,21 +60,28 @@ module.exports = async function (config) {
       'src/plugins/**/tests/**/*.spec.ts': ['webpack', 'sourcemap']
     },
     webpack: testWebpackConfig,
-    webpackMiddleware: { stats: 'minimal' },
-    reporters: ['progress', 'coverage'],
-    port: 9876,
-    colors: true,
-    logLevel: config.LOG_INFO,
+    webpackMiddleware: {
+      // Turn off webpack build output
+      stats: 'errors-only',
+      // Increase performance with these settings
+      watchOptions: {
+        ignored: /node_modules/
+      }
+    },
+    // Reduce console output
+    reporters: ['dots', 'coverage'],
+    // Reduce logging
+    logLevel: config.LOG_ERROR,
     browsers: ['ChromeHeadless'],
+    // Increase timeouts
+    browserDisconnectTimeout: 10000,
+    browserDisconnectTolerance: 3,
+    browserNoActivityTimeout: 60000,
+    captureTimeout: 60000,
+    // Enable this if you need to keep tests running
     singleRun: true,
-    concurrency: Infinity,
-    plugins: [
-      'karma-jasmine',
-      'karma-chrome-launcher',
-      'karma-webpack',
-      'karma-sourcemap-loader',
-      'karma-coverage'
-    ],
+    // Limit parallel tests
+    concurrency: 1,
     coverageReporter: {
       includeAllSources: true,
       dir: 'coverage/',

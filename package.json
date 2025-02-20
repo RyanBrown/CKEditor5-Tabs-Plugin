@@ -93,6 +93,7 @@
         "build": "webpack --mode production && node prepend-banner.js",
         "postbuild": "tsc --declaration --declarationDir build --stripInternal --emitDeclarationOnly",
         "test": "karma start karma.conf.cjs",
+        "test:fast": "FAST_TEST=true karma start karma.conf.cjs",
         "test:watch": "karma start karma.conf.cjs --auto-watch --no-single-run",
         "test:coverage": "karma start karma.conf.cjs --coverage"
     },
