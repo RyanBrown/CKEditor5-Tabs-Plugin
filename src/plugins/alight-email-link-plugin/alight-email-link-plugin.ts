@@ -4,7 +4,7 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { Link } from '@ckeditor/ckeditor5-link';
 import AlightEmailLinkPluginEditing from './alight-email-link-plugin-editing';
-import AlightEmailLinkPluginUI from './alight-email-link-plugin-plugin-ui';
+import AlightEmailLinkPluginUI from './alight-email-link-plugin-ui';
 
 // The main plugin class that integrates the email link functionality.
 // It bundles together the editing and UI components along with the core Link plugin.
