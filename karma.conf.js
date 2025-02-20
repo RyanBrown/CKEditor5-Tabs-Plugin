@@ -14,6 +14,8 @@
 const path = require('path');
 const webpackConfig = require('./webpack.config');
 const TerserWebpackPlugin = require('terser-webpack-plugin');
+const { cache } = require('webpack');
+const { split } = require('postcss/lib/list');
 
 module.exports = function (config) {
   // Create a webpack configuration for tests.
@@ -21,7 +23,8 @@ module.exports = function (config) {
     mode: 'development',
     devtool: 'inline-source-map',
     resolve: {
-      extensions: ['.ts', '.js', '.json']
+      extensions: ['.ts', '.js', '.json'],
+      cache: true,
     },
     module: {
       rules: [
@@ -29,19 +32,32 @@ module.exports = function (config) {
         ...webpackConfig.module.rules,
         // Instrument TypeScript files (excluding tests) for coverage.
         {
-          test: /\.ts$/,
+          test: /\.(js|ts)$/,
           include: path.resolve(__dirname, 'src'),
           exclude: [/\.spec\.ts$/],
           enforce: 'post',
-          loader: 'istanbul-instrumenter-loader',
-          options: { esModules: true }
+          loader: 'coverage-istanbul-loader',
+          options: {
+            esModules: true,
+            cacheDirectory: true
+          }
         }
       ]
     },
     // Remove plugins (like Terser) that could interfere with testing.
     plugins: webpackConfig.plugins.filter(plugin =>
       !(plugin instanceof TerserWebpackPlugin)
-    )
+    ),
+    // Add cache confirmation
+    cache: {
+      type: 'memory'
+    },
+    // Optimization performance settings
+    optimization: {
+      removeAvailableModules: false,
+      removeEmptyChunks: false,
+      splitChunks: false,
+    },
   };
 
   config.set({
@@ -57,7 +73,10 @@ module.exports = function (config) {
     },
     webpack: testWebpackConfig,
     webpackMiddleware: {
-      stats: 'minimal'
+      stats: 'minimal',
+      watchOptions: {
+        ignored: /node_modules/
+      }
     },
     // Use both progress and coverage reporters.
     reporters: ['progress', 'coverage'],
@@ -65,6 +84,12 @@ module.exports = function (config) {
     colors: true,
     logLevel: config.LOG_INFO,
     browsers: ['ChromeHeadless'],
+    // Increase timeouts
+    browserDisconnectTimeout: 10000,
+    browserDisconnectTolerance: 3,
+    browserNoActivityTimeout: 60000,
+    captureTimeout: 60000,
+    // Enable this if you need to keep tests running
     singleRun: true,
     concurrency: Infinity,
     coverageReporter: {
@@ -73,11 +98,8 @@ module.exports = function (config) {
       // Output directory for coverage reports.
       dir: 'coverage/',
       reporters: [
-        // Detailed HTML report.
         { type: 'html', subdir: 'html' },
-        // lcov report for CI tools.
-        { type: 'lcov', subdir: 'lcov' },
-        // Text summary printed in the console.
+        // { type: 'lcov', subdir: 'lcov' },
         { type: 'text-summary' }
       ],
       // Optional watermarks for visual reporting.
