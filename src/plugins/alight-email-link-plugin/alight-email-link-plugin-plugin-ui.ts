@@ -98,7 +98,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     });
   }
 
-  // Sets up click handling for detecting and interacting with links in the editor
+  // Sets up click handling for detecting and interacting with links in the editor.
   private _setupClickHandling(): void {
     // console.log('[AlightEmailLinkPluginUI] Setting up click handling.');
     const editor = this.editor;
@@ -127,24 +127,16 @@ export default class AlightEmailLinkPluginUI extends Plugin {
               writer.setSelection(writer.createRangeOn(modelElement));
               // console.log('[AlightEmailLinkPluginUI] Model selection set on clicked link.');
             });
-            this._showBalloon();
+            this._updateBalloonVisibility();
           }
         }
       }
     });
 
-    // Hide the balloon when the editor loses focus.
-    this.listenTo(editor.ui.focusTracker, 'change:isFocused', (evt, name, isFocused) => {
-      console.log('[AlightEmailLinkPluginUI] Editor focus changed. isFocused:', isFocused);
-      if (!isFocused) {
-        const selection = editor.model.document.selection;
-        const range = selection.getFirstRange();
-        if (range) {
-          // console.log('[AlightEmailLinkPluginUI] Selection range found. Hiding balloon.');
-          this._hideBalloon();
-        }
-        console.log('[AlightEmailLinkPluginUI] Balloon hidden due to loss of focus.');
-      }
+    // Listen for focus changes to update balloon visibility.
+    this.listenTo(editor.ui.focusTracker, 'change:isFocused', () => {
+      console.log('[AlightEmailLinkPluginUI] Focus changed. Updating balloon visibility.');
+      this._updateBalloonVisibility();
     });
   }
 
@@ -155,16 +147,25 @@ export default class AlightEmailLinkPluginUI extends Plugin {
 
     // Listen for changes in the model selection.
     this.listenTo(editor.model.document.selection, 'change:range', () => {
-      // console.log('[AlightEmailLinkPluginUI] Selection range changed.');
-      const command = editor.commands.get('alightEmailLinkPlugin');
-      if (command?.value) {
-        // console.log('[AlightEmailLinkPluginUI] Link attribute found in selection. Showing balloon.');
-        this._showBalloon();
-      } else {
-        // console.log('[AlightEmailLinkPluginUI] No link attribute in selection. Hiding balloon.');
-        this._hideBalloon();
-      }
+      console.log('[AlightEmailLinkPluginUI] Selection range changed. Updating balloon visibility.');
+      this._updateBalloonVisibility();
     });
+  }
+
+  // Consolidated function to update the balloon's visibility based on focus and selection.
+  private _updateBalloonVisibility(): void {
+    const editor = this.editor;
+    const command = editor.commands.get('alightEmailLinkPlugin');
+    const hasFocus = editor.ui.focusTracker.isFocused;
+    const hasLinkSelected = !!command?.value;
+
+    console.log('[AlightEmailLinkPluginUI] _updateBalloonVisibility: hasFocus =', hasFocus, ', hasLinkSelected =', hasLinkSelected);
+
+    if (hasFocus && hasLinkSelected) {
+      this._showBalloon();
+    } else {
+      this._hideBalloon();
+    }
   }
 
   // Creates the actions view displayed in the balloon.
