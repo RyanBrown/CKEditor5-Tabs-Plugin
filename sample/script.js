@@ -1,35 +1,35 @@
-const watchdog = new CKSource.EditorWatchdog();
+const watchdog = new CKEditor.EditorWatchdog();
 
 window.watchdog = watchdog;
 
-watchdog.setCreator( ( element, config ) => {
-	return CKSource.Editor
-		.create( element, config )
-		.then( editor => {
+watchdog.setCreator((element, config) => {
+	return CKEditor.Editor
+		.create(element, config)
+		.then(editor => {
 			return editor;
-		} );
-} );
+		});
+});
 
-watchdog.setDestructor( editor => {
+watchdog.setDestructor(editor => {
 	return editor.destroy();
-} );
+});
 
-watchdog.on( 'error', handleSampleError );
+watchdog.on('error', handleSampleError);
 
 watchdog
-	.create( document.querySelector( '.editor' ), {
+	.create(document.querySelector('.editor'), {
 		// Editor configuration.
-	} )
-	.catch( handleSampleError );
+	})
+	.catch(handleSampleError);
 
-function handleSampleError( error ) {
+function handleSampleError(error) {
 	const issueUrl = 'https://github.com/ckeditor/ckeditor5/issues';
 
 	const message = [
 		'Oops, something went wrong!',
-		`Please, report the following error on ${ issueUrl } with the build id "8d10683l9mj7-aq8r9rg4xws6" and the error stack trace:`
-	].join( '\n' );
+		`Please, report the following error on ${issueUrl} with the build id "8d10683l9mj7-aq8r9rg4xws6" and the error stack trace:`
+	].join('\n');
 
-	console.error( message );
-	console.error( error );
+	console.error(message);
+	console.error(error);
 }

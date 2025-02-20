@@ -1,6 +1,6 @@
 {
     "name": "ckeditor5-custom-build",
-    "author": "CKSource",
+    "author": "CKEditor",
     "description": "A custom CKEditor 5 build made by the CKEditor 5 online builder.",
     "version": "0.0.1",
     "license": "SEE LICENSE IN LICENSE.md",
@@ -56,9 +56,9 @@
     },
     "devDependencies": {
         "@ckeditor/ckeditor5-core": "^44.2.0",
-        "@ckeditor/ckeditor5-dev-tests": "^43.0.1",
+        "@ckeditor/ckeditor5-dev-tests": "^46.0.4",
         "@ckeditor/ckeditor5-dev-translations": "^43.0.1",
-        "@ckeditor/ckeditor5-dev-utils": "^43.0.1",
+        "@ckeditor/ckeditor5-dev-utils": "^46.0.4",
         "@ckeditor/ckeditor5-editor-classic": "^44.2.0",
         "@ckeditor/ckeditor5-engine": "^44.2.0",
         "@ckeditor/ckeditor5-inspector": "4.1.0",
@@ -66,8 +66,8 @@
         "@types/jasmine": "^4.0.0",
         "@types/jest": "^29.5.14",
         "@types/node": "^22.10.10",
+        "coverage-istanbul-loader": "^3.0.5",
         "css-loader": "^5.2.7",
-        "istanbul-instrumenter-loader": "^3.0.1",
         "jasmine-core": "^4.6.1",
         "karma": "~6.4.2",
         "karma-chrome-launcher": "~3.1.1",
@@ -77,23 +77,24 @@
         "karma-spec-reporter": "^0.0.36",
         "karma-typescript": "^5.5.4",
         "karma-webpack": "^5.0.1",
-        "postcss": "^8.4.38",
+        "postcss": "^8.5.3",
         "postcss-loader": "^4.3.0",
         "raw-loader": "^4.0.2",
-        "sass": "^1.83.4",
-        "sass-loader": "^16.0.4",
+        "sass": "^1.85.0",
+        "sass-loader": "^16.0.5",
         "style-loader": "^2.0.0",
         "terser-webpack-plugin": "^5.0.0",
         "ts-loader": "^9.5.2",
         "typescript": "^5.7.3",
         "webpack": "^5.98.0",
-        "webpack-cli": "^4.10.0"
+        "webpack-cli": "^6.0.1"
     },
     "scripts": {
         "build": "webpack --mode production && node prepend-banner.js",
         "postbuild": "tsc --declaration --declarationDir build --stripInternal --emitDeclarationOnly",
-        "test": "karma start",
-        "test:watch": "karma start --auto-watch --no-single-run",
-        "test:coverage": "karma start --coverage"
-    }
+        "test": "karma start karma.conf.cjs",
+        "test:watch": "karma start karma.conf.cjs --auto-watch --no-single-run",
+        "test:coverage": "karma start karma.conf.cjs --coverage"
+    },
+    "type": "module"
 }
