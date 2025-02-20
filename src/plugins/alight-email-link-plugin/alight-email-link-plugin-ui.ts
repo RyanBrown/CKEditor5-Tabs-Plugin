@@ -20,8 +20,7 @@ import type ViewElement from '@ckeditor/ckeditor5-engine/src/view/element';
 /**
  * The UI component of the email link plugin.
  * It handles the toolbar button and the modal dialog.
- * This version extends the default LinkUI actions view so that custom functions
- * can be passed to its buttons without needing to manage the balloon directly.
+ * This version extends the default LinkUI actions view by waiting for it to be available.
  */
 export default class AlightEmailLinkPluginUI extends Plugin {
   // Holds the reference to the modal dialog.
@@ -50,6 +49,14 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     editor.editing.view.addObserver(ClickObserver);
     // Setup the toolbar button.
     this._setupToolbarButton();
+    // Attach a selection change listener to attempt extending the default actions view
+    // once a link is selected (and hence the actions view is created).
+    editor.model.document.selection.on('change:range', () => {
+      const linkElement = getSelectedLinkElement(editor);
+      if (linkElement) {
+        this._extendDefaultActionsView();
+      }
+    });
   }
 
   /**
@@ -89,55 +96,40 @@ export default class AlightEmailLinkPluginUI extends Plugin {
 
   /**
    * Extends the default LinkUI actions view by assigning custom functions to its buttons.
-   * This allows you to pass your custom behaviors (e.g. open your modal dialog) without having
-   * to manage balloon visibility manually.
-   *
-   * @returns The extended actions view.
+   * This method checks if the default actions view is available and, if so, overrides its
+   * button behaviors. If the actions view is still undefined, it will do nothing.
    */
   private _extendDefaultActionsView(): void {
     const editor = this.editor;
-    let defaultActionsView: View | undefined;
+    const linkUI: any = editor.plugins.get('LinkUI');
 
-    try {
-      // Retrieve the default LinkUI plugin's actions view.
-      const linkUI: any = editor.plugins.get('LinkUI');
-      defaultActionsView = linkUI.actionsView;
+    // Check if the default actions view is available.
+    if (!linkUI || !linkUI.actionsView) {
+      // It might not be ready yet, so exit gracefully.
+      return;
+    }
 
-      if (!defaultActionsView) {
-        throw new Error('Default actions view is undefined');
-      }
+    const actionsView: any = linkUI.actionsView;
 
-      // The default actions view does not have typed definitions for its buttons,
-      // so we cast it to any in order to override the properties.
-      const actionsView: any = defaultActionsView;
+    // Override the default behavior for the "edit" button.
+    if (actionsView.editButtonView) {
+      actionsView.editButtonView.off('execute'); // remove existing listeners
+      actionsView.editButtonView.on('execute', () => {
+        console.log('[AlightEmailLinkPluginUI] Custom edit action triggered.');
+        this._showModal();
+      });
+    }
 
-      // Override the default behavior for the "edit" button.
-      if (actionsView.editButtonView) {
-        actionsView.editButtonView.on('execute', () => {
-          console.log('[AlightEmailLinkPluginUI] Custom edit action triggered.');
-          this._showModal();
-        });
-      }
-
-      // Override the default behavior for the "unlink" button.
-      if (actionsView.unlinkButtonView) {
-        actionsView.unlinkButtonView.on('execute', () => {
-          console.log('[AlightEmailLinkPluginUI] Custom unlink action triggered.');
-          const command = editor.commands.get('alightEmailLinkPlugin');
-          if (command) {
-            command.execute(undefined);
-          }
-        });
-      }
-
-      // Optionally, add any additional custom content if desired.
-      // For example:
-      // const customContentView = new MyCustomContentView(editor.locale);
-      // customContentView.render();
-      // (actionsView as any).children.push(customContentView);
-
-    } catch (error) {
-      console.warn('[AlightEmailLinkPluginUI] Could not extend default actions view:', error);
+    // Override the default behavior for the "unlink" button.
+    if (actionsView.unlinkButtonView) {
+      actionsView.unlinkButtonView.off('execute');
+      actionsView.unlinkButtonView.on('execute', () => {
+        console.log('[AlightEmailLinkPluginUI] Custom unlink action triggered.');
+        const command = editor.commands.get('alightEmailLinkPlugin');
+        if (command) {
+          command.execute(undefined);
+        }
+      });
     }
   }
 
@@ -204,11 +196,6 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     const content = ContentManager(initialEmail, initialOrgName);
     this._modalDialog.setContent(content);
     this._modalDialog.show();
-
-    // Extend the default actions view when the modal is shown.
-    // This ensures that if the user clicks an inline link later,
-    // the default balloon buttons already have your custom functions.
-    this._extendDefaultActionsView();
   }
 
   /**
