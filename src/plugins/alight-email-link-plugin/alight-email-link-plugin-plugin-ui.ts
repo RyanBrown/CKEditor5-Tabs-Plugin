@@ -7,7 +7,8 @@ import { ClickObserver } from '@ckeditor/ckeditor5-engine';
 import { CkAlightModalDialog } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import { ContentManager, validateForm } from './modal-content/alight-email-link-plugin-modal-ContentManager';
 import type AlightEmailLinkPluginCommand from './alight-email-link-plugin-command';
-import toolBarIcon from './assets/icon-link.svg';
+import { getSelectedLinkElement } from './alight-email-link-plugin-plugin-utils';
+import linkIcon from './assets/icon-link.svg';
 import editIcon from './assets/icon-pencil.svg';
 import unlinkIcon from './assets/icon-unlink.svg';
 import './styles/alight-email-link-plugin.scss';
@@ -77,7 +78,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
       // Configure the button properties.
       button.set({
         label: t('Email Link'),
-        icon: toolBarIcon,
+        icon: linkIcon,
         tooltip: true,
         withText: true,
       });
@@ -155,9 +156,10 @@ export default class AlightEmailLinkPluginUI extends Plugin {
   // Consolidated function to update the balloon's visibility based on focus and selection.
   private _updateBalloonVisibility(): void {
     const editor = this.editor;
-    const command = editor.commands.get('alightEmailLinkPlugin');
+    // Use getSelectedLinkElement to check if a link is actually selected.
+    const selectedLink = getSelectedLinkElement(editor);
+    const hasLinkSelected = !!selectedLink;
     const hasFocus = editor.ui.focusTracker.isFocused;
-    const hasLinkSelected = !!command?.value;
 
     console.log('[AlightEmailLinkPluginUI] _updateBalloonVisibility: hasFocus =', hasFocus, ', hasLinkSelected =', hasLinkSelected);
 
