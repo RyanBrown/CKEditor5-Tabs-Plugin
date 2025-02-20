@@ -9,37 +9,37 @@ import AlightEmailLinkPluginCommand from './alight-email-link-plugin-command';
 export default class AlightEmailLinkPluginEditing extends Plugin {
   // Returns the plugin name.
   public static get pluginName() {
-    console.log('[AlightEmailLinkPluginEditing] Retrieving plugin name.');
+    // console.log('[AlightEmailLinkPluginEditing] Retrieving plugin name.');
     return 'AlightEmailLinkPluginEditing' as const;
   }
 
   // Returns the required plugins for this plugin.
   public static get requires() {
-    console.log('[AlightEmailLinkPluginEditing] Retrieving required plugins.');
+    // console.log('[AlightEmailLinkPluginEditing] Retrieving required plugins.');
     return [Link] as const;
   }
 
   // Initializes the plugin by defining schema, converters, and commands.
   public init(): void {
-    console.log('[AlightEmailLinkPluginEditing] Initializing plugin.');
+    // console.log('[AlightEmailLinkPluginEditing] Initializing plugin.');
     this._defineSchema();
     this._defineConverters();
     this._defineCommands();
-    console.log('[AlightEmailLinkPluginEditing] Plugin initialized successfully.');
+    // console.log('[AlightEmailLinkPluginEditing] Plugin initialized successfully.');
   }
 
   // Extend the schema to allow the custom email link attribute on text nodes.
   private _defineSchema(): void {
-    console.log('[AlightEmailLinkPluginEditing] Defining schema.');
+    // console.log('[AlightEmailLinkPluginEditing] Defining schema.');
     this.editor.model.schema.extend('$text', {
       allowAttributes: ['alightEmailLinkPlugin']
     });
-    console.log('[AlightEmailLinkPluginEditing] Schema defined: allowed attribute "alightEmailLinkPlugin" on "$text".');
+    // console.log('[AlightEmailLinkPluginEditing] Schema defined: allowed attribute "alightEmailLinkPlugin" on "$text".');
   }
 
   // Define conversion rules for downcasting (model to view) and upcasting (view to model).
   private _defineConverters(): void {
-    console.log('[AlightEmailLinkPluginEditing] Defining converters.');
+    // console.log('[AlightEmailLinkPluginEditing] Defining converters.');
     const conversion = this.editor.conversion;
 
     // Downcast converter: Converts the model attribute to a view element (an <a> tag).
@@ -49,9 +49,9 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
         name: '$text'
       },
       view: (modelAttributeValue, { writer }) => {
-        console.log('[AlightEmailLinkPluginEditing] Downcasting attribute "alightEmailLinkPlugin" with value:', modelAttributeValue);
+        // console.log('[AlightEmailLinkPluginEditing] Downcasting attribute "alightEmailLinkPlugin" with value:', modelAttributeValue);
         if (!modelAttributeValue) {
-          console.log('[AlightEmailLinkPluginEditing] No attribute value found during downcast. Skipping element creation.');
+          // console.log('[AlightEmailLinkPluginEditing] No attribute value found during downcast. Skipping element creation.');
           return;
         }
         // Cast modelAttributeValue to an object containing email and optional orgName.
@@ -68,7 +68,7 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
             priority: 5
           }
         );
-        console.log('[AlightEmailLinkPluginEditing] Created view element:', element);
+        // console.log('[AlightEmailLinkPluginEditing] Created view element:', element);
         return element;
       }
     });
@@ -89,19 +89,19 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
           // Retrieve the organization name from the data attribute.
           const orgName = viewElement.getAttribute('data-org-name');
           const attributeValue = { email, orgName };
-          console.log('[AlightEmailLinkPluginEditing] Upcasting view element. Extracted attribute value:', attributeValue);
+          // console.log('[AlightEmailLinkPluginEditing] Upcasting view element. Extracted attribute value:', attributeValue);
           return attributeValue;
         }
       }
     });
-    console.log('[AlightEmailLinkPluginEditing] Converters defined.');
+    // console.log('[AlightEmailLinkPluginEditing] Converters defined.');
   }
 
   // Define and add the command for handling email link attributes.
   private _defineCommands(): void {
-    console.log('[AlightEmailLinkPluginEditing] Defining commands.');
+    // console.log('[AlightEmailLinkPluginEditing] Defining commands.');
     // Add a new command instance to the editor under the key 'alightEmailLinkPlugin'.
     this.editor.commands.add('alightEmailLinkPlugin', new AlightEmailLinkPluginCommand(this.editor));
-    console.log('[AlightEmailLinkPluginEditing] Command "alightEmailLinkPlugin" added to the editor.');
+    // console.log('[AlightEmailLinkPluginEditing] Command "alightEmailLinkPlugin" added to the editor.');
   }
 }

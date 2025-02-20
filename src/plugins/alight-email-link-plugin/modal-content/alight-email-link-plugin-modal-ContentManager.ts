@@ -7,7 +7,7 @@
 // @returns An HTMLElement containing the form.
 
 export function ContentManager(initialValue?: string, initialOrgName?: string): HTMLElement {
-  console.log('[ContentManager] Creating modal content with initialValue:', initialValue, 'and initialOrgName:', initialOrgName);
+  // console.log('[ContentManager] Creating modal content with initialValue:', initialValue, 'and initialOrgName:', initialOrgName);
   // Create a container element for the form content.
   const container = document.createElement('div');
 
@@ -59,7 +59,7 @@ export function ContentManager(initialValue?: string, initialOrgName?: string): 
 
   // Insert the form content into the container.
   container.innerHTML = formContent;
-  console.log('[ContentManager] Modal content created successfully.');
+  // console.log('[ContentManager] Modal content created successfully.');
 
   return container;
 }
@@ -69,10 +69,10 @@ export function ContentManager(initialValue?: string, initialOrgName?: string): 
 // @param email - The email address to validate.
 // @returns A boolean indicating whether the email is valid.
 function isValidEmail(email: string): boolean {
-  console.log('[isValidEmail] Validating email:', email);
+  // console.log('[isValidEmail] Validating email:', email);
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const isValid = emailRegex.test(email);
-  console.log('[isValidEmail] Email is valid:', isValid);
+  // console.log('[isValidEmail] Email is valid:', isValid);
   return isValid;
 }
 
@@ -82,33 +82,33 @@ function isValidEmail(email: string): boolean {
 // @param form - The HTML form element containing the email input field.
 // @returns A boolean indicating whether the form is valid.
 export function validateForm(form: HTMLFormElement): boolean {
-  console.log('[validateForm] Validating form input.');
+  // console.log('[validateForm] Validating form input.');
 
   // Retrieve the email input element and error message element.
   const emailInput = form.querySelector('#link-email') as HTMLInputElement;
   const emailError = form.querySelector('#email-error') as HTMLDivElement;
   const value = emailInput.value.trim();
-  console.log('[validateForm] Email input value:', value);
+  // console.log('[validateForm] Email input value:', value);
 
   // Reset any previous error messages.
   hideError(emailInput, emailError);
-  console.log('[validateForm] Previous errors cleared.');
+  // console.log('[validateForm] Previous errors cleared.');
 
   // Check if the email field is empty (it's required).
   if (!value) {
-    console.log('[validateForm] Email input is empty.');
+    // console.log('[validateForm] Email input is empty.');
     showError(emailInput, emailError, 'Email address is required.');
     return false;
   }
 
   // Validate the email format.
   if (!isValidEmail(value)) {
-    console.log('[validateForm] Email format is invalid.');
+    // console.log('[validateForm] Email format is invalid.');
     showError(emailInput, emailError, 'Please enter a valid email address.');
     return false;
   }
 
-  console.log('[validateForm] Form input is valid.');
+  // console.log('[validateForm] Form input is valid.');
   return true;
 }
 
@@ -118,7 +118,7 @@ export function validateForm(form: HTMLFormElement): boolean {
 // @param errorElement - The corresponding error message element.
 // @param message - The error message to display.
 function showError(input: HTMLInputElement, errorElement: HTMLElement, message: string): void {
-  console.log('[showError] Showing error for input:', input, 'with message:', message);
+  // console.log('[showError] Showing error for input:', input, 'with message:', message);
   input.classList.add('invalid');
   errorElement.textContent = message;
   errorElement.style.display = 'block';
@@ -130,7 +130,7 @@ function showError(input: HTMLInputElement, errorElement: HTMLElement, message: 
 // @param input - The input field to remove the error state from.
 // @param errorElement - The error message element to hide.
 function hideError(input: HTMLInputElement, errorElement: HTMLElement): void {
-  console.log('[hideError] Hiding error for input:', input);
+  // console.log('[hideError] Hiding error for input:', input);
   input.classList.remove('invalid');
   errorElement.style.display = 'none';
 }

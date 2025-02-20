@@ -12,13 +12,13 @@ export default class AlightEmailLinkPlugin extends Plugin {
   // Specifies the plugins that this plugin requires.
   // This includes the editing part, UI part, and the core Link plugin.
   public static get requires() {
-    console.log('[AlightEmailLinkPlugin] Retrieving required plugins.');
+    // console.log('[AlightEmailLinkPlugin] Retrieving required plugins.');
     return [AlightEmailLinkPluginEditing, AlightEmailLinkPluginUI, Link] as const;
   }
 
   // Returns the plugin name.
   public static get pluginName() {
-    console.log('[AlightEmailLinkPlugin] Retrieving plugin name.');
+    // console.log('[AlightEmailLinkPlugin] Retrieving plugin name.');
     return 'AlightEmailLinkPlugin' as const;
   }
 }

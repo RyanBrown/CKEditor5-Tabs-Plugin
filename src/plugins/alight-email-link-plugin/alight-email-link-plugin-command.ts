@@ -24,16 +24,16 @@ export default class AlightEmailLinkPluginCommand extends Command {
     const selection = model.document.selection;
 
     // Log current selection and state for debugging.
-    console.log('[AlightEmailLinkPluginCommand] Refreshing command state.');
-    console.log('[AlightEmailLinkPluginCommand] Current selection:', selection);
+    // console.log('[AlightEmailLinkPluginCommand] Refreshing command state.');
+    // console.log('[AlightEmailLinkPluginCommand] Current selection:', selection);
 
     // Check if the 'alightEmailLinkPlugin' attribute is allowed in the current selection.
     this.isEnabled = model.schema.checkAttributeInSelection(selection, 'alightEmailLinkPlugin');
-    console.log('[AlightEmailLinkPluginCommand] isEnabled set to:', this.isEnabled);
+    // console.log('[AlightEmailLinkPluginCommand] isEnabled set to:', this.isEnabled);
 
     // Retrieve the current attribute value from the selection.
     this.value = selection.getAttribute('alightEmailLinkPlugin') as alightEmailLinkPluginAttributes;
-    console.log('[AlightEmailLinkPluginCommand] Current attribute value:', this.value);
+    // console.log('[AlightEmailLinkPluginCommand] Current attribute value:', this.value);
   }
 
   // Execute the command.
@@ -44,14 +44,14 @@ export default class AlightEmailLinkPluginCommand extends Command {
     const selection = model.document.selection;
 
     // Log the execution command and the attributes provided.
-    console.log('[AlightEmailLinkPluginCommand] Executing command with attributes:', attributes);
-    console.log('[AlightEmailLinkPluginCommand] Current selection before change:', selection);
+    // console.log('[AlightEmailLinkPluginCommand] Executing command with attributes:', attributes);
+    // console.log('[AlightEmailLinkPluginCommand] Current selection before change:', selection);
 
     // Begin model change block for making modifications.
     model.change(writer => {
       // If no attributes are provided, then remove the email link attribute.
       if (!attributes) {
-        console.log('[AlightEmailLinkPluginCommand] No attributes provided. Removing the attribute.');
+        // console.log('[AlightEmailLinkPluginCommand] No attributes provided. Removing the attribute.');
         // Find the range where the current attribute is applied.
         const range = findAttributeRange(
           selection.getFirstPosition()!,
@@ -59,7 +59,7 @@ export default class AlightEmailLinkPluginCommand extends Command {
           this.value,
           model
         );
-        console.log('[AlightEmailLinkPluginCommand] Removing attribute in range:', range);
+        // console.log('[AlightEmailLinkPluginCommand] Removing attribute in range:', range);
         // Remove the attribute from the found range.
         writer.removeAttribute('alightEmailLinkPlugin', range);
         return;
@@ -69,7 +69,7 @@ export default class AlightEmailLinkPluginCommand extends Command {
       let range;
       if (selection.isCollapsed) {
         // If selection is collapsed, find the attribute range where the current value is applied.
-        console.log('[AlightEmailLinkPluginCommand] Collapsed selection. Finding attribute range for update.');
+        // console.log('[AlightEmailLinkPluginCommand] Collapsed selection. Finding attribute range for update.');
         range = findAttributeRange(
           selection.getFirstPosition()!,
           'alightEmailLinkPlugin',
@@ -78,15 +78,15 @@ export default class AlightEmailLinkPluginCommand extends Command {
         );
       } else {
         // If selection is not collapsed, create a range spanning from the first to the last position.
-        console.log('[AlightEmailLinkPluginCommand] Expanded selection. Creating range from start to end of selection.');
+        // console.log('[AlightEmailLinkPluginCommand] Expanded selection. Creating range from start to end of selection.');
         range = model.createRange(selection.getFirstPosition()!, selection.getLastPosition()!);
       }
       // Log the range where the attribute will be applied.
-      console.log('[AlightEmailLinkPluginCommand] Applying attribute in range:', range);
+      // console.log('[AlightEmailLinkPluginCommand] Applying attribute in range:', range);
       // Set the new attribute on the determined range.
       writer.setAttribute('alightEmailLinkPlugin', attributes, range);
     });
     // Log the completion of the command execution.
-    console.log('[AlightEmailLinkPluginCommand] Command execution completed.');
+    // console.log('[AlightEmailLinkPluginCommand] Command execution completed.');
   }
 }

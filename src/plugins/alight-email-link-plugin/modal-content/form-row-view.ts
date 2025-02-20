@@ -19,15 +19,15 @@ export default class AlightEmailLinkFormRowView extends View {
     options: { labelText: string; inputAttributes?: Record<string, any> }
   ) {
     super(locale);
-    console.log('[AlightEmailLinkFormRowView] Initializing form row view with options:', options);
+    // console.log('[AlightEmailLinkFormRowView] Initializing form row view with options:', options);
 
     // Create the label view using the provided label text.
     this.labelView = this._createLabelView(options.labelText);
-    console.log('[AlightEmailLinkFormRowView] Label view created:', this.labelView);
+    // console.log('[AlightEmailLinkFormRowView] Label view created:', this.labelView);
 
     // Create the input view using the provided attributes (if any).
     this.inputView = this._createInputView(options.inputAttributes);
-    console.log('[AlightEmailLinkFormRowView] Input view created:', this.inputView);
+    // console.log('[AlightEmailLinkFormRowView] Input view created:', this.inputView);
 
     // Set the template for the form row view container.
     this.setTemplate({
@@ -40,17 +40,17 @@ export default class AlightEmailLinkFormRowView extends View {
         this.inputView
       ]
     });
-    console.log('[AlightEmailLinkFormRowView] Template set for form row view.');
+    // console.log('[AlightEmailLinkFormRowView] Template set for form row view.');
   }
 
   // Creates the label view for the form row.
   // @param text - The text to be displayed in the label.
   // @returns The created LabelView instance.
   private _createLabelView(text: string): LabelView {
-    console.log('[AlightEmailLinkFormRowView] Creating label view with text:', text);
+    // console.log('[AlightEmailLinkFormRowView] Creating label view with text:', text);
     const label = new LabelView(this.locale);
     label.text = text;
-    console.log('[AlightEmailLinkFormRowView] Label view initialized:', label);
+    // console.log('[AlightEmailLinkFormRowView] Label view initialized:', label);
     return label;
   }
 
@@ -58,7 +58,7 @@ export default class AlightEmailLinkFormRowView extends View {
   // @param attributes - Optional attributes to extend the input template.
   // @returns The created InputTextView instance.
   private _createInputView(attributes?: Record<string, any>): InputTextView {
-    console.log('[AlightEmailLinkFormRowView] Creating input view with attributes:', attributes);
+    // console.log('[AlightEmailLinkFormRowView] Creating input view with attributes:', attributes);
     const input = new InputTextView(this.locale);
 
     // Extend the input view template with any provided attributes.
@@ -68,16 +68,16 @@ export default class AlightEmailLinkFormRowView extends View {
           ...attributes
         }
       });
-      console.log('[AlightEmailLinkFormRowView] Input view template extended with attributes.');
+      // console.log('[AlightEmailLinkFormRowView] Input view template extended with attributes.');
     }
 
-    console.log('[AlightEmailLinkFormRowView] Input view created:', input);
+    // console.log('[AlightEmailLinkFormRowView] Input view created:', input);
     return input;
   }
 
   // Sets focus on the input view.
   focus(): void {
-    console.log('[AlightEmailLinkFormRowView] Focusing input view.');
+    // console.log('[AlightEmailLinkFormRowView] Focusing input view.');
     this.inputView.focus();
   }
 }
