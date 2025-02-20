@@ -56,7 +56,7 @@ import AlightCopyPlugin from './plugins/alight-copy-plugin/alight-copy-plugin';
 import AlightImagePlugin from './plugins/alight-image-plugin/alight-image-plugin';
 import AlightPastePlugin from './plugins/alight-paste-plugin/alight-paste-plugin';
 import AlightPopulationPlugin from './plugins/alight-population-plugin/alight-population-plugin';
-import TabsPlugin from './plugins/alight-tabs-plugin/alight-tabs-plugin';
+// import TabsPlugin from './plugins/alight-tabs-plugin/alight-tabs-plugin';
 
 import AlightParentLinkPlugin from './plugins/alight-parent-link-plugin/alight-parent-link-plugin';
 import AlightPredefinedLinkPlugin from './plugins/alight-predefined-link-plugin/alight-predefined-link-plugin';
@@ -184,7 +184,7 @@ class Editor extends ClassicEditor {
     AlightImagePlugin,
     AlightPastePlugin,
     AlightPopulationPlugin,
-    TabsPlugin,
+    // TabsPlugin,
     AlightParentLinkPlugin,
     AlightGenericLinkPlugin,
     AlightPredefinedLinkPlugin,
@@ -240,7 +240,7 @@ class Editor extends ClassicEditor {
         '|',
         'removeFormat',
         '-',
-        'tabsPlugin',
+        // 'tabsPlugin',
         'alightCopyPlugin',
         'alightPastePlugin',
         'alightImagePlugin',

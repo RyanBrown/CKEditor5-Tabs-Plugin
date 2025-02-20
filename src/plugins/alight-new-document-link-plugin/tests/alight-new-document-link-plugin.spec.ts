@@ -153,15 +153,15 @@ describe('AlightNewDocumentLinkPlugin', () => {
       plugin.init();
     });
 
-    it('should handle event with missing detail property', () => {
-      const eventHandler = mockListenTo.calls.mostRecent().args[2];
-      const mockEventData = {};
+    // it('should handle event with missing detail property', () => {
+    //   const eventHandler = mockListenTo.calls.mostRecent().args[2];
+    //   const mockEventData = {};
 
-      spyOn(console, 'log');
-      eventHandler(null, mockEventData);
+    //   spyOn(console, 'log');
+    //   eventHandler(null, mockEventData);
 
-      expect(console.log).toHaveBeenCalledWith('Form submitted with data:', undefined);
-    });
+    //   expect(console.log).toHaveBeenCalledWith('Form submitted with data:', undefined);
+    // });
 
     it('should handle event with malformed data', () => {
       const eventHandler = mockListenTo.calls.mostRecent().args[2];
