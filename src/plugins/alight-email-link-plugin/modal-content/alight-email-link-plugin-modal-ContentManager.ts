@@ -76,7 +76,7 @@ function isValidEmail(email: string): boolean {
 }
 
 // Validates the form input by checking if a valid email address is provided.
-// If the email starts with "mailto:" (case-insensitive), the prefix is stripped.
+// If the email starts with "mailto:" (in any variation of case), the prefix is stripped.
 // Displays appropriate error messages if validation fails.
 // @param form - The HTML form element containing the email input field.
 // @returns A boolean indicating whether the form is valid.
@@ -90,7 +90,9 @@ export function validateForm(form: HTMLFormElement): boolean {
 
   // If the email starts with "mailto:" (case-insensitive), strip the prefix.
   if (value.toLowerCase().startsWith('mailto:')) {
-    value = value.replace(/^mailto:/i, '');
+    // Log that a mailto: prefix was detected and is being stripped.
+    console.log('[validateForm] "mailto:" prefix detected. Stripping it from the email address.');
+    value = value.replace(/^mailto:/i, '').trim();
     emailInput.value = value; // Update the input field value.
   }
 
