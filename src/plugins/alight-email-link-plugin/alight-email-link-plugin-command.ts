@@ -65,22 +65,16 @@ export default class AlightEmailLinkPluginCommand extends Command {
         return;
       }
 
-      // If attributes are provided, add or update the email link attribute.
-      let range;
-      if (selection.isCollapsed) {
-        // If selection is collapsed, find the attribute range where the current value is applied.
-        // console.log('[AlightEmailLinkPluginCommand] Collapsed selection. Finding attribute range for update.');
-        range = findAttributeRange(
+      // Add or update link
+      const range = selection.isCollapsed
+        ? findAttributeRange(
           selection.getFirstPosition()!,
           'alightEmailLinkPlugin',
           this.value,
           model
-        );
-      } else {
-        // If selection is not collapsed, create a range spanning from the first to the last position.
-        // console.log('[AlightEmailLinkPluginCommand] Expanded selection. Creating range from start to end of selection.');
-        range = model.createRange(selection.getFirstPosition()!, selection.getLastPosition()!);
-      }
+        )
+        : model.createRange(selection.getFirstPosition()!, selection.getLastPosition()!);
+
       // Log the range where the attribute will be applied.
       // console.log('[AlightEmailLinkPluginCommand] Applying attribute in range:', range);
       // Set the new attribute on the determined range.

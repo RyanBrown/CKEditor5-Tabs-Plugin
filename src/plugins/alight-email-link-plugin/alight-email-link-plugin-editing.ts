@@ -57,23 +57,17 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
         // Cast modelAttributeValue to an object containing email and optional orgName.
         const linkData = modelAttributeValue as { email: string; orgName?: string };
         // Create an anchor element with mailto link, data attribute, and a class.
-        const element = writer.createAttributeElement(
-          'a',
-          {
-            href: `mailto:${linkData.email}`,
-            'data-org-name': linkData.orgName || '',
-            class: 'email-link'
-          },
-          {
-            priority: 5
-          }
-        );
-        // console.log('[AlightEmailLinkPluginEditing] Created view element:', element);
-        return element;
+        return writer.createAttributeElement('a', {
+          href: `mailto:${linkData.email}`,
+          'data-org-name': linkData.orgName || '',
+          class: 'email-link'
+        }, {
+          priority: 5
+        });
       }
     });
 
-    // Upcast converter: Converts a view element (an <a> tag with mailto:) to the model attribute.
+    // Upcast converter (view to model)
     conversion.for('upcast').elementToAttribute({
       view: {
         name: 'a',
@@ -83,15 +77,11 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
       },
       model: {
         key: 'alightEmailLinkPlugin',
-        value: (viewElement: Element) => {
+        value: (viewElement: Element) => ({
           // Extract the email address by removing the 'mailto:' prefix.
-          const email = viewElement.getAttribute('href')?.replace(/^mailto:/, '');
-          // Retrieve the organization name from the data attribute.
-          const orgName = viewElement.getAttribute('data-org-name');
-          const attributeValue = { email, orgName };
-          // console.log('[AlightEmailLinkPluginEditing] Upcasting view element. Extracted attribute value:', attributeValue);
-          return attributeValue;
-        }
+          email: viewElement.getAttribute('href')?.replace(/^mailto:/, ''),
+          orgName: viewElement.getAttribute('data-org-name')
+        })
       }
     });
     // console.log('[AlightEmailLinkPluginEditing] Converters defined.');

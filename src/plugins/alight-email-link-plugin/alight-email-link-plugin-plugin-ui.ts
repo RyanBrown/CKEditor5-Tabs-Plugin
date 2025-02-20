@@ -105,7 +105,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
 
     // Listen for clicks in the editor view.
     this.listenTo(editor.editing.view.document, 'click', (evt, data) => {
-      // // console.log('[AlightEmailLinkPluginUI] Editor view click detected.', data);
+      // console.log('[AlightEmailLinkPluginUI] Editor view click detected.', data);
       const domEvent = data.domEvent as MouseEvent;
       const domElement = domEvent.target as HTMLElement;
 
@@ -135,10 +135,15 @@ export default class AlightEmailLinkPluginUI extends Plugin {
 
     // Hide the balloon when the editor loses focus.
     this.listenTo(editor.ui.focusTracker, 'change:isFocused', (evt, name, isFocused) => {
-      // // console.log('[AlightEmailLinkPluginUI] Editor focus changed. isFocused:', isFocused);
+      console.log('[AlightEmailLinkPluginUI] Editor focus changed. isFocused:', isFocused);
       if (!isFocused) {
-        this._hideBalloon();
-        // console.log('[AlightEmailLinkPluginUI] Balloon hidden due to loss of focus.');
+        const selection = editor.model.document.selection;
+        const range = selection.getFirstRange();
+        if (range) {
+          // console.log('[AlightEmailLinkPluginUI] Selection range found. Hiding balloon.');
+          this._hideBalloon();
+        }
+        console.log('[AlightEmailLinkPluginUI] Balloon hidden due to loss of focus.');
       }
     });
   }
