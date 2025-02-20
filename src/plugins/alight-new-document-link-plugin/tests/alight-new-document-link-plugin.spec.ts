@@ -2,6 +2,7 @@
 
 import AlightNewDocumentLinkPlugin from '../alight-new-document-link-plugin';
 import AlightNewDocumentLinkPluginUI from '../alight-new-document-link-plugin-ui';
+import { LICENSE_KEY } from '../../../ckeditor';
 
 describe('AlightNewDocumentLinkPlugin', () => {
   let plugin: AlightNewDocumentLinkPlugin;
@@ -22,6 +23,9 @@ describe('AlightNewDocumentLinkPlugin', () => {
         view: {
           document: mockDocument
         }
+      },
+      config: {
+        get: () => LICENSE_KEY
       }
     };
 
