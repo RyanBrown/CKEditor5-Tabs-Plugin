@@ -3,7 +3,6 @@ import { Plugin } from '@ckeditor/ckeditor5-core';
 import { Link } from '@ckeditor/ckeditor5-link';
 import AlightEmailLinkPluginEditing from './alight-email-link-plugin-editing';
 import AlightEmailLinkPluginUI from './alight-email-link-plugin-plugin-ui';
-import AlightEmailLinkPluginCommand from './alight-email-link-plugin-command';
 
 // The `AlightEmailLinkPlugin` class is a CKEditor plugin that extends the default link functionality
 // to support "public links" with additional attributes and UI elements.

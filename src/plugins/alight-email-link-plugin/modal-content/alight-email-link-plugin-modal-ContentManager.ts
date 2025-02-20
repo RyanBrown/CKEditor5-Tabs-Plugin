@@ -1,23 +1,11 @@
-// src/plugins/alight-generic-link-plugin/modal-content/public-website.ts
-interface PublicLinkData {
-  email?: string;
-  orgName?: string;
-}
+// src/plugins/alight-email-link-plugin/modal-content/public-website.ts
 
-/**
- * Creates and returns an HTML form element to collect public link information.
- * This form includes fields for an email address and an optional organization name.
- *
- * @param initialValue - The initial value for the email input field.
- * @param initialOrgName - The initial value for the organization name input field.
- * @returns A container div element containing the form.
- */
 export function ContentManager(initialValue?: string, initialOrgName?: string): HTMLElement {
   const container = document.createElement('div');
 
   // HTML structure for the form
   const formContent = `
-      <form id="generic-link-form" class="ck-form">
+      <form id="email-link-form" class="ck-form">
         <div class="ck-form-group">
           <label for="link-email" class="cka-input-label">
             Email Address

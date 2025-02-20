@@ -16,7 +16,6 @@ export default class AlightEmailLinkPluginUI extends Plugin {
   private _balloon?: ContextualBalloon; // Holds the reference to the contextual balloon instance
   private _actionsView?: ActionsView; // Holds the reference to the actions view displayed in the balloon
   private _modalDialog?: CkAlightModalDialog; // Holds the reference to the modal dialog
-  private _storedRange: any = null; // Stores the selection range when losing focus
 
   // Plugin dependencies
   public static get requires() {
@@ -115,7 +114,6 @@ export default class AlightEmailLinkPluginUI extends Plugin {
         const selection = editor.model.document.selection;
         const range = selection.getFirstRange();
         if (range) {
-          this._storedRange = range;
         }
         this._hideBalloon();
       }

@@ -2,7 +2,6 @@
 import { Command } from '@ckeditor/ckeditor5-core';
 import type { Editor } from '@ckeditor/ckeditor5-core';
 import { findAttributeRange } from '@ckeditor/ckeditor5-typing';
-import { type Item, type Node } from '@ckeditor/ckeditor5-engine';
 
 export interface LinkAttributes {
   url: string;

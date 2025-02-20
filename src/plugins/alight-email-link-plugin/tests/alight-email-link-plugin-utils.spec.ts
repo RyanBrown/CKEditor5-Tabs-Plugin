@@ -1,5 +1,5 @@
 // src/plugins/alight-email-link-plugin/tests/alight-email-link-plugin-utils.spec.ts
-import { getSelectedLinkElement, hasLinkAttribute, getLinkAttributeValue } from '../alight-email-link-plugin-plugin-utils';
+import { getSelectedLinkElement } from '../alight-email-link-plugin-plugin-utils';
 import { Editor } from '@ckeditor/ckeditor5-core';
 import { setData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model';
 import { LICENSE_KEY } from '../../../ckeditor';
@@ -61,48 +61,6 @@ describe('AlightEmailLinkPluginUtils', () => {
       const element = getSelectedLinkElement(editor);
       expect(element).toBeTruthy();
       expect(element?.is('element', 'a')).toBe(true);
-    });
-  });
-
-  describe('hasLinkAttribute', () => {
-    it('should return false when selection has no link attribute', () => {
-      setData(editor.model, '<paragraph>foo[]bar</paragraph>');
-      const selection = editor.model.document.selection;
-      expect(hasLinkAttribute(selection)).toBe(false);
-    });
-
-    it('should return true when selection has link attribute', () => {
-      const linkData = {
-        url: 'https://example.com',
-        orgName: 'Example Org'
-      };
-      setData(
-        editor.model,
-        `<paragraph><$text alightEmailLinkPlugin='${JSON.stringify(linkData)}'>foo[]bar</$text></paragraph>`
-      );
-      const selection = editor.model.document.selection;
-      expect(hasLinkAttribute(selection)).toBe(true);
-    });
-  });
-
-  describe('getLinkAttributeValue', () => {
-    it('should return undefined when no link attribute exists', () => {
-      setData(editor.model, '<paragraph>foo[]bar</paragraph>');
-      const selection = editor.model.document.selection;
-      expect(getLinkAttributeValue(selection)).toBeUndefined();
-    });
-
-    it('should return link attributes when they exist', () => {
-      const linkData = {
-        url: 'https://example.com',
-        orgName: 'Example Org'
-      };
-      setData(
-        editor.model,
-        `<paragraph><$text alightEmailLinkPlugin='${JSON.stringify(linkData)}'>foo[]bar</$text></paragraph>`
-      );
-      const selection = editor.model.document.selection;
-      expect(getLinkAttributeValue(selection)).toEqual(linkData);
     });
   });
 });

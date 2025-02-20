@@ -37,26 +37,3 @@ export function getSelectedLinkElement(editor: Editor): Element | null {
 
   return null;
 }
-
-/**
- * Checks if the selection has the 'alightEmailLinkPlugin' attribute.
- * This attribute is used to indicate that a public link is applied.
- *
- * @param selection - The current selection in the editor.
- * @returns True if the selection has the 'alightEmailLinkPlugin' attribute, false otherwise.
- */
-export function hasLinkAttribute(selection: any): boolean {
-  return selection.hasAttribute('alightEmailLinkPlugin');
-}
-
-/**
- * Retrieves the value of the 'alightEmailLinkPlugin' attribute from the selection.
- * The attribute stores link details such as the URL and an optional organization name.
- *
- * @param selection - The current selection in the editor.
- * @returns An object containing the URL and optional organization name, or undefined if not set.
- */
-export function getLinkAttributeValue(selection: any): { url: string; orgName?: string } | undefined {
-  const value = selection.getAttribute('alightEmailLinkPlugin');
-  return value as { url: string; orgName?: string } | undefined;
-}
