@@ -65,20 +65,19 @@ export function ContentManager(initialValue?: string, initialOrgName?: string): 
 }
 
 // Validates an email address using a regular expression.
-// This checks for basic email format requirements.
+// This function checks for basic email format requirements.
 // @param email - The email address to validate.
 // @returns A boolean indicating whether the email is valid.
 function isValidEmail(email: string): boolean {
   // console.log('[isValidEmail] Validating email:', email);
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const isValid = emailRegex.test(email);
+  return emailRegex.test(email);
   // console.log('[isValidEmail] Email is valid:', isValid);
-  return isValid;
 }
 
 // Validates the form input by checking if a valid email address is provided.
+// If the email starts with "mailto:" (case-insensitive), the prefix is stripped.
 // Displays appropriate error messages if validation fails.
-//
 // @param form - The HTML form element containing the email input field.
 // @returns A boolean indicating whether the form is valid.
 export function validateForm(form: HTMLFormElement): boolean {
@@ -87,8 +86,13 @@ export function validateForm(form: HTMLFormElement): boolean {
   // Retrieve the email input element and error message element.
   const emailInput = form.querySelector('#link-email') as HTMLInputElement;
   const emailError = form.querySelector('#email-error') as HTMLDivElement;
-  const value = emailInput.value.trim();
-  // console.log('[validateForm] Email input value:', value);
+  let value = emailInput.value.trim();
+
+  // If the email starts with "mailto:" (case-insensitive), strip the prefix.
+  if (value.toLowerCase().startsWith('mailto:')) {
+    value = value.replace(/^mailto:/i, '');
+    emailInput.value = value; // Update the input field value.
+  }
 
   // Reset any previous error messages.
   hideError(emailInput, emailError);
@@ -126,7 +130,6 @@ function showError(input: HTMLInputElement, errorElement: HTMLElement, message: 
 
 // Hides any displayed error message for an input field.
 // Removes the invalid state from the input.
-
 // @param input - The input field to remove the error state from.
 // @param errorElement - The error message element to hide.
 function hideError(input: HTMLInputElement, errorElement: HTMLElement): void {
