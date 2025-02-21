@@ -72,6 +72,9 @@ export default class AlightEmailLinkPluginUI extends Plugin {
 
           // Customize the display of mailto links by stripping the mailto: prefix
           actionsView.previewButtonView.unbind('label');
+          actionsView.previewButtonView.unbind('tooltip');
+
+          // Update the button label (text)
           actionsView.previewButtonView.bind('label').to(actionsView, 'href', (href: string) => {
             if (!href) {
               return editor.t('This link has no URL');
@@ -79,6 +82,14 @@ export default class AlightEmailLinkPluginUI extends Plugin {
             // Show only the email address part for mailto links
             return href.toLowerCase().startsWith('mailto:') ?
               href.substring(7) : href;
+          });
+
+          // Update the button tooltip (title)
+          actionsView.previewButtonView.bind('tooltip').to(actionsView, 'href', (href: string) => {
+            if (href && href.toLowerCase().startsWith('mailto:')) {
+              return editor.t('Open email in client');
+            }
+            return editor.t('Open link in new tab');
           });
 
           return actionsView;
@@ -156,7 +167,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     if (!linkValue.startsWith('mailto:')) {
       if (actionsView.editButtonView) {
         actionsView.editButtonView.off('execute');
-        actionsView.off('edit'); // THIS STOPS THE DEFAULT EDIT BUTTON BEHAVIOR
+        actionsView.off('edit');
       }
       return;
     }
@@ -165,7 +176,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     if (actionsView.editButtonView) {
       // Clean up existing handlers
       actionsView.editButtonView.off('execute');
-      actionsView.off('edit'); // THIS STOPS THE DEFAULT EDIT BUTTON BEHAVIOR
+      actionsView.off('edit');
 
       // Add custom edit handler for mailto links
       actionsView.editButtonView.on('execute', (evt: { stop: () => void }) => {
@@ -181,7 +192,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
         this._showModal({ email });
       }, { priority: 'highest' });
 
-      // Prevent default link edit behavior
+      // Prevent default edit behavior
       actionsView.on('edit', (evt: { stop: () => void }) => {
         evt.stop();
       }, { priority: 'highest' });
@@ -199,7 +210,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
   private _showModal(initialValue?: { email?: string; orgName?: string }): void {
     const editor = this.editor;
 
-    // The built-in 'link' command sets linkHref in the model.
+    // Get link command for creating/editing links
     const linkCommand = editor.commands.get('link');
     if (!linkCommand) {
       console.warn('[AlightEmailLinkPluginUI] The built-in "link" command is unavailable.');
