@@ -44,14 +44,6 @@ export default class AlightEmailLinkPluginUI extends Plugin {
       this._extendDefaultActionsView();
     });
 
-    // Listen to selection changes
-    this.listenTo(editor.model.document.selection, 'change:range', () => {
-      if (!this._isSelectionInLink()) {
-        this._hideUI();
-      }
-      this._extendDefaultActionsView();
-    });
-
     // Override the LinkUI's _showActions method
     const linkUI: any = editor.plugins.get('LinkUI');
     if (linkUI) {
@@ -62,42 +54,6 @@ export default class AlightEmailLinkPluginUI extends Plugin {
           this._extendDefaultActionsView();
         };
       }
-    }
-  }
-
-  /**
-   * Checks if the current selection is within a link
-   */
-  private _isSelectionInLink(): boolean {
-    const editor = this.editor;
-    const selection = editor.model.document.selection;
-    return selection.hasAttribute('linkHref');
-  }
-
-  /**
-   * Removes the balloon and cleans up the UI
-   */
-  private _hideUI(): void {
-    const editor = this.editor;
-    const linkUI = editor.plugins.get('LinkUI') as any;
-
-    // Stop listening to UI updates
-    this.stopListening(editor.ui, 'update');
-
-    // Make sure focus returns to editing view before removing UI
-    editor.editing.view.focus();
-
-    // Only try to remove the actions view if it exists and is in the balloon
-    if (linkUI?.actionsView && this._balloon.hasView(linkUI.actionsView)) {
-      // If we're currently displaying the actionsView, remove it first
-      if (this._balloon.visibleView === linkUI.actionsView) {
-        this._balloon.remove(linkUI.actionsView);
-      }
-    }
-
-    // Hide modal if open
-    if (this._modalDialog?.isVisible) {
-      this._modalDialog.hide();
     }
   }
 
@@ -128,7 +84,6 @@ export default class AlightEmailLinkPluginUI extends Plugin {
 
       // On execute, open the custom modal dialog.
       button.on('execute', () => {
-        this._hideUI();
         this._showModal();
       });
 
@@ -155,7 +110,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     if (actionsView.editButtonView) {
       // Remove all existing listeners from both the button and the actions view
       actionsView.editButtonView.off('execute');
-      actionsView.off('edit');
+      actionsView.off('edit'); // THIS STOPS THE DEFAULT EDIT BEHAVIOR
 
       // Add our custom listener with highest priority
       actionsView.editButtonView.on('execute', (evt: { stop: () => void }) => {
@@ -173,18 +128,17 @@ export default class AlightEmailLinkPluginUI extends Plugin {
         this._showModal({ email });
       }, { priority: 'highest' });
 
-      // Prevent the default 'edit' event handler from firing
+      // Prevent the default 'edit' event handler
       actionsView.on('edit', (evt: { stop: () => void }) => {
         evt.stop();
       }, { priority: 'highest' });
     }
 
-    // Override the unlink button if needed
+    // Override the unlink button
     if (actionsView.unlinkButtonView) {
       actionsView.unlinkButtonView.off('execute');
       actionsView.unlinkButtonView.on('execute', () => {
         editor.execute('unlink');
-        this._hideUI();
       });
     }
   }
@@ -243,7 +197,6 @@ export default class AlightEmailLinkPluginUI extends Plugin {
           const isValid = validateForm(form);
           if (isValid) {
             const emailInput = form.querySelector('#link-email') as HTMLInputElement;
-
             const emailVal = emailInput.value.trim();
 
             // Insert or edit the link with mailto:
@@ -257,15 +210,11 @@ export default class AlightEmailLinkPluginUI extends Plugin {
       });
     }
 
-    // Provide the initial email (and orgName if you want to do something with it).
     const content = ContentManager(initialEmail, initialOrgName);
     this._modalDialog.setContent(content);
     this._modalDialog.show();
   }
 
-  /**
-   * Clean up resources on destroy.
-   */
   public override destroy(): void {
     super.destroy();
     this._modalDialog?.destroy();
