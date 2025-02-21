@@ -12,7 +12,7 @@ export default class AlightEmailLinkFormView extends View {
   // Input row for the email address.
   public readonly emailInputRow: FormRowView;
   // Input row for the organization name.
-  public readonly orgNameInputRow: FormRowView;
+  public readonly orgNameTextInputRow: FormRowView;
   // Tracks focus for the form elements.
   public readonly focusTracker: FocusTracker;
   // Handles keyboard events on the form.
@@ -28,8 +28,8 @@ export default class AlightEmailLinkFormView extends View {
     this.emailInputRow = this._createInputRow('Email address', 'email');
     // console.log('[AlightEmailLinkFormView] Email input row created:', this.emailInputRow);
     // Create the input row for the organization name with type 'text'.
-    this.orgNameInputRow = this._createInputRow('Organization name', 'text');
-    // console.log('[AlightEmailLinkFormView] Organization name input row created:', this.orgNameInputRow);
+    this.orgNameTextInputRow = this._createInputRow('Organization name', 'text');
+    // console.log('[AlightEmailLinkFormView] Organization name input row created:', this.orgNameTextInputRow);
     // Initialize focus tracking and keyboard handling.
     this.focusTracker = new FocusTracker();
     // console.log('[AlightEmailLinkFormView] FocusTracker initialized.');
@@ -45,7 +45,7 @@ export default class AlightEmailLinkFormView extends View {
       },
       children: [
         this.emailInputRow,
-        this.orgNameInputRow
+        this.orgNameTextInputRow
       ]
     });
     // console.log('[AlightEmailLinkFormView] Form template set.');
@@ -90,7 +90,7 @@ export default class AlightEmailLinkFormView extends View {
     // Add the form's input elements to the focus tracker.
     const elements = [
       this.emailInputRow.inputView.element,
-      this.orgNameInputRow.inputView.element
+      this.orgNameTextInputRow.inputView.element
     ];
     elements.forEach(element => {
       if (element) {

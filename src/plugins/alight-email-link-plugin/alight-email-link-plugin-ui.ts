@@ -207,7 +207,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
    * 
    * @param initialValue Optional initial values for email and org name
    */
-  private _showModal(initialValue?: { email?: string; orgName?: string }): void {
+  private _showModal(initialValue?: { email?: string; orgNameText?: string }): void {
     const editor = this.editor;
 
     // Get link command for creating/editing links
@@ -218,7 +218,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     }
 
     const initialEmail = initialValue?.email || '';
-    const initialOrgName = initialValue?.orgName || '';
+    const initialOrgNameText = initialValue?.orgNameText || '';
 
     // Create modal dialog if it doesn't exist
     if (!this._modalDialog) {
@@ -272,7 +272,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     }
 
     // Set modal content and show
-    const content = ContentManager(initialEmail, initialOrgName);
+    const content = ContentManager(initialEmail, initialOrgNameText);
     this._modalDialog.setContent(content);
     this._modalDialog.show();
   }

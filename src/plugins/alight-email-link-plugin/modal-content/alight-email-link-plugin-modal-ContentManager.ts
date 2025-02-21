@@ -3,11 +3,11 @@
 // Generates the modal content for the email link plugin.
 // It creates a container with a form for entering an email address and an optional organization name.
 // @param initialValue - An optional initial value for the email input.
-// @param initialOrgName - An optional initial value for the organization name input.
+// @param initialOrgNameText - An optional initial value for the organization name input.
 // @returns An HTMLElement containing the form.
 
-export function ContentManager(initialValue?: string, initialOrgName?: string): HTMLElement {
-  // console.log('[ContentManager] Creating modal content with initialValue:', initialValue, 'and initialOrgName:', initialOrgName);
+export function ContentManager(initialValue?: string, initialOrgNameText?: string): HTMLElement {
+  // console.log('[ContentManager] Creating modal content with initialValue:', initialValue, 'and initialOrgNameText:', initialOrgNameText);
   // Create a container element for the form content.
   const container = document.createElement('div');
 
@@ -44,9 +44,9 @@ export function ContentManager(initialValue?: string, initialOrgName?: string): 
           <input 
             type="text" 
             id="org-name" 
-            name="displayText" 
+            name="orgNameText" 
             class="cka-input-text block"
-            value="${initialOrgName || ''}"
+            value="${initialOrgNameText || ''}"
             placeholder="Organization name"
           />
         </div>

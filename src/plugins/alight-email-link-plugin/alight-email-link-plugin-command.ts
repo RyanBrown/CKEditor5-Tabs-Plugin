@@ -8,7 +8,7 @@ import { findAttributeRange } from '@ckeditor/ckeditor5-typing';
 // This interface includes an email property and an optional organization name.
 export interface alightEmailLinkPluginAttributes {
   email: string;
-  orgName?: string;
+  orgNameText?: string;
 }
 
 // Define the command class that extends CKEditor's Command.
