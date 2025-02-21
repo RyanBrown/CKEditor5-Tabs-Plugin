@@ -254,6 +254,21 @@ class Editor extends ClassicEditor {
       ],
       shouldNotGroupWhenFull: true,
     },
+    htmlSupport: {
+      allow: [
+        {
+          name: 'svg',
+          attributes: true,
+          classes: true,
+          styles: true
+        },
+        {
+          name: 'span',
+          classes: true,
+          styles: true
+        }
+      ]
+    },
     language: 'en',
     image: {
       toolbar: [
