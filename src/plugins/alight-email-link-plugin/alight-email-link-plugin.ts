@@ -1,3 +1,4 @@
+// src/plugins/alight-email-link-plugin/alight-email-link-plugin.ts
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { Link } from '@ckeditor/ckeditor5-link';
 import AlightEmailLinkPluginEditing from './alight-email-link-plugin-editing';
