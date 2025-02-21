@@ -16,6 +16,7 @@ import { DataSchema } from '@ckeditor/ckeditor5-html-support';
 import type { EditorConfig } from '@ckeditor/ckeditor5-core';
 import { Essentials } from '@ckeditor/ckeditor5-essentials';
 import { FontBackgroundColor, FontColor, FontFamily, FontSize } from '@ckeditor/ckeditor5-font';
+import { GeneralHtmlSupport } from '@ckeditor/ckeditor5-html-support';
 import { Heading, Title } from '@ckeditor/ckeditor5-heading';
 import { Highlight } from '@ckeditor/ckeditor5-highlight';
 import { HorizontalLine } from '@ckeditor/ckeditor5-horizontal-line';
@@ -139,6 +140,7 @@ class Editor extends ClassicEditor {
     FontColor,
     FontFamily,
     FontSize,
+    GeneralHtmlSupport,
     Heading,
     Highlight,
     HorizontalLine,
@@ -257,13 +259,14 @@ class Editor extends ClassicEditor {
     htmlSupport: {
       allow: [
         {
-          name: 'svg',
-          attributes: true,
-          classes: true,
-          styles: true
+          name: 'span',
+          attributes: true, // Allow all attributes
+          classes: true,    // Allow all classes
+          styles: true      // Allow all inline styles
         },
         {
-          name: 'span',
+          name: 'svg',
+          attributes: true,
           classes: true,
           styles: true
         }
