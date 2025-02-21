@@ -298,6 +298,16 @@ class Editor extends ClassicEditor {
         },
       },
     },
+    list: {
+      properties: {
+        styles: {
+          listStyleTypes: {
+            numbered: ['decimal'],
+            bulleted: ['disc']
+          }
+        }
+      }
+    },
     indentBlock: {
       offset: 1,
       unit: 'em',
