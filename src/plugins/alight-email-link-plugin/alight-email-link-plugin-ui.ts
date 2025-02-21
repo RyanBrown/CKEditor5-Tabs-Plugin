@@ -99,10 +99,11 @@ export default class AlightEmailLinkPluginUI extends Plugin {
       return;
     }
 
-    // The default actions view with edit/unlink buttons.
+    // The default LinkUI actions view with edit/unlink buttons.
     const actionsView: any = linkUI.actionsView;
+    const balloon = editor.plugins.get(ContextualBalloon);
 
-    // 1) Override the Edit button to open our modal.
+    // 1) Override the "Edit" button to open our modal.
     if (actionsView.editButtonView) {
       actionsView.editButtonView.off('execute');
       actionsView.editButtonView.on('execute', () => {
@@ -118,25 +119,11 @@ export default class AlightEmailLinkPluginUI extends Plugin {
         const linkCommand = editor.commands.get('link');
         let email = '';
         if (linkCommand && typeof linkCommand.value === 'string') {
-          // Remove mailto: if present.
+          // Strip "mailto:" for convenience.
           email = linkCommand.value.replace(/^mailto:/i, '');
         }
         // Open modal with the current email.
         this._showModal({ email });
-      });
-    }
-
-    // 2) Override the Unlink button so it calls the built-in 'unlink' command & closes balloon.
-    if (actionsView.unlinkButtonView) {
-      actionsView.unlinkButtonView.off('execute');
-      actionsView.unlinkButtonView.on('execute', () => {
-        // If you want to remove just the href, you can do editor.execute('unlink') or editor.execute('link', null).
-        editor.execute('unlink');
-
-        const balloon = editor.plugins.get(ContextualBalloon);
-        if (balloon.hasView(actionsView)) {
-          balloon.remove(actionsView);
-        }
       });
     }
   }
