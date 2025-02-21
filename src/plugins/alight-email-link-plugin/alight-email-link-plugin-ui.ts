@@ -41,7 +41,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     this._setupToolbarButton();
 
     // Whenever the selection changes, LinkUI may show or hide the balloon.
-    // Here, we override the default balloon's "edit" / "unlink" buttons
+    // We override the default balloon's "edit" / "unlink" buttons
     // so that "edit" calls _showModal() and "unlink" calls the built-in unlink.
     this.listenTo(editor.model.document.selection, 'change:range', () => {
       this._extendDefaultActionsView();
@@ -106,9 +106,13 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     if (actionsView.editButtonView) {
       actionsView.editButtonView.off('execute');
       actionsView.editButtonView.on('execute', () => {
-        // Remove balloon so only our modal is shown.
+        // Remove the balloon so only our modal is shown.
         const balloon = editor.plugins.get(ContextualBalloon);
-        balloon.remove(actionsView);
+
+        // SAFETY CHECK: Only remove it if it's actually there!
+        if (balloon.hasView(actionsView)) {
+          balloon.remove(actionsView);
+        }
 
         // If there's a link in the selection, linkCommand.value holds the href string.
         const linkCommand = editor.commands.get('link');
@@ -128,8 +132,11 @@ export default class AlightEmailLinkPluginUI extends Plugin {
       actionsView.unlinkButtonView.on('execute', () => {
         // If you want to remove just the href, you can do editor.execute('unlink') or editor.execute('link', null).
         editor.execute('unlink');
+
         const balloon = editor.plugins.get(ContextualBalloon);
-        balloon.remove(actionsView);
+        if (balloon.hasView(actionsView)) {
+          balloon.remove(actionsView);
+        }
       });
     }
   }
@@ -188,8 +195,6 @@ export default class AlightEmailLinkPluginUI extends Plugin {
           const isValid = validateForm(form);
           if (isValid) {
             const emailInput = form.querySelector('#link-email') as HTMLInputElement;
-            // optional: read orgName if you want
-            // const orgNameInput = form.querySelector('#org-name') as HTMLInputElement;
 
             const emailVal = emailInput.value.trim();
 
