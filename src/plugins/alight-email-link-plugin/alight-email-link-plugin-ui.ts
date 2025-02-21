@@ -44,12 +44,15 @@ export default class AlightEmailLinkPluginUI extends Plugin {
       this._extendDefaultActionsView();
     });
 
-    // Also listen to selection changes
+    // Listen to selection changes
     this.listenTo(editor.model.document.selection, 'change:range', () => {
+      if (!this._isSelectionInLink()) {
+        this._hideUI();
+      }
       this._extendDefaultActionsView();
     });
 
-    // Override the LinkUI's _showActions method to ensure our overrides are applied
+    // Override the LinkUI's _showActions method
     const linkUI: any = editor.plugins.get('LinkUI');
     if (linkUI) {
       const originalShowActions = linkUI.showActions?.bind(linkUI);
@@ -59,6 +62,42 @@ export default class AlightEmailLinkPluginUI extends Plugin {
           this._extendDefaultActionsView();
         };
       }
+    }
+  }
+
+  /**
+   * Checks if the current selection is within a link
+   */
+  private _isSelectionInLink(): boolean {
+    const editor = this.editor;
+    const selection = editor.model.document.selection;
+    return selection.hasAttribute('linkHref');
+  }
+
+  /**
+   * Removes the balloon and cleans up the UI
+   */
+  private _hideUI(): void {
+    const editor = this.editor;
+    const linkUI = editor.plugins.get('LinkUI') as any;
+
+    // Stop listening to UI updates
+    this.stopListening(editor.ui, 'update');
+
+    // Make sure focus returns to editing view before removing UI
+    editor.editing.view.focus();
+
+    // Only try to remove the actions view if it exists and is in the balloon
+    if (linkUI?.actionsView && this._balloon.hasView(linkUI.actionsView)) {
+      // If we're currently displaying the actionsView, remove it first
+      if (this._balloon.visibleView === linkUI.actionsView) {
+        this._balloon.remove(linkUI.actionsView);
+      }
+    }
+
+    // Hide modal if open
+    if (this._modalDialog?.isVisible) {
+      this._modalDialog.hide();
     }
   }
 
@@ -89,6 +128,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
 
       // On execute, open the custom modal dialog.
       button.on('execute', () => {
+        this._hideUI();
         this._showModal();
       });
 
@@ -97,10 +137,10 @@ export default class AlightEmailLinkPluginUI extends Plugin {
   }
 
   /**
-   * Overrides the default LinkUI actions (edit/unlink).
-   * - The "Edit" button calls our custom modal instead of the inline link editing.
-   * - The "Unlink" button calls the built-in 'unlink' command.
-   */
+    * Overrides the default LinkUI actions (edit/unlink).
+    * - The "Edit" button calls our custom modal instead of the inline link editing.
+    * - The "Unlink" button calls the built-in 'unlink' command.
+    */
   private _extendDefaultActionsView(): void {
     const editor = this.editor;
     const linkUI: any = editor.plugins.get('LinkUI');
@@ -113,15 +153,14 @@ export default class AlightEmailLinkPluginUI extends Plugin {
 
     // Override the edit button behavior
     if (actionsView.editButtonView) {
-      // Remove all existing listeners
+      // Remove all existing listeners from both the button and the actions view
       actionsView.editButtonView.off('execute');
+      actionsView.off('edit');
 
-      // Add our custom listener
-      actionsView.editButtonView.on('execute', () => {
-        // Remove the balloon
-        if (this._balloon.hasView(actionsView)) {
-          this._balloon.remove(actionsView);
-        }
+      // Add our custom listener with highest priority
+      actionsView.editButtonView.on('execute', (evt: { stop: () => void }) => {
+        // Stop the event propagation
+        evt.stop();
 
         // Get current link value
         const linkCommand = editor.commands.get('link');
@@ -133,6 +172,20 @@ export default class AlightEmailLinkPluginUI extends Plugin {
         // Show our modal
         this._showModal({ email });
       }, { priority: 'highest' });
+
+      // Prevent the default 'edit' event handler from firing
+      actionsView.on('edit', (evt: { stop: () => void }) => {
+        evt.stop();
+      }, { priority: 'highest' });
+    }
+
+    // Override the unlink button if needed
+    if (actionsView.unlinkButtonView) {
+      actionsView.unlinkButtonView.off('execute');
+      actionsView.unlinkButtonView.on('execute', () => {
+        editor.execute('unlink');
+        this._hideUI();
+      });
     }
   }
 
