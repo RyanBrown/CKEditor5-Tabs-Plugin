@@ -99,12 +99,28 @@ export default class AlightEmailLinkPluginUI extends Plugin {
   private _extendDefaultActionsView(): void {
     const editor = this.editor;
     const linkUI: any = editor.plugins.get('LinkUI');
-
-    if (!linkUI?.actionsView) {
+    if (!linkUI || !linkUI.actionsView) {
+      console.log('no linkUI or actionsView');
       return;
     }
 
-    const actionsView = linkUI.actionsView;
+    const actionsView: any = linkUI.actionsView;
+    const linkCommand = editor.commands.get('link');
+    // Explicitly check if linkCommand is present and if `value` is a string
+    if (!linkCommand || typeof linkCommand.value !== 'string') {
+      // If there's no linkCommand or the value isn't a string,
+      // we can simply return or handle that scenario differently.
+      return;
+    }
+
+    let linkValue = linkCommand.value.trim().toLowerCase();
+    console.log('linkValue', linkValue);
+
+    // If it's not a mailto link, do nothing (default LinkUI behavior).
+    if (!linkValue.startsWith('mailto:')) {
+      console.log('not a mailto link');
+      return;
+    }
 
     // Override the edit button behavior
     if (actionsView.editButtonView) {
@@ -132,14 +148,6 @@ export default class AlightEmailLinkPluginUI extends Plugin {
       actionsView.on('edit', (evt: { stop: () => void }) => {
         evt.stop();
       }, { priority: 'highest' });
-    }
-
-    // Override the unlink button
-    if (actionsView.unlinkButtonView) {
-      actionsView.unlinkButtonView.off('execute');
-      actionsView.unlinkButtonView.on('execute', () => {
-        editor.execute('unlink');
-      });
     }
   }
 
