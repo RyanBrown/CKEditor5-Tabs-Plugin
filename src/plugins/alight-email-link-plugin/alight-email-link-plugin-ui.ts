@@ -106,35 +106,35 @@ export default class AlightEmailLinkPluginUI extends Plugin {
 
     const actionsView: any = linkUI.actionsView;
     const linkCommand = editor.commands.get('link');
-    // Explicitly check if linkCommand is present and if `value` is a string
+
+    // Early return if no link command or value isn't a string
     if (!linkCommand || typeof linkCommand.value !== 'string') {
-      // If there's no linkCommand or the value isn't a string,
-      // we can simply return or handle that scenario differently.
       return;
     }
 
     let linkValue = linkCommand.value.trim().toLowerCase();
-    console.log('linkValue', linkValue);
 
-    // If it's not a mailto link, do nothing (default LinkUI behavior).
+    // If it's not a mailto link, remove our custom handlers and let default LinkUI handle it
     if (!linkValue.startsWith('mailto:')) {
-      console.log('not a mailto link');
+      if (actionsView.editButtonView) {
+        // Remove our custom handlers
+        actionsView.editButtonView.off('execute');
+        actionsView.off('edit');
+      }
       return;
     }
 
-    // Override the edit button behavior
+    // Only add our custom handlers for mailto links
     if (actionsView.editButtonView) {
-      // Remove all existing listeners from both the button and the actions view
+      // First remove any existing handlers to prevent duplicates
       actionsView.editButtonView.off('execute');
-      actionsView.off('edit'); // THIS STOPS THE DEFAULT EDIT BEHAVIOR
+      actionsView.off('edit');
 
-      // Add our custom listener with highest priority
+      // Add our custom handler for mailto links
       actionsView.editButtonView.on('execute', (evt: { stop: () => void }) => {
-        // Stop the event propagation
         evt.stop();
 
-        // Get current link value
-        const linkCommand = editor.commands.get('link');
+        // Get current email from mailto link
         let email = '';
         if (linkCommand && typeof linkCommand.value === 'string') {
           email = linkCommand.value.replace(/^mailto:/i, '');
@@ -144,7 +144,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
         this._showModal({ email });
       }, { priority: 'highest' });
 
-      // Prevent the default 'edit' event handler
+      // Prevent the default 'edit' event handler for mailto links
       actionsView.on('edit', (evt: { stop: () => void }) => {
         evt.stop();
       }, { priority: 'highest' });
