@@ -54,6 +54,27 @@ export default class AlightEmailLinkPluginUI extends Plugin {
           this._extendDefaultActionsView();
         };
       }
+
+      // Store reference to original actionsView creation method
+      const originalCreateActionsView = linkUI._createActionsView?.bind(linkUI);
+      if (originalCreateActionsView) {
+        linkUI._createActionsView = () => {
+          const actionsView = originalCreateActionsView();
+
+          // Override the label binding for mailto links
+          actionsView.previewButtonView.unbind('label');
+          actionsView.previewButtonView.bind('label').to(actionsView, 'href', (href: string) => {
+            if (!href) {
+              return editor.t('This link has no URL');
+            }
+            // Strip mailto: prefix for display
+            return href.toLowerCase().startsWith('mailto:') ?
+              href.substring(7) : href;
+          });
+
+          return actionsView;
+        };
+      }
     }
   }
 
