@@ -260,9 +260,9 @@ class Editor extends ClassicEditor {
       allow: [
         {
           name: 'span',
-          attributes: true, // Allow all attributes
-          classes: true,    // Allow all classes
-          styles: true      // Allow all inline styles
+          attributes: true,
+          classes: true,
+          styles: true
         },
         {
           name: 'svg',
@@ -316,6 +316,16 @@ class Editor extends ClassicEditor {
         },
       },
     },
+    list: {
+      properties: {
+        styles: {
+          listStyleTypes: {
+            numbered: ['decimal'],
+            bulleted: ['disc']
+          }
+        }
+      }
+    },
     indentBlock: {
       offset: 1,
       unit: 'em',
@@ -328,5 +338,3 @@ class Editor extends ClassicEditor {
 }
 
 export default { Editor, EditorWatchdog };
-
-
