@@ -2,6 +2,8 @@
 
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { Link } from '@ckeditor/ckeditor5-link';
+import type { Element } from '@ckeditor/ckeditor5-engine';
+import AlightEmailLinkPluginCommand from './alight-email-link-plugin-command';
 
 /**
  * A plugin that extends the built-in Link plugin’s conversion for mailto links.
@@ -19,34 +21,51 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
 
   public init(): void {
     const editor = this.editor;
-    const conversion = editor.conversion;
+    const schema = editor.model.schema;
 
-    // DOWNCAST: Convert model linkHref -> view <a>.
-    // If linkHref starts with "mailto:", add a special "email-link" class.
-    conversion.for('downcast').attributeToElement({
-      model: 'linkHref', // The built-in Link plugin uses this attribute name.
-      view: (href: string, { writer }) => {
-        if (!href) {
-          // If there's no href, return nothing so no <a> is created.
-          return;
+    // Register schema rules
+    schema.extend('$text', {
+      allowAttributes: ['alightEmailLink', 'linkHref']
+    });
+
+    // Make sure the link plugin is configured
+    editor.config.define('link', {
+      decorators: {
+        isEmail: {
+          mode: 'manual',
+          label: 'Email Link',
+          attributes: {
+            class: 'email-link'
+          }
         }
-
-        // Basic <a> with href=...
-        const attributes: Record<string, string> = {
-          href
-        };
-
-        // If it's a mailto link, add the "email-link" class.
-        if (href.toLowerCase().startsWith('mailto:')) {
-          attributes.class = 'email-link';
-        }
-
-        // Return the attribute element for the link.
-        return writer.createAttributeElement('a', attributes, { priority: 5 });
       }
     });
 
-    // UPCAST: Convert view <a> -> model linkHref if the href starts with mailto:
+    this._registerCommands();
+    this._setupSchema();
+    this._setupConversion();
+  }
+
+  private _registerCommands(): void {
+    this.editor.commands.add('alightEmailLink', new AlightEmailLinkPluginCommand(this.editor));
+  }
+
+  private _setupSchema(): void {
+    const schema = this.editor.model.schema;
+
+    schema.extend('$text', {
+      allowAttributes: [
+        'alightEmailLink',
+        'linkHref',
+        'orgNameText'
+      ]
+    });
+  }
+
+  private _setupConversion(): void {
+    const conversion = this.editor.conversion;
+
+    // DATA -> MODEL (Upcast)
     conversion.for('upcast').elementToAttribute({
       view: {
         name: 'a',
@@ -56,13 +75,97 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
         }
       },
       model: {
-        key: 'linkHref',
+        key: 'alightEmailLink',
         value: (viewElement: Element) => {
-          // Return the anchor's href to store in the model.
-          const hrefVal = viewElement.getAttribute('href');
-          return hrefVal || '';
+          const href = viewElement.getAttribute('href') || '';
+          const email = href ? (href as string).replace(/^mailto:/i, '') : '';
+          const orgName = viewElement.getAttribute('data-org-name') || '';
+
+          return {
+            email,
+            orgNameText: orgName
+          };
         }
       }
+    });
+
+    // MODEL -> DATA (Downcast)
+    conversion.for('downcast').attributeToElement({
+      model: 'alightEmailLink',
+      view: (modelAttributeValue, { writer }) => {
+        if (!modelAttributeValue) {
+          return;
+        }
+
+        const { email, orgNameText } = modelAttributeValue;
+        const attributes: Record<string, string> = {
+          class: 'email-link',
+          href: `mailto:${email}`
+        };
+
+        if (orgNameText) {
+          attributes['data-org-name'] = orgNameText;
+        }
+
+        return writer.createAttributeElement('a', attributes, {
+          priority: 5
+        });
+      }
+    });
+
+    // MODEL -> EDITING (Editing downcast)
+    conversion.for('editingDowncast').attributeToElement({
+      model: 'alightEmailLink',
+      view: (modelAttributeValue, { writer }) => {
+        if (!modelAttributeValue) {
+          return;
+        }
+
+        const { email, orgNameText } = modelAttributeValue;
+        const attributes: Record<string, string> = {
+          class: 'email-link',
+          href: `mailto:${email}`,
+          title: orgNameText ? `Email: ${email} (${orgNameText})` : `Email: ${email}`
+        };
+
+        if (orgNameText) {
+          attributes['data-org-name'] = orgNameText;
+        }
+
+        return writer.createAttributeElement('a', attributes, {
+          priority: 5
+        });
+      }
+    });
+
+    // Post-fixer for attribute preservation
+    this.editor.model.document.registerPostFixer(writer => {
+      let changed = false;
+      const selection = this.editor.model.document.selection;
+
+      if (!selection.isCollapsed) {
+        return changed;
+      }
+
+      const position = selection.getFirstPosition();
+      if (!position) {
+        return changed;
+      }
+
+      const parent = position.parent;
+      if (!parent) {
+        return changed;
+      }
+
+      const orgNameAttr = parent.is('element') ? parent.getAttribute('orgNameText') : null;
+      const emailLinkAttr = parent.is('element') ? parent.getAttribute('alightEmailLink') : null;
+
+      if (orgNameAttr && !emailLinkAttr && parent.is('element')) {
+        writer.removeAttribute('orgNameText', parent);
+        changed = true;
+      }
+
+      return changed;
     });
   }
 }
