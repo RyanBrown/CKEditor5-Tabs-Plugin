@@ -5,7 +5,7 @@ import { ButtonView } from '@ckeditor/ckeditor5-ui';
 import { CkAlightModalDialog } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import { ContentManager } from './modal-content/alight-new-document-link-plugin-modal-ContentManager';
 import { Notification } from '@ckeditor/ckeditor5-ui';
-import toolBarIcon from './assets/icon-link.svg';
+import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 import './styles/alight-new-document-link-plugin.scss';
 
 export default class AlightNewDocumentLinkPluginUI extends Plugin {
@@ -35,7 +35,7 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
 
       button.set({
         label: t('New Document'),
-        icon: toolBarIcon,
+        icon: ToolBarIcon,
         tooltip: true,
         withText: true,
       });
