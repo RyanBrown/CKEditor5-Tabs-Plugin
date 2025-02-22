@@ -117,3 +117,39 @@
 
   --ck-font-face: 'FSThriveElliotWeb-Regular', 'FSThriveElliotWeb-Bold', 'FSThriveElliotWeb-Heavy', 'FSThriveElliotWeb-Light', Helvetica, Arial, Tahoma, Verdana, Sans-Serif;
 }
+
+
+
+// list styles overrides
+.ck-content ol {
+  list-style-type: decimal;
+}
+
+.ck-content ol ol {
+  list-style-type: decimal;
+}
+
+.ck-content ol ol ol {
+  list-style-type: decimal;
+}
+
+.ck-content ol ol ol ol {
+  list-style-type: decimal;
+}
+
+.ck-content ol ol ol ol ol {
+  list-style-type: decimal;
+}
+
+.ck-content ul {
+  list-style-type: disc;
+}
+
+.ck-content ul ul {
+  list-style-type: disc;
+}
+
+.ck-content ul ul ul,
+.ck-content ul ul ul ul {
+  list-style-type: disc;
+}
