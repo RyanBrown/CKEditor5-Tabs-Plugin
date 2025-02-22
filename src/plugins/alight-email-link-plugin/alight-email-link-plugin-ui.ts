@@ -5,7 +5,7 @@ import { ClickObserver } from '@ckeditor/ckeditor5-engine';
 import type ViewElement from '@ckeditor/ckeditor5-engine/src/view/element';
 import { CkAlightModalDialog } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import LinkUI from '@ckeditor/ckeditor5-link/src/linkui';
-import toolBarIcon from './assets/icon-link.svg';
+import toolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 import { FocusTracker, KeystrokeHandler, type Locale } from '@ckeditor/ckeditor5-utils';
 import './styles/alight-email-link-plugin.scss';
 
