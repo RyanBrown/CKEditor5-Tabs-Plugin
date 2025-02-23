@@ -2,23 +2,23 @@
 import { Command } from '@ckeditor/ckeditor5-core';
 import { findAttributeRange } from '@ckeditor/ckeditor5-typing';
 
-export interface alightEmailLinkPluginAttributes {
+export interface AlightEmailLinkPluginAttributes {
   email: string;
-  orgNameText?: string;
+  orgName?: string;
 }
 
 export default class AlightEmailLinkPluginCommand extends Command {
-  declare value: alightEmailLinkPluginAttributes | undefined;
+  declare value: AlightEmailLinkPluginAttributes | undefined;
 
   override refresh(): void {
     const model = this.editor.model;
     const selection = model.document.selection;
 
     this.isEnabled = model.schema.checkAttributeInSelection(selection, 'alightEmailLinkPlugin');
-    this.value = selection.getAttribute('alightEmailLinkPlugin') as alightEmailLinkPluginAttributes;
+    this.value = selection.getAttribute('alightEmailLinkPlugin') as AlightEmailLinkPluginAttributes;
   }
 
-  override execute(attributes?: alightEmailLinkPluginAttributes): void {
+  override execute(attributes?: AlightEmailLinkPluginAttributes): void {
     const model = this.editor.model;
     const selection = model.document.selection;
 

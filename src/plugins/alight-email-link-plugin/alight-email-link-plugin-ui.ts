@@ -1,52 +1,113 @@
 // src/plugins/alight-email-link-plugin/alight-email-link-plugin-ui.ts
-
 import { Plugin } from '@ckeditor/ckeditor5-core';
-import { ButtonView, ContextualBalloon, View } from '@ckeditor/ckeditor5-ui';
+import { ButtonView, ContextualBalloon, View, LabelView, InputTextView, submitHandler } from '@ckeditor/ckeditor5-ui';
 import { ClickObserver } from '@ckeditor/ckeditor5-engine';
-import LinkUI from '@ckeditor/ckeditor5-link/src/linkui';
-import type { Command } from '@ckeditor/ckeditor5-core';
+import { FocusTracker, KeystrokeHandler } from '@ckeditor/ckeditor5-utils';
+import type { Locale } from '@ckeditor/ckeditor5-utils';
 import { CkAlightModalDialog } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
-import type AlightEmailLinkPluginCommand from './alight-email-link-plugin-command';
-import AlightEmailLinkPluginEditing from './alight-email-link-plugin-editing';
+import LinkUI from '@ckeditor/ckeditor5-link/src/linkui';
 import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
+import './styles/alight-email-link-plugin.scss';
 
-interface InitialLinkData {
-  email?: string;
-  orgNameText?: string;
+class FormRowView extends View {
+  public readonly labelView: LabelView;
+  public readonly inputView: InputTextView;
+
+  constructor(locale: Locale, options: { labelText: string; inputAttributes?: Record<string, any> }) {
+    super(locale);
+
+    this.labelView = new LabelView(locale);
+    this.labelView.text = options.labelText;
+
+    this.inputView = new InputTextView(locale);
+    if (options.inputAttributes) {
+      this.inputView.extendTemplate({
+        attributes: {
+          ...options.inputAttributes
+        }
+      });
+    }
+
+    this.setTemplate({
+      tag: 'div',
+      attributes: {
+        class: ['ck', 'ck-form-row']
+      },
+      children: [this.labelView, this.inputView]
+    });
+  }
+
+  focus(): void {
+    this.inputView.focus();
+  }
 }
 
-interface ModalDialogButton {
-  label: string;
-  variant: 'outlined' | 'default';
-  shape: 'round';
-  isPrimary?: boolean;
-  closeOnClick?: boolean;
+class EmailLinkFormView extends View {
+  public readonly emailInputRow: FormRowView;
+  public readonly orgNameInputRow: FormRowView;
+  public readonly focusTracker: FocusTracker;
+  public readonly keystrokes: KeystrokeHandler;
+
+  constructor(locale: Locale) {
+    super(locale);
+
+    this.emailInputRow = new FormRowView(locale, {
+      labelText: 'Email address',
+      inputAttributes: { type: 'email', required: true }
+    });
+
+    this.orgNameInputRow = new FormRowView(locale, {
+      labelText: 'Organization name',
+      inputAttributes: { type: 'text' }
+    });
+
+    this.focusTracker = new FocusTracker();
+    this.keystrokes = new KeystrokeHandler();
+
+    this.setTemplate({
+      tag: 'form',
+      attributes: {
+        class: ['ck', 'ck-email-link-form'],
+        tabindex: '-1'
+      },
+      children: [this.emailInputRow, this.orgNameInputRow]
+    });
+  }
+
+  focus(): void {
+    this.emailInputRow.focus();
+  }
+
+  override render(): void {
+    super.render();
+
+    submitHandler({ view: this });
+
+    const elements = [
+      this.emailInputRow.inputView.element,
+      this.orgNameInputRow.inputView.element
+    ];
+    elements.forEach(element => {
+      if (element) {
+        this.focusTracker.add(element);
+      }
+    });
+
+    this.keystrokes.listenTo(this.element!);
+  }
 }
 
-interface ModalOptions {
-  title: string;
-  modal: boolean;
-  width: string;
-  height: string;
-  contentClass: string;
-  buttons: ModalDialogButton[];
-}
-
-interface LinkUIActionsView extends View {
-  editButtonView?: ButtonView;
-  previewButtonView: ButtonView;
-  href: string;
+function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
 }
 
 export default class AlightEmailLinkPluginUI extends Plugin {
   private _modalDialog?: CkAlightModalDialog;
-  private _emailLinkCommand!: AlightEmailLinkPluginCommand;
-  private _linkCommand!: Command;
   private _balloon!: ContextualBalloon;
-  private _editing!: AlightEmailLinkPluginEditing;
 
   public static get requires() {
-    return [LinkUI, ContextualBalloon, AlightEmailLinkPluginEditing] as const;
+    return [LinkUI] as const;
   }
 
   public static get pluginName() {
@@ -55,31 +116,13 @@ export default class AlightEmailLinkPluginUI extends Plugin {
 
   public init(): void {
     const editor = this.editor;
+    this._balloon = editor.plugins.get(ContextualBalloon);
 
-    // Add click observer
     editor.editing.view.addObserver(ClickObserver);
 
-    // Get required plugins and commands
-    this._balloon = editor.plugins.get(ContextualBalloon);
-    this._emailLinkCommand = editor.commands.get('alightEmailLinkPlugin') as AlightEmailLinkPluginCommand;
-    this._linkCommand = editor.commands.get('link') as Command;
-    this._editing = editor.plugins.get(AlightEmailLinkPluginEditing);
-
-    if (!this._linkCommand) {
-      throw new Error('[AlightEmailLinkPluginUI] The built-in "link" command is unavailable.');
-    }
-
-    // Set up UI components
     this._setupToolbarButton();
-
-    // Setup balloon content change handler
-    this._balloon.on('change:visibleView', () => {
-      this._extendDefaultActionsView();
-    });
-
-    // Get reference to LinkUI plugin and override its behavior
-    const linkUI = editor.plugins.get('LinkUI');
-    this._setupLinkUIOverrides(linkUI);
+    this._setupBalloonBehavior();
+    this._overrideLinkUIBehavior();
   }
 
   private _setupToolbarButton(): void {
@@ -87,6 +130,12 @@ export default class AlightEmailLinkPluginUI extends Plugin {
 
     editor.ui.componentFactory.add('alightEmailLinkPlugin', locale => {
       const button = new ButtonView(locale);
+      const linkCommand = editor.commands.get('link');
+
+      if (!linkCommand) {
+        console.warn('[AlightEmailLinkPluginUI] The built-in "link" command is unavailable.');
+        return button;
+      }
 
       button.set({
         label: editor.t('Email Link'),
@@ -95,11 +144,9 @@ export default class AlightEmailLinkPluginUI extends Plugin {
         withText: true
       });
 
-      // Bind button state to link command
-      button.bind('isEnabled').to(this._linkCommand);
-      button.bind('isOn').to(this._linkCommand, 'value', value => !!value);
+      button.bind('isEnabled').to(linkCommand);
+      button.bind('isOn').to(linkCommand, 'value', value => !!value);
 
-      // Show modal dialog when clicked
       button.on('execute', () => {
         this._showModal();
       });
@@ -108,46 +155,53 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     });
   }
 
-  private _setupLinkUIOverrides(linkUI: LinkUI): void {
-    if (!linkUI) return;
+  private _setupBalloonBehavior(): void {
+    this._balloon.on('change:visibleView', () => {
+      this._extendDefaultActionsView();
+    });
+  }
 
-    // Override showActions to ensure our custom handlers are added
-    const originalShowActions = (linkUI as any).showActions?.bind(linkUI);
-    if (originalShowActions) {
-      (linkUI as any).showActions = (...args: unknown[]) => {
-        originalShowActions(...args);
-        this._extendDefaultActionsView();
-      };
+  private _overrideLinkUIBehavior(): void {
+    const editor = this.editor;
+    const linkUI: any = editor.plugins.get('LinkUI');
+
+    if (linkUI) {
+      const originalShowActions = linkUI.showActions?.bind(linkUI);
+      if (originalShowActions) {
+        linkUI.showActions = (...args: any[]) => {
+          originalShowActions(...args);
+          this._extendDefaultActionsView();
+        };
+      }
+
+      this._overrideLinkPreviewDisplay(linkUI);
     }
+  }
 
-    // Override how link previews are displayed in the balloon
-    const originalCreateActionsView = (linkUI as any)._createActionsView?.bind(linkUI);
+  private _overrideLinkPreviewDisplay(linkUI: any): void {
+    const editor = this.editor;
+    const originalCreateActionsView = linkUI._createActionsView?.bind(linkUI);
+
     if (originalCreateActionsView) {
-      (linkUI as any)._createActionsView = () => {
-        const actionsView = originalCreateActionsView() as LinkUIActionsView;
+      linkUI._createActionsView = () => {
+        const actionsView = originalCreateActionsView();
 
-        if (actionsView?.previewButtonView) {
-          // Customize the display of mailto links
-          actionsView.previewButtonView.unbind('label');
-          actionsView.previewButtonView.unbind('tooltip');
+        actionsView.previewButtonView.unbind('label');
+        actionsView.previewButtonView.unbind('tooltip');
 
-          // Update the button label (text)
-          actionsView.previewButtonView.bind('label').to(actionsView, 'href', (href: string) => {
-            if (!href) {
-              return this.editor.t('This link has no URL');
-            }
-            return href.toLowerCase().startsWith('mailto:') ?
-              href.substring(7) : href;
-          });
+        actionsView.previewButtonView.bind('label').to(actionsView, 'href', (href: string) => {
+          if (!href) {
+            return editor.t('This link has no URL');
+          }
+          return href.toLowerCase().startsWith('mailto:') ? href.substring(7) : href;
+        });
 
-          // Update the button tooltip (title)
-          actionsView.previewButtonView.bind('tooltip').to(actionsView, 'href', (href: string) => {
-            if (href && href.toLowerCase().startsWith('mailto:')) {
-              return this.editor.t('Open email in client');
-            }
-            return this.editor.t('Open link in new tab');
-          });
-        }
+        actionsView.previewButtonView.bind('tooltip').to(actionsView, 'href', (href: string) => {
+          if (href && href.toLowerCase().startsWith('mailto:')) {
+            return editor.t('Open email in client');
+          }
+          return editor.t('Open link in new tab');
+        });
 
         return actionsView;
       };
@@ -157,7 +211,6 @@ export default class AlightEmailLinkPluginUI extends Plugin {
   private _extendDefaultActionsView(): void {
     const editor = this.editor;
     const linkUI: any = editor.plugins.get('LinkUI');
-
     if (!linkUI || !linkUI.actionsView) {
       return;
     }
@@ -165,14 +218,12 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     const actionsView: any = linkUI.actionsView;
     const linkCommand = editor.commands.get('link');
 
-    // Validate link command and value
     if (!linkCommand || typeof linkCommand.value !== 'string') {
       return;
     }
 
     let linkValue = linkCommand.value.trim().toLowerCase();
 
-    // Handle non-mailto links by removing our custom handlers
     if (!linkValue.startsWith('mailto:')) {
       if (actionsView.editButtonView) {
         actionsView.editButtonView.off('execute');
@@ -181,51 +232,48 @@ export default class AlightEmailLinkPluginUI extends Plugin {
       return;
     }
 
-    // Setup custom handling for mailto links
     if (actionsView.editButtonView) {
-      // Clean up existing handlers
       actionsView.editButtonView.off('execute');
       actionsView.off('edit');
 
-      // Add custom edit handler for mailto links
       actionsView.editButtonView.on('execute', (evt: { stop: () => void }) => {
         evt.stop();
 
-        // Extract email from mailto link
         let email = '';
         if (linkCommand && typeof linkCommand.value === 'string') {
           email = linkCommand.value.replace(/^mailto:/i, '');
         }
 
-        // Show edit modal with current email
         this._showModal({ email });
       }, { priority: 'highest' });
 
-      // Prevent default edit behavior
       actionsView.on('edit', (evt: { stop: () => void }) => {
         evt.stop();
       }, { priority: 'highest' });
     }
   }
 
-  private _showModal(initialData?: InitialLinkData): void {
+  private _showModal(initialValue?: { email?: string; orgName?: string }): void {
     const editor = this.editor;
+    const linkCommand = editor.commands.get('link');
+
+    if (!linkCommand) {
+      console.warn('[AlightEmailLinkPluginUI] The built-in "link" command is unavailable.');
+      return;
+    }
 
     if (!this._modalDialog) {
-      const modalOptions: ModalOptions = {
+      this._modalDialog = new CkAlightModalDialog({
         title: 'Create an Email Link',
         modal: true,
         width: '500px',
         height: 'auto',
         contentClass: 'email-link-content',
         buttons: [
-          { label: 'Cancel', variant: 'outlined', shape: 'round' },
-          { label: 'Continue', variant: 'default', isPrimary: true, shape: 'round', closeOnClick: false }
+          { label: 'Cancel', variant: 'outlined', shape: 'round', disabled: false },
+          { label: 'Continue', variant: 'default', isPrimary: true, shape: 'round', closeOnClick: false, disabled: false }
         ]
-      };
-
-      this._modalDialog = new CkAlightModalDialog(modalOptions);
-      this._modalDialog.setContent(this._editing.getFormTemplate());
+      });
 
       this._modalDialog.on('buttonClick', (label: string) => {
         if (label === 'Cancel') {
@@ -234,75 +282,100 @@ export default class AlightEmailLinkPluginUI extends Plugin {
         }
 
         if (label === 'Continue') {
-          const form = document.getElementById('email-link-form') as HTMLFormElement;
-          const emailInput = form?.querySelector('#email') as HTMLInputElement;
-          const orgNameInput = form?.querySelector('#orgNameText') as HTMLInputElement;
-          const errorDiv = form?.querySelector('.error-message') as HTMLDivElement;
+          const form = this._modalDialog?.element?.querySelector('#email-link-form') as HTMLFormElement;
+          const emailInput = form.querySelector('#link-email') as HTMLInputElement;
+          const emailVal = emailInput.value.trim();
 
-          const email = emailInput?.value.trim();
-          const orgNameText = orgNameInput?.value.trim();
-
-          if (!email) {
-            errorDiv.textContent = 'Email address is required.';
-            errorDiv.style.display = 'block';
-            return;
-          }
-
-          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          if (!emailRegex.test(email)) {
-            errorDiv.textContent = 'Please enter a valid email address.';
-            errorDiv.style.display = 'block';
-            return;
-          }
-
-          // Create or update the mailto link
-          editor.model.change(() => {
-            // First create the link using the built-in link command
-            editor.execute('link', `mailto:${email}`);
-
-            // Then add our custom attributes
-            editor.execute('alightEmailLinkPlugin', {
-              email,
-              orgNameText: orgNameText || undefined
+          if (this._validateEmail(emailVal)) {
+            editor.model.change(() => {
+              editor.execute('link', 'mailto:' + emailVal);
             });
-          });
-
-          this._modalDialog?.hide();
+            this._modalDialog?.hide();
+          }
         }
       });
     }
 
-    this._resetForm(initialData);
+    const content = this._createModalContent(initialValue?.email, initialValue?.orgName);
+    this._modalDialog.setContent(content);
     this._modalDialog.show();
-
-    // Focus email input after showing
-    setTimeout(() => {
-      const emailInput = document.querySelector('#email') as HTMLInputElement;
-      emailInput?.focus();
-    }, 100);
   }
 
-  private _resetForm(initialData?: InitialLinkData): void {
-    const form = document.getElementById('email-link-form');
-    if (form) {
-      const emailInput = form.querySelector('#email') as HTMLInputElement;
-      const orgNameInput = form.querySelector('#orgNameText') as HTMLInputElement;
-      const errorDiv = form.querySelector('.error-message') as HTMLDivElement;
+  private _createModalContent(initialEmail?: string, initialOrgName?: string): HTMLElement {
+    const container = document.createElement('div');
 
-      // Clear previous values and errors
-      emailInput.value = '';
-      orgNameInput.value = '';
-      errorDiv.style.display = 'none';
-      errorDiv.textContent = '';
+    const formContent = `
+      <form id="email-link-form" class="ck-form">
+        <div class="ck-form-group">
+          <label for="email" class="cka-input-label">
+            Email Address
+          </label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            class="cka-input-text block"
+            required
+            value="${initialEmail || ''}"
+            placeholder="user@example.com"
+          />
+          <div class="error-message" id="email-error" style="display: none;">
+            Please enter a valid email address.
+          </div>
+        </div>
 
-      // Set initial values if provided
-      if (initialData?.email) {
-        emailInput.value = initialData.email;
-      }
-      if (initialData?.orgNameText) {
-        orgNameInput.value = initialData.orgNameText;
-      }
+        <div class="ck-form-group mt-3">
+          <label for="org-name" class="cka-input-label">
+            Organization Name (optional)
+          </label>
+          <input 
+            type="text" 
+            id="org-name" 
+            name="displayText" 
+            class="cka-input-text block"
+            value="${initialOrgName || ''}"
+            placeholder="Organization name"
+          />
+        </div>
+
+        <p class="note-text">
+          Organization Name (optional): Specify the third-party organization to inform users about the email's origin.
+        </p>
+      </form>
+    `;
+
+    container.innerHTML = formContent;
+    return container;
+  }
+
+  private _validateEmail(email: string): boolean {
+    const emailInput = this._modalDialog?.element?.querySelector('#link-email') as HTMLInputElement;
+    const emailError = this._modalDialog?.element?.querySelector('#email-error') as HTMLDivElement;
+
+    this._hideError(emailInput, emailError);
+
+    if (!email) {
+      this._showError(emailInput, emailError, 'Email address is required.');
+      return false;
     }
+
+    if (!isValidEmail(email)) {
+      this._showError(emailInput, emailError, 'Please enter a valid email address.');
+      return false;
+    }
+
+    return true;
+  }
+
+  private _showError(input: HTMLInputElement, errorElement: HTMLElement, message: string): void {
+    input.classList.add('invalid');
+    errorElement.textContent = message;
+    errorElement.style.display = 'block';
+  }
+
+  private _hideError(input: HTMLInputElement, errorElement: HTMLElement): void {
+    input.classList.remove('invalid');
+    errorElement.style.display = 'none';
   }
 
   public override destroy(): void {
