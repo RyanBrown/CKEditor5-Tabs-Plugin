@@ -196,7 +196,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
 
         if (label === 'Continue') {
           const form = this._modalDialog?.element?.querySelector('#email-link-form') as HTMLFormElement;
-          const emailInput = form.querySelector('#link-email') as HTMLInputElement;
+          const emailInput = form.querySelector('#email') as HTMLInputElement;
           const emailVal = emailInput.value.trim();
 
           if (this._validateEmail(emailVal)) {
@@ -262,7 +262,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
   }
 
   private _validateEmail(email: string): boolean {
-    const emailInput = this._modalDialog?.element?.querySelector('#link-email') as HTMLInputElement;
+    const emailInput = this._modalDialog?.element?.querySelector('#email') as HTMLInputElement;
     const emailError = this._modalDialog?.element?.querySelector('#email-error') as HTMLDivElement;
 
     this._hideError(emailInput, emailError);
