@@ -4,46 +4,6 @@ import { Link } from '@ckeditor/ckeditor5-link';
 import type { Element } from '@ckeditor/ckeditor5-engine';
 import AlightEmailLinkPluginCommand from './alight-email-link-plugin-command';
 
-// Form template for the email link dialog
-const EMAIL_FORM_TEMPLATE = `
-<form id="email-link-form" class="ck-form">
-  <div class="ck-form-group">
-    <label class="cka-input-label" for="email">Email Address</label>
-    <input type="email" id="email" class="cka-input-text block" required />
-    <div class="error-message" style="display: none; color: red; margin-top: 4px;"></div>
-  </div>
-  <div class="ck-form-group mt-3">
-    <label class="cka-input-label" for="orgName">Organization Name (optional)</label>
-    <input type="text" id="orgName" class="cka-input-text block" />
-  </div>
-  <p class="note-text mt-3">
-    Specify the third-party organization to inform users about the email's origin.
-  </p>
-</form>
-`;
-
-// Form style definitions
-const FORM_STYLES = {
-  form: {
-    classes: ['ck-form']
-  },
-  group: {
-    classes: ['ck-form-group']
-  },
-  label: {
-    classes: ['cka-input-label']
-  },
-  input: {
-    classes: ['cka-input-text', 'block']
-  },
-  error: {
-    classes: ['error-message']
-  },
-  note: {
-    classes: ['note-text', 'mt-3']
-  }
-};
-
 /**
  * A plugin that extends the built-in Link plugin's conversion for mailto links.
  * It handles the editing, schema, and conversion setup for email links.
@@ -54,7 +14,6 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
   }
 
   public static get requires() {
-    // We require the built-in Link plugin so we can extend its linkHref logic.
     return [Link] as const;
   }
 
@@ -81,6 +40,52 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
     this._registerCommands();
     this._setupConversion();
     this._setupFormElementConversion();
+  }
+
+  /**
+   * Returns the HTML template for the email link form.
+   * This is used by the UI component to create the modal dialog.
+   * @param initialValue - Initial email value
+   * @param initialOrgName - Initial organization name
+   */
+  public getFormTemplate(initialValue: string = '', initialOrgName: string = ''): string {
+    return `
+      <form id="email-link-form" class="ck-form">
+        <div class="ck-form-group">
+          <label for="email" class="cka-input-label">
+            Email Address
+          </label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            class="cka-input-text block"
+            required
+            value="${initialValue}"
+            placeholder="user@example.com"
+          />
+          <div class="error-message" id="email-error" style="display: none;">
+            Please enter a valid email address.
+          </div>
+        </div>
+        <div class="ck-form-group mt-3">
+          <label for="orgName" class="cka-input-label">
+            Organization Name (optional)
+          </label>
+          <input 
+            type="text" 
+            id="orgName" 
+            name="orgName" 
+            class="cka-input-text block"
+            value="${initialOrgName}"
+            placeholder="Organization name"
+          />
+        </div>
+        <p class="note-text">
+          Organization Name (optional): Specify the third-party organization to inform users about the email's origin.
+        </p>
+      </form>
+    `;
   }
 
   private _registerCommands(): void {
@@ -128,67 +133,12 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
   private _setupFormElementConversion(): void {
     const conversion = this.editor.conversion;
 
-    // Form container conversion
-    conversion.for('upcast').elementToElement({
-      model: 'emailForm',
-      view: {
-        name: 'form',
-        classes: FORM_STYLES.form.classes
-      }
-    });
-
-    conversion.for('downcast').elementToElement({
-      model: 'emailForm',
-      view: (modelElement, { writer }) => {
-        return writer.createContainerElement('form', {
-          class: FORM_STYLES.form.classes.join(' '),
-          id: 'email-link-form'
-        });
-      }
-    });
-
-    // Form group conversion
-    conversion.for('upcast').elementToElement({
-      model: 'formGroup',
-      view: {
-        name: 'div',
-        classes: FORM_STYLES.group.classes
-      }
-    });
-
-    conversion.for('downcast').elementToElement({
-      model: 'formGroup',
-      view: (modelElement, { writer }) => {
-        return writer.createContainerElement('div', {
-          class: FORM_STYLES.group.classes.join(' ')
-        });
-      }
-    });
-
-    // Label conversion
-    conversion.for('upcast').elementToElement({
-      model: 'formLabel',
-      view: {
-        name: 'label',
-        classes: FORM_STYLES.label.classes
-      }
-    });
-
-    conversion.for('downcast').elementToElement({
-      model: 'formLabel',
-      view: (modelElement, { writer }) => {
-        return writer.createContainerElement('label', {
-          class: FORM_STYLES.label.classes.join(' ')
-        });
-      }
-    });
-
     // Input conversion
     conversion.for('upcast').elementToElement({
       model: 'formInput',
       view: {
         name: 'input',
-        classes: FORM_STYLES.input.classes
+        classes: ['cka-input-text', 'block']
       }
     });
 
@@ -196,7 +146,7 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
       model: 'formInput',
       view: (modelElement, { writer }) => {
         const inputAttributes = {
-          class: FORM_STYLES.input.classes.join(' '),
+          class: 'cka-input-text block',
           type: modelElement.getAttribute('type') || 'text',
           id: modelElement.getAttribute('id')
         };
@@ -313,21 +263,5 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
 
       return changed;
     });
-  }
-
-  /**
-   * Returns the HTML template for the email link form.
-   * This is used by the UI component to create the modal dialog.
-   */
-  public getFormTemplate(): string {
-    return EMAIL_FORM_TEMPLATE;
-  }
-
-  /**
-   * Returns the style definitions for form elements.
-   * This can be used by other components that need to maintain consistent styling.
-   */
-  public getFormStyles(): typeof FORM_STYLES {
-    return FORM_STYLES;
   }
 }
