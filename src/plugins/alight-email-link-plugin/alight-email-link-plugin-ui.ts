@@ -12,7 +12,7 @@ import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 
 interface InitialLinkData {
   email?: string;
-  orgName?: string;
+  orgNameText?: string;
 }
 
 interface ModalDialogButton {
@@ -61,7 +61,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
 
     // Get required plugins and commands
     this._balloon = editor.plugins.get(ContextualBalloon);
-    this._emailLinkCommand = editor.commands.get('alightEmailLink') as AlightEmailLinkPluginCommand;
+    this._emailLinkCommand = editor.commands.get('alightEmailLinkPlugin') as AlightEmailLinkPluginCommand;
     this._linkCommand = editor.commands.get('link') as Command;
     this._editing = editor.plugins.get(AlightEmailLinkPluginEditing);
 
@@ -236,11 +236,11 @@ export default class AlightEmailLinkPluginUI extends Plugin {
         if (label === 'Continue') {
           const form = document.getElementById('email-link-form') as HTMLFormElement;
           const emailInput = form?.querySelector('#email') as HTMLInputElement;
-          const orgNameInput = form?.querySelector('#orgName') as HTMLInputElement;
+          const orgNameInput = form?.querySelector('#orgNameText') as HTMLInputElement;
           const errorDiv = form?.querySelector('.error-message') as HTMLDivElement;
 
           const email = emailInput?.value.trim();
-          const orgName = orgNameInput?.value.trim();
+          const orgNameText = orgNameInput?.value.trim();
 
           if (!email) {
             errorDiv.textContent = 'Email address is required.';
@@ -261,9 +261,9 @@ export default class AlightEmailLinkPluginUI extends Plugin {
             editor.execute('link', `mailto:${email}`);
 
             // Then add our custom attributes
-            editor.execute('alightEmailLink', {
+            editor.execute('alightEmailLinkPlugin', {
               email,
-              orgNameText: orgName || undefined
+              orgNameText: orgNameText || undefined
             });
           });
 
@@ -286,7 +286,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     const form = document.getElementById('email-link-form');
     if (form) {
       const emailInput = form.querySelector('#email') as HTMLInputElement;
-      const orgNameInput = form.querySelector('#orgName') as HTMLInputElement;
+      const orgNameInput = form.querySelector('#orgNameText') as HTMLInputElement;
       const errorDiv = form.querySelector('.error-message') as HTMLDivElement;
 
       // Clear previous values and errors
@@ -299,8 +299,8 @@ export default class AlightEmailLinkPluginUI extends Plugin {
       if (initialData?.email) {
         emailInput.value = initialData.email;
       }
-      if (initialData?.orgName) {
-        orgNameInput.value = initialData.orgName;
+      if (initialData?.orgNameText) {
+        orgNameInput.value = initialData.orgNameText;
       }
     }
   }

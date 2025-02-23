@@ -69,13 +69,13 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
           </div>
         </div>
         <div class="ck-form-group mt-3">
-          <label for="orgName" class="cka-input-label">
+          <label for="orgNameText" class="cka-input-label">
             Organization Name (optional)
           </label>
           <input 
             type="text" 
-            id="orgName" 
-            name="orgName" 
+            id="orgNameText" 
+            name="orgNameText" 
             class="cka-input-text block"
             value="${initialOrgName}"
             placeholder="Organization name"
@@ -89,7 +89,7 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
   }
 
   private _registerCommands(): void {
-    this.editor.commands.add('alightEmailLink', new AlightEmailLinkPluginCommand(this.editor));
+    this.editor.commands.add('alightEmailLinkPlugin', new AlightEmailLinkPluginCommand(this.editor));
   }
 
   private _setupSchema(): void {
@@ -98,7 +98,7 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
     // Allow basic text attributes
     schema.extend('$text', {
       allowAttributes: [
-        'alightEmailLink',
+        'alightEmailLinkPlugin',
         'linkHref',
         'orgNameText'
       ]
@@ -171,15 +171,15 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
         }
       },
       model: {
-        key: 'alightEmailLink',
+        key: 'alightEmailLinkPlugin',
         value: (viewElement: Element) => {
           const href = viewElement.getAttribute('href') || '';
           const email = href ? (href as string).replace(/^mailto:/i, '') : '';
-          const orgName = viewElement.getAttribute('data-org-name') || '';
+          const orgNameText = viewElement.getAttribute('data-org-name') || '';
 
           return {
             email,
-            orgNameText: orgName
+            orgNameText: orgNameText
           };
         }
       }
@@ -187,7 +187,7 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
 
     // MODEL -> DATA (Downcast)
     conversion.for('downcast').attributeToElement({
-      model: 'alightEmailLink',
+      model: 'alightEmailLinkPlugin',
       view: (modelAttributeValue, { writer }) => {
         if (!modelAttributeValue) {
           return;
@@ -211,7 +211,7 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
 
     // MODEL -> EDITING (Editing downcast)
     conversion.for('editingDowncast').attributeToElement({
-      model: 'alightEmailLink',
+      model: 'alightEmailLinkPlugin',
       view: (modelAttributeValue, { writer }) => {
         if (!modelAttributeValue) {
           return;
@@ -254,7 +254,7 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
       }
 
       const orgNameAttr = parent.is('element') ? parent.getAttribute('orgNameText') : null;
-      const emailLinkAttr = parent.is('element') ? parent.getAttribute('alightEmailLink') : null;
+      const emailLinkAttr = parent.is('element') ? parent.getAttribute('alightEmailLinkPlugin') : null;
 
       if (orgNameAttr && !emailLinkAttr && parent.is('element')) {
         writer.removeAttribute('orgNameText', parent);

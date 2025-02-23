@@ -14,11 +14,8 @@ export default class AlightEmailLinkPluginCommand extends Command {
     const model = this.editor.model;
     const selection = model.document.selection;
 
-    // Check if the attribute is allowed in current selection
-    this.isEnabled = model.schema.checkAttributeInSelection(selection, 'alightEmailLink');
-
-    // Get the current value if it exists
-    this.value = selection.getAttribute('alightEmailLink') as alightEmailLinkPluginAttributes;
+    this.isEnabled = model.schema.checkAttributeInSelection(selection, 'alightEmailLinkPlugin');
+    this.value = selection.getAttribute('alightEmailLinkPlugin') as alightEmailLinkPluginAttributes;
   }
 
   override execute(attributes?: alightEmailLinkPluginAttributes): void {
@@ -27,31 +24,26 @@ export default class AlightEmailLinkPluginCommand extends Command {
 
     model.change(writer => {
       if (!attributes) {
-        // If no attributes provided, remove the existing link
-        if (this.value) {
-          const range = findAttributeRange(
-            selection.getFirstPosition()!,
-            'alightEmailLink',
-            this.value,
-            model
-          );
-          writer.removeAttribute('alightEmailLink', range);
-        }
+        const range = findAttributeRange(
+          selection.getFirstPosition()!,
+          'alightEmailLinkPlugin',
+          this.value,
+          model
+        );
+        writer.removeAttribute('alightEmailLinkPlugin', range);
         return;
       }
 
-      // Determine the range where we'll apply the attribute
       const range = selection.isCollapsed
         ? findAttributeRange(
           selection.getFirstPosition()!,
-          'alightEmailLink',
+          'alightEmailLinkPlugin',
           this.value,
           model
         )
         : model.createRange(selection.getFirstPosition()!, selection.getLastPosition()!);
 
-      // Set the email link attribute
-      writer.setAttribute('alightEmailLink', attributes, range);
+      writer.setAttribute('alightEmailLinkPlugin', attributes, range);
     });
   }
 }
