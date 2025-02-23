@@ -6,10 +6,12 @@ import { ClickObserver } from '@ckeditor/ckeditor5-engine';
 import type { Editor } from '@ckeditor/ckeditor5-core';
 import type { Element } from '@ckeditor/ckeditor5-engine';
 import LinkUI from '@ckeditor/ckeditor5-link/src/linkui';
-import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
+import type { Command } from '@ckeditor/ckeditor5-core';
 import { CkAlightModalDialog } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import type AlightEmailLinkPluginCommand from './alight-email-link-plugin-command';
 import { getSelectedLinkElement } from './alight-email-link-plugin-utils';
+import { createDropdown } from '@ckeditor/ckeditor5-ui/src/dropdown/utils';
+import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 
 interface InitialLinkData {
   email?: string;
@@ -33,9 +35,16 @@ interface ModalOptions {
   buttons: ModalDialogButton[];
 }
 
+interface LinkUIActionsView extends View {
+  editButtonView?: ButtonView;
+  previewButtonView: ButtonView;
+  href: string;
+}
+
 export default class AlightEmailLinkPluginUI extends Plugin {
   private _modalDialog?: CkAlightModalDialog;
   private _emailLinkCommand!: AlightEmailLinkPluginCommand;
+  private _linkCommand!: Command;
   private _balloon!: ContextualBalloon;
 
   public static get requires() {
@@ -48,6 +57,8 @@ export default class AlightEmailLinkPluginUI extends Plugin {
 
   public init(): void {
     const editor = this.editor;
+    const t = editor.t;
+    const command = editor.commands.get('emailLink');
 
     // Add click observer
     editor.editing.view.addObserver(ClickObserver);
@@ -55,6 +66,11 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     // Get required plugins and commands
     this._balloon = editor.plugins.get(ContextualBalloon);
     this._emailLinkCommand = editor.commands.get('alightEmailLink') as AlightEmailLinkPluginCommand;
+    this._linkCommand = editor.commands.get('link') as Command;
+
+    if (!this._linkCommand) {
+      throw new Error('[AlightEmailLinkPluginUI] The built-in "link" command is unavailable.');
+    }
 
     // Set up the toolbar button
     this._setupToolbarButton();
@@ -86,19 +102,28 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     const originalCreateActionsView = (linkUI as any)._createActionsView?.bind(linkUI);
     if (originalCreateActionsView) {
       (linkUI as any)._createActionsView = () => {
-        const actionsView = originalCreateActionsView();
+        const actionsView = originalCreateActionsView() as LinkUIActionsView;
 
-        if (actionsView && 'previewButtonView' in actionsView) {
-          const previewView = actionsView.previewButtonView as ButtonView;
+        if (actionsView?.previewButtonView) {
           // Customize the display of mailto links
-          previewView.unbind('label');
-          // Bind to actionsView's href property correctly
-          previewView.bind('label').to(actionsView, 'href', (href: string) => {
+          actionsView.previewButtonView.unbind('label');
+          actionsView.previewButtonView.unbind('tooltip');
+
+          // Update the button label (text)
+          actionsView.previewButtonView.bind('label').to(actionsView, 'href', (href: string) => {
             if (!href) {
               return editor.t('This link has no URL');
             }
             return href.toLowerCase().startsWith('mailto:') ?
               href.substring(7) : href;
+          });
+
+          // Update the button tooltip (title)
+          actionsView.previewButtonView.bind('tooltip').to(actionsView, 'href', (href: string) => {
+            if (href && href.toLowerCase().startsWith('mailto:')) {
+              return editor.t('Open email in client');
+            }
+            return editor.t('Open link in new tab');
           });
         }
 
@@ -110,7 +135,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
   private _extendDefaultActionsView(): void {
     const editor = this.editor;
     const linkUI = editor.plugins.get('LinkUI');
-    const actionsView = (linkUI as any).actionsView;
+    const actionsView = (linkUI as any).actionsView as LinkUIActionsView;
 
     if (!actionsView) {
       return;
@@ -125,8 +150,8 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     if (!href.toLowerCase().startsWith('mailto:')) {
       // Remove our custom handlers for non-mailto links
       if (actionsView.editButtonView) {
-        actionsView.editButtonView.off('execute', undefined, undefined);
-        actionsView.off('edit', undefined, undefined);
+        actionsView.editButtonView.off('execute');
+        actionsView.off('edit');
       }
       return;
     }
@@ -134,8 +159,8 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     // Setup custom handling for mailto links
     if (actionsView.editButtonView) {
       // Clean up existing handlers
-      actionsView.editButtonView.off('execute', undefined, undefined);
-      actionsView.off('edit', undefined, undefined);
+      actionsView.editButtonView.off('execute');
+      actionsView.off('edit');
 
       // Add custom edit handler for mailto links
       actionsView.editButtonView.on('execute', () => {
@@ -165,17 +190,14 @@ export default class AlightEmailLinkPluginUI extends Plugin {
         tooltip: true,
         withText: true
       });
-      // Bind button state to command state
-      button.bind('isEnabled').to(this._emailLinkCommand, 'isEnabled');
 
-      // Execute button
+      // Bind button state to link command
+      button.bind('isEnabled').to(this._linkCommand);
+      button.bind('isOn').to(this._linkCommand, 'value', value => !!value);
+
+      // Show modal dialog when clicked
       button.on('execute', () => {
-        const selection = editor.model.document.selection;
-        const range = selection.getFirstRange();
-
-        if (range) {
-          this._showModal();
-        }
+        this._showModal();
       });
 
       return button;
@@ -245,9 +267,16 @@ export default class AlightEmailLinkPluginUI extends Plugin {
             return;
           }
 
-          editor.execute('alightEmailLink', {
-            email,
-            orgNameText: orgName || undefined
+          // Create or update the mailto link
+          editor.model.change(() => {
+            // First create the link using the built-in link command
+            editor.execute('link', `mailto:${email}`);
+
+            // Then add our custom attributes
+            editor.execute('alightEmailLink', {
+              email,
+              orgNameText: orgName || undefined
+            });
           });
 
           this._modalDialog?.hide();
