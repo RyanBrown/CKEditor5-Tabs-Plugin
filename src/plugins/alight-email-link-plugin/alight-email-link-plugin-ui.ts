@@ -57,8 +57,6 @@ export default class AlightEmailLinkPluginUI extends Plugin {
 
   public init(): void {
     const editor = this.editor;
-    const t = editor.t;
-    const command = editor.commands.get('emailLink');
 
     // Add click observer
     editor.editing.view.addObserver(ClickObserver);
@@ -134,21 +132,24 @@ export default class AlightEmailLinkPluginUI extends Plugin {
 
   private _extendDefaultActionsView(): void {
     const editor = this.editor;
-    const linkUI = editor.plugins.get('LinkUI');
-    const actionsView = (linkUI as any).actionsView as LinkUIActionsView;
-
-    if (!actionsView) {
+    const linkUI: any = editor.plugins.get('LinkUI');
+    if (!linkUI || !linkUI.actionsView) {
+      console.log('no linkUI or actionsView');
       return;
     }
 
-    const selectedElement = getSelectedLinkElement(editor);
-    if (!selectedElement) {
+    const actionsView: any = linkUI.actionsView;
+    const linkCommand = editor.commands.get('link');
+
+    // Validate link command and value
+    if (!linkCommand || typeof linkCommand.value !== 'string') {
       return;
     }
 
-    const href = selectedElement.getAttribute('href') as string || '';
-    if (!href.toLowerCase().startsWith('mailto:')) {
-      // Remove our custom handlers for non-mailto links
+    let linkValue = linkCommand.value.trim().toLowerCase();
+
+    // Handle non-mailto links by removing our custom handlers
+    if (!linkValue.startsWith('mailto:')) {
       if (actionsView.editButtonView) {
         actionsView.editButtonView.off('execute');
         actionsView.off('edit');
@@ -163,12 +164,17 @@ export default class AlightEmailLinkPluginUI extends Plugin {
       actionsView.off('edit');
 
       // Add custom edit handler for mailto links
-      actionsView.editButtonView.on('execute', () => {
-        const email = href.replace(/^mailto:/i, '');
-        const orgName = selectedElement.getAttribute('data-org-name') as string || '';
+      actionsView.editButtonView.on('execute', (evt: { stop: () => void }) => {
+        evt.stop();
 
-        // Show edit modal with current values
-        this._showModal({ email, orgName });
+        // Extract email from mailto link
+        let email = '';
+        if (linkCommand && typeof linkCommand.value === 'string') {
+          email = linkCommand.value.replace(/^mailto:/i, '');
+        }
+
+        // Show edit modal with current email
+        this._showModal({ email });
       }, { priority: 'highest' });
 
       // Prevent default edit behavior
