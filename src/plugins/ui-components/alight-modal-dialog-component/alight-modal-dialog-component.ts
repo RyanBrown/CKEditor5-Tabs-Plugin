@@ -201,11 +201,23 @@ export class CkAlightModalDialog {
     const footer = document.createElement('div');
     footer.className = 'cka-dialog-footer-buttons';
 
-    // Create and append each button
+    // Create and append each button with default styles
     buttons.forEach(buttonConfig => {
-      const button = this.createButton(buttonConfig);
+      // Set default styles based on button type
+      const defaultedConfig = { ...buttonConfig };
 
-      // If button is disabled, set the attribute
+      if (defaultedConfig.label.toLowerCase() === 'continue' ||
+        defaultedConfig.label.toLowerCase() === 'submit' ||
+        defaultedConfig.isPrimary) {
+        defaultedConfig.variant = defaultedConfig.variant || 'default';
+        defaultedConfig.shape = defaultedConfig.shape || 'round';
+      } else if (defaultedConfig.label.toLowerCase() === 'cancel') {
+        defaultedConfig.variant = defaultedConfig.variant || 'outlined';
+        defaultedConfig.shape = defaultedConfig.shape || 'round';
+      }
+
+      const button = this.createButton(defaultedConfig);
+
       if (buttonConfig.disabled) {
         button.disabled = true;
       }

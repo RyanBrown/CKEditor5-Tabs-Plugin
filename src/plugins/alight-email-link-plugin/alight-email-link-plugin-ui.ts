@@ -183,8 +183,8 @@ export default class AlightEmailLinkPluginUI extends Plugin {
         height: 'auto',
         contentClass: 'email-link-content',
         buttons: [
-          { label: 'Cancel', variant: 'outlined', shape: 'round', disabled: false },
-          { label: 'Continue', variant: 'default', isPrimary: true, shape: 'round', closeOnClick: false, disabled: false }
+          { label: 'Cancel', disabled: false },
+          { label: 'Continue', isPrimary: true, closeOnClick: false, disabled: false }
         ]
       });
 
