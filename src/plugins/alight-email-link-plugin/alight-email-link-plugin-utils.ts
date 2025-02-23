@@ -1,6 +1,4 @@
 // src/plugins/alight-email-link-plugin/alight-email-link-plugin-utils.ts
-
-// Import types for Editor and Element from CKEditor packages.
 import type { Editor } from '@ckeditor/ckeditor5-core';
 import { type Element } from '@ckeditor/ckeditor5-engine';
 
