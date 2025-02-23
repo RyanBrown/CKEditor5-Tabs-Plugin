@@ -121,6 +121,26 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     }
   }
 
+  private _handleLinkRemoval(): void {
+    const editor = this.editor;
+    const model = editor.model;
+    const selection = model.document.selection;
+    const range = selection.getFirstRange()!;
+
+    model.change(writer => {
+      // First, remove the link
+      editor.execute('unlink');
+
+      // Then find and remove any org-name-text spans
+      const items = Array.from(range.getItems());
+      for (const item of items) {
+        if (item.is('element', 'span') && item.hasAttribute('class') && item.getAttribute('class') === 'org-name-text') {
+          writer.remove(item);
+        }
+      }
+    });
+  }
+
   private _extendDefaultActionsView(): void {
     const editor = this.editor;
     const linkUI: any = editor.plugins.get('LinkUI');
@@ -145,6 +165,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
       return;
     }
 
+    // Handle the edit button
     if (actionsView.editButtonView) {
       actionsView.editButtonView.off('execute');
       actionsView.off('edit');
@@ -152,16 +173,42 @@ export default class AlightEmailLinkPluginUI extends Plugin {
       actionsView.editButtonView.on('execute', (evt: { stop: () => void }) => {
         evt.stop();
 
+        // Get the current email address
         let email = '';
         if (linkCommand && typeof linkCommand.value === 'string') {
           email = linkCommand.value.replace(/^mailto:/i, '');
         }
 
-        this._showModal({ email });
+        // Get the current organization name if it exists
+        const selection = editor.model.document.selection;
+        const range = selection.getFirstRange()!;
+        const items = Array.from(range.getItems());
+        let orgName = '';
+        for (const item of items) {
+          if (item.is('element', 'span') && item.hasAttribute('class') && item.getAttribute('class') === 'org-name-text') {
+            // Extract org name from the span content, removing the parentheses
+            const firstChild = item.getChild(0);
+            if (firstChild && 'data' in firstChild) {
+              const spanText = firstChild.data as string;
+              orgName = spanText.slice(2, -1); // Remove " (" and ")"
+            }
+            break;
+          }
+        }
+
+        this._showModal({ email, orgName });
       }, { priority: 'highest' });
 
       actionsView.on('edit', (evt: { stop: () => void }) => {
         evt.stop();
+      }, { priority: 'highest' });
+    }
+
+    // Handle the unlink button
+    if (actionsView.unlinkButtonView) {
+      actionsView.unlinkButtonView.off('execute');
+      actionsView.unlinkButtonView.on('execute', () => {
+        this._handleLinkRemoval();
       }, { priority: 'highest' });
     }
   }
@@ -188,7 +235,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
         ]
       });
 
-      this._modalDialog.on('buttonClick', (label: string) => {
+      this._modalDialog.on('buttonClick', async (label: string) => {
         if (label === 'Cancel') {
           this._modalDialog?.hide();
           return;
@@ -197,12 +244,38 @@ export default class AlightEmailLinkPluginUI extends Plugin {
         if (label === 'Continue') {
           const form = this._modalDialog?.element?.querySelector('#email-link-form') as HTMLFormElement;
           const emailInput = form.querySelector('#email') as HTMLInputElement;
+          const orgNameInput = form.querySelector('#org-name') as HTMLInputElement;
           const emailVal = emailInput.value.trim();
+          const orgNameVal = orgNameInput.value.trim();
 
           if (this._validateEmail(emailVal)) {
-            editor.model.change(() => {
+            const model = editor.model;
+            const selection = model.document.selection;
+
+            model.change(writer => {
+              // First apply the email link to the current selection
               editor.execute('link', 'mailto:' + emailVal);
+
+              // Find the current selection range
+              const range = selection.getFirstRange()!;
+              const rangeEnd = range.end;
+
+              // Remove any existing org name span
+              const items = Array.from(range.getItems());
+              for (const item of items) {
+                if (item.is('element', 'span') && item.hasAttribute('class') && item.getAttribute('class') === 'org-name-text') {
+                  writer.remove(item);
+                }
+              }
+
+              // If org name is provided, add it after the link
+              if (orgNameVal) {
+                const spanElement = writer.createElement('span', { class: 'org-name-text' });
+                writer.insertText(` (${orgNameVal})`, spanElement);
+                writer.insert(spanElement, rangeEnd);
+              }
             });
+
             this._modalDialog?.hide();
           }
         }
@@ -244,7 +317,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
           <input 
             type="text" 
             id="org-name" 
-            name="displayText" 
+            name="orgNameInput" 
             class="cka-input-text block"
             value="${initialOrgName || ''}"
             placeholder="Organization name"

@@ -13,27 +13,55 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
 
   public init(): void {
     const editor = this.editor;
+    const schema = editor.model.schema;
     const conversion = editor.conversion;
 
-    conversion.for('downcast').attributeToElement({
-      model: 'linkHref',
-      view: (href: string, { writer }) => {
-        if (!href) {
-          return;
-        }
+    // Allow span elements in the model
+    schema.register('span', {
+      allowWhere: '$text',
+      allowContentOf: '$block',
+      allowAttributes: ['class']
+    });
 
-        const attributes: Record<string, string> = {
-          href
-        };
-
-        if (href.toLowerCase().startsWith('mailto:')) {
-          attributes.class = 'email-link';
-        }
-
-        return writer.createAttributeElement('a', attributes, { priority: 5 });
+    // Downcast conversion for spans
+    conversion.for('downcast').elementToElement({
+      model: 'span',
+      view: (modelElement, { writer }) => {
+        return writer.createContainerElement('span', {
+          class: modelElement.getAttribute('class')
+        });
       }
     });
 
+    // Upcast conversion for spans
+    conversion.for('upcast').elementToElement({
+      view: {
+        name: 'span',
+        classes: ['org-name-text']
+      },
+      model: (viewElement, { writer }) => {
+        return writer.createElement('span', { class: 'org-name-text' });
+      }
+    });
+
+    // Setup downcast conversion for email links
+    conversion.for('downcast').attributeToElement({
+      model: 'linkHref',
+      view: (href, { writer }) => {
+        if (!href) return;
+
+        if (href.toLowerCase().startsWith('mailto:')) {
+          return writer.createAttributeElement('a', {
+            href,
+            class: 'email-link'
+          });
+        }
+
+        return writer.createAttributeElement('a', { href });
+      }
+    });
+
+    // Setup upcast conversion for email links
     conversion.for('upcast').elementToAttribute({
       view: {
         name: 'a',
@@ -43,10 +71,7 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
       },
       model: {
         key: 'linkHref',
-        value: (viewElement: Element) => {
-          const hrefVal = viewElement.getAttribute('href');
-          return hrefVal || '';
-        }
+        value: (viewElement: { getAttribute: (arg0: string) => any; }) => viewElement.getAttribute('href')
       }
     });
   }
