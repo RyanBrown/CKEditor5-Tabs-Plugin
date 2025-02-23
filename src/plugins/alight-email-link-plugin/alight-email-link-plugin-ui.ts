@@ -3,14 +3,11 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { ButtonView, ContextualBalloon, View } from '@ckeditor/ckeditor5-ui';
 import { ClickObserver } from '@ckeditor/ckeditor5-engine';
-import type { Editor } from '@ckeditor/ckeditor5-core';
-import type { Element } from '@ckeditor/ckeditor5-engine';
 import LinkUI from '@ckeditor/ckeditor5-link/src/linkui';
 import type { Command } from '@ckeditor/ckeditor5-core';
 import { CkAlightModalDialog } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import type AlightEmailLinkPluginCommand from './alight-email-link-plugin-command';
 import AlightEmailLinkPluginEditing from './alight-email-link-plugin-editing';
-import { getSelectedLinkElement } from './alight-email-link-plugin-utils';
 import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 
 interface InitialLinkData {

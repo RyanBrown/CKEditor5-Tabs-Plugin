@@ -1,6 +1,4 @@
 // src/plugins/alight-email-link-plugin/alight-email-link-plugin-command.ts
-
-
 import { Command } from '@ckeditor/ckeditor5-core';
 import { findAttributeRange } from '@ckeditor/ckeditor5-typing';
 

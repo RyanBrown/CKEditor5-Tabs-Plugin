@@ -1,5 +1,4 @@
 // src/plugins/alight-email-link-plugin/alight-email-link-plugin-editing.ts
-
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { Link } from '@ckeditor/ckeditor5-link';
 import type { Element } from '@ckeditor/ckeditor5-engine';
