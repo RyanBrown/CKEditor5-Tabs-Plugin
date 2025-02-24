@@ -21,8 +21,8 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
     // Create and register the organization name handler
     const orgNameHandler = new OrganizationNameHandler(editor);
 
-    // Register schema and conversion for organization name spans
-    orgNameHandler.registerSchema();
+    // No longer need to register schema for organization name spans
+    // orgNameHandler.registerSchema();
 
     // Register the email link command
     const emailLinkCommand = new AlightEmailLinkPluginCommand(editor);
@@ -66,7 +66,7 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
     });
   }
 
-  // Removes an email link and any associated organization name span
+  // Removes an email link
   public removeEmailLink(): void {
     const emailLinkCommand = this.editor.commands.get('applyEmailLinkPlugin') as AlightEmailLinkPluginCommand;
     if (emailLinkCommand) {

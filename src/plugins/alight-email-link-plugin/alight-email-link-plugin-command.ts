@@ -29,11 +29,10 @@ export default class AlightEmailLinkPluginCommand extends Command {
       const range = selection.getFirstRange()!;
       const rangeEnd = range.end;
 
-      // Remove any existing org name span
-      this.orgNameHandler.removeOrgNameSpans(writer, range);
-
       // If org name is provided, add it after the link
-      this.orgNameHandler.insertOrgName(writer, orgName || '', rangeEnd);
+      if (orgName) {
+        this.orgNameHandler.insertOrgName(writer, orgName, rangeEnd);
+      }
     });
   }
 
@@ -46,19 +45,15 @@ export default class AlightEmailLinkPluginCommand extends Command {
     this.isEnabled = linkCommand ? linkCommand.isEnabled : false;
   }
 
-  // Removes an email link and any associated organization name span
+  // Removes an email link and any associated organization name text
   public removeEmailLink(): void {
     const editor = this.editor;
     const model = editor.model;
     const selection = model.document.selection;
-    const range = selection.getFirstRange()!;
 
-    model.change(writer => {
-      // First, remove the link
+    model.change(() => {
+      // Just execute the unlink command - no need to remove spans anymore
       editor.execute('unlink');
-
-      // Then find and remove any org-name-text spans
-      this.orgNameHandler.removeOrgNameSpans(writer, range);
     });
   }
 }
