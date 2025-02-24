@@ -289,7 +289,11 @@ export default class AlightEmailLinkPluginUI extends Plugin {
 
     // Create an empty container for the modal content
     const container = document.createElement('div');
-    container.className = 'email-link-modal-content';
+    container.className = 'email-link-modal-content'; // optional class wrapping modal content
+
+    // No need to add the email-link-content class as it's handled by:
+    // 1. The modal dialog's contentClass option
+    // 2. The emailFormContainer downcast converter
 
     // Set the empty container as content
     this._modalDialog.setContent(container);
