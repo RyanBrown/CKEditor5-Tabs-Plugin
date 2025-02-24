@@ -1,9 +1,7 @@
 // src/plugins/alight-email-link-plugin/alight-email-link-plugin-ui.ts
 import { Plugin } from '@ckeditor/ckeditor5-core';
-import { ButtonView, ContextualBalloon, View, submitHandler } from '@ckeditor/ckeditor5-ui';
+import { ButtonView, ContextualBalloon } from '@ckeditor/ckeditor5-ui';
 import { ClickObserver } from '@ckeditor/ckeditor5-engine';
-import { FocusTracker, KeystrokeHandler } from '@ckeditor/ckeditor5-utils';
-import type { Locale } from '@ckeditor/ckeditor5-utils';
 import { CkAlightModalDialog } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import LinkUI from '@ckeditor/ckeditor5-link/src/linkui';
 import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
@@ -304,11 +302,11 @@ export default class AlightEmailLinkPluginUI extends Plugin {
   }
 
   /**
- * Renders a form in the modal using the model-based approach from the editing plugin
- * @param containerElement The container element to render the form into
- * @param initialEmail Initial email value
- * @param initialOrgName Initial organization name value
- */
+   * Renders a form in the modal using the model-based approach from the editing plugin
+   * @param containerElement The container element to render the form into
+   * @param initialEmail Initial email value
+   * @param initialOrgName Initial organization name value
+   */
   private _renderFormFromModel(containerElement: HTMLElement, initialEmail: string = '', initialOrgName: string = ''): void {
     const editor = this.editor;
 

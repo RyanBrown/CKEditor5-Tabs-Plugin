@@ -1,8 +1,6 @@
 // src/plugins/alight-email-link-plugin/alight-email-link-plugin-utils.ts
 import type { Editor } from '@ckeditor/ckeditor5-core';
 import { type Element } from '@ckeditor/ckeditor5-engine';
-import { View, LabelView, InputTextView, submitHandler } from '@ckeditor/ckeditor5-ui';
-import { Locale, FocusTracker, KeystrokeHandler } from '@ckeditor/ckeditor5-utils';
 
 export function getSelectedLinkElement(editor: Editor): Element | null {
   const view = editor.editing.view;

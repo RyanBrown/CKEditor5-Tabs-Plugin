@@ -20,7 +20,7 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
     // Allow span elements in the model
     schema.register('span', { allowAttributes: ['class'], allowContentOf: '$block', allowWhere: '$text' });
 
-    // Register the email form model elements
+    // Register the email form model elements (only needed for the form creation)
     this._registerEmailFormSchema(schema);
 
     // Downcast conversion for spans
@@ -44,7 +44,7 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
       }
     });
 
-    // Setup email form conversions
+    // Setup email form conversions (only downcasts needed)
     this._setupEmailFormConversions(conversion);
 
     // Setup downcast conversion for email links
@@ -88,17 +88,17 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
     // Form group
     schema.register('formGroup', { allowAttributes: ['class'], allowIn: 'emailForm', isObject: true, });
     // Label element
-    schema.register('formLabel', { allowAttributes: ['for', 'class'], allowIn: 'formGroup', isObject: true, });
+    schema.register('formLabel', { allowAttributes: ['for', 'class', 'text'], allowIn: 'formGroup', isObject: true, });
     // Input element
     schema.register('formInput', { allowAttributes: ['type', 'id', 'name', 'class', 'required', 'value', 'placeholder', 'style'], allowIn: 'formGroup', isObject: true, });
     // Error message
-    schema.register('errorMessage', { allowAttributes: ['id', 'class', 'style'], allowIn: 'formGroup', isObject: true, });
+    schema.register('errorMessage', { allowAttributes: ['id', 'class', 'style', 'text'], allowIn: 'formGroup', isObject: true, });
     // Note text
-    schema.register('noteText', { allowAttributes: ['class'], allowIn: 'emailForm', isObject: true, });
+    schema.register('noteText', { allowAttributes: ['class', 'text'], allowIn: 'emailForm', isObject: true, });
   }
 
   /**
-   * Setup conversion rules for email form elements
+   * Setup conversion rules for email form elements (downcast only)
    */
   private _setupEmailFormConversions(conversion: any): void {
     // Container element conversion
@@ -197,29 +197,8 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
       }
     });
 
-    // Container element upcast
-    conversion.for('upcast').elementToElement({
-      view: {
-        name: 'div',
-        classes: ['email-link-content']
-      },
-      model: (viewElement: any, { writer }: any) => {
-        return writer.createElement('emailFormContainer');
-      }
-    });
-
-    // Form element upcast
-    conversion.for('upcast').elementToElement({
-      view: {
-        name: 'form',
-        classes: ['ck-form']
-      },
-      model: (viewElement: any, { writer }: any) => {
-        return writer.createElement('emailForm', {
-          id: viewElement.getAttribute('id')
-        });
-      }
-    });
+    // No upcast converters needed for form elements since they are only created
+    // programmatically for the modal dialog and never parsed from existing content
   }
 
   /**
