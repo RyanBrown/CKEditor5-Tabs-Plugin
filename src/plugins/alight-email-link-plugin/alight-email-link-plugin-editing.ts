@@ -2,6 +2,7 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { Link } from '@ckeditor/ckeditor5-link';
 import { toWidget } from '@ckeditor/ckeditor5-widget/src/utils';
+import AlightEmailLinkPluginCommand from './alight-email-link-plugin-command';
 
 export default class AlightEmailLinkPluginEditing extends Plugin {
   public static get pluginName() {
@@ -16,6 +17,9 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
     const editor = this.editor;
     const schema = editor.model.schema;
     const conversion = editor.conversion;
+
+    // Register the email link command
+    editor.commands.add('applyEmailLinkPlugin', new AlightEmailLinkPluginCommand(editor));
 
     // Allow span elements in the model
     schema.register('span', { allowAttributes: ['class'], allowContentOf: '$block', allowWhere: '$text' });
@@ -77,6 +81,17 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
         value: (viewElement: { getAttribute: (arg0: string) => any; }) => viewElement.getAttribute('href')
       }
     });
+  }
+
+  // Removes an email link and any associated organization name span
+  public removeEmailLink(): void {
+    const emailLinkCommand = this.editor.commands.get('applyEmailLinkPlugin') as AlightEmailLinkPluginCommand;
+    if (emailLinkCommand) {
+      emailLinkCommand.removeEmailLink();
+    } else {
+      // Fallback to basic unlink if the command isn't available
+      this.editor.execute('unlink');
+    }
   }
 
   // Register schema definitions for email form elements

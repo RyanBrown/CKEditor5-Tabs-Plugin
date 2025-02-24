@@ -124,23 +124,8 @@ export default class AlightEmailLinkPluginUI extends Plugin {
   }
 
   private _handleLinkRemoval(): void {
-    const editor = this.editor;
-    const model = editor.model;
-    const selection = model.document.selection;
-    const range = selection.getFirstRange()!;
-
-    model.change(writer => {
-      // First, remove the link
-      editor.execute('unlink');
-
-      // Then find and remove any org-name-text spans
-      const items = Array.from(range.getItems());
-      for (const item of items) {
-        if (item.is('element', 'span') && item.hasAttribute('class') && item.getAttribute('class') === 'org-name-text') {
-          writer.remove(item);
-        }
-      }
-    });
+    // Use the editing plugin's method instead of duplicating logic
+    this._editingPlugin.removeEmailLink();
   }
 
   private _extendDefaultActionsView(): void {
@@ -251,31 +236,10 @@ export default class AlightEmailLinkPluginUI extends Plugin {
           const orgNameVal = orgNameInput.value.trim();
 
           if (this._validateEmail(emailVal)) {
-            const model = editor.model;
-            const selection = model.document.selection;
-
-            model.change(writer => {
-              // First apply the email link to the current selection
-              editor.execute('link', 'mailto:' + emailVal);
-
-              // Find the current selection range
-              const range = selection.getFirstRange()!;
-              const rangeEnd = range.end;
-
-              // Remove any existing org name span
-              const items = Array.from(range.getItems());
-              for (const item of items) {
-                if (item.is('element', 'span') && item.hasAttribute('class') && item.getAttribute('class') === 'org-name-text') {
-                  writer.remove(item);
-                }
-              }
-
-              // If org name is provided, add it after the link
-              if (orgNameVal) {
-                const spanElement = writer.createElement('span', { class: 'org-name-text' });
-                writer.insertText(` (${orgNameVal})`, spanElement);
-                writer.insert(spanElement, rangeEnd);
-              }
+            // Use the new command instead of directly modifying the model
+            editor.execute('applyEmailLinkPlugin', {
+              email: emailVal,
+              orgName: orgNameVal || undefined
             });
 
             this._modalDialog?.hide();
