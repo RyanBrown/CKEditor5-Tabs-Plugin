@@ -7,6 +7,7 @@ import LinkUI from '@ckeditor/ckeditor5-link/src/linkui';
 import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 import AlightEmailLinkPluginEditing from './alight-email-link-plugin-editing';
 import './styles/alight-email-link-plugin.scss';
+import AlightEmailLinkPluginCommand from './alight-email-link-plugin-command';
 
 function isValidEmail(email: string): boolean {
   const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
@@ -166,21 +167,15 @@ export default class AlightEmailLinkPluginUI extends Plugin {
           email = linkCommand.value.replace(/^mailto:/i, '');
         }
 
-        // Get the current organization name if it exists
+        // Get the organization name handler
+        const emailLinkCommand = editor.commands.get('applyEmailLink') as AlightEmailLinkPluginCommand;
         const selection = editor.model.document.selection;
         const range = selection.getFirstRange()!;
-        const items = Array.from(range.getItems());
+
+        // Use the handler to extract the organization name
         let orgName = '';
-        for (const item of items) {
-          if (item.is('element', 'span') && item.hasAttribute('class') && item.getAttribute('class') === 'org-name-text') {
-            // Extract org name from the span content, removing the parentheses
-            const firstChild = item.getChild(0);
-            if (firstChild && 'data' in firstChild) {
-              const spanText = firstChild.data as string;
-              orgName = spanText.slice(2, -1); // Remove " (" and ")"
-            }
-            break;
-          }
+        if (emailLinkCommand) {
+          orgName = emailLinkCommand.orgNameHandler.extractOrgName(range);
         }
 
         this._showModal({ email, orgName });

@@ -1,5 +1,6 @@
 // src/plugins/alight-email-link-plugin/alight-email-link-command.ts
-import { Command } from '@ckeditor/ckeditor5-core';
+import { Command, Editor } from '@ckeditor/ckeditor5-core';
+import { OrganizationNameHandler } from './alight-email-link-plugin-utils';
 
 export interface AlightEmailLinkPluginCommandOptions {
   email: string;
@@ -7,6 +8,13 @@ export interface AlightEmailLinkPluginCommandOptions {
 }
 
 export default class AlightEmailLinkPluginCommand extends Command {
+  public orgNameHandler: OrganizationNameHandler;
+
+  constructor(editor: Editor) {
+    super(editor);
+    this.orgNameHandler = new OrganizationNameHandler(editor);
+  }
+
   override execute(options: AlightEmailLinkPluginCommandOptions): void {
     const editor = this.editor;
     const model = editor.model;
@@ -22,19 +30,10 @@ export default class AlightEmailLinkPluginCommand extends Command {
       const rangeEnd = range.end;
 
       // Remove any existing org name span
-      const items = Array.from(range.getItems());
-      for (const item of items) {
-        if (item.is('element', 'span') && item.hasAttribute('class') && item.getAttribute('class') === 'org-name-text') {
-          writer.remove(item);
-        }
-      }
+      this.orgNameHandler.removeOrgNameSpans(writer, range);
 
       // If org name is provided, add it after the link
-      if (orgName) {
-        const spanElement = writer.createElement('span', { class: 'org-name-text' });
-        writer.insertText(` (${orgName})`, spanElement);
-        writer.insert(spanElement, rangeEnd);
-      }
+      this.orgNameHandler.insertOrgName(writer, orgName || '', rangeEnd);
     });
   }
 
@@ -59,12 +58,7 @@ export default class AlightEmailLinkPluginCommand extends Command {
       editor.execute('unlink');
 
       // Then find and remove any org-name-text spans
-      const items = Array.from(range.getItems());
-      for (const item of items) {
-        if (item.is('element', 'span') && item.hasAttribute('class') && item.getAttribute('class') === 'org-name-text') {
-          writer.remove(item);
-        }
-      }
+      this.orgNameHandler.removeOrgNameSpans(writer, range);
     });
   }
 }

@@ -3,6 +3,7 @@ import { Plugin } from '@ckeditor/ckeditor5-core';
 import { Link } from '@ckeditor/ckeditor5-link';
 import { toWidget } from '@ckeditor/ckeditor5-widget/src/utils';
 import AlightEmailLinkPluginCommand from './alight-email-link-plugin-command';
+import { OrganizationNameHandler } from './alight-email-link-plugin-utils';
 
 export default class AlightEmailLinkPluginEditing extends Plugin {
   public static get pluginName() {
@@ -15,38 +16,20 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
 
   public init(): void {
     const editor = this.editor;
-    const schema = editor.model.schema;
     const conversion = editor.conversion;
 
-    // Register the email link command
-    editor.commands.add('applyEmailLinkPlugin', new AlightEmailLinkPluginCommand(editor));
+    // Create and register the organization name handler
+    const orgNameHandler = new OrganizationNameHandler(editor);
 
-    // Allow span elements in the model
-    schema.register('span', { allowAttributes: ['class'], allowContentOf: '$block', allowWhere: '$text' });
+    // Register schema and conversion for organization name spans
+    orgNameHandler.registerSchema();
+
+    // Register the email link command
+    const emailLinkCommand = new AlightEmailLinkPluginCommand(editor);
+    editor.commands.add('applyEmailLinkPlugin', emailLinkCommand);
 
     // Register the email form model elements (only needed for the form creation)
-    this._registerEmailFormSchema(schema);
-
-    // Downcast conversion for spans
-    conversion.for('downcast').elementToElement({
-      model: 'span',
-      view: (modelElement, { writer }) => {
-        return writer.createContainerElement('span', {
-          class: modelElement.getAttribute('class')
-        });
-      }
-    });
-
-    // Upcast conversion for spans
-    conversion.for('upcast').elementToElement({
-      view: {
-        name: 'span',
-        classes: ['org-name-text']
-      },
-      model: (viewElement, { writer }) => {
-        return writer.createElement('span', { class: 'org-name-text' });
-      }
-    });
+    this._registerEmailFormSchema(editor.model.schema);
 
     // Setup email form conversions (only downcasts needed)
     this._setupEmailFormConversions(conversion);
