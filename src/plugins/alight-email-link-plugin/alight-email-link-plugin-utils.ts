@@ -41,12 +41,29 @@ export class OrganizationNameHandler {
    * @param orgName The organization name to insert
    * @param rangeEnd The position to insert after
    */
+  // Updated insertOrgName method for OrganizationNameHandler class
+
   public insertOrgName(writer: Writer, orgName: string, rangeEnd: any): void {
     if (!orgName) return;
 
-    const spanElement = writer.createElement('span', { class: 'org-name-text' });
-    writer.insertText(` (${orgName})`, spanElement);
-    writer.insert(spanElement, rangeEnd);
+    // Create the text for the organization name
+    const orgText = ` (${orgName})`;
+
+    // Insert the text at the range end - this will be inside the link's attribute range
+    // CKEditor will automatically apply the link attribute to this text
+    writer.insertText(orgText, rangeEnd);
+
+    // We don't need to create a separate span element anymore since we're 
+    // inserting directly inside the link, but we need a way to identify this text
+    // for extraction later, so we'll use a marker or a custom attribute
+
+    // Option 1: Use a custom attribute on the text node
+    // Find the newly inserted text node
+    const textNode = rangeEnd.textNode;
+    if (textNode) {
+      // Mark this node with a custom attribute that indicates it's an org name
+      writer.setAttribute('data-org-name', true, textNode);
+    }
   }
 
   /**
