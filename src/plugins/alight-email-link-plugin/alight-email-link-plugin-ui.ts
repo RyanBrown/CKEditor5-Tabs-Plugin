@@ -305,11 +305,11 @@ export default class AlightEmailLinkPluginUI extends Plugin {
   }
 
   /**
-   * Renders a form in the modal using the model-based approach from the editing plugin
-   * @param containerElement The container element to render the form into
-   * @param initialEmail Initial email value
-   * @param initialOrgName Initial organization name value
-   */
+ * Renders a form in the modal using the model-based approach from the editing plugin
+ * @param containerElement The container element to render the form into
+ * @param initialEmail Initial email value
+ * @param initialOrgName Initial organization name value
+ */
   private _renderFormFromModel(containerElement: HTMLElement, initialEmail: string = '', initialOrgName: string = ''): void {
     const editor = this.editor;
 
@@ -330,27 +330,14 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     } catch (error) {
       console.error('Error creating email form from model:', error);
 
-      // If the model-based approach fails, create a simple fallback form
-      containerElement.innerHTML = `
-        <form id="email-link-form" class="ck-form">
-          <div class="ck-form-group">
-            <label for="email" class="cka-input-label">Email Address</label>
-            <input type="email" id="email" name="email" class="cka-input-text block" required 
-              value="${initialEmail}" placeholder="user@example.com" />
-            <div class="error-message" id="email-error" style="display: none;">
-              Please enter a valid email address.
-            </div>
-          </div>
-          <div class="ck-form-group mt-3">
-            <label for="org-name" class="cka-input-label">Organization Name (optional)</label>
-            <input type="text" id="org-name" name="orgNameInput" class="cka-input-text block"
-              value="${initialOrgName}" placeholder="Organization name" />
-          </div>
-          <p class="note-text">
-            Organization Name (optional): Specify the third-party organization to inform users about the email's origin.
-          </p>
-        </form>
-      `;
+      // Display a user-friendly error message
+      containerElement.innerHTML = '<div class="email-form-error">Unable to load the email form. Please try again later.</div>';
+
+      // Disable the Continue button
+      const continueButton = this._modalDialog?.element?.querySelector('button[data-button="Continue"]');
+      if (continueButton) {
+        continueButton.setAttribute('disabled', 'disabled');
+      }
     }
   }
 
