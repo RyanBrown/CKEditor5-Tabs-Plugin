@@ -1,6 +1,7 @@
 // src/plugins/alight-email-link-plugin/alight-email-link-plugin-editing.ts
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { Link } from '@ckeditor/ckeditor5-link';
+import { toWidget } from '@ckeditor/ckeditor5-widget/src/utils';
 
 export default class AlightEmailLinkPluginEditing extends Plugin {
   public static get pluginName() {
@@ -17,11 +18,10 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
     const conversion = editor.conversion;
 
     // Allow span elements in the model
-    schema.register('span', {
-      allowWhere: '$text',
-      allowContentOf: '$block',
-      allowAttributes: ['class']
-    });
+    schema.register('span', { allowAttributes: ['class'], allowContentOf: '$block', allowWhere: '$text' });
+
+    // Register the email form model elements
+    this._registerEmailFormSchema(schema);
 
     // Downcast conversion for spans
     conversion.for('downcast').elementToElement({
@@ -43,6 +43,9 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
         return writer.createElement('span', { class: 'org-name-text' });
       }
     });
+
+    // Setup email form conversions
+    this._setupEmailFormConversions(conversion);
 
     // Setup downcast conversion for email links
     conversion.for('downcast').attributeToElement({
@@ -74,5 +77,236 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
         value: (viewElement: { getAttribute: (arg0: string) => any; }) => viewElement.getAttribute('href')
       }
     });
+  }
+
+  // Register schema definitions for email form elements
+  private _registerEmailFormSchema(schema: any): void {
+    // Root form container
+    schema.register('emailFormContainer', { allowAttributes: ['class'], allowWhere: '$block', isBlock: true, isObject: true, });
+    // Form element
+    schema.register('emailForm', { allowAttributes: ['id', 'class'], allowIn: 'emailFormContainer', isObject: true, });
+    // Form group
+    schema.register('formGroup', { allowAttributes: ['class'], allowIn: 'emailForm', isObject: true, });
+    // Label element
+    schema.register('formLabel', { allowAttributes: ['for', 'class'], allowIn: 'formGroup', isObject: true, });
+    // Input element
+    schema.register('formInput', { allowAttributes: ['type', 'id', 'name', 'class', 'required', 'value', 'placeholder', 'style'], allowIn: 'formGroup', isObject: true, });
+    // Error message
+    schema.register('errorMessage', { allowAttributes: ['id', 'class', 'style'], allowIn: 'formGroup', isObject: true, });
+    // Note text
+    schema.register('noteText', { allowAttributes: ['class'], allowIn: 'emailForm', isObject: true, });
+  }
+
+  /**
+   * Setup conversion rules for email form elements
+   */
+  private _setupEmailFormConversions(conversion: any): void {
+    // Container element conversion
+    conversion.for('downcast').elementToElement({
+      model: 'emailFormContainer',
+      view: (modelElement: any, { writer }: any) => {
+        const containerElement = writer.createContainerElement('div', {
+          class: 'email-link-content'
+        });
+        return containerElement;
+      }
+    });
+
+    // Form element conversion
+    conversion.for('downcast').elementToElement({
+      model: 'emailForm',
+      view: (modelElement: any, { writer }: any) => {
+        return writer.createContainerElement('form', {
+          id: 'email-link-form',
+          class: 'ck-form'
+        });
+      }
+    });
+
+    // Form group conversion
+    conversion.for('downcast').elementToElement({
+      model: 'formGroup',
+      view: (modelElement: any, { writer }: any) => {
+        const classAttribute = modelElement.getAttribute('class') || 'ck-form-group';
+        return writer.createContainerElement('div', { class: classAttribute });
+      }
+    });
+
+    // Label conversion
+    conversion.for('downcast').elementToElement({
+      model: 'formLabel',
+      view: (modelElement: any, { writer }: any) => {
+        const labelElement = writer.createContainerElement('label', {
+          for: modelElement.getAttribute('for'),
+          class: modelElement.getAttribute('class') || 'cka-input-label'
+        });
+        writer.insert(
+          writer.createPositionAt(labelElement, 0),
+          writer.createText(modelElement.getAttribute('text') || '')
+        );
+        return labelElement;
+      }
+    });
+
+    // Input conversion
+    conversion.for('downcast').elementToElement({
+      model: 'formInput',
+      view: (modelElement: any, { writer }: any) => {
+        return writer.createEmptyElement('input', {
+          type: modelElement.getAttribute('type') || 'text',
+          id: modelElement.getAttribute('id') || '',
+          name: modelElement.getAttribute('name') || '',
+          class: modelElement.getAttribute('class') || '',
+          value: modelElement.getAttribute('value') || '',
+          placeholder: modelElement.getAttribute('placeholder') || '',
+          required: modelElement.getAttribute('required') ? 'required' : undefined,
+          style: modelElement.getAttribute('style') || ''
+        });
+      }
+    });
+
+    // Error message conversion
+    conversion.for('downcast').elementToElement({
+      model: 'errorMessage',
+      view: (modelElement: any, { writer }: any) => {
+        const errorElement = writer.createContainerElement('div', {
+          id: modelElement.getAttribute('id') || '',
+          class: modelElement.getAttribute('class') || 'error-message',
+          style: modelElement.getAttribute('style') || 'display: none;'
+        });
+        writer.insert(
+          writer.createPositionAt(errorElement, 0),
+          writer.createText(modelElement.getAttribute('text') || 'Please enter a valid email address.')
+        );
+        return errorElement;
+      }
+    });
+
+    // Note text conversion
+    conversion.for('downcast').elementToElement({
+      model: 'noteText',
+      view: (modelElement: any, { writer }: any) => {
+        const noteElement = writer.createContainerElement('p', {
+          class: modelElement.getAttribute('class') || 'note-text'
+        });
+        writer.insert(
+          writer.createPositionAt(noteElement, 0),
+          writer.createText(modelElement.getAttribute('text') || '')
+        );
+        return noteElement;
+      }
+    });
+
+    // Container element upcast
+    conversion.for('upcast').elementToElement({
+      view: {
+        name: 'div',
+        classes: ['email-link-content']
+      },
+      model: (viewElement: any, { writer }: any) => {
+        return writer.createElement('emailFormContainer');
+      }
+    });
+
+    // Form element upcast
+    conversion.for('upcast').elementToElement({
+      view: {
+        name: 'form',
+        classes: ['ck-form']
+      },
+      model: (viewElement: any, { writer }: any) => {
+        return writer.createElement('emailForm', {
+          id: viewElement.getAttribute('id')
+        });
+      }
+    });
+  }
+
+  /**
+   * Creates a full email form model structure
+   * @param writer The model writer
+   * @param initialEmail Optional initial email value
+   * @param initialOrgName Optional initial organization name value
+   * @returns The created model fragment
+   */
+  public createEmailFormModel(writer: any, initialEmail: string = '', initialOrgName: string = '') {
+    // Create the root container
+    const formContainer = writer.createElement('emailFormContainer');
+
+    // Create the form element
+    const form = writer.createElement('emailForm', { id: 'email-link-form' });
+
+    // Email form group
+    const emailGroup = writer.createElement('formGroup', { class: 'ck-form-group' });
+
+    // Email label
+    const emailLabel = writer.createElement('formLabel', {
+      for: 'email',
+      class: 'cka-input-label',
+      text: 'Email Address'
+    });
+
+    // Email input
+    const emailInput = writer.createElement('formInput', {
+      type: 'email',
+      id: 'email',
+      name: 'email',
+      class: 'cka-input-text block',
+      required: true,
+      value: initialEmail,
+      placeholder: 'user@example.com'
+    });
+
+    // Error message
+    const emailError = writer.createElement('errorMessage', {
+      id: 'email-error',
+      class: 'error-message',
+      style: 'display: none;',
+      text: 'Please enter a valid email address.'
+    });
+
+    // Add email elements to group
+    writer.append(emailLabel, emailGroup);
+    writer.append(emailInput, emailGroup);
+    writer.append(emailError, emailGroup);
+
+    // Organization form group
+    const orgGroup = writer.createElement('formGroup', { class: 'ck-form-group mt-3' });
+
+    // Organization label
+    const orgLabel = writer.createElement('formLabel', {
+      for: 'org-name',
+      class: 'cka-input-label',
+      text: 'Organization Name (optional)'
+    });
+
+    // Organization input
+    const orgInput = writer.createElement('formInput', {
+      type: 'text',
+      id: 'org-name',
+      name: 'orgNameInput',
+      class: 'cka-input-text block',
+      value: initialOrgName,
+      placeholder: 'Organization name'
+    });
+
+    // Add org elements to group
+    writer.append(orgLabel, orgGroup);
+    writer.append(orgInput, orgGroup);
+
+    // Note text
+    const noteText = writer.createElement('noteText', {
+      text: 'Organization Name (optional): Specify the third-party organization to inform users about the email\'s origin.'
+    });
+
+    // Assemble the form
+    writer.append(emailGroup, form);
+    writer.append(orgGroup, form);
+    writer.append(noteText, form);
+
+    // Add form to container
+    writer.append(form, formContainer);
+
+    return formContainer;
   }
 }
