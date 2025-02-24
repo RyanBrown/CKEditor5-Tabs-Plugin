@@ -7,6 +7,7 @@ import type { Locale } from '@ckeditor/ckeditor5-utils';
 import { CkAlightModalDialog } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import LinkUI from '@ckeditor/ckeditor5-link/src/linkui';
 import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
+import AlightEmailLinkPluginEditing from './alight-email-link-plugin-editing';
 import './styles/alight-email-link-plugin.scss';
 import { FormRowView, EmailLinkFormView } from './alight-email-link-plugin-utils';
 
@@ -18,9 +19,10 @@ function isValidEmail(email: string): boolean {
 export default class AlightEmailLinkPluginUI extends Plugin {
   private _modalDialog?: CkAlightModalDialog;
   private _balloon!: ContextualBalloon;
+  private _editingPlugin!: AlightEmailLinkPluginEditing;
 
   public static get requires() {
-    return [LinkUI] as const;
+    return [LinkUI, AlightEmailLinkPluginEditing] as const;
   }
 
   public static get pluginName() {
@@ -30,6 +32,9 @@ export default class AlightEmailLinkPluginUI extends Plugin {
   public init(): void {
     const editor = this.editor;
     this._balloon = editor.plugins.get(ContextualBalloon);
+
+    // Use type assertion to tell TypeScript that this is definitely an AlightEmailLinkPluginEditing instance
+    this._editingPlugin = editor.plugins.get('AlightEmailLinkPluginEditing') as AlightEmailLinkPluginEditing;
 
     editor.editing.view.addObserver(ClickObserver);
 
@@ -282,56 +287,71 @@ export default class AlightEmailLinkPluginUI extends Plugin {
       });
     }
 
-    const content = this._createModalContent(initialValue?.email, initialValue?.orgName);
-    this._modalDialog.setContent(content);
+    const emailValue = initialValue?.email || '';
+    const orgNameValue = initialValue?.orgName || '';
+
+    // Create an empty container for the modal content
+    const container = document.createElement('div');
+    container.className = 'email-link-content';
+
+    // Set the empty container as content
+    this._modalDialog.setContent(container);
+
+    // Show the modal first
     this._modalDialog.show();
+
+    // Now use the editor's downcast conversion to create the form
+    this._renderFormFromModel(container, emailValue, orgNameValue);
   }
 
-  private _createModalContent(initialEmail?: string, initialOrgName?: string): HTMLElement {
-    const container = document.createElement('div');
+  /**
+   * Renders a form in the modal using the model-based approach from the editing plugin
+   * @param containerElement The container element to render the form into
+   * @param initialEmail Initial email value
+   * @param initialOrgName Initial organization name value
+   */
+  private _renderFormFromModel(containerElement: HTMLElement, initialEmail: string = '', initialOrgName: string = ''): void {
+    const editor = this.editor;
 
-    const formContent = `
-      <form id="email-link-form" class="ck-form">
-        <div class="ck-form-group">
-          <label for="email" class="cka-input-label">
-            Email Address
-          </label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            class="cka-input-text block"
-            required
-            value="${initialEmail || ''}"
-            placeholder="user@example.com"
-          />
-          <div class="error-message" id="email-error" style="display: none;">
-            Please enter a valid email address.
+    try {
+      editor.model.change(writer => {
+        // Create the form structure using the editing component
+        const formModel = this._editingPlugin.createEmailFormModel(writer, initialEmail, initialOrgName);
+
+        // Convert the model to view
+        const viewFragment = editor.data.toView(formModel);
+
+        // Convert the view to DOM
+        const domFragment = editor.data.processor.toData(viewFragment);
+
+        // Insert the DOM fragment into the container
+        containerElement.innerHTML = domFragment;
+      });
+    } catch (error) {
+      console.error('Error creating email form from model:', error);
+
+      // If the model-based approach fails, create a simple fallback form
+      containerElement.innerHTML = `
+        <form id="email-link-form" class="ck-form">
+          <div class="ck-form-group">
+            <label for="email" class="cka-input-label">Email Address</label>
+            <input type="email" id="email" name="email" class="cka-input-text block" required 
+              value="${initialEmail}" placeholder="user@example.com" />
+            <div class="error-message" id="email-error" style="display: none;">
+              Please enter a valid email address.
+            </div>
           </div>
-        </div>
-
-        <div class="ck-form-group mt-3">
-          <label for="org-name" class="cka-input-label">
-            Organization Name (optional)
-          </label>
-          <input 
-            type="text" 
-            id="org-name" 
-            name="orgNameInput" 
-            class="cka-input-text block"
-            value="${initialOrgName || ''}"
-            placeholder="Organization name"
-          />
-        </div>
-
-        <p class="note-text">
-          Organization Name (optional): Specify the third-party organization to inform users about the email's origin.
-        </p>
-      </form>
-    `;
-
-    container.innerHTML = formContent;
-    return container;
+          <div class="ck-form-group mt-3">
+            <label for="org-name" class="cka-input-label">Organization Name (optional)</label>
+            <input type="text" id="org-name" name="orgNameInput" class="cka-input-text block"
+              value="${initialOrgName}" placeholder="Organization name" />
+          </div>
+          <p class="note-text">
+            Organization Name (optional): Specify the third-party organization to inform users about the email's origin.
+          </p>
+        </form>
+      `;
+    }
   }
 
   private _validateEmail(email: string): boolean {
