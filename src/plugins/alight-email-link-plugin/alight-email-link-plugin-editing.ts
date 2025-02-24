@@ -3,7 +3,6 @@ import { Plugin } from '@ckeditor/ckeditor5-core';
 import { Link } from '@ckeditor/ckeditor5-link';
 import { toWidget } from '@ckeditor/ckeditor5-widget/src/utils';
 import AlightEmailLinkPluginCommand from './alight-email-link-plugin-command';
-import { OrganizationNameHandler } from './alight-email-link-plugin-utils';
 
 export default class AlightEmailLinkPluginEditing extends Plugin {
   public static get pluginName() {
@@ -17,12 +16,6 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
   public init(): void {
     const editor = this.editor;
     const conversion = editor.conversion;
-
-    // Create and register the organization name handler
-    const orgNameHandler = new OrganizationNameHandler(editor);
-
-    // No longer need to register schema for organization name spans
-    // orgNameHandler.registerSchema();
 
     // Register the email link command
     const emailLinkCommand = new AlightEmailLinkPluginCommand(editor);

@@ -37,8 +37,6 @@ export default class AlightEmailLinkPluginCommand extends Command {
   }
 
   override refresh(): void {
-    const model = this.editor.model;
-    const selection = model.document.selection;
     const linkCommand = this.editor.commands.get('link');
 
     // AlightEmailLinkPluginCommand should be enabled when the regular link command is enabled
@@ -49,7 +47,6 @@ export default class AlightEmailLinkPluginCommand extends Command {
   public removeEmailLink(): void {
     const editor = this.editor;
     const model = editor.model;
-    const selection = model.document.selection;
 
     model.change(() => {
       // Just execute the unlink command - no need to remove spans anymore
