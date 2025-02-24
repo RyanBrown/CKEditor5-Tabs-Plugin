@@ -1,7 +1,6 @@
 // src/plugins/alight-email-link-plugin/alight-email-link-plugin-editing.ts
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { Link } from '@ckeditor/ckeditor5-link';
-import { toWidget } from '@ckeditor/ckeditor5-widget/src/utils';
 import AlightEmailLinkPluginCommand from './alight-email-link-plugin-command';
 
 export default class AlightEmailLinkPluginEditing extends Plugin {

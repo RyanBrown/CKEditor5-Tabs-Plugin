@@ -35,12 +35,7 @@ export class OrganizationNameHandler {
     this.editor = editor;
   }
 
-  /**
-   * Insert an organization name after a range (typically after an email link)
-   * @param writer The model writer
-   * @param orgName The organization name to insert
-   * @param rangeEnd The position to insert after
-   */
+  // Insert an organization name after a range (typically after an email link)
   public insertOrgName(writer: Writer, orgName: string, rangeEnd: any): void {
     if (!orgName) return;
 
@@ -49,16 +44,6 @@ export class OrganizationNameHandler {
 
     // Insert the text at the range end
     writer.insertText(orgText, rangeEnd);
-  }
-
-  /**
-   * Remove organization name spans from a range - no longer needed as we're not using spans
-   * @param writer The model writer
-   * @param range The range to clean up
-   */
-  public removeOrgNameSpans(writer: Writer, range: Range): void {
-    // This method is intentionally empty as we no longer use spans
-    // Kept for API compatibility
   }
 
   /**
@@ -77,11 +62,5 @@ export class OrganizationNameHandler {
     // Look for text in the format " (Organization Name)"
     const match = text.match(/ \(([^)]+)\)/);
     return match ? match[1] : '';
-  }
-
-  // Register schema and conversion for organization name spans - no longer needed
-  public registerSchema(): void {
-    // This method is intentionally empty as we no longer use spans
-    // Kept for API compatibility
   }
 }
