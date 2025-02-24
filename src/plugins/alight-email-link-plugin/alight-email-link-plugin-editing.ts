@@ -81,25 +81,16 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
 
   // Register schema definitions for email form elements
   private _registerEmailFormSchema(schema: any): void {
-    // Root form container
     schema.register('emailFormContainer', { allowAttributes: ['class'], allowWhere: '$block', isBlock: true, isObject: true, });
-    // Form element
     schema.register('emailForm', { allowAttributes: ['id', 'class'], allowIn: 'emailFormContainer', isObject: true, });
-    // Form group
     schema.register('formGroup', { allowAttributes: ['class'], allowIn: 'emailForm', isObject: true, });
-    // Label element
     schema.register('formLabel', { allowAttributes: ['for', 'class', 'text'], allowIn: 'formGroup', isObject: true, });
-    // Input element
     schema.register('formInput', { allowAttributes: ['type', 'id', 'name', 'class', 'required', 'value', 'placeholder', 'style'], allowIn: 'formGroup', isObject: true, });
-    // Error message
     schema.register('errorMessage', { allowAttributes: ['id', 'class', 'style', 'text'], allowIn: 'formGroup', isObject: true, });
-    // Note text
     schema.register('noteText', { allowAttributes: ['class', 'text'], allowIn: 'emailForm', isObject: true, });
   }
 
-  /**
-   * Setup conversion rules for email form elements (downcast only)
-   */
+  // Setup conversion rules for email form elements (downcast only)
   private _setupEmailFormConversions(conversion: any): void {
     // Container element conversion
     conversion.for('downcast').elementToElement({

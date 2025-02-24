@@ -9,7 +9,7 @@ import AlightEmailLinkPluginEditing from './alight-email-link-plugin-editing';
 import './styles/alight-email-link-plugin.scss';
 
 function isValidEmail(email: string): boolean {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
   return emailRegex.test(email);
 }
 
@@ -290,10 +290,6 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     // Create an empty container for the modal content
     const container = document.createElement('div');
     container.className = 'email-link-modal-content'; // optional class wrapping modal content
-
-    // No need to add the email-link-content class as it's handled by:
-    // 1. The modal dialog's contentClass option
-    // 2. The emailFormContainer downcast converter
 
     // Set the empty container as content
     this._modalDialog.setContent(container);
