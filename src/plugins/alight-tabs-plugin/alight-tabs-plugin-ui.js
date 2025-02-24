@@ -1,255 +1,416 @@
+// src/plugins/alight-tabs-plugin/alight-tabs-plugin-ui.js
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { ButtonView } from '@ckeditor/ckeditor5-ui';
-import { createTabsPluginElement, createTabElement, findAllDescendants } from './alight-tabs-plugin-utils';
-import { generateTabId } from './alight-tabs-plugin-command';
+import TabToolbarIcon from './assets/icon-tab.svg';
 import './styles/alight-tabs-plugin.scss';
 
-export default class TabsPluginUI extends Plugin {
+export default class AlightTabsPluginUI extends Plugin {
+  // Initializes the plugin, adding UI components and modals.
   init() {
     const editor = this.editor;
-    this._insertTabsPlugin(editor);
-    this._registerEventHandlers(editor);
-  }
 
-  // Inserts the tabs plugin button into the editor's UI
-  _insertTabsPlugin(editor) {
-    editor.ui.componentFactory.add('tabsPlugin', (locale) => {
-      const button = new ButtonView(locale);
-      button.set({
-        icon: '<svg enable-background="new 0 0 24 24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m23.1 1.6c-.2-.2-.5-.4-.8-.5-.3-.1-.6-.2-1-.2h-18.5c-.4 0-.7.1-1 .2-.4.1-.6.3-.9.5-.5.5-.9 1.3-.9 2.1v16.6c0 1.5 1.2 2.8 2.8 2.8h18.5c1.5 0 2.8-1.2 2.8-2.8v-16.6c-.1-.8-.5-1.6-1-2.1zm-9.3 1.2c.5 0 .9.4.9.9v3.7h-5.5v-3.7c0-.5.4-.9.9-.9zm8.4 17.5c0 .5-.4.9-.9.9h-18.5c-.5 0-.9-.4-.9-.9v-16.6c0-.5.4-.9.9-.9h3.7c.5 0 .9.4.9.9v5.5h14.8zm-5.6-12.9v-3.7c0-.5.4-.9.9-.9h3.7c.5 0 .9.4.9.9v3.7z" fill="#3448c5"/></svg>',
+    // Register event handlers for buttons and user interactions.
+    this._registerEventHandlers(editor);
+
+    // Create modals for delete confirmation and tab count prompt.
+    this._createConfirmationModal();
+    this._createTabCountPromptModal();
+
+    // Define default configuration options for the Tabs Plugin.
+    this.editor.config.define('alightTabsPlugin', {
+      enableTabPrompt: true, // Enable prompt for tab count.
+      defaultTabCount: 2, // Default number of tabs to insert.
+    });
+    // Add the Tabs button to the toolbar.
+    editor.ui.componentFactory.add('alightTabsPlugin', (locale) => {
+      const command = editor.commands.get('alightTabsPlugin');
+      const buttonView = new ButtonView(locale);
+
+      buttonView.set({
+        icon: TabToolbarIcon,
         label: 'Insert Tabs',
         tooltip: true,
-        withText: false,
       });
-      button.on('execute', () => {
-        editor.model.change((writer) => {
-          const tabsPluginElement = createTabsPluginElement(writer);
-          editor.model.insertContent(tabsPluginElement, editor.model.document.selection.getFirstPosition());
+      // Update the button state depending on selection context.
+      const updateButtonState = () => {
+        const isInDisallowedContext = this.isSelectionInDisallowedContext();
+        buttonView.isEnabled = !isInDisallowedContext;
+        if (buttonView.element) {
+          buttonView.element.classList.toggle('ck-disabled', isInDisallowedContext);
+        }
+      };
+      updateButtonState();
+      editor.model.document.selection.on('change:range', updateButtonState);
+
+      buttonView.bind('isEnabled').to(command, 'isEnabled');
+
+      // Execute the TabsPlugin command when the button is clicked.
+      this.listenTo(buttonView, 'execute', () => {
+        const { enableTabPrompt, defaultTabCount } = this.editor.config.get('alightTabsPlugin');
+
+        if (enableTabPrompt) {
+          this._showTabCountPromptModal(defaultTabCount);
+        } else {
+          editor.execute('alightTabsPlugin', { tabCount: defaultTabCount });
+          editor.editing.view.focus();
+        }
+      });
+      return buttonView;
+    });
+  }
+  // Checks if the current selection is within a table or a table cell.
+  isSelectionInTableOrCell() {
+    const selection = this.editor.model.document.selection;
+    return Array.from(selection.getRanges()).some((range) => {
+      const start = range.start;
+      const end = range.end;
+      return !!start.findAncestor('table') || !!start.findAncestor('tableCell') || !!end.findAncestor('table') || !!end.findAncestor('tableCell');
+    });
+  }
+  // Checks if the current selection is within a set of specific ancestor elements.
+  isSelectionInAncestors(ancestors) {
+    const selection = this.editor.model.document.selection;
+    return Array.from(selection.getRanges()).some((range) => {
+      return ancestors.some((ancestor) => range.start.findAncestor(ancestor) || range.end.findAncestor(ancestor));
+    });
+  }
+  // Checks if the current selection is within an accordion element.
+  isInAccordion() {
+    return this.isSelectionInAncestors(['accordion']);
+  }
+  // Checks if the current selection is within a tab component.
+  isInTabComponent() {
+    return this.isSelectionInAncestors(['tabTitle', 'tabContent']);
+  }
+  // Checks if the selection is in a disallowed context (e.g., within a table or accordion).
+  isSelectionInDisallowedContext() {
+    return this.isSelectionInTableOrCell() || this.isInAccordion() || this.isInTabComponent();
+  }
+  // Registers event handlers for tab-related buttons and actions.
+  _registerEventHandlers(editor) {
+    const commandsToDisable = ['link', 'bold', 'italic', 'underline', 'strikethrough', 'subscript', 'superscript', 'style', 'findAndReplace', 'fontColor', 'fontFamily', 'fontSize', 'fontBackgroundColor', 'highlight', 'alignment', 'insertImage', 'insertTable', 'insertBlockQuote', 'insertHorizontalLine', 'insertMedia'];
+    // Toggles the enabled/disabled state of specified commands and toolbar buttons.
+    const toggleCommandsAndButtons = (isDisabled) => {
+      commandsToDisable.forEach((commandName) => {
+        const command = editor.commands.get(commandName);
+        if (command) {
+          isDisabled ? command.forceDisabled('tabTitle') : command.clearForceDisabled('tabTitle');
+        }
+        // Disable corresponding toolbar buttons.
+        editor.ui.view.toolbar.items.forEach((item) => {
+          if (item.buttonView && item.buttonView.commandName === commandName) {
+            item.buttonView.isEnabled = !isDisabled;
+          }
         });
       });
-      return button;
-    });
-  }
-
-  // Registers event handlers for the tabs plugin
-  _registerEventHandlers(editor) {
-    editor.editing.view.document.on('click', (evt, data) => {
-      const target = data.target;
-      if (target.hasClass('tab-list-item') || target.hasClass('tab-title')) {
-        this._handleTabClick(editor, target, evt);
-      } else if (target.hasClass('delete-tab-button')) {
-        this._handleDeleteTab(editor, target, evt);
-      } else if (target.hasClass('add-tab-button')) {
-        this._handleAddTab(editor, evt);
-      } else if (target.hasClass('move-left-button')) {
-        this._handleMoveTab(editor, target, evt, -1);
-      } else if (target.hasClass('move-right-button')) {
-        this._handleMoveTab(editor, target, evt, 1);
+    };
+    // Toggle commands and buttons when focusing or blurring tab titles.
+    editor.editing.view.document.on('focus blur', (evt, data) => {
+      if (data.target.hasClass && data.target.hasClass('tabTitle')) {
+        const isFocused = evt.name === 'focus';
+        toggleCommandsAndButtons(isFocused);
       }
     });
 
-    editor.model.document.on('change:data', () => {
-      this._updateEmptyTabTitles(editor);
+    // Disable commands when the editor is ready.
+    editor.ui.on('ready', () => {
+      toggleCommandsAndButtons(false);
     });
-  }
 
-  // Updates empty tab titles with a default value
-  _updateEmptyTabTitles(editor) {
-    const viewRoot = editor.editing.view.document.getRoot();
-    const tabList = Array.from(viewRoot.getChildren()).find(
-      (child) => child.is('element', 'ul') && child.hasClass('tab-list')
-    );
-
-    if (tabList) {
-      const tabTitleElements = Array.from(tabList.getChildren()).filter(
-        (child) => child.is('element', 'li') && child.hasClass('tab-list-item')
-      );
-
-      for (const tabTitleElement of tabTitleElements) {
-        const inputElement = tabTitleElement.getChild(1).getChild(0);
-        if (inputElement && inputElement.is('element', 'input') && inputElement.hasClass('tab-title')) {
-          const text = inputElement.getAttribute('value').trim();
-          if (text === '') {
-            inputElement.setAttribute('value', 'Tab Name');
+    // Map event handlers to specific tab buttons.
+    const eventHandlerMap = {
+      addicon: (target) => {
+        const pluginId = target.getAttribute('data-plugin-id') || target.findAncestor('alightTabsPlugin')?.getAttribute('data-plugin-id');
+        if (pluginId) {
+          this._handleAddTab(editor, pluginId);
+        } else {
+          console.warn('AddTabButton clicked without a valid pluginId.');
+        }
+      },
+      dropicon: (target) => {
+        this._handleDeleteTab(editor, target);
+      },
+      'left-arrow': (target) => {
+        this._handleMoveTab(editor, target, -1);
+      },
+      'right-arrow': (target) => {
+        this._handleMoveTab(editor, target, 1);
+      },
+    };
+    // Handle click events for tabs.
+    editor.editing.view.document.on(
+      'click',
+      (evt, data) => {
+        const target = data.target;
+        for (const [className, handler] of Object.entries(eventHandlerMap)) {
+          if (target.hasClass(className)) {
+            handler(target);
+            return;
           }
         }
-      }
-    }
+        // Handle clicks on tabListItem or tabTitle
+        if (target.hasClass('tabTitle')) {
+          this._handleTabClick(editor, target);
+        } else {
+          this._handleTabClick(editor, target);
+        }
+      },
+      { priority: 'high' }
+    );
   }
 
-  // Handles the tab click event
-  _handleTabClick(editor, target, evt) {
-    let tabListItem = target;
+  // Handles tab click events to set the clicked tab as active.
+  _handleTabClick(editor, target) {
+    const modelElement = editor.editing.mapper.toModelElement(target);
 
-    while (tabListItem && !tabListItem.hasClass('tab-list-item')) {
+    if (!modelElement) {
+      // console.warn('Cannot map clicked element to a model element.');
+      return;
+    }
+    // Find the nearest 'tabListItem' ancestor in the model
+    let tabListItem = modelElement;
+    while (tabListItem && tabListItem.name !== 'tabListItem') {
       tabListItem = tabListItem.parent;
     }
-
-    if (tabListItem) {
-      this._activateTab(editor, tabListItem);
-    }
-
-    evt.stop();
-  }
-
-  // Activates the specified tab
-  _activateTab(editor, tabListItem) {
-    const tabId = tabListItem.getAttribute('data-target');
-    const viewRoot = editor.editing.view.document.getRoot();
-    const tabsRootElement = Array.from(viewRoot.getChildren()).find(
-      (child) => child.is('element', 'div') && child.hasClass('tabs-plugin')
-    );
-
-    if (!tabsRootElement) {
-      console.error('Tabs root element not found');
+    if (!tabListItem) {
+      // console.warn('Clicked element is not within a tabListItem.');
       return;
     }
+    const pluginId = tabListItem.getAttribute('data-plugin-id');
+    const tabIndex = parseInt(tabListItem.getAttribute('data-index'), 10);
 
-    const tabListElement = Array.from(tabsRootElement.getChildren()).find(
-      (child) => child.is('element', 'ul') && child.hasClass('tab-list')
-    );
-    const tabContentElement = Array.from(tabsRootElement.getChildren()).find(
-      (child) => child.is('element', 'div') && child.hasClass('tab-content')
-    );
-
-    if (!tabListElement || !tabContentElement) {
-      console.error('Tab list or content element not found');
+    if (!pluginId || isNaN(tabIndex)) {
+      console.warn('Invalid pluginId or tabIndex in _handleTabClick.');
       return;
     }
-
-    editor.editing.view.change((writer) => {
-      // Remove the 'active' class from all tab list items and tab content elements
-      for (const item of tabListElement.getChildren()) {
-        writer.removeClass('active', item);
-      }
-      for (const content of tabContentElement.getChildren()) {
-        writer.removeClass('active', content);
-      }
-
-      // Add the 'active' class to the selected tab list item and corresponding tab content element
-      writer.addClass('active', tabListItem);
-      const selectedTabContent = Array.from(tabContentElement.getChildren()).find(
-        (child) => child.getAttribute('id') === tabId.slice(1)
-      );
-      if (selectedTabContent) {
-        writer.addClass('active', selectedTabContent);
-      } else {
-        console.error('Selected tab content not found');
-      }
-    });
+    // console.log(`Activating tab for pluginId: ${pluginId}, tabIndex: ${tabIndex}`);
+    // Execute the command to set the tab as active.
+    editor.execute('setActiveTab', { pluginId, tabIndex });
   }
 
-  // Handles the delete tab button click event
-  _handleDeleteTab(editor, target, evt) {
-    const tabListItem = target.findAncestor('li');
-    const tabId = tabListItem.getAttribute('data-target').slice(1);
-    const wasActive = tabListItem.hasClass('active');
+  // Handles the move tab operation when a user clicks the left or right arrow.
+  _handleMoveTab(editor, target, direction) {
+    const modelElement = editor.editing.mapper.toModelElement(target);
 
-    editor.model.change((writer) => {
-      editor.execute('deleteTab', tabId);
-
-      if (wasActive) {
-        const tabList = tabListItem.parent;
-        const tabListItems = Array.from(tabList.getChildren()).filter(
-          (child) => child.is('element', 'li') && child.hasClass('tab-list-item')
-        );
-        const index = tabListItems.indexOf(tabListItem);
-
-        // Find the next tab to activate
-        const nextTab = tabListItems[index - 1] || tabListItems[index + 1];
-        if (nextTab) {
-          this._activateTab(editor, nextTab);
-        }
-      }
-    });
-
-    evt.stop();
+    if (!modelElement) {
+      console.warn('Cannot map clicked view element to a model element.');
+      return;
+    }
+    // Find the nearest tabListItem ancestor.
+    let tabListItem = modelElement;
+    while (tabListItem && tabListItem.name !== 'tabListItem') {
+      tabListItem = tabListItem.parent;
+    }
+    if (!tabListItem) {
+      console.warn('MoveTabButton clicked outside of a tabListItem.');
+      return;
+    }
+    const pluginId = tabListItem.getAttribute('data-plugin-id');
+    const tabIndex = parseInt(tabListItem.getAttribute('data-index'), 10);
+    // Enhanced debugging output
+    console.log(`_handleMoveTab: Retrieved values -> pluginId: ${pluginId}, tabIndex: ${tabIndex}, direction: ${direction}`);
+    if (!pluginId || isNaN(tabIndex)) {
+      console.warn(`Invalid pluginId or tabIndex in _handleMoveTab. Current values -> pluginId: ${pluginId}, tabIndex: ${tabIndex}`);
+      if (!pluginId) console.warn('Missing pluginId.');
+      if (isNaN(tabIndex)) console.warn('Missing or invalid tabIndex.');
+      return;
+    }
+    // Execute moveTab with pluginId.
+    editor.execute('moveTab', { pluginId, tabIndex, direction });
   }
 
-  // Handles the add tab button click event
-  _handleAddTab(editor, evt) {
-    this._addNewTab(editor);
-    evt.stop();
+  // Handles the delete tab operation by showing a confirmation modal.
+  _handleDeleteTab(editor, target) {
+    const modelElement = editor.editing.mapper.toModelElement(target);
+
+    if (!modelElement) {
+      console.warn('Cannot map clicked view element to a model element.');
+      return;
+    }
+    // Find the nearest tabListItem ancestor.
+    let tabListItem = modelElement;
+    while (tabListItem && tabListItem.name !== 'tabListItem') {
+      tabListItem = tabListItem.parent;
+    }
+    if (!tabListItem) {
+      // console.warn('DeleteTabButton clicked outside of a tabListItem.');
+      return;
+    }
+    const pluginId = tabListItem.getAttribute('data-plugin-id');
+    const tabIndex = parseInt(tabListItem.getAttribute('data-index'), 10);
+
+    if (!pluginId || isNaN(tabIndex)) {
+      console.warn('DeleteTabButton clicked without valid pluginId or tabIndex.');
+      return;
+    }
+    // Show confirmation modal.
+    this._showDeleteConfirmationModal(editor, pluginId, tabIndex, tabListItem);
   }
 
-  // Handles the move tab button click event
-  _handleMoveTab(editor, target, evt, direction) {
-    const tabListItem = target.findAncestor('li');
-    const tabId = tabListItem.getAttribute('data-target').slice(1);
-    const wasActive = tabListItem.hasClass('active');
+  // Retrieves the text of the tab title from a tabListItem element.
+  _getTabTitleTextFromTabListItem(tabListItem) {
+    let tabTitleText = '';
 
-    editor.model.change((writer) => {
-      editor.execute('moveTab', { tabId, direction });
-
-      if (wasActive) {
-        const tabList = tabListItem.parent;
-        const tabListItems = Array.from(tabList.getChildren()).filter(
-          (child) => child.is('element', 'li') && child.hasClass('tab-list-item')
-        );
-        const movedTabListItem = tabListItems.find((item) => item.getAttribute('data-target') === `#${tabId}`);
-
-        if (movedTabListItem) {
-          this._activateTab(editor, movedTabListItem);
-        }
-      }
-    });
-
-    evt.stop();
-  }
-
-  // Adds a new tab to the tabs plugin
-  _addNewTab(editor) {
-    editor.model.change((writer) => {
-      // Get the root element of the document
-      const root = editor.model.document.getRoot();
-
-      // Find tabsPlugin, tabList, and tabContent by querying for them directly
-      let tabsPlugin = null;
-      let tabList = null;
-      let tabContent = null;
-
-      // Search for the tabsPlugin element
-      for (const node of root.getChildren()) {
-        if (node.is('element', 'tabsPlugin')) {
-          tabsPlugin = node;
+    function findTabTitleText(element) {
+      for (const child of element.getChildren()) {
+        if (child.is('element', 'tabTitle')) {
+          const textNodes = Array.from(child.getChildren()).filter((node) => node.is('text'));
+          tabTitleText = textNodes.map((textNode) => textNode.data).join('');
           break;
+        } else {
+          findTabTitleText(child);
         }
       }
+    }
+    findTabTitleText(tabListItem);
+    return tabTitleText;
+  }
 
-      // If tabsPlugin is not found, create it and append to the root
-      if (!tabsPlugin) {
-        tabsPlugin = writer.createElement('tabsPlugin');
-        writer.append(tabsPlugin, root);
-      }
+  // Shows a modal to confirm the deletion of a tab.
+  _showDeleteConfirmationModal(editor, pluginId, tabIndex, tabListItem) {
+    const modal = document.querySelector('.confirm-delete-modal');
+    const confirmYesBtn = document.querySelector('.confirm-delete-yes-btn');
+    const confirmNoBtn = document.querySelector('.confirm-delete-no-btn');
+    const tabTitlePlaceholder = document.querySelector('.tab-title-placeholder');
 
-      // Within tabsPlugin, find or create tabList and tabContent
-      for (const node of tabsPlugin.getChildren()) {
-        if (node.is('element', 'tabList')) {
-          tabList = node;
-        } else if (node.is('element', 'tabContent')) {
-          tabContent = node;
-        }
-      }
+    if (!modal || !confirmYesBtn || !confirmNoBtn || !tabTitlePlaceholder) {
+      console.warn('DeleteTabCommand: Confirmation modal elements not found.');
+      return;
+    }
+    // Get tab title text.
+    const tabTitleText = this._getTabTitleTextFromTabListItem(tabListItem);
+    tabTitlePlaceholder.textContent = tabTitleText;
 
-      if (!tabList) {
-        tabList = writer.createElement('tabList');
-        writer.append(tabList, tabsPlugin);
-      }
-      if (!tabContent) {
-        tabContent = writer.createElement('tabContent');
-        writer.append(tabContent, tabsPlugin);
-      }
+    // Show modal.
+    modal.style.display = 'block';
 
-      // Generate a unique tabId for the new tab using centralized method
-      const newTabId = generateTabId();
-      // Use the utility function to create a new tab list item and content
-      const { tabListItem, tabNestedContent } = createTabElement(writer, newTabId);
-      // Find the "Add Tab" button in the tabList
-      const addTabButton = tabList.getChild(tabList.childCount - 1);
-      // Insert the new tab list item before the "Add Tab" button
-      writer.insert(tabListItem, addTabButton, 'before');
-      // Append the new tab content to the tabContent
-      writer.append(tabNestedContent, tabContent);
-    });
+    // Modal event handlers.
+    const handleConfirmYes = () => {
+      // console.log(`User confirmed deletion of tab with data-index: ${tabIndex}`);
+      modal.style.display = 'none';
+      editor.execute('deleteTab', { pluginId, tabIndex });
+      cleanupEventListeners();
+    };
+    const handleConfirmNo = () => {
+      // console.log(`User canceled deletion of tab with data-index: ${tabIndex}`);
+      modal.style.display = 'none';
+      cleanupEventListeners();
+    };
+    const handleKeyDown = (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        handleConfirmYes();
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        handleConfirmNo();
+      }
+    };
+    const cleanupEventListeners = () => {
+      confirmYesBtn.removeEventListener('click', handleConfirmYes);
+      confirmNoBtn.removeEventListener('click', handleConfirmNo);
+      modal.removeEventListener('keydown', handleKeyDown);
+    };
+
+    confirmYesBtn.addEventListener('click', handleConfirmYes);
+    confirmNoBtn.addEventListener('click', handleConfirmNo);
+    modal.addEventListener('keydown', handleKeyDown);
+  }
+
+  // Handles adding a new tab.
+  _handleAddTab(editor, pluginId) {
+    editor.execute('addTab', { pluginId });
+  }
+
+  // Creates the delete confirmation modal.
+  _createConfirmationModal() {
+    const modalHtml = `
+      <div class="confirm-delete-modal" style="display:none;" tabindex="-1">
+        <div class="confirm-delete-modal-content">
+          <p>Are you sure you want to delete the following tab?</p>
+          <p><span class="tab-title-placeholder"></span></p>
+          <footer>
+            <button class="confirm-delete-yes-btn">Yes</button>
+            <button class="confirm-delete-no-btn">No</button>
+          </footer>
+        </div>
+      </div>
+    `;
+    const modalContainer = document.createElement('div');
+    modalContainer.innerHTML = modalHtml;
+    document.body.appendChild(modalContainer);
+  }
+
+  // Creates the tab count prompt modal for the initial tab count input.
+  _createTabCountPromptModal() {
+    const modalHtml = `
+      <div class="tab-count-prompt-modal" style="display:none;" tabindex="-1">
+        <div class="tab-count-prompt-modal-content">
+          <p>Enter the number of tabs to create:</p>
+          <p><input type="number" class="tab-count-input" min="1" value="2" /></p>
+          <footer>
+            <button class="tab-count-ok-btn">Ok</button>
+            <button class="tab-count-cancel-btn">Cancel</button>
+          </footer>
+        </div>
+      </div>
+    `;
+    const modalContainer = document.createElement('div');
+    modalContainer.innerHTML = modalHtml;
+    document.body.appendChild(modalContainer);
+  }
+
+  // Shows the tab count prompt modal and processes user input.
+  _showTabCountPromptModal(defaultTabCount) {
+    const modal = document.querySelector('.tab-count-prompt-modal');
+    const okBtn = document.querySelector('.tab-count-ok-btn');
+    const cancelBtn = document.querySelector('.tab-count-cancel-btn');
+    const tabCountInput = document.querySelector('.tab-count-input');
+
+    if (!modal || !okBtn || !cancelBtn || !tabCountInput) {
+      console.warn('TabCountPromptModal: Modal elements not found.');
+      return;
+    }
+
+    tabCountInput.value = defaultTabCount;
+    modal.style.display = 'block';
+    modal.focus();
+    tabCountInput.focus();
+
+    const handleOk = () => {
+      const userTabCount = parseInt(tabCountInput.value, 10);
+      const tabCount = userTabCount > 0 ? userTabCount : defaultTabCount;
+
+      // console.log(`User entered tab count: ${tabCount}`);
+
+      modal.style.display = 'none';
+
+      this.editor.execute('alightTabsPlugin', { tabCount });
+      this.editor.editing.view.focus();
+
+      cleanupEventListeners();
+    };
+    const handleCancel = () => {
+      // console.log('User canceled tab count prompt.');
+      modal.style.display = 'none';
+      cleanupEventListeners();
+    };
+    const handleKeyDown = (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        handleOk();
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        handleCancel();
+      }
+    };
+    const cleanupEventListeners = () => {
+      okBtn.removeEventListener('click', handleOk);
+      cancelBtn.removeEventListener('click', handleCancel);
+      modal.removeEventListener('keydown', handleKeyDown);
+    };
+
+    okBtn.addEventListener('click', handleOk);
+    cancelBtn.addEventListener('click', handleCancel);
+    modal.addEventListener('keydown', handleKeyDown);
   }
 }
