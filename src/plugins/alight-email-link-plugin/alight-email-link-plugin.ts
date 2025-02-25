@@ -14,6 +14,7 @@ export default class AlightEmailLinkPlugin extends Plugin {
   }
 
   public init(): void {
+    // This ensures that the Link plugin is loaded and available
     this.editor.plugins.get('Link');
   }
 }

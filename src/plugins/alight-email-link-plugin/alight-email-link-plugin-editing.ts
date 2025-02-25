@@ -2,16 +2,26 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { Link } from '@ckeditor/ckeditor5-link';
 import AlightEmailLinkPluginCommand from './alight-email-link-plugin-command';
+import { Element } from '@ckeditor/ckeditor5-engine';
+import { OrganizationNameHandler, LinkData } from './alight-email-link-plugin-utils';
 
+/**
+ * Plugin handling the editing functionality for email links.
+ * Sets up commands, schema, and conversion rules.
+ */
 export default class AlightEmailLinkPluginEditing extends Plugin {
+  // The unique plugin name for registration with CKEditor.
   public static get pluginName() {
     return 'AlightEmailLinkPluginEditing' as const;
   }
 
+  // Required plugins that must be loaded for this plugin to work correctly.
   public static get requires() {
     return [Link] as const;
   }
 
+  // Plugin initialization.
+  // Sets up commands, schema, and conversion rules.
   public init(): void {
     const editor = this.editor;
     const conversion = editor.conversion;
@@ -58,7 +68,18 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
     });
   }
 
-  // Removes an email link
+  /**
+   * Gets data from a link element.
+   * 
+   * @param linkElement The link element to extract data from
+   * @returns Object containing email and orgName
+   */
+  public getLinkData(linkElement: Element): LinkData {
+    const orgNameHandler = new OrganizationNameHandler(this.editor);
+    return orgNameHandler.extractLinkData(linkElement);
+  }
+
+  // Removes an email link.
   public removeEmailLink(): void {
     const emailLinkCommand = this.editor.commands.get('applyEmailLinkPlugin') as AlightEmailLinkPluginCommand;
     if (emailLinkCommand) {
@@ -69,7 +90,11 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
     }
   }
 
-  // Register schema definitions for email form elements
+  /**
+   * Register schema definitions for email form elements.
+   * 
+   * @param schema The editor's schema
+   */
   private _registerEmailFormSchema(schema: any): void {
     schema.register('emailFormContainer', { allowAttributes: ['class'], allowWhere: '$block', isBlock: true, isObject: true, });
     schema.register('emailForm', { allowAttributes: ['id', 'class'], allowIn: 'emailFormContainer', isObject: true, });
@@ -80,7 +105,11 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
     schema.register('noteText', { allowAttributes: ['class', 'text'], allowIn: 'emailForm', isObject: true, });
   }
 
-  // Setup conversion rules for email form elements (downcast only)
+  /**
+   * Setup conversion rules for email form elements (downcast only).
+   * 
+   * @param conversion The editor's conversion manager
+   */
   private _setupEmailFormConversions(conversion: any): void {
     // Container element conversion
     conversion.for('downcast').elementToElement({
@@ -152,7 +181,7 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
       view: (modelElement: any, { writer }: any) => {
         const errorElement = writer.createContainerElement('div', {
           id: modelElement.getAttribute('id') || '',
-          class: modelElement.getAttribute('class') || 'error-message',
+          class: modelElement.getAttribute('class') || 'cka-error-message',
           style: modelElement.getAttribute('style') || 'display: none;'
         });
         writer.insert(
@@ -168,7 +197,7 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
       model: 'noteText',
       view: (modelElement: any, { writer }: any) => {
         const noteElement = writer.createContainerElement('p', {
-          class: modelElement.getAttribute('class') || 'note-text'
+          class: modelElement.getAttribute('class') || 'cka-note-text'
         });
         writer.insert(
           writer.createPositionAt(noteElement, 0),
@@ -177,13 +206,11 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
         return noteElement;
       }
     });
-
-    // No upcast converters needed for form elements since they are only created
-    // programmatically for the modal dialog and never parsed from existing content
   }
 
   /**
-   * Creates a full email form model structure
+   * Creates a full email form model structure for the modal dialog.
+   * 
    * @param writer The model writer
    * @param initialEmail Optional initial email value
    * @param initialOrgName Optional initial organization name value
@@ -206,21 +233,22 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
       text: 'Email Address'
     });
 
-    // Email input
+    // Email input - notice we're stripping mailto: prefix if present
+    const cleanInitialEmail = initialEmail.replace(/^mailto:/i, '');
     const emailInput = writer.createElement('formInput', {
       type: 'email',
       id: 'email',
       name: 'email',
       class: 'cka-input-text block',
       required: true,
-      value: initialEmail,
+      value: cleanInitialEmail,
       placeholder: 'user@example.com'
     });
 
     // Error message
     const emailError = writer.createElement('errorMessage', {
       id: 'email-error',
-      class: 'error-message',
+      class: 'cka-error-message',
       style: 'display: none;',
       text: 'Please enter a valid email address.'
     });
