@@ -76,34 +76,42 @@ export default class AlightEmailLinkPluginCommand extends Command {
     let selectedText = '';
     try {
       const selectedContent = editor.model.getSelectedContent(selection);
-      if (selectedContent && selectedContent.childCount > 0) {
-        const firstChild = selectedContent.getChild(0);
-        if (firstChild && 'data' in firstChild) {
-          selectedText = firstChild.data as string;
+      console.log('DEBUG: Selected content:', selectedContent);
+
+      for (const child of selectedContent.getChildren()) {
+        if ('data' in child) {
+          selectedText += child.data;
         }
       }
     } catch (error) {
       console.log('DEBUG: Error getting selected text:', error);
     }
+
+    if (!selectedText) {
+      console.log('DEBUG: Selected text is empty');
+      return;
+    }
+
     console.log('DEBUG: Link text from model:', selectedText);
 
-    // Check if the text already has an organization name
-    const orgNameRegex = / \([^)]+\)$/;
-    const hasOrgName = orgNameRegex.test(selectedText);
-    console.log('DEBUG: Has org name already:', hasOrgName, 'Match:', selectedText.match(orgNameRegex));
+    function updateOrgName(selectedText: string, orgName?: string): string {
+      const orgNameRegex = /\s\(([^)]+)\)$/;
+      let newText = selectedText;
+      if (orgName) {
+        if (orgNameRegex.test(selectedText)) {
+          newText = selectedText.replace(orgNameRegex, ` (${orgName})`);
+        } else {
+          newText = `${selectedText} (${orgName})`;
+        }
+        console.log('DEBUG: Updating organization name:', { selectedText, orgName, newText });
+      } else {
+        console.log('DEBUG: No org name provided, using selected text:', selectedText);
+      }
 
-    // Remove the existing org name part if it exists
-    const baseText = hasOrgName ? selectedText.replace(orgNameRegex, '') : selectedText;
-    console.log('DEBUG: Base text after removing org name:', baseText);
-
-    // Create the new text based on whether we're adding/changing/removing org name
-    let newText = baseText;
-    if (orgName) {
-      newText = `${baseText} (${orgName})`;
-      console.log('DEBUG: Adding/updating organization name:', { baseText, orgName, newText });
-    } else {
-      console.log('DEBUG: No org name provided, using base text:', baseText);
+      return newText
     }
+
+    const newText = updateOrgName(selectedText, orgName);
 
     // Only update if the text has changed
     if (newText !== selectedText) {
@@ -112,9 +120,6 @@ export default class AlightEmailLinkPluginCommand extends Command {
       // Remove the existing link first
       editor.execute('unlink');
 
-      // Remove the existing content
-      writer.remove(range);
-
       // Insert the updated text
       writer.insertText(newText, range.start);
 
@@ -122,13 +127,14 @@ export default class AlightEmailLinkPluginCommand extends Command {
       const newEnd = range.start.getShiftedBy(newText.length);
       const newRange = writer.createRange(range.start, newEnd);
       writer.setSelection(newRange);
+
+      // Apply the link (with mailto:)
+      console.log('DEBUG: Applying link to:', newText);
+      editor.execute('link', email);
+
     } else {
       console.log('DEBUG: Text has not changed');
     }
-
-    // Apply the link (with mailto:)
-    console.log('DEBUG: Applying link to:', newText);
-    editor.execute('link', email);
   }
 
   /**
