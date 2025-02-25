@@ -78,7 +78,7 @@ export default class AlightEmailLinkPluginCommand extends Command {
       const selectedContent = editor.model.getSelectedContent(selection);
       console.log('DEBUG: Selected content:', selectedContent);
 
-      // Extract yext from the selected content
+      // Extract ytext from the selected content
       for (const child of selectedContent.getChildren()) {
         if ('data' in child) {
           selectedText += child.data;
@@ -88,7 +88,7 @@ export default class AlightEmailLinkPluginCommand extends Command {
       console.log('DEBUG: Error getting selected text:', error);
     }
 
-    // Ensure selected text is not empty
+    // Ensure selectedText is not empty
     if (!selectedText) {
       console.log('DEBUG: Selected text is empty');
       return;
@@ -135,7 +135,6 @@ export default class AlightEmailLinkPluginCommand extends Command {
       // Apply the link (with mailto:)
       console.log('DEBUG: Applying link to:', newText);
       editor.execute('link', email);
-
     } else {
       console.log('DEBUG: Text has not changed');
     }
