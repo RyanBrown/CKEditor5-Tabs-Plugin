@@ -78,6 +78,7 @@ export default class AlightEmailLinkPluginCommand extends Command {
       const selectedContent = editor.model.getSelectedContent(selection);
       console.log('DEBUG: Selected content:', selectedContent);
 
+      // Extract yext from the selected content
       for (const child of selectedContent.getChildren()) {
         if ('data' in child) {
           selectedText += child.data;
@@ -87,6 +88,7 @@ export default class AlightEmailLinkPluginCommand extends Command {
       console.log('DEBUG: Error getting selected text:', error);
     }
 
+    // Ensure selected text is not empty
     if (!selectedText) {
       console.log('DEBUG: Selected text is empty');
       return;
@@ -94,9 +96,11 @@ export default class AlightEmailLinkPluginCommand extends Command {
 
     console.log('DEBUG: Link text from model:', selectedText);
 
+    // Function to update the orgNam in the selected text
     function updateOrgName(selectedText: string, orgName?: string): string {
       const orgNameRegex = /\s\(([^)]+)\)$/;
       let newText = selectedText;
+
       if (orgName) {
         if (orgNameRegex.test(selectedText)) {
           newText = selectedText.replace(orgNameRegex, ` (${orgName})`);
@@ -108,7 +112,7 @@ export default class AlightEmailLinkPluginCommand extends Command {
         console.log('DEBUG: No org name provided, using selected text:', selectedText);
       }
 
-      return newText
+      return newText;
     }
 
     const newText = updateOrgName(selectedText, orgName);
