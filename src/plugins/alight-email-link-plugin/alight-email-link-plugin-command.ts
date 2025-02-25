@@ -78,7 +78,7 @@ export default class AlightEmailLinkPluginCommand extends Command {
       const selectedContent = editor.model.getSelectedContent(selection);
       console.log('DEBUG: Selected content:', selectedContent);
 
-      // Extract ytext from the selected content
+      // Extract text from the selected content
       for (const child of selectedContent.getChildren()) {
         if ('data' in child) {
           selectedText += child.data;
@@ -96,7 +96,7 @@ export default class AlightEmailLinkPluginCommand extends Command {
 
     console.log('DEBUG: Link text from model:', selectedText);
 
-    // Function to update the orgNam in the selected text
+    // Function to update the orgName in the selected text
     function updateOrgName(selectedText: string, orgName?: string): string {
       const orgNameRegex = /\s\(([^)]+)\)$/;
       let newText = selectedText;
