@@ -44,7 +44,7 @@ export class ContentManager implements LinkManager {
       ${this.createCardHTML(`
         <label for="language-select-container" class="cka-input-label">Language</label>
         <div id="language-select-container" class="cka-width-half"></div>
-        <div class="error-message">Choose a language to continue.</div>
+        <div class="cka-error-message">Choose a language to continue.</div>
       `)}
     `;
   }
@@ -72,8 +72,8 @@ export class ContentManager implements LinkManager {
             <strong>Supported file types:</strong> ${supportedFileTypes.join(', ')}
           </em>
         </div>
-        <div class="error-message file-error">Choose a file.</div>
-        <div class="error-message file-size-error">Choose a file less than 5MB.</div>
+        <div class="cka-error-message file-error">Choose a file.</div>
+        <div class="cka-error-message file-size-error">Choose a file less than 5MB.</div>
 
         <label for="document-title" class="cka-input-label mt-4">Document Title</label>
         <input
@@ -90,7 +90,7 @@ export class ContentManager implements LinkManager {
         <div class="cka-control-footer">
           <strong>Note:</strong> Special characters such as (\\, ], :, >, /, <, [, |, ?, ", *, comma) are not allowed.
         </div>
-        <div class="error-message title-error">Enter title to continue.</div>
+        <div class="cka-error-message title-error">Enter title to continue.</div>
       `)}
     `;
   }
@@ -116,7 +116,7 @@ export class ContentManager implements LinkManager {
           rows="5" 
           placeholder="Enter description..."
         >${this.formData.description}</textarea>
-        <div class="error-message description-error">Enter a description to continue.</div>
+        <div class="cka-error-message description-error">Enter a description to continue.</div>
 
         <label for="categories" class="cka-input-label mt-4">Categories (optional)</label>
         <a href="#" class="cka-categories-toggle">Choose Categories</a>
@@ -233,7 +233,7 @@ export class ContentManager implements LinkManager {
 
     if (this.hasUserInteracted && !validation.isValid && validation.errors && this.container) {
       // Clear all existing error messages first
-      this.container.querySelectorAll('.error-message').forEach(msg => {
+      this.container.querySelectorAll('.cka-error-message').forEach(msg => {
         msg.classList.remove('visible');
       });
 
@@ -441,7 +441,7 @@ export class ContentManager implements LinkManager {
     `;
 
     // Initially hide all error messages
-    container.querySelectorAll('.error-message').forEach(msg => {
+    container.querySelectorAll('.cka-error-message').forEach(msg => {
       msg.classList.remove('visible');
     });
 
@@ -550,7 +550,7 @@ export class ContentManager implements LinkManager {
         }
 
         // Reset error messages
-        const errorMessages = this.container.querySelectorAll('.error-message');
+        const errorMessages = this.container.querySelectorAll('.cka-error-message');
         errorMessages.forEach(message => {
           message.classList.remove('visible');
         });

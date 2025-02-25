@@ -142,7 +142,7 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
         const formContainer = this._modalDialog.element?.querySelector('.new-document-content');
         if (formContainer) {
           // Clear any existing error messages
-          formContainer.querySelectorAll('.error-message').forEach(msg => {
+          formContainer.querySelectorAll('.cka-error-message').forEach(msg => {
             msg.classList.remove('visible');
           });
 

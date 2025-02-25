@@ -34,7 +34,7 @@ export function ContentManager(initialValue?: string, initialOrgName?: string): 
             placeholder="example.com"
           />
           <div 
-            class="error-message" 
+            class="cka-error-message" 
             id="url-error" 
             style="display: none;"
           >
@@ -90,7 +90,7 @@ export function ContentManager(initialValue?: string, initialOrgName?: string): 
           </ul>
         </div>
           
-        <p class="note-text">
+        <p class="cka-note-text">
           Organization Name (optional): Specify the third-party organization to inform users about the link's destination.
         </p>
       </form>

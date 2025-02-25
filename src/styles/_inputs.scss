@@ -58,7 +58,7 @@
 }
 
 // Validation classes
-.error-message {
+.cka-error-message {
   color: var(--error);
   display: none;
   font-size: 0.875rem;
@@ -69,7 +69,7 @@
   }
 }
 
-.note-text {
+.cka-note-text {
   font-size: mixins.toRem(14);
   margin: 2rem 0 0;
 }
