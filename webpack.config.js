@@ -7,8 +7,9 @@ const webpack = require('webpack');
 const { bundler, styles } = require('@ckeditor/ckeditor5-dev-utils');
 const { CKEditorTranslationsPlugin } = require('@ckeditor/ckeditor5-dev-translations');
 const TerserWebpackPlugin = require('terser-webpack-plugin');
+const SpeedMeasurePlugin = require('speed-measure-webpack-plugin');
 
-module.exports = {
+module.exports = new SpeedMeasurePlugin().wrap({
     devtool: 'source-map',
     performance: { hints: false },
 
@@ -113,4 +114,4 @@ module.exports = {
             },
         ],
     },
-};
+});

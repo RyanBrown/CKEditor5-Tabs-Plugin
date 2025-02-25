@@ -5,7 +5,7 @@ import { ClickObserver } from '@ckeditor/ckeditor5-engine';
 import { CkAlightModalDialog } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import { ContentManager } from './modal-content/alight-existing-document-link-plugin-modal-ContentManager';
 import type AlightExistingDocumentLinkPluginCommand from './alight-existing-document-link-plugin-command';
-import toolBarIcon from './assets/icon-link.svg';
+import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 import editIcon from './assets/icon-pencil.svg';
 import unlinkIcon from './assets/icon-unlink.svg';
 import './styles/alight-existing-document-link-plugin.scss';
@@ -62,7 +62,7 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
 
       button.set({
         label: t('Existing Document Link'),
-        icon: toolBarIcon,
+        icon: ToolBarIcon,
         tooltip: true,
         withText: true,
       });

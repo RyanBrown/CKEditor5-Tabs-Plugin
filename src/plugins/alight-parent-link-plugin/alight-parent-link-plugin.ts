@@ -10,7 +10,7 @@ import ListItemView from '@ckeditor/ckeditor5-ui/src/list/listitemview';
 import ListSeparatorView from '@ckeditor/ckeditor5-ui/src/list/listseparatorview';
 import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
 import View from '@ckeditor/ckeditor5-ui/src/view';
-import ToolBarIcon from './assets/icon-link.svg';
+import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 import { Locale } from '@ckeditor/ckeditor5-utils';
 
 export default class AlightParentLinkPluginUI extends Plugin {

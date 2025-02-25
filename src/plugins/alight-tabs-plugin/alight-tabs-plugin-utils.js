@@ -1,106 +1,169 @@
-import { generateTabId } from './alight-tabs-plugin-command';
+// src/plugins/alight-tabs-plugin/alight-tabs-plugin-utils.js
+// Map to store instances of the alightTabsPlugin associated with a unique pluginId.
+export const tabsPluginMap = new Map();
 
-// Create tabs plugin element with two initial tabs
-export function createTabsPluginElement(writer) {
-  const tabsPlugin = writer.createElement('tabsPlugin');
-  const tabList = writer.createElement('tabList', { class: 'tab-list' });
-  const tabContent = writer.createElement('tabContent', { class: 'tab-content' });
+let counter = 0;
 
-  // Create the first tab using centralized tabId generation
-  const firstTabId = generateTabId();
-  const { tabListItem: firstTabListItem, tabNestedContent: firstTabNestedContent } = createTabElement(
-    writer,
-    firstTabId
-  );
-  // Add active class to the first tab and content
-  writer.setAttribute('class', `${firstTabListItem.getAttribute('class')} active`, firstTabListItem);
-  writer.setAttribute('class', `${firstTabNestedContent.getAttribute('class')} active`, firstTabNestedContent);
-  writer.append(firstTabListItem, tabList);
-  writer.append(firstTabNestedContent, tabContent);
-
-  // Create the second tab using centralized tabId generation
-  const secondTabId = generateTabId();
-  const { tabListItem: secondTabListItem, tabNestedContent: secondTabNestedContent } = createTabElement(
-    writer,
-    secondTabId
-  );
-  writer.append(secondTabListItem, tabList);
-  writer.append(secondTabNestedContent, tabContent);
-
-  // Add the 'Add Tab' button to the tabList as the last item
-  const addTabButton = createAddTabButton(writer);
-  writer.append(addTabButton, tabList);
-
-  writer.append(tabList, tabsPlugin);
-  writer.append(tabContent, tabsPlugin);
-
-  return tabsPlugin;
+// Generates a unique plugin ID.
+export function generatePluginId() {
+  return `plugin-${Date.now()}-${counter++}`;
 }
 
-// Find all descendants that match a condition
-export function findAllDescendants(node, predicate) {
-  let results = [];
-  if (!node || !node.getChildren) return results;
+// Creates a tab element consisting of a tabListItem and its corresponding tabNestedContent.
+export function createTabElement(writer, dataIndex, pluginId) {
+  const tabName = `Tab Name`;
+  // const tabName = `Tab Name ${dataIndex + 1}`;
+  const tabListItem = createTabListItem(writer, tabName, dataIndex, pluginId);
+  // const tabNestedContent = createTabNestedContent(writer, `Content for ${tabName}`, dataIndex);
+  const tabNestedContent = createTabNestedContent(writer, `Tab Content`, dataIndex);
 
-  const children = node.getChildren();
-  for (const child of children) {
-    if (predicate(child)) results.push(child);
+  // Set 'isActive' attribute to true to mark the new tab as active.
+  writer.setAttribute('isActive', true, tabListItem);
+  writer.setAttribute('isActive', true, tabNestedContent);
 
-    // Recursively find further, ensuring that 'findAllDescendants' is called correctly
-    results = results.concat(findAllDescendants(child, predicate));
-  }
-  return results;
-}
-
-// Create tab element
-export function createTabElement(writer, tabId) {
-  const tabListItem = createTabListItem(writer, tabId);
-  const tabNestedContent = createTabContent(writer, tabId);
-  // writer.insertText('Tab Content', tabNestedContent); // Insert the title text
   return { tabListItem, tabNestedContent };
 }
 
-// Create tab list item
-export function createTabListItem(writer, tabId) {
-  const tabListItem = writer.createElement('tabListItem', {
-    'data-target': `#${tabId}`,
-    class: 'tab-list-item',
-  });
-  const tabEditBar = writer.createElement('tabEditBar', { class: 'tab-edit-bar' });
-  const moveButtonsWrapper = writer.createElement('moveButtonsWrapper', { class: 'move-buttons-wrapper' });
+// Creates a tabListItem element which represents a single tab.
+export function createTabListItem(writer, tabName, dataIndex, pluginId) {
+  const tabListItem = writer.createElement('tabListItem', { 'data-index': dataIndex, 'data-plugin-id': pluginId });
 
-  appendControlElement(writer, moveButtonsWrapper, 'moveLeftButton', 'Move Tab Left');
-  appendControlElement(writer, moveButtonsWrapper, 'moveRightButton', 'Move Tab Right');
-  writer.append(moveButtonsWrapper, tabEditBar);
-  appendControlElement(writer, tabEditBar, 'deleteTabButton', 'Delete Tab');
+  const tabListItemLabelDiv = writer.createElement('tabListItemLabelDiv');
+  const tabListTable = writer.createElement('tabListTable');
+  const tabListTable_thead = writer.createElement('tabListTable_thead');
+  const tabListTable_tbody = writer.createElement('tabListTable_tbody');
 
-  const tabTitle = writer.createElement('tabTitle', { class: 'tab-title' });
-  writer.insertText(`Tab Name`, tabTitle);
+  const tabListTable_thead_tr = writer.createElement('tabListTable_tr');
+  const tabListTable_th_moveLeft = writer.createElement('tabListTable_th');
+  const tabListTable_th_moveRight = writer.createElement('tabListTable_th');
+  const tabListTable_th_delete = writer.createElement('tabListTable_th');
 
-  writer.append(tabEditBar, tabListItem);
-  writer.append(tabTitle, tabListItem);
+  // Create buttons for moving and deleting the tab.
+  const moveLeftButton = createMoveLeftButton(writer, dataIndex, pluginId);
+  const moveRightButton = createMoveRightButton(writer, dataIndex, pluginId);
+  const deleteTabButton = createDeleteTabButton(writer, dataIndex, pluginId);
+  const deleteTabButtonParagraph = writer.createElement('deleteTabButtonParagraph');
+
+  const tabListTable_tbody_tr = writer.createElement('tabListTable_tr');
+  const tabListTable_td = writer.createElement('tabListTable_td', { colspan: '5' });
+
+  const tabTitle = writer.createElement('tabTitle');
+  writer.insertText(tabName, tabTitle);
+
+  // Construct the table layout for the tab header.
+  writer.append(moveLeftButton, tabListTable_th_moveLeft);
+  writer.append(moveRightButton, tabListTable_th_moveRight);
+  writer.append(deleteTabButtonParagraph, deleteTabButton);
+  writer.append(deleteTabButton, tabListTable_th_delete);
+
+  writer.append(tabListTable_th_moveLeft, tabListTable_thead_tr);
+  writer.append(tabListTable_th_moveRight, tabListTable_thead_tr);
+  writer.append(tabListTable_th_delete, tabListTable_thead_tr);
+  writer.append(tabListTable_thead_tr, tabListTable_thead);
+
+  writer.append(tabTitle, tabListTable_td);
+  writer.append(tabListTable_td, tabListTable_tbody_tr);
+  writer.append(tabListTable_tbody_tr, tabListTable_tbody);
+
+  writer.append(tabListTable_thead, tabListTable);
+  writer.append(tabListTable_tbody, tabListTable);
+  writer.append(tabListTable, tabListItemLabelDiv);
+  writer.append(tabListItemLabelDiv, tabListItem);
 
   return tabListItem;
 }
 
-// Create tab content
-export function createTabContent(writer, tabId) {
-  return writer.createElement('tabNestedContent', {
-    id: tabId,
-    class: 'tab-nested-content',
-  });
+// Creates a "Move Left" button for a tab.
+export function createMoveLeftButton(writer, dataIndex, pluginId) {
+  return writer.createElement('moveLeftButton', { 'data-index': dataIndex, 'data-plugin-id': pluginId });
 }
 
-// Create 'Add Tab' button
-export function createAddTabButton(writer) {
-  const addTabListItem = writer.createElement('addTabListItem', { class: 'add-tab-list-item' });
-  const addTabButton = writer.createElement('addTabButton');
+// Creates a "Move Right" button for a tab.
+export function createMoveRightButton(writer, dataIndex, pluginId) {
+  return writer.createElement('moveRightButton', { 'data-index': dataIndex, 'data-plugin-id': pluginId });
+}
+
+// Creates a "Delete Tab" button for a tab.
+export function createDeleteTabButton(writer, dataIndex, pluginId) {
+  const deleteTabButton = writer.createElement('deleteTabButton', { 'data-index': dataIndex, 'data-plugin-id': pluginId });
+  const deleteTabButtonParagraph = writer.createElement('deleteTabButtonParagraph');
+  writer.append(deleteTabButtonParagraph, deleteTabButton);
+  return deleteTabButton;
+}
+
+// Creates a tabNestedContent element which represents the content for a tab.
+export function createTabNestedContent(writer, content, dataIndex) {
+  const tabNestedContent = writer.createElement('tabNestedContent', { 'data-index': dataIndex });
+  const paragraph = writer.createElement('paragraph');
+  writer.insertText(content, paragraph);
+  writer.append(paragraph, tabNestedContent);
+  return tabNestedContent;
+}
+
+// Creates an "Add Tab" button, which allows the user to add new tabs.
+export function createAddTabButton(writer, pluginId) {
+  const addTabListItem = writer.createElement('addTabListItem');
+  const addTabButton = writer.createElement('addTabButton', { 'data-plugin-id': pluginId });
+  const addTabIcon = writer.createElement('addTabIcon');
+
+  writer.append(addTabIcon, addTabButton);
   writer.append(addTabButton, addTabListItem);
+
   return addTabListItem;
 }
 
-// Append control element
-export function appendControlElement(writer, parent, type, title) {
-  const element = writer.createElement(type, { class: type, title });
-  writer.append(element, parent);
+// Creates the complete alightTabsPlugin structure with a specified number of tabs.
+export function createTabsPlugin(writer, pluginId, tabCount) {
+  const alightTabsPlugin = writer.createElement('alightTabsPlugin', { 'data-plugin-id': pluginId });
+  const containerDiv = writer.createElement('containerDiv');
+  const tabHeader = writer.createElement('tabHeader');
+  const tabList = writer.createElement('tabList');
+  const tabContent = writer.createElement('tabContent');
+
+  // Generate the specified number of tabs.
+  for (let i = 0; i < tabCount; i++) {
+    const { tabListItem, tabNestedContent } = createTabElement(writer, i, pluginId);
+    writer.append(tabListItem, tabList);
+    writer.append(tabNestedContent, tabContent);
+  }
+
+  // Append the "Add Tab" button.
+  const addTabButton = createAddTabButton(writer, pluginId);
+  writer.append(addTabButton, tabList);
+
+  // Assemble the plugin structure.
+  writer.append(tabList, tabHeader);
+  writer.append(tabHeader, containerDiv);
+  writer.append(tabContent, containerDiv);
+  writer.append(containerDiv, alightTabsPlugin);
+
+  return alightTabsPlugin;
+}
+// Ensures the first tab is set to active if none are active.
+export function ensureFirstTabActive(editor) {
+  const model = editor.model;
+
+  model.change((writer) => {
+    const tabsPlugins = Array.from(model.document.getRoot().getChildren()).filter((element) => element.is('element', 'alightTabsPlugin'));
+
+    tabsPlugins.forEach((alightTabsPlugin) => {
+      const containerDiv = alightTabsPlugin.getChild(0);
+      const tabList = containerDiv?.getChild(0)?.getChild(0);
+      const tabContentContainer = containerDiv?.getChild(1);
+
+      if (!tabList || !tabContentContainer) {
+        console.warn('Invalid alightTabsPlugin structure.');
+        return;
+      }
+
+      const tabListItems = Array.from(tabList.getChildren()).filter((item) => !item.is('element', 'addTabListItem'));
+      const tabContents = Array.from(tabContentContainer.getChildren());
+
+      // If no tab is active, set the first tab and its content as active
+      if (!tabListItems.some((item) => item.getAttribute('isActive')) && tabListItems.length > 0 && tabContents.length > 0) {
+        writer.setAttribute('isActive', true, tabListItems[0]);
+        writer.setAttribute('isActive', true, tabContents[0]);
+      }
+    });
+  });
 }

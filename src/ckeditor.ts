@@ -16,6 +16,7 @@ import { DataSchema } from '@ckeditor/ckeditor5-html-support';
 import type { EditorConfig } from '@ckeditor/ckeditor5-core';
 import { Essentials } from '@ckeditor/ckeditor5-essentials';
 import { FontBackgroundColor, FontColor, FontFamily, FontSize } from '@ckeditor/ckeditor5-font';
+import { GeneralHtmlSupport } from '@ckeditor/ckeditor5-html-support';
 import { Heading, Title } from '@ckeditor/ckeditor5-heading';
 import { Highlight } from '@ckeditor/ckeditor5-highlight';
 import { HorizontalLine } from '@ckeditor/ckeditor5-horizontal-line';
@@ -56,7 +57,7 @@ import AlightCopyPlugin from './plugins/alight-copy-plugin/alight-copy-plugin';
 import AlightImagePlugin from './plugins/alight-image-plugin/alight-image-plugin';
 import AlightPastePlugin from './plugins/alight-paste-plugin/alight-paste-plugin';
 import AlightPopulationPlugin from './plugins/alight-population-plugin/alight-population-plugin';
-import TabsPlugin from './plugins/alight-tabs-plugin/alight-tabs-plugin';
+import AlightTabsPlugin from './plugins/alight-tabs-plugin/alight-tabs-plugin';
 
 import AlightParentLinkPlugin from './plugins/alight-parent-link-plugin/alight-parent-link-plugin';
 import AlightPredefinedLinkPlugin from './plugins/alight-predefined-link-plugin/alight-predefined-link-plugin';
@@ -139,6 +140,7 @@ class Editor extends ClassicEditor {
     FontColor,
     FontFamily,
     FontSize,
+    GeneralHtmlSupport,
     Heading,
     Highlight,
     HorizontalLine,
@@ -184,7 +186,7 @@ class Editor extends ClassicEditor {
     AlightImagePlugin,
     AlightPastePlugin,
     AlightPopulationPlugin,
-    TabsPlugin,
+    AlightTabsPlugin,
     AlightParentLinkPlugin,
     AlightGenericLinkPlugin,
     AlightPredefinedLinkPlugin,
@@ -240,7 +242,7 @@ class Editor extends ClassicEditor {
         '|',
         'removeFormat',
         '-',
-        'tabsPlugin',
+        'alightTabsPlugin',
         'alightCopyPlugin',
         'alightPastePlugin',
         'alightImagePlugin',
@@ -253,6 +255,22 @@ class Editor extends ClassicEditor {
         'alightNewDocumentLinkPlugin',
       ],
       shouldNotGroupWhenFull: true,
+    },
+    htmlSupport: {
+      allow: [
+        {
+          name: 'span',
+          attributes: true,
+          classes: true,
+          styles: true
+        },
+        {
+          name: 'svg',
+          attributes: true,
+          classes: true,
+          styles: true
+        }
+      ]
     },
     language: 'en',
     image: {
@@ -320,5 +338,3 @@ class Editor extends ClassicEditor {
 }
 
 export default { Editor, EditorWatchdog };
-
-
