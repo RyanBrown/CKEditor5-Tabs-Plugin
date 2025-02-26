@@ -43,7 +43,7 @@ export class ContentManager implements LinkManager {
       <h3 class="cka-sub-title">Language</h3>
       ${this.createCardHTML(`
         <label for="language-select-container" class="cka-input-label">Language</label>
-        <div id="language-select-container" class="cka-width-half"></div>
+        <div id="language-select-container" class="cka-width-50"></div>
         <div class="cka-error-message">Choose a language to continue.</div>
       `)}
     `;
@@ -57,7 +57,7 @@ export class ContentManager implements LinkManager {
       <h3 class="cka-sub-title">Document & Title</h3>
       ${this.createCardHTML(`
         <label for="file-input" class="cka-input-label">Upload Document (5MB Limit)</label>
-        <div class="cka-file-input-wrapper cka-width-half" data-text="No file chosen">
+        <div class="cka-file-input-wrapper cka-width-50" data-text="No file chosen">
           <input 
             accept="${acceptedFileTypes}"
             class="cka-input-file"
@@ -77,7 +77,7 @@ export class ContentManager implements LinkManager {
 
         <label for="document-title" class="cka-input-label mt-4">Document Title</label>
         <input
-          class="cka-input-text cka-width-half"
+          class="cka-input-text cka-width-50"
           id="document-title"
           maxlength="250"
           name="documentTitle"
@@ -86,7 +86,7 @@ export class ContentManager implements LinkManager {
           placeholder="Enter document title..."
           required
         />
-        <span class="cka-control-footer block character-count">250 characters remaining</span>
+        <span class="cka-control-footer cka-width-100 character-count">250 characters remaining</span>
         <div class="cka-control-footer">
           <strong>Note:</strong> Special characters such as (\\, ], :, >, /, <, [, |, ?, ", *, comma) are not allowed.
         </div>
@@ -100,8 +100,8 @@ export class ContentManager implements LinkManager {
       <h3 class="cka-sub-title">Search Criteria</h3>
       ${this.createCardHTML(`
         <label for="search-tags-chips" class="cka-input-label">Search Tags (optional)</label>
-        <div id="search-tags-chips" class="cka-width-half"></div>
-        <span class="cka-control-footer cka-width-half">
+        <div id="search-tags-chips" class="cka-width-50"></div>
+        <span class="cka-control-footer cka-width-50">
           Add search tags to improve the relevancy of search results. 
           Use commas to separate multiple tags.
           Type your tag and press Enter to add it.
@@ -109,7 +109,7 @@ export class ContentManager implements LinkManager {
 
         <label for="description" class="cka-input-label mt-4">Description</label>
         <textarea 
-          class="cka-textarea cka-width-half"
+          class="cka-textarea cka-width-50"
           id="description"
           cols="30"
           required

@@ -28,7 +28,7 @@ export function ContentManager(initialValue?: string, initialOrgName?: string): 
             type="url" 
             id="link-url" 
             name="url" 
-            class="cka-input-text block" 
+            class="cka-input-text cka-width-100" 
             required
             value="${initialValue || ''}"
             placeholder="example.com"
@@ -50,7 +50,7 @@ export function ContentManager(initialValue?: string, initialOrgName?: string): 
             type="text" 
             id="org-name" 
             name="displayText" 
-            class="cka-input-text block"
+            class="cka-input-text cka-width-100"
             value="${initialOrgName || ''}"
             placeholder="Organization name"
           />

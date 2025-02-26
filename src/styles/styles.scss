@@ -241,38 +241,34 @@ $spacing-values: (
 @include generate-spacing-classes('l', $spacing-values, 'p');
 @include generate-spacing-classes('r', $spacing-values, 'p');
 
-
-
-
-
 // Display helper classes
-.block {
+.cka-block {
   display: block;
 }
 
-.inline {
+.cka-inline {
   display: inline;
 }
 
-.inline-block {
+.cka-inline-block {
   display: inline-block;
 }
 
-.flex {
+.cka-flex {
   display: flex;
 }
 
 
 // Text helper classes
-.text-center {
+.cka-text-center {
   text-align: center;
 }
 
 // Width helper classes
-.cka-width-full {
+.cka-width-100 {
   width: 100%;
 }
 
-.cka-width-half {
+.cka-width-50 {
   width: 50%;
 }

@@ -113,9 +113,9 @@ export default class AlightParentLinkPluginUI extends Plugin {
     // Define available link types and their configurations
     // The order of the list is set here
     const childPlugins = [
-      { label: 'Generic Link', command: 'alightGenericLinkPlugin', pluginName: 'AlightGenericLinkPluginUI' },
+      { label: 'External Site', command: 'alightGenericLinkPlugin', pluginName: 'AlightGenericLinkPluginUI' },
       { label: 'Predefined Link', command: 'alightPredefinedLinkPlugin', pluginName: 'AlightPredefinedLinkPluginUI' },
-      { label: 'Email Link', command: 'alightEmailLinkPlugin', pluginName: 'AlightEmailLinkPluginUI' },
+      { label: 'Email', command: 'alightEmailLinkPlugin', pluginName: 'AlightEmailLinkPluginUI' },
       { label: 'Existing Document', command: 'alightExistingDocumentLinkPlugin', pluginName: 'AlightExistingDocumentLinkPluginUI' },
       { label: 'New Document', command: 'alightNewDocumentLinkPlugin', pluginName: 'AlightNewDocumentLinkPluginUI' },
     ];
