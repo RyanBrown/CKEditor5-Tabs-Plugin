@@ -74,8 +74,8 @@ export default class AlightEmailLinkPluginUI extends Plugin implements ModalPlug
       button.bind('isEnabled').to(linkCommand);
       button.bind('isOn').to(linkCommand, 'value', value => !!value);
 
-      button.on('execute', () => {
-        this._showModal();
+      button.on('execute', async () => {
+        await this._showModal();
       });
 
       return button;
@@ -232,7 +232,7 @@ export default class AlightEmailLinkPluginUI extends Plugin implements ModalPlug
   * 
   * @param initialValue Optional initial values for email and organization name
   */
-  public _showModal(initialValue?: { email?: string; orgName?: string; url?: string }): void {
+  public async _showModal(initialValue?: { email?: string; orgName?: string; url?: string }): Promise<void> {
     const editor = this.editor;
     const linkCommand = editor.commands.get('link');
 

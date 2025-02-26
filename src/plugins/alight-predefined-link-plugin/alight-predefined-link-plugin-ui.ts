@@ -72,8 +72,8 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
       button.bind('isOn').to(command, 'value', value => !!value);
 
       // Handle button click to show the modal
-      button.on('execute', () => {
-        this._showModal();
+      button.on('execute', async () => {
+        await this._showModal();
       });
 
       return button;
@@ -215,7 +215,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
 
   // In AlightPredefinedLinkPluginUI class, change the _showModal method to:
 
-  public _showModal(initialValue?: { url: string; orgName?: string }): void {
+  public async _showModal(initialValue?: { url: string; orgName?: string }): Promise<void> {
     const editor = this.editor;
     const command = editor.commands.get('alightPredefinedLinkPlugin') as AlightPredefinedLinkPluginCommand;
 

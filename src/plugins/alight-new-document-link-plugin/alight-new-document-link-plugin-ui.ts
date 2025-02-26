@@ -49,8 +49,8 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin implements Mod
         button.isEnabled = true;
       }
 
-      button.on('execute', () => {
-        this._showModal();
+      button.on('execute', async () => {
+        await this._showModal();
       });
 
       return button;
@@ -67,7 +67,7 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin implements Mod
    * 
    * @param initialValue Optional initial values (not used in this plugin, but included for API consistency)
    */
-  public _showModal(initialValue?: { url?: string; orgName?: string; email?: string }): void {
+  public async _showModal(initialValue?: { url?: string; orgName?: string; email?: string }): Promise<void> {
     if (!this._modalDialog) {
       this._modalDialog = new CkAlightModalDialog({
         title: 'Create a New Document',
