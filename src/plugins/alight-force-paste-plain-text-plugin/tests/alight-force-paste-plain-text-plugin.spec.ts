@@ -6,8 +6,8 @@ import { LICENSE_KEY } from '../../../ckeditor';
 import AlightForcePastePlainText from '../alight-force-paste-plain-text-plugin';
 
 describe('AlightForcePastePlainText', () => {
-  let element: HTMLElement;
   let editor: ClassicEditor;
+  let element: HTMLElement;
 
   beforeEach(async () => {
     element = document.createElement('div');

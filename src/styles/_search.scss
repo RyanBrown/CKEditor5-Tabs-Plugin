@@ -96,46 +96,6 @@
   }
 }
 
-.advanced-search-panel {
-  padding: 0.5rem 1rem 1rem;
-
-  header {
-    align-items: center;
-    display: flex;
-    justify-content: space-between;
-    margin: 0 0 1rem;
-
-    h3 {
-      font-size: var(--font-size-lg);
-      margin: 0;
-    }
-  }
-
-  .filter-panel-title {
-    display: block;
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-normal);
-    line-height: 150%;
-    margin: 0 0 0.75rem;
-  }
-
-  footer {
-    margin-top: 2rem;
-
-    p-button+p-button,
-    button+button {
-      margin-left: 1rem;
-    }
-  }
-}
-
-
-
-
-
-
-
-
 .cka-search-container {
   align-items: center;
   background-color: var(--neutral-white);

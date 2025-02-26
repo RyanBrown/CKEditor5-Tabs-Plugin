@@ -228,7 +228,6 @@ export default class AlightEmailLinkPluginUI extends Plugin implements ModalPlug
 
   /**
   * Shows the modal dialog for creating or editing an email link.
-  * Made public so it can be called from the parent link plugin.
   * 
   * @param initialValue Optional initial values for email and organization name
   */
