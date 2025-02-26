@@ -271,17 +271,17 @@ class Editor extends ClassicEditor {
     htmlSupport: {
       allow: [
         {
-          name: 'span',
+          name: 'svg',
           attributes: true,
           classes: true,
           styles: true
         },
         {
-          name: 'svg',
+          name: 'span',
           attributes: true,
           classes: true,
           styles: true
-        }
+        },
       ]
     },
     language: 'en',
@@ -297,6 +297,19 @@ class Editor extends ClassicEditor {
     },
     mediaEmbed: {
       toolbar: ['mediaEmbed'],
+    },
+    fontSize: {
+      options: ["default", 8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72],
+    },
+    fontColor: {
+      colors: awldsColorPalette,
+      colorPicker: false,
+      columns: 5,
+    },
+    fontBackgroundColor: {
+      colors: awldsColorPalette,
+      colorPicker: false,
+      columns: 5,
     },
     table: {
       contentToolbar: [
@@ -326,10 +339,16 @@ class Editor extends ClassicEditor {
           borderWidth: '1px',
           padding: '10px',
         },
+        // Keep the colors defined by AWLDS - removed color picker
+        borderColors: awldsColorPalette,
+        backgroundColors: awldsColorPalette,
+        colorPicker: false
       },
     },
     list: {
       properties: {
+        startIndex: false,
+        reversed: false,
         styles: {
           listStyleTypes: {
             numbered: ['decimal'],
