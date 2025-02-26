@@ -1,3 +1,4 @@
+// src/plugins/alight-force-paste-plain-text-plugin/alight-force-paste-plain-text-plugin.ts
 import { Plugin } from '@ckeditor/ckeditor5-core';
 
 // AlightForcePastePlainText plugin forces pasting content as plain text, preserving line breaks. 
