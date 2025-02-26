@@ -10,12 +10,24 @@ import { Alignment } from '@ckeditor/ckeditor5-alignment';
 import { Autoformat } from '@ckeditor/ckeditor5-autoformat';
 import { Autosave } from '@ckeditor/ckeditor5-autosave';
 import { BlockQuote } from '@ckeditor/ckeditor5-block-quote';
-import { Bold, Italic, Strikethrough, Subscript, Superscript, Underline } from '@ckeditor/ckeditor5-basic-styles';
+import {
+  Bold,
+  Italic,
+  Strikethrough,
+  Subscript,
+  Superscript,
+  Underline
+} from '@ckeditor/ckeditor5-basic-styles';
 import { Clipboard } from '@ckeditor/ckeditor5-clipboard';
 import { DataSchema } from '@ckeditor/ckeditor5-html-support';
 import type { EditorConfig } from '@ckeditor/ckeditor5-core';
 import { Essentials } from '@ckeditor/ckeditor5-essentials';
-import { FontBackgroundColor, FontColor, FontFamily, FontSize } from '@ckeditor/ckeditor5-font';
+import {
+  FontBackgroundColor,
+  FontColor,
+  FontFamily,
+  FontSize
+} from '@ckeditor/ckeditor5-font';
 import { GeneralHtmlSupport } from '@ckeditor/ckeditor5-html-support';
 import { Heading, Title } from '@ckeditor/ckeditor5-heading';
 import { Highlight } from '@ckeditor/ckeditor5-highlight';
@@ -250,7 +262,7 @@ class Editor extends ClassicEditor {
         'alightParentLinkPlugin',
         // 'alightGenericLinkPlugin',
         // 'alightPredefinedLinkPlugin',
-        // 'alightEmailLinkPlugin',
+        'alightEmailLinkPlugin',
         // 'alightExistingDocumentLinkPlugin',
         // 'alightNewDocumentLinkPlugin',
       ],
