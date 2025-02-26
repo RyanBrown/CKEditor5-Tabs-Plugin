@@ -239,7 +239,7 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
       type: 'email',
       id: 'email',
       name: 'email',
-      class: 'cka-input-text block',
+      class: 'cka-input-text cka-width-100',
       required: true,
       value: cleanInitialEmail,
       placeholder: 'user@example.com'
@@ -273,7 +273,7 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
       type: 'text',
       id: 'org-name',
       name: 'orgNameInput',
-      class: 'cka-input-text block',
+      class: 'cka-input-text cka-width-100',
       value: initialOrgName,
       placeholder: 'Organization name'
     });
