@@ -8,12 +8,13 @@ import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 import AlightEmailLinkPluginEditing from './alight-email-link-plugin-editing';
 import './styles/alight-email-link-plugin.scss';
 import { getSelectedLinkElement, isValidEmail } from './alight-email-link-plugin-utils';
+import { ModalPluginInterface } from '../interfaces/custom-plugin-interfaces';
 
 /**
  * Plugin handling the UI components for email links.
  * Sets up toolbar button and modal dialog.
  */
-export default class AlightEmailLinkPluginUI extends Plugin {
+export default class AlightEmailLinkPluginUI extends Plugin implements ModalPluginInterface {
   private _modalDialog?: CkAlightModalDialog;
   private _balloon!: ContextualBalloon;
   private _editingPlugin!: AlightEmailLinkPluginEditing;
@@ -226,13 +227,26 @@ export default class AlightEmailLinkPluginUI extends Plugin {
   }
 
   /**
-   * Shows the modal dialog for creating or editing an email link.
-   * 
-   * @param initialValue Optional initial values for email and organization name
-   */
-  private _showModal(initialValue?: { email?: string; orgName?: string }): void {
+  * Shows the modal dialog for creating or editing an email link.
+  * Made public so it can be called from the parent link plugin.
+  * 
+  * @param initialValue Optional initial values for email and organization name
+  */
+  public _showModal(initialValue?: { email?: string; orgName?: string; url?: string }): void {
     const editor = this.editor;
     const linkCommand = editor.commands.get('link');
+
+    // Handle case where url is provided instead of email (from parent plugin)
+    let emailValue = initialValue?.email || '';
+    let orgNameValue = initialValue?.orgName || '';
+
+    // If url is provided but not email, extract email from mailto: url
+    if (initialValue?.url && !emailValue && typeof initialValue.url === 'string') {
+      const url = initialValue.url;
+      if (url.toLowerCase().startsWith('mailto:')) {
+        emailValue = url.substring(7); // Remove mailto: prefix
+      }
+    }
 
     if (!linkCommand) {
       console.warn('[AlightEmailLinkPluginUI] The built-in "link" command is unavailable.');
@@ -277,9 +291,6 @@ export default class AlightEmailLinkPluginUI extends Plugin {
         }
       });
     }
-
-    const emailValue = initialValue?.email || '';
-    const orgNameValue = initialValue?.orgName || '';
 
     // Create an empty container for the modal content
     const container = document.createElement('div');

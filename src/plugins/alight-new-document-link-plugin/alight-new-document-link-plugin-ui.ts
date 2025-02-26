@@ -7,8 +7,9 @@ import { ContentManager } from './modal-content/alight-new-document-link-plugin-
 import { Notification } from '@ckeditor/ckeditor5-ui';
 import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 import './styles/alight-new-document-link-plugin.scss';
+import { ModalPluginInterface } from './../interfaces/custom-plugin-interfaces';
 
-export default class AlightNewDocumentLinkPluginUI extends Plugin {
+export default class AlightNewDocumentLinkPluginUI extends Plugin implements ModalPluginInterface {
   private _modalDialog?: CkAlightModalDialog;
   private _formManager?: ContentManager;
   private _isSubmitting: boolean = false;
@@ -32,6 +33,7 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
 
     editor.ui.componentFactory.add('alightNewDocumentLinkPlugin', locale => {
       const button = new ButtonView(locale);
+      const command = editor.commands.get('alightNewDocumentLinkPlugin');
 
       button.set({
         label: t('New Document'),
@@ -40,7 +42,12 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
         withText: true,
       });
 
-      button.isEnabled = true;
+      // Bind button state to command if available
+      if (command) {
+        button.bind('isEnabled').to(command);
+      } else {
+        button.isEnabled = true;
+      }
 
       button.on('execute', () => {
         this._showModal();
@@ -54,8 +61,13 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
     this._formManager = new ContentManager();
   }
 
-  // In alight-new-document-link-plugin-ui.ts
-  private _showModal(): void {
+  /**
+   * Shows the modal dialog for creating a new document.
+   * Made public so it can be called from the parent link plugin.
+   * 
+   * @param initialValue Optional initial values (not used in this plugin, but included for API consistency)
+   */
+  public _showModal(initialValue?: { url?: string; orgName?: string; email?: string }): void {
     if (!this._modalDialog) {
       this._modalDialog = new CkAlightModalDialog({
         title: 'Create a New Document',
