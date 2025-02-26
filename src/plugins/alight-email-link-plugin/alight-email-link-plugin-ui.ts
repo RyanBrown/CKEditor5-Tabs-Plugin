@@ -245,7 +245,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
         modal: true,
         width: '500px',
         height: 'auto',
-        contentClass: 'email-link-content',
+        contentClass: 'cka-email-link-content',
         buttons: [
           { label: 'Cancel', disabled: false },
           { label: 'Continue', isPrimary: true, closeOnClick: false, disabled: false }

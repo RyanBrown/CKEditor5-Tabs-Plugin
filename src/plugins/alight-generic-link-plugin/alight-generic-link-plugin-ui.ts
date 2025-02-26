@@ -228,7 +228,7 @@ export default class AlightGenericLinkPluginUI extends Plugin {
         modal: true,
         width: '500px',
         height: 'auto',
-        contentClass: 'generic-link-content',
+        contentClass: 'cka-generic-link-content',
         buttons: [
           {
             label: 'Cancel',

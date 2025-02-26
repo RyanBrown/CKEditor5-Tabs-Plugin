@@ -116,7 +116,7 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
       model: 'emailFormContainer',
       view: (modelElement: any, { writer }: any) => {
         const containerElement = writer.createContainerElement('div', {
-          class: 'email-link-content'
+          class: 'cka-email-link-content'
         });
         return containerElement;
       }

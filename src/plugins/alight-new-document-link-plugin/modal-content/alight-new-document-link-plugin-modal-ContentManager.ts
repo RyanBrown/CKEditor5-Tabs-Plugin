@@ -40,7 +40,7 @@ export class ContentManager implements LinkManager {
 
   private createLanguageSelectHTML(): string {
     return `
-      <h3 class="sub-title">Language</h3>
+      <h3 class="cka-sub-title">Language</h3>
       ${this.createCardHTML(`
         <label for="language-select-container" class="cka-input-label">Language</label>
         <div id="language-select-container" class="cka-width-half"></div>
@@ -54,7 +54,7 @@ export class ContentManager implements LinkManager {
     const supportedFileTypes = ['doc', 'docx', 'xls', 'xlsx', 'xlsm', 'ppt', 'pptx', 'pdf'];
 
     return `
-      <h3 class="sub-title">Document & Title</h3>
+      <h3 class="cka-sub-title">Document & Title</h3>
       ${this.createCardHTML(`
         <label for="file-input" class="cka-input-label">Upload Document (5MB Limit)</label>
         <div class="cka-file-input-wrapper cka-width-half" data-text="No file chosen">
@@ -97,7 +97,7 @@ export class ContentManager implements LinkManager {
 
   private createSearchCriteriaHTML(): string {
     return `
-      <h3 class="sub-title">Search Criteria</h3>
+      <h3 class="cka-sub-title">Search Criteria</h3>
       ${this.createCardHTML(`
         <label for="search-tags-chips" class="cka-input-label">Search Tags (optional)</label>
         <div id="search-tags-chips" class="cka-width-half"></div>
@@ -143,21 +143,21 @@ export class ContentManager implements LinkManager {
 
   private createCheckboxGroupHTML(): string {
     return `
-      <h3 class="sub-title">Content Library</h3>
+      <h3 class="cka-sub-title">Content Library</h3>
       ${this.createCardHTML(`
         <cka-checkbox id="contentLibraryAccess">
           Access from Content Library (optional)
         </cka-checkbox>
       `)}
 
-      <h3 class="sub-title">Alight Worklife Link</h3>
+      <h3 class="cka-sub-title">Alight Worklife Link</h3>
       ${this.createCardHTML(`
         <cka-checkbox id="worklifeLink">
           Link to Document From a Alight Worklife Link (optional)
         </cka-checkbox>
       `)}
 
-      <h3 class="sub-title">Search Results</h3>
+      <h3 class="cka-sub-title">Search Results</h3>
       ${this.createCardHTML(`
         <cka-checkbox id="showInSearch" initialvalue="true">
           Show in Search Results (optional)
