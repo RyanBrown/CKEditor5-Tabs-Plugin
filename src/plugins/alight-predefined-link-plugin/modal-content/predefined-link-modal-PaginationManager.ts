@@ -9,7 +9,7 @@ export class PaginationManager {
 
   constructor(
     private onPageChange: (page: number) => void,
-    pageSize = 5
+    pageSize = 10
   ) {
     this.pageSize = pageSize;
   }
