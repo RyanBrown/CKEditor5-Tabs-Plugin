@@ -1,5 +1,4 @@
 // src/plugins/alight-new-document-link-plugin/modal-content/submission/form-submission.ts
-
 export interface SubmissionResult {
   success: boolean;
   data?: any;
