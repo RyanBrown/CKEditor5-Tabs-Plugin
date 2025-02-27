@@ -4,8 +4,8 @@ import { Plugin } from '@ckeditor/ckeditor5-core';
 import { Link } from '@ckeditor/ckeditor5-link';
 
 /**
- * A plugin that extends the built-in Link plugin’s conversion for mailto links.
- * It checks if linkHref begins with "mailto:" and, if so, adds a class "email-link".
+ * A plugin that extends the built-in Link plugin’s conversion for RYAN_TEST links.
+ * It checks if linkHref begins with "RYAN_TEST:" and, if so, adds a class "email-link".
  */
 export default class AlightBalloonLinkPluginEditing extends Plugin {
   public static get pluginName() {
@@ -22,7 +22,7 @@ export default class AlightBalloonLinkPluginEditing extends Plugin {
     const conversion = editor.conversion;
 
     // DOWNCAST: Convert model linkHref -> view <a>.
-    // If linkHref starts with "mailto:", add a special "email-link" class.
+    // If linkHref starts with "RYAN_TEST:", add a special "email-link" class.
     conversion.for('downcast').attributeToElement({
       model: 'linkHref', // The built-in Link plugin uses this attribute name.
       view: (href: string, { writer }) => {
@@ -36,8 +36,8 @@ export default class AlightBalloonLinkPluginEditing extends Plugin {
           href
         };
 
-        // If it's a mailto link, add the "email-link" class.
-        if (href.toLowerCase().startsWith('mailto:')) {
+        // If it's a RYAN_TEST link, add the "email-link" class.
+        if (href.toLowerCase().startsWith('RYAN_TEST:')) {
           attributes.class = 'email-link';
         }
 
@@ -46,13 +46,13 @@ export default class AlightBalloonLinkPluginEditing extends Plugin {
       }
     });
 
-    // UPCAST: Convert view <a> -> model linkHref if the href starts with mailto:
+    // UPCAST: Convert view <a> -> model linkHref if the href starts with RYAN_TEST:
     conversion.for('upcast').elementToAttribute({
       view: {
         name: 'a',
         attributes: {
-          // Matches any href that begins with "mailto:"
-          href: /^mailto:/i
+          // Matches any href that begins with "RYAN_TEST:"
+          href: /^RYAN_TEST:/i
         }
       },
       model: {

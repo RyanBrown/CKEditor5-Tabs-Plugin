@@ -4,7 +4,7 @@ import { ButtonView, ContextualBalloon, View } from '@ckeditor/ckeditor5-ui';
 import { ClickObserver } from '@ckeditor/ckeditor5-engine';
 import type ViewElement from '@ckeditor/ckeditor5-engine/src/view/element';
 import { CkAlightModalDialog } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
-import { ContentManager, validateForm } from './modal-content/alight-balloon-link-plugin-modal-ContentManager';
+import { ContentManager } from './modal-content/alight-balloon-link-plugin-modal-ContentManager';
 import LinkUI from '@ckeditor/ckeditor5-link/src/linkui';
 import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 
@@ -255,18 +255,6 @@ export default class AlightBalloonLinkPluginUI extends Plugin {
 
         if (label === 'Continue') {
           const form = this._modalDialog?.element?.querySelector('#email-link-form') as HTMLFormElement;
-          const isValid = validateForm(form);
-          if (isValid) {
-            const emailInput = form.querySelector('#link-email') as HTMLInputElement;
-            const emailVal = emailInput.value.trim();
-
-            // Create or update the mailto link
-            editor.model.change(() => {
-              editor.execute('link', 'mailto:' + emailVal);
-            });
-
-            this._modalDialog?.hide();
-          }
         }
       });
     }
