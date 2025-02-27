@@ -72,6 +72,34 @@ export default class AlightBalloonLinkPluginUI extends Plugin {
         linkUI._createActionsView = () => {
           const actionsView = originalCreateActionsView();
 
+          // Customize the preview button to not be clickable
+          actionsView.previewButtonView.delegate('execute').to(this, 'customLinkPreviewHandler');
+
+          // Hook into DOM element creation to modify the <a> element attributes
+          const originalRender = actionsView.previewButtonView.render;
+          actionsView.previewButtonView.render = function () {
+            originalRender.call(this);
+
+            if (this.element) {
+              // Add custom class
+              this.element.classList.add('cka-disabled-link-preview');
+
+              // Add onClick handler to prevent default behavior
+              this.element.addEventListener('click', (event: Event) => {
+                event.preventDefault();
+                return false;
+              });
+
+              // Change appearance to make it clear it's not clickable
+              this.element.style.cursor = 'default';
+              this.element.style.pointerEvents = 'none'; // This disables interactions
+
+              // Remove target="_blank" and rel attributes
+              this.element.removeAttribute('target');
+              this.element.removeAttribute('rel');
+            }
+          };
+
           // Customize the display of links in the preview
           actionsView.previewButtonView.unbind('label');
           actionsView.previewButtonView.unbind('tooltip');
@@ -82,8 +110,8 @@ export default class AlightBalloonLinkPluginUI extends Plugin {
               return editor.t('This link has no URL');
             }
 
-            // Show only the url address part for https links
-            if (href.toLowerCase().startsWith('https://')) {
+            // Show only the email address part for mailto links
+            if (href.toLowerCase().startsWith('mailto:')) {
               return href.substring(7);
             }
 
@@ -92,16 +120,22 @@ export default class AlightBalloonLinkPluginUI extends Plugin {
 
           // Update the button tooltip (title)
           actionsView.previewButtonView.bind('tooltip').to(actionsView, 'href', (href: string) => {
-            if (href && href.toLowerCase().startsWith('https://')) {
-              return editor.t('Open link in new tab');
-            }
-            return editor.t('Open link in new tab');
+            return 'Link preview (disabled)';
           });
 
           return actionsView;
         };
       }
     }
+  }
+
+  /**
+   * Custom handler for link preview clicks - prevents default behavior
+   */
+  public customLinkPreviewHandler(event: any): void {
+    // This function intentionally does nothing to prevent the default link preview behavior
+    event.preventDefault();
+    event.stopPropagation();
   }
 
   /**
@@ -167,8 +201,31 @@ export default class AlightBalloonLinkPluginUI extends Plugin {
     }
 
     let linkValue = linkCommand.value.trim().toLowerCase();
-    const validProtocols = ['http://', 'https://'];
+    const validProtocols = ['mailto:', 'http://', 'https://'];
     const isOurLink = validProtocols.some(protocol => linkValue.startsWith(protocol));
+
+    // Apply additional transformations to the actionsView DOM elements
+    if (actionsView.element) {
+      const previewLinkElement = actionsView.element.querySelector('.ck-link-actions__preview');
+      if (previewLinkElement) {
+        // Add your custom class
+        previewLinkElement.classList.add('cka-disabled-link-preview');
+
+        // Disable the link behavior
+        previewLinkElement.addEventListener('click', (event: Event) => {
+          event.preventDefault();
+          return false;
+        });
+
+        // Visual indication that it's not clickable
+        previewLinkElement.style.cursor = 'default';
+        previewLinkElement.style.pointerEvents = 'none';
+
+        // Remove target and rel attributes
+        previewLinkElement.removeAttribute('target');
+        previewLinkElement.removeAttribute('rel');
+      }
+    }
 
     // Setup custom handling for our links
     if (actionsView.editButtonView) {
