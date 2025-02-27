@@ -5,10 +5,9 @@ import { Command } from '@ckeditor/ckeditor5-core';
 import { findAttributeRange } from '@ckeditor/ckeditor5-typing';
 
 // Define an interface for the plugin attributes.
-// This interface includes an email property and an optional organization name.
+// This interface includes an email property.
 export interface alightBalloonLinkPluginAttributes {
   email: string;
-  orgName?: string;
 }
 
 // Define the command class that extends CKEditor's Command.

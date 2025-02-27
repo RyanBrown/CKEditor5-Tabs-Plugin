@@ -7,12 +7,10 @@ import { FocusTracker, KeystrokeHandler } from '@ckeditor/ckeditor5-utils';
 import FormRowView from './form-row-view';
 
 // Represents the form view for creating or editing an email link.
-// It includes input rows for email address and organization name.
+// It includes input row for email address.
 export default class AlightEmailLinkFormView extends View {
   // Input row for the email address.
   public readonly emailInputRow: FormRowView;
-  // Input row for the organization name.
-  public readonly orgNameInputRow: FormRowView;
   // Tracks focus for the form elements.
   public readonly focusTracker: FocusTracker;
   // Handles keyboard events on the form.
@@ -27,9 +25,7 @@ export default class AlightEmailLinkFormView extends View {
     // Create the input row for the email address with type 'email'.
     this.emailInputRow = this._createInputRow('Email address', 'email');
     // console.log('[AlightEmailLinkFormView] Email input row created:', this.emailInputRow);
-    // Create the input row for the organization name with type 'text'.
-    this.orgNameInputRow = this._createInputRow('Organization name', 'text');
-    // console.log('[AlightEmailLinkFormView] Organization name input row created:', this.orgNameInputRow);
+
     // Initialize focus tracking and keyboard handling.
     this.focusTracker = new FocusTracker();
     // console.log('[AlightEmailLinkFormView] FocusTracker initialized.');
@@ -44,8 +40,7 @@ export default class AlightEmailLinkFormView extends View {
         tabindex: '-1'
       },
       children: [
-        this.emailInputRow,
-        this.orgNameInputRow
+        this.emailInputRow
       ]
     });
     // console.log('[AlightEmailLinkFormView] Form template set.');
@@ -89,8 +84,7 @@ export default class AlightEmailLinkFormView extends View {
 
     // Add the form's input elements to the focus tracker.
     const elements = [
-      this.emailInputRow.inputView.element,
-      this.orgNameInputRow.inputView.element
+      this.emailInputRow.inputView.element
     ];
     elements.forEach(element => {
       if (element) {

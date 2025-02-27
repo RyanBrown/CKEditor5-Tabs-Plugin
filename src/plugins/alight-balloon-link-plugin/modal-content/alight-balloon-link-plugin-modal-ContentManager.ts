@@ -1,13 +1,12 @@
 // src/plugins/alight-balloon-link-plugin/modal-content/alight-balloon-link-plugin-modal-content-manager.ts
 
 // Generates the modal content for the email link plugin.
-// It creates a container with a form for entering an email address and an optional organization name.
+// It creates a container with a form for entering an email address.
 // @param initialValue - An optional initial value for the email input.
-// @param initialOrgName - An optional initial value for the organization name input.
 // @returns An HTMLElement containing the form.
 
-export function ContentManager(initialValue?: string, initialOrgName?: string): HTMLElement {
-  // console.log('[ContentManager] Creating modal content with initialValue:', initialValue, 'and initialOrgName:', initialOrgName);
+export function ContentManager(initialValue?: string): HTMLElement {
+  // console.log('[ContentManager] Creating modal content with initialValue:', initialValue);
   // Create a container element for the form content.
   const container = document.createElement('div');
 
@@ -36,24 +35,6 @@ export function ContentManager(initialValue?: string, initialOrgName?: string): 
             Please enter a valid email address.
           </div>
         </div>
-
-        <div class="ck-form-group mt-3">
-          <label for="org-name" class="cka-input-label">
-            Organization Name (optional)
-          </label>
-          <input 
-            type="text" 
-            id="org-name" 
-            name="displayText" 
-            class="cka-input-text cka-width-100"
-            value="${initialOrgName || ''}"
-            placeholder="Organization name"
-          />
-        </div>
-
-        <p class="note-text">
-          Organization Name (optional): Specify the third-party organization to inform users about the email's origin.
-        </p>
       </form>
   `;
 

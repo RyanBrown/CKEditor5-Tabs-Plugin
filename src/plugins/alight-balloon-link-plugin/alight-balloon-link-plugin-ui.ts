@@ -206,9 +206,9 @@ export default class AlightBalloonLinkPluginUI extends Plugin {
    * - Configures modal buttons and handlers
    * - Handles form validation and link creation
    * 
-   * @param initialValue Optional initial values for email and org name
+   * @param initialValue Optional initial values for email
    */
-  private _showModal(initialValue?: { email?: string; orgName?: string }): void {
+  private _showModal(initialValue?: { email?: string }): void {
     const editor = this.editor;
 
     // Get link command for creating/editing links
@@ -219,7 +219,6 @@ export default class AlightBalloonLinkPluginUI extends Plugin {
     }
 
     const initialEmail = initialValue?.email || '';
-    const initialOrgName = initialValue?.orgName || '';
 
     // Create modal dialog if it doesn't exist
     if (!this._modalDialog) {
@@ -273,7 +272,7 @@ export default class AlightBalloonLinkPluginUI extends Plugin {
     }
 
     // Set modal content and show
-    const content = ContentManager(initialEmail, initialOrgName);
+    const content = ContentManager(initialEmail);
     this._modalDialog.setContent(content);
     this._modalDialog.show();
   }
