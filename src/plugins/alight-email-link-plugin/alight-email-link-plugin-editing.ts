@@ -98,11 +98,11 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
   private _registerEmailFormSchema(schema: any): void {
     schema.register('emailFormContainer', { allowAttributes: ['class'], allowWhere: '$block', isBlock: true, isObject: true, });
     schema.register('emailForm', { allowAttributes: ['id', 'class'], allowIn: 'emailFormContainer', isObject: true, });
-    schema.register('formGroup', { allowAttributes: ['class'], allowIn: 'emailForm', isObject: true, });
-    schema.register('formLabel', { allowAttributes: ['for', 'class', 'text'], allowIn: 'formGroup', isObject: true, });
-    schema.register('formInput', { allowAttributes: ['type', 'id', 'name', 'class', 'required', 'value', 'placeholder', 'style'], allowIn: 'formGroup', isObject: true, });
-    schema.register('errorMessage', { allowAttributes: ['id', 'class', 'style', 'text'], allowIn: 'formGroup', isObject: true, });
-    schema.register('noteText', { allowAttributes: ['class', 'text'], allowIn: 'emailForm', isObject: true, });
+    schema.register('emailFormGroup', { allowAttributes: ['class'], allowIn: 'emailForm', isObject: true, });
+    schema.register('emailFormLabel', { allowAttributes: ['for', 'class', 'text'], allowIn: 'emailFormGroup', isObject: true, });
+    schema.register('emailFormInput', { allowAttributes: ['type', 'id', 'name', 'class', 'required', 'value', 'placeholder', 'style'], allowIn: 'emailFormGroup', isObject: true, });
+    schema.register('emailErrorMessage', { allowAttributes: ['id', 'class', 'style', 'text'], allowIn: 'emailFormGroup', isObject: true, });
+    schema.register('emailNoteText', { allowAttributes: ['class', 'text'], allowIn: 'emailForm', isObject: true, });
   }
 
   /**
@@ -135,7 +135,7 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
 
     // Form group conversion
     conversion.for('downcast').elementToElement({
-      model: 'formGroup',
+      model: 'emailFormGroup',
       view: (modelElement: any, { writer }: any) => {
         const classAttribute = modelElement.getAttribute('class') || 'ck-form-group';
         return writer.createContainerElement('div', { class: classAttribute });
@@ -144,7 +144,7 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
 
     // Label conversion
     conversion.for('downcast').elementToElement({
-      model: 'formLabel',
+      model: 'emailFormLabel',
       view: (modelElement: any, { writer }: any) => {
         const labelElement = writer.createContainerElement('label', {
           for: modelElement.getAttribute('for'),
@@ -160,7 +160,7 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
 
     // Input conversion
     conversion.for('downcast').elementToElement({
-      model: 'formInput',
+      model: 'emailFormInput',
       view: (modelElement: any, { writer }: any) => {
         return writer.createEmptyElement('input', {
           type: modelElement.getAttribute('type') || 'text',
@@ -177,7 +177,7 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
 
     // Error message conversion
     conversion.for('downcast').elementToElement({
-      model: 'errorMessage',
+      model: 'emailErrorMessage',
       view: (modelElement: any, { writer }: any) => {
         const errorElement = writer.createContainerElement('div', {
           id: modelElement.getAttribute('id') || '',
@@ -194,7 +194,7 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
 
     // Note text conversion
     conversion.for('downcast').elementToElement({
-      model: 'noteText',
+      model: 'emailNoteText',
       view: (modelElement: any, { writer }: any) => {
         const noteElement = writer.createContainerElement('p', {
           class: modelElement.getAttribute('class') || 'cka-note-text'
@@ -224,10 +224,10 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
     const form = writer.createElement('emailForm', { id: 'email-link-form' });
 
     // Email form group
-    const emailGroup = writer.createElement('formGroup', { class: 'ck-form-group' });
+    const emailGroup = writer.createElement('emailFormGroup', { class: 'ck-form-group' });
 
     // Email label
-    const emailLabel = writer.createElement('formLabel', {
+    const emailLabel = writer.createElement('emailFormLabel', {
       for: 'email',
       class: 'cka-input-label',
       text: 'Email Address'
@@ -235,7 +235,7 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
 
     // Email input - notice we're stripping mailto: prefix if present
     const cleanInitialEmail = initialEmail.replace(/^mailto:/i, '');
-    const emailInput = writer.createElement('formInput', {
+    const emailInput = writer.createElement('emailFormInput', {
       type: 'email',
       id: 'email',
       name: 'email',
@@ -246,7 +246,7 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
     });
 
     // Error message
-    const emailError = writer.createElement('errorMessage', {
+    const emailError = writer.createElement('emailErrorMessage', {
       id: 'email-error',
       class: 'cka-error-message',
       style: 'display: none;',
@@ -259,17 +259,17 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
     writer.append(emailError, emailGroup);
 
     // Organization form group
-    const orgGroup = writer.createElement('formGroup', { class: 'ck-form-group mt-3' });
+    const orgGroup = writer.createElement('emailFormGroup', { class: 'ck-form-group mt-3' });
 
     // Organization label
-    const orgLabel = writer.createElement('formLabel', {
+    const orgLabel = writer.createElement('emailFormLabel', {
       for: 'org-name',
       class: 'cka-input-label',
       text: 'Organization Name (optional)'
     });
 
     // Organization input
-    const orgInput = writer.createElement('formInput', {
+    const orgInput = writer.createElement('emailFormInput', {
       type: 'text',
       id: 'org-name',
       name: 'orgNameInput',
@@ -283,14 +283,14 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
     writer.append(orgInput, orgGroup);
 
     // Note text
-    const noteText = writer.createElement('noteText', {
+    const emailNoteText = writer.createElement('emailNoteText', {
       text: 'Organization Name (optional): Specify the third-party organization to inform users about the email\'s origin.'
     });
 
     // Assemble the form
     writer.append(emailGroup, form);
     writer.append(orgGroup, form);
-    writer.append(noteText, form);
+    writer.append(emailNoteText, form);
 
     // Add form to container
     writer.append(form, formContainer);

@@ -254,7 +254,7 @@ export default class AlightEmailLinkPluginUI extends Plugin implements ModalPlug
 
     if (!this._modalDialog) {
       this._modalDialog = new CkAlightModalDialog({
-        title: 'Create an Email Link',
+        title: 'Create Email Link',
         modal: true,
         width: '500px',
         height: 'auto',
