@@ -1,0 +1,6 @@
+// src/plugins/alight-email-link-plugin/styles/alight-email-link-plugin.scss
+@use './../../../styles/mixins' as mixins;
+
+.email-link-content {
+  padding: var(--spacing-xl) var(--spacing-xl) 0;
+}
