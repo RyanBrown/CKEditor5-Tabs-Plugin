@@ -1,7 +1,7 @@
 // src/plugins/alight-copy-plugin/alight-copy-plugin.ts
 import { Editor, Plugin } from '@ckeditor/ckeditor5-core';
 import { ButtonView } from '@ckeditor/ckeditor5-ui';
-import ToolBarIcon from './assets/icon-copy.svg';
+import ToolBarIcon from './../../../theme/icons/icon-copy.svg';
 import AlightCopyPluginCommand from './alight-copy-plugin-command';
 
 export default class AlightCopyPlugin extends Plugin {

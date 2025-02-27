@@ -6,7 +6,7 @@ import ListItemView from '@ckeditor/ckeditor5-ui/src/list/listitemview';
 import ListSeparatorView from '@ckeditor/ckeditor5-ui/src/list/listseparatorview';
 import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
 import View from '@ckeditor/ckeditor5-ui/src/view';
-import ToolBarIcon from './assets/icon-image.svg';
+import ToolBarIcon from '@ckeditor/ckeditor5-core/theme/icons/image.svg';
 import './styles/alight-image-plugin.scss';
 
 export default class AlightImagePluginUI extends Plugin {

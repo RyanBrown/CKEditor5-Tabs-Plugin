@@ -1,7 +1,7 @@
 // src/plugins/alight-population-plugin/alight-population-plugin-ui.ts
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
-import ToolBarIcon from './assets/icon-population.svg';
+import ToolBarIcon from './../../../theme/icons/icon-population.svg';
 import './styles/alight-population-plugin.scss';
 
 export default class AlightPopulationPluginUI extends Plugin {

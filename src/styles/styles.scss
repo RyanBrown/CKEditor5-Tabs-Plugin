@@ -272,3 +272,8 @@ $spacing-values: (
 .cka-width-50 {
   width: 50%;
 }
+
+// Predefined and Existing Docs modal class
+.cka-links-container {
+  padding: 0 var(--spacing-l);
+}

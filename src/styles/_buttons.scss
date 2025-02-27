@@ -213,7 +213,7 @@ ul.cka-radio-group {
 }
 
 // Checkbox List
-ul.checkbox-list {
+ul.cka-checkbox-list {
   display: flex;
   flex-wrap: wrap;
   list-style: none;
@@ -228,8 +228,8 @@ ul.checkbox-list {
 }
 
 
-.radio-list-inline,
-.checkbox-list-inline {
+.cka-radio-list-inline,
+.cka-checkbox-list-inline {
   list-style: none;
   margin: 0;
   padding: 0;
