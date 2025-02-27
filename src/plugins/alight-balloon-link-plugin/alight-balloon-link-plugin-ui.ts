@@ -4,7 +4,7 @@ import { ButtonView, ContextualBalloon, View } from '@ckeditor/ckeditor5-ui';
 import { ClickObserver } from '@ckeditor/ckeditor5-engine';
 import type ViewElement from '@ckeditor/ckeditor5-engine/src/view/element';
 import { CkAlightModalDialog } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
-import { ContentManager } from './modal-content/alight-balloon-link-plugin-modal-ContentManager';
+import { ContentManager } from './modal-content/balloon-link-modal-ContentManager';
 import LinkUI from '@ckeditor/ckeditor5-link/src/linkui';
 import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 
@@ -12,13 +12,14 @@ import './styles/alight-balloon-link-plugin.scss';
 
 /**
  * A UI plugin that provides:
- * 1. A "Email Link" toolbar button that calls the built-in 'link' command with mailto: addresses.
- * 2. Overrides the default LinkUI balloon's "Edit" button so it opens a modal dialog.
- * 3. Leaves balloon auto-handling to LinkUI, except for our overridden button behaviors.
+ * 1. A "Balloon Link" toolbar button that allows creating custom links
+ * 2. Overrides the default LinkUI balloon's "Edit" button to open a modal dialog
+ * 3. Leaves balloon auto-handling to LinkUI, except for overridden button behaviors
  */
 export default class AlightBalloonLinkPluginUI extends Plugin {
   private _modalDialog?: CkAlightModalDialog;
   private _balloon!: ContextualBalloon;
+  private _contentManager?: ContentManager;
 
   /**
    * Defines required plugins - requires LinkUI for default link balloon functionality
@@ -36,7 +37,7 @@ export default class AlightBalloonLinkPluginUI extends Plugin {
    * 1. Gets balloon reference
    * 2. Sets up click observer
    * 3. Creates toolbar button
-   * 4. Overrides default LinkUI behaviors for mailto links
+   * 4. Overrides default LinkUI behaviors for custom links
    */
   public init(): void {
     const editor = this.editor;
@@ -45,7 +46,7 @@ export default class AlightBalloonLinkPluginUI extends Plugin {
     // Add click observer for handling link clicks
     editor.editing.view.addObserver(ClickObserver);
 
-    // Create the email link toolbar button
+    // Create the balloon link toolbar button
     this._setupToolbarButton();
 
     // Setup balloon content change handler
@@ -64,43 +65,11 @@ export default class AlightBalloonLinkPluginUI extends Plugin {
           this._extendDefaultActionsView();
         };
       }
-
-      // Override how link previews are displayed in the balloon
-      const originalCreateActionsView = linkUI._createActionsView?.bind(linkUI);
-      if (originalCreateActionsView) {
-        linkUI._createActionsView = () => {
-          const actionsView = originalCreateActionsView();
-
-          // Customize the display of mailto links by stripping the mailto: prefix
-          actionsView.previewButtonView.unbind('label');
-          actionsView.previewButtonView.unbind('tooltip');
-
-          // Update the button label (text)
-          actionsView.previewButtonView.bind('label').to(actionsView, 'href', (href: string) => {
-            if (!href) {
-              return editor.t('This link has no URL');
-            }
-            // Show only the email address part for mailto links
-            return href.toLowerCase().startsWith('mailto:') ?
-              href.substring(7) : href;
-          });
-
-          // Update the button tooltip (title)
-          actionsView.previewButtonView.bind('tooltip').to(actionsView, 'href', (href: string) => {
-            if (href && href.toLowerCase().startsWith('mailto:')) {
-              return editor.t('Open email in client');
-            }
-            return editor.t('Open link in new tab');
-          });
-
-          return actionsView;
-        };
-      }
     }
   }
 
   /**
-   * Creates and configures the email link toolbar button:
+   * Creates and configures the balloon link toolbar button:
    * - Sets up button appearance and behavior
    * - Binds to link command for state management
    * - Handles button click to show modal
@@ -141,8 +110,8 @@ export default class AlightBalloonLinkPluginUI extends Plugin {
   }
 
   /**
-   * Extends the default link actions view to handle mailto links differently:
-   * - For mailto links: Shows custom modal for editing
+   * Extends the default link actions view to handle custom links differently:
+   * - For custom links: Shows custom modal for editing
    * - For regular links: Uses default LinkUI behavior
    * This is called whenever the balloon content changes
    */
@@ -165,7 +134,7 @@ export default class AlightBalloonLinkPluginUI extends Plugin {
     let linkValue = linkCommand.value.trim().toLowerCase();
 
     // Handle non-mailto links by removing our custom handlers
-    if (!linkValue.startsWith('mailto:')) {
+    if (!linkValue.startsWith('mailto:') && !linkValue.startsWith('ryan_test:')) {
       if (actionsView.editButtonView) {
         actionsView.editButtonView.off('execute');
         actionsView.off('edit');
@@ -173,20 +142,20 @@ export default class AlightBalloonLinkPluginUI extends Plugin {
       return;
     }
 
-    // Setup custom handling for mailto links
+    // Setup custom handling for custom links
     if (actionsView.editButtonView) {
       // Clean up existing handlers
       actionsView.editButtonView.off('execute');
       actionsView.off('edit');
 
-      // Add custom edit handler for mailto links
+      // Add custom edit handler for our special links
       actionsView.editButtonView.on('execute', (evt: { stop: () => void }) => {
         evt.stop();
 
-        // Extract email from mailto link
+        // Extract email from link
         let email = '';
         if (linkCommand && typeof linkCommand.value === 'string') {
-          email = linkCommand.value.replace(/^mailto:/i, '');
+          email = linkCommand.value.replace(/^mailto:|^ryan_test:/i, '');
         }
 
         // Show edit modal with current email
@@ -201,7 +170,7 @@ export default class AlightBalloonLinkPluginUI extends Plugin {
   }
 
   /**
-   * Shows modal dialog for creating/editing email links:
+   * Shows modal dialog for creating/editing links:
    * - Creates modal if it doesn't exist
    * - Configures modal buttons and handlers
    * - Handles form validation and link creation
@@ -225,7 +194,7 @@ export default class AlightBalloonLinkPluginUI extends Plugin {
       this._modalDialog = new CkAlightModalDialog({
         title: 'Balloon Link',
         modal: true,
-        width: '500px',
+        width: '80vw',
         height: 'auto',
         contentClass: 'email-link-content',
         buttons: [
@@ -254,14 +223,32 @@ export default class AlightBalloonLinkPluginUI extends Plugin {
         }
 
         if (label === 'Continue') {
-          const form = this._modalDialog?.element?.querySelector('#email-link-form') as HTMLFormElement;
+          // Get the selected link from the content manager
+          const selectedLink = this._contentManager?.getSelectedLink();
+
+          if (selectedLink) {
+            // Create the link in the editor using the built-in link command
+            const url = `RYAN_TEST:${selectedLink.destination}`;
+            linkCommand.execute(url);
+
+            // Hide the modal after creating the link
+            this._modalDialog?.hide();
+          } else {
+            // Show some feedback that no link was selected
+            console.warn('No link selected');
+            // You could add UI feedback here
+          }
         }
       });
     }
 
-    // Set modal content and show
-    const content = ContentManager(initialEmail);
-    this._modalDialog.setContent(content);
+    // Create a new instance of ContentManager with the initial email
+    this._contentManager = new ContentManager(initialEmail);
+
+    // Set the content to the modal dialog using the getContent method
+    this._modalDialog.setContent(this._contentManager.getContent());
+
+    // Show the modal
     this._modalDialog.show();
   }
 
