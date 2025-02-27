@@ -5,8 +5,10 @@ import { ClickObserver } from '@ckeditor/ckeditor5-engine';
 import type ViewElement from '@ckeditor/ckeditor5-engine/src/view/element';
 import { CkAlightModalDialog } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import { ContentManager } from './modal-content/balloon-link-modal-ContentManager';
+import { BalloonLink } from './modal-content/balloon-link-modal-types';
 import LinkUI from '@ckeditor/ckeditor5-link/src/linkui';
 import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
+import predefinedLinksData from './modal-content/json/predefined-test-data.json';
 
 import './styles/alight-balloon-link-plugin.scss';
 
@@ -20,6 +22,7 @@ export default class AlightBalloonLinkPluginUI extends Plugin {
   private _modalDialog?: CkAlightModalDialog;
   private _balloon!: ContextualBalloon;
   private _contentManager?: ContentManager;
+  private _predefinedLinksData: BalloonLink[] = predefinedLinksData.predefinedLinksDetails;
 
   /**
    * Defines required plugins - requires LinkUI for default link balloon functionality
@@ -81,8 +84,14 @@ export default class AlightBalloonLinkPluginUI extends Plugin {
             originalRender.call(this);
 
             if (this.element) {
-              // Add custom class
+              // Add custom class to the <a> element
               this.element.classList.add('cka-disabled-link-preview');
+
+              // Find and add class to the span.ck-button__label
+              const labelElement = this.element.querySelector('.ck-button__label');
+              if (labelElement) {
+                labelElement.classList.add('cka-custom-link-label');
+              }
 
               // Add onClick handler to prevent default behavior
               this.element.addEventListener('click', (event: Event) => {
@@ -104,7 +113,7 @@ export default class AlightBalloonLinkPluginUI extends Plugin {
           actionsView.previewButtonView.unbind('label');
           actionsView.previewButtonView.unbind('tooltip');
 
-          // Update the button label (text)
+          // Update the button label (text) - Use predefinedLinkName instead of URL
           actionsView.previewButtonView.bind('label').to(actionsView, 'href', (href: string) => {
             if (!href) {
               return editor.t('This link has no URL');
@@ -115,11 +124,23 @@ export default class AlightBalloonLinkPluginUI extends Plugin {
               return href.substring(7);
             }
 
+            // Find the predefined link with this URL and use its name instead
+            const predefinedLink = this._findPredefinedLinkByUrl(href);
+            if (predefinedLink) {
+              return predefinedLink.predefinedLinkName;
+            }
+
             return href;
           });
 
           // Update the button tooltip (title)
           actionsView.previewButtonView.bind('tooltip').to(actionsView, 'href', (href: string) => {
+            if (href) {
+              const predefinedLink = this._findPredefinedLinkByUrl(href);
+              if (predefinedLink) {
+                return `${predefinedLink.predefinedLinkDescription} (${href})`;
+              }
+            }
             return 'Link preview (disabled)';
           });
 
@@ -127,6 +148,13 @@ export default class AlightBalloonLinkPluginUI extends Plugin {
         };
       }
     }
+  }
+
+  /**
+   * Find predefined link by URL
+   */
+  private _findPredefinedLinkByUrl(url: string): BalloonLink | null {
+    return this._predefinedLinksData.find(link => link.destination === url) || null;
   }
 
   /**
@@ -181,7 +209,7 @@ export default class AlightBalloonLinkPluginUI extends Plugin {
 
   /**
    * Extends the default link actions view to handle links differently:
-   * - Shows custom modal for editing http, and https links
+   * - Shows custom modal for editing mailto, http, and https links
    * This is called whenever the balloon content changes
    */
   private _extendDefaultActionsView(): void {
@@ -200,16 +228,29 @@ export default class AlightBalloonLinkPluginUI extends Plugin {
       return;
     }
 
-    let linkValue = linkCommand.value.trim().toLowerCase();
-    const validProtocols = ['mailto:', 'http://', 'https://'];
-    const isOurLink = validProtocols.some(protocol => linkValue.startsWith(protocol));
+    let linkValue = linkCommand.value.trim();
 
     // Apply additional transformations to the actionsView DOM elements
     if (actionsView.element) {
+      // Find the preview link element
       const previewLinkElement = actionsView.element.querySelector('.ck-link-actions__preview');
       if (previewLinkElement) {
-        // Add your custom class
+        // Add custom class to the link
         previewLinkElement.classList.add('cka-disabled-link-preview');
+
+        // Find and add class to the span.ck-button__label
+        const labelSpan = previewLinkElement.querySelector('.ck-button__label');
+        if (labelSpan) {
+          labelSpan.classList.add('cka-custom-link-label');
+
+          // Update the label to show the predefined link name if available
+          const predefinedLink = this._findPredefinedLinkByUrl(linkValue);
+          if (predefinedLink) {
+            labelSpan.textContent = predefinedLink.predefinedLinkName;
+            // Add tooltip with URL
+            previewLinkElement.setAttribute('title', `${predefinedLink.predefinedLinkDescription} (${linkValue})`);
+          }
+        }
 
         // Disable the link behavior
         previewLinkElement.addEventListener('click', (event: Event) => {
