@@ -26,8 +26,8 @@ describe('AlightPastePlugin', () => {
       execute: jasmine.createSpy('execute'),
       document: {
         selection: {
-          getFirstPosition: () => null,
-          getLastPosition: () => null
+          getFirstPosition: (): any => null,
+          getLastPosition: (): any => null
         },
         on: jasmine.createSpy('on'),
         roots: new Map()
@@ -35,8 +35,8 @@ describe('AlightPastePlugin', () => {
       model: {
         document: {
           selection: {
-            getFirstPosition: () => null,
-            getLastPosition: () => null
+            getFirstPosition: (): any => null,
+            getLastPosition: (): any => null
           }
         }
       },
@@ -44,8 +44,8 @@ describe('AlightPastePlugin', () => {
         view: {
           document: {
             selection: {
-              getFirstPosition: () => null,
-              getLastPosition: () => null
+              getFirstPosition: (): any => null,
+              getLastPosition: (): any => null
             }
           }
         }
