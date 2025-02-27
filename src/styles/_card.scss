@@ -1,7 +1,7 @@
 @use './mixins' as mixins;
 
 $card-background: var(--neutral-white);
-$card-border-color: #dee2e6;
+$card-border-color: var(--gray-300);
 $card-border-radius: 6px;
 $card-header-padding: 1.5rem;
 $card-content-padding: 1.5rem;
