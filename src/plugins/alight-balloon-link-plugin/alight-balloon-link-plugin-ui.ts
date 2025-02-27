@@ -65,6 +65,42 @@ export default class AlightBalloonLinkPluginUI extends Plugin {
           this._extendDefaultActionsView();
         };
       }
+
+      // Override how link previews are displayed in the balloon
+      const originalCreateActionsView = linkUI._createActionsView?.bind(linkUI);
+      if (originalCreateActionsView) {
+        linkUI._createActionsView = () => {
+          const actionsView = originalCreateActionsView();
+
+          // Customize the display of links in the preview
+          actionsView.previewButtonView.unbind('label');
+          actionsView.previewButtonView.unbind('tooltip');
+
+          // Update the button label (text)
+          actionsView.previewButtonView.bind('label').to(actionsView, 'href', (href: string) => {
+            if (!href) {
+              return editor.t('This link has no URL');
+            }
+
+            // Show only the url address part for https links
+            if (href.toLowerCase().startsWith('https://')) {
+              return href.substring(7);
+            }
+
+            return href;
+          });
+
+          // Update the button tooltip (title)
+          actionsView.previewButtonView.bind('tooltip').to(actionsView, 'href', (href: string) => {
+            if (href && href.toLowerCase().startsWith('https://')) {
+              return editor.t('Open link in new tab');
+            }
+            return editor.t('Open link in new tab');
+          });
+
+          return actionsView;
+        };
+      }
     }
   }
 
@@ -110,9 +146,8 @@ export default class AlightBalloonLinkPluginUI extends Plugin {
   }
 
   /**
-   * Extends the default link actions view to handle custom links differently:
-   * - For custom links: Shows custom modal for editing
-   * - For regular links: Uses default LinkUI behavior
+   * Extends the default link actions view to handle links differently:
+   * - Shows custom modal for editing http, and https links
    * This is called whenever the balloon content changes
    */
   private _extendDefaultActionsView(): void {
@@ -132,34 +167,27 @@ export default class AlightBalloonLinkPluginUI extends Plugin {
     }
 
     let linkValue = linkCommand.value.trim().toLowerCase();
+    const validProtocols = ['http://', 'https://'];
+    const isOurLink = validProtocols.some(protocol => linkValue.startsWith(protocol));
 
-    // Handle non-mailto links by removing our custom handlers
-    if (!linkValue.startsWith('mailto:') && !linkValue.startsWith('ryan_test:')) {
-      if (actionsView.editButtonView) {
-        actionsView.editButtonView.off('execute');
-        actionsView.off('edit');
-      }
-      return;
-    }
-
-    // Setup custom handling for custom links
+    // Setup custom handling for our links
     if (actionsView.editButtonView) {
       // Clean up existing handlers
       actionsView.editButtonView.off('execute');
       actionsView.off('edit');
 
-      // Add custom edit handler for our special links
+      // Add custom edit handler for our links
       actionsView.editButtonView.on('execute', (evt: { stop: () => void }) => {
         evt.stop();
 
-        // Extract email from link
-        let email = '';
+        // Extract the URL from the link
+        let url = '';
         if (linkCommand && typeof linkCommand.value === 'string') {
-          email = linkCommand.value.replace(/^mailto:|^ryan_test:/i, '');
+          url = linkCommand.value;
         }
 
-        // Show edit modal with current email
-        this._showModal({ email });
+        // Show edit modal with current URL
+        this._showModal({ url });
       }, { priority: 'highest' });
 
       // Prevent default edit behavior
@@ -175,9 +203,9 @@ export default class AlightBalloonLinkPluginUI extends Plugin {
    * - Configures modal buttons and handlers
    * - Handles form validation and link creation
    * 
-   * @param initialValue Optional initial values for email
+   * @param initialValue Optional initial values for the link
    */
-  private _showModal(initialValue?: { email?: string }): void {
+  private _showModal(initialValue?: { url?: string }): void {
     const editor = this.editor;
 
     // Get link command for creating/editing links
@@ -187,7 +215,7 @@ export default class AlightBalloonLinkPluginUI extends Plugin {
       return;
     }
 
-    const initialEmail = initialValue?.email || '';
+    const initialUrl = initialValue?.url || '';
 
     // Create modal dialog if it doesn't exist
     if (!this._modalDialog) {
@@ -196,7 +224,7 @@ export default class AlightBalloonLinkPluginUI extends Plugin {
         modal: true,
         width: '80vw',
         height: 'auto',
-        contentClass: 'email-link-content',
+        contentClass: 'balloon-link-content',
         buttons: [
           {
             label: 'Cancel',
@@ -228,8 +256,7 @@ export default class AlightBalloonLinkPluginUI extends Plugin {
 
           if (selectedLink) {
             // Create the link in the editor using the built-in link command
-            const url = `RYAN_TEST:${selectedLink.destination}`;
-            linkCommand.execute(url);
+            linkCommand.execute(selectedLink.destination);
 
             // Hide the modal after creating the link
             this._modalDialog?.hide();
@@ -242,8 +269,8 @@ export default class AlightBalloonLinkPluginUI extends Plugin {
       });
     }
 
-    // Create a new instance of ContentManager with the initial email
-    this._contentManager = new ContentManager(initialEmail);
+    // Create a new instance of ContentManager with the initial URL
+    this._contentManager = new ContentManager(initialUrl);
 
     // Set the content to the modal dialog using the getContent method
     this._modalDialog.setContent(this._contentManager.getContent());
