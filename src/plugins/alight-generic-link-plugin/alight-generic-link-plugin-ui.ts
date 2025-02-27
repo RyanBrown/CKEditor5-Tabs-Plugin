@@ -1,77 +1,79 @@
 // src/plugins/alight-generic-link-plugin/alight-generic-link-plugin-ui.ts
 import { Plugin } from '@ckeditor/ckeditor5-core';
-import { ButtonView, ContextualBalloon, View, BalloonPanelView } from '@ckeditor/ckeditor5-ui';
+import { ButtonView, ContextualBalloon } from '@ckeditor/ckeditor5-ui';
 import { ClickObserver } from '@ckeditor/ckeditor5-engine';
 import { CkAlightModalDialog } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
-import { ContentManager, validateForm } from './modal-content/alight-generic-link-plugin-modal-ContentManager';
-import type AlightGenericLinkPluginCommand from './alight-generic-link-plugin-command';
+import LinkUI from '@ckeditor/ckeditor5-link/src/linkui';
 import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
-import editIcon from './assets/icon-pencil.svg';
-import unlinkIcon from './assets/icon-unlink.svg';
+import AlightGenericLinkPluginEditing from './alight-generic-link-plugin-editing';
 import './styles/alight-generic-link-plugin.scss';
+import { getSelectedLinkElement, isValidLinkUrl } from './alight-generic-link-plugin-utils';
+import { ModalPluginInterface } from '../interfaces/custom-plugin-interfaces';
 
-// The UI component of the public link plugin.
-// Handles the toolbar button, modal dialog, and contextual balloon.
-export default class AlightGenericLinkPluginUI extends Plugin {
-  private _balloon?: ContextualBalloon; // Holds the reference to the contextual balloon instance
-  private _actionsView?: ActionsView; // Holds the reference to the actions view displayed in the balloon
-  private _modalDialog?: CkAlightModalDialog; // Holds the reference to the modal dialog
-  private _storedRange: any = null; // Stores the selection range when losing focus
+/**
+ * Plugin handling the UI components for email links.
+ * Sets up toolbar button and modal dialog.
+ */
+export default class AlightGenericLinkPluginUI extends Plugin implements ModalPluginInterface {
+  private _modalDialog?: CkAlightModalDialog;
+  private _balloon!: ContextualBalloon;
+  private _editingPlugin!: AlightGenericLinkPluginEditing;
 
-  // Plugin dependencies
+  // Required plugins that must be loaded for this plugin to work correctly.
   public static get requires() {
-    return [ContextualBalloon];
+    return [LinkUI, AlightGenericLinkPluginEditing] as const;
   }
 
-  // Plugin name
+  // The unique plugin name for registration with CKEditor.
   public static get pluginName() {
     return 'AlightGenericLinkPluginUI' as const;
   }
 
-  // Initializes the plugin
+  /**
+   * Plugin initialization.
+   * Sets up toolbar button, balloon, and link UI integration.
+   */
   public init(): void {
     const editor = this.editor;
-
-    // Get the balloon plugin instance
     this._balloon = editor.plugins.get(ContextualBalloon);
-    // Create actions view for the balloon
-    this._actionsView = this._createActionsView();
-    // Add click observer for handling link clicks
+
+    // Get the editing plugin
+    this._editingPlugin = editor.plugins.get('AlightGenericLinkPluginEditing') as AlightGenericLinkPluginEditing;
+
+    // Add click observer to the editing view
     editor.editing.view.addObserver(ClickObserver);
 
-    // Setup toolbar button, click handling, and balloon handling
+    // Setup the toolbar button
     this._setupToolbarButton();
-    this._setupClickHandling();
-    this._setupBalloonHandling();
+    // Setup the balloon behavior
+    this._setupBalloonBehavior();
+    // Override the Link UI behavior to support email links
+    this._overrideLinkUIBehavior();
   }
 
-  // Sets up the toolbar button for inserting a public link
+  // Sets up the toolbar button for email links.
   private _setupToolbarButton(): void {
     const editor = this.editor;
-    const t = editor.t;
 
-    // Add toolbar button
-    editor.ui.componentFactory.add('alightGenericLinkPlugin', locale => {
+    editor.ui.componentFactory.add('AlightGenericLinkPlugin', locale => {
       const button = new ButtonView(locale);
-      const command = editor.commands.get('alightGenericLinkPlugin');
+      const linkCommand = editor.commands.get('link');
 
-      if (!command) {
-        console.warn('AlightGenericLinkPlugin command not found');
+      if (!linkCommand) {
+        console.warn('[AlightGenericLinkPluginUI] The built-in "link" command is unavailable.');
         return button;
       }
 
       button.set({
-        label: t('Generic Link'),
+        label: editor.t('External Site'),
         icon: ToolBarIcon,
         tooltip: true,
-        withText: true,
+        withText: true
       });
 
-      // Bind button state to command state
-      button.bind('isEnabled').to(command);
-      button.bind('isOn').to(command, 'value', value => !!value);
+      button.bind('isEnabled').to(linkCommand);
+      button.bind('isOn').to(linkCommand, 'value', value => !!value);
 
-      // Handle button click to show the modal
       button.on('execute', async () => {
         await this._showModal();
       });
@@ -80,286 +82,337 @@ export default class AlightGenericLinkPluginUI extends Plugin {
     });
   }
 
-  // Sets up click handling for detecting and interacting with links
-  private _setupClickHandling(): void {
+  // Sets up the balloon behavior for link editing.
+  private _setupBalloonBehavior(): void {
+    this._balloon.on('change:visibleView', () => {
+      this._extendDefaultActionsView();
+    });
+  }
+
+  // Overrides the Link UI behavior to support email links.
+  private _overrideLinkUIBehavior(): void {
     const editor = this.editor;
+    const linkUI: any = editor.plugins.get('LinkUI');
 
-    // Handle clicks in the editor
-    this.listenTo(editor.editing.view.document, 'click', (evt, data) => {
-      const domEvent = data.domEvent as MouseEvent;
-      const domElement = domEvent.target as HTMLElement;
+    if (linkUI) {
+      // Override the showActions method to extend the default actions view
+      const originalShowActions = linkUI.showActions?.bind(linkUI);
+      if (originalShowActions) {
+        linkUI.showActions = (...args: any[]) => {
+          originalShowActions(...args);
+          this._extendDefaultActionsView();
+        };
+      }
 
-      // Check if the clicked element is a link
-      if (domElement.tagName === 'A') {
-        evt.stop();
-        data.preventDefault();
+      // Override the link preview display
+      this._overrideLinkPreviewDisplay(linkUI);
+    }
+  }
 
-        // Convert DOM element to CKEditor view element
-        const viewElement = editor.editing.view.domConverter.domToView(domElement);
-        if (viewElement && viewElement.is('element')) {
-          const modelElement = editor.editing.mapper.toModelElement(viewElement);
-          if (modelElement) {
-            // Set selection on the clicked link
-            editor.model.change(writer => {
-              writer.setSelection(writer.createRangeOn(modelElement));
-            });
-            this._showBalloon();
+  /**
+   * Overrides the link preview display to better handle email links.
+   * 
+   * @param linkUI The Link UI plugin instance
+   */
+  private _overrideLinkPreviewDisplay(linkUI: any): void {
+    const editor = this.editor;
+    const originalCreateActionsView = linkUI._createActionsView?.bind(linkUI);
+
+    if (originalCreateActionsView) {
+      linkUI._createActionsView = () => {
+        const actionsView = originalCreateActionsView();
+
+        // Unbind the default label and tooltip
+        actionsView.previewButtonView.unbind('label');
+        actionsView.previewButtonView.unbind('tooltip');
+
+        // Bind the label to display cleaned email address (without mailto:)
+        actionsView.previewButtonView.bind('label').to(actionsView, 'href', (href: string) => {
+          if (!href) {
+            return editor.t('This link has no URL');
           }
-        }
-      }
-    });
+          return href.toLowerCase().startsWith('mailto:') ? href.substring(7) : href;
+        });
 
-    // Hide the balloon when editor loses focus
-    this.listenTo(editor.ui.focusTracker, 'change:isFocused', (evt, name, isFocused) => {
-      if (!isFocused) {
-        const selection = editor.model.document.selection;
-        const range = selection.getFirstRange();
-        if (range) {
-          this._storedRange = range;
-        }
-        this._hideBalloon();
-      }
-    });
-  }
+        // Bind the tooltip to show appropriate action for email links
+        actionsView.previewButtonView.bind('tooltip').to(actionsView, 'href', (href: string) => {
+          if (href && href.toLowerCase().startsWith('mailto:')) {
+            return editor.t('Open email in client');
+          }
+          return editor.t('Open link in new tab');
+        });
 
-  // Sets up balloon handling for showing the link actions
-  private _setupBalloonHandling(): void {
-    const editor = this.editor;
-
-    // Show balloon on selection change if link is selected
-    this.listenTo(editor.model.document.selection, 'change:range', () => {
-      const command = editor.commands.get('alightGenericLinkPlugin');
-      if (command?.value) {
-        this._showBalloon();
-      } else {
-        this._hideBalloon();
-      }
-    });
-  }
-
-  // Creates the actions view displayed in the balloon
-  private _createActionsView(): ActionsView {
-    const editor = this.editor;
-    const actionsView = new ActionsView(editor.locale);
-    const command = editor.commands.get('alightGenericLinkPlugin') as AlightGenericLinkPluginCommand;
-
-    // Handle edit button click
-    actionsView.editButtonView.on('execute', () => {
-      this._hideBalloon();
-      this._showModal(command.value);
-    });
-
-    // Handle unlink button click
-    actionsView.unlinkButtonView.on('execute', () => {
-      editor.execute('alightGenericLinkPlugin');
-      this._hideBalloon();
-    });
-
-    return actionsView;
-  }
-
-  // Shows the balloon with link actions
-  private _showBalloon(): void {
-    if (!this._balloon || !this._actionsView) return;
-
-    const command = this.editor.commands.get('alightGenericLinkPlugin') as AlightGenericLinkPluginCommand;
-    const linkUrl = command.value?.url || '';
-
-    // Update URL display in balloon
-    this._actionsView.updateLinkDisplay(linkUrl);
-
-    const positions = BalloonPanelView.defaultPositions;
-    const selection = this.editor.model.document.selection;
-    const range = selection.getFirstRange();
-
-    if (!range) return;
-
-    // Convert model position to view position for balloon placement
-    const viewRange = this.editor.editing.mapper.toViewRange(range);
-    const domRange = this.editor.editing.view.domConverter.viewRangeToDom(viewRange);
-
-    if (!domRange) return;
-
-    if (this._balloon.hasView(this._actionsView)) {
-      this._balloon.updatePosition({
-        target: domRange,
-        positions: [
-          positions.northArrowSouth,
-          positions.southArrowNorth,
-          positions.eastArrowWest,
-          positions.westArrowEast
-        ]
-      });
-    } else {
-      this._balloon.add({
-        view: this._actionsView,
-        position: {
-          target: domRange,
-          positions: [
-            positions.northArrowSouth,
-            positions.southArrowNorth,
-            positions.eastArrowWest,
-            positions.westArrowEast
-          ]
-        }
-      });
+        return actionsView;
+      };
     }
   }
 
-  // Hides the balloon
-  private _hideBalloon(): void {
-    if (this._balloon && this._actionsView && this._balloon.hasView(this._actionsView)) {
-      this._balloon.remove(this._actionsView);
+  // Handles the removal of an email link.
+  private _handleLinkRemoval(): void {
+    // Use the editing plugin's method instead of duplicating logic
+    this._editingPlugin.removeUrlLink();
+  }
+
+  // Extends the default actions view to handle email links.
+  private _extendDefaultActionsView(): void {
+    const editor = this.editor;
+    const linkUI: any = editor.plugins.get('LinkUI');
+    if (!linkUI || !linkUI.actionsView) {
+      return;
+    }
+
+    const actionsView: any = linkUI.actionsView;
+    const linkCommand = editor.commands.get('link');
+
+    if (!linkCommand || typeof linkCommand.value !== 'string') {
+      return;
+    }
+
+    let linkValue = linkCommand.value.trim().toLowerCase();
+
+    // Only modify behavior for mailto: links
+    if (!linkValue.startsWith('mailto:')) {
+      if (actionsView.editButtonView) {
+        actionsView.editButtonView.off('execute');
+        actionsView.off('edit');
+      }
+      return;
+    }
+
+    // Handle the edit button for mailto: links
+    if (actionsView.editButtonView) {
+      actionsView.editButtonView.off('execute');
+      actionsView.off('edit');
+
+      actionsView.editButtonView.on('execute', (evt: { stop: () => void }) => {
+        evt.stop();
+
+        // Get the selected link element
+        const selectedLinkElement = getSelectedLinkElement(editor);
+
+        if (!selectedLinkElement) {
+          console.warn('[AlightGenericLinkPluginUI] No link element found for editing.');
+          return;
+        }
+
+        // Get the email from the href attribute (without mailto: prefix)
+        let email = '';
+        if (linkCommand && typeof linkCommand.value === 'string') {
+          email = linkCommand.value.replace(/^mailto:/i, '');
+        }
+
+        // Extract organization name from the link text
+        const { orgName: extractedOrgName } =
+          this._editingPlugin.getLinkData(selectedLinkElement);
+
+        console.log('DEBUG: Opening modal with data:', { email, orgName: extractedOrgName });
+
+        // Show modal with the cleaned email and extracted org name
+        this._showModal({ email, orgName: extractedOrgName });
+      }, { priority: 'highest' });
+
+      // Prevent the default link UI from taking over
+      actionsView.on('edit', (evt: { stop: () => void }) => {
+        evt.stop();
+      });
+    }
+
+    // Handle the unlink button
+    if (actionsView.unlinkButtonView) {
+      actionsView.unlinkButtonView.off('execute');
+      actionsView.unlinkButtonView.on('execute', () => {
+        this._handleLinkRemoval();
+      }, { priority: 'highest' });
     }
   }
 
-  // In AlightGenericLinkPluginUI class, change the _showModal method to:
-
-  public async _showModal(initialValue?: { url: string; orgName?: string }): Promise<void> {
+  /**
+  * Shows the modal dialog for creating or editing an email link.
+  * 
+  * @param initialValue Optional initial values for email and organization name
+  */
+  public async _showModal(initialValue?: { email?: string; orgName?: string; url?: string }): Promise<void> {
     const editor = this.editor;
-    const command = editor.commands.get('alightGenericLinkPlugin') as AlightGenericLinkPluginCommand;
+    const linkCommand = editor.commands.get('link');
 
-    const initialUrl = initialValue?.url || '';
-    const initialOrgName = initialValue?.orgName || '';
+    // Handle case where url is provided instead of email (from parent plugin)
+    let emailValue = initialValue?.email || '';
+    let orgNameValue = initialValue?.orgName || '';
+
+    // If url is provided but not email, extract email from mailto: url
+    if (initialValue?.url && !emailValue && typeof initialValue.url === 'string') {
+      const url = initialValue.url;
+      if (url.toLowerCase().startsWith('mailto:')) {
+        emailValue = url.substring(7); // Remove mailto: prefix
+      }
+    }
+
+    if (!linkCommand) {
+      console.warn('[AlightGenericLinkPluginUI] The built-in "link" command is unavailable.');
+      return;
+    }
 
     if (!this._modalDialog) {
       this._modalDialog = new CkAlightModalDialog({
-        title: 'Create a Link',
+        title: 'Create External Site Link',
         modal: true,
         width: '500px',
         height: 'auto',
-        contentClass: 'cka-generic-link-content',
+        contentClass: 'cka-email-link-content',
         buttons: [
-          {
-            label: 'Cancel',
-            variant: 'outlined',
-            shape: 'round',
-            disabled: false
-          },
-          {
-            label: 'Continue',
-            variant: 'default',
-            isPrimary: true,
-            shape: 'round',
-            closeOnClick: false,
-            disabled: false
-          }
+          { label: 'Cancel', disabled: false },
+          { label: 'Continue', isPrimary: true, closeOnClick: false, disabled: false }
         ]
       });
 
-      // Handle modal button clicks
-      this._modalDialog.on('buttonClick', (label: string) => {
+      this._modalDialog.on('buttonClick', async (label: string) => {
         if (label === 'Cancel') {
           this._modalDialog?.hide();
           return;
         }
 
         if (label === 'Continue') {
-          const form = this._modalDialog?.element?.querySelector('#generic-link-form') as HTMLFormElement;
-          const isValid = validateForm(form);
+          const form = this._modalDialog?.element?.querySelector('#email-link-form') as HTMLFormElement;
+          const emailInput = form.querySelector('#email') as HTMLInputElement;
+          const orgNameInput = form.querySelector('#org-name') as HTMLInputElement;
+          const emailVal = emailInput.value.trim();
+          const orgNameVal = orgNameInput.value.trim();
 
-          if (isValid) {
-            const urlInput = form?.querySelector('#link-url') as HTMLInputElement;
-            const orgNameInput = form?.querySelector('#org-name') as HTMLInputElement;
-
-            command.execute({
-              url: urlInput.value,
-              orgName: orgNameInput?.value || undefined
+          if (this._validateUrl(emailVal)) {
+            // Use the command to apply the email link
+            editor.execute('applyGenericLinkPlugin', {
+              email: emailVal,
+              orgName: orgNameVal || undefined
             });
+
             this._modalDialog?.hide();
           }
         }
       });
     }
 
-    // Set modal content and show it
-    const content = ContentManager(initialUrl, initialOrgName);
-    this._modalDialog.setContent(content);
+    // Create an empty container for the modal content
+    const container = document.createElement('div');
+    container.className = 'cka-generic-link-modal-content';
+
+    // Set the empty container as content
+    this._modalDialog.setContent(container);
+
+    // Show the modal first
     this._modalDialog.show();
+
+    // Now use the editor's downcast conversion to create the form
+    this._renderFormFromModel(container, emailValue, orgNameValue);
   }
 
-  // Destroys the plugin
+  /**
+   * Renders the email form in the modal using the model-based approach.
+   * 
+   * @param containerElement The container element to render the form into
+   * @param initialEmail Initial email value (without mailto: prefix)
+   * @param initialOrgName Initial organization name value
+   */
+  private _renderFormFromModel(containerElement: HTMLElement, initialEmail: string = '', initialOrgName: string = ''): void {
+    const editor = this.editor;
+
+    try {
+      editor.model.change(writer => {
+        // Create the form structure using the editing component
+        const formModel = this._editingPlugin.createLinkFormModel(writer, initialEmail, initialOrgName);
+
+        // Convert the model to view
+        const viewFragment = editor.data.toView(formModel);
+
+        // Convert the view to DOM
+        const domFragment = editor.data.processor.toData(viewFragment);
+
+        // Insert the DOM fragment into the container
+        containerElement.innerHTML = domFragment;
+
+        // Ensure the values are set in the actual DOM inputs
+        setTimeout(() => {
+          const emailInput = containerElement.querySelector('#email') as HTMLInputElement;
+          const orgNameInput = containerElement.querySelector('#org-name') as HTMLInputElement;
+
+          if (emailInput && initialEmail) {
+            // Ensure mailto: prefix is removed
+            emailInput.value = initialEmail.replace(/^mailto:/i, '');
+          }
+
+          if (orgNameInput && initialOrgName) {
+            orgNameInput.value = initialOrgName;
+          }
+        }, 0);
+      });
+    } catch (error) {
+      console.error('Error creating email form from model:', error);
+
+      // Display a user-friendly error message
+      containerElement.innerHTML = '<div class="email-form-error">Unable to load the email form. Please try again later.</div>';
+
+      // Disable the Continue button
+      const continueButton = this._modalDialog?.element?.querySelector('button[data-button="Continue"]');
+      if (continueButton) {
+        continueButton.setAttribute('disabled', 'disabled');
+      }
+    }
+  }
+
+  /**
+   * Validates an email input with appropriate error handling.
+   * 
+   * @param email The email value to validate
+   * @returns True if the email is valid, false otherwise
+   */
+  private _validateUrl(email: string): boolean {
+    const emailInput = this._modalDialog?.element?.querySelector('#email') as HTMLInputElement;
+    const emailError = this._modalDialog?.element?.querySelector('#email-error') as HTMLDivElement;
+
+    this._hideError(emailInput, emailError);
+
+    if (!email) {
+      this._showError(emailInput, emailError, 'Email address is required.');
+      return false;
+    }
+
+    // Remove mailto: prefix for validation if present
+    const cleanEmail = email.replace(/^mailto:/i, '').trim();
+
+    if (!isValidLinkUrl(cleanEmail)) {
+      this._showError(emailInput, emailError, 'Please enter a valid email address.');
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Shows an error message for a form input.
+   * 
+   * @param input The input element
+   * @param errorElement The error message element
+   * @param message The error message text
+   */
+  private _showError(input: HTMLInputElement, errorElement: HTMLElement, message: string): void {
+    input.classList.add('invalid');
+    errorElement.textContent = message;
+    errorElement.style.display = 'block';
+  }
+
+  /**
+   * Hides the error message for a form input.
+   * 
+   * @param input The input element
+   * @param errorElement The error message element
+   */
+  private _hideError(input: HTMLInputElement, errorElement: HTMLElement): void {
+    input.classList.remove('invalid');
+    errorElement.style.display = 'none';
+  }
+
+  // Clean up resources when the plugin is destroyed.
   public override destroy(): void {
     super.destroy();
     this._modalDialog?.destroy();
-    this._actionsView?.destroy();
-  }
-}
-
-// The view displayed in the balloon
-class ActionsView extends View {
-  public readonly editButtonView: ButtonView; // Button for editing the link
-  public readonly unlinkButtonView: ButtonView; // Button for unlinking the link
-  public readonly linkURLView: View; // View displaying the link URL
-  private _urlText: string = ''; // Stores the displayed URL text
-
-  constructor(locale: any) {
-    super(locale);
-
-    // Initialize buttons and URL preview
-    this.editButtonView = this._createButton('Edit link', editIcon);
-    this.unlinkButtonView = this._createButton('Unlink', unlinkIcon);
-    this.linkURLView = this._createURLPreview();
-
-    // Set the template for the actions view container
-    this.setTemplate({
-      tag: 'div',
-      attributes: {
-        class: ['ck', 'ck-link-actions', 'ck-responsive-form', 'alight-link-actions'],
-      },
-      children: [
-        this.linkURLView,
-        this.editButtonView,
-        this.unlinkButtonView
-      ]
-    });
-  }
-
-  // Updates the URL display in the balloon
-  public updateLinkDisplay(url: string): void {
-    this._urlText = url;
-    this.linkURLView.setTemplate({
-      tag: 'div',
-      attributes: {
-        class: ['ck', 'updateLinkDisplay', 'ck-link-actions__preview', 'alight-link-url-preview'],
-      },
-      children: [
-        {
-          text: this._urlText
-        }
-      ]
-    });
-  }
-
-  // Creates a button view with an icon and label
-  private _createButton(label: string, icon: string): ButtonView {
-    const button = new ButtonView(this.locale);
-
-    button.set({
-      label,
-      icon,
-      tooltip: true
-    });
-
-    return button;
-  }
-
-  // Creates the URL preview view
-  private _createURLPreview(): View {
-    const view = new View(this.locale);
-
-    view.setTemplate({
-      tag: 'div',
-      attributes: {
-        class: ['ck', '_createURLPreview', 'alight-link-url-preview'],
-      },
-      children: [
-        {
-          text: this._urlText
-        }
-      ]
-    });
-
-    return view;
   }
 }
