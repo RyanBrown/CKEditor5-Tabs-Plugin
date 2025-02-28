@@ -118,10 +118,10 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
               return editor.t('This link has no URL');
             }
 
-            // Show only the url address part for mailto links
-            if (href.toLowerCase().startsWith('mailto:')) {
-              return href.substring(7);
-            }
+            // // Show only the url address part for mailto links
+            // if (href.toLowerCase().startsWith('mailto:')) {
+            //   return href.substring(7);
+            // }
 
             // Find the predefined link with this URL and use its name instead
             const predefinedLink = this._findPredefinedLinkByUrl(href);
@@ -208,7 +208,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
 
   /**
    * Extends the default link actions view to handle links differently:
-   * - Shows custom modal for editing mailto, http, and https links
+   * - Shows custom modal for editing http, and https links
    * This is called whenever the balloon content changes
    */
   private _extendDefaultActionsView(): void {
