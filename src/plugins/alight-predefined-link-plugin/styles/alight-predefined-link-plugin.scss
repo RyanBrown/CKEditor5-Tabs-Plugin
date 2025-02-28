@@ -16,7 +16,7 @@
   transition: background-color 0.15s;
 
   &:hover {
-    background-color: #fafafa;
+    background-color: --neutral-gallery;
     cursor: pointer;
   }
 
@@ -30,4 +30,11 @@
     padding: 0;
     list-style: none;
   }
+}
+
+.ck.ck-link-actions .ck-button.ck-link-actions__preview.cka-disabled-link-preview .ck-button__label {
+  color: var(--neutral-black);
+  cursor: default;
+  font-weight: bold;
+  pointer-events: none;
 }

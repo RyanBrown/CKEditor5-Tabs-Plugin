@@ -1,143 +1,83 @@
 // src/plugins/alight-predefined-link-plugin/alight-predefined-link-plugin-command.ts
 import { Command } from '@ckeditor/ckeditor5-core';
-import type { Editor } from '@ckeditor/ckeditor5-core';
 import { findAttributeRange } from '@ckeditor/ckeditor5-typing';
-import { type Item, type Node } from '@ckeditor/ckeditor5-engine';
 
-export interface LinkAttributes {
+// Define an interface for the plugin attributes.
+// This interface includes an url property.
+export interface alightPredefinedLinkPluginAttributes {
   url: string;
-  orgName?: string;
 }
 
+// Define the command class that extends CKEditor's Command.
+// This command handles the adding, updating, or removing of the custom url link attribute.
 export default class AlightPredefinedLinkPluginCommand extends Command {
-  declare value: LinkAttributes | undefined;
+  // Declare the value property that will hold the current attributes, if any.
+  declare value: alightPredefinedLinkPluginAttributes | undefined;
 
-  constructor(editor: Editor) {
-    super(editor);
-
-    // Refresh the command state whenever the selection range changes
-    this.listenTo(editor.model.document.selection, 'change:range', () => {
-      this.refresh();
-    });
-  }
-
+  // Refresh the command's state.
+  // Checks if the attribute is allowed in the current selection and retrieves its value.
   override refresh(): void {
     const model = this.editor.model;
     const selection = model.document.selection;
-    const firstPosition = selection.getFirstPosition();
 
-    if (firstPosition) {
-      const element = firstPosition.parent;
-      if (element && model.schema.isLimit(element)) {
-        this.isEnabled = false;
-        this.value = undefined;
-        return;
-      }
-    }
+    // Log current selection and state for debugging.
+    // console.log('[AlightPredefinedLinkPluginCommand] Refreshing command state.');
+    // console.log('[AlightPredefinedLinkPluginCommand] Current selection:', selection);
 
+    // Check if the 'alightPredefinedLinkPlugin' attribute is allowed in the current selection.
     this.isEnabled = model.schema.checkAttributeInSelection(selection, 'alightPredefinedLinkPlugin');
+    // console.log('[AlightPredefinedLinkPluginCommand] isEnabled set to:', this.isEnabled);
 
-    if (!firstPosition) {
-      this.value = undefined;
-      return;
-    }
-
-    const attributeValue = selection.getAttribute('alightPredefinedLinkPlugin');
-    if (attributeValue && typeof attributeValue === 'object') {
-      this.value = attributeValue as LinkAttributes;
-    } else {
-      this.value = undefined;
-    }
+    // Retrieve the current attribute value from the selection.
+    this.value = selection.getAttribute('alightPredefinedLinkPlugin') as alightPredefinedLinkPluginAttributes;
+    // console.log('[AlightPredefinedLinkPluginCommand] Current attribute value:', this.value);
   }
 
-  override execute(linkData?: LinkAttributes): void {
+  // Execute the command.
+  // Depending on whether attributes are provided, either adds/updates or removes the url link attribute.
+  // @param attributes Optional attributes for the url link.
+  override execute(attributes?: alightPredefinedLinkPluginAttributes): void {
     const model = this.editor.model;
     const selection = model.document.selection;
 
+    // Log the execution command and the attributes provided.
+    // console.log('[AlightPredefinedLinkPluginCommand] Executing command with attributes:', attributes);
+    // console.log('[AlightPredefinedLinkPluginCommand] Current selection before change:', selection);
+
+    // Begin model change block for making modifications.
     model.change(writer => {
-      // If no link data is provided, remove the link and associated organization name
-      if (!linkData) {
-        const ranges = selection.isCollapsed
-          ? [findAttributeRange(
-            selection.getFirstPosition()!,
-            'alightPredefinedLinkPlugin',
-            selection.getAttribute('alightPredefinedLinkPlugin'),
-            model
-          )]
-          : selection.getRanges();
-
-        for (const range of ranges) {
-          const items = Array.from(range.getItems());
-          const text = items
-            .map(item => {
-              if (item.is('$text') || item.is('$textProxy')) {
-                return item.data;
-              }
-              return '';
-            })
-            .join('')
-            .replace(/ \([^)]+\)$/, '');
-
-          writer.remove(range);
-          writer.insertText(text, range.start);
-          writer.removeAttribute('alightPredefinedLinkPlugin', range);
-        }
+      // If no attributes are provided, then remove the url link attribute.
+      if (!attributes) {
+        // console.log('[AlightPredefinedLinkPluginCommand] No attributes provided. Removing the attribute.');
+        // Find the range where the current attribute is applied.
+        const range = findAttributeRange(
+          selection.getFirstPosition()!,
+          'alightPredefinedLinkPlugin',
+          this.value,
+          model
+        );
+        // console.log('[AlightPredefinedLinkPluginCommand] Removing attribute in range:', range);
+        // Remove the attribute from the found range.
+        writer.removeAttribute('alightPredefinedLinkPlugin', range);
         return;
       }
 
-      if (selection.isCollapsed) {
-        // If the selection is collapsed, find the range of the current link and update it
-        const position = selection.getFirstPosition()!;
-        const range = findAttributeRange(
-          position,
+      // Add or update link
+      const range = selection.isCollapsed
+        ? findAttributeRange(
+          selection.getFirstPosition()!,
           'alightPredefinedLinkPlugin',
-          selection.getAttribute('alightPredefinedLinkPlugin'),
+          this.value,
           model
-        );
+        )
+        : model.createRange(selection.getFirstPosition()!, selection.getLastPosition()!);
 
-        const items = Array.from(range.getItems());
-        const text = items
-          .map(item => {
-            if (item.is('$text') || item.is('$textProxy')) {
-              return item.data;
-            }
-            return '';
-          })
-          .join('')
-          .replace(/ \([^)]+\)$/, '');
-
-        const newText = linkData.orgName
-          ? `${text} (${linkData.orgName})`
-          : text;
-
-        writer.remove(range);
-        writer.insertText(newText, range.start);
-        writer.setAttribute('alightPredefinedLinkPlugin', linkData, range);
-      } else {
-        // If the selection is not collapsed, apply attributes to the selected range
-        const ranges = model.schema.getValidRanges(selection.getRanges(), 'alightPredefinedLinkPlugin');
-
-        for (const range of ranges) {
-          const items = Array.from(range.getItems());
-          const text = items
-            .map(item => {
-              if (item.is('$text') || item.is('$textProxy')) {
-                return item.data;
-              }
-              return '';
-            })
-            .join('')
-            .replace(/ \([^)]+\)$/, '');
-
-          const newText = linkData.orgName
-            ? `${text} (${linkData.orgName})`
-            : text;
-
-          writer.remove(range);
-          writer.insertText(newText, range.start);
-          writer.setAttribute('alightPredefinedLinkPlugin', linkData, range);
-        }
-      }
+      // Log the range where the attribute will be applied.
+      // console.log('[AlightPredefinedLinkPluginCommand] Applying attribute in range:', range);
+      // Set the new attribute on the determined range.
+      writer.setAttribute('alightPredefinedLinkPlugin', attributes, range);
     });
+    // Log the completion of the command execution.
+    // console.log('[AlightPredefinedLinkPluginCommand] Command execution completed.');
   }
 }

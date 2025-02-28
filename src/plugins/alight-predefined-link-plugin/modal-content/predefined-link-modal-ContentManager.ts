@@ -4,7 +4,7 @@ import { PredefinedLink } from './predefined-link-modal-types';
 import { SearchManager } from './predefined-link-modal-SearchManager';
 import { PaginationManager } from './predefined-link-modal-PaginationManager';
 import predefinedLinksData from './json/predefined-test-data.json';
-import './../../ui-components/alight-radio-component/alight-radio-component';
+import '../../ui-components/alight-radio-component/alight-radio-component';
 import './../styles/alight-predefined-link-plugin.scss';
 
 export class ContentManager implements LinkManager {
@@ -14,14 +14,36 @@ export class ContentManager implements LinkManager {
   private searchManager: SearchManager;
   private paginationManager: PaginationManager;
   private container: HTMLElement | null = null;
+  private initialUrl: string = '';
 
-  constructor() {
+  constructor(initialUrl: string = '') {
+    this.initialUrl = initialUrl;
+
+    // If we have an initial URL, try to find and preselect the matching link
+    if (initialUrl) {
+      this.selectedLink = this.predefinedLinksData.find(
+        link => link.destination === initialUrl
+      ) || null;
+    }
+
     this.paginationManager = new PaginationManager(this.handlePageChange.bind(this));
     this.searchManager = new SearchManager(
       this.predefinedLinksData,
       this.handleSearchResults.bind(this),
       this.paginationManager
     );
+  }
+
+  public getContent(): HTMLElement {
+    // Create a container element for the content
+    const contentElement = document.createElement('div');
+    contentElement.className = 'cka-predefined-link-content';
+
+    // Render the content into the container
+    this.renderContent(contentElement);
+
+    // Return the container with the rendered content
+    return contentElement;
   }
 
   public getSelectedLink(): { destination: string; title: string } | null {
@@ -102,6 +124,12 @@ export class ContentManager implements LinkManager {
     // Search container
     const searchContainerMarkup = `<div id="search-container-root" class="cka-search-container"></div>`;
 
+    // Current URL info if we have an initial URL
+    const currentUrlInfo = this.initialUrl ?
+      `<div class="current-url-info">
+        <p><strong>Current URL:</strong> ${this.initialUrl}</p>
+      </div>` : '';
+
     // Links list
     const linksMarkup = currentPageData.length > 0
       ? currentPageData
@@ -114,6 +142,7 @@ export class ContentManager implements LinkManager {
 
     return `
       ${searchContainerMarkup}
+      ${currentUrlInfo}
       <div id="links-container" class="cka-links-container">
         ${linksMarkup}
       </div>
@@ -139,7 +168,7 @@ export class ContentManager implements LinkManager {
           <li><strong>Description:</strong> ${link.predefinedLinkDescription}</li>
           <li><strong>Base/Client Specific:</strong> ${link.baseOrClientSpecific}</li>
           <li><strong>Page Type:</strong> ${link.pageType}</li>
-          <li><strong>Destination:</strong> ${link.destination}</li>
+          <li><strong>Destination:</strong> <a href="${link.destination}" target="_blank">${link.destination}</a></li>
           <li><strong>Domain:</strong> ${link.domain}</li>
           <li><strong>Unique ID:</strong> ${link.uniqueId}</li>
           <li><strong>Attribute Name:</strong> ${link.attributeName}</li>
@@ -154,8 +183,8 @@ export class ContentManager implements LinkManager {
     container.querySelectorAll('.cka-link-item').forEach(item => {
       item.addEventListener('click', (e: Event) => {
         const target = e.target as HTMLElement;
-        // Ignore clicks on the radio button itself
-        if (target.closest('cka-radio-button')) return;
+        // Ignore clicks on the radio button itself and on any links
+        if (target.closest('cka-radio-button') || target.tagName === 'A') return;
 
         const linkName = (item as HTMLElement).dataset.linkName;
         if (!linkName) return;

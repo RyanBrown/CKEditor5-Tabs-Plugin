@@ -2,31 +2,32 @@
 import type { Editor } from '@ckeditor/ckeditor5-core';
 import { type Element } from '@ckeditor/ckeditor5-engine';
 
-/**
- * Retrieves the selected link element from the editor.
- * If the selection is on or within a link, it returns the link element.
- * Otherwise, it returns null.
- *
- * @param editor - The CKEditor instance.
- * @returns The selected link element or null if no link is selected.
- */
+// Retrieves the selected link element from the editor.
+// If the selection is on or within a link, it returns the link element.
+// Otherwise, it returns null.
+// @param editor - The CKEditor instance.
+// @returns The selected link element or null if no link is selected.
+
 export function getSelectedLinkElement(editor: Editor): Element | null {
+  // Get the view from the editor editing instance.
   const view = editor.editing.view;
+  // Retrieve the current selection from the view's document.
   const selection = view.document.selection;
 
-  // Get the directly selected element, or if the selection is within text, get its parent.
+  // Get the directly selected element or, if selection is within text, get its parent element.
   const selectedElement = selection.getSelectedElement() || selection.getFirstPosition()?.parent;
 
+  // If no element is selected, return null.
   if (!selectedElement) {
     return null;
   }
 
-  // Check if the selected element is a link
+  // Check if the selected element is a link (<a> element).
   if (selectedElement.is('element', 'a')) {
     return selectedElement as unknown as Element;
   }
 
-  // If the selection is inside a link, traverse up the tree to find the link element
+  // If the selection is inside a link, traverse up the parent chain to find the link element.
   let parent = selectedElement.parent;
   while (parent) {
     if (parent.is('element', 'a')) {
@@ -35,28 +36,7 @@ export function getSelectedLinkElement(editor: Editor): Element | null {
     parent = parent.parent;
   }
 
+  // If no link element is found in the ancestry, return null.
+  // console.log('[getSelectedLinkElement] No link element found in the selection ancestry. Returning null.');
   return null;
-}
-
-/**
- * Checks if the selection has the 'alightPredefinedLinkPlugin' attribute.
- * This attribute is used to indicate that a public link is applied.
- *
- * @param selection - The current selection in the editor.
- * @returns True if the selection has the 'alightPredefinedLinkPlugin' attribute, false otherwise.
- */
-export function hasLinkAttribute(selection: any): boolean {
-  return selection.hasAttribute('alightPredefinedLinkPlugin');
-}
-
-/**
- * Retrieves the value of the 'alightPredefinedLinkPlugin' attribute from the selection.
- * The attribute stores link details such as the URL and an optional organization name.
- *
- * @param selection - The current selection in the editor.
- * @returns An object containing the URL and optional organization name, or undefined if not set.
- */
-export function getLinkAttributeValue(selection: any): { url: string; orgName?: string } | undefined {
-  const value = selection.getAttribute('alightPredefinedLinkPlugin');
-  return value as { url: string; orgName?: string } | undefined;
 }
