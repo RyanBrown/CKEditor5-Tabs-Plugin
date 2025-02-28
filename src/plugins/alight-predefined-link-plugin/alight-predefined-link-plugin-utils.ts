@@ -7,7 +7,6 @@ import { type Element } from '@ckeditor/ckeditor5-engine';
 // Otherwise, it returns null.
 // @param editor - The CKEditor instance.
 // @returns The selected link element or null if no link is selected.
-
 export function getSelectedLinkElement(editor: Editor): Element | null {
   // Get the view from the editor editing instance.
   const view = editor.editing.view;
@@ -36,7 +35,5 @@ export function getSelectedLinkElement(editor: Editor): Element | null {
     parent = parent.parent;
   }
 
-  // If no link element is found in the ancestry, return null.
-  // console.log('[getSelectedLinkElement] No link element found in the selection ancestry. Returning null.');
   return null;
 }

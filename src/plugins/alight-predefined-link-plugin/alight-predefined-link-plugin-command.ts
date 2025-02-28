@@ -20,17 +20,12 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
     const model = this.editor.model;
     const selection = model.document.selection;
 
-    // Log current selection and state for debugging.
-    // console.log('[AlightPredefinedLinkPluginCommand] Refreshing command state.');
-    // console.log('[AlightPredefinedLinkPluginCommand] Current selection:', selection);
-
     // Check if the 'alightPredefinedLinkPlugin' attribute is allowed in the current selection.
     this.isEnabled = model.schema.checkAttributeInSelection(selection, 'alightPredefinedLinkPlugin');
     // console.log('[AlightPredefinedLinkPluginCommand] isEnabled set to:', this.isEnabled);
 
     // Retrieve the current attribute value from the selection.
     this.value = selection.getAttribute('alightPredefinedLinkPlugin') as alightPredefinedLinkPluginAttributes;
-    // console.log('[AlightPredefinedLinkPluginCommand] Current attribute value:', this.value);
   }
 
   // Execute the command.
@@ -40,15 +35,10 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
     const model = this.editor.model;
     const selection = model.document.selection;
 
-    // Log the execution command and the attributes provided.
-    // console.log('[AlightPredefinedLinkPluginCommand] Executing command with attributes:', attributes);
-    // console.log('[AlightPredefinedLinkPluginCommand] Current selection before change:', selection);
-
     // Begin model change block for making modifications.
     model.change(writer => {
       // If no attributes are provided, then remove the url link attribute.
       if (!attributes) {
-        // console.log('[AlightPredefinedLinkPluginCommand] No attributes provided. Removing the attribute.');
         // Find the range where the current attribute is applied.
         const range = findAttributeRange(
           selection.getFirstPosition()!,
@@ -56,8 +46,6 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
           this.value,
           model
         );
-        // console.log('[AlightPredefinedLinkPluginCommand] Removing attribute in range:', range);
-        // Remove the attribute from the found range.
         writer.removeAttribute('alightPredefinedLinkPlugin', range);
         return;
       }
@@ -72,12 +60,8 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
         )
         : model.createRange(selection.getFirstPosition()!, selection.getLastPosition()!);
 
-      // Log the range where the attribute will be applied.
-      // console.log('[AlightPredefinedLinkPluginCommand] Applying attribute in range:', range);
       // Set the new attribute on the determined range.
       writer.setAttribute('alightPredefinedLinkPlugin', attributes, range);
     });
-    // Log the completion of the command execution.
-    // console.log('[AlightPredefinedLinkPluginCommand] Command execution completed.');
   }
 }
