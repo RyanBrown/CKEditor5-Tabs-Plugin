@@ -5,8 +5,9 @@ export interface PredefinedLink {
   baseOrClientSpecific: string;
   pageType: string;
   destination: string;
+  pageCode: string;
   domain: string;
-  uniqueId: string;
+  uniqueId: string | number;
   attributeName: string;
   attributeValue: string;
 }

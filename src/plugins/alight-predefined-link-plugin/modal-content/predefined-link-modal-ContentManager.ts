@@ -169,6 +169,7 @@ export class ContentManager implements ILinkManager {
           <li><strong>Base/Client Specific:</strong> ${link.baseOrClientSpecific}</li>
           <li><strong>Page Type:</strong> ${link.pageType}</li>
           <li><strong>Destination:</strong> ${link.destination}</li>
+          <li><strong>Page Code:</strong> ${link.pageCode}</li>
           <li><strong>Domain:</strong> ${link.domain}</li>
           <li><strong>Unique ID:</strong> ${link.uniqueId}</li>
           <li><strong>Attribute Name:</strong> ${link.attributeName}</li>
