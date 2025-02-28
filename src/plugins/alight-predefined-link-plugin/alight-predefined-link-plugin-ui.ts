@@ -20,12 +20,10 @@ import './styles/alight-predefined-link-plugin.scss';
 export default class AlightPredefinedLinkPluginUI extends Plugin {
   private _modalDialog?: CkAlightModalDialog;
   private _balloon!: ContextualBalloon;
-  private _contentManager?: ContentManager;
+  private linkManager?: ContentManager;
   private _predefinedLinksData: PredefinedLink[] = predefinedLinksData.predefinedLinksDetails;
 
-  /**
-   * Defines required plugins - requires LinkUI for default link balloon functionality
-   */
+  // Defines required plugins - requires LinkUI for default link balloon functionality
   public static get requires() {
     return [LinkUI] as const;
   }
@@ -149,16 +147,12 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
     }
   }
 
-  /**
-   * Find predefined link by URL
-   */
+  // Find predefined link by URL
   private _findPredefinedLinkByUrl(url: string): PredefinedLink | null {
     return this._predefinedLinksData.find(link => link.destination === url) || null;
   }
 
-  /**
-   * Custom handler for link preview clicks - prevents default behavior
-   */
+  // Custom handler for link preview clicks - prevents default behavior
   public customLinkPreviewHandler(event: any): void {
     // This function intentionally does nothing to prevent the default link preview behavior
     event.preventDefault();
@@ -349,7 +343,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
 
         if (label === 'Continue') {
           // Get the selected link from the content manager
-          const selectedLink = this._contentManager?.getSelectedLink();
+          const selectedLink = this.linkManager?.getSelectedLink();
 
           if (selectedLink) {
             // Create the link in the editor using the built-in link command
@@ -367,18 +361,16 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
     }
 
     // Create a new instance of ContentManager with the initial URL
-    this._contentManager = new ContentManager(initialUrl);
+    this.linkManager = new ContentManager(initialUrl);
 
     // Set the content to the modal dialog using the getContent method
-    this._modalDialog.setContent(this._contentManager.getContent());
+    this._modalDialog.setContent(this.linkManager.getContent());
 
     // Show the modal
     this._modalDialog.show();
   }
 
-  /**
-   * Cleanup when plugin is destroyed
-   */
+  // Cleanup when plugin is destroyed
   public override destroy(): void {
     super.destroy();
     this._modalDialog?.destroy();

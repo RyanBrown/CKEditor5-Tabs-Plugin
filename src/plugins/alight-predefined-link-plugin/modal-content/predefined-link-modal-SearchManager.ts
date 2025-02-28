@@ -171,7 +171,6 @@ export class SearchManager {
   }
 
   // Removed setupCheckboxListeners as it's now handled in setupSingleCheckboxListener
-
   private performSearch(): void {
     this.currentSearchQuery = this.searchInput?.value || '';
     this.updateFilteredData();

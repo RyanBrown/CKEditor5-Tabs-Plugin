@@ -1,5 +1,5 @@
 // src/plugins/alight-predefined-link-plugin/modal-content/predefined-link-modal-ContentManager.ts
-import { LinkManager } from './predefined-link-modal-LinkManager';
+import { ILinkManager } from './predefined-link-modal-ILinkManager';
 import { PredefinedLink } from './predefined-link-modal-types';
 import { SearchManager } from './predefined-link-modal-SearchManager';
 import { PaginationManager } from './predefined-link-modal-PaginationManager';
@@ -7,7 +7,7 @@ import predefinedLinksData from './json/predefined-test-data.json';
 import '../../ui-components/alight-radio-component/alight-radio-component';
 import './../styles/alight-predefined-link-plugin.scss';
 
-export class ContentManager implements LinkManager {
+export class ContentManager implements ILinkManager {
   private selectedLink: PredefinedLink | null = null;
   private predefinedLinksData: PredefinedLink[] = predefinedLinksData.predefinedLinksDetails;
   private filteredLinksData: PredefinedLink[] = [...this.predefinedLinksData];
@@ -168,7 +168,7 @@ export class ContentManager implements LinkManager {
           <li><strong>Description:</strong> ${link.predefinedLinkDescription}</li>
           <li><strong>Base/Client Specific:</strong> ${link.baseOrClientSpecific}</li>
           <li><strong>Page Type:</strong> ${link.pageType}</li>
-          <li><strong>Destination:</strong> <a href="${link.destination}" target="_blank">${link.destination}</a></li>
+          <li><strong>Destination:</strong> ${link.destination}</li>
           <li><strong>Domain:</strong> ${link.domain}</li>
           <li><strong>Unique ID:</strong> ${link.uniqueId}</li>
           <li><strong>Attribute Name:</strong> ${link.attributeName}</li>
