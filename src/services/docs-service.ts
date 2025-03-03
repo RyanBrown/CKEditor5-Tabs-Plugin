@@ -1,36 +1,37 @@
-import { Category } from '../plugins/alight-new-document-link-plugin/modal-content/mock/categories';
-import existingDocSampleData from '../data/existing-doc-sample-data.json';
-import categorySampleData from '../plugins/alight-new-document-link-plugin/modal-content/mock/categories';
+import existingDocSampleData from './../data/existing-document-test-data.json';
+import categorySampleData from '../plugins/alight-new-document-link-plugin/modal-content/json/category-sample-data.json';
+import { DataSourceDocs, IReadSourceDocs } from '../data-sources/custom-source/data-source-docs';
 import { DocumentLink } from '../plugins/alight-predefined-link-plugin/modal-content/predefined-link-modal-types';
 import { HttpService } from './http-service';
 import { IReadSource, IWriteSource } from '../data-sources/base-source/data-source';
 
-export class DocService {
+export class DocService extends HttpService {
 
   private readonly _categorySampleModalData: boolean = true;
 
   public getDocumentLinks = async (): Promise<DocumentLink[]> => {
+
     if (this._sampleMode)
       return Promise.resolve(existingDocSampleData.documentList as DocumentLink[]);
 
-    let dataSource: IReadSource = new DataSourceDocs(this.sessionSvc.apiUrl, this.sessionSvc.clientId);
-    return await this.get(dataSource, this.sessionSvc.sessionToken, this.sessionSvc.sessionHeader)
-      .then((response: string) => JSON.parse(response).documentList as DocumentLink[]);
+    let dataSource: IReadSource = new DataSourceDocs(this._sessionSvc.apiUrl, this._sessionSvc.clientId);
+    return await this.get(dataSource, this._sessionSvc.sessionToken, this._sessionSvc.requestHeader)
+      .then(response => JSON.parse(response).documentList as DocumentLink[]);
   }
 
-  public getCategories = async (): Promise<DocumentLink[]> => {
+  public getCategories = async (): Promise<string[]> => {
 
     if (this._categorySampleMode)
       return Promise.resolve(categorySampleData.categoryList as string[]);
 
-    let dataSource: IReadSourceDocs = new DataSourceDocs(this.sessionSvc.apiUrl, this.sessionSvc.clientId);
-    return await this.get(dataSource, this.sessionSvc.sessionToken, this.sessionSvc.sessionHeader)
+    let dataSource: IReadSourceDocs = new DataSourceDocs(this._sessionSvc.apiUrl, this._sessionSvc.clientId);
+    return await this.get(dataSource.dataSourceCategory, this._sessionSvc.sessionToken, this._sessionSvc.requestHeader)
       .then((response: string) => JSON.parse(response).documentList as DocumentLink[]);
   }
 
   public saveDocument = async (document: Record<string, any>): Promise<string> => {
 
-    let dataSource: IWriteSource = new DataSourceDocs(this.sessionSvc.apiUrl, this.sessionSvc.clientId);
-    return await this.post(dataSource, this.sessionSvc.sessionToken, this.sessionSvc.sessionHeader, document)
+    let dataSource: IWriteSource = new DataSourceDocs(this._sessionSvc.apiUrl, this._sessionSvc.clientId);
+    return await this.post(dataSource, this._sessionSvc.sessionToken, this._sessionSvc.requestHeader, document)
   }
 }

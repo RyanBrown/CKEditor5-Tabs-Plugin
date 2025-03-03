@@ -6,7 +6,7 @@ import { CkAlightSelectMenu } from '../../ui-components/alight-select-menu-compo
 import { CkAlightCheckbox } from '../../ui-components/alight-checkbox-component/alight-checkbox-component';
 import { CkAlightChipsMenu } from '../../ui-components/alight-chips-menu-component/alight-chips-menu-component';
 import '../../ui-components/alight-checkbox-component/alight-checkbox-component';
-import { mockCategories } from './mock/categories';
+import { mockCategories } from './json/categories';
 
 export class ContentManager implements LinkManager {
   private container: HTMLElement | null = null;
