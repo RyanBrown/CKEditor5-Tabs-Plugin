@@ -136,7 +136,7 @@ const awldsColorPalette = [
   { label: 'Info Background', color: '#dbe8ff' },
 ];
 
-class Editor extends ClassicEditor {
+class AlightEditor extends ClassicEditor {
   public static override builtinPlugins = [
     AccessibilityHelp,
     Alignment,
@@ -368,4 +368,4 @@ class Editor extends ClassicEditor {
   };
 }
 
-export default { Editor, EditorWatchdog };
+export default AlightEditor;

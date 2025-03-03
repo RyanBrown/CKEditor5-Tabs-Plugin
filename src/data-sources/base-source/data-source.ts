@@ -1,9 +1,9 @@
 export interface IDataSource {
   get host(): string;
-  get host(value: string);
+  set host(value: string);
 
   get path(): string;
-  get path(value: string);
+  set path(value: string);
 }
 
 export abstract class DataSource implements IDataSource {
@@ -26,4 +26,3 @@ export interface IWriteSource {
 export interface IReadSource {
   load(sessionToken: string, requestHeader: string, contentType?: string): Promise<Response>;
 }
-

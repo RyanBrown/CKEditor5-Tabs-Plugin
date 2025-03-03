@@ -5,5 +5,5 @@ export enum HttpRequestMethod {
   DELETE = 'DELETE',
   PATCH = 'PATCH',
   OPTIONS = 'OPTIONS',
-  HEAD = 'HEAD',
+  HEAD = 'HEAD'
 }

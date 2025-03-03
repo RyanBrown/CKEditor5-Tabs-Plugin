@@ -1,31 +1,28 @@
 export class SessionService {
-  public readonly _apiUrlKey: string = 'apiUrl';
-  public readonly _dummySessionTokenKey: string = 'sessionToken';
-  public readonly _dummyRequestHeaderKey: string = 'sessionHeader';
 
-  private sessionMap: Map<string, string> = new Map<string, string>([
+  public readonly _apiUrlKey: string = 'apiUrl';
+  public readonly _dummyColleagueSessionToken: string = 'dummyColleagueSessionToken';
+  public readonly _dummyRequestHeaderKey: string = 'dummyRequestHeader';
+
+  private _sessionMap: Map<string, string> = new Map<string, string>([
     [this._apiUrlKey, sessionStorage.getItem(this._apiUrlKey)!],
-    [this._dummySessionTokenKey, sessionStorage.getItem(this._dummySessionTokenKey)!],
+    [this._dummyColleagueSessionToken, sessionStorage.getItem(this._dummyColleagueSessionToken)!],
     [this._dummyRequestHeaderKey, sessionStorage.getItem(this._dummyRequestHeaderKey)!],
   ]);
 
   public get apiUrl(): string {
-    return localStorage.getItem(this._apiUrlKey) ?? '';
+    return this._sessionMap.get(this._apiUrlKey)!;
   }
 
   public get sessionToken(): string {
-    return localStorage.getItem(this._dummySessionTokenKey) ?? '';
+    return this._sessionMap.get(this._dummyColleagueSessionToken)!;
   }
 
   public get sessionHeader(): string {
-    return localStorage.getItem(this._dummyRequestHeaderKey) ?? '';
-  }
-
-  public set clientId(value: string) {
-    sessionStorage.setItem('clientId', value);
+    return this._sessionMap.get(this._dummyRequestHeaderKey)!;
   }
 
   public get clientId(): string {
-    return sessionStorage.getItem('clientId') || '';
+    return this._sessionMap.get(this._dummyRequestHeaderKey))?.clientId;
   }
 }

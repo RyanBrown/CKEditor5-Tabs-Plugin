@@ -1,7 +1,6 @@
 import { Category } from './../plugins/alight-new-document-link-plugin/modal-content/mock/categories';
 import existingDocSampleData from '../data/existing-doc-sample-data.json';
 import categorySampleData from '../plugins/alight-new-document-link-plugin/modal-content/mock/categories';
-import { DataSourceDocs, IReadSourceDocs } from '../data-sources/custom-source/data-source-docs';
 import { DocumentLink } from './../plugins/alight-predefined-link-plugin/modal-content/predefined-link-modal-types';
 import { HttpService } from '../services/http-service';
 import { IReadSource, IWriteSource } from '../data-sources/base-source/data-source';
@@ -11,7 +10,7 @@ export class DocService {
   private readonly _categorySampleModalData: boolean = true;
 
   public getDocumentLinks = async (): Promise<DocumentLink[]> => {
-    if (this._sampleModal)
+    if (this._sampleMode)
       return Promise.resolve(existingDocSampleData.documentList as DocumentLink[]);
 
     let dataSource: IReadSource = new DataSourceDocs(this.sessionSvc.apiUrl, this.sessionSvc.clientId);

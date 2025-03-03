@@ -5,11 +5,11 @@ export class DataSourceGet extends DataSourceRequest implements IDataSourceReque
   override get requestMethod(): HttpRequestMethod { return HttpRequestMethod.GET; }
 
   private _path: string;
-  get path(): string { return this._path; }
-  set path(value: string) { this._path = value; }
+  override get path(): string { return this._path; }
+  override set path(value: string) { this._path = value; }
 
   constructor(host: string, path: string, queryParams?: string) {
     super(host, queryParams);
-    this._path = path;
+    this.path = path;
   }
 }

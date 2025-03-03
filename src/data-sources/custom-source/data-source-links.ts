@@ -4,9 +4,11 @@ import { IReadSource } from '../base-source/data-source';
 
 export class DataSourceLinks extends DataSources implements IReadSource {
 
-  private static httpGetPath = `links-path`;
+  private static httpGetPath = `dummy-path/common/getPreferredPages`;
 
   constructor(host: string) {
-    super(new DataSourceGet(host, DataSourceLinks.httpGetPath));
+    super(
+      new DataSourceGet(host, DataSourceLinks.httpGetPath)
+    );
   }
 }

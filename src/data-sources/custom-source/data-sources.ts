@@ -6,6 +6,11 @@ export class DataSources implements IReadSource, IWriteSource {
   private _get: DataSourceGet;
   private _post: DataSourcePost;
 
+  constructor(get: DataSourceGet, post: DataSourcePost) {
+    this._get = get;
+    this._post = post;
+  }
+
   public load = async (sessionToken: string, requestHeader: string, contentType?: string): Promise<Response> =>
     await this._get.request(sessionToken, requestHeader, contentType);
 

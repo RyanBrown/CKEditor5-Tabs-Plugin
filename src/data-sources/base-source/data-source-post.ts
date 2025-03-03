@@ -5,10 +5,11 @@ export class DataSourcePost extends DataSourceRequest implements IDataSourceRequ
   override get requestMethod(): HttpRequestMethod { return HttpRequestMethod.POST; }
 
   private _path: string;
-  get path(): string { return this._path; }
-  set path(value: string) { this._path = value; }
+  override get path(): string { return this._path; }
+  override set path(value: string) { this._path = value; }
 
   constructor(host: string, path: string, body: string) {
     super(host);
+    this.path = path;
   }
 }
