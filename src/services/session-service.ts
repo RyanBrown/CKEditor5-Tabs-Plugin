@@ -21,7 +21,11 @@ export class SessionService {
     return localStorage.getItem(this._dummyRequestHeaderKey) ?? '';
   }
 
-  public set clientId(): string {
-    return JSON.parse(this.sessionMap.get(this._dummyRequestHeaderKey) ?? '');
+  public set clientId(value: string) {
+    sessionStorage.setItem('clientId', value);
+  }
+
+  public get clientId(): string {
+    return sessionStorage.getItem('clientId') || '';
   }
 }
