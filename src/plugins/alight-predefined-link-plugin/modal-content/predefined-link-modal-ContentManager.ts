@@ -3,7 +3,7 @@ import { ILinkManager } from './predefined-link-modal-ILinkManager';
 import { PredefinedLink } from './predefined-link-modal-types';
 import { SearchManager } from './predefined-link-modal-SearchManager';
 import { PaginationManager } from './predefined-link-modal-PaginationManager';
-import predefinedLinksData from './json/predefined-test-data.json';
+import predefinedLinksData from './../../../data/predefined-test-data.json';
 import '../../ui-components/alight-radio-component/alight-radio-component';
 import './../styles/alight-predefined-link-plugin.scss';
 

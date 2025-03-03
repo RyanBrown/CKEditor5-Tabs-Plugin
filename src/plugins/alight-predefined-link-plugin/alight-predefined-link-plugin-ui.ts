@@ -8,7 +8,7 @@ import { ContentManager } from './modal-content/predefined-link-modal-ContentMan
 import { PredefinedLink } from './modal-content/predefined-link-modal-types';
 import LinkUI from '@ckeditor/ckeditor5-link/src/linkui';
 import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
-import predefinedLinksData from './modal-content/json/predefined-test-data.json';
+import predefinedLinksData from './../../data/predefined-test-data.json';
 import './styles/alight-predefined-link-plugin.scss';
 
 /**
