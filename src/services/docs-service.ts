@@ -1,8 +1,8 @@
-import { Category } from './../plugins/alight-new-document-link-plugin/modal-content/mock/categories';
+import { Category } from '../plugins/alight-new-document-link-plugin/modal-content/mock/categories';
 import existingDocSampleData from '../data/existing-doc-sample-data.json';
 import categorySampleData from '../plugins/alight-new-document-link-plugin/modal-content/mock/categories';
-import { DocumentLink } from './../plugins/alight-predefined-link-plugin/modal-content/predefined-link-modal-types';
-import { HttpService } from '../services/http-service';
+import { DocumentLink } from '../plugins/alight-predefined-link-plugin/modal-content/predefined-link-modal-types';
+import { HttpService } from './http-service';
 import { IReadSource, IWriteSource } from '../data-sources/base-source/data-source';
 
 export class DocService {

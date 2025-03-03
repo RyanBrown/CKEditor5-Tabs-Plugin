@@ -18,11 +18,11 @@ export class SessionService {
     return this._sessionMap.get(this._dummyColleagueSessionToken)!;
   }
 
-  public get sessionHeader(): string {
+  public get requestHeader(): string {
     return this._sessionMap.get(this._dummyRequestHeaderKey)!;
   }
 
   public get clientId(): string {
-    return this._sessionMap.get(this._dummyRequestHeaderKey))?.clientId;
+    return JSON.parse(this._sessionMap.get(this._dummyRequestHeaderKey))?.clientId;
   }
 }

@@ -3,13 +3,13 @@ import { HttpRequestMethod } from './http-request-method';
 
 export interface IDataSourceRequest {
 
-  get requestMethod(): HttpRequestMethod;
+  get requestMethod(): HttpRequestMethod; // GET, POST, PUT, etc.
   get queryParams(): string;
   set queryParams(value: string);
   request(sessionToken: string, requestHeader: string, contentType?: string): Promise<Response>;
 }
 
-export abstract class DataSourceRequest implements IDataSourceRequest {
+export abstract class DataSourceRequest extends DataSource implements IDataSourceRequest {
 
   public abstract get requestMethod(): HttpRequestMethod;
 
@@ -22,21 +22,21 @@ export abstract class DataSourceRequest implements IDataSourceRequest {
     this.queryParams = queryParams;
   }
 
-  public request = async (sessionToken: string, requestHeader: string, contentType?: string, requestBody?: string): Promise<Response> {
+  public request = async (sessionToken: string, requestHeader: string, contentType?: string, requestBody?: Record<string, any>): Promise<Response> {
     try {
       if (sessionToken === null || sessionToken === null) {
-        throw new Error('Must provide both a dummySessionToken token and dummyRequestHeader');
+        throw new Error('Must provide both a dummyColleagueSessionToken and dummyRequestHeader');
       }
-      let url = `${this.host}/${this.path}${this.queryParams ? `?${this.queryParams}` : ''}`;
+      let url = `${this.host}/${this.path}${this.queryParams?.length > 0 ? `?${this.queryParams}` : ''}`;
       const options: RequestInit = {
         method: this.requestMethod,
         headers: {
           'Content-Type': contentType || 'application/json',
-          'dummySessionToken': sessionToken,
+          'dummyColleagueSessionToken': sessionToken,
           'dummyRequestHeader': requestHeader,
         },
-      }
-      if (this.requestMethod === HttpRequestMethod.POST && requestBody) options.body = JSON.stringify(requestBody);
+      };
+      if (this.requestMethod == HttpRequestMethod.POST && requestBody) options.body = JSON.stringify(requestBody);
       return await fetch(url, options);
     } catch (error) {
       console.error(`DataSource.request -> request failed: <tag>.`, error);

@@ -2,8 +2,8 @@ export interface IDataSource {
   get host(): string;
   set host(value: string);
 
-  get path(): string;
-  set path(value: string);
+  get path();
+  set path(path: string);
 }
 
 export abstract class DataSource implements IDataSource {
@@ -11,8 +11,8 @@ export abstract class DataSource implements IDataSource {
   get host(): string { return this._host; }
   set host(value: string) { this._host = value; }
 
-  abstract get path(): string;
-  abstract set path(value: string);
+  abstract get path();
+  abstract set path(path: string);
 
   constructor(host: string) {
     this._host = host;
@@ -20,7 +20,7 @@ export abstract class DataSource implements IDataSource {
 }
 
 export interface IWriteSource {
-  save(sessionToken: string, requestHeader: string, contentType?: string, requestBody?: string): Promise<Response>;
+  save(sessionToken: string, requestHeader: string, contentType?: string, requestBody?: Record<string, any>): Promise<Response>;
 }
 
 export interface IReadSource {

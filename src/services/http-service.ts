@@ -17,11 +17,11 @@ export class HttpService {
         error => this.handleError(error, true)
       );
 
-  protected post = async (dataSource: IWriteSource, sessionToken: string, requestHeader: string, data: Record<string, any>): Promise<string> =>
+  protected post = async (dataSource: IWriteSource, sessionToken: string, requestHeader: string, requestBody: Record<string, any>): Promise<string> =>
     dataSource.save(sessionToken, requestHeader, null, requestBody)
       .then(
         async response => await response.text(),
-        error => this.handleError(error, false)
+        error => this.handleError(error, true)
       );
 
   protected handleError = (error: Error, rethrow?: boolean): string => {
