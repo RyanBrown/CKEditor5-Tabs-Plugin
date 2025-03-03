@@ -22,9 +22,9 @@ export abstract class DataSourceRequest extends DataSource implements IDataSourc
     this.queryParams = queryParams;
   }
 
-  public request = async (sessionToken: string, requestHeader: string, contentType?: string, requestBody?: Record<string, any>): Promise<Response> {
+  public request = async (sessionToken: string, requestHeader: string, contentType?: string, requestBody?: Record<string, any>): Promise<Response> => {
     try {
-      if (sessionToken === null || sessionToken === null) {
+      if (sessionToken == null || requestHeader == null) {
         throw new Error('Must provide both a dummyColleagueSessionToken and dummyRequestHeader');
       }
       let url = `${this.host}/${this.path}${this.queryParams?.length > 0 ? `?${this.queryParams}` : ''}`;

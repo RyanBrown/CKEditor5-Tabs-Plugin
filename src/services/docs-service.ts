@@ -5,9 +5,9 @@ import { DocumentLink } from '../plugins/alight-predefined-link-plugin/modal-con
 import { HttpService } from './http-service';
 import { IReadSource, IWriteSource } from '../data-sources/base-source/data-source';
 
-export class DocService extends HttpService {
+export class DocsService extends HttpService {
 
-  private readonly _categorySampleModalData: boolean = true;
+  private readonly _categorySampleMode: boolean = true;
 
   public getDocumentLinks = async (): Promise<DocumentLink[]> => {
 
@@ -26,12 +26,12 @@ export class DocService extends HttpService {
 
     let dataSource: IReadSourceDocs = new DataSourceDocs(this._sessionSvc.apiUrl, this._sessionSvc.clientId);
     return await this.get(dataSource.dataSourceCategory, this._sessionSvc.sessionToken, this._sessionSvc.requestHeader)
-      .then((response: string) => JSON.parse(response).documentList as DocumentLink[]);
+      .then((response: string) => JSON.parse(response).categoryList as string[]);
   }
 
   public saveDocument = async (document: Record<string, any>): Promise<string> => {
 
     let dataSource: IWriteSource = new DataSourceDocs(this._sessionSvc.apiUrl, this._sessionSvc.clientId);
-    return await this.post(dataSource, this._sessionSvc.sessionToken, this._sessionSvc.requestHeader, document)
+    return await this.post(dataSource, this._sessionSvc.sessionToken, this._sessionSvc.requestHeader, document);
   }
 }

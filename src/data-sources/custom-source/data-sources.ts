@@ -3,8 +3,8 @@ import { DataSourcePost } from '../base-source/data-source-post';
 import { IReadSource, IWriteSource } from '../base-source/data-source';
 
 export abstract class DataSources implements IReadSource, IWriteSource {
-  private _get: DataSourceGet;
-  private _post: DataSourcePost;
+  protected _get: DataSourceGet;
+  protected _post: DataSourcePost;
 
   constructor(get: DataSourceGet, post: DataSourcePost) {
     this._get = get;
