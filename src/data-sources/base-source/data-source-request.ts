@@ -10,7 +10,6 @@ export interface IDataSourceRequest {
 }
 
 export abstract class DataSourceRequest extends DataSource implements IDataSourceRequest {
-
   public abstract get requestMethod(): HttpRequestMethod;
 
   private _queryParams: string;

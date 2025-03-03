@@ -1,8 +1,8 @@
 export class SessionService {
 
-  public readonly _apiUrlKey: string = 'apiUrl';
-  public readonly _dummyColleagueSessionTokenKey: string = 'dummyColleagueSessionToken';
-  public readonly _dummyRequestHeaderKey: string = 'dummyRequestHeader';
+  private readonly _apiUrlKey: string = 'apiUrl';
+  private readonly _dummyColleagueSessionTokenKey: string = 'dummyColleagueSessionToken';
+  private readonly _dummyRequestHeaderKey: string = 'dummyRequestHeader';
 
   private _sessionMap: Map<string, string> = new Map<string, string>([
     [this._apiUrlKey, sessionStorage.getItem(this._apiUrlKey)!],

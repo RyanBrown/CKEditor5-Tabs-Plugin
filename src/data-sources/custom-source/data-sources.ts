@@ -6,7 +6,7 @@ export abstract class DataSources implements IReadSource, IWriteSource {
   protected _get: DataSourceGet;
   protected _post: DataSourcePost;
 
-  constructor(get: DataSourceGet, post: DataSourcePost) {
+  constructor(get?: DataSourceGet, post?: DataSourcePost) {
     this._get = get;
     this._post = post;
   }

@@ -3,13 +3,12 @@ import { DataSourcePost } from '../base-source/data-source-post';
 import { DataSource } from '../base-source/data-source';
 import { IReadSource, IWriteSource } from '../base-source/data-source';
 
-class DataSourceDocsPaths extends DataSource {
+class DataSourceDocsPaths extends DataSources {
   protected static getPath = `dummy-path/content/documentPath`;
   protected static postPath = `dummy-path/document/files`;
 }
 
 class DataSourceCategories extends DataSourceDocsPaths implements IReadSource {
-
   private static folderPath = `categories-path/Categories`;
 
   constructor(host: string, clientId: string) {
@@ -23,7 +22,7 @@ export interface IReadSourceDocs extends IReadSource {
   get dataSourceCategory(): IReadSource;
 }
 
-export class DataSourceDocs extends DataSourceDocPaths implements IReadSourceDocs, IWriteSource {
+export class DataSourceDocs extends DataSourceDocsPaths implements IReadSourceDocs, IWriteSource {
 
   private static folderPath = `folder-path/UploadedDocs`;
 
