@@ -2,6 +2,7 @@ import { DataSourceGet } from '../base-source/data-source-get';
 import { DataSourcePost } from '../base-source/data-source-post';
 import { DataSource } from '../base-source/data-source';
 import { IReadSource, IWriteSource } from '../base-source/data-source';
+import { DataSources } from './data-sources';
 
 class DataSourceDocsPaths extends DataSources {
   protected static getPath = `dummy-path/content/documentPath`;
