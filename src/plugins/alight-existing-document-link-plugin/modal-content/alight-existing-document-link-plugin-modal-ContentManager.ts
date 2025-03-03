@@ -3,7 +3,7 @@ import { LinkManager } from './alight-existing-document-link-plugin-modal-LinkMa
 import { DocumentLink } from './alight-existing-document-link-plugin-modal-types';
 import { SearchManager } from './alight-existing-document-link-plugin-modal-SearchManager';
 import { PaginationManager } from './alight-existing-document-link-plugin-modal-PaginationManager';
-import existingDocumentLinksData from './json/existing-document-test-data.json';
+import existingDocumentLinksData from './../../../data/existing-document-test-data.json';
 import './../styles/alight-existing-document-link-plugin.scss';
 
 export class ContentManager implements LinkManager {
