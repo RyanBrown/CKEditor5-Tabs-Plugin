@@ -1,12 +1,17 @@
 // src/plugins/alight-predefined-link-plugin/alight-predefined-link-plugin-editing.ts
-import { Plugin } from '@ckeditor/ckeditor5-core';
+import { Plugin, Editor } from '@ckeditor/ckeditor5-core';
 import { Link } from '@ckeditor/ckeditor5-link';
+import { predefinedLinkRegistry } from './alight-predefined-link-plugin-registry';
 
 /**
- * A plugin that extends the built-in Link plugin's conversion.
- * It adds specific class names based on the link type (http, https).
+ * A plugin that adds classes and data attributes to predefined links without
+ * interfering with the core link functionality.
  */
 export default class AlightPredefinedLinkPluginEditing extends Plugin {
+  constructor(editor: Editor) {
+    super(editor);
+  }
+
   public static get pluginName() {
     return 'AlightPredefinedLinkPluginEditing' as const;
   }
@@ -17,32 +22,69 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
   }
 
   public init(): void {
-    const editor = this.editor;
-    const conversion = editor.conversion;
+    try {
+      // Add a downcast dispatcher to apply predefined link styling without overriding basic link functionality
+      this._setupDowncastDispatcher();
+    } catch (e) {
+      console.error('Error initializing predefined link editing', e);
+    }
+  }
 
-    // DOWNCAST: Convert model linkHref -> view <a>.
-    // Add specific classes based on link type
-    conversion.for('downcast').attributeToElement({
-      model: 'linkHref', // The built-in Link plugin uses this attribute name.
-      view: (href: string, { writer }) => {
-        if (!href) {
-          // If there's no href, return nothing so no <a> is created.
-          return;
+  /**
+   * Set up a post-fixer for the downcast conversion to add predefined link classes
+   * to links that match entries in our registry.
+   */
+  private _setupDowncastDispatcher(): void {
+    try {
+      const editor = this.editor;
+      const registry = predefinedLinkRegistry.getRegistry();
+
+      // Add a dispatcher for link rendering with defensive checks
+      editor.editing.downcastDispatcher.on('attribute:linkHref', (evt, data, conversionApi) => {
+        try {
+          // This is non-intrusive - we're just adding to the conversion, not replacing it
+          const { writer, mapper } = conversionApi;
+
+          // Get the model range
+          const modelRange = data.range;
+
+          // Map model to view
+          const viewRange = mapper.toViewRange(modelRange);
+
+          // Get the URL from the data
+          const url = data.attributeNewValue;
+
+          // Only proceed if we have a URL and it exists in our registry
+          if (!url || !registry.has(url)) {
+            return;
+          }
+
+          // Get predefined link metadata
+          const linkData = registry.get(url);
+          if (!linkData) {
+            return;
+          }
+
+          // Find all <a> elements in this range
+          const walker = viewRange.getWalker({ shallow: true });
+
+          for (const { item } of walker) {
+            if (item && item.is && item.is('element', 'a')) {
+              // Add our class to identify this as a predefined link
+              writer.addClass('predefined-link', item);
+
+              // Add data attributes for predefined link metadata
+              writer.setAttribute('data-predefined-name', linkData.name || '', item);
+              writer.setAttribute('data-predefined-description', linkData.description || '', item);
+              writer.setAttribute('data-predefined-id', linkData.id || '', item);
+            }
+          }
+        } catch (e) {
+          console.warn('Error in predefined link downcast conversion', e);
         }
-
-        // Basic <a> with href=...
-        const attributes: Record<string, string> = {
-          href
-        };
-
-        // Add appropriate class based on link type
-        if (href.toLowerCase().startsWith('https://')) {
-          attributes.class = 'predefined-link';
-        }
-
-        // Return the attribute element for the link.
-        return writer.createAttributeElement('a', attributes, { priority: 5 });
-      }
-    });
+      }, { priority: 'low' }); // Low priority so it runs after the default link conversion
+    } catch (e) {
+      console.error('Error setting up downcast dispatcher', e);
+    }
   }
 }

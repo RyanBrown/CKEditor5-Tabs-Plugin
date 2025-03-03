@@ -46,11 +46,13 @@ export class ContentManager implements ILinkManager {
     return contentElement;
   }
 
-  public getSelectedLink(): { destination: string; title: string } | null {
+  public getSelectedLink(): { destination: string; title: string; description?: string; id?: string } | null {
     if (!this.selectedLink) return null;
     return {
       destination: this.selectedLink.destination,
-      title: this.selectedLink.predefinedLinkName
+      title: this.selectedLink.predefinedLinkName,
+      description: this.selectedLink.predefinedLinkDescription,
+      id: String(this.selectedLink.uniqueId)
     };
   }
 

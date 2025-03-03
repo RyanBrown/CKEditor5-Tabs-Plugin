@@ -1,378 +1,411 @@
 // src/plugins/alight-predefined-link-plugin/alight-predefined-link-plugin-ui.ts
-import { Plugin } from '@ckeditor/ckeditor5-core';
-import { ButtonView, ContextualBalloon, View } from '@ckeditor/ckeditor5-ui';
-import { ClickObserver } from '@ckeditor/ckeditor5-engine';
-import type ViewElement from '@ckeditor/ckeditor5-engine/src/view/element';
+import { Plugin, Editor } from '@ckeditor/ckeditor5-core';
+import { ButtonView } from '@ckeditor/ckeditor5-ui';
 import { CkAlightModalDialog } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import { ContentManager } from './modal-content/predefined-link-modal-ContentManager';
-import { PredefinedLink } from './modal-content/predefined-link-modal-types';
-import LinkUI from '@ckeditor/ckeditor5-link/src/linkui';
-import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 import predefinedLinksData from './../../data/predefined-test-data.json';
+import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 import './styles/alight-predefined-link-plugin.scss';
+import { PredefinedLinkData } from './alight-predefined-link-plugin-types';
+import { predefinedLinkRegistry } from './alight-predefined-link-plugin-registry';
+import type LinkCommand from '@ckeditor/ckeditor5-link/src/linkcommand';
 
-/**
- * A UI plugin that provides:
- * 1. A "Predefined Link" toolbar button that allows creating custom links
- * 2. Overrides the default LinkUI balloon's "Edit" button to open a modal dialog
- * 3. Leaves balloon auto-handling to LinkUI, except for overridden button behaviors
- */
+/////
+// A UI plugin that provides:
+// 1. A "Predefined Link" toolbar button
+// 2. A modal for selecting predefined links
+// 3. Metadata tracking for predefined links
+///
 export default class AlightPredefinedLinkPluginUI extends Plugin {
   private _modalDialog?: CkAlightModalDialog;
-  private _balloon!: ContextualBalloon;
   private linkManager?: ContentManager;
-  private _predefinedLinksData: PredefinedLink[] = predefinedLinksData.predefinedLinksDetails;
-
-  // Defines required plugins - requires LinkUI for default link balloon functionality
-  public static get requires() {
-    return [LinkUI] as const;
-  }
+  private _predefinedLinksData = predefinedLinksData.predefinedLinksDetails;
+  private _linkUIPlugin: any = null;
 
   public static get pluginName() {
     return 'AlightPredefinedLinkPluginUI' as const;
   }
 
-  /**
-   * Initializes the plugin:
-   * 1. Gets balloon reference
-   * 2. Sets up click observer
-   * 3. Creates toolbar button
-   * 4. Overrides default LinkUI behaviors for custom links
-   */
+  constructor(editor: Editor) {
+    super(editor);
+  }
+
+
+  // Initialize the plugin:
+  // 1. Pre-populate registry with predefined links
+  // 2. Set up the toolbar button
+  // 3. Enhance the link UI
   public init(): void {
-    const editor = this.editor;
-    this._balloon = editor.plugins.get(ContextualBalloon);
-
-    // Add click observer for handling link clicks
-    editor.editing.view.addObserver(ClickObserver);
-
-    // Create the balloon link toolbar button
-    this._setupToolbarButton();
-
-    // Setup balloon content change handler
-    this._balloon.on('change:visibleView', () => {
-      this._extendDefaultActionsView();
-    });
-
-    // Get reference to LinkUI plugin
-    const linkUI: any = editor.plugins.get('LinkUI');
-    if (linkUI) {
-      // Override showActions to ensure our custom handlers are added
-      const originalShowActions = linkUI.showActions?.bind(linkUI);
-      if (originalShowActions) {
-        linkUI.showActions = (...args: any[]) => {
-          originalShowActions(...args);
-          this._extendDefaultActionsView();
-        };
+    try {
+      // Safety check the data before continuing
+      if (!this._predefinedLinksData || !Array.isArray(this._predefinedLinksData)) {
+        console.warn('Predefined links data is not available or not an array');
+        this._predefinedLinksData = [];
       }
 
-      // Override how link previews are displayed in the balloon
-      const originalCreateActionsView = linkUI._createActionsView?.bind(linkUI);
-      if (originalCreateActionsView) {
-        linkUI._createActionsView = () => {
-          const actionsView = originalCreateActionsView();
+      // Pre-populate registry with predefined links from data
+      this._initializeRegistry();
 
-          // Customize the preview button to not be clickable
-          actionsView.previewButtonView.delegate('execute').to(this, 'customLinkPreviewHandler');
+      // Set up the predefined link button
+      this._setupToolbarButton();
 
-          // Hook into DOM element creation to modify the <a> element attributes
-          const originalRender = actionsView.previewButtonView.render;
-          actionsView.previewButtonView.render = function () {
-            originalRender.call(this);
+      // Add afterInit to ensure we have access to all plugins
+      this.editor.on('ready', () => {
+        console.log('Editor ready - setting up link UI enhancements');
+        // Wait a bit to ensure all UI components are initialized
+        setTimeout(() => {
+          this._setupLinkUIEnhancements();
+        }, 200);
+      });
 
-            if (this.element) {
-              // Add custom class to the <a> element
-              this.element.classList.add('cka-disabled-link-preview');
-
-              // Find and add class to the span.ck-button__label
-              const labelElement = this.element.querySelector('.ck-button__label');
-              if (labelElement) {
-                labelElement.classList.add('cka-custom-link-label');
-              }
-
-              // Add onClick handler to prevent default behavior
-              this.element.addEventListener('click', (event: Event) => {
-                event.preventDefault();
-                return false;
-              });
-
-              // Change appearance to make it clear it's not clickable
-              this.element.style.cursor = 'default';
-              this.element.style.pointerEvents = 'none'; // This disables interactions
-
-              // Remove target="_blank" and rel attributes
-              this.element.removeAttribute('target');
-              this.element.removeAttribute('rel');
-            }
-          };
-
-          // Customize the display of links in the preview
-          actionsView.previewButtonView.unbind('label');
-          actionsView.previewButtonView.unbind('tooltip');
-
-          // Update the button label (text) - Use predefinedLinkName instead of URL
-          actionsView.previewButtonView.bind('label').to(actionsView, 'href', (href: string) => {
-            if (!href) {
-              return editor.t('This link has no URL');
-            }
-
-            // // Show only the url address part for mailto links
-            // if (href.toLowerCase().startsWith('mailto:')) {
-            //   return href.substring(7);
-            // }
-
-            // Find the predefined link with this URL and use its name instead
-            const predefinedLink = this._findPredefinedLinkByUrl(href);
-            if (predefinedLink) {
-              return predefinedLink.predefinedLinkName;
-            }
-
-            return href;
-          });
-
-          // Update the button tooltip (title)
-          actionsView.previewButtonView.bind('tooltip').to(actionsView, 'href', (href: string) => {
-            if (href) {
-              const predefinedLink = this._findPredefinedLinkByUrl(href);
-              if (predefinedLink) {
-                return `${predefinedLink.predefinedLinkDescription} (${href})`;
-              }
-            }
-            return 'Link preview (disabled)';
-          });
-
-          return actionsView;
-        };
-      }
+    } catch (e) {
+      console.error('Error initializing predefined link UI', e);
     }
   }
 
-  // Find predefined link by URL
-  private _findPredefinedLinkByUrl(url: string): PredefinedLink | null {
-    return this._predefinedLinksData.find(link => link.destination === url) || null;
+
+  // Initialize the registry with predefined links data
+  private _initializeRegistry(): void {
+    try {
+      this._predefinedLinksData.forEach(link => {
+        predefinedLinkRegistry.setLink(link.destination, {
+          id: String(link.uniqueId || ''),
+          name: link.predefinedLinkName || '',
+          description: link.predefinedLinkDescription || '',
+          url: link.destination || '',
+          pageCode: link.pageCode || '',
+          domain: link.domain || '',
+          baseOrClientSpecific: link.baseOrClientSpecific || '',
+          pageType: link.pageType || ''
+        });
+      });
+    } catch (e) {
+      console.error('Error populating predefined links registry', e);
+    }
   }
 
-  // Custom handler for link preview clicks - prevents default behavior
-  public customLinkPreviewHandler(event: any): void {
-    // This function intentionally does nothing to prevent the default link preview behavior
-    event.preventDefault();
-    event.stopPropagation();
-  }
 
-  /**
-   * Creates and configures the balloon link toolbar button:
-   * - Sets up button appearance and behavior
-   * - Binds to link command for state management
-   * - Handles button click to show modal
-   */
+  // Creates and configures the predefined link toolbar button
   private _setupToolbarButton(): void {
-    const editor = this.editor;
-    const t = editor.t;
+    try {
+      const editor = this.editor;
+      const t = editor.t;
 
-    editor.ui.componentFactory.add('alightPredefinedLinkPlugin', locale => {
-      const button = new ButtonView(locale);
+      editor.ui.componentFactory.add('alightPredefinedLinkPlugin', locale => {
+        const button = new ButtonView(locale);
+        const linkCommand = editor.commands.get('link') as LinkCommand;
 
-      // Get reference to link command for state binding
-      const linkCommand = editor.commands.get('link');
-      if (!linkCommand) {
-        console.warn('[AlightPredefinedLinkPluginUI] The built-in "link" command is unavailable.');
-        return button;
-      }
-
-      // Configure button appearance
-      button.set({
-        label: t('Predefined Link'),
-        icon: ToolBarIcon,
-        tooltip: true,
-        withText: true
-      });
-
-      // Bind button state to link command
-      button.bind('isEnabled').to(linkCommand);
-      button.bind('isOn').to(linkCommand, 'value', value => !!value);
-
-      // Show modal dialog when clicked
-      button.on('execute', () => {
-        this._showModal();
-      });
-
-      return button;
-    });
-  }
-
-  /**
-   * Extends the default link actions view to handle links differently:
-   * - Shows custom modal for editing http, and https links
-   * This is called whenever the balloon content changes
-   */
-  private _extendDefaultActionsView(): void {
-    const editor = this.editor;
-    const linkUI: any = editor.plugins.get('LinkUI');
-    if (!linkUI || !linkUI.actionsView) {
-      console.log('no linkUI or actionsView');
-      return;
-    }
-
-    const actionsView: any = linkUI.actionsView;
-    const linkCommand = editor.commands.get('link');
-
-    // Validate link command and value
-    if (!linkCommand || typeof linkCommand.value !== 'string') {
-      return;
-    }
-
-    let linkValue = linkCommand.value.trim();
-
-    // Apply additional transformations to the actionsView DOM elements
-    if (actionsView.element) {
-      // Find the preview link element
-      const previewLinkElement = actionsView.element.querySelector('.ck-link-actions__preview');
-      if (previewLinkElement) {
-        // Add custom class to the link
-        previewLinkElement.classList.add('cka-disabled-link-preview');
-
-        // Find and add class to the span.ck-button__label
-        const labelSpan = previewLinkElement.querySelector('.ck-button__label');
-        if (labelSpan) {
-          labelSpan.classList.add('cka-custom-link-label');
-
-          // Update the label to show the predefined link name if available
-          const predefinedLink = this._findPredefinedLinkByUrl(linkValue);
-          if (predefinedLink) {
-            labelSpan.textContent = predefinedLink.predefinedLinkName;
-            // Add tooltip with URL
-            previewLinkElement.setAttribute('title', `${predefinedLink.predefinedLinkDescription} (${linkValue})`);
-          }
-        }
-
-        // Disable the link behavior
-        previewLinkElement.addEventListener('click', (event: Event) => {
-          event.preventDefault();
-          return false;
+        button.set({
+          label: t('Predefined Link'),
+          icon: ToolBarIcon,
+          tooltip: true,
+          withText: true
         });
 
-        // Visual indication that it's not clickable
-        previewLinkElement.style.cursor = 'default';
-        previewLinkElement.style.pointerEvents = 'none';
-
-        // Remove target and rel attributes
-        previewLinkElement.removeAttribute('target');
-        previewLinkElement.removeAttribute('rel');
-      }
-    }
-
-    // Setup custom handling for our links
-    if (actionsView.editButtonView) {
-      // Clean up existing handlers
-      actionsView.editButtonView.off('execute');
-      actionsView.off('edit');
-
-      // Add custom edit handler for our links
-      actionsView.editButtonView.on('execute', (evt: { stop: () => void }) => {
-        evt.stop();
-
-        // Extract the URL from the link
-        let url = '';
-        if (linkCommand && typeof linkCommand.value === 'string') {
-          url = linkCommand.value;
+        // Bind button state to link command if it exists
+        if (linkCommand && typeof linkCommand.isEnabled !== 'undefined') {
+          button.bind('isEnabled').to(linkCommand);
         }
 
-        // Show edit modal with current URL
-        this._showModal({ url });
-      }, { priority: 'highest' });
+        // When clicked, show the predefined link modal
+        button.on('execute', () => {
+          this._showModal();
+        });
 
-      // Prevent default edit behavior
-      actionsView.on('edit', (evt: { stop: () => void }) => {
-        evt.stop();
-      }, { priority: 'highest' });
+        return button;
+      });
+    } catch (e) {
+      console.error('Error setting up toolbar button', e);
     }
   }
 
-  /**
-   * Shows modal dialog for creating/editing links:
-   * - Creates modal if it doesn't exist
-   * - Configures modal buttons and handlers
-   * - Handles form validation and link creation
-   * 
-   * @param initialValue Optional initial values for the link
-   */
-  private _showModal(initialValue?: { url?: string }): void {
-    const editor = this.editor;
 
-    // Get link command for creating/editing links
-    const linkCommand = editor.commands.get('link');
-    if (!linkCommand) {
-      console.warn('[AlightPredefinedLinkPluginUI] The built-in "link" command is unavailable.');
-      return;
-    }
-
-    const initialUrl = initialValue?.url || '';
-
-    // Create modal dialog if it doesn't exist
-    if (!this._modalDialog) {
-      this._modalDialog = new CkAlightModalDialog({
-        title: 'Predefined Link',
-        modal: true,
-        width: '80vw',
-        height: 'auto',
-        contentClass: 'predefined-link-content',
-        buttons: [
-          {
-            label: 'Cancel',
-            variant: 'outlined',
-            shape: 'round',
-            disabled: false
-          },
-          {
-            label: 'Continue',
-            variant: 'default',
-            isPrimary: true,
-            shape: 'round',
-            closeOnClick: false,
-            disabled: false
-          }
-        ]
-      });
-
-      // Handle modal button clicks
-      this._modalDialog.on('buttonClick', (label: string) => {
-        if (label === 'Cancel') {
-          this._modalDialog?.hide();
+  // Sets up enhancements to the link UI for predefined links.
+  // This is a direct approach to override the edit button's behavior.
+  private _setupLinkUIEnhancements(): void {
+    try {
+      // Get the LinkUI plugin
+      try {
+        this._linkUIPlugin = this.editor.plugins.get('LinkUI');
+        if (!this._linkUIPlugin) {
+          console.warn('LinkUI plugin not found');
           return;
         }
+        console.log('Successfully got LinkUI plugin');
+      } catch (e) {
+        console.error('Error getting LinkUI plugin:', e);
+        return;
+      }
 
-        if (label === 'Continue') {
-          // Get the selected link from the content manager
-          const selectedLink = this.linkManager?.getSelectedLink();
-
-          if (selectedLink) {
-            // Create the link in the editor using the built-in link command
-            linkCommand.execute(selectedLink.destination);
-
-            // Hide the modal after creating the link
-            this._modalDialog?.hide();
-          } else {
-            // Show some feedback that no link was selected
-            console.warn('No link selected');
-            // You could add UI feedback here
-          }
+      // Set up observers to watch for actionsView becoming visible
+      try {
+        if (this._linkUIPlugin.actionsView) {
+          console.log('LinkUI actionsView already exists');
+          this._hookEditButton();
+        } else {
+          console.log('LinkUI actionsView does not exist yet, setting up observer');
+          // If actionsView doesn't exist yet, we need to observe when it's created
+          this._observeActionsViewCreation();
         }
-      });
+
+        // Also watch for changes in the balloon's visible view
+        if (this._linkUIPlugin.balloon && typeof this._linkUIPlugin.balloon.on === 'function') {
+          this._linkUIPlugin.balloon.on('change:visibleView', () => {
+            console.log('Balloon visible view changed');
+            this._extendLinkUIBalloon();
+            this._hookEditButton();
+          });
+        }
+      } catch (e) {
+        console.error('Error setting up observers:', e);
+      }
+    } catch (e) {
+      console.error('Error setting up link UI enhancements:', e);
     }
-
-    // Create a new instance of ContentManager with the initial URL
-    this.linkManager = new ContentManager(initialUrl);
-
-    // Set the content to the modal dialog using the getContent method
-    this._modalDialog.setContent(this.linkManager.getContent());
-
-    // Show the modal
-    this._modalDialog.show();
   }
 
-  // Cleanup when plugin is destroyed
+
+  // Observe when the actionsView is created
+  private _observeActionsViewCreation(): void {
+    const linkUI = this._linkUIPlugin;
+
+    // Monitor the _createActionsView method
+    if (linkUI._createActionsView) {
+      const originalCreateActionsView = linkUI._createActionsView.bind(linkUI);
+
+      linkUI._createActionsView = () => {
+        const actionsView = originalCreateActionsView();
+        console.log('Actions view created, hooking edit button');
+
+        // Now that actionsView is created, we can hook the edit button
+        setTimeout(() => {
+          this._hookEditButton();
+        }, 100);
+
+        return actionsView;
+      };
+    }
+  }
+
+
+  // Hook into the edit button to handle predefined links
+  private _hookEditButton(): void {
+    try {
+      const linkUI = this._linkUIPlugin;
+      if (!linkUI || !linkUI.actionsView || !linkUI.actionsView.editButtonView) {
+        console.log('Cannot hook edit button - actionsView or editButtonView not found');
+        return;
+      }
+
+      const actionsView = linkUI.actionsView;
+      const editButtonView = actionsView.editButtonView;
+
+      // Check if we've already hooked this button
+      if (editButtonView._predefinedLinkHooked) {
+        console.log('Edit button already hooked');
+        return;
+      }
+
+      console.log('Hooking edit button');
+
+      // Mark this button as hooked to avoid multiple handlers
+      editButtonView._predefinedLinkHooked = true;
+
+      // Remove all execute listeners
+      editButtonView.off('execute');
+
+      // Add our custom handler
+      editButtonView.on('execute', () => {
+        console.log('Edit button clicked');
+        const linkCommand = this.editor.commands.get('link') as LinkCommand;
+
+        if (linkCommand && typeof linkCommand.value === 'string') {
+          const url = linkCommand.value;
+          console.log('Current link URL:', url);
+
+          // Check if this is a predefined link
+          if (predefinedLinkRegistry.hasLink(url)) {
+            console.log('This is a predefined link, opening modal');
+
+            // Hide the default balloon
+            if (linkUI.balloon && typeof linkUI.balloon.remove === 'function') {
+              linkUI.balloon.remove(actionsView);
+            }
+
+            // Show our custom modal
+            this._showModal({ url });
+            return;
+          } else {
+            console.log('This is a regular link, using default behavior');
+          }
+        }
+
+        // For non-predefined links, trigger the default edit action
+        actionsView.fire('edit');
+      });
+
+      console.log('Edit button hook complete');
+    } catch (e) {
+      console.error('Error hooking edit button:', e);
+    }
+  }
+
+
+  // Extends the link UI balloon when it's visible
+  private _extendLinkUIBalloon(): void {
+    try {
+      const linkUI = this._linkUIPlugin;
+      // Check if the actions view is visible
+      if (!linkUI || !linkUI.actionsView || !linkUI.balloon ||
+        !linkUI.balloon.hasView || !linkUI.balloon.hasView(linkUI.actionsView)) return;
+
+      // Get the current link's URL
+      const linkCommand = this.editor.commands.get('link') as LinkCommand;
+      if (!linkCommand || typeof linkCommand.value !== 'string') return;
+
+      const url = linkCommand.value;
+
+      // Check if it's a predefined link
+      if (!predefinedLinkRegistry.hasLink(url)) return;
+
+      // Get the predefined link data
+      const linkData = predefinedLinkRegistry.getLink(url);
+      if (!linkData) return;
+
+      // Customize the preview button if it exists
+      const actionsView = linkUI.actionsView;
+      if (actionsView.element) {
+        // Find the preview button
+        const previewButton = actionsView.element.querySelector('.ck-link-actions__preview');
+        if (previewButton) {
+          // Add custom class
+          previewButton.classList.add('predefined-link-preview');
+
+          // Change the label to show the predefined link name
+          const labelElement = previewButton.querySelector('.ck-button__label');
+          if (labelElement && linkData.name) {
+            labelElement.textContent = linkData.name;
+          }
+
+          // Add a tooltip with description and URL
+          if (linkData.description) {
+            previewButton.setAttribute('title', `${linkData.description} (${url})`);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Error customizing link UI balloon', e);
+    }
+  }
+
+
+  // Shows the predefined link modal dialog
+  private _showModal(initialValue?: { url?: string }): void {
+    try {
+      const editor = this.editor;
+      const linkCommand = editor.commands.get('link') as LinkCommand;
+
+      if (!linkCommand) {
+        console.warn('[AlightPredefinedLinkPluginUI] The "link" command is unavailable.');
+        return;
+      }
+
+      const initialUrl = initialValue?.url || '';
+      console.log('Opening modal with URL:', initialUrl);
+
+      // Clean up existing modal if needed
+      if (this._modalDialog) {
+        this._modalDialog.hide();
+      }
+
+      // Create a new modal dialog if needed
+      if (!this._modalDialog) {
+        this._modalDialog = new CkAlightModalDialog({
+          title: initialUrl ? 'Edit Predefined Link' : 'Add Predefined Link',
+          modal: true,
+          width: '80vw',
+          height: 'auto',
+          contentClass: 'predefined-link-content',
+          buttons: [
+            {
+              label: 'Cancel',
+              variant: 'outlined',
+              shape: 'round',
+              disabled: false
+            },
+            {
+              label: 'Continue',
+              variant: 'default',
+              isPrimary: true,
+              shape: 'round',
+              closeOnClick: false,
+              disabled: false
+            }
+          ]
+        });
+
+        // Handle button clicks
+        this._modalDialog.on('buttonClick', (label: string) => {
+          if (label === 'Cancel') {
+            this._modalDialog?.hide();
+            return;
+          }
+
+          if (label === 'Continue') {
+            const selectedLink = this.linkManager?.getSelectedLink();
+
+            if (selectedLink) {
+              // Add to registry
+              const linkData: PredefinedLinkData = {
+                id: selectedLink.id || '',
+                name: selectedLink.title,
+                description: selectedLink.description || '',
+                url: selectedLink.destination
+              };
+
+              predefinedLinkRegistry.setLink(selectedLink.destination, linkData);
+
+              // Execute the regular link command - this is key for compatibility
+              linkCommand.execute(selectedLink.destination);
+
+              this._modalDialog?.hide();
+            } else {
+              console.warn('No link selected');
+            }
+          }
+        });
+      } else {
+        // Update the title if reusing the dialog
+        if (this._modalDialog.element) {
+          const titleElement = this._modalDialog.element.querySelector('.ck-alight-modal__title');
+          if (titleElement) {
+            titleElement.textContent = initialUrl ? 'Edit Predefined Link' : 'Add Predefined Link';
+          }
+        }
+      }
+
+      // Create content manager with initial URL
+      this.linkManager = new ContentManager(initialUrl);
+
+      if (this._modalDialog && typeof this._modalDialog.setContent === 'function') {
+        this._modalDialog.setContent(this.linkManager.getContent());
+        this._modalDialog.show();
+      } else {
+        console.error('Modal dialog is not properly initialized');
+      }
+    } catch (e) {
+      console.error('Error showing predefined link modal', e);
+    }
+  }
+
   public override destroy(): void {
     super.destroy();
-    this._modalDialog?.destroy();
+    if (this._modalDialog && typeof this._modalDialog.destroy === 'function') {
+      try {
+        this._modalDialog.destroy();
+      } catch (e) {
+        console.warn('Error destroying modal dialog', e);
+      }
+    }
   }
 }

@@ -30,7 +30,12 @@ export class SearchManager {
     }
 
     this.injectSearchUI(searchContainer as HTMLElement);
-    this.setupOverlayPanel(container);
+
+    // Give the DOM time to update before setting up the overlay panel
+    setTimeout(() => {
+      this.setupOverlayPanel(container);
+    }, 100);
+
     this.setupEventListeners(container);
   }
 
@@ -111,19 +116,34 @@ export class SearchManager {
   }
 
   private setupOverlayPanel(container: HTMLElement): void {
-    const triggerEl = container.querySelector(`#${this.advancedSearchTriggerId}`);
-    if (!triggerEl) {
-      console.error('Advanced search trigger not found');
-      return;
-    }
-
-    this.overlayPanel = new AlightOverlayPanel(triggerEl as HTMLElement, {
-      width: '600px',
-      height: 'auto',
-      onOpen: () => {
-        this.setupAdvancedSearchListeners(container);
+    try {
+      // Make sure we're looking in the right container
+      const triggerEl = container.querySelector(`#${this.advancedSearchTriggerId}`);
+      if (!triggerEl) {
+        console.error('Advanced search trigger not found');
+        return;
       }
-    });
+
+      // Find the panel in the document
+      const panelElement = container.querySelector('.cka-overlay-panel[data-id="advanced-search-panel"]');
+      if (!panelElement) {
+        console.error('Panel with data-id="advanced-search-panel" not found in container');
+        // Debugging help
+        console.log('Container children:', container.children);
+        return;
+      }
+
+      // Create the overlay panel
+      this.overlayPanel = new AlightOverlayPanel(triggerEl as HTMLElement, {
+        width: '600px',
+        height: 'auto',
+        onOpen: () => {
+          this.setupAdvancedSearchListeners(container);
+        }
+      });
+    } catch (e) {
+      console.error('Error setting up overlay panel:', e);
+    }
   }
 
   private setupEventListeners(container: HTMLElement): void {
@@ -133,44 +153,51 @@ export class SearchManager {
   }
 
   private setupAdvancedSearchListeners(container: HTMLElement): void {
-    // Handle the apply filters button click
-    document.querySelectorAll('#apply-filters').forEach(button => {
-      button.addEventListener('click', () => {
-        this.applyFilters();
+    try {
+      // Handle the apply filters button click
+      document.querySelectorAll('#apply-filters').forEach(button => {
+        button.addEventListener('click', () => {
+          this.applyFilters();
+        });
       });
-    });
 
-    // Handle the clear filters button click
-    document.querySelectorAll('#clear-filters').forEach(button => {
-      button.addEventListener('click', () => {
-        this.clearFilters();
+      // Handle the clear filters button click
+      document.querySelectorAll('#clear-filters').forEach(button => {
+        button.addEventListener('click', () => {
+          this.clearFilters();
+        });
       });
-    });
 
-    // Setup checkbox listeners for all checkboxes in the document
-    document.querySelectorAll('cka-checkbox').forEach(checkbox => {
-      this.setupSingleCheckboxListener(checkbox);
-    });
+      // Setup checkbox listeners for all checkboxes in the document
+      document.querySelectorAll('cka-checkbox').forEach(checkbox => {
+        this.setupSingleCheckboxListener(checkbox);
+      });
+    } catch (e) {
+      console.error('Error setting up advanced search listeners:', e);
+    }
   }
 
   private setupSingleCheckboxListener(checkbox: Element): void {
-    checkbox.addEventListener('change', (event: Event) => {
-      const target = event.target as HTMLElement;
-      const filterType = target.getAttribute('data-filter-type') as keyof SelectedFilters;
-      const value = target.getAttribute('data-value');
-      const isChecked = (target as any).checked;
+    try {
+      checkbox.addEventListener('change', (event: Event) => {
+        const target = event.target as HTMLElement;
+        const filterType = target.getAttribute('data-filter-type') as keyof SelectedFilters;
+        const value = target.getAttribute('data-value');
+        const isChecked = (target as any).checked;
 
-      if (filterType && value) {
-        if (isChecked && !this.selectedFilters[filterType].includes(value)) {
-          this.selectedFilters[filterType].push(value);
-        } else if (!isChecked) {
-          this.selectedFilters[filterType] = this.selectedFilters[filterType].filter(v => v !== value);
+        if (filterType && value) {
+          if (isChecked && !this.selectedFilters[filterType].includes(value)) {
+            this.selectedFilters[filterType].push(value);
+          } else if (!isChecked) {
+            this.selectedFilters[filterType] = this.selectedFilters[filterType].filter(v => v !== value);
+          }
         }
-      }
-    });
+      });
+    } catch (e) {
+      console.error('Error setting up checkbox listener:', e);
+    }
   }
 
-  // Removed setupCheckboxListeners as it's now handled in setupSingleCheckboxListener
   private performSearch(): void {
     this.currentSearchQuery = this.searchInput?.value || '';
     this.updateFilteredData();
@@ -184,34 +211,46 @@ export class SearchManager {
     };
 
     // Update all checkboxes in the document
-    document.querySelectorAll('cka-checkbox').forEach(checkbox => {
-      (checkbox as any).checked = false;
-    });
+    try {
+      document.querySelectorAll('cka-checkbox').forEach(checkbox => {
+        if (checkbox && typeof (checkbox as any).checked !== 'undefined') {
+          (checkbox as any).checked = false;
+        }
+      });
+    } catch (e) {
+      console.error('Error clearing filters:', e);
+    }
   }
 
   private applyFilters(): void {
     this.updateFilteredData();
-    this.overlayPanel?.close();
+    if (this.overlayPanel && typeof this.overlayPanel.close === 'function') {
+      this.overlayPanel.close();
+    }
   }
 
   private updateFilteredData(): void {
-    const filteredData = this.predefinedLinksData.filter(link => {
-      const matchesSearch = !this.currentSearchQuery ||
-        link.predefinedLinkName.toLowerCase().includes(this.currentSearchQuery.toLowerCase());
+    try {
+      const filteredData = this.predefinedLinksData.filter(link => {
+        const matchesSearch = !this.currentSearchQuery ||
+          link.predefinedLinkName.toLowerCase().includes(this.currentSearchQuery.toLowerCase());
 
-      const matchesFilters =
-        (this.selectedFilters.baseOrClientSpecific.length === 0 ||
-          this.selectedFilters.baseOrClientSpecific.includes(link.baseOrClientSpecific)) &&
-        (this.selectedFilters.pageType.length === 0 ||
-          this.selectedFilters.pageType.includes(link.pageType)) &&
-        (this.selectedFilters.domain.length === 0 ||
-          this.selectedFilters.domain.includes(link.domain));
+        const matchesFilters =
+          (this.selectedFilters.baseOrClientSpecific.length === 0 ||
+            this.selectedFilters.baseOrClientSpecific.includes(link.baseOrClientSpecific)) &&
+          (this.selectedFilters.pageType.length === 0 ||
+            this.selectedFilters.pageType.includes(link.pageType)) &&
+          (this.selectedFilters.domain.length === 0 ||
+            this.selectedFilters.domain.includes(link.domain));
 
-      return matchesSearch && matchesFilters;
-    });
+        return matchesSearch && matchesFilters;
+      });
 
-    this.onSearch(filteredData);
-    this.paginationManager.setPage(1, filteredData.length);
+      this.onSearch(filteredData);
+      this.paginationManager.setPage(1, filteredData.length);
+    } catch (e) {
+      console.error('Error updating filtered data:', e);
+    }
   }
 
   public reset(): void {
