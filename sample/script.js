@@ -6,8 +6,8 @@ AlightEditor
 		CKEditorInspector.attach(editor);
 
 		sessionStorage.setItem('apiUrl', '1234567890');
-		sessionStorage.setItem('sessionToken', '1234567890');
-		sessionStorage.setItem('sessionHeader', '1234567890');
+		sessionStorage.setItem('dummyColleagueSessionToken', '1234567890');
+		sessionStorage.setItem('dummyRequestHeader', '1234567890');
 
 	}).catch(handleSampleError);
 

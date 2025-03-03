@@ -1,5 +1,5 @@
 import existingDocSampleData from './../data/existing-document-test-data.json';
-import categorySampleData from '../plugins/alight-new-document-link-plugin/modal-content/json/category-sample-data.json';
+import categorySampleData from './../data/category-sample-data.json';
 import { DataSourceDocs, IReadSourceDocs } from '../data-sources/custom-source/data-source-docs';
 import { DocumentLink } from '../plugins/alight-predefined-link-plugin/modal-content/predefined-link-modal-types';
 import { HttpService } from "./http-service";
