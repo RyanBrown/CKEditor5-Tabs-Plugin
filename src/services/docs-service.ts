@@ -12,7 +12,7 @@ export class DocsService extends HttpService {
   public getDocumentLinks = async (): Promise<DocumentLink[]> => {
 
     if (this._sampleMode)
-      return Promise.resolve(existingDocSampleData.documentList as DocumentLink[]);
+      return Promise.resolve(existingDocSampleData.documentList as unknown as DocumentLink[]);
 
     let dataSource: IReadSource = new DataSourceDocs(this._sessionSvc.apiUrl, this._sessionSvc.clientId);
     return await this.get(dataSource, this._sessionSvc.sessionToken, this._sessionSvc.requestHeader)
