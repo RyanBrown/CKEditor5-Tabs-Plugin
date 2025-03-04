@@ -18,7 +18,6 @@ import {
 import {
 	ButtonView,
 	ContextualBalloon,
-	clickOutsideHandler,
 	CssTransitionDisablerMixin,
 	MenuBarMenuListItemButtonView,
 	type ViewWithCssTransitionDisabler
@@ -38,6 +37,7 @@ import {
 } from './utils';
 
 import linkIcon from '../theme/icons/link.svg';
+import { CkAlightModalDialog } from './../../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 
 const VISUAL_SELECTION_MARKER_NAME = 'alight-external-link-ui';
 
@@ -57,6 +57,11 @@ export default class AlightExternalLinkUI extends Plugin {
 	 * The form view displayed inside the balloon.
 	 */
 	public formView: LinkFormView & ViewWithCssTransitionDisabler | null = null;
+
+	/**
+	 * The modal dialog for link editing
+	 */
+	private _linkDialog: CkAlightModalDialog | null = null;
 
 	/**
 	 * The contextual balloon plugin instance.
@@ -158,6 +163,10 @@ export default class AlightExternalLinkUI extends Plugin {
 		if (this.actionsView) {
 			this.actionsView.destroy();
 		}
+
+		if (this._linkDialog) {
+			this._linkDialog.destroy();
+		}
 	}
 
 	/**
@@ -169,6 +178,157 @@ export default class AlightExternalLinkUI extends Plugin {
 
 		// Attach lifecycle actions to the the balloon.
 		this._enableUserBalloonInteractions();
+	}
+
+	/**
+	 * Creates the modal dialog for link editing.
+	 */
+	private _createLinkDialog(): CkAlightModalDialog {
+		const editor = this.editor;
+		const t = editor.t;
+		const linkCommand = editor.commands.get('alight-external-link') as AlightExternalLinkCommand;
+		const validators = getFormValidators(editor);
+
+		const dialog = new CkAlightModalDialog({
+			title: t('Insert link'),
+			width: '400px',
+			height: 'auto',
+			modal: true,
+			draggable: true,
+			closeOnEscape: true,
+			closeOnClickOutside: true,
+			buttons: [
+				{
+					label: t('Cancel'),
+					variant: 'outlined',
+					closeOnClick: true
+				},
+				{
+					label: t('Save'),
+					isPrimary: true,
+					closeOnClick: false
+				}
+			]
+		});
+
+		// Create form content
+		const content = document.createElement('div');
+		content.className = 'ck-link-form-container';
+
+		// URL input
+		const urlContainer = document.createElement('div');
+		urlContainer.className = 'ck-link-form-url-container';
+
+		const urlLabel = document.createElement('label');
+		urlLabel.textContent = t('Link URL');
+		urlLabel.htmlFor = 'ck-link-url-input';
+
+		const urlInput = document.createElement('input');
+		urlInput.type = 'url';
+		urlInput.className = 'ck-link-url-input';
+		urlInput.id = 'ck-link-url-input';
+		urlInput.value = linkCommand.value || '';
+
+		const errorMessage = document.createElement('div');
+		errorMessage.className = 'ck-link-form-error';
+		errorMessage.style.color = 'red';
+		errorMessage.style.display = 'none';
+		errorMessage.style.marginTop = '4px';
+		errorMessage.style.fontSize = '12px';
+
+		urlContainer.appendChild(urlLabel);
+		urlContainer.appendChild(urlInput);
+		urlContainer.appendChild(errorMessage);
+		content.appendChild(urlContainer);
+
+		// Add decorator switches if they exist
+		const decorators = linkCommand.manualDecorators;
+
+		if (decorators.length) {
+			const decoratorsContainer = document.createElement('div');
+			decoratorsContainer.className = 'ck-link-form-decorators-container';
+			decoratorsContainer.style.marginTop = '16px';
+
+			decorators.forEach(decorator => {
+				const decoratorContainer = document.createElement('div');
+				decoratorContainer.className = 'ck-link-form-decorator';
+				decoratorContainer.style.display = 'flex';
+				decoratorContainer.style.alignItems = 'center';
+				decoratorContainer.style.marginBottom = '8px';
+
+				const switchInput = document.createElement('input');
+				switchInput.type = 'checkbox';
+				switchInput.id = `ck-link-decorator-${decorator.id}`;
+				switchInput.checked = decorator.value || !!decorator.defaultValue;
+				switchInput.className = 'ck-link-decorator-switch';
+
+				const switchLabel = document.createElement('label');
+				switchLabel.htmlFor = `ck-link-decorator-${decorator.id}`;
+				switchLabel.textContent = decorator.label;
+				switchLabel.style.marginLeft = '8px';
+
+				decoratorContainer.appendChild(switchInput);
+				decoratorContainer.appendChild(switchLabel);
+				decoratorsContainer.appendChild(decoratorContainer);
+			});
+
+			content.appendChild(decoratorsContainer);
+		}
+
+		dialog.setContent(content);
+
+		// Handle form submission
+		const saveButton = dialog.element?.querySelector('.cka-button-primary') as HTMLButtonElement;
+
+		if (saveButton) {
+			saveButton.addEventListener('click', () => {
+				const url = urlInput.value.trim();
+				let isValid = true;
+
+				// Run validators
+				for (const validator of validators) {
+					const mockFormView = {
+						url,
+						urlInputView: {
+							errorText: null
+						}
+					} as any;
+
+					const errorText = validator(mockFormView);
+
+					if (errorText) {
+						errorMessage.textContent = errorText;
+						errorMessage.style.display = 'block';
+						isValid = false;
+						break;
+					}
+				}
+
+				if (isValid) {
+					// Get decorator states
+					const decoratorStates: Record<string, boolean> = {};
+
+					decorators.forEach(decorator => {
+						const switchElement = document.getElementById(`ck-link-decorator-${decorator.id}`) as HTMLInputElement;
+						if (switchElement) {
+							decoratorStates[decorator.id] = switchElement.checked;
+						}
+					});
+
+					const defaultProtocol = editor.config.get('link.defaultProtocol');
+					const parsedUrl = addLinkProtocolIfApplicable(url, defaultProtocol);
+
+					// Execute the command
+					editor.execute('alight-external-link', parsedUrl, decoratorStates);
+
+					// Hide dialog
+					dialog.hide();
+					this._hideFakeVisualSelection();
+				}
+			});
+		}
+
+		return dialog;
 	}
 
 	/**
@@ -190,7 +350,7 @@ export default class AlightExternalLinkUI extends Plugin {
 
 		// Execute unlink command after clicking on the "Edit" button.
 		this.listenTo(actionsView, 'edit', () => {
-			this._addFormView();
+			this._showLinkDialog();
 		});
 
 		// Execute unlink command after clicking on the "Unlink" button.
@@ -207,7 +367,7 @@ export default class AlightExternalLinkUI extends Plugin {
 
 		// Open the form view on Ctrl+K when the **actions have focus**..
 		actionsView.keystrokes.set(LINK_KEYSTROKE, (data, cancel) => {
-			this._addFormView();
+			this._showLinkDialog();
 			cancel();
 		});
 
@@ -220,9 +380,7 @@ export default class AlightExternalLinkUI extends Plugin {
 	private _createFormView(): LinkFormView & ViewWithCssTransitionDisabler {
 		const editor = this.editor;
 		const linkCommand = editor.commands.get('alight-external-link') as AlightExternalLinkCommand;
-		const defaultProtocol = editor.config.get('link.defaultProtocol');
-
-		const formView = new (CssTransitionDisablerMixin(LinkFormView))(editor.locale, linkCommand, getFormValidators(editor));
+		const formView = new (CssTransitionDisablerMixin(LinkFormView))(editor.locale, linkCommand, getFormValidators(editor)) as any;
 
 		formView.urlInputView.fieldView.bind('value').to(linkCommand, 'value');
 
@@ -236,6 +394,7 @@ export default class AlightExternalLinkUI extends Plugin {
 		this.listenTo(formView, 'submit', () => {
 			if (formView.isValid()) {
 				const { value } = formView.urlInputView.fieldView.element!;
+				const defaultProtocol = editor.config.get('link.defaultProtocol');
 				const parsedUrl = addLinkProtocolIfApplicable(value, defaultProtocol);
 				editor.execute('alight-external-link', parsedUrl, formView.getDecoratorSwitchesState());
 				this._closeFormView();
@@ -253,7 +412,7 @@ export default class AlightExternalLinkUI extends Plugin {
 		});
 
 		// Close the panel on esc key press when the **form has focus**.
-		formView.keystrokes.set('Esc', (data, cancel) => {
+		formView.keystrokes.set('Esc', (data: any, cancel: () => void) => {
 			this._closeFormView();
 			cancel();
 		});
@@ -311,7 +470,7 @@ export default class AlightExternalLinkUI extends Plugin {
 		view.bind('isOn').to(command, 'value', value => !!value);
 
 		// Show the panel on button click.
-		this.listenTo(view, 'execute', () => this._showUI(true));
+		this.listenTo(view, 'execute', () => this._showLinkDialog());
 
 		return view;
 	}
@@ -341,7 +500,7 @@ export default class AlightExternalLinkUI extends Plugin {
 			cancel();
 
 			if (editor.commands.get('alight-external-link')!.isEnabled) {
-				this._showUI(true);
+				this._showLinkDialog();
 			}
 		});
 	}
@@ -371,14 +530,47 @@ export default class AlightExternalLinkUI extends Plugin {
 				cancel();
 			}
 		});
+	}
 
-		// Close on click outside of balloon panel element.
-		clickOutsideHandler({
-			emitter: this.formView!,
-			activator: () => this._isUIInPanel,
-			contextElements: () => [this._balloon.view.element!],
-			callback: () => this._hideUI()
-		});
+	/**
+	 * Shows the link editing dialog.
+	 */
+	private _showLinkDialog(): void {
+		// Ensure views are created
+		if (!this.actionsView) {
+			this._createViews();
+		}
+
+		// Show visual selection
+		this._showFakeVisualSelection();
+
+		if (!this._linkDialog) {
+			this._linkDialog = this._createLinkDialog();
+		}
+
+		// Update URL value if editing an existing link
+		const linkCommand = this.editor.commands.get('alight-external-link') as AlightExternalLinkCommand;
+		const urlInput = this._linkDialog.element?.querySelector('.ck-link-url-input') as HTMLInputElement;
+
+		if (urlInput) {
+			urlInput.value = linkCommand.value || '';
+
+			// Update decorator switches
+			linkCommand.manualDecorators.forEach(decorator => {
+				const switchElement = document.getElementById(`ck-link-decorator-${decorator.id}`) as HTMLInputElement;
+				if (switchElement) {
+					switchElement.checked = decorator.value || !!decorator.defaultValue;
+				}
+			});
+
+			// Focus the input field once shown
+			setTimeout(() => {
+				urlInput.focus();
+				urlInput.select();
+			}, 50);
+		}
+
+		this._linkDialog.show();
 	}
 
 	/**
@@ -489,7 +681,7 @@ export default class AlightExternalLinkUI extends Plugin {
 	 * @internal
 	 */
 	public _showUI(forceVisible: boolean = false): void {
-		if (!this.formView) {
+		if (!this.actionsView) {
 			this._createViews();
 		}
 
@@ -512,7 +704,7 @@ export default class AlightExternalLinkUI extends Plugin {
 		else {
 			// Go to the editing UI if actions are already visible.
 			if (this._areActionsVisible) {
-				this._addFormView();
+				this._showLinkDialog();
 			}
 			// Otherwise display just the actions UI.
 			else {
