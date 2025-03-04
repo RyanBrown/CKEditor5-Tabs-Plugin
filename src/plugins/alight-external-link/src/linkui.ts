@@ -38,6 +38,7 @@ import {
 
 import linkIcon from '../theme/icons/link.svg';
 import { CkAlightModalDialog } from './../../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
+import type { CkAlightCheckbox } from './../../ui-components/alight-checkbox-component/alight-checkbox-component';
 
 const VISUAL_SELECTION_MARKER_NAME = 'alight-external-link-ui';
 
@@ -181,8 +182,8 @@ export default class AlightExternalLinkUI extends Plugin {
 	}
 
 	/**
-	 * Creates the modal dialog for link editing.
-	 */
+ * Creates the modal dialog for link editing.
+ */
 	private _createLinkDialog(): CkAlightModalDialog {
 		const editor = this.editor;
 		const t = editor.t;
@@ -247,7 +248,25 @@ export default class AlightExternalLinkUI extends Plugin {
 		orgNameInput.className = 'cka-input-text cka-width-100';
 		orgNameInput.id = 'cka-link-org-name-input';
 		orgNameInput.placeholder = 'Organization Name';
-		orgNameInput.value = linkCommand.value || '';
+		orgNameInput.value = '';
+
+		// Create checkbox container and label
+		const checkboxContainer = document.createElement('div');
+		checkboxContainer.className = 'cka-checkbox-container mt-3';
+
+		// Create checkbox using the native checkbox input
+		const checkboxInput = document.createElement('input');
+		checkboxInput.type = 'checkbox';
+		checkboxInput.id = 'cka-allow-unsecure-urls';
+		checkboxInput.className = 'cka-checkbox-input';
+
+		const checkboxLabel = document.createElement('label');
+		checkboxLabel.htmlFor = 'cka-allow-unsecure-urls';
+		checkboxLabel.textContent = t('Allow unsecure HTTP URLs');
+		checkboxLabel.className = 'cka-checkbox-label';
+
+		checkboxContainer.appendChild(checkboxInput);
+		checkboxContainer.appendChild(checkboxLabel);
 
 		const noteText = document.createElement('div');
 		noteText.textContent = t('Organization Name (optional): Specify the third-party organization to inform users about the email\'s origin.');
@@ -258,43 +277,10 @@ export default class AlightExternalLinkUI extends Plugin {
 		urlContainer.appendChild(errorMessage);
 		urlContainer.appendChild(orgNameLabel);
 		urlContainer.appendChild(orgNameInput);
+		urlContainer.appendChild(checkboxContainer);
 		urlContainer.appendChild(noteText);
 
 		content.appendChild(urlContainer);
-
-		// Add decorator switches if they exist
-		const decorators = linkCommand.manualDecorators;
-
-		if (decorators.length) {
-			const decoratorsContainer = document.createElement('div');
-			decoratorsContainer.className = 'ck-link-form-decorators-container';
-			decoratorsContainer.style.marginTop = '16px';
-
-			decorators.forEach(decorator => {
-				const decoratorContainer = document.createElement('div');
-				decoratorContainer.className = 'ck-link-form-decorator';
-				decoratorContainer.style.display = 'flex';
-				decoratorContainer.style.alignItems = 'center';
-				decoratorContainer.style.marginBottom = '8px';
-
-				const switchInput = document.createElement('input');
-				switchInput.type = 'checkbox';
-				switchInput.id = `ck-link-decorator-${decorator.id}`;
-				switchInput.checked = decorator.value || !!decorator.defaultValue;
-				switchInput.className = 'ck-link-decorator-switch';
-
-				const switchLabel = document.createElement('label');
-				switchLabel.htmlFor = `ck-link-decorator-${decorator.id}`;
-				switchLabel.textContent = decorator.label;
-				switchLabel.style.marginLeft = '8px';
-
-				decoratorContainer.appendChild(switchInput);
-				decoratorContainer.appendChild(switchLabel);
-				decoratorsContainer.appendChild(decoratorContainer);
-			});
-
-			content.appendChild(decoratorsContainer);
-		}
 
 		dialog.setContent(content);
 
@@ -304,6 +290,8 @@ export default class AlightExternalLinkUI extends Plugin {
 		if (saveButton) {
 			saveButton.addEventListener('click', () => {
 				const url = urlInput.value.trim();
+				const orgName = orgNameInput.value.trim();
+				const allowUnsecureUrls = checkboxInput.checked;
 				let isValid = true;
 
 				// Run validators
@@ -326,21 +314,14 @@ export default class AlightExternalLinkUI extends Plugin {
 				}
 
 				if (isValid) {
-					// Get decorator states
-					const decoratorStates: Record<string, boolean> = {};
-
-					decorators.forEach(decorator => {
-						const switchElement = document.getElementById(`ck-link-decorator-${decorator.id}`) as HTMLInputElement;
-						if (switchElement) {
-							decoratorStates[decorator.id] = switchElement.checked;
-						}
-					});
-
 					const defaultProtocol = editor.config.get('link.defaultProtocol');
 					const parsedUrl = addLinkProtocolIfApplicable(url, defaultProtocol);
 
-					// Execute the command
-					editor.execute('alight-external-link', parsedUrl, decoratorStates);
+					// Execute the command with the organization name as part of the options
+					editor.execute('alight-external-link', parsedUrl, {
+						orgName: !!orgName,
+						allowUnsecureUrls
+					});
 
 					// Hide dialog
 					dialog.hide();
@@ -571,18 +552,10 @@ export default class AlightExternalLinkUI extends Plugin {
 
 		// Update URL value if editing an existing link
 		const linkCommand = this.editor.commands.get('alight-external-link') as AlightExternalLinkCommand;
-		const urlInput = this._linkDialog.element?.querySelector('.ck-link-url-input') as HTMLInputElement;
+		const urlInput = this._linkDialog.element?.querySelector('#cka-link-url-input') as HTMLInputElement;
 
 		if (urlInput) {
 			urlInput.value = linkCommand.value || '';
-
-			// Update decorator switches
-			linkCommand.manualDecorators.forEach(decorator => {
-				const switchElement = document.getElementById(`ck-link-decorator-${decorator.id}`) as HTMLInputElement;
-				if (switchElement) {
-					switchElement.checked = decorator.value || !!decorator.defaultValue;
-				}
-			});
 
 			// Focus the input field once shown
 			setTimeout(() => {
