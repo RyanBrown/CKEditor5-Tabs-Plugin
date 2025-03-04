@@ -268,7 +268,7 @@ export default class AlightLinkUI extends Plugin {
 	private _createToolbarLinkButton(): void {
 		const editor = this.editor;
 
-		editor.ui.componentFactory.add('alight-link', () => {
+		editor.ui.componentFactory.add('alightLink', () => {
 			const button = this._createButton(ButtonView);
 
 			button.set({
@@ -278,7 +278,7 @@ export default class AlightLinkUI extends Plugin {
 			return button;
 		});
 
-		editor.ui.componentFactory.add('menuBar:alight-link', () => {
+		editor.ui.componentFactory.add('menuBar:alightLink', () => {
 			const button = this._createButton(MenuBarMenuListItemButtonView);
 
 			button.set({
