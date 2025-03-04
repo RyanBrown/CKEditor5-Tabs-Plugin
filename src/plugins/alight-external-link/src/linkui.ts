@@ -190,13 +190,14 @@ export default class AlightExternalLinkUI extends Plugin {
 		const validators = getFormValidators(editor);
 
 		const dialog = new CkAlightModalDialog({
-			title: t('Insert link'),
-			width: '400px',
+			title: t('Create External Site Link'),
+			width: '500px',
 			height: 'auto',
 			modal: true,
 			draggable: true,
 			closeOnEscape: true,
 			closeOnClickOutside: true,
+			contentClass: 'cka-external-link-content',
 			buttons: [
 				{
 					label: t('Cancel'),
@@ -213,32 +214,52 @@ export default class AlightExternalLinkUI extends Plugin {
 
 		// Create form content
 		const content = document.createElement('div');
-		content.className = 'ck-link-form-container';
+		content.className = 'cka-url-form-container';
 
 		// URL input
 		const urlContainer = document.createElement('div');
-		urlContainer.className = 'ck-link-form-url-container';
+		urlContainer.className = 'cka-url-form-url-container';
 
 		const urlLabel = document.createElement('label');
-		urlLabel.textContent = t('Link URL');
-		urlLabel.htmlFor = 'ck-link-url-input';
+		urlLabel.textContent = t('URL');
+		urlLabel.htmlFor = 'cka-link-url-input';
+		urlLabel.className = 'cka-input-label';
 
 		const urlInput = document.createElement('input');
 		urlInput.type = 'url';
-		urlInput.className = 'ck-link-url-input';
-		urlInput.id = 'ck-link-url-input';
+		urlInput.className = 'cka-input-text cka-width-100';
+		urlInput.id = 'cka-link-url-input';
+		urlInput.placeholder = 'example.com';
 		urlInput.value = linkCommand.value || '';
 
 		const errorMessage = document.createElement('div');
-		errorMessage.className = 'ck-link-form-error';
-		errorMessage.style.color = 'red';
+		errorMessage.textContent = t('Please enter a valid web address.');
+		errorMessage.className = 'cka-error-message';
 		errorMessage.style.display = 'none';
-		errorMessage.style.marginTop = '4px';
-		errorMessage.style.fontSize = '12px';
+
+		const orgNameLabel = document.createElement('label');
+		orgNameLabel.textContent = t('Organization Name (optional)');
+		orgNameLabel.htmlFor = 'cka-link-org-name-input';
+		orgNameLabel.className = 'cka-input-label mt-3';
+
+		const orgNameInput = document.createElement('input');
+		orgNameInput.type = 'text';
+		orgNameInput.className = 'cka-input-text cka-width-100';
+		orgNameInput.id = 'cka-link-org-name-input';
+		orgNameInput.placeholder = 'Organization Name';
+		orgNameInput.value = linkCommand.value || '';
+
+		const noteText = document.createElement('div');
+		noteText.textContent = t('Organization Name (optional): Specify the third-party organization to inform users about the email\'s origin.');
+		noteText.className = 'cka-note-text';
 
 		urlContainer.appendChild(urlLabel);
 		urlContainer.appendChild(urlInput);
 		urlContainer.appendChild(errorMessage);
+		urlContainer.appendChild(orgNameLabel);
+		urlContainer.appendChild(orgNameInput);
+		urlContainer.appendChild(noteText);
+
 		content.appendChild(urlContainer);
 
 		// Add decorator switches if they exist
