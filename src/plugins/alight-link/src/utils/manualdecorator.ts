@@ -7,14 +7,14 @@
  * @module link/utils/manualdecorator
  */
 
-import { ObservableMixin, type ArrayOrItem } from 'ckeditor5/src/utils.js';
-import type { MatcherObjectPattern } from 'ckeditor5/src/engine.js';
-import type { NormalizedLinkDecoratorManualDefinition } from '../utils.js';
+import { ObservableMixin, type ArrayOrItem } from 'ckeditor5/src/utils';
+import type { MatcherObjectPattern } from 'ckeditor5/src/engine';
+import type { NormalizedLinkDecoratorManualDefinition } from '../utils';
 
 /**
  * Helper class that stores manual decorators with observable {@link module:link/utils/manualdecorator~ManualDecorator#value}
  * to support integration with the UI state. An instance of this class is a model with the state of individual manual decorators.
- * These decorators are kept as collections in {@link module:link/linkcommand~LinkCommand#manualDecorators}.
+ * These decorators are kept as collections in {@link module:link/AlightLinkCommand~AlightLinkCommand#manualDecorators}.
  */
 export default class ManualDecorator extends /* #__PURE__ */ ObservableMixin() {
 	/**
@@ -67,11 +67,11 @@ export default class ManualDecorator extends /* #__PURE__ */ ObservableMixin() {
 	 * Attributes should keep the format of attributes defined in {@link module:engine/view/elementdefinition~ElementDefinition}.
 	 * @param [config.defaultValue] Controls whether the decorator is "on" by default.
 	 */
-	constructor( { id, label, attributes, classes, styles, defaultValue }: NormalizedLinkDecoratorManualDefinition ) {
+	constructor({ id, label, attributes, classes, styles, defaultValue }: NormalizedLinkDecoratorManualDefinition) {
 		super();
 
 		this.id = id;
-		this.set( 'value', undefined );
+		this.set('value', undefined);
 		this.defaultValue = defaultValue;
 		this.label = label;
 		this.attributes = attributes;

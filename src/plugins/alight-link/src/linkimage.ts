@@ -4,34 +4,34 @@
  */
 
 /**
- * @module link/linkimage
+ * @module link/AlightLinkImage
  */
 
-import { Plugin } from 'ckeditor5/src/core.js';
-import LinkImageEditing from './linkimageediting.js';
-import LinkImageUI from './linkimageui.js';
+import { Plugin } from 'ckeditor5/src/core';
+import AlightLinkImageEditing from './linkimageediting';
+import AlightLinkImageUI from './linkimageui';
 
-import '../theme/linkimage.css';
+import '../theme/AlightLinkImage.css';
 
 /**
- * The `LinkImage` plugin.
+ * The `AlightLinkImage` plugin.
  *
- * This is a "glue" plugin that loads the {@link module:link/linkimageediting~LinkImageEditing link image editing feature}
- * and {@link module:link/linkimageui~LinkImageUI link image UI feature}.
+ * This is a "glue" plugin that loads the {@link module:link/AlightLinkImageediting~AlightLinkImageEditing link image editing feature}
+ * and {@link module:link/AlightLinkImageui~AlightLinkImageUI link image UI feature}.
  */
-export default class LinkImage extends Plugin {
+export default class AlightLinkImage extends Plugin {
 	/**
 	 * @inheritDoc
 	 */
 	public static get requires() {
-		return [ LinkImageEditing, LinkImageUI ] as const;
+		return [AlightLinkImageEditing, AlightLinkImageUI] as const;
 	}
 
 	/**
 	 * @inheritDoc
 	 */
 	public static get pluginName() {
-		return 'LinkImage' as const;
+		return 'AlightLinkImage' as const;
 	}
 
 	/**

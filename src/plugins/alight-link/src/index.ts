@@ -7,24 +7,24 @@
  * @module link
  */
 
-export { default as Link } from './link.js';
-export { default as LinkEditing } from './linkediting.js';
-export { default as LinkUI } from './linkui.js';
-export { default as LinkImage } from './linkimage.js';
-export { default as LinkImageEditing } from './linkimageediting.js';
-export { default as LinkImageUI } from './linkimageui.js';
-export { default as AutoLink } from './autolink.js';
-export { default as LinkActionsView } from './ui/linkactionsview.js';
-export { default as LinkFormView } from './ui/linkformview.js';
-export { default as LinkCommand } from './linkcommand.js';
-export { default as UnlinkCommand } from './unlinkcommand.js';
+export { default as AlightLink } from './link';
+export { default as AlightLinkEditing } from './linkediting';
+export { default as AlightLinkUI } from './linkui';
+export { default as AlightLinkImage } from './linkimage';
+export { default as AlightLinkImageEditing } from './linkimageediting';
+export { default as AlightLinkImageUI } from './linkimageui';
+export { default as AlightAutoLink } from './autolink';
+export { default as LinkActionsView } from './ui/linkactionsview';
+export { default as LinkFormView } from './ui/linkformview';
+export { default as AlightLinkCommand } from './linkcommand';
+export { default as AlightUnlinkCommand } from './unlinkcommand';
 
 export {
 	addLinkProtocolIfApplicable,
 	ensureSafeUrl,
 	isLinkableElement
-} from './utils.js';
+} from './utils';
 
-export type { LinkConfig, LinkDecoratorDefinition } from './linkconfig.js';
+export type { LinkConfig, LinkDecoratorDefinition } from './linkconfig';
 
-import './augmentation.js';
+import './augmentation';

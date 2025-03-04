@@ -10,7 +10,7 @@
 import {
 	Plugin,
 	type Editor
-} from 'ckeditor5/src/core.js';
+} from 'ckeditor5/src/core';
 import type {
 	Schema,
 	Writer,
@@ -18,21 +18,21 @@ import type {
 	ViewDocumentKeyDownEvent,
 	ViewDocumentClickEvent,
 	DocumentSelectionChangeAttributeEvent
-} from 'ckeditor5/src/engine.js';
+} from 'ckeditor5/src/engine';
 import {
 	Input,
 	TwoStepCaretMovement,
 	inlineHighlight
-} from 'ckeditor5/src/typing.js';
+} from 'ckeditor5/src/typing';
 import {
 	ClipboardPipeline,
 	type ClipboardContentInsertionEvent
-} from 'ckeditor5/src/clipboard.js';
-import { keyCodes, env } from 'ckeditor5/src/utils.js';
+} from 'ckeditor5/src/clipboard';
+import { keyCodes, env } from 'ckeditor5/src/utils';
 
-import LinkCommand from './linkcommand.js';
-import UnlinkCommand from './unlinkcommand.js';
-import ManualDecorator from './utils/manualdecorator.js';
+import AlightLinkCommand from './linkcommand';
+import AlightUnlinkCommand from './unlinkcommand';
+import ManualDecorator from './utils/manualdecorator';
 import {
 	createLinkElement,
 	ensureSafeUrl,
@@ -43,7 +43,7 @@ import {
 	openLink,
 	type NormalizedLinkDecoratorAutomaticDefinition,
 	type NormalizedLinkDecoratorManualDefinition
-} from './utils.js';
+} from './utils';
 
 import '../theme/link.css';
 
@@ -58,12 +58,12 @@ const EXTERNAL_LINKS_REGEXP = /^(https?:)?\/\//;
  * It introduces the `linkHref="url"` attribute in the model which renders to the view as a `<a href="url">` element
  * as well as `'link'` and `'unlink'` commands.
  */
-export default class LinkEditing extends Plugin {
+export default class AlightLinkEditing extends Plugin {
 	/**
 	 * @inheritDoc
 	 */
 	public static get pluginName() {
-		return 'LinkEditing' as const;
+		return 'AlightLinkEditing' as const;
 	}
 
 	/**
@@ -78,19 +78,19 @@ export default class LinkEditing extends Plugin {
 	 */
 	public static get requires() {
 		// Clipboard is required for handling cut and paste events while typing over the link.
-		return [ TwoStepCaretMovement, Input, ClipboardPipeline ] as const;
+		return [TwoStepCaretMovement, Input, ClipboardPipeline] as const;
 	}
 
 	/**
 	 * @inheritDoc
 	 */
-	constructor( editor: Editor ) {
-		super( editor );
+	constructor(editor: Editor) {
+		super(editor);
 
-		editor.config.define( 'link', {
+		editor.config.define('link', {
 			allowCreatingEmptyLinks: false,
 			addTargetToExternalLinks: false
-		} );
+		});
 	}
 
 	/**
@@ -98,21 +98,23 @@ export default class LinkEditing extends Plugin {
 	 */
 	public init(): void {
 		const editor = this.editor;
-		const allowedProtocols = this.editor.config.get( 'link.allowedProtocols' );
+		const allowedProtocols = this.editor.config.get('link.allowedProtocols');
 
 		// Allow link attribute on all inline nodes.
-		editor.model.schema.extend( '$text', { allowAttributes: 'linkHref' } );
+		editor.model.schema.extend('$text', { allowAttributes: 'linkHref' });
 
-		editor.conversion.for( 'dataDowncast' )
-			.attributeToElement( { model: 'linkHref', view: createLinkElement } );
+		editor.conversion.for('dataDowncast')
+			.attributeToElement({ model: 'linkHref', view: createLinkElement });
 
-		editor.conversion.for( 'editingDowncast' )
-			.attributeToElement( { model: 'linkHref', view: ( href, conversionApi ) => {
-				return createLinkElement( ensureSafeUrl( href, allowedProtocols ), conversionApi );
-			} } );
+		editor.conversion.for('editingDowncast')
+			.attributeToElement({
+				model: 'linkHref', view: (href, conversionApi) => {
+					return createLinkElement(ensureSafeUrl(href, allowedProtocols), conversionApi);
+				}
+			});
 
-		editor.conversion.for( 'upcast' )
-			.elementToAttribute( {
+		editor.conversion.for('upcast')
+			.elementToAttribute({
 				view: {
 					name: 'a',
 					attributes: {
@@ -121,27 +123,27 @@ export default class LinkEditing extends Plugin {
 				},
 				model: {
 					key: 'linkHref',
-					value: ( viewElement: ViewElement ) => viewElement.getAttribute( 'href' )
+					value: (viewElement: ViewElement) => viewElement.getAttribute('href')
 				}
-			} );
+			});
 
 		// Create linking commands.
-		editor.commands.add( 'link', new LinkCommand( editor ) );
-		editor.commands.add( 'unlink', new UnlinkCommand( editor ) );
+		editor.commands.add('alight-link', new AlightLinkCommand(editor));
+		editor.commands.add('alight-unlink', new AlightUnlinkCommand(editor));
 
-		const linkDecorators = getLocalizedDecorators( editor.t, normalizeDecorators( editor.config.get( 'link.decorators' ) ) );
+		const linkDecorators = getLocalizedDecorators(editor.t, normalizeDecorators(editor.config.get('link.decorators')));
 
-		this._enableAutomaticDecorators( linkDecorators
-			.filter( ( item ): item is NormalizedLinkDecoratorAutomaticDefinition => item.mode === DECORATOR_AUTOMATIC ) );
-		this._enableManualDecorators( linkDecorators
-			.filter( ( item ): item is NormalizedLinkDecoratorManualDefinition => item.mode === DECORATOR_MANUAL ) );
+		this._enableAutomaticDecorators(linkDecorators
+			.filter((item): item is NormalizedLinkDecoratorAutomaticDefinition => item.mode === DECORATOR_AUTOMATIC));
+		this._enableManualDecorators(linkDecorators
+			.filter((item): item is NormalizedLinkDecoratorManualDefinition => item.mode === DECORATOR_MANUAL));
 
 		// Enable two-step caret movement for `linkHref` attribute.
-		const twoStepCaretMovementPlugin = editor.plugins.get( TwoStepCaretMovement );
-		twoStepCaretMovementPlugin.registerAttribute( 'linkHref' );
+		const twoStepCaretMovementPlugin = editor.plugins.get(TwoStepCaretMovement);
+		twoStepCaretMovementPlugin.registerAttribute('linkHref');
 
 		// Setup highlight over selected link.
-		inlineHighlight( editor, 'linkHref', 'a', HIGHLIGHT_CLASS );
+		inlineHighlight(editor, 'linkHref', 'a', HIGHLIGHT_CLASS);
 
 		// Handle link following by CTRL+click or ALT+ENTER
 		this._enableLinkOpen();
@@ -162,86 +164,86 @@ export default class LinkEditing extends Plugin {
 	 * **Note**: This method also activates the automatic external link decorator if enabled with
 	 * {@link module:link/linkconfig~LinkConfig#addTargetToExternalLinks `config.link.addTargetToExternalLinks`}.
 	 */
-	private _enableAutomaticDecorators( automaticDecoratorDefinitions: Array<NormalizedLinkDecoratorAutomaticDefinition> ): void {
+	private _enableAutomaticDecorators(automaticDecoratorDefinitions: Array<NormalizedLinkDecoratorAutomaticDefinition>): void {
 		const editor = this.editor;
 		// Store automatic decorators in the command instance as we do the same with manual decorators.
-		// Thanks to that, `LinkImageEditing` plugin can re-use the same definitions.
-		const command: LinkCommand = editor.commands.get( 'link' )!;
+		// Thanks to that, `AlightLinkImageEditing` plugin can re-use the same definitions.
+		const command = editor.commands.get('alight-link') as AlightLinkCommand;
 		const automaticDecorators = command.automaticDecorators;
 
 		// Adds a default decorator for external links.
-		if ( editor.config.get( 'link.addTargetToExternalLinks' ) ) {
-			automaticDecorators.add( {
+		if (editor.config.get('link.addTargetToExternalLinks')) {
+			automaticDecorators.add({
 				id: 'linkIsExternal',
 				mode: DECORATOR_AUTOMATIC,
-				callback: url => !!url && EXTERNAL_LINKS_REGEXP.test( url ),
+				callback: url => !!url && EXTERNAL_LINKS_REGEXP.test(url),
 				attributes: {
 					target: '_blank',
 					rel: 'noopener noreferrer'
 				}
-			} );
+			});
 		}
 
-		automaticDecorators.add( automaticDecoratorDefinitions );
+		automaticDecorators.add(automaticDecoratorDefinitions);
 
-		if ( automaticDecorators.length ) {
-			editor.conversion.for( 'downcast' ).add( automaticDecorators.getDispatcher() );
+		if (automaticDecorators.length) {
+			editor.conversion.for('downcast').add(automaticDecorators.getDispatcher());
 		}
 	}
 
 	/**
 	 * Processes an array of configured {@link module:link/linkconfig~LinkDecoratorManualDefinition manual decorators},
 	 * transforms them into {@link module:link/utils/manualdecorator~ManualDecorator} instances and stores them in the
-	 * {@link module:link/linkcommand~LinkCommand#manualDecorators} collection (a model for manual decorators state).
+	 * {@link module:link/AlightLinkCommand~AlightLinkCommand#manualDecorators} collection (a model for manual decorators state).
 	 *
 	 * Also registers an {@link module:engine/conversion/downcasthelpers~DowncastHelpers#attributeToElement attribute-to-element}
 	 * converter for each manual decorator and extends the {@link module:engine/model/schema~Schema model's schema}
 	 * with adequate model attributes.
 	 */
-	private _enableManualDecorators( manualDecoratorDefinitions: Array<NormalizedLinkDecoratorManualDefinition> ): void {
-		if ( !manualDecoratorDefinitions.length ) {
+	private _enableManualDecorators(manualDecoratorDefinitions: Array<NormalizedLinkDecoratorManualDefinition>): void {
+		if (!manualDecoratorDefinitions.length) {
 			return;
 		}
 
 		const editor = this.editor;
-		const command: LinkCommand = editor.commands.get( 'link' )!;
+		const command = editor.commands.get('alight-link') as AlightLinkCommand;
 		const manualDecorators = command.manualDecorators;
 
-		manualDecoratorDefinitions.forEach( decoratorDefinition => {
-			editor.model.schema.extend( '$text', { allowAttributes: decoratorDefinition.id } );
+		manualDecoratorDefinitions.forEach(decoratorDefinition => {
+			editor.model.schema.extend('$text', { allowAttributes: decoratorDefinition.id });
 
 			// Keeps reference to manual decorator to decode its name to attributes during downcast.
-			const decorator = new ManualDecorator( decoratorDefinition );
+			const decorator = new ManualDecorator(decoratorDefinition);
 
-			manualDecorators.add( decorator );
+			manualDecorators.add(decorator);
 
-			editor.conversion.for( 'downcast' ).attributeToElement( {
+			editor.conversion.for('downcast').attributeToElement({
 				model: decorator.id,
-				view: ( manualDecoratorValue, { writer, schema }, { item } ) => {
-					// Manual decorators for block links are handled e.g. in LinkImageEditing.
-					if ( !( item.is( 'selection' ) || schema.isInline( item ) ) ) {
+				view: (manualDecoratorValue, { writer, schema }, { item }) => {
+					// Manual decorators for block links are handled e.g. in AlightLinkImageEditing.
+					if (!(item.is('selection') || schema.isInline(item))) {
 						return;
 					}
 
-					if ( manualDecoratorValue ) {
-						const element = writer.createAttributeElement( 'a', decorator.attributes, { priority: 5 } );
+					if (manualDecoratorValue) {
+						const element = writer.createAttributeElement('a', decorator.attributes, { priority: 5 });
 
-						if ( decorator.classes ) {
-							writer.addClass( decorator.classes, element );
+						if (decorator.classes) {
+							writer.addClass(decorator.classes, element);
 						}
 
-						for ( const key in decorator.styles ) {
-							writer.setStyle( key, decorator.styles[ key ], element );
+						for (const key in decorator.styles) {
+							writer.setStyle(key, decorator.styles[key], element);
 						}
 
-						writer.setCustomProperty( 'link', true, element );
+						writer.setCustomProperty('link', true, element);
 
 						return element;
 					}
 				}
-			} );
+			});
 
-			editor.conversion.for( 'upcast' ).elementToAttribute( {
+			editor.conversion.for('upcast').elementToAttribute({
 				view: {
 					name: 'a',
 					...decorator._createPattern()
@@ -249,8 +251,8 @@ export default class LinkEditing extends Plugin {
 				model: {
 					key: decorator.id
 				}
-			} );
-		} );
+			});
+		});
 	}
 
 	/**
@@ -261,59 +263,59 @@ export default class LinkEditing extends Plugin {
 		const editor = this.editor;
 		const view = editor.editing.view;
 		const viewDocument = view.document;
-		const bookmarkCallbacks = createBookmarkCallbacks( editor );
+		const bookmarkCallbacks = createBookmarkCallbacks(editor);
 
-		function handleLinkOpening( url: string ): void {
-			if ( bookmarkCallbacks.isScrollableToTarget( url ) ) {
-				bookmarkCallbacks.scrollToTarget( url );
+		function handleLinkOpening(url: string): void {
+			if (bookmarkCallbacks.isScrollableToTarget(url)) {
+				bookmarkCallbacks.scrollToTarget(url);
 			} else {
-				openLink( url );
+				openLink(url);
 			}
 		}
 
-		this.listenTo<ViewDocumentClickEvent>( viewDocument, 'click', ( evt, data ) => {
+		this.listenTo<ViewDocumentClickEvent>(viewDocument, 'click', (evt, data) => {
 			const shouldOpen = env.isMac ? data.domEvent.metaKey : data.domEvent.ctrlKey;
 
-			if ( !shouldOpen ) {
+			if (!shouldOpen) {
 				return;
 			}
 
 			let clickedElement: Element | null = data.domTarget;
 
-			if ( clickedElement.tagName.toLowerCase() != 'a' ) {
-				clickedElement = clickedElement.closest( 'a' );
+			if (clickedElement.tagName.toLowerCase() != 'a') {
+				clickedElement = clickedElement.closest('a');
 			}
 
-			if ( !clickedElement ) {
+			if (!clickedElement) {
 				return;
 			}
 
-			const url = clickedElement.getAttribute( 'href' );
+			const url = clickedElement.getAttribute('href');
 
-			if ( !url ) {
+			if (!url) {
 				return;
 			}
 
 			evt.stop();
 			data.preventDefault();
 
-			handleLinkOpening( url );
-		}, { context: '$capture' } );
+			handleLinkOpening(url);
+		}, { context: '$capture' });
 
 		// Open link on Alt+Enter.
-		this.listenTo<ViewDocumentKeyDownEvent>( viewDocument, 'keydown', ( evt, data ) => {
-			const linkCommand: LinkCommand = editor.commands.get( 'link' )!;
-			const url = linkCommand!.value;
+		this.listenTo<ViewDocumentKeyDownEvent>(viewDocument, 'keydown', (evt, data) => {
+			const command = editor.commands.get('alight-link') as AlightLinkCommand;
+			const url = command.value;
 			const shouldOpen = !!url && data.keyCode === keyCodes.enter && data.altKey;
 
-			if ( !shouldOpen ) {
+			if (!shouldOpen) {
 				return;
 			}
 
 			evt.stop();
 
-			handleLinkOpening( url );
-		} );
+			handleLinkOpening(url);
+		});
 	}
 
 	/**
@@ -326,15 +328,15 @@ export default class LinkEditing extends Plugin {
 		const model = editor.model;
 		const selection = model.document.selection;
 
-		this.listenTo<DocumentSelectionChangeAttributeEvent>( selection, 'change:attribute', ( evt, { attributeKeys } ) => {
-			if ( !attributeKeys.includes( 'linkHref' ) || selection.hasAttribute( 'linkHref' ) ) {
+		this.listenTo<DocumentSelectionChangeAttributeEvent>(selection, 'change:attribute', (evt, { attributeKeys }) => {
+			if (!attributeKeys.includes('linkHref') || selection.hasAttribute('linkHref')) {
 				return;
 			}
 
-			model.change( writer => {
-				removeLinkAttributesFromSelection( writer, getLinkAttributesAllowedOnText( model.schema ) );
-			} );
-		} );
+			model.change(writer => {
+				removeLinkAttributesFromSelection(writer, getLinkAttributesAllowedOnText(model.schema));
+			});
+		});
 	}
 
 	/**
@@ -343,25 +345,25 @@ export default class LinkEditing extends Plugin {
 	private _enableClipboardIntegration(): void {
 		const editor = this.editor;
 		const model = editor.model;
-		const defaultProtocol = this.editor.config.get( 'link.defaultProtocol' );
+		const defaultProtocol = this.editor.config.get('link.defaultProtocol');
 
-		if ( !defaultProtocol ) {
+		if (!defaultProtocol) {
 			return;
 		}
 
-		this.listenTo<ClipboardContentInsertionEvent>( editor.plugins.get( 'ClipboardPipeline' ), 'contentInsertion', ( evt, data ) => {
-			model.change( writer => {
-				const range = writer.createRangeIn( data.content );
+		this.listenTo<ClipboardContentInsertionEvent>(editor.plugins.get('ClipboardPipeline'), 'contentInsertion', (evt, data) => {
+			model.change(writer => {
+				const range = writer.createRangeIn(data.content);
 
-				for ( const item of range.getItems() ) {
-					if ( item.hasAttribute( 'linkHref' ) ) {
-						const newLink = addLinkProtocolIfApplicable( item.getAttribute( 'linkHref' ) as string, defaultProtocol );
+				for (const item of range.getItems()) {
+					if (item.hasAttribute('linkHref')) {
+						const newLink = addLinkProtocolIfApplicable(item.getAttribute('linkHref') as string, defaultProtocol);
 
-						writer.setAttribute( 'linkHref', newLink, item );
+						writer.setAttribute('linkHref', newLink, item);
 					}
 				}
-			} );
-		} );
+			});
+		});
 	}
 }
 
@@ -370,19 +372,19 @@ export default class LinkEditing extends Plugin {
  * All link-related model attributes start with "link". That includes not only "linkHref"
  * but also all decorator attributes (they have dynamic names), or even custom plugins.
  */
-function removeLinkAttributesFromSelection( writer: Writer, linkAttributes: Array<string> ): void {
-	writer.removeSelectionAttribute( 'linkHref' );
+function removeLinkAttributesFromSelection(writer: Writer, linkAttributes: Array<string>): void {
+	writer.removeSelectionAttribute('linkHref');
 
-	for ( const attribute of linkAttributes ) {
-		writer.removeSelectionAttribute( attribute );
+	for (const attribute of linkAttributes) {
+		writer.removeSelectionAttribute(attribute);
 	}
 }
 
 /**
  * Returns an array containing names of the attributes allowed on `$text` that describes the link item.
  */
-function getLinkAttributesAllowedOnText( schema: Schema ): Array<string> {
-	const textAttributes = schema.getDefinition( '$text' )!.allowAttributes;
+function getLinkAttributesAllowedOnText(schema: Schema): Array<string> {
+	const textAttributes = schema.getDefinition('$text')!.allowAttributes;
 
-	return textAttributes.filter( attribute => attribute.startsWith( 'link' ) );
+	return textAttributes.filter(attribute => attribute.startsWith('link'));
 }

@@ -4,19 +4,19 @@
  */
 
 /**
- * @module link/unlinkcommand
+ * @module link/AlightUnlinkCommand
  */
 
-import { Command } from 'ckeditor5/src/core.js';
-import { findAttributeRange } from 'ckeditor5/src/typing.js';
+import { Command } from 'ckeditor5/src/core';
+import { findAttributeRange } from 'ckeditor5/src/typing';
 
-import type LinkCommand from './linkcommand.js';
-import { isLinkableElement } from './utils.js';
+import type AlightLinkCommand from './linkcommand';
+import { isLinkableElement } from './utils';
 
 /**
- * The unlink command. It is used by the {@link module:link/link~Link link plugin}.
+ * The unlink command. It is used by the {@link module:link/link~AlightLink link plugin}.
  */
-export default class UnlinkCommand extends Command {
+export default class AlightUnlinkCommand extends Command {
 	/**
 	 * @inheritDoc
 	 */
@@ -25,12 +25,12 @@ export default class UnlinkCommand extends Command {
 		const selection = model.document.selection;
 		const selectedElement = selection.getSelectedElement();
 
-		// A check for any integration that allows linking elements (e.g. `LinkImage`).
+		// A check for any integration that allows linking elements (e.g. `AlightLinkImage`).
 		// Currently the selection reads attributes from text nodes only. See #7429 and #7465.
-		if ( isLinkableElement( selectedElement, model.schema ) ) {
-			this.isEnabled = model.schema.checkAttribute( selectedElement, 'linkHref' );
+		if (isLinkableElement(selectedElement, model.schema)) {
+			this.isEnabled = model.schema.checkAttribute(selectedElement, 'linkHref');
 		} else {
-			this.isEnabled = model.schema.checkAttributeInSelection( selection, 'linkHref' );
+			this.isEnabled = model.schema.checkAttributeInSelection(selection, 'linkHref');
 		}
 	}
 
@@ -51,29 +51,29 @@ export default class UnlinkCommand extends Command {
 		const editor = this.editor;
 		const model = this.editor.model;
 		const selection = model.document.selection;
-		const linkCommand: LinkCommand | undefined = editor.commands.get( 'link' );
+		const linkCommand = editor.commands.get('alight-link') as AlightLinkCommand | undefined;
 
-		model.change( writer => {
+		model.change(writer => {
 			// Get ranges to unlink.
 			const rangesToUnlink = selection.isCollapsed ?
-				[ findAttributeRange(
+				[findAttributeRange(
 					selection.getFirstPosition()!,
 					'linkHref',
-					selection.getAttribute( 'linkHref' ),
+					selection.getAttribute('linkHref'),
 					model
-				) ] :
-				model.schema.getValidRanges( selection.getRanges(), 'linkHref' );
+				)] :
+				model.schema.getValidRanges(selection.getRanges(), 'linkHref');
 
 			// Remove `linkHref` attribute from specified ranges.
-			for ( const range of rangesToUnlink ) {
-				writer.removeAttribute( 'linkHref', range );
+			for (const range of rangesToUnlink) {
+				writer.removeAttribute('linkHref', range);
 				// If there are registered custom attributes, then remove them during unlink.
-				if ( linkCommand ) {
-					for ( const manualDecorator of linkCommand.manualDecorators ) {
-						writer.removeAttribute( manualDecorator.id, range );
+				if (linkCommand) {
+					for (const manualDecorator of linkCommand.manualDecorators) {
+						writer.removeAttribute(manualDecorator.id, range);
 					}
 				}
 			}
-		} );
+		});
 	}
 }

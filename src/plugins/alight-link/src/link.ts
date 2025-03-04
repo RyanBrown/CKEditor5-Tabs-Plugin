@@ -7,30 +7,30 @@
  * @module link/link
  */
 
-import { Plugin } from 'ckeditor5/src/core.js';
-import LinkEditing from './linkediting.js';
-import LinkUI from './linkui.js';
-import AutoLink from './autolink.js';
+import { Plugin } from 'ckeditor5/src/core';
+import AlightLinkEditing from './linkediting';
+import AlightLinkUI from './linkui';
+import AlightAutoLink from './autolink';
 
 /**
  * The link plugin.
  *
- * This is a "glue" plugin that loads the {@link module:link/linkediting~LinkEditing link editing feature}
- * and {@link module:link/linkui~LinkUI link UI feature}.
+ * This is a "glue" plugin that loads the {@link module:link/linkediting~AlightLinkEditing link editing feature}
+ * and {@link module:link/linkui~AlightLinkUI link UI feature}.
  */
-export default class Link extends Plugin {
+export default class AlightLink extends Plugin {
 	/**
 	 * @inheritDoc
 	 */
 	public static get requires() {
-		return [ LinkEditing, LinkUI, AutoLink ] as const;
+		return [AlightLinkEditing, AlightLinkUI, AlightAutoLink] as const;
 	}
 
 	/**
 	 * @inheritDoc
 	 */
 	public static get pluginName() {
-		return 'Link' as const;
+		return 'AlightLink' as const;
 	}
 
 	/**

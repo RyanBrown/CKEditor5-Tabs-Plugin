@@ -1,7 +1,7 @@
 {
   "name": "@ckeditor/ckeditor5-link",
   "version": "44.1.0",
-  "description": "Link feature for CKEditor 5.",
+  "description": "AlightLink feature for CKEditor 5.",
   "keywords": [
     "ckeditor",
     "ckeditor5",
@@ -55,16 +55,16 @@
   "files": [
     "dist",
     "lang",
-    "src/**/*.js",
+    "src/**/*",
     "src/**/*.d.ts",
     "theme",
     "build",
-    "ckeditor5-metadata.json",
+    "ckeditor5-metadataon",
     "CHANGELOG.md"
   ],
   "scripts": {
     "dll:build": "webpack",
-    "build": "tsc -p ./tsconfig.json",
+    "build": "tsc -p ./tsconfigon",
     "build:dist": "node ../../scripts/nim/build-package.mjs"
   }
 }

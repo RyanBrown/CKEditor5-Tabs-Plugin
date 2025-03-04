@@ -7,11 +7,11 @@
  * @module link/ui/linkactionsview
  */
 
-import { ButtonView, View, ViewCollection, FocusCycler, type FocusableView } from 'ckeditor5/src/ui.js';
-import { FocusTracker, KeystrokeHandler, type LocaleTranslate, type Locale } from 'ckeditor5/src/utils.js';
-import { icons } from 'ckeditor5/src/core.js';
+import { ButtonView, View, ViewCollection, FocusCycler, type FocusableView } from 'ckeditor5/src/ui';
+import { FocusTracker, KeystrokeHandler, type LocaleTranslate, type Locale } from 'ckeditor5/src/utils';
+import { icons } from 'ckeditor5/src/core';
 
-import { ensureSafeUrl, openLink } from '../utils.js';
+import { ensureSafeUrl, openLink } from '../utils';
 
 // See: #8833.
 // eslint-disable-next-line ckeditor5-rules/ckeditor-imports
@@ -19,7 +19,7 @@ import '@ckeditor/ckeditor5-ui/theme/components/responsive-form/responsiveform.c
 import '../../theme/linkactions.css';
 
 import unlinkIcon from '../../theme/icons/unlink.svg';
-import type { LinkConfig } from '../linkconfig.js';
+import type { LinkConfig } from '../linkconfig';
 
 /**
  * The link actions view class. This view displays the link preview, allows
@@ -77,21 +77,21 @@ export default class LinkActionsView extends View {
 	/**
 	 * @inheritDoc
 	 */
-	constructor( locale: Locale, linkConfig: LinkConfig = {}, options?: LinkActionsViewOptions ) {
-		super( locale );
+	constructor(locale: Locale, linkConfig: LinkConfig = {}, options?: LinkActionsViewOptions) {
+		super(locale);
 
 		const t = locale.t;
 
 		this._options = options;
 		this.previewButtonView = this._createPreviewButton();
-		this.unlinkButtonView = this._createButton( t( 'Unlink' ), unlinkIcon, 'unlink' );
-		this.editButtonView = this._createButton( t( 'Edit link' ), icons.pencil, 'edit' );
+		this.unlinkButtonView = this._createButton(t('Unlink'), unlinkIcon, 'unlink');
+		this.editButtonView = this._createButton(t('Edit link'), icons.pencil, 'edit');
 
-		this.set( 'href', undefined );
+		this.set('href', undefined);
 
 		this._linkConfig = linkConfig;
 
-		this._focusCycler = new FocusCycler( {
+		this._focusCycler = new FocusCycler({
 			focusables: this._focusables,
 			focusTracker: this.focusTracker,
 			keystrokeHandler: this.keystrokes,
@@ -102,9 +102,9 @@ export default class LinkActionsView extends View {
 				// Navigate fields forwards using the Tab key.
 				focusNext: 'tab'
 			}
-		} );
+		});
 
-		this.setTemplate( {
+		this.setTemplate({
 			tag: 'div',
 
 			attributes: {
@@ -123,7 +123,7 @@ export default class LinkActionsView extends View {
 				this.editButtonView,
 				this.unlinkButtonView
 			]
-		} );
+		});
 	}
 
 	/**
@@ -138,16 +138,16 @@ export default class LinkActionsView extends View {
 			this.unlinkButtonView
 		];
 
-		childViews.forEach( v => {
+		childViews.forEach(v => {
 			// Register the view as focusable.
-			this._focusables.add( v );
+			this._focusables.add(v);
 
 			// Register the view in the focus tracker.
-			this.focusTracker.add( v.element! );
-		} );
+			this.focusTracker.add(v.element!);
+		});
 
 		// Start listening for the keystrokes coming from #element.
-		this.keystrokes.listenTo( this.element! );
+		this.keystrokes.listenTo(this.element!);
 	}
 
 	/**
@@ -175,16 +175,16 @@ export default class LinkActionsView extends View {
 	 * @param eventName An event name that the `ButtonView#execute` event will be delegated to.
 	 * @returns The button view instance.
 	 */
-	private _createButton( label: string, icon: string, eventName?: string ): ButtonView {
-		const button = new ButtonView( this.locale );
+	private _createButton(label: string, icon: string, eventName?: string): ButtonView {
+		const button = new ButtonView(this.locale);
 
-		button.set( {
+		button.set({
 			label,
 			icon,
 			tooltip: true
-		} );
+		});
 
-		button.delegate( 'execute' ).to( this, eventName );
+		button.delegate('execute').to(this, eventName);
 
 		return button;
 	}
@@ -195,49 +195,49 @@ export default class LinkActionsView extends View {
 	 * @returns The button view instance.
 	 */
 	private _createPreviewButton(): ButtonView {
-		const button = new ButtonView( this.locale );
+		const button = new ButtonView(this.locale);
 		const bind = this.bindTemplate;
 		const t = this.t;
 
-		button.set( {
+		button.set({
 			withText: true
-		} );
+		});
 
-		button.extendTemplate( {
+		button.extendTemplate({
 			attributes: {
 				class: [
 					'ck',
 					'ck-link-actions__preview'
 				],
-				href: bind.to( 'href', href => href && ensureSafeUrl( href, this._linkConfig.allowedProtocols ) ),
+				href: bind.to('href', href => href && ensureSafeUrl(href, this._linkConfig.allowedProtocols)),
 				target: '_blank',
 				rel: 'noopener noreferrer'
 			},
 			on: {
-				click: bind.to( evt => {
-					if ( this._options && this._options.isScrollableToTarget( this.href ) ) {
+				click: bind.to(evt => {
+					if (this._options && this._options.isScrollableToTarget(this.href)) {
 						evt.preventDefault();
-						this._options.scrollToTarget( this.href! );
+						this._options.scrollToTarget(this.href!);
 					} else {
-						openLink( this.href! );
+						openLink(this.href!);
 					}
-				} )
+				})
 			}
-		} );
+		});
 
-		button.bind( 'tooltip' ).to( this, 'href', href => {
-			if ( this._options && this._options.isScrollableToTarget( href ) ) {
-				return t( 'Scroll to target' );
+		button.bind('tooltip').to(this, 'href', href => {
+			if (this._options && this._options.isScrollableToTarget(href)) {
+				return t('Scroll to target');
 			}
 
-			return t( 'Open link in new tab' );
-		} );
+			return t('Open link in new tab');
+		});
 
-		button.bind( 'label' ).to( this, 'href', href => {
-			return href || t( 'This link has no URL' );
-		} );
+		button.bind('label').to(this, 'href', href => {
+			return href || t('This link has no URL');
+		});
 
-		button.bind( 'isEnabled' ).to( this, 'href', href => !!href );
+		button.bind('isEnabled').to(this, 'href', href => !!href);
 
 		button.template!.tag = 'a';
 
@@ -273,10 +273,10 @@ export type LinkActionsViewOptions = {
 	/**
 	 * Returns `true` when bookmark `id` matches the hash from `link`.
 	 */
-	isScrollableToTarget: ( href: string | undefined ) => boolean;
+	isScrollableToTarget: (href: string | undefined) => boolean;
 
 	/**
 	 * Scrolls the view to the desired bookmark or open a link in new window.
 	 */
-	scrollToTarget: ( href: string ) => void;
+	scrollToTarget: (href: string) => void;
 };

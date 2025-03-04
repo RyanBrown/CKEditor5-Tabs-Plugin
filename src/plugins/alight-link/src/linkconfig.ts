@@ -7,15 +7,15 @@
  * @module link/linkconfig
  */
 
-import type { ArrayOrItem } from 'ckeditor5/src/utils.js';
+import type { ArrayOrItem } from 'ckeditor5/src/utils';
 
 /**
- * The configuration of the {@link module:link/link~Link link feature}.
+ * The configuration of the {@link module:link/link~AlightLink link feature}.
  *
  * ```ts
  * ClassicEditor
  * 	.create( editorElement, {
- * 		link:  ... // Link feature configuration.
+ * 		link:  ... // AlightLink feature configuration.
  * 	} )
  * 	.then( ... )
  * 	.catch( ... );
@@ -131,7 +131,7 @@ export interface LinkConfig {
 	 * * {@link module:link/linkconfig~LinkDecoratorManualDefinition Manual} &ndash; They allow users to control link attributes
 	 * individually, using the editor UI.
 	 *
-	 * Link decorators are defined as objects with key-value pairs, where the key is the name provided for a given decorator and the
+	 * AlightLink decorators are defined as objects with key-value pairs, where the key is the name provided for a given decorator and the
 	 * value is the decorator definition.
 	 *
 	 * The name of the decorator also corresponds to the {@glink framework/architecture/editing-engine#text-attributes text
@@ -221,14 +221,14 @@ export type LinkDecoratorDefinition = LinkDecoratorAutomaticDefinition | LinkDec
 export interface LinkDecoratorAutomaticDefinition {
 
 	/**
-	 * Link decorator type. It is `'automatic'` for all automatic decorators.
+	 * AlightLink decorator type. It is `'automatic'` for all automatic decorators.
 	 */
 	mode: 'automatic';
 
 	/**
 	 * Takes a `url` as a parameter and returns `true` if the `attributes` should be applied to the link.
 	 */
-	callback: ( url: string | null ) => boolean;
+	callback: (url: string | null) => boolean;
 
 	/**
 	 * Key-value pairs used as link attributes added to the output during the
@@ -248,7 +248,7 @@ export interface LinkDecoratorAutomaticDefinition {
 	 * Class names used as link classes added to the output during the
 	 * {@glink framework/architecture/editing-engine#conversion downcasting}.
 	 * Classes should follow the {@link module:engine/view/elementdefinition~ElementDefinition} syntax.
- 	 */
+		 */
 	classes?: ArrayOrItem<string>;
 }
 
@@ -275,7 +275,7 @@ export interface LinkDecoratorAutomaticDefinition {
 export interface LinkDecoratorManualDefinition {
 
 	/**
-	 * Link decorator type. It is `'manual'` for all manual decorators.
+	 * AlightLink decorator type. It is `'manual'` for all manual decorators.
 	 */
 	mode: 'manual';
 

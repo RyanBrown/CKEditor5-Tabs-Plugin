@@ -5,22 +5,22 @@
 
 import type {
 	LinkConfig,
-	AutoLink,
-	Link,
-	LinkEditing,
-	LinkImage,
-	LinkImageEditing,
-	LinkImageUI,
-	LinkUI,
-	LinkCommand,
-	UnlinkCommand
-} from './index.js';
+	AlightAutoLink,
+	AlightLink,
+	AlightLinkEditing,
+	AlightLinkImage,
+	AlightLinkImageEditing,
+	AlightLinkImageUI,
+	AlightLinkUI,
+	AlightLinkCommand,
+	AlightUnlinkCommand
+} from './index';
 
 declare module '@ckeditor/ckeditor5-core' {
 	interface EditorConfig {
 
 		/**
-		 * The configuration of the {@link module:link/link~Link} feature.
+		 * The configuration of the {@link module:link/link~AlightLink} feature.
 		 *
 		 * Read more in {@link module:link/linkconfig~LinkConfig}.
 		 */
@@ -28,20 +28,18 @@ declare module '@ckeditor/ckeditor5-core' {
 	}
 
 	interface PluginsMap {
-		[ AutoLink.pluginName ]: AutoLink;
-		[ Link.pluginName ]: Link;
-		[ LinkEditing.pluginName ]: LinkEditing;
-		[ LinkImage.pluginName ]: LinkImage;
-		[ LinkImageEditing.pluginName ]: LinkImageEditing;
-		[ LinkImageUI.pluginName ]: LinkImageUI;
-		[ LinkUI.pluginName ]: LinkUI;
+		[AlightAutoLink.pluginName]: AlightAutoLink;
+		[AlightLink.pluginName]: AlightLink;
+		[AlightLinkEditing.pluginName]: AlightLinkEditing;
+		[AlightLinkImage.pluginName]: AlightLinkImage;
+		[AlightLinkImageEditing.pluginName]: AlightLinkImageEditing;
+		[AlightLinkImageUI.pluginName]: AlightLinkImageUI;
+		[AlightLinkUI.pluginName]: AlightLinkUI;
 	}
 
 	interface CommandsMap {
-		link: LinkCommand;
-	}
-
-	interface CommandsMap {
-		unlink: UnlinkCommand;
+		// Use string literal for the command name to avoid conflicts
+		'alight-link': AlightLinkCommand;
+		'alight-unlink': AlightUnlinkCommand;
 	}
 }

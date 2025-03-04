@@ -2,20 +2,20 @@
 	"plugins": [
 		{
 			"name": "Autolink",
-			"className": "AutoLink",
+			"className": "AlightAutoLink",
 			"description": "Automatically turns plain text links in the document into active URLs as you write. Works for emails, too.",
 			"docs": "features/link.html#autolink-feature",
-			"path": "src/autolink.js",
+			"path": "src/autolink",
 			"requires": [
-				"Link"
+				"AlightLink"
 			]
 		},
 		{
-			"name": "Link",
-			"className": "Link",
+			"name": "AlightLink",
+			"className": "AlightLink",
 			"description": "Brings support for inserting hyperlinks into the content and offers the UI to create and edit them.",
 			"docs": "features/link.html",
-			"path": "src/link.js",
+			"path": "src/link",
 			"uiComponents": [
 				{
 					"type": "Button",
@@ -48,19 +48,19 @@
 			]
 		},
 		{
-			"name": "Link image",
-			"className": "LinkImage",
+			"name": "AlightLink image",
+			"className": "AlightLinkImage",
 			"description": "Allows adding clickable links to images for creating banners or referrers.",
 			"docs": "features/images/images-linking.html",
-			"path": "src/linkimage.js",
+			"path": "src/AlightLinkImage",
 			"requires": [
-				"Link",
+				"AlightLink",
 				"ImageBlock"
 			],
 			"uiComponents": [
 				{
 					"type": "Button",
-					"name": "linkImage",
+					"name": "AlightLinkImage",
 					"iconPath": "theme/icons/link.svg",
 					"toolbars": [
 						"image.toolbar"

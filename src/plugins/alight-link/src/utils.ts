@@ -16,19 +16,19 @@ import type {
 	ViewAttributeElement,
 	ViewNode,
 	ViewDocumentFragment
-} from 'ckeditor5/src/engine.js';
+} from 'ckeditor5/src/engine';
 
-import type { Editor } from 'ckeditor5/src/core.js';
-import type { LocaleTranslate } from 'ckeditor5/src/utils.js';
+import type { Editor } from 'ckeditor5/src/core';
+import type { LocaleTranslate } from 'ckeditor5/src/utils';
 import type { BookmarkEditing } from '@ckeditor/ckeditor5-bookmark';
 
 import type {
 	LinkDecoratorAutomaticDefinition,
 	LinkDecoratorDefinition,
 	LinkDecoratorManualDefinition
-} from './linkconfig.js';
+} from './linkconfig';
 
-import type { LinkActionsViewOptions } from './ui/linkactionsview.js';
+import type { LinkActionsViewOptions } from './ui/linkactionsview';
 
 import { upperFirst } from 'lodash-es';
 
@@ -50,25 +50,25 @@ const DEFAULT_LINK_PROTOCOLS = [
 ];
 
 /**
- * A keystroke used by the {@link module:link/linkui~LinkUI link UI feature}.
+ * A keystroke used by the {@link module:link/linkui~AlightLinkUI link UI feature}.
  */
 export const LINK_KEYSTROKE = 'Ctrl+K';
 
 /**
  * Returns `true` if a given view node is the link element.
  */
-export function isLinkElement( node: ViewNode | ViewDocumentFragment ): boolean {
-	return node.is( 'attributeElement' ) && !!node.getCustomProperty( 'link' );
+export function isLinkElement(node: ViewNode | ViewDocumentFragment): boolean {
+	return node.is('attributeElement') && !!node.getCustomProperty('link');
 }
 
 /**
  * Creates a link {@link module:engine/view/attributeelement~AttributeElement} with the provided `href` attribute.
  */
-export function createLinkElement( href: string, { writer }: DowncastConversionApi ): ViewAttributeElement {
+export function createLinkElement(href: string, { writer }: DowncastConversionApi): ViewAttributeElement {
 	// Priority 5 - https://github.com/ckeditor/ckeditor5-link/issues/121.
-	const linkElement = writer.createAttributeElement( 'a', { href }, { priority: 5 } );
+	const linkElement = writer.createAttributeElement('a', { href }, { priority: 5 });
 
-	writer.setCustomProperty( 'link', true, linkElement );
+	writer.setCustomProperty('link', true, linkElement);
 
 	return linkElement;
 }
@@ -82,22 +82,22 @@ export function createLinkElement( href: string, { writer }: DowncastConversionA
  *
  * @internal
  */
-export function ensureSafeUrl( url: unknown, allowedProtocols: Array<string> = DEFAULT_LINK_PROTOCOLS ): string {
-	const urlString = String( url );
+export function ensureSafeUrl(url: unknown, allowedProtocols: Array<string> = DEFAULT_LINK_PROTOCOLS): string {
+	const urlString = String(url);
 
-	const protocolsList = allowedProtocols.join( '|' );
-	const customSafeRegex = new RegExp( `${ SAFE_URL_TEMPLATE.replace( '<protocols>', protocolsList ) }`, 'i' );
+	const protocolsList = allowedProtocols.join('|');
+	const customSafeRegex = new RegExp(`${SAFE_URL_TEMPLATE.replace('<protocols>', protocolsList)}`, 'i');
 
-	return isSafeUrl( urlString, customSafeRegex ) ? urlString : '#';
+	return isSafeUrl(urlString, customSafeRegex) ? urlString : '#';
 }
 
 /**
  * Checks whether the given URL is safe for the user (does not contain any malicious code).
  */
-function isSafeUrl( url: string, customRegexp: RegExp ): boolean {
-	const normalizedUrl = url.replace( ATTRIBUTE_WHITESPACES, '' );
+function isSafeUrl(url: string, customRegexp: RegExp): boolean {
+	const normalizedUrl = url.replace(ATTRIBUTE_WHITESPACES, '');
 
-	return !!normalizedUrl.match( customRegexp );
+	return !!normalizedUrl.match(customRegexp);
 }
 
 /**
@@ -116,17 +116,17 @@ export function getLocalizedDecorators(
 	decorators: Array<NormalizedLinkDecoratorDefinition>
 ): Array<NormalizedLinkDecoratorDefinition> {
 	const localizedDecoratorsLabels: Record<string, string> = {
-		'Open in a new tab': t( 'Open in a new tab' ),
-		'Downloadable': t( 'Downloadable' )
+		'Open in a new tab': t('Open in a new tab'),
+		'Downloadable': t('Downloadable')
 	};
 
-	decorators.forEach( decorator => {
-		if ( 'label' in decorator && localizedDecoratorsLabels[ decorator.label ] ) {
-			decorator.label = localizedDecoratorsLabels[ decorator.label ];
+	decorators.forEach(decorator => {
+		if ('label' in decorator && localizedDecoratorsLabels[decorator.label]) {
+			decorator.label = localizedDecoratorsLabels[decorator.label];
 		}
 
 		return decorator;
-	} );
+	});
 
 	return decorators;
 }
@@ -135,18 +135,18 @@ export function getLocalizedDecorators(
  * Converts an object with defined decorators to a normalized array of decorators. The `id` key is added for each decorator and
  * is used as the attribute's name in the model.
  */
-export function normalizeDecorators( decorators?: Record<string, LinkDecoratorDefinition> ): Array<NormalizedLinkDecoratorDefinition> {
+export function normalizeDecorators(decorators?: Record<string, LinkDecoratorDefinition>): Array<NormalizedLinkDecoratorDefinition> {
 	const retArray: Array<NormalizedLinkDecoratorDefinition> = [];
 
-	if ( decorators ) {
-		for ( const [ key, value ] of Object.entries( decorators ) ) {
+	if (decorators) {
+		for (const [key, value] of Object.entries(decorators)) {
 			const decorator = Object.assign(
 				{},
 				value,
-				{ id: `link${ upperFirst( key ) }` }
+				{ id: `link${upperFirst(key)}` }
 			);
 
-			retArray.push( decorator );
+			retArray.push(decorator);
 		}
 	}
 
@@ -156,19 +156,19 @@ export function normalizeDecorators( decorators?: Record<string, LinkDecoratorDe
 /**
  * Returns `true` if the specified `element` can be linked (the element allows the `linkHref` attribute).
  */
-export function isLinkableElement( element: Element | null, schema: Schema ): element is Element {
-	if ( !element ) {
+export function isLinkableElement(element: Element | null, schema: Schema): element is Element {
+	if (!element) {
 		return false;
 	}
 
-	return schema.checkAttribute( element.name, 'linkHref' );
+	return schema.checkAttribute(element.name, 'linkHref');
 }
 
 /**
  * Returns `true` if the specified `value` is an email.
  */
-export function isEmail( value: string ): boolean {
-	return EMAIL_REG_EXP.test( value );
+export function isEmail(value: string): boolean {
+	return EMAIL_REG_EXP.test(value);
 }
 
 /**
@@ -178,9 +178,9 @@ export function isEmail( value: string ): boolean {
  * configuration value provided,
  * * or the link is an email address.
  */
-export function addLinkProtocolIfApplicable( link: string, defaultProtocol?: string ): string {
-	const protocol = isEmail( link ) ? 'mailto:' : defaultProtocol;
-	const isProtocolNeeded = !!protocol && !linkHasProtocol( link );
+export function addLinkProtocolIfApplicable(link: string, defaultProtocol?: string): string {
+	const protocol = isEmail(link) ? 'mailto:' : defaultProtocol;
+	const isProtocolNeeded = !!protocol && !linkHasProtocol(link);
 
 	return link && isProtocolNeeded ? protocol + link : link;
 }
@@ -188,50 +188,50 @@ export function addLinkProtocolIfApplicable( link: string, defaultProtocol?: str
 /**
  * Checks if protocol is already included in the link.
  */
-export function linkHasProtocol( link: string ): boolean {
-	return PROTOCOL_REG_EXP.test( link );
+export function linkHasProtocol(link: string): boolean {
+	return PROTOCOL_REG_EXP.test(link);
 }
 
 /**
  * Opens the link in a new browser tab.
  */
-export function openLink( link: string ): void {
-	window.open( link, '_blank', 'noopener' );
+export function openLink(link: string): void {
+	window.open(link, '_blank', 'noopener');
 }
 
 /**
  * Creates the bookmark callbacks for handling link opening experience.
  */
-export function createBookmarkCallbacks( editor: Editor ): LinkActionsViewOptions {
-	const bookmarkEditing: BookmarkEditing | null = editor.plugins.has( 'BookmarkEditing' ) ?
-		editor.plugins.get( 'BookmarkEditing' ) :
+export function createBookmarkCallbacks(editor: Editor): LinkActionsViewOptions {
+	const bookmarkEditing: BookmarkEditing | null = editor.plugins.has('BookmarkEditing') ?
+		editor.plugins.get('BookmarkEditing') :
 		null;
 
 	/**
 	 * Returns `true` when bookmark `id` matches the hash from `link`.
 	 */
-	function isScrollableToTarget( link: string | undefined ): boolean {
+	function isScrollableToTarget(link: string | undefined): boolean {
 		return !!link &&
-			link.startsWith( '#' ) &&
+			link.startsWith('#') &&
 			!!bookmarkEditing &&
-			!!bookmarkEditing.getElementForBookmarkId( link.slice( 1 ) );
+			!!bookmarkEditing.getElementForBookmarkId(link.slice(1));
 	}
 
 	/**
 	 * Scrolls the view to the desired bookmark or open a link in new window.
 	 */
-	function scrollToTarget( link: string ): void {
-		const bookmarkId = link.slice( 1 );
-		const modelBookmark = bookmarkEditing!.getElementForBookmarkId( bookmarkId );
+	function scrollToTarget(link: string): void {
+		const bookmarkId = link.slice(1);
+		const modelBookmark = bookmarkEditing!.getElementForBookmarkId(bookmarkId);
 
-		editor.model.change( writer => {
-			writer.setSelection( modelBookmark!, 'on' );
-		} );
+		editor.model.change(writer => {
+			writer.setSelection(modelBookmark!, 'on');
+		});
 
-		editor.editing.view.scrollToTheSelection( {
+		editor.editing.view.scrollToTheSelection({
 			alignToTop: true,
 			forceScroll: true
-		} );
+		});
 	}
 
 	return {
