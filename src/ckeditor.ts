@@ -79,6 +79,7 @@ import AlightTabsPlugin from './plugins/alight-tabs-plugin/alight-tabs-plugin';
 // import AlightEmailLinkPlugin from './plugins/alight-email-link-plugin/alight-email-link-plugin';
 import AlightLink from './plugins/alight-link/src/link';
 import AlightExternalLink from './plugins/alight-external-link/src/link';
+import AlightEmailLink from './plugins/alight-email-link/src/link';
 
 // Import custom styles for headings, style definitions and custom plugins
 import './styles/styles.scss';
@@ -209,6 +210,7 @@ class Editor extends ClassicEditor {
     // AlightEmailLinkPlugin,
     AlightLink,
     AlightExternalLink,
+    AlightEmailLink,
   ];
 
   public static override defaultConfig: EditorConfig = {
@@ -271,6 +273,7 @@ class Editor extends ClassicEditor {
         // 'alightNewDocumentLinkPlugin',
         'alightLink',
         'alightExternalLink',
+        'alightEmailLink',
       ],
       shouldNotGroupWhenFull: true,
     },
