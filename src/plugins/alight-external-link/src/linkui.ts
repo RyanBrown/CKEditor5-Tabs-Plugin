@@ -226,12 +226,51 @@ export default class AlightExternalLinkUI extends Plugin {
 		urlLabel.htmlFor = 'cka-link-url-input';
 		urlLabel.className = 'cka-input-label';
 
+		// Create a container for the URL input with prefix
+		const urlInputContainer = document.createElement('div');
+		urlInputContainer.className = 'cka-url-input-container';
+		urlInputContainer.style.display = 'flex';
+		urlInputContainer.style.alignItems = 'center';
+		urlInputContainer.style.width = '100%';
+		urlInputContainer.style.border = '1px solid #767676';
+
+		// Create the prefix element
+		const urlPrefix = document.createElement('div');
+		urlPrefix.textContent = 'https://';
+		urlPrefix.className = 'cka-url-prefix';
+		urlPrefix.style.padding = '8px 4px 8px 8px';
+		urlPrefix.style.backgroundColor = '#f0f0f0';
+		urlPrefix.style.color = '#666';
+		urlPrefix.style.fontFamily = 'monospace';
+		urlPrefix.style.borderRight = '1px solid #767676';
+
+		// Create the actual input
 		const urlInput = document.createElement('input');
-		urlInput.type = 'url';
-		urlInput.className = 'cka-input-text cka-width-100';
+		urlInput.type = 'text';
+		urlInput.className = 'cka-input-text';
 		urlInput.id = 'cka-link-url-input';
 		urlInput.placeholder = 'example.com';
-		urlInput.value = linkCommand.value || '';
+		urlInput.style.border = 'none';
+		urlInput.style.padding = '8px';
+		urlInput.style.flexGrow = '1';
+		urlInput.style.width = '100%';
+		urlInput.style.outline = 'none';
+
+		// Process and set the input value
+		let initialUrl = linkCommand.value || '';
+
+		// Remove protocol if it exists
+		if (initialUrl.startsWith('https://')) {
+			initialUrl = initialUrl.substring(8);
+		} else if (initialUrl.startsWith('http://')) {
+			initialUrl = initialUrl.substring(7);
+		}
+
+		urlInput.value = initialUrl;
+
+		// Assemble the URL input
+		urlInputContainer.appendChild(urlPrefix);
+		urlInputContainer.appendChild(urlInput);
 
 		const errorMessage = document.createElement('div');
 		errorMessage.textContent = t('Please enter a valid web address.');
@@ -265,6 +304,19 @@ export default class AlightExternalLinkUI extends Plugin {
 		checkboxLabel.textContent = t('Allow unsecure HTTP URLs');
 		checkboxLabel.className = 'cka-checkbox-label';
 
+		// Handle checkbox change to update the prefix
+		checkboxInput.addEventListener('change', () => {
+			urlPrefix.textContent = checkboxInput.checked ? 'http://' : 'https://';
+			// Add a visual indication of insecure protocol
+			if (checkboxInput.checked) {
+				urlPrefix.style.backgroundColor = '#fff3cd';
+				urlPrefix.style.color = '#856404';
+			} else {
+				urlPrefix.style.backgroundColor = '#f0f0f0';
+				urlPrefix.style.color = '#666';
+			}
+		});
+
 		checkboxContainer.appendChild(checkboxInput);
 		checkboxContainer.appendChild(checkboxLabel);
 
@@ -273,7 +325,7 @@ export default class AlightExternalLinkUI extends Plugin {
 		noteText.className = 'cka-note-text';
 
 		urlContainer.appendChild(urlLabel);
-		urlContainer.appendChild(urlInput);
+		urlContainer.appendChild(urlInputContainer);
 		urlContainer.appendChild(errorMessage);
 		urlContainer.appendChild(orgNameLabel);
 		urlContainer.appendChild(orgNameInput);
@@ -289,15 +341,15 @@ export default class AlightExternalLinkUI extends Plugin {
 
 		if (saveButton) {
 			saveButton.addEventListener('click', () => {
-				const url = urlInput.value.trim();
+				const urlValue = urlInput.value.trim();
 				const orgName = orgNameInput.value.trim();
-				const allowUnsecureUrls = checkboxInput.checked;
+				const useHttpProtocol = checkboxInput.checked;
 				let isValid = true;
 
-				// Run validators
+				// Run validators on the URL without protocol
 				for (const validator of validators) {
 					const mockFormView = {
-						url,
+						url: urlValue, // Validate just the domain part
 						urlInputView: {
 							errorText: null
 						}
@@ -314,13 +366,14 @@ export default class AlightExternalLinkUI extends Plugin {
 				}
 
 				if (isValid) {
-					const defaultProtocol = editor.config.get('link.defaultProtocol');
-					const parsedUrl = addLinkProtocolIfApplicable(url, defaultProtocol);
+					// Construct the full URL with the correct protocol
+					const protocol = useHttpProtocol ? 'http://' : 'https://';
+					const fullUrl = protocol + urlValue;
 
 					// Execute the command with the organization name as part of the options
-					editor.execute('alight-external-link', parsedUrl, {
+					editor.execute('alight-external-link', fullUrl, {
 						orgName: !!orgName,
-						allowUnsecureUrls
+						allowUnsecureUrls: useHttpProtocol
 					});
 
 					// Hide dialog
