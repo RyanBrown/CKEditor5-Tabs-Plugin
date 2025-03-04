@@ -47,7 +47,7 @@ import {
 
 import '../theme/link.css';
 
-const HIGHLIGHT_CLASS = 'ck-link_selected';
+const HIGHLIGHT_CLASS = 'alight-link_selected';
 const DECORATOR_AUTOMATIC = 'automatic';
 const DECORATOR_MANUAL = 'manual';
 const EXTERNAL_LINKS_REGEXP = /^(https?:)?\/\//;
@@ -55,7 +55,7 @@ const EXTERNAL_LINKS_REGEXP = /^(https?:)?\/\//;
 /**
  * The link engine feature.
  *
- * It introduces the `linkHref="url"` attribute in the model which renders to the view as a `<a href="url">` element
+ * It introduces the `alightLinkHref="url"` attribute in the model which renders to the view as a `<a href="url">` element
  * as well as `'link'` and `'unlink'` commands.
  */
 export default class AlightLinkEditing extends Plugin {
@@ -101,14 +101,14 @@ export default class AlightLinkEditing extends Plugin {
 		const allowedProtocols = this.editor.config.get('link.allowedProtocols');
 
 		// Allow link attribute on all inline nodes.
-		editor.model.schema.extend('$text', { allowAttributes: 'linkHref' });
+		editor.model.schema.extend('$text', { allowAttributes: 'alightLinkHref' });
 
 		editor.conversion.for('dataDowncast')
-			.attributeToElement({ model: 'linkHref', view: createLinkElement });
+			.attributeToElement({ model: 'alightLinkHref', view: createLinkElement });
 
 		editor.conversion.for('editingDowncast')
 			.attributeToElement({
-				model: 'linkHref', view: (href, conversionApi) => {
+				model: 'alightLinkHref', view: (href, conversionApi) => {
 					return createLinkElement(ensureSafeUrl(href, allowedProtocols), conversionApi);
 				}
 			});
@@ -122,7 +122,7 @@ export default class AlightLinkEditing extends Plugin {
 					}
 				},
 				model: {
-					key: 'linkHref',
+					key: 'alightLinkHref',
 					value: (viewElement: ViewElement) => viewElement.getAttribute('href')
 				}
 			});
@@ -138,12 +138,12 @@ export default class AlightLinkEditing extends Plugin {
 		this._enableManualDecorators(linkDecorators
 			.filter((item): item is NormalizedLinkDecoratorManualDefinition => item.mode === DECORATOR_MANUAL));
 
-		// Enable two-step caret movement for `linkHref` attribute.
+		// Enable two-step caret movement for `alightLinkHref` attribute.
 		const twoStepCaretMovementPlugin = editor.plugins.get(TwoStepCaretMovement);
-		twoStepCaretMovementPlugin.registerAttribute('linkHref');
+		twoStepCaretMovementPlugin.registerAttribute('alightLinkHref');
 
 		// Setup highlight over selected link.
-		inlineHighlight(editor, 'linkHref', 'a', HIGHLIGHT_CLASS);
+		inlineHighlight(editor, 'alightLinkHref', 'a', HIGHLIGHT_CLASS);
 
 		// Handle link following by CTRL+click or ALT+ENTER
 		this._enableLinkOpen();
@@ -319,7 +319,7 @@ export default class AlightLinkEditing extends Plugin {
 	}
 
 	/**
-	 * Watches the DocumentSelection attribute changes and removes link decorator attributes when the linkHref attribute is removed.
+	 * Watches the DocumentSelection attribute changes and removes link decorator attributes when the alightLinkHref attribute is removed.
 	 *
 	 * This is to ensure that there is no left-over link decorator attributes on the document selection that is no longer in a link.
 	 */
@@ -329,7 +329,7 @@ export default class AlightLinkEditing extends Plugin {
 		const selection = model.document.selection;
 
 		this.listenTo<DocumentSelectionChangeAttributeEvent>(selection, 'change:attribute', (evt, { attributeKeys }) => {
-			if (!attributeKeys.includes('linkHref') || selection.hasAttribute('linkHref')) {
+			if (!attributeKeys.includes('alightLinkHref') || selection.hasAttribute('alightLinkHref')) {
 				return;
 			}
 
@@ -356,10 +356,10 @@ export default class AlightLinkEditing extends Plugin {
 				const range = writer.createRangeIn(data.content);
 
 				for (const item of range.getItems()) {
-					if (item.hasAttribute('linkHref')) {
-						const newLink = addLinkProtocolIfApplicable(item.getAttribute('linkHref') as string, defaultProtocol);
+					if (item.hasAttribute('alightLinkHref')) {
+						const newLink = addLinkProtocolIfApplicable(item.getAttribute('alightLinkHref') as string, defaultProtocol);
 
-						writer.setAttribute('linkHref', newLink, item);
+						writer.setAttribute('alightLinkHref', newLink, item);
 					}
 				}
 			});
@@ -369,11 +369,11 @@ export default class AlightLinkEditing extends Plugin {
 
 /**
  * Make the selection free of link-related model attributes.
- * All link-related model attributes start with "link". That includes not only "linkHref"
+ * All link-related model attributes start with "link". That includes not only "alightLinkHref"
  * but also all decorator attributes (they have dynamic names), or even custom plugins.
  */
 function removeLinkAttributesFromSelection(writer: Writer, linkAttributes: Array<string>): void {
-	writer.removeSelectionAttribute('linkHref');
+	writer.removeSelectionAttribute('alightLinkHref');
 
 	for (const attribute of linkAttributes) {
 		writer.removeSelectionAttribute(attribute);

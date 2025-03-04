@@ -122,8 +122,8 @@ export default class AlightAutoLink extends Plugin {
 	 * If position is not inside a link, returns `null`.
 	 */
 	private _expandLinkRange(model: Model, position: Position): Range | null {
-		if (position.textNode && position.textNode.hasAttribute('linkHref')) {
-			return findAttributeRange(position, 'linkHref', position.textNode.getAttribute('linkHref'), model);
+		if (position.textNode && position.textNode.hasAttribute('alightLinkHref')) {
+			return findAttributeRange(position, 'alightLinkHref', position.textNode.getAttribute('alightLinkHref'), model);
 		} else {
 			return null;
 		}
@@ -345,7 +345,7 @@ export default class AlightAutoLink extends Plugin {
 
 		// Enqueue change to make undo step.
 		model.enqueueChange(writer => {
-			writer.setAttribute('linkHref', url, range);
+			writer.setAttribute('alightLinkHref', url, range);
 
 			model.enqueueChange(() => {
 				deletePlugin.requestUndoOnBackspace();
@@ -366,10 +366,10 @@ function getUrlAtTextEnd(text: string): string | null {
 }
 
 function isLinkAllowedOnRange(range: Range, model: Model): boolean {
-	return model.schema.checkAttributeInSelection(model.createSelection(range), 'linkHref');
+	return model.schema.checkAttributeInSelection(model.createSelection(range), 'alightLinkHref');
 }
 
 function linkIsAlreadySet(range: Range): boolean {
 	const item = range.start.nodeAfter;
-	return !!item && item.hasAttribute('linkHref');
+	return !!item && item.hasAttribute('alightLinkHref');
 }
