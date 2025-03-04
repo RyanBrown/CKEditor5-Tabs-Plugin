@@ -300,10 +300,11 @@ export default class AlightLinkUI extends Plugin {
 		const t = locale.t;
 
 		view.set({
-			label: t('AlightLink'),
+			label: t('Alight Link'),
 			icon: linkIcon,
 			keystroke: LINK_KEYSTROKE,
-			isToggleable: true
+			isToggleable: true,
+			withText: true
 		});
 
 		view.bind('isEnabled').to(command, 'isEnabled');
