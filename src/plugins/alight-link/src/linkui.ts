@@ -39,7 +39,7 @@ import {
 
 import linkIcon from '../theme/icons/link.svg';
 
-const VISUAL_SELECTION_MARKER_NAME = 'link-ui';
+const VISUAL_SELECTION_MARKER_NAME = 'alight-link-ui';
 
 /**
  * The link UI plugin. It introduces the `'link'` and `'unlink'` buttons and support for the <kbd>Ctrl+K</kbd> keystroke.

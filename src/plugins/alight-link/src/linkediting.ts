@@ -236,7 +236,7 @@ export default class AlightLinkEditing extends Plugin {
 							writer.setStyle(key, decorator.styles[key], element);
 						}
 
-						writer.setCustomProperty('link', true, element);
+						writer.setCustomProperty('alight-link', true, element);
 
 						return element;
 					}
