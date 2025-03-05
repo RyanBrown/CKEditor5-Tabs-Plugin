@@ -19,24 +19,24 @@ import AlightExternalLinkAutoLink from './autolink';
  * and {@link module:link/linkui~AlightExternalLinkUI link UI feature}.
  */
 export default class AlightExternalLink extends Plugin {
-	/**
-	 * @inheritDoc
-	 */
-	public static get requires() {
-		return [AlightExternalLinkEditing, AlightExternalLinkUI, AlightExternalLinkAutoLink] as const;
-	}
+  /**
+   * @inheritDoc
+   */
+  public static get requires() {
+    return [AlightExternalLinkEditing, AlightExternalLinkUI, AlightExternalLinkAutoLink] as const;
+  }
 
-	/**
-	 * @inheritDoc
-	 */
-	public static get pluginName() {
-		return 'AlightExternalLink' as const;
-	}
+  /**
+   * @inheritDoc
+   */
+  public static get pluginName() {
+    return 'AlightExternalLink' as const;
+  }
 
-	/**
-	 * @inheritDoc
-	 */
-	public static override get isOfficialPlugin(): true {
-		return true;
-	}
+  /**
+   * @inheritDoc
+   */
+  public static override get isOfficialPlugin(): true {
+    return true;
+  }
 }

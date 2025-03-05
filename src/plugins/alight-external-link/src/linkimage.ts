@@ -20,24 +20,24 @@ import '../theme/AlightExternalLinkImage.css';
  * and {@link module:link/AlightExternalLinkImageui~AlightExternalLinkImageUI link image UI feature}.
  */
 export default class AlightExternalLinkImage extends Plugin {
-	/**
-	 * @inheritDoc
-	 */
-	public static get requires() {
-		return [AlightExternalLinkImageEditing, AlightExternalLinkImageUI] as const;
-	}
+  /**
+   * @inheritDoc
+   */
+  public static get requires() {
+    return [AlightExternalLinkImageEditing, AlightExternalLinkImageUI] as const;
+  }
 
-	/**
-	 * @inheritDoc
-	 */
-	public static get pluginName() {
-		return 'AlightExternalLinkImage' as const;
-	}
+  /**
+   * @inheritDoc
+   */
+  public static get pluginName() {
+    return 'AlightExternalLinkImage' as const;
+  }
 
-	/**
-	 * @inheritDoc
-	 */
-	public static override get isOfficialPlugin(): true {
-		return true;
-	}
+  /**
+   * @inheritDoc
+   */
+  public static override get isOfficialPlugin(): true {
+    return true;
+  }
 }
