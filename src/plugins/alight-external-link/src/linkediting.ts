@@ -47,7 +47,7 @@ import {
 
 import '../theme/link.css';
 
-const HIGHLIGHT_CLASS = 'alight-external-link_selected';
+const HIGHLIGHT_CLASS = 'ck-link_selected';
 const DECORATOR_AUTOMATIC = 'automatic';
 const DECORATOR_MANUAL = 'manual';
 const EXTERNAL_LINKS_REGEXP = /^(https?:)?\/\//;
