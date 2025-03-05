@@ -4,7 +4,7 @@
  */
 
 /**
- * @module link/link
+ * @module link/alightemaillink
  */
 
 import { Plugin } from 'ckeditor5/src/core';
@@ -13,10 +13,9 @@ import AlightEmailLinkUI from './linkui';
 import AlightEmailAutoLink from './autolink';
 
 /**
- * The link plugin.
+ * The Alight Email link plugin.
  *
- * This is a "glue" plugin that loads the {@link module:link/linkediting~AlightEmailLinkEditing link editing feature}
- * and {@link module:link/linkui~AlightEmailLinkUI link UI feature}.
+ * This is a "glue" plugin that loads the modified link editing and UI features.
  */
 export default class AlightEmailLink extends Plugin {
 	/**
@@ -38,5 +37,12 @@ export default class AlightEmailLink extends Plugin {
 	 */
 	public static override get isOfficialPlugin(): true {
 		return true;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public init(): void {
+		// The UI component is already registered by AlightEmailLinkUI plugin
 	}
 }

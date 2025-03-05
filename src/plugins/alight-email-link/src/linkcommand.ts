@@ -4,7 +4,7 @@
  */
 
 /**
- * @module link/AlightEmailLinkCommand
+ * Modified AlightEmailLinkCommand to support organization name
  */
 
 import { Command } from 'ckeditor5/src/core';
@@ -17,7 +17,16 @@ import { isLinkableElement } from './utils';
 import type ManualDecorator from './utils/manualdecorator';
 
 /**
+ * Interface for link options including organization name
+ */
+interface LinkOptions {
+	[key: string]: boolean | string | undefined;
+	organization?: string;
+}
+
+/**
  * The link command. It is used by the {@link module:link/link~AlightEmailLink link feature}.
+ * Enhanced to support organization name.
  */
 export default class AlightEmailLinkCommand extends Command {
 	/**
@@ -87,69 +96,27 @@ export default class AlightEmailLinkCommand extends Command {
 	 *
 	 * When the selection is collapsed and inside the text with the `alightEmailLinkHref` attribute, the attribute value will be updated.
 	 *
-	 * # Decorators and model attribute management
-	 *
-	 * There is an optional argument to this command that applies or removes model
-	 * {@glink framework/architecture/editing-engine#text-attributes text attributes} brought by
-	 * {@link module:link/utils/manualdecorator~ManualDecorator manual link decorators}.
-	 *
-	 * Text attribute names in the model correspond to the entries in the {@link module:link/linkconfig~LinkConfig#decorators
-	 * configuration}.
-	 * For every decorator configured, a model text attribute exists with the "link" prefix. For example, a `'linkMyDecorator'` attribute
-	 * corresponds to `'myDecorator'` in the configuration.
-	 *
-	 * To learn more about link decorators, check out the {@link module:link/linkconfig~LinkConfig#decorators `config.link.decorators`}
-	 * documentation.
-	 *
-	 * Here is how to manage decorator attributes with the link command:
-	 *
-	 * ```ts
-	 * const AlightEmailLinkCommand = editor.commands.get( 'link' );
-	 *
-	 * // Adding a new decorator attribute.
-	 * AlightEmailLinkCommand.execute( 'http://example.com', {
-	 * 	linkIsEmail: true
-	 * } );
-	 *
-	 * // Removing a decorator attribute from the selection.
-	 * AlightEmailLinkCommand.execute( 'http://example.com', {
-	 * 	linkIsEmail: false
-	 * } );
-	 *
-	 * // Adding multiple decorator attributes at the same time.
-	 * AlightEmailLinkCommand.execute( 'http://example.com', {
-	 * 	linkIsEmail: true,
-	 * 	linkIsDownloadable: true,
-	 * } );
-	 *
-	 * // Removing and adding decorator attributes at the same time.
-	 * AlightEmailLinkCommand.execute( 'http://example.com', {
-	 * 	linkIsEmail: false,
-	 * 	linkFoo: true,
-	 * 	linkIsDownloadable: false,
-	 * } );
-	 * ```
-	 *
-	 * **Note**: If the decorator attribute name is not specified, its state remains untouched.
-	 *
-	 * **Note**: {@link module:link/AlightEmailUnlinkCommand~AlightEmailUnlinkCommand#execute `AlightEmailUnlinkCommand#execute()`} removes all
-	 * decorator attributes.
-	 *
 	 * @fires execute
 	 * @param href AlightEmailLink destination.
-	 * @param manualDecoratorIds The information about manual decorator attributes to be applied or removed upon execution.
+	 * @param options Options including manual decorator attributes and organization name.
 	 */
-	public override execute(href: string, manualDecoratorIds: Record<string, boolean> = {}): void {
+	public override execute(href: string, options: LinkOptions = {}): void {
 		const model = this.editor.model;
 		const selection = model.document.selection;
-		// Stores information about manual decorators to turn them on/off when command is applied.
+
+		// Extract organization option
+		const organization = options.organization || '';
+
+		// Extract decorator options
 		const truthyManualDecorators: Array<string> = [];
 		const falsyManualDecorators: Array<string> = [];
 
-		for (const name in manualDecoratorIds) {
-			if (manualDecoratorIds[name]) {
+		for (const name in options) {
+			if (name === 'organization') continue; // Skip organization name
+
+			if (options[name] === true) {
 				truthyManualDecorators.push(name);
-			} else {
+			} else if (options[name] === false) {
 				falsyManualDecorators.push(name);
 			}
 		}
@@ -163,10 +130,18 @@ export default class AlightEmailLinkCommand extends Command {
 				if (selection.hasAttribute('alightEmailLinkHref')) {
 					const linkText = extractTextFromSelection(selection);
 					// Then update `alightEmailLinkHref` value.
-					let linkRange = findAttributeRange(position, 'alightEmailLinkHref', selection.getAttribute('alightEmailLinkHref'), model);
+					let linkRange = findAttributeRange(
+						position,
+						'alightEmailLinkHref',
+						selection.getAttribute('alightEmailLinkHref'),
+						model
+					);
 
 					if (selection.getAttribute('alightEmailLinkHref') === linkText) {
-						linkRange = this._updateLinkContent(model, writer, linkRange, href);
+						linkRange = this._updateLinkContent(model, writer, linkRange, href, organization);
+					} else {
+						// Update the link text for organization
+						this._appendOrganizationToLink(writer, linkRange, organization);
 					}
 
 					writer.setAttribute('alightEmailLinkHref', href, linkRange);
@@ -183,8 +158,6 @@ export default class AlightEmailLinkCommand extends Command {
 					writer.setSelection(writer.createPositionAfter(linkRange.end.nodeBefore!));
 				}
 				// If not then insert text node with `alightEmailLinkHref` attribute in place of caret.
-				// However, since selection is collapsed, attribute value will be used as data for text node.
-				// So, if `href` is empty, do not create text node.
 				else if (href !== '') {
 					const attributes = toMap(selection.getAttributes());
 
@@ -194,10 +167,18 @@ export default class AlightEmailLinkCommand extends Command {
 						attributes.set(item, true);
 					});
 
-					const { end: positionAfter } = model.insertContent(writer.createText(href, attributes), position);
+					// If organization is provided, create the display text with it
+					let displayText = href;
+					if (organization) {
+						displayText = `${href} (${organization})`;
+					}
+
+					const { end: positionAfter } = model.insertContent(
+						writer.createText(displayText, attributes as any),
+						position
+					);
 
 					// Put the selection at the end of the inserted link.
-					// Using end of range returned from insertContent in case nodes with the same attributes got merged.
 					writer.setSelection(positionAfter);
 				}
 
@@ -220,11 +201,10 @@ export default class AlightEmailLinkCommand extends Command {
 					}
 				}
 
-				// Ranges that accept the `alightEmailLinkHref` attribute. Since we will iterate over `allowedRanges`, let's clone it.
+				// Ranges that accept the `alightEmailLinkHref` attribute.
 				const rangesToUpdate = allowedRanges.slice();
 
 				// For all selection ranges we want to check whether given range is inside an element that accepts the `alightEmailLinkHref` attribute.
-				// If so, we don't want to propagate applying the attribute to its children.
 				for (const range of ranges) {
 					if (this._isRangeToUpdate(range, allowedRanges)) {
 						rangesToUpdate.push(range);
@@ -234,12 +214,17 @@ export default class AlightEmailLinkCommand extends Command {
 				for (const range of rangesToUpdate) {
 					let linkRange = range;
 
+					// Update link text if there's an organization
+					if (organization) {
+						this._appendOrganizationToLink(writer, linkRange, organization);
+					}
+
 					if (rangesToUpdate.length === 1) {
 						// Current text of the link in the document.
 						const linkText = extractTextFromSelection(selection);
 
 						if (selection.getAttribute('alightEmailLinkHref') === linkText) {
-							linkRange = this._updateLinkContent(model, writer, range, href);
+							linkRange = this._updateLinkContent(model, writer, range, href, organization);
 							writer.setSelection(writer.createSelection(linkRange));
 						}
 					}
@@ -259,18 +244,54 @@ export default class AlightEmailLinkCommand extends Command {
 	}
 
 	/**
+	 * Updates the link text with organization name in parentheses.
+	 * This method uses proper Writer operations to update the text.
+	 */
+	private _appendOrganizationToLink(writer: Writer, range: Range, organization: string): void {
+		if (!organization) {
+			return;
+		}
+
+		// Get the text nodes in the range
+		const textNodes = Array.from(range.getItems()).filter(item => item.is('$text'));
+
+		if (textNodes.length === 0) {
+			return;
+		}
+
+		// For simplicity, get the combined text and process it
+		let combinedText = '';
+		for (const node of textNodes) {
+			combinedText += node.data;
+		}
+
+		// Check if there's already an organization
+		const match = combinedText.match(/^(.*?)(?:\s*\(.*?\))?$/);
+		if (!match) {
+			return;
+		}
+
+		const baseText = match[1];
+		const newText = `${baseText} (${organization})`;
+
+		// Remove all existing text nodes in the range
+		for (const node of textNodes) {
+			writer.remove(node);
+		}
+
+		// Insert new text with organization at the start of the range
+		writer.insertText(newText, range.start);
+	}
+
+	/**
 	 * Provides information whether a decorator with a given name is present in the currently processed selection.
-	 *
-	 * @param decoratorName The name of the manual decorator used in the model
-	 * @returns The information whether a given decorator is currently present in the selection.
 	 */
 	private _getDecoratorStateFromModel(decoratorName: string): boolean | undefined {
 		const model = this.editor.model;
 		const selection = model.document.selection;
 		const selectedElement = selection.getSelectedElement();
 
-		// A check for the `AlightEmailLinkImage` plugin. If the selection contains an element, get values from the element.
-		// Currently the selection reads attributes from text nodes only. See #7429 and #7465.
+		// A check for the `AlightEmailLinkImage` plugin.
 		if (isLinkableElement(selectedElement, model.schema)) {
 			return selectedElement.getAttribute(decoratorName) as boolean | undefined;
 		}
@@ -280,9 +301,6 @@ export default class AlightEmailLinkCommand extends Command {
 
 	/**
 	 * Checks whether specified `range` is inside an element that accepts the `alightEmailLinkHref` attribute.
-	 *
-	 * @param range A range to check.
-	 * @param allowedRanges An array of ranges created on elements where the attribute is accepted.
 	 */
 	private _isRangeToUpdate(range: Range, allowedRanges: Array<Range>): boolean {
 		for (const allowedRange of allowedRanges) {
@@ -296,17 +314,31 @@ export default class AlightEmailLinkCommand extends Command {
 	}
 
 	/**
-	 * Updates selected link with a new value as its content and as its href attribute.
-	 *
-	 * @param model Model is need to insert content.
-	 * @param writer Writer is need to create text element in model.
-	 * @param range A range where should be inserted content.
-	 * @param href A link value which should be in the href attribute and in the content.
+	 * Updates the link content with href and organization if provided.
 	 */
-	private _updateLinkContent(model: Model, writer: Writer, range: Range, href: string): Range {
-		const text = writer.createText(href, { alightEmailLinkHref: href });
+	private _updateLinkContent(
+		model: Model,
+		writer: Writer,
+		range: Range,
+		href: string,
+		organization: string
+	): Range {
+		let text = href;
 
-		return model.insertContent(text, range);
+		// If organization is provided, add it to the link text
+		if (organization) {
+			text = `${href} (${organization})`;
+		}
+
+		// Remove all content in the range
+		writer.remove(range);
+
+		// Create a new text node with attributes
+		const attributeValue = { alightEmailLinkHref: href } as any;
+		const textNode = writer.createText(text, attributeValue);
+
+		// Insert the new text node at the range start
+		return model.insertContent(textNode, range.start);
 	}
 }
 

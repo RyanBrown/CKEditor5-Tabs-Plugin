@@ -1,73 +1,36 @@
-/**
- * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
- */
-
-/**
- * @module link/linkui
- */
-
-import { Plugin, type Editor } from 'ckeditor5/src/core';
-import {
-	ClickObserver,
-	type ViewAttributeElement,
-	type ViewDocumentClickEvent,
-	type ViewElement,
-	type ViewPosition
-} from 'ckeditor5/src/engine';
-import {
-	ButtonView,
-	ContextualBalloon,
-	clickOutsideHandler,
-	CssTransitionDisablerMixin,
-	MenuBarMenuListItemButtonView,
-	type ViewWithCssTransitionDisabler
-} from 'ckeditor5/src/ui';
-import type { PositionOptions } from 'ckeditor5/src/utils';
+// Modified AlightEmailLinkUI class to use CkAlightModalDialog
+import { Plugin } from 'ckeditor5/src/core';
+import { ClickObserver, type ViewAttributeElement, type ViewDocumentClickEvent } from 'ckeditor5/src/engine';
+import { ButtonView, MenuBarMenuListItemButtonView } from 'ckeditor5/src/ui';
 import { isWidget } from 'ckeditor5/src/widget';
 
-import LinkFormView, { type LinkFormValidatorCallback } from './ui/linkformview';
-import LinkActionsView from './ui/linkactionsview';
+import AlightEmailLinkEditing from './linkediting';
 import type AlightEmailLinkCommand from './linkcommand';
 import type AlightEmailUnlinkCommand from './unlinkcommand';
-import {
-	addLinkProtocolIfApplicable,
-	isLinkElement,
-	createBookmarkCallbacks,
-	LINK_KEYSTROKE
-} from './utils';
+import { addLinkProtocolIfApplicable, isLinkElement, LINK_KEYSTROKE } from './utils';
+import CkAlightModalDialog from '../../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 
 import linkIcon from '../theme/icons/link.svg';
 
 const VISUAL_SELECTION_MARKER_NAME = 'alight-email-link-ui';
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 /**
  * The link UI plugin. It introduces the `'link'` and `'unlink'` buttons and support for the <kbd>Ctrl+K</kbd> keystroke.
  *
- * It uses the
- * {@link module:ui/panel/balloon/contextualballoon~ContextualBalloon contextual balloon plugin}.
+ * It uses a modal dialog instead of the original balloon interface.
  */
 export default class AlightEmailLinkUI extends Plugin {
 	/**
-	 * The actions view displayed inside of the balloon.
+	 * The modal dialog instance.
 	 */
-	public actionsView: LinkActionsView | null = null;
-
-	/**
-	 * The form view displayed inside the balloon.
-	 */
-	public formView: LinkFormView & ViewWithCssTransitionDisabler | null = null;
-
-	/**
-	 * The contextual balloon plugin instance.
-	 */
-	private _balloon!: ContextualBalloon;
+	private _modalDialog: CkAlightModalDialog | null = null;
 
 	/**
 	 * @inheritDoc
 	 */
 	public static get requires() {
-		return [ContextualBalloon] as const;
+		return [AlightEmailLinkEditing] as const;
 	}
 
 	/**
@@ -93,11 +56,9 @@ export default class AlightEmailLinkUI extends Plugin {
 
 		editor.editing.view.addObserver(ClickObserver);
 
-		this._balloon = editor.plugins.get(ContextualBalloon);
-
 		// Create toolbar buttons.
 		this._createToolbarLinkButton();
-		this._enableBalloonActivators();
+		this._enableUIActivators();
 
 		// Renders a fake visual selection marker on an expanded selection.
 		editor.conversion.for('editingDowncast').markerToHighlight({
@@ -142,6 +103,11 @@ export default class AlightEmailLinkUI extends Plugin {
 				}
 			]
 		});
+
+		// Register the UI component
+		editor.ui.componentFactory.add('AlightEmailLink', locale => {
+			return this._createButton(ButtonView);
+		});
 	}
 
 	/**
@@ -150,133 +116,18 @@ export default class AlightEmailLinkUI extends Plugin {
 	public override destroy(): void {
 		super.destroy();
 
-		// Destroy created UI components as they are not automatically destroyed (see ckeditor5#1341).
-		if (this.formView) {
-			this.formView.destroy();
-		}
-
-		if (this.actionsView) {
-			this.actionsView.destroy();
+		// Destroy created UI components
+		if (this._modalDialog) {
+			this._modalDialog.destroy();
+			this._modalDialog = null;
 		}
 	}
 
 	/**
-	 * Creates views.
-	 */
-	private _createViews() {
-		this.actionsView = this._createActionsView();
-		this.formView = this._createFormView();
-
-		// Attach lifecycle actions to the the balloon.
-		this._enableUserBalloonInteractions();
-	}
-
-	/**
-	 * Creates the {@link module:link/ui/linkactionsview~LinkActionsView} instance.
-	 */
-	private _createActionsView(): LinkActionsView {
-		const editor = this.editor;
-		const actionsView = new LinkActionsView(
-			editor.locale,
-			editor.config.get('link'),
-			createBookmarkCallbacks(editor)
-		);
-		const linkCommand = editor.commands.get('alight-email-link') as AlightEmailLinkCommand;
-		const unlinkCommand = editor.commands.get('alight-email-unlink') as AlightEmailUnlinkCommand;
-
-		actionsView.bind('href').to(linkCommand, 'value');
-		actionsView.editButtonView.bind('isEnabled').to(linkCommand);
-		actionsView.unlinkButtonView.bind('isEnabled').to(unlinkCommand);
-
-		// Execute unlink command after clicking on the "Edit" button.
-		this.listenTo(actionsView, 'edit', () => {
-			this._addFormView();
-		});
-
-		// Execute unlink command after clicking on the "Unlink" button.
-		this.listenTo(actionsView, 'unlink', () => {
-			editor.execute('alight-email-unlink');
-			this._hideUI();
-		});
-
-		// Close the panel on esc key press when the **actions have focus**.
-		actionsView.keystrokes.set('Esc', (data, cancel) => {
-			this._hideUI();
-			cancel();
-		});
-
-		// Open the form view on Ctrl+K when the **actions have focus**..
-		actionsView.keystrokes.set(LINK_KEYSTROKE, (data, cancel) => {
-			this._addFormView();
-			cancel();
-		});
-
-		return actionsView;
-	}
-
-	/**
-	 * Creates the {@link module:link/ui/linkformview~LinkFormView} instance.
-	 */
-	private _createFormView(): LinkFormView & ViewWithCssTransitionDisabler {
-		const editor = this.editor;
-		const linkCommand = editor.commands.get('alight-email-link') as AlightEmailLinkCommand;
-		const defaultProtocol = editor.config.get('link.defaultProtocol');
-
-		const formView = new (CssTransitionDisablerMixin(LinkFormView))(editor.locale, linkCommand, getFormValidators(editor));
-
-		formView.urlInputView.fieldView.bind('value').to(linkCommand, 'value');
-
-		// Form elements should be read-only when corresponding commands are disabled.
-		formView.urlInputView.bind('isEnabled').to(linkCommand, 'isEnabled');
-
-		// Disable the "save" button if the command is disabled.
-		formView.saveButtonView.bind('isEnabled').to(linkCommand, 'isEnabled');
-
-		// Execute link command after clicking the "Save" button.
-		this.listenTo(formView, 'submit', () => {
-			if (formView.isValid()) {
-				const { value } = formView.urlInputView.fieldView.element!;
-				const parsedUrl = addLinkProtocolIfApplicable(value, defaultProtocol);
-				editor.execute('alight-email-link', parsedUrl, formView.getDecoratorSwitchesState());
-				this._closeFormView();
-			}
-		});
-
-		// Update balloon position when form error changes.
-		this.listenTo(formView.urlInputView, 'change:errorText', () => {
-			editor.ui.update();
-		});
-
-		// Hide the panel after clicking the "Cancel" button.
-		this.listenTo(formView, 'cancel', () => {
-			this._closeFormView();
-		});
-
-		// Close the panel on esc key press when the **form has focus**.
-		formView.keystrokes.set('Esc', (data, cancel) => {
-			this._closeFormView();
-			cancel();
-		});
-
-		return formView;
-	}
-
-	/**
-	 * Creates a toolbar AlightEmailLink button. Clicking this button will show
-	 * a {@link #_balloon} attached to the selection.
+	 * Creates a toolbar AlightEmailLink button. Clicking this button will show the modal dialog.
 	 */
 	private _createToolbarLinkButton(): void {
 		const editor = this.editor;
-
-		editor.ui.componentFactory.add('AlightEmailLink', () => {
-			const button = this._createButton(ButtonView);
-
-			button.set({
-				tooltip: true
-			});
-
-			return button;
-		});
 
 		editor.ui.componentFactory.add('menuBar:AlightEmailLink', () => {
 			const button = this._createButton(MenuBarMenuListItemButtonView);
@@ -310,397 +161,215 @@ export default class AlightEmailLinkUI extends Plugin {
 		view.bind('isEnabled').to(command, 'isEnabled');
 		view.bind('isOn').to(command, 'value', value => !!value);
 
-		// Show the panel on button click.
-		this.listenTo(view, 'execute', () => this._showUI(true));
+		// Show the modal dialog on button click.
+		this.listenTo(view, 'execute', () => this._showUI());
 
 		return view;
 	}
 
 	/**
-	 * Attaches actions that control whether the balloon panel containing the
-	 * {@link #formView} should be displayed.
+	 * Public method to show UI - needed for compatibility with linkimageui.ts
+	 * 
+	 * @param isEditing Whether we're editing an existing link
 	 */
-	private _enableBalloonActivators(): void {
+	public showUI(isEditing: boolean = false): void {
+		this._showUI(isEditing);
+	}
+
+	/**
+	 * Attaches actions that control whether the modal dialog should be displayed.
+	 */
+	private _enableUIActivators(): void {
 		const editor = this.editor;
 		const viewDocument = editor.editing.view.document;
 
-		// Handle click on view document and show panel when selection is placed inside the link element.
-		// Keep panel open until selection will be inside the same link element.
+		// Handle click on view document and show modal when selection is placed inside the link element.
 		this.listenTo<ViewDocumentClickEvent>(viewDocument, 'click', () => {
-			const parentLink = this._getSelectedLinkElement();
+			const selectedLink = this._getSelectedLinkElement();
 
-			if (parentLink) {
-				// Then show panel but keep focus inside editor editable.
-				this._showUI();
-			}
-		});
-
-		// Handle the `Ctrl+K` keystroke and show the panel.
-		editor.keystrokes.set(LINK_KEYSTROKE, (keyEvtData, cancel) => {
-			// Prevent focusing the search bar in FF, Chrome and Edge. See https://github.com/ckeditor/ckeditor5/issues/4811.
-			cancel();
-
-			if (editor.commands.get('alight-email-link')!.isEnabled) {
+			if (selectedLink) {
 				this._showUI(true);
 			}
 		});
-	}
 
-	/**
-	 * Attaches actions that control whether the balloon panel containing the
-	 * {@link #formView} is visible or not.
-	 */
-	private _enableUserBalloonInteractions(): void {
-		// Focus the form if the balloon is visible and the Tab key has been pressed.
-		this.editor.keystrokes.set('Tab', (data, cancel) => {
-			if (this._areActionsVisible && !this.actionsView!.focusTracker.isFocused) {
-				this.actionsView!.focus();
-				cancel();
-			}
-		}, {
-			// Use the high priority because the link UI navigation is more important
-			// than other feature's actions, e.g. list indentation.
-			// https://github.com/ckeditor/ckeditor5-link/issues/146
-			priority: 'high'
-		});
+		// Handle the `Ctrl+K` keystroke and show the modal.
+		editor.keystrokes.set(LINK_KEYSTROKE, (keyEvtData, cancel) => {
+			// Prevent focusing the search bar in FF, Chrome and Edge.
+			cancel();
 
-		// Close the panel on the Esc key press when the editable has focus and the balloon is visible.
-		this.editor.keystrokes.set('Esc', (data, cancel) => {
-			if (this._isUIVisible) {
-				this._hideUI();
-				cancel();
+			if (editor.commands.get('alight-email-link')!.isEnabled) {
+				this._showUI();
 			}
 		});
-
-		// Close on click outside of balloon panel element.
-		clickOutsideHandler({
-			emitter: this.formView!,
-			activator: () => this._isUIInPanel,
-			contextElements: () => [this._balloon.view.element!],
-			callback: () => this._hideUI()
-		});
 	}
 
 	/**
-	 * Adds the {@link #actionsView} to the {@link #_balloon}.
-	 *
-	 * @internal
+	 * Shows the modal dialog for link editing.
 	 */
-	public _addActionsView(): void {
-		if (!this.actionsView) {
-			this._createViews();
-		}
-
-		if (this._areActionsInPanel) {
-			return;
-		}
-
-		this._balloon.add({
-			view: this.actionsView!,
-			position: this._getBalloonPositionData()
-		});
-	}
-
-	/**
-	 * Adds the {@link #formView} to the {@link #_balloon}.
-	 */
-	private _addFormView(): void {
-		if (!this.formView) {
-			this._createViews();
-		}
-
-		if (this._isFormInPanel) {
-			return;
-		}
-
+	private _showUI(isEditing: boolean = false): void {
 		const editor = this.editor;
+		const t = editor.t;
 		const linkCommand = editor.commands.get('alight-email-link') as AlightEmailLinkCommand;
+		const defaultProtocol = editor.config.get('link.defaultProtocol');
+		const selectedLink = this._getSelectedLinkElement();
 
-		this.formView!.disableCssTransitions();
-		this.formView!.resetFormStatus();
+		// Create modal if it doesn't exist
+		if (!this._modalDialog) {
+			this._modalDialog = new CkAlightModalDialog({
+				title: t('Email Link'),
+				width: '400px',
+				height: 'auto',
+				draggable: true,
+				modal: true,
+				closeOnEscape: true,
+				closeOnClickOutside: true,
+				buttons: [
+					{
+						label: t('Save'),
+						isPrimary: true,
+						closeOnClick: false
+					},
+					{
+						label: t('Cancel'),
+						variant: 'outlined'
+					}
+				]
+			});
 
-		this._balloon.add({
-			view: this.formView!,
-			position: this._getBalloonPositionData()
-		});
+			// Handle Save button click
+			this._modalDialog.on('buttonClick', (label: string) => {
+				if (label === t('Save')) {
+					const emailInput = document.getElementById('ck-email-input') as HTMLInputElement;
+					const organizationInput = document.getElementById('ck-organization-input') as HTMLInputElement;
 
-		// Make sure that each time the panel shows up, the URL field remains in sync with the value of
-		// the command. If the user typed in the input, then canceled the balloon (`urlInputView.fieldView#value` stays
-		// unaltered) and re-opened it without changing the value of the link command (e.g. because they
-		// clicked the same link), they would see the old value instead of the actual value of the command.
-		// https://github.com/ckeditor/ckeditor5-link/issues/78
-		// https://github.com/ckeditor/ckeditor5-link/issues/123
-		this.formView!.urlInputView.fieldView.value = linkCommand.value || '';
+					const email = emailInput.value.trim();
+					const organization = organizationInput.value.trim();
 
-		// Select input when form view is currently visible.
-		if (this._balloon.visibleView === this.formView) {
-			this.formView!.urlInputView.fieldView.select();
+					// Validate email
+					if (!this._validateEmail(email)) {
+						// Show error message
+						const errorElement = document.getElementById('ck-email-error');
+						if (errorElement) {
+							errorElement.textContent = t('Please enter a valid email address');
+							errorElement.style.display = 'block';
+						}
+						return;
+					}
+
+					// Build proper mailto link
+					let emailLink = email;
+					if (!emailLink.startsWith('mailto:')) {
+						emailLink = 'mailto:' + emailLink;
+					}
+
+					// Execute the command with the organization as custom data
+					editor.execute('alight-email-link', emailLink, { organization });
+
+					// Close the modal
+					this._modalDialog!.hide();
+				}
+			});
+
+			// Handle Cancel button click
+			this._modalDialog.on('cancel', () => {
+				this._modalDialog!.hide();
+			});
+
+			// Handle Close button click
+			this._modalDialog.on('close', () => {
+				this._modalDialog!.hide();
+			});
 		}
 
-		this.formView!.enableCssTransitions();
-	}
+		// Prepare the form HTML
+		const formHTML = this._createFormHTML(t, isEditing);
+		this._modalDialog.setContent(formHTML);
 
-	/**
-	 * Closes the form view. Decides whether the balloon should be hidden completely or if the action view should be shown. This is
-	 * decided upon the link command value (which has a value if the document selection is in the link).
-	 *
-	 * Additionally, if any {@link module:link/linkconfig~LinkConfig#decorators} are defined in the editor configuration, the state of
-	 * switch buttons responsible for manual decorator handling is restored.
-	 */
-	private _closeFormView(): void {
-		const linkCommand = this.editor.commands.get('alight-email-link') as AlightEmailLinkCommand;
+		// Set values if we're editing
+		if (isEditing && linkCommand.value) {
+			setTimeout(() => {
+				const emailInput = document.getElementById('ck-email-input') as HTMLInputElement;
+				const organizationInput = document.getElementById('ck-organization-input') as HTMLInputElement;
 
-		// Restore manual decorator states to represent the current model state. This case is important to reset the switch buttons
-		// when the user cancels the editing form.
-		linkCommand.restoreManualDecoratorStates();
+				let email = linkCommand.value || '';
+				if (email.startsWith('mailto:')) {
+					email = email.substring(7); // Remove mailto: prefix
+				}
 
-		if (linkCommand.value !== undefined) {
-			this._removeFormView();
-		} else {
-			this._hideUI();
-		}
-	}
+				emailInput.value = email;
 
-	/**
-	 * Removes the {@link #formView} from the {@link #_balloon}.
-	 */
-	private _removeFormView(): void {
-		if (this._isFormInPanel) {
-			// Blur the input element before removing it from DOM to prevent issues in some browsers.
-			// See https://github.com/ckeditor/ckeditor5/issues/1501.
-			this.formView!.saveButtonView.focus();
-
-			// Reset the URL field to update the state of the submit button.
-			this.formView!.urlInputView.fieldView.reset();
-
-			this._balloon.remove(this.formView!);
-
-			// Because the form has an input which has focus, the focus must be brought back
-			// to the editor. Otherwise, it would be lost.
-			this.editor.editing.view.focus();
-
-			this._hideFakeVisualSelection();
-		}
-	}
-
-	/**
-	 * Shows the correct UI type. It is either {@link #formView} or {@link #actionsView}.
-	 *
-	 * @internal
-	 */
-	public _showUI(forceVisible: boolean = false): void {
-		if (!this.formView) {
-			this._createViews();
+				// Get organization from the selection - need to extract from text
+				const selectedElement = this._getSelectedLinkElement();
+				if (selectedElement && selectedElement.is('attributeElement')) {
+					const children = Array.from(selectedElement.getChildren());
+					if (children.length > 0) {
+						const textNode = children[0];
+						if (textNode && textNode.is('$text')) {
+							const text = textNode.data || '';
+							const match = text.match(/^(.*?)(?:\s*\((.*?)\))?$/);
+							if (match && match[2]) {
+								organizationInput.value = match[2];
+							}
+						}
+					}
+				}
+			}, 50);
 		}
 
-		// When there's no link under the selection, go straight to the editing UI.
-		if (!this._getSelectedLinkElement()) {
-			// Show visual selection on a text without a link when the contextual balloon is displayed.
-			// See https://github.com/ckeditor/ckeditor5/issues/4721.
-			this._showFakeVisualSelection();
+		// Show the modal
+		this._modalDialog.show();
 
-			this._addActionsView();
-
-			// Be sure panel with link is visible.
-			if (forceVisible) {
-				this._balloon.showStack('main');
+		// Focus the email input
+		setTimeout(() => {
+			const emailInput = document.getElementById('ck-email-input') as HTMLInputElement;
+			if (emailInput) {
+				emailInput.focus();
 			}
-
-			this._addFormView();
-		}
-		// If there's a link under the selection...
-		else {
-			// Go to the editing UI if actions are already visible.
-			if (this._areActionsVisible) {
-				this._addFormView();
-			}
-			// Otherwise display just the actions UI.
-			else {
-				this._addActionsView();
-			}
-
-			// Be sure panel with link is visible.
-			if (forceVisible) {
-				this._balloon.showStack('main');
-			}
-		}
-
-		// Begin responding to ui#update once the UI is added.
-		this._startUpdatingUI();
+		}, 100);
 	}
 
 	/**
-	 * Removes the {@link #formView} from the {@link #_balloon}.
-	 *
-	 * See {@link #_addFormView}, {@link #_addActionsView}.
+	 * Creates the HTML for the form inside the modal.
 	 */
-	private _hideUI(): void {
-		if (!this._isUIInPanel) {
-			return;
-		}
-
-		const editor = this.editor;
-
-		this.stopListening(editor.ui, 'update');
-		this.stopListening(this._balloon, 'change:visibleView');
-
-		// Make sure the focus always gets back to the editable _before_ removing the focused form view.
-		// Doing otherwise causes issues in some browsers. See https://github.com/ckeditor/ckeditor5-link/issues/193.
-		editor.editing.view.focus();
-
-		// Remove form first because it's on top of the stack.
-		this._removeFormView();
-
-		// Then remove the actions view because it's beneath the form.
-		this._balloon.remove(this.actionsView!);
-
-		this._hideFakeVisualSelection();
+	private _createFormHTML(t: any, isEditing: boolean): string {
+		return `
+            <div class="cka-form-container" style="padding: 1em 0;">
+                <div class="cka-form-group" style="margin-bottom: 1em;">
+                    <label for="ck-email-input" style="display: block; margin-bottom: 0.5em; font-weight: bold;">${t('Email Address')}</label>
+                    <input id="ck-email-input" type="email" class="cka-input" style="width: 100%; padding: 0.5em; border: 1px solid #c4c4c4; border-radius: 4px;">
+                    <div id="ck-email-error" style="color: #d1344e; font-size: 0.8em; margin-top: 0.5em; display: none;"></div>
+                    <div style="color: #707070; font-size: 0.8em; margin-top: 0.5em;">${t('Enter a valid email address or a mailto: link')}</div>
+                </div>
+                <div class="cka-form-group">
+                    <label for="ck-organization-input" style="display: block; margin-bottom: 0.5em; font-weight: bold;">${t('Organization Name')}</label>
+                    <input id="ck-organization-input" type="text" class="cka-input" style="width: 100%; padding: 0.5em; border: 1px solid #c4c4c4; border-radius: 4px;">
+                    <div style="color: #707070; font-size: 0.8em; margin-top: 0.5em;">${t('Optional: Will be appended to link text in parentheses')}</div>
+                </div>
+            </div>
+        `;
 	}
 
 	/**
-	 * Makes the UI react to the {@link module:ui/editorui/editorui~EditorUI#event:update} event to
-	 * reposition itself when the editor UI should be refreshed.
-	 *
-	 * See: {@link #_hideUI} to learn when the UI stops reacting to the `update` event.
+	 * Validates an email address.
 	 */
-	private _startUpdatingUI(): void {
-		const editor = this.editor;
-		const viewDocument = editor.editing.view.document;
-
-		let prevSelectedLink = this._getSelectedLinkElement();
-		let prevSelectionParent = getSelectionParent();
-
-		const update = () => {
-			const selectedLink = this._getSelectedLinkElement();
-			const selectionParent = getSelectionParent();
-
-			// Hide the panel if:
-			//
-			// * the selection went out of the EXISTING link element. E.g. user moved the caret out
-			//   of the link,
-			// * the selection went to a different parent when creating a NEW link. E.g. someone
-			//   else modified the document.
-			// * the selection has expanded (e.g. displaying link actions then pressing SHIFT+Right arrow).
-			//
-			// Note: #_getSelectedLinkElement will return a link for a non-collapsed selection only
-			// when fully selected.
-			if ((prevSelectedLink && !selectedLink) ||
-				(!prevSelectedLink && selectionParent !== prevSelectionParent)) {
-				this._hideUI();
-			}
-			// Update the position of the panel when:
-			//  * link panel is in the visible stack
-			//  * the selection remains in the original link element,
-			//  * there was no link element in the first place, i.e. creating a new link
-			else if (this._isUIVisible) {
-				// If still in a link element, simply update the position of the balloon.
-				// If there was no link (e.g. inserting one), the balloon must be moved
-				// to the new position in the editing view (a new native DOM range).
-				this._balloon.updatePosition(this._getBalloonPositionData());
-			}
-
-			prevSelectedLink = selectedLink;
-			prevSelectionParent = selectionParent;
-		};
-
-		function getSelectionParent() {
-			return viewDocument.selection.focus!.getAncestors()
-				.reverse()
-				.find((node): node is ViewElement => node.is('element'));
+	private _validateEmail(email: string): boolean {
+		// Allow empty string as it will be handled by the link command
+		if (!email) {
+			return true;
 		}
 
-		this.listenTo(editor.ui, 'update', update);
-		this.listenTo(this._balloon, 'change:visibleView', update);
-	}
-
-	/**
-	 * Returns `true` when {@link #formView} is in the {@link #_balloon}.
-	 */
-	private get _isFormInPanel(): boolean {
-		return !!this.formView && this._balloon.hasView(this.formView);
-	}
-
-	/**
-	 * Returns `true` when {@link #actionsView} is in the {@link #_balloon}.
-	 */
-	private get _areActionsInPanel(): boolean {
-		return !!this.actionsView && this._balloon.hasView(this.actionsView);
-	}
-
-	/**
-	 * Returns `true` when {@link #actionsView} is in the {@link #_balloon} and it is
-	 * currently visible.
-	 */
-	private get _areActionsVisible(): boolean {
-		return !!this.actionsView && this._balloon.visibleView === this.actionsView;
-	}
-
-	/**
-	 * Returns `true` when {@link #actionsView} or {@link #formView} is in the {@link #_balloon}.
-	 */
-	private get _isUIInPanel(): boolean {
-		return this._isFormInPanel || this._areActionsInPanel;
-	}
-
-	/**
-	 * Returns `true` when {@link #actionsView} or {@link #formView} is in the {@link #_balloon} and it is
-	 * currently visible.
-	 */
-	private get _isUIVisible(): boolean {
-		const visibleView = this._balloon.visibleView;
-
-		return !!this.formView && visibleView == this.formView || this._areActionsVisible;
-	}
-
-	/**
-	 * Returns positioning options for the {@link #_balloon}. They control the way the balloon is attached
-	 * to the target element or selection.
-	 *
-	 * If the selection is collapsed and inside a link element, the panel will be attached to the
-	 * entire link element. Otherwise, it will be attached to the selection.
-	 */
-	private _getBalloonPositionData(): Partial<PositionOptions> {
-		const view = this.editor.editing.view;
-		const model = this.editor.model;
-		const viewDocument = view.document;
-		let target: PositionOptions['target'];
-
-		if (model.markers.has(VISUAL_SELECTION_MARKER_NAME)) {
-			// There are cases when we highlight selection using a marker (#7705, #4721).
-			const markerViewElements = Array.from(this.editor.editing.mapper.markerNameToElements(VISUAL_SELECTION_MARKER_NAME)!);
-			const newRange = view.createRange(
-				view.createPositionBefore(markerViewElements[0]),
-				view.createPositionAfter(markerViewElements[markerViewElements.length - 1])
-			);
-
-			target = view.domConverter.viewRangeToDom(newRange);
-		} else {
-			// Make sure the target is calculated on demand at the last moment because a cached DOM range
-			// (which is very fragile) can desynchronize with the state of the editing view if there was
-			// any rendering done in the meantime. This can happen, for instance, when an inline widget
-			// gets unlinked.
-			target = () => {
-				const targetLink = this._getSelectedLinkElement();
-
-				return targetLink ?
-					// When selection is inside link element, then attach panel to this element.
-					view.domConverter.mapViewToDom(targetLink)! :
-					// Otherwise attach panel to the selection.
-					view.domConverter.viewRangeToDom(viewDocument.selection.getFirstRange()!);
-			};
+		// If it starts with mailto:, validate the part after
+		if (email.startsWith('mailto:')) {
+			return EMAIL_REGEX.test(email.substring(7));
 		}
 
-		return { target };
+		// Otherwise validate the entire string
+		return EMAIL_REGEX.test(email);
 	}
 
 	/**
-	 * Returns the link {@link module:engine/view/attributeelement~AttributeElement} under
-	 * the {@link module:engine/view/document~Document editing view's} selection or `null`
+	 * Returns the link element under the editing view's selection or `null`
 	 * if there is none.
-	 *
-	 * **Note**: For a non–collapsed selection, the link element is returned when **fully**
-	 * selected and the **only** element within the selection boundaries, or when
-	 * a linked widget is selected.
 	 */
 	private _getSelectedLinkElement(): ViewAttributeElement | null {
 		const view = this.editor.editing.view;
@@ -729,81 +398,12 @@ export default class AlightEmailLinkUI extends Plugin {
 			}
 		}
 	}
-
-	/**
-	 * Displays a fake visual selection when the contextual balloon is displayed.
-	 *
-	 * This adds a 'link-ui' marker into the document that is rendered as a highlight on selected text fragment.
-	 */
-	private _showFakeVisualSelection(): void {
-		const model = this.editor.model;
-
-		model.change(writer => {
-			const range = model.document.selection.getFirstRange()!;
-
-			if (model.markers.has(VISUAL_SELECTION_MARKER_NAME)) {
-				writer.updateMarker(VISUAL_SELECTION_MARKER_NAME, { range });
-			} else {
-				if (range.start.isAtEnd) {
-					const startPosition = range.start.getLastMatchingPosition(
-						({ item }) => !model.schema.isContent(item),
-						{ boundaries: range }
-					);
-
-					writer.addMarker(VISUAL_SELECTION_MARKER_NAME, {
-						usingOperation: false,
-						affectsData: false,
-						range: writer.createRange(startPosition, range.end)
-					});
-				} else {
-					writer.addMarker(VISUAL_SELECTION_MARKER_NAME, {
-						usingOperation: false,
-						affectsData: false,
-						range
-					});
-				}
-			}
-		});
-	}
-
-	/**
-	 * Hides the fake visual selection created in {@link #_showFakeVisualSelection}.
-	 */
-	private _hideFakeVisualSelection(): void {
-		const model = this.editor.model;
-
-		if (model.markers.has(VISUAL_SELECTION_MARKER_NAME)) {
-			model.change(writer => {
-				writer.removeMarker(VISUAL_SELECTION_MARKER_NAME);
-			});
-		}
-	}
 }
 
 /**
  * Returns a link element if there's one among the ancestors of the provided `Position`.
- *
- * @param View position to analyze.
- * @returns AlightEmailLink element at the position or null.
  */
-function findLinkElementAncestor(position: ViewPosition): ViewAttributeElement | null {
-	return position.getAncestors().find((ancestor): ancestor is ViewAttributeElement => isLinkElement(ancestor)) || null;
-}
-
-/**
- * Returns link form validation callbacks.
- *
- * @param editor Editor instance.
- */
-function getFormValidators(editor: Editor): Array<LinkFormValidatorCallback> {
-	const t = editor.t;
-	const allowCreatingEmptyLinks = editor.config.get('link.allowCreatingEmptyLinks');
-
-	return [
-		form => {
-			if (!allowCreatingEmptyLinks && !form.url!.length) {
-				return t('AlightEmailLink URL must not be empty.');
-			}
-		}
-	];
+function findLinkElementAncestor(position: any): ViewAttributeElement | null {
+	const linkElement = position.getAncestors().find((ancestor: any) => isLinkElement(ancestor));
+	return linkElement && linkElement.is('attributeElement') ? linkElement : null;
 }
