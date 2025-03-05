@@ -195,9 +195,6 @@ export default class AlightExternalLinkUI extends Plugin {
 			width: '500px',
 			height: 'auto',
 			modal: true,
-			draggable: true,
-			closeOnEscape: true,
-			closeOnClickOutside: true,
 			contentClass: 'cka-external-link-content',
 			buttons: [
 				{

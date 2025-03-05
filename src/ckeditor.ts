@@ -71,12 +71,12 @@ import AlightPastePlugin from './plugins/alight-paste-plugin/alight-paste-plugin
 import AlightPopulationPlugin from './plugins/alight-population-plugin/alight-population-plugin';
 import AlightTabsPlugin from './plugins/alight-tabs-plugin/alight-tabs-plugin';
 
-// import AlightParentLinkPlugin from './plugins/alight-parent-link-plugin/alight-parent-link-plugin';
-// import AlightPredefinedLinkPlugin from './plugins/alight-predefined-link-plugin/alight-predefined-link-plugin';
-// import AlightGenericLinkPlugin from './plugins/alight-generic-link-plugin/alight-generic-link-plugin';
-// import AlightNewDocumentLinkPlugin from './plugins/alight-new-document-link-plugin/alight-new-document-link-plugin';
-// import AlightExistingDocumentLinkPlugin from './plugins/alight-existing-document-link-plugin/alight-existing-document-link-plugin';
-// import AlightEmailLinkPlugin from './plugins/alight-email-link-plugin/alight-email-link-plugin';
+import AlightParentLinkPlugin from './plugins/alight-parent-link-plugin/alight-parent-link-plugin';
+import AlightPredefinedLinkPlugin from './plugins/alight-predefined-link-plugin/alight-predefined-link-plugin';
+import AlightGenericLinkPlugin from './plugins/alight-generic-link-plugin/alight-generic-link-plugin';
+import AlightNewDocumentLinkPlugin from './plugins/alight-new-document-link-plugin/alight-new-document-link-plugin';
+import AlightExistingDocumentLinkPlugin from './plugins/alight-existing-document-link-plugin/alight-existing-document-link-plugin';
+import AlightEmailLinkPlugin from './plugins/alight-email-link-plugin/alight-email-link-plugin';
 import AlightLink from './plugins/alight-link/src/link';
 import AlightExternalLink from './plugins/alight-external-link/src/link';
 import AlightEmailLink from './plugins/alight-email-link/src/link';
@@ -202,12 +202,12 @@ class Editor extends ClassicEditor {
     AlightPastePlugin,
     AlightPopulationPlugin,
     AlightTabsPlugin,
-    // AlightParentLinkPlugin,
-    // AlightGenericLinkPlugin,
-    // AlightPredefinedLinkPlugin,
-    // AlightNewDocumentLinkPlugin,
-    // AlightExistingDocumentLinkPlugin,
-    // AlightEmailLinkPlugin,
+    AlightParentLinkPlugin,
+    AlightGenericLinkPlugin,
+    AlightPredefinedLinkPlugin,
+    AlightNewDocumentLinkPlugin,
+    AlightExistingDocumentLinkPlugin,
+    AlightEmailLinkPlugin,
     AlightLink,
     AlightExternalLink,
     AlightEmailLink,
@@ -265,7 +265,7 @@ class Editor extends ClassicEditor {
         'alightPastePlugin',
         'alightImagePlugin',
         'alightPopulationPlugin',
-        // 'alightParentLinkPlugin',
+        'alightParentLinkPlugin',
         // 'alightGenericLinkPlugin',
         // 'alightPredefinedLinkPlugin',
         // 'alightEmailLinkPlugin',
