@@ -4,42 +4,42 @@
  */
 
 import type {
-	LinkConfig,
-	AlightEmailAutoLink,
-	AlightEmailLink,
-	AlightEmailLinkEditing,
-	AlightEmailLinkImage,
-	AlightEmailLinkImageEditing,
-	AlightEmailLinkImageUI,
-	AlightEmailLinkUI,
-	AlightEmailLinkCommand,
-	AlightEmailUnlinkCommand
+  LinkConfig,
+  AlightEmailAutoLink,
+  AlightEmailLink,
+  AlightEmailLinkEditing,
+  AlightEmailLinkImage,
+  AlightEmailLinkImageEditing,
+  AlightEmailLinkImageUI,
+  AlightEmailLinkUI,
+  AlightEmailLinkCommand,
+  AlightEmailUnlinkCommand
 } from './index';
 
 declare module '@ckeditor/ckeditor5-core' {
-	interface EditorConfig {
+  interface EditorConfig {
 
-		/**
-		 * The configuration of the {@link module:link/link~AlightEmailLink} feature.
-		 *
-		 * Read more in {@link module:link/linkconfig~LinkConfig}.
-		 */
-		link?: LinkConfig;
-	}
+    /**
+     * The configuration of the {@link module:link/link~AlightEmailLink} feature.
+     *
+     * Read more in {@link module:link/linkconfig~LinkConfig}.
+     */
+    link?: LinkConfig;
+  }
 
-	interface PluginsMap {
-		[AlightEmailAutoLink.pluginName]: AlightEmailAutoLink;
-		[AlightEmailLink.pluginName]: AlightEmailLink;
-		[AlightEmailLinkEditing.pluginName]: AlightEmailLinkEditing;
-		[AlightEmailLinkImage.pluginName]: AlightEmailLinkImage;
-		[AlightEmailLinkImageEditing.pluginName]: AlightEmailLinkImageEditing;
-		[AlightEmailLinkImageUI.pluginName]: AlightEmailLinkImageUI;
-		[AlightEmailLinkUI.pluginName]: AlightEmailLinkUI;
-	}
+  interface PluginsMap {
+    [AlightEmailAutoLink.pluginName]: AlightEmailAutoLink;
+    [AlightEmailLink.pluginName]: AlightEmailLink;
+    [AlightEmailLinkEditing.pluginName]: AlightEmailLinkEditing;
+    [AlightEmailLinkImage.pluginName]: AlightEmailLinkImage;
+    [AlightEmailLinkImageEditing.pluginName]: AlightEmailLinkImageEditing;
+    [AlightEmailLinkImageUI.pluginName]: AlightEmailLinkImageUI;
+    [AlightEmailLinkUI.pluginName]: AlightEmailLinkUI;
+  }
 
-	interface CommandsMap {
-		// Use string literal for the command name to avoid conflicts
-		'alight-email-link': AlightEmailLinkCommand;
-		'alight-email-unlink': AlightEmailUnlinkCommand;
-	}
+  interface CommandsMap {
+    // Use string literal for the command name to avoid conflicts
+    'alight-email-link': AlightEmailLinkCommand;
+    'alight-email-unlink': AlightEmailUnlinkCommand;
+  }
 }

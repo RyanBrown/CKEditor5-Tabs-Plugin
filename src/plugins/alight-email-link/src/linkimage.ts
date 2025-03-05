@@ -20,24 +20,24 @@ import '../theme/AlightEmailLinkImage.css';
  * and {@link module:link/AlightEmailLinkImageui~AlightEmailLinkImageUI link image UI feature}.
  */
 export default class AlightEmailLinkImage extends Plugin {
-	/**
-	 * @inheritDoc
-	 */
-	public static get requires() {
-		return [AlightEmailLinkImageEditing, AlightEmailLinkImageUI] as const;
-	}
+  /**
+   * @inheritDoc
+   */
+  public static get requires() {
+    return [AlightEmailLinkImageEditing, AlightEmailLinkImageUI] as const;
+  }
 
-	/**
-	 * @inheritDoc
-	 */
-	public static get pluginName() {
-		return 'AlightEmailLinkImage' as const;
-	}
+  /**
+   * @inheritDoc
+   */
+  public static get pluginName() {
+    return 'AlightEmailLinkImage' as const;
+  }
 
-	/**
-	 * @inheritDoc
-	 */
-	public static override get isOfficialPlugin(): true {
-		return true;
-	}
+  /**
+   * @inheritDoc
+   */
+  public static override get isOfficialPlugin(): true {
+    return true;
+  }
 }

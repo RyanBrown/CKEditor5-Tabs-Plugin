@@ -18,31 +18,31 @@ import AlightEmailAutoLink from './autolink';
  * This is a "glue" plugin that loads the modified link editing and UI features.
  */
 export default class AlightEmailLink extends Plugin {
-	/**
-	 * @inheritDoc
-	 */
-	public static get requires() {
-		return [AlightEmailLinkEditing, AlightEmailLinkUI, AlightEmailAutoLink] as const;
-	}
+  /**
+   * @inheritDoc
+   */
+  public static get requires() {
+    return [AlightEmailLinkEditing, AlightEmailLinkUI, AlightEmailAutoLink] as const;
+  }
 
-	/**
-	 * @inheritDoc
-	 */
-	public static get pluginName() {
-		return 'AlightEmailLink' as const;
-	}
+  /**
+   * @inheritDoc
+   */
+  public static get pluginName() {
+    return 'AlightEmailLink' as const;
+  }
 
-	/**
-	 * @inheritDoc
-	 */
-	public static override get isOfficialPlugin(): true {
-		return true;
-	}
+  /**
+   * @inheritDoc
+   */
+  public static override get isOfficialPlugin(): true {
+    return true;
+  }
 
-	/**
-	 * @inheritDoc
-	 */
-	public init(): void {
-		// The UI component is already registered by AlightEmailLinkUI plugin
-	}
+  /**
+   * @inheritDoc
+   */
+  public init(): void {
+    // The UI component is already registered by AlightEmailLinkUI plugin
+  }
 }
