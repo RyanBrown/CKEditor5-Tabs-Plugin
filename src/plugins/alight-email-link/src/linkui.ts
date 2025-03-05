@@ -409,14 +409,23 @@ export default class AlightEmailLinkUI extends Plugin {
 					const email = emailInput.value.trim();
 					const organization = organizationInput.value.trim();
 
+					// Clear any previous error messages
+					const errorElement = document.getElementById('ck-email-error');
+					if (errorElement) {
+						errorElement.style.display = 'none';
+					}
+
 					// Validate email
 					if (!this._validateEmail(email)) {
 						// Show error message
-						const errorElement = document.getElementById('ck-email-error');
 						if (errorElement) {
-							errorElement.textContent = t('Please enter a valid email address');
+							errorElement.textContent = email.trim() === '' ?
+								t('Email address is required') :
+								t('Please enter a valid email address');
 							errorElement.style.display = 'block';
 						}
+						// Focus back on the email input
+						emailInput.focus();
 						return;
 					}
 
@@ -432,16 +441,6 @@ export default class AlightEmailLinkUI extends Plugin {
 					// Close the modal
 					this._modalDialog!.hide();
 				}
-			});
-
-			// Handle Cancel button click
-			this._modalDialog.on('cancel', () => {
-				this._modalDialog!.hide();
-			});
-
-			// Handle Close button click
-			this._modalDialog.on('close', () => {
-				this._modalDialog!.hide();
 			});
 		}
 
@@ -527,7 +526,7 @@ export default class AlightEmailLinkUI extends Plugin {
 			<div class="cka-form-container">
 				<div class="cka-form-group">
 					<label for="ck-email-input" class="cka-input-label">${t('Email Address')}</label>
-					<input id="ck-email-input" type="email" class="cka-input-text cka-width-100" placeholder="${t('user@example.com')}"/>
+					<input id="ck-email-input" type="email" class="cka-input-text cka-width-100" placeholder="${t('user@example.com')}" required/>
 					<div id="ck-email-error" class="cka-error-message"></div>
 					<div class="cka-error-message">${t('Enter a valid email address or a mailto: link')}</div>
 				</div>
@@ -543,10 +542,11 @@ export default class AlightEmailLinkUI extends Plugin {
 	/**
 	 * Validates an email address.
 	 */
+	// Update the _validateEmail method in linkui.ts to require an email address
 	private _validateEmail(email: string): boolean {
-		// Allow empty string as it will be handled by the link command
-		if (!email) {
-			return true;
+		// Check that email is not empty
+		if (!email || email.trim() === '') {
+			return false;
 		}
 
 		// If it starts with mailto:, validate the part after
