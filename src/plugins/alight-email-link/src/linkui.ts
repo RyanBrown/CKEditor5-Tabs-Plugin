@@ -379,8 +379,8 @@ export default class AlightEmailLinkUI extends Plugin {
   }
 
   /**
-   * Shows the modal dialog for link editing.
-   */
+     * Shows the modal dialog for link editing.
+     */
   private _showUI(isEditing: boolean = false): void {
     const editor = this.editor;
     const t = editor.t;
@@ -523,26 +523,25 @@ export default class AlightEmailLinkUI extends Plugin {
    */
   private _createFormHTML(t: any, isEditing: boolean): string {
     return `
-			<div class="cka-form-container">
-				<div class="cka-form-group">
-					<label for="ck-email-input" class="cka-input-label">${t('Email Address')}</label>
-					<input id="ck-email-input" type="email" class="cka-input-text cka-width-100" placeholder="${t('user@example.com')}" required/>
-					<div id="ck-email-error" class="cka-error-message"></div>
+      <div class="cka-form-container">
+        <div class="cka-form-group">
+          <label for="ck-email-input" class="cka-input-label">${t('Email Address')}</label>
+          <input id="ck-email-input" type="email" class="cka-input-text cka-width-100" placeholder="${t('user@example.com')}" required/>
+          <div id="ck-email-error" class="cka-error-message"></div>
 					<div class="cka-error-message">${t('Enter a valid email address or a mailto: link')}</div>
-				</div>
-				<div class="cka-form-group mt-3">
-					<label for="ck-organization-input" class="cka-input-label">${t('Organization Name (optional)')}</label>
-					<input id="ck-organization-input" type="text" class="cka-input-text cka-width-100" placeholder="${t('Organization name')}"/>
-					<div class="cka-note-text">${t('Organization Name (optional): Specify the third-party organization to inform users about the email\'s origin.')}</div>
-				</div>
-			</div>
-		`;
+        </div>
+        <div class="cka-form-group mt-3">
+          <label for="ck-organization-input" class="cka-input-label">${t('Organization Name (optional)')}</label>
+          <input id="ck-organization-input" type="text" class="cka-input-text cka-width-100" placeholder="${t('Organization name')}"/>
+          <div class="cka-note-text">${t('Organization Name (optional): Specify the third-party organization to inform users about the email\'s origin.')}</div>
+        </div>
+      </div>
+    `;
   }
 
   /**
    * Validates an email address.
    */
-  // Update the _validateEmail method in linkui.ts to require an email address
   private _validateEmail(email: string): boolean {
     // Check that email is not empty
     if (!email || email.trim() === '') {
