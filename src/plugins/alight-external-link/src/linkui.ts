@@ -182,8 +182,8 @@ export default class AlightExternalLinkUI extends Plugin {
 	}
 
 	/**
- * Creates the modal dialog for link editing.
- */
+	 * Creates the modal dialog for link editing.
+	 */
 	private _createLinkDialog(): CkAlightModalDialog {
 		const editor = this.editor;
 		const t = editor.t;
