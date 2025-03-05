@@ -11,6 +11,7 @@ import { Plugin } from 'ckeditor5/src/core';
 import AlightEmailLinkEditing from './linkediting';
 import AlightEmailLinkUI from './linkui';
 import AlightEmailAutoLink from './autolink';
+import './styles/styles.scss';
 
 /**
  * The Alight Email link plugin.
