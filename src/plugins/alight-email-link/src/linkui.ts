@@ -452,6 +452,9 @@ export default class AlightEmailLinkUI extends Plugin {
       });
     }
 
+    // Update modal title based on whether we're editing or creating
+    this._modalDialog.setTitle(isEditing ? t('Edit Email Link') : t('Create Email Link'));
+
     // Prepare the form HTML
     const formHTML = this._createFormHTML(t, isEditing);
     this._modalDialog.setContent(formHTML);
