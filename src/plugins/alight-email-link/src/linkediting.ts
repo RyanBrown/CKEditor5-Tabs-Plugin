@@ -89,7 +89,7 @@ export default class AlightEmailLinkEditing extends Plugin {
 
 		editor.config.define('link', {
 			allowCreatingEmptyLinks: false,
-			addTargetToEmailLinks: false
+			addTargetToExternalLinks: false
 		});
 	}
 
@@ -162,7 +162,7 @@ export default class AlightEmailLinkEditing extends Plugin {
 	 * {@link module:link/utils/automaticdecorators~AutomaticDecorators#getDispatcher} method.
 	 *
 	 * **Note**: This method also activates the automatic external link decorator if enabled with
-	 * {@link module:link/linkconfig~LinkConfig#addTargetToEmailLinks `config.link.addTargetToEmailLinks`}.
+	 * {@link module:link/linkconfig~LinkConfig#addTargetToExternalLinks `config.link.addTargetToExternalLinks`}.
 	 */
 	private _enableAutomaticDecorators(automaticDecoratorDefinitions: Array<NormalizedLinkDecoratorAutomaticDefinition>): void {
 		const editor = this.editor;
@@ -172,7 +172,7 @@ export default class AlightEmailLinkEditing extends Plugin {
 		const automaticDecorators = command.automaticDecorators;
 
 		// Adds a default decorator for external links.
-		if (editor.config.get('link.addTargetToEmailLinks')) {
+		if (editor.config.get('link.addTargetToExternalLinks')) {
 			automaticDecorators.add({
 				id: 'linkIsEmail',
 				mode: DECORATOR_AUTOMATIC,

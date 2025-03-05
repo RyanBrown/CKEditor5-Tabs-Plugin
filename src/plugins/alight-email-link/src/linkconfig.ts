@@ -97,7 +97,7 @@ export interface LinkConfig {
 	 * ClassicEditor
 	 * 	.create( editorElement, {
 	 * 		link: {
-	 * 			addTargetToEmailLinks: true
+	 * 			addTargetToExternalLinks: true
 	 * 		}
 	 * 	} )
 	 * 	.then( ... )
@@ -110,7 +110,7 @@ export interface LinkConfig {
 	 * **Note**: To control the `target` and `rel` attributes of specific links in the edited content, a dedicated
 	 * {@link module:link/linkconfig~LinkDecoratorManualDefinition manual} decorator must be defined in the
 	 * {@link module:link/linkconfig~LinkConfig#decorators `config.link.decorators`} array. In such scenario,
-	 * the `config.link.addTargetToEmailLinks` option should remain `undefined` or `false` to not interfere with the manual decorator.
+	 * the `config.link.addTargetToExternalLinks` option should remain `undefined` or `false` to not interfere with the manual decorator.
 	 *
 	 * It is possible to add other {@link module:link/linkconfig~LinkDecoratorAutomaticDefinition automatic}
 	 * or {@link module:link/linkconfig~LinkDecoratorManualDefinition manual} link decorators when this option is active.
@@ -120,7 +120,7 @@ export interface LinkConfig {
 	 *
 	 * @default false
 	 */
-	addTargetToEmailLinks?: boolean;
+	addTargetToExternalLinks?: boolean;
 
 	/**
 	 * Decorators provide an easy way to configure and manage additional link attributes in the editor content. There are
@@ -174,7 +174,7 @@ export interface LinkConfig {
 	 *
 	 * **Note**: Since the `target` attribute management for external links is a common use case, there is a predefined automatic decorator
 	 * dedicated for that purpose which can be enabled by turning a single option on. Check out the
-	 * {@link module:link/linkconfig~LinkConfig#addTargetToEmailLinks `config.link.addTargetToEmailLinks`}
+	 * {@link module:link/linkconfig~LinkConfig#addTargetToExternalLinks `config.link.addTargetToExternalLinks`}
 	 * configuration description to learn more.
 	 *
 	 * See also the {@glink features/link#custom-link-attributes-decorators link feature guide} for more information.
@@ -215,7 +215,7 @@ export type LinkDecoratorDefinition = LinkDecoratorAutomaticDefinition | LinkDec
  *
  * **Note**: Since the `target` attribute management for external links is a common use case, there is a predefined automatic decorator
  * dedicated for that purpose that can be enabled by turning a single option on. Check out the
- * {@link module:link/linkconfig~LinkConfig#addTargetToEmailLinks `config.link.addTargetToEmailLinks`}
+ * {@link module:link/linkconfig~LinkConfig#addTargetToExternalLinks `config.link.addTargetToExternalLinks`}
  * configuration description to learn more.
  */
 export interface LinkDecoratorAutomaticDefinition {

@@ -35,7 +35,7 @@
 						"target"
 					],
 					"isAlternative": true,
-					"_comment": "If `config.link.addTargetToEmailLinks` is enabled, then the external links are decorated with `rel` and `target` attributes."
+					"_comment": "If `config.link.addTargetToExternalLinks` is enabled, then the external links are decorated with `rel` and `target` attributes."
 				},
 				{
 					"elements": "a",
