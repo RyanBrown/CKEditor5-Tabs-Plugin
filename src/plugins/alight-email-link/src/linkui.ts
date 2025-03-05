@@ -470,7 +470,7 @@ export default class AlightEmailLinkUI extends Plugin {
 						const textNode = children[0];
 						if (textNode && textNode.is('$text')) {
 							const text = textNode.data || '';
-							const match = text.match(/^(.*?)(?:\s*\((.*?)\))?$/);
+							const match = text.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
 							if (match && match[2]) {
 								organizationInput.value = match[2];
 							}

@@ -266,12 +266,12 @@ export default class AlightEmailLinkCommand extends Command {
 		}
 
 		// Check if there's already an organization
-		const match = combinedText.match(/^(.*?)(?:\s*\(.*?\))?$/);
+		const match = combinedText.match(/^(.*?)(?:\s*\(([^)]*)\))?$/);
 		if (!match) {
 			return;
 		}
 
-		const baseText = match[1];
+		const baseText = match[1].trim(); // Trim to ensure clean spacing
 		const newText = `${baseText} (${organization})`;
 
 		// Remove all existing text nodes in the range

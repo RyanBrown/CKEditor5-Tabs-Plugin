@@ -102,7 +102,7 @@ export default class AlightEmailUnlinkCommand extends Command {
 
 		if (match) {
 			// Extract the text without the organization part
-			const cleanText = match[1];
+			const cleanText = match[1].trim(); // Trim to ensure clean spacing
 
 			// Remove all existing text nodes in the range
 			for (const node of textNodes) {
