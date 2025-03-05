@@ -1,7 +1,7 @@
 {
   "name": "@ckeditor/ckeditor5-link",
   "version": "44.1.0",
-  "description": "AlightEmailLink feature for CKEditor 5.",
+  "description": "AlightEmailLinkPlugin feature for CKEditor 5.",
   "keywords": [
     "ckeditor",
     "ckeditor5",

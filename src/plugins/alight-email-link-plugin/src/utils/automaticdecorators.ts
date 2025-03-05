@@ -50,16 +50,16 @@ export default class AutomaticDecorators {
    */
   public getDispatcher(): (dispatcher: DowncastDispatcher) => void {
     return dispatcher => {
-      dispatcher.on<DowncastAttributeEvent>('attribute:alightEmailLinkHref', (evt, data, conversionApi) => {
+      dispatcher.on<DowncastAttributeEvent>('attribute:alightEmailLinkPluginHref', (evt, data, conversionApi) => {
         // There is only test as this behavior decorates links and
         // it is run before dispatcher which actually consumes this node.
         // This allows on writing own dispatcher with highest priority,
         // which blocks both native converter and this additional decoration.
-        if (!conversionApi.consumable.test(data.item, 'attribute:alightEmailLinkHref')) {
+        if (!conversionApi.consumable.test(data.item, 'attribute:alightEmailLinkPluginHref')) {
           return;
         }
 
-        // Automatic decorators for block links are handled e.g. in AlightEmailLinkImageEditing.
+        // Automatic decorators for block links are handled e.g. in AlightEmailLinkPluginImageEditing.
         if (!(data.item.is('selection') || conversionApi.schema.isInline(data.item))) {
           return;
         }
@@ -104,7 +104,7 @@ export default class AutomaticDecorators {
    */
   public getDispatcherForLinkedImage(): (dispatcher: DowncastDispatcher) => void {
     return dispatcher => {
-      dispatcher.on<DowncastAttributeEvent<Element>>('attribute:alightEmailLinkHref:imageBlock', (evt, data, { writer, mapper }) => {
+      dispatcher.on<DowncastAttributeEvent<Element>>('attribute:alightEmailLinkPluginHref:imageBlock', (evt, data, { writer, mapper }) => {
         const viewFigure = mapper.toViewElement(data.item)!;
         const linkInImage = Array.from(viewFigure.getChildren())
           .find((child): child is ViewElement => child.is('element', 'a'))!;

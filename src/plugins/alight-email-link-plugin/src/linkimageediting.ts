@@ -4,7 +4,7 @@
  */
 
 /**
- * @module link/AlightEmailLinkImageediting
+ * @module link/AlightEmailLinkPluginImageediting
  */
 
 import {
@@ -23,31 +23,31 @@ import {
 } from 'ckeditor5/src/engine';
 import { toMap } from 'ckeditor5/src/utils';
 
-import AlightEmailLinkEditing from './linkediting';
+import AlightEmailLinkPluginEditing from './linkediting';
 import type ManualDecorator from './utils/manualdecorator';
-import type AlightEmailLinkCommand from './linkcommand';
+import type AlightEmailLinkPluginCommand from './linkcommand';
 
 import type { ImageUtils } from '@ckeditor/ckeditor5-image';
 
 /**
  * The link image engine feature.
  *
- * It accepts the `alightEmailLinkHref="url"` attribute in the model for the {@link module:image/image~Image `<imageBlock>`} element
+ * It accepts the `alightEmailLinkPluginHref="url"` attribute in the model for the {@link module:image/image~Image `<imageBlock>`} element
  * which allows linking images.
  */
-export default class AlightEmailLinkImageEditing extends Plugin {
+export default class AlightEmailLinkPluginImageEditing extends Plugin {
   /**
    * @inheritDoc
    */
   public static get requires() {
-    return ['ImageEditing', 'ImageUtils', AlightEmailLinkEditing] as const;
+    return ['ImageEditing', 'ImageUtils', AlightEmailLinkPluginEditing] as const;
   }
 
   /**
    * @inheritDoc
    */
   public static get pluginName() {
-    return 'AlightEmailLinkImageEditing' as const;
+    return 'AlightEmailLinkPluginImageEditing' as const;
   }
 
   /**
@@ -65,13 +65,13 @@ export default class AlightEmailLinkImageEditing extends Plugin {
     const schema = editor.model.schema;
 
     if (editor.plugins.has('ImageBlockEditing')) {
-      schema.extend('imageBlock', { allowAttributes: ['alightEmailLinkHref'] });
+      schema.extend('imageBlock', { allowAttributes: ['alightEmailLinkPluginHref'] });
     }
 
     editor.conversion.for('upcast').add(upcastLink(editor));
     editor.conversion.for('downcast').add(downcastImageLink(editor));
 
-    // Definitions for decorators are provided by the `link` command and the `AlightEmailLinkEditing` plugin.
+    // Definitions for decorators are provided by the `link` command and the `AlightEmailLinkPluginEditing` plugin.
     this._enableAutomaticDecorators();
     this._enableManualDecorators();
   }
@@ -82,7 +82,7 @@ export default class AlightEmailLinkImageEditing extends Plugin {
    */
   private _enableAutomaticDecorators(): void {
     const editor = this.editor;
-    const command = editor.commands.get('alight-email-link') as AlightEmailLinkCommand;
+    const command = editor.commands.get('alight-email-link') as AlightEmailLinkPluginCommand;
     const automaticDecorators = command.automaticDecorators;
 
     if (automaticDecorators.length) {
@@ -96,7 +96,7 @@ export default class AlightEmailLinkImageEditing extends Plugin {
    */
   private _enableManualDecorators(): void {
     const editor = this.editor;
-    const command = editor.commands.get('alight-email-link') as AlightEmailLinkCommand;
+    const command = editor.commands.get('alight-email-link') as AlightEmailLinkPluginCommand;
 
     for (const decorator of command.manualDecorators) {
       if (editor.plugins.has('ImageBlockEditing')) {
@@ -147,7 +147,7 @@ function upcastLink(editor: Editor): (dispatcher: UpcastDispatcher) => void {
         return;
       }
 
-      // There's an image inside an <a> element - we consume it so it won't be picked up by the AlightEmailLink plugin.
+      // There's an image inside an <a> element - we consume it so it won't be picked up by the AlightEmailLinkPlugin plugin.
       const consumableAttributes = { attributes: ['href'] };
 
       // Consume the `href` attribute so the default one will not convert it to $text attribute.
@@ -156,10 +156,10 @@ function upcastLink(editor: Editor): (dispatcher: UpcastDispatcher) => void {
         return;
       }
 
-      const alightEmailLinkHref = viewLink.getAttribute('href');
+      const alightEmailLinkPluginHref = viewLink.getAttribute('href');
 
       // Missing the 'href' attribute.
-      if (!alightEmailLinkHref) {
+      if (!alightEmailLinkPluginHref) {
         return;
       }
 
@@ -181,8 +181,8 @@ function upcastLink(editor: Editor): (dispatcher: UpcastDispatcher) => void {
       }
 
       if (modelElement && modelElement.is('element', 'imageBlock')) {
-        // Set the alightEmailLinkHref attribute from link element on model image element.
-        conversionApi.writer.setAttribute('alightEmailLinkHref', alightEmailLinkHref, modelElement);
+        // Set the alightEmailLinkPluginHref attribute from link element on model image element.
+        conversionApi.writer.setAttribute('alightEmailLinkPluginHref', alightEmailLinkPluginHref, modelElement);
       }
     }, { priority: 'high' });
     // Using the same priority that `upcastImageLinkManualDecorator()` converter guarantees
@@ -197,7 +197,7 @@ function downcastImageLink(editor: Editor): (dispatcher: DowncastDispatcher) => 
   const imageUtils: ImageUtils = editor.plugins.get('ImageUtils');
 
   return dispatcher => {
-    dispatcher.on<DowncastAttributeEvent<Element>>('attribute:alightEmailLinkHref:imageBlock', (evt, data, conversionApi) => {
+    dispatcher.on<DowncastAttributeEvent<Element>>('attribute:alightEmailLinkPluginHref:imageBlock', (evt, data, conversionApi) => {
       if (!conversionApi.consumable.consume(data.item, evt.name)) {
         return;
       }
@@ -247,7 +247,7 @@ function downcastImageLinkManualDecorator(decorator: ManualDecorator): (dispatch
         .find((child): child is ViewElement => child.is('element', 'a'));
 
       // The <a> element was removed by the time this converter is executed.
-      // It may happen when the base `alightEmailLinkHref` and decorator attributes are removed
+      // It may happen when the base `alightEmailLinkPluginHref` and decorator attributes are removed
       // at the same time (see #8401).
       if (!linkInImage) {
         return;

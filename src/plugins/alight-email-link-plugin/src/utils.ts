@@ -50,7 +50,7 @@ const DEFAULT_LINK_PROTOCOLS = [
 ];
 
 /**
- * A keystroke used by the {@link module:link/linkui~AlightEmailLinkUI link UI feature}.
+ * A keystroke used by the {@link module:link/linkui~AlightEmailLinkPluginUI link UI feature}.
  */
 export const LINK_KEYSTROKE = 'Ctrl+K';
 
@@ -154,14 +154,14 @@ export function normalizeDecorators(decorators?: Record<string, LinkDecoratorDef
 }
 
 /**
- * Returns `true` if the specified `element` can be linked (the element allows the `alightEmailLinkHref` attribute).
+ * Returns `true` if the specified `element` can be linked (the element allows the `alightEmailLinkPluginHref` attribute).
  */
 export function isLinkableElement(element: Element | null, schema: Schema): element is Element {
   if (!element) {
     return false;
   }
 
-  return schema.checkAttribute(element.name, 'alightEmailLinkHref');
+  return schema.checkAttribute(element.name, 'alightEmailLinkPluginHref');
 }
 
 /**

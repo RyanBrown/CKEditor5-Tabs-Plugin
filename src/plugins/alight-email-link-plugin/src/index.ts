@@ -7,16 +7,16 @@
  * @module link
  */
 
-export { default as AlightEmailLink } from './link';
-export { default as AlightEmailLinkEditing } from './linkediting';
-export { default as AlightEmailLinkUI } from './linkui';
-export { default as AlightEmailLinkImage } from './linkimage';
-export { default as AlightEmailLinkImageEditing } from './linkimageediting';
-export { default as AlightEmailLinkImageUI } from './linkimageui';
+export { default as AlightEmailLinkPlugin } from './link';
+export { default as AlightEmailLinkPluginEditing } from './linkediting';
+export { default as AlightEmailLinkPluginUI } from './linkui';
+export { default as AlightEmailLinkPluginImage } from './linkimage';
+export { default as AlightEmailLinkPluginImageEditing } from './linkimageediting';
+export { default as AlightEmailLinkPluginImageUI } from './linkimageui';
 export { default as AlightEmailAutoLink } from './autolink';
 export { default as LinkActionsView } from './ui/linkactionsview';
 export { default as LinkFormView } from './ui/linkformview';
-export { default as AlightEmailLinkCommand } from './linkcommand';
+export { default as AlightEmailLinkPluginCommand } from './linkcommand';
 export { default as AlightEmailUnlinkCommand } from './unlinkcommand';
 
 export {

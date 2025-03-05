@@ -10,12 +10,12 @@
 import type { ArrayOrItem } from 'ckeditor5/src/utils';
 
 /**
- * The configuration of the {@link module:link/link~AlightEmailLink link feature}.
+ * The configuration of the {@link module:link/link~AlightEmailLinkPlugin link feature}.
  *
  * ```ts
  * ClassicEditor
  * 	.create( editorElement, {
- * 		link:  ... // AlightEmailLink feature configuration.
+ * 		link:  ... // AlightEmailLinkPlugin feature configuration.
  * 	} )
  * 	.then( ... )
  * 	.catch( ... );
@@ -131,7 +131,7 @@ export interface LinkConfig {
    * * {@link module:link/linkconfig~LinkDecoratorManualDefinition Manual} &ndash; They allow users to control link attributes
    * individually, using the editor UI.
    *
-   * AlightEmailLink decorators are defined as objects with key-value pairs, where the key is the name provided for a given decorator and the
+   * AlightEmailLinkPlugin decorators are defined as objects with key-value pairs, where the key is the name provided for a given decorator and the
    * value is the decorator definition.
    *
    * The name of the decorator also corresponds to the {@glink framework/architecture/editing-engine#text-attributes text
@@ -221,7 +221,7 @@ export type LinkDecoratorDefinition = LinkDecoratorAutomaticDefinition | LinkDec
 export interface LinkDecoratorAutomaticDefinition {
 
   /**
-   * AlightEmailLink decorator type. It is `'automatic'` for all automatic decorators.
+   * AlightEmailLinkPlugin decorator type. It is `'automatic'` for all automatic decorators.
    */
   mode: 'automatic';
 
@@ -275,7 +275,7 @@ export interface LinkDecoratorAutomaticDefinition {
 export interface LinkDecoratorManualDefinition {
 
   /**
-   * AlightEmailLink decorator type. It is `'manual'` for all manual decorators.
+   * AlightEmailLinkPlugin decorator type. It is `'manual'` for all manual decorators.
    */
   mode: 'manual';
 

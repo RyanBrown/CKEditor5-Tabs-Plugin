@@ -27,7 +27,7 @@ import {
 } from 'ckeditor5/src/utils';
 import { icons } from 'ckeditor5/src/core';
 
-import type AlightEmailLinkCommand from '../linkcommand';
+import type AlightEmailLinkPluginCommand from '../linkcommand';
 import type ManualDecorator from '../utils/manualdecorator';
 
 // See: #8833.
@@ -68,7 +68,7 @@ export default class LinkFormView extends View {
 
   /**
    * A collection of {@link module:ui/button/switchbuttonview~SwitchButtonView},
-   * which corresponds to {@link module:link/AlightEmailLinkCommand~AlightEmailLinkCommand#manualDecorators manual decorators}
+   * which corresponds to {@link module:link/AlightEmailLinkPluginCommand~AlightEmailLinkPluginCommand#manualDecorators manual decorators}
    * configured in the editor.
    */
   private readonly _manualDecoratorSwitches: ViewCollection<SwitchButtonView>;
@@ -99,10 +99,10 @@ export default class LinkFormView extends View {
    * Also see {@link #render}.
    *
    * @param locale The localization services instance.
-   * @param AlightEmailLinkCommand Reference to {@link module:link/AlightEmailLinkCommand~AlightEmailLinkCommand}.
+   * @param AlightEmailLinkPluginCommand Reference to {@link module:link/AlightEmailLinkPluginCommand~AlightEmailLinkPluginCommand}.
    * @param validators  Form validators used by {@link #isValid}.
    */
-  constructor(locale: Locale, AlightEmailLinkCommand: AlightEmailLinkCommand, validators: Array<LinkFormValidatorCallback>) {
+  constructor(locale: Locale, AlightEmailLinkPluginCommand: AlightEmailLinkPluginCommand, validators: Array<LinkFormValidatorCallback>) {
     super(locale);
 
     const t = locale.t;
@@ -112,8 +112,8 @@ export default class LinkFormView extends View {
     this.saveButtonView = this._createButton(t('Save'), icons.check, 'ck-button-save');
     this.saveButtonView.type = 'submit';
     this.cancelButtonView = this._createButton(t('Cancel'), icons.cancel, 'ck-button-cancel', 'cancel');
-    this._manualDecoratorSwitches = this._createManualDecoratorSwitches(AlightEmailLinkCommand);
-    this.children = this._createFormChildren(AlightEmailLinkCommand.manualDecorators);
+    this._manualDecoratorSwitches = this._createManualDecoratorSwitches(AlightEmailLinkPluginCommand);
+    this.children = this._createFormChildren(AlightEmailLinkPluginCommand.manualDecorators);
 
     this._focusCycler = new FocusCycler({
       focusables: this._focusables,
@@ -130,7 +130,7 @@ export default class LinkFormView extends View {
 
     const classList = ['ck', 'ck-link-form', 'ck-responsive-form'];
 
-    if (AlightEmailLinkCommand.manualDecorators.length) {
+    if (AlightEmailLinkPluginCommand.manualDecorators.length) {
       classList.push('ck-link-form_layout-vertical', 'ck-vertical-form');
     }
 
@@ -150,7 +150,7 @@ export default class LinkFormView extends View {
 
   /**
    * Obtains the state of the {@link module:ui/button/switchbuttonview~SwitchButtonView switch buttons} representing
-   * {@link module:link/AlightEmailLinkCommand~AlightEmailLinkCommand#manualDecorators manual link decorators}
+   * {@link module:link/AlightEmailLinkPluginCommand~AlightEmailLinkPluginCommand#manualDecorators manual link decorators}
    * in the {@link module:link/ui/linkformview~LinkFormView}.
    *
    * @returns Key-value pairs, where the key is the name of the decorator and the value is its state.
@@ -251,7 +251,7 @@ export default class LinkFormView extends View {
     const labeledInput = new LabeledFieldView(this.locale, createLabeledInputText);
 
     labeledInput.fieldView.inputMode = 'url';
-    labeledInput.label = t('AlightEmailLink URL');
+    labeledInput.label = t('AlightEmailLinkPlugin URL');
 
     return labeledInput;
   }
@@ -289,15 +289,15 @@ export default class LinkFormView extends View {
 
   /**
    * Populates {@link module:ui/viewcollection~ViewCollection} of {@link module:ui/button/switchbuttonview~SwitchButtonView}
-   * made based on {@link module:link/AlightEmailLinkCommand~AlightEmailLinkCommand#manualDecorators}.
+   * made based on {@link module:link/AlightEmailLinkPluginCommand~AlightEmailLinkPluginCommand#manualDecorators}.
    *
-   * @param AlightEmailLinkCommand A reference to the link command.
+   * @param AlightEmailLinkPluginCommand A reference to the link command.
    * @returns ViewCollection of switch buttons.
    */
-  private _createManualDecoratorSwitches(AlightEmailLinkCommand: AlightEmailLinkCommand): ViewCollection<SwitchButtonView> {
+  private _createManualDecoratorSwitches(AlightEmailLinkPluginCommand: AlightEmailLinkPluginCommand): ViewCollection<SwitchButtonView> {
     const switches = this.createCollection<SwitchButtonView>();
 
-    for (const manualDecorator of AlightEmailLinkCommand.manualDecorators) {
+    for (const manualDecorator of AlightEmailLinkPluginCommand.manualDecorators) {
       const switchButton: SwitchButtonView & { name?: string } = new SwitchButtonView(this.locale);
 
       switchButton.set({
@@ -306,7 +306,7 @@ export default class LinkFormView extends View {
         withText: true
       });
 
-      switchButton.bind('isOn').toMany([manualDecorator, AlightEmailLinkCommand], 'value', (decoratorValue, commandValue) => {
+      switchButton.bind('isOn').toMany([manualDecorator, AlightEmailLinkPluginCommand], 'value', (decoratorValue, commandValue) => {
         return commandValue === undefined && decoratorValue === undefined ? !!manualDecorator.defaultValue : !!decoratorValue;
       });
 
@@ -323,7 +323,7 @@ export default class LinkFormView extends View {
   /**
    * Populates the {@link #children} collection of the form.
    *
-   * If {@link module:link/AlightEmailLinkCommand~AlightEmailLinkCommand#manualDecorators manual decorators} are configured in the editor, it creates an
+   * If {@link module:link/AlightEmailLinkPluginCommand~AlightEmailLinkPluginCommand#manualDecorators manual decorators} are configured in the editor, it creates an
    * additional `View` wrapping all {@link #_manualDecoratorSwitches} switch buttons corresponding
    * to these decorators.
    *

@@ -6,13 +6,13 @@
 import type {
   LinkConfig,
   AlightEmailAutoLink,
-  AlightEmailLink,
-  AlightEmailLinkEditing,
-  AlightEmailLinkImage,
-  AlightEmailLinkImageEditing,
-  AlightEmailLinkImageUI,
-  AlightEmailLinkUI,
-  AlightEmailLinkCommand,
+  AlightEmailLinkPlugin,
+  AlightEmailLinkPluginEditing,
+  AlightEmailLinkPluginImage,
+  AlightEmailLinkPluginImageEditing,
+  AlightEmailLinkPluginImageUI,
+  AlightEmailLinkPluginUI,
+  AlightEmailLinkPluginCommand,
   AlightEmailUnlinkCommand
 } from './index';
 
@@ -20,7 +20,7 @@ declare module '@ckeditor/ckeditor5-core' {
   interface EditorConfig {
 
     /**
-     * The configuration of the {@link module:link/link~AlightEmailLink} feature.
+     * The configuration of the {@link module:link/link~AlightEmailLinkPlugin} feature.
      *
      * Read more in {@link module:link/linkconfig~LinkConfig}.
      */
@@ -29,17 +29,17 @@ declare module '@ckeditor/ckeditor5-core' {
 
   interface PluginsMap {
     [AlightEmailAutoLink.pluginName]: AlightEmailAutoLink;
-    [AlightEmailLink.pluginName]: AlightEmailLink;
-    [AlightEmailLinkEditing.pluginName]: AlightEmailLinkEditing;
-    [AlightEmailLinkImage.pluginName]: AlightEmailLinkImage;
-    [AlightEmailLinkImageEditing.pluginName]: AlightEmailLinkImageEditing;
-    [AlightEmailLinkImageUI.pluginName]: AlightEmailLinkImageUI;
-    [AlightEmailLinkUI.pluginName]: AlightEmailLinkUI;
+    [AlightEmailLinkPlugin.pluginName]: AlightEmailLinkPlugin;
+    [AlightEmailLinkPluginEditing.pluginName]: AlightEmailLinkPluginEditing;
+    [AlightEmailLinkPluginImage.pluginName]: AlightEmailLinkPluginImage;
+    [AlightEmailLinkPluginImageEditing.pluginName]: AlightEmailLinkPluginImageEditing;
+    [AlightEmailLinkPluginImageUI.pluginName]: AlightEmailLinkPluginImageUI;
+    [AlightEmailLinkPluginUI.pluginName]: AlightEmailLinkPluginUI;
   }
 
   interface CommandsMap {
     // Use string literal for the command name to avoid conflicts
-    'alight-email-link': AlightEmailLinkCommand;
+    'alight-email-link': AlightEmailLinkPluginCommand;
     'alight-email-unlink': AlightEmailUnlinkCommand;
   }
 }

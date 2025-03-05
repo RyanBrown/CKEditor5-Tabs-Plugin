@@ -13,9 +13,9 @@ import {
 } from 'ckeditor5/src/ui';
 import { isWidget } from 'ckeditor5/src/widget';
 
-import AlightEmailLinkEditing from './linkediting';
+import AlightEmailLinkPluginEditing from './linkediting';
 import LinkActionsView from './ui/linkactionsview';
-import type AlightEmailLinkCommand from './linkcommand';
+import type AlightEmailLinkPluginCommand from './linkcommand';
 import type AlightEmailUnlinkCommand from './unlinkcommand';
 import { addLinkProtocolIfApplicable, isLinkElement, LINK_KEYSTROKE } from './utils';
 import CkAlightModalDialog from '../../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
@@ -30,7 +30,7 @@ const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
  * 
  * Uses a balloon for unlink actions, and a modal dialog for create/edit functions.
  */
-export default class AlightEmailLinkUI extends Plugin {
+export default class AlightEmailLinkPluginUI extends Plugin {
   /**
    * The modal dialog instance.
    */
@@ -55,14 +55,14 @@ export default class AlightEmailLinkUI extends Plugin {
    * @inheritDoc
    */
   public static get requires() {
-    return [AlightEmailLinkEditing, ContextualBalloon] as const;
+    return [AlightEmailLinkPluginEditing, ContextualBalloon] as const;
   }
 
   /**
    * @inheritDoc
    */
   public static get pluginName() {
-    return 'AlightEmailLinkUI' as const;
+    return 'AlightEmailLinkPluginUI' as const;
   }
 
   /**
@@ -137,7 +137,7 @@ export default class AlightEmailLinkUI extends Plugin {
     });
 
     // Register the UI component
-    editor.ui.componentFactory.add('AlightEmailLink', locale => {
+    editor.ui.componentFactory.add('AlightEmailLinkPlugin', locale => {
       return this._createButton(ButtonView);
     });
   }
@@ -160,12 +160,12 @@ export default class AlightEmailLinkUI extends Plugin {
   }
 
   /**
-   * Creates a toolbar AlightEmailLink button. Clicking this button will show the modal dialog.
+   * Creates a toolbar AlightEmailLinkPlugin button. Clicking this button will show the modal dialog.
    */
   private _createToolbarLinkButton(): void {
     const editor = this.editor;
 
-    editor.ui.componentFactory.add('menuBar:AlightEmailLink', () => {
+    editor.ui.componentFactory.add('menuBar:AlightEmailLinkPlugin', () => {
       const button = this._createButton(MenuBarMenuListItemButtonView);
 
       button.set({
@@ -209,7 +209,7 @@ export default class AlightEmailLinkUI extends Plugin {
   private _createActionsView(): LinkActionsView {
     const editor = this.editor;
     const actionsView = new LinkActionsView(editor.locale);
-    const linkCommand = editor.commands.get('alight-email-link') as AlightEmailLinkCommand;
+    const linkCommand = editor.commands.get('alight-email-link') as AlightEmailLinkPluginCommand;
     const unlinkCommand = editor.commands.get('alight-email-unlink') as AlightEmailUnlinkCommand;
 
     actionsView.bind('href').to(linkCommand, 'value');
@@ -392,7 +392,7 @@ export default class AlightEmailLinkUI extends Plugin {
   private _showUI(isEditing: boolean = false): void {
     const editor = this.editor;
     const t = editor.t;
-    const linkCommand = editor.commands.get('alight-email-link') as AlightEmailLinkCommand;
+    const linkCommand = editor.commands.get('alight-email-link') as AlightEmailLinkPluginCommand;
     const defaultProtocol = editor.config.get('link.defaultProtocol');
     const selectedLink = this._getSelectedLinkElement();
 

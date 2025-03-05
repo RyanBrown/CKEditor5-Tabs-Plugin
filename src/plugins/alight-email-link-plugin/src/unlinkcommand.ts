@@ -9,12 +9,12 @@
 import { Command } from 'ckeditor5/src/core';
 import { findAttributeRange } from 'ckeditor5/src/typing';
 
-import type AlightEmailLinkCommand from './linkcommand';
+import type AlightEmailLinkPluginCommand from './linkcommand';
 import { isLinkableElement } from './utils';
 import type { Range, Writer } from '@ckeditor/ckeditor5-engine';
 
 /**
- * The unlink command. It is used by the {@link module:link/link~AlightEmailLink link feature}.
+ * The unlink command. It is used by the {@link module:link/link~AlightEmailLinkPlugin link feature}.
  * Enhanced to remove organization names from links.
  */
 export default class AlightEmailUnlinkCommand extends Command {
@@ -26,44 +26,44 @@ export default class AlightEmailUnlinkCommand extends Command {
     const selection = model.document.selection;
     const selectedElement = selection.getSelectedElement();
 
-    // A check for any integration that allows linking elements (e.g. `AlightEmailLinkImage`).
+    // A check for any integration that allows linking elements (e.g. `AlightEmailLinkPluginImage`).
     if (isLinkableElement(selectedElement, model.schema)) {
-      this.isEnabled = model.schema.checkAttribute(selectedElement, 'alightEmailLinkHref');
+      this.isEnabled = model.schema.checkAttribute(selectedElement, 'alightEmailLinkPluginHref');
     } else {
-      this.isEnabled = model.schema.checkAttributeInSelection(selection, 'alightEmailLinkHref');
+      this.isEnabled = model.schema.checkAttributeInSelection(selection, 'alightEmailLinkPluginHref');
     }
   }
 
   /**
    * Executes the command.
    *
-   * When the selection is collapsed, it removes the `alightEmailLinkHref` attribute from each node with the same `alightEmailLinkHref` attribute value.
-   * When the selection is non-collapsed, it removes the `alightEmailLinkHref` attribute from each node in selected ranges.
+   * When the selection is collapsed, it removes the `alightEmailLinkPluginHref` attribute from each node with the same `alightEmailLinkPluginHref` attribute value.
+   * When the selection is non-collapsed, it removes the `alightEmailLinkPluginHref` attribute from each node in selected ranges.
    * Additionally, it removes organization names from the text content.
    */
   public override execute(): void {
     const editor = this.editor;
     const model = this.editor.model;
     const selection = model.document.selection;
-    const linkCommand = editor.commands.get('alight-email-link') as AlightEmailLinkCommand | undefined;
+    const linkCommand = editor.commands.get('alight-email-link') as AlightEmailLinkPluginCommand | undefined;
 
     model.change(writer => {
       // Get ranges to unlink.
       const rangesToUnlink = selection.isCollapsed ?
         [findAttributeRange(
           selection.getFirstPosition()!,
-          'alightEmailLinkHref',
-          selection.getAttribute('alightEmailLinkHref'),
+          'alightEmailLinkPluginHref',
+          selection.getAttribute('alightEmailLinkPluginHref'),
           model
         )] :
-        model.schema.getValidRanges(selection.getRanges(), 'alightEmailLinkHref');
+        model.schema.getValidRanges(selection.getRanges(), 'alightEmailLinkPluginHref');
 
-      // Remove `alightEmailLinkHref` attribute from specified ranges.
+      // Remove `alightEmailLinkPluginHref` attribute from specified ranges.
       for (const range of rangesToUnlink) {
         // Before removing the attribute, let's remove any organization name from the text
         this._removeOrganizationNameFromText(writer, range);
 
-        writer.removeAttribute('alightEmailLinkHref', range);
+        writer.removeAttribute('alightEmailLinkPluginHref', range);
 
         // If there are registered custom attributes, then remove them during unlink.
         if (linkCommand) {

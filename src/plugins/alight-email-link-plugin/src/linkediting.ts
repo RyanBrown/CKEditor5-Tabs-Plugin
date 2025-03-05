@@ -30,7 +30,7 @@ import {
 } from 'ckeditor5/src/clipboard';
 import { keyCodes, env } from 'ckeditor5/src/utils';
 
-import AlightEmailLinkCommand from './linkcommand';
+import AlightEmailLinkPluginCommand from './linkcommand';
 import AlightEmailUnlinkCommand from './unlinkcommand';
 import ManualDecorator from './utils/manualdecorator';
 import {
@@ -55,15 +55,15 @@ const EXTERNAL_LINKS_REGEXP = /^(https?:)?\/\//;
 /**
  * The link engine feature.
  *
- * It introduces the `alightEmailLinkHref="url"` attribute in the model which renders to the view as a `<a href="url">` element
+ * It introduces the `alightEmailLinkPluginHref="url"` attribute in the model which renders to the view as a `<a href="url">` element
  * as well as `'link'` and `'unlink'` commands.
  */
-export default class AlightEmailLinkEditing extends Plugin {
+export default class AlightEmailLinkPluginEditing extends Plugin {
   /**
    * @inheritDoc
    */
   public static get pluginName() {
-    return 'AlightEmailLinkEditing' as const;
+    return 'AlightEmailLinkPluginEditing' as const;
   }
 
   /**
@@ -101,14 +101,14 @@ export default class AlightEmailLinkEditing extends Plugin {
     const allowedProtocols = this.editor.config.get('link.allowedProtocols');
 
     // Allow link attribute on all inline nodes.
-    editor.model.schema.extend('$text', { allowAttributes: 'alightEmailLinkHref' });
+    editor.model.schema.extend('$text', { allowAttributes: 'alightEmailLinkPluginHref' });
 
     editor.conversion.for('dataDowncast')
-      .attributeToElement({ model: 'alightEmailLinkHref', view: createLinkElement });
+      .attributeToElement({ model: 'alightEmailLinkPluginHref', view: createLinkElement });
 
     editor.conversion.for('editingDowncast')
       .attributeToElement({
-        model: 'alightEmailLinkHref', view: (href, conversionApi) => {
+        model: 'alightEmailLinkPluginHref', view: (href, conversionApi) => {
           return createLinkElement(ensureSafeUrl(href, allowedProtocols), conversionApi);
         }
       });
@@ -122,13 +122,13 @@ export default class AlightEmailLinkEditing extends Plugin {
           }
         },
         model: {
-          key: 'alightEmailLinkHref',
+          key: 'alightEmailLinkPluginHref',
           value: (viewElement: ViewElement) => viewElement.getAttribute('href')
         }
       });
 
     // Create linking commands.
-    editor.commands.add('alight-email-link', new AlightEmailLinkCommand(editor));
+    editor.commands.add('alight-email-link', new AlightEmailLinkPluginCommand(editor));
     editor.commands.add('alight-email-unlink', new AlightEmailUnlinkCommand(editor));
 
     const linkDecorators = getLocalizedDecorators(editor.t, normalizeDecorators(editor.config.get('link.decorators')));
@@ -138,12 +138,12 @@ export default class AlightEmailLinkEditing extends Plugin {
     this._enableManualDecorators(linkDecorators
       .filter((item): item is NormalizedLinkDecoratorManualDefinition => item.mode === DECORATOR_MANUAL));
 
-    // Enable two-step caret movement for `alightEmailLinkHref` attribute.
+    // Enable two-step caret movement for `alightEmailLinkPluginHref` attribute.
     const twoStepCaretMovementPlugin = editor.plugins.get(TwoStepCaretMovement);
-    twoStepCaretMovementPlugin.registerAttribute('alightEmailLinkHref');
+    twoStepCaretMovementPlugin.registerAttribute('alightEmailLinkPluginHref');
 
     // Setup highlight over selected link.
-    inlineHighlight(editor, 'alightEmailLinkHref', 'a', HIGHLIGHT_CLASS);
+    inlineHighlight(editor, 'alightEmailLinkPluginHref', 'a', HIGHLIGHT_CLASS);
 
     // Handle link following by CTRL+click or ALT+ENTER
     this._enableLinkOpen();
@@ -167,8 +167,8 @@ export default class AlightEmailLinkEditing extends Plugin {
   private _enableAutomaticDecorators(automaticDecoratorDefinitions: Array<NormalizedLinkDecoratorAutomaticDefinition>): void {
     const editor = this.editor;
     // Store automatic decorators in the command instance as we do the same with manual decorators.
-    // Thanks to that, `AlightEmailLinkImageEditing` plugin can re-use the same definitions.
-    const command = editor.commands.get('alight-email-link') as AlightEmailLinkCommand;
+    // Thanks to that, `AlightEmailLinkPluginImageEditing` plugin can re-use the same definitions.
+    const command = editor.commands.get('alight-email-link') as AlightEmailLinkPluginCommand;
     const automaticDecorators = command.automaticDecorators;
 
     // Adds a default decorator for external links.
@@ -194,7 +194,7 @@ export default class AlightEmailLinkEditing extends Plugin {
   /**
    * Processes an array of configured {@link module:link/linkconfig~LinkDecoratorManualDefinition manual decorators},
    * transforms them into {@link module:link/utils/manualdecorator~ManualDecorator} instances and stores them in the
-   * {@link module:link/AlightEmailLinkCommand~AlightEmailLinkCommand#manualDecorators} collection (a model for manual decorators state).
+   * {@link module:link/AlightEmailLinkPluginCommand~AlightEmailLinkPluginCommand#manualDecorators} collection (a model for manual decorators state).
    *
    * Also registers an {@link module:engine/conversion/downcasthelpers~DowncastHelpers#attributeToElement attribute-to-element}
    * converter for each manual decorator and extends the {@link module:engine/model/schema~Schema model's schema}
@@ -206,7 +206,7 @@ export default class AlightEmailLinkEditing extends Plugin {
     }
 
     const editor = this.editor;
-    const command = editor.commands.get('alight-email-link') as AlightEmailLinkCommand;
+    const command = editor.commands.get('alight-email-link') as AlightEmailLinkPluginCommand;
     const manualDecorators = command.manualDecorators;
 
     manualDecoratorDefinitions.forEach(decoratorDefinition => {
@@ -220,7 +220,7 @@ export default class AlightEmailLinkEditing extends Plugin {
       editor.conversion.for('downcast').attributeToElement({
         model: decorator.id,
         view: (manualDecoratorValue, { writer, schema }, { item }) => {
-          // Manual decorators for block links are handled e.g. in AlightEmailLinkImageEditing.
+          // Manual decorators for block links are handled e.g. in AlightEmailLinkPluginImageEditing.
           if (!(item.is('selection') || schema.isInline(item))) {
             return;
           }
@@ -304,7 +304,7 @@ export default class AlightEmailLinkEditing extends Plugin {
 
     // Open link on Alt+Enter.
     this.listenTo<ViewDocumentKeyDownEvent>(viewDocument, 'keydown', (evt, data) => {
-      const command = editor.commands.get('alight-email-link') as AlightEmailLinkCommand;
+      const command = editor.commands.get('alight-email-link') as AlightEmailLinkPluginCommand;
       const url = command.value;
       const shouldOpen = !!url && data.keyCode === keyCodes.enter && data.altKey;
 
@@ -319,7 +319,7 @@ export default class AlightEmailLinkEditing extends Plugin {
   }
 
   /**
-   * Watches the DocumentSelection attribute changes and removes link decorator attributes when the alightEmailLinkHref attribute is removed.
+   * Watches the DocumentSelection attribute changes and removes link decorator attributes when the alightEmailLinkPluginHref attribute is removed.
    *
    * This is to ensure that there is no left-over link decorator attributes on the document selection that is no longer in a link.
    */
@@ -329,7 +329,7 @@ export default class AlightEmailLinkEditing extends Plugin {
     const selection = model.document.selection;
 
     this.listenTo<DocumentSelectionChangeAttributeEvent>(selection, 'change:attribute', (evt, { attributeKeys }) => {
-      if (!attributeKeys.includes('alightEmailLinkHref') || selection.hasAttribute('alightEmailLinkHref')) {
+      if (!attributeKeys.includes('alightEmailLinkPluginHref') || selection.hasAttribute('alightEmailLinkPluginHref')) {
         return;
       }
 
@@ -356,10 +356,10 @@ export default class AlightEmailLinkEditing extends Plugin {
         const range = writer.createRangeIn(data.content);
 
         for (const item of range.getItems()) {
-          if (item.hasAttribute('alightEmailLinkHref')) {
-            const newLink = addLinkProtocolIfApplicable(item.getAttribute('alightEmailLinkHref') as string, defaultProtocol);
+          if (item.hasAttribute('alightEmailLinkPluginHref')) {
+            const newLink = addLinkProtocolIfApplicable(item.getAttribute('alightEmailLinkPluginHref') as string, defaultProtocol);
 
-            writer.setAttribute('alightEmailLinkHref', newLink, item);
+            writer.setAttribute('alightEmailLinkPluginHref', newLink, item);
           }
         }
       });
@@ -369,11 +369,11 @@ export default class AlightEmailLinkEditing extends Plugin {
 
 /**
  * Make the selection free of link-related model attributes.
- * All link-related model attributes start with "link". That includes not only "alightEmailLinkHref"
+ * All link-related model attributes start with "link". That includes not only "alightEmailLinkPluginHref"
  * but also all decorator attributes (they have dynamic names), or even custom plugins.
  */
 function removeLinkAttributesFromSelection(writer: Writer, linkAttributes: Array<string>): void {
-  writer.removeSelectionAttribute('alightEmailLinkHref');
+  writer.removeSelectionAttribute('alightEmailLinkPluginHref');
 
   for (const attribute of linkAttributes) {
     writer.removeSelectionAttribute(attribute);

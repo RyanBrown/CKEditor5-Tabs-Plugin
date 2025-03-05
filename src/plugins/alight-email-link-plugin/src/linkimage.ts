@@ -4,34 +4,34 @@
  */
 
 /**
- * @module link/AlightEmailLinkImage
+ * @module link/AlightEmailLinkPluginImage
  */
 
 import { Plugin } from 'ckeditor5/src/core';
-import AlightEmailLinkImageEditing from './linkimageediting';
-import AlightEmailLinkImageUI from './linkimageui';
+import AlightEmailLinkPluginImageEditing from './linkimageediting';
+import AlightEmailLinkPluginImageUI from './linkimageui';
 
-import '../theme/AlightEmailLinkImage.css';
+import '../theme/AlightEmailLinkPluginImage.css';
 
 /**
- * The `AlightEmailLinkImage` plugin.
+ * The `AlightEmailLinkPluginImage` plugin.
  *
- * This is a "glue" plugin that loads the {@link module:link/AlightEmailLinkImageediting~AlightEmailLinkImageEditing link image editing feature}
- * and {@link module:link/AlightEmailLinkImageui~AlightEmailLinkImageUI link image UI feature}.
+ * This is a "glue" plugin that loads the {@link module:link/AlightEmailLinkPluginImageediting~AlightEmailLinkPluginImageEditing link image editing feature}
+ * and {@link module:link/AlightEmailLinkPluginImageui~AlightEmailLinkPluginImageUI link image UI feature}.
  */
-export default class AlightEmailLinkImage extends Plugin {
+export default class AlightEmailLinkPluginImage extends Plugin {
   /**
    * @inheritDoc
    */
   public static get requires() {
-    return [AlightEmailLinkImageEditing, AlightEmailLinkImageUI] as const;
+    return [AlightEmailLinkPluginImageEditing, AlightEmailLinkPluginImageUI] as const;
   }
 
   /**
    * @inheritDoc
    */
   public static get pluginName() {
-    return 'AlightEmailLinkImage' as const;
+    return 'AlightEmailLinkPluginImage' as const;
   }
 
   /**

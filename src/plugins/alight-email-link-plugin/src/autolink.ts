@@ -14,7 +14,7 @@ import { Delete, TextWatcher, getLastTextLine, findAttributeRange, type TextWatc
 import type { EnterCommand, ShiftEnterCommand } from 'ckeditor5/src/enter';
 
 import { addLinkProtocolIfApplicable, linkHasProtocol } from './utils';
-import AlightEmailLinkEditing from './linkediting';
+import AlightEmailLinkPluginEditing from './linkediting';
 
 const MIN_LINK_LENGTH_WITH_SPACE_AT_END = 4; // Ie: "t.co " (length 5).
 
@@ -75,7 +75,7 @@ export default class AlightEmailAutoLink extends Plugin {
    * @inheritDoc
    */
   public static get requires() {
-    return [Delete, AlightEmailLinkEditing] as const;
+    return [Delete, AlightEmailLinkPluginEditing] as const;
   }
 
   /**
@@ -122,8 +122,8 @@ export default class AlightEmailAutoLink extends Plugin {
    * If position is not inside a link, returns `null`.
    */
   private _expandLinkRange(model: Model, position: Position): Range | null {
-    if (position.textNode && position.textNode.hasAttribute('alightEmailLinkHref')) {
-      return findAttributeRange(position, 'alightEmailLinkHref', position.textNode.getAttribute('alightEmailLinkHref'), model);
+    if (position.textNode && position.textNode.hasAttribute('alightEmailLinkPluginHref')) {
+      return findAttributeRange(position, 'alightEmailLinkPluginHref', position.textNode.getAttribute('alightEmailLinkPluginHref'), model);
     } else {
       return null;
     }
@@ -158,10 +158,10 @@ export default class AlightEmailAutoLink extends Plugin {
     const model = editor.model;
     const selection = model.document.selection;
     const clipboardPipeline = editor.plugins.get('ClipboardPipeline');
-    const AlightEmailLinkCommand = editor.commands.get('link')!;
+    const AlightEmailLinkPluginCommand = editor.commands.get('link')!;
 
     clipboardPipeline.on('inputTransformation', (evt, data: ClipboardInputTransformationData) => {
-      if (!this.isEnabled || !AlightEmailLinkCommand.isEnabled || selection.isCollapsed || data.method !== 'paste') {
+      if (!this.isEnabled || !AlightEmailLinkPluginCommand.isEnabled || selection.isCollapsed || data.method !== 'paste') {
         // Abort if we are disabled or the selection is collapsed.
         return;
       }
@@ -186,7 +186,7 @@ export default class AlightEmailAutoLink extends Plugin {
       if (matches && matches[2] === newLink) {
         model.change(writer => {
           this._selectEntireLinks(writer, selectedRange);
-          AlightEmailLinkCommand.execute(newLink);
+          AlightEmailLinkPluginCommand.execute(newLink);
         });
 
         evt.stop();
@@ -345,7 +345,7 @@ export default class AlightEmailAutoLink extends Plugin {
 
     // Enqueue change to make undo step.
     model.enqueueChange(writer => {
-      writer.setAttribute('alightEmailLinkHref', url, range);
+      writer.setAttribute('alightEmailLinkPluginHref', url, range);
 
       model.enqueueChange(() => {
         deletePlugin.requestUndoOnBackspace();
@@ -366,10 +366,10 @@ function getUrlAtTextEnd(text: string): string | null {
 }
 
 function isLinkAllowedOnRange(range: Range, model: Model): boolean {
-  return model.schema.checkAttributeInSelection(model.createSelection(range), 'alightEmailLinkHref');
+  return model.schema.checkAttributeInSelection(model.createSelection(range), 'alightEmailLinkPluginHref');
 }
 
 function linkIsAlreadySet(range: Range): boolean {
   const item = range.start.nodeAfter;
-  return !!item && item.hasAttribute('alightEmailLinkHref');
+  return !!item && item.hasAttribute('alightEmailLinkPluginHref');
 }

@@ -7,12 +7,12 @@
 			"docs": "features/link.html#autolink-feature",
 			"path": "src/autolink",
 			"requires": [
-				"AlightEmailLink"
+				"AlightEmailLinkPlugin"
 			]
 		},
 		{
-			"name": "AlightEmailLink",
-			"className": "AlightEmailLink",
+			"name": "AlightEmailLinkPlugin",
+			"className": "AlightEmailLinkPlugin",
 			"description": "Brings support for inserting hyperlinks into the content and offers the UI to create and edit them.",
 			"docs": "features/link.html",
 			"path": "src/link",
@@ -48,19 +48,19 @@
 			]
 		},
 		{
-			"name": "AlightEmailLink image",
-			"className": "AlightEmailLinkImage",
+			"name": "AlightEmailLinkPlugin image",
+			"className": "AlightEmailLinkPluginImage",
 			"description": "Allows adding clickable links to images for creating banners or referrers.",
 			"docs": "features/images/images-linking.html",
-			"path": "src/AlightEmailLinkImage",
+			"path": "src/AlightEmailLinkPluginImage",
 			"requires": [
-				"AlightEmailLink",
+				"AlightEmailLinkPlugin",
 				"ImageBlock"
 			],
 			"uiComponents": [
 				{
 					"type": "Button",
-					"name": "AlightEmailLinkImage",
+					"name": "AlightEmailLinkPluginImage",
 					"iconPath": "theme/icons/link.svg",
 					"toolbars": [
 						"image.toolbar"

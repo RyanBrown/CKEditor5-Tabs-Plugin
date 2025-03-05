@@ -14,7 +14,7 @@ import type { NormalizedLinkDecoratorManualDefinition } from '../utils';
 /**
  * Helper class that stores manual decorators with observable {@link module:link/utils/manualdecorator~ManualDecorator#value}
  * to support integration with the UI state. An instance of this class is a model with the state of individual manual decorators.
- * These decorators are kept as collections in {@link module:link/AlightEmailLinkCommand~AlightEmailLinkCommand#manualDecorators}.
+ * These decorators are kept as collections in {@link module:link/AlightEmailLinkPluginCommand~AlightEmailLinkPluginCommand#manualDecorators}.
  */
 export default class ManualDecorator extends /* #__PURE__ */ ObservableMixin() {
   /**

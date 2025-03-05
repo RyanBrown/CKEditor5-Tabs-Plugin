@@ -4,7 +4,7 @@
  */
 
 /**
- * Modified AlightEmailLinkCommand to support organization name
+ * Modified AlightEmailLinkPluginCommand to support organization name
  */
 
 import { Command } from 'ckeditor5/src/core';
@@ -25,12 +25,12 @@ interface LinkOptions {
 }
 
 /**
- * The link command. It is used by the {@link module:link/link~AlightEmailLink link feature}.
+ * The link command. It is used by the {@link module:link/link~AlightEmailLinkPlugin link feature}.
  * Enhanced to support organization name.
  */
-export default class AlightEmailLinkCommand extends Command {
+export default class AlightEmailLinkPluginCommand extends Command {
   /**
-   * The value of the `'alightEmailLinkHref'` attribute if the start of the selection is located in a node with this attribute.
+   * The value of the `'alightEmailLinkPluginHref'` attribute if the start of the selection is located in a node with this attribute.
    *
    * @observable
    * @readonly
@@ -68,14 +68,14 @@ export default class AlightEmailLinkCommand extends Command {
     const selection = model.document.selection;
     const selectedElement = selection.getSelectedElement() || first(selection.getSelectedBlocks());
 
-    // A check for any integration that allows linking elements (e.g. `AlightEmailLinkImage`).
+    // A check for any integration that allows linking elements (e.g. `AlightEmailLinkPluginImage`).
     // Currently the selection reads attributes from text nodes only. See #7429 and #7465.
     if (isLinkableElement(selectedElement, model.schema)) {
-      this.value = selectedElement.getAttribute('alightEmailLinkHref') as string | undefined;
-      this.isEnabled = model.schema.checkAttribute(selectedElement, 'alightEmailLinkHref');
+      this.value = selectedElement.getAttribute('alightEmailLinkPluginHref') as string | undefined;
+      this.isEnabled = model.schema.checkAttribute(selectedElement, 'alightEmailLinkPluginHref');
     } else {
-      this.value = selection.getAttribute('alightEmailLinkHref') as string | undefined;
-      this.isEnabled = model.schema.checkAttributeInSelection(selection, 'alightEmailLinkHref');
+      this.value = selection.getAttribute('alightEmailLinkPluginHref') as string | undefined;
+      this.isEnabled = model.schema.checkAttributeInSelection(selection, 'alightEmailLinkPluginHref');
     }
 
     for (const manualDecorator of this.manualDecorators) {
@@ -86,18 +86,18 @@ export default class AlightEmailLinkCommand extends Command {
   /**
    * Executes the command.
    *
-   * When the selection is non-collapsed, the `alightEmailLinkHref` attribute will be applied to nodes inside the selection, but only to
-   * those nodes where the `alightEmailLinkHref` attribute is allowed (disallowed nodes will be omitted).
+   * When the selection is non-collapsed, the `alightEmailLinkPluginHref` attribute will be applied to nodes inside the selection, but only to
+   * those nodes where the `alightEmailLinkPluginHref` attribute is allowed (disallowed nodes will be omitted).
    *
-   * When the selection is collapsed and is not inside the text with the `alightEmailLinkHref` attribute, a
-   * new {@link module:engine/model/text~Text text node} with the `alightEmailLinkHref` attribute will be inserted in place of the caret, but
+   * When the selection is collapsed and is not inside the text with the `alightEmailLinkPluginHref` attribute, a
+   * new {@link module:engine/model/text~Text text node} with the `alightEmailLinkPluginHref` attribute will be inserted in place of the caret, but
    * only if such element is allowed in this place. The `_data` of the inserted text will equal the `href` parameter.
    * The selection will be updated to wrap the just inserted text node.
    *
-   * When the selection is collapsed and inside the text with the `alightEmailLinkHref` attribute, the attribute value will be updated.
+   * When the selection is collapsed and inside the text with the `alightEmailLinkPluginHref` attribute, the attribute value will be updated.
    *
    * @fires execute
-   * @param href AlightEmailLink destination.
+   * @param href AlightEmailLinkPlugin destination.
  * @param options Options including manual decorator attributes and organization name.
  */
   public override execute(href: string, options: LinkOptions = {}): void {
@@ -126,18 +126,18 @@ export default class AlightEmailLinkCommand extends Command {
       if (selection.isCollapsed) {
         const position = selection.getFirstPosition()!;
 
-        // When selection is inside text with `alightEmailLinkHref` attribute.
-        if (selection.hasAttribute('alightEmailLinkHref')) {
-          // Then update `alightEmailLinkHref` value.
+        // When selection is inside text with `alightEmailLinkPluginHref` attribute.
+        if (selection.hasAttribute('alightEmailLinkPluginHref')) {
+          // Then update `alightEmailLinkPluginHref` value.
           const linkRange = findAttributeRange(
             position,
-            'alightEmailLinkHref',
-            selection.getAttribute('alightEmailLinkHref'),
+            'alightEmailLinkPluginHref',
+            selection.getAttribute('alightEmailLinkPluginHref'),
             model
           );
 
           // Update href attribute
-          writer.setAttribute('alightEmailLinkHref', href, linkRange);
+          writer.setAttribute('alightEmailLinkPluginHref', href, linkRange);
 
           // Apply decorators
           truthyManualDecorators.forEach(item => {
@@ -151,11 +151,11 @@ export default class AlightEmailLinkCommand extends Command {
           // Put the selection at the end of the updated link.
           writer.setSelection(writer.createPositionAfter(linkRange.end.nodeBefore!));
         }
-        // If not then insert text node with `alightEmailLinkHref` attribute in place of caret.
+        // If not then insert text node with `alightEmailLinkPluginHref` attribute in place of caret.
         else if (href !== '') {
           const attributes = toMap(selection.getAttributes());
 
-          attributes.set('alightEmailLinkHref', href);
+          attributes.set('alightEmailLinkPluginHref', href);
 
           truthyManualDecorators.forEach(item => {
             attributes.set(item, true);
@@ -176,14 +176,14 @@ export default class AlightEmailLinkCommand extends Command {
           writer.setSelection(positionAfter);
         }
 
-        // Remove the `alightEmailLinkHref` attribute and all link decorators from the selection.
+        // Remove the `alightEmailLinkPluginHref` attribute and all link decorators from the selection.
         // It stops adding a new content into the link element.
-        ['alightEmailLinkHref', ...truthyManualDecorators, ...falsyManualDecorators].forEach(item => {
+        ['alightEmailLinkPluginHref', ...truthyManualDecorators, ...falsyManualDecorators].forEach(item => {
           writer.removeSelectionAttribute(item);
         });
       } else {
         // If selection has non-collapsed ranges, we change attribute on nodes inside those ranges
-        const ranges = model.schema.getValidRanges(selection.getRanges(), 'alightEmailLinkHref');
+        const ranges = model.schema.getValidRanges(selection.getRanges(), 'alightEmailLinkPluginHref');
 
         // Get the selected text content
         let selectedText = '';
@@ -210,7 +210,7 @@ export default class AlightEmailLinkCommand extends Command {
           writer.remove(range);
 
           // Then insert the new content with the organization
-          const attributes = { alightEmailLinkHref: href } as any;
+          const attributes = { alightEmailLinkPluginHref: href } as any;
 
           // Add decorators
           truthyManualDecorators.forEach(item => {
@@ -233,7 +233,7 @@ export default class AlightEmailLinkCommand extends Command {
     const selection = model.document.selection;
     const selectedElement = selection.getSelectedElement();
 
-    // A check for the `AlightEmailLinkImage` plugin.
+    // A check for the `AlightEmailLinkPluginImage` plugin.
     if (isLinkableElement(selectedElement, model.schema)) {
       return selectedElement.getAttribute(decoratorName) as boolean | undefined;
     }

@@ -4,7 +4,7 @@
  */
 
 /**
- * @module link/AlightEmailLinkImageui
+ * @module link/AlightEmailLinkPluginImageui
  */
 
 import { ButtonView } from 'ckeditor5/src/ui';
@@ -17,9 +17,9 @@ import type {
 
 import type { ImageUtils } from '@ckeditor/ckeditor5-image';
 
-import AlightEmailLinkUI from './linkui';
-import AlightEmailLinkEditing from './linkediting';
-import type AlightEmailLinkCommand from './linkcommand';
+import AlightEmailLinkPluginUI from './linkui';
+import AlightEmailLinkPluginEditing from './linkediting';
+import type AlightEmailLinkPluginCommand from './linkcommand';
 
 import { LINK_KEYSTROKE } from './utils';
 
@@ -28,22 +28,22 @@ import linkIcon from '../theme/icons/link.svg';
 /**
  * The link image UI plugin.
  *
- * This plugin provides the `'AlightEmailLinkImage'` button that can be displayed in the {@link module:image/imagetoolbar~ImageToolbar}.
+ * This plugin provides the `'AlightEmailLinkPluginImage'` button that can be displayed in the {@link module:image/imagetoolbar~ImageToolbar}.
  * It can be used to wrap images in links.
  */
-export default class AlightEmailLinkImageUI extends Plugin {
+export default class AlightEmailLinkPluginImageUI extends Plugin {
   /**
    * @inheritDoc
    */
   public static get requires() {
-    return [AlightEmailLinkEditing, AlightEmailLinkUI, 'ImageBlockEditing'] as const;
+    return [AlightEmailLinkPluginEditing, AlightEmailLinkPluginUI, 'ImageBlockEditing'] as const;
   }
 
   /**
    * @inheritDoc
    */
   public static get pluginName() {
-    return 'AlightEmailLinkImageUI' as const;
+    return 'AlightEmailLinkPluginImageUI' as const;
   }
 
   /**
@@ -65,32 +65,32 @@ export default class AlightEmailLinkImageUI extends Plugin {
         // Prevent browser navigation when clicking a linked image.
         data.preventDefault();
 
-        // Block the `AlightEmailLinkUI` plugin when an image was clicked.
+        // Block the `AlightEmailLinkPluginUI` plugin when an image was clicked.
         // In such a case, we'd like to display the image toolbar.
         evt.stop();
       }
     }, { priority: 'high' });
 
-    this._createToolbarAlightEmailLinkImageButton();
+    this._createToolbarAlightEmailLinkPluginImageButton();
   }
 
   /**
-   * Creates a `AlightEmailLinkImageUI` button view.
+   * Creates a `AlightEmailLinkPluginImageUI` button view.
    *
    * Clicking this button shows a modal dialog for editing the image link.
    */
-  private _createToolbarAlightEmailLinkImageButton(): void {
+  private _createToolbarAlightEmailLinkPluginImageButton(): void {
     const editor = this.editor;
     const t = editor.t;
 
-    editor.ui.componentFactory.add('AlightEmailLinkImage', locale => {
+    editor.ui.componentFactory.add('AlightEmailLinkPluginImage', locale => {
       const button = new ButtonView(locale);
-      const plugin = editor.plugins.get('AlightEmailLinkUI');
-      const linkCommand = editor.commands.get('alight-email-link') as AlightEmailLinkCommand;
+      const plugin = editor.plugins.get('AlightEmailLinkPluginUI');
+      const linkCommand = editor.commands.get('alight-email-link') as AlightEmailLinkPluginCommand;
 
       button.set({
         isEnabled: true,
-        label: t('AlightEmailLink image'),
+        label: t('AlightEmailLinkPlugin image'),
         icon: linkIcon,
         keystroke: LINK_KEYSTROKE,
         tooltip: true,
