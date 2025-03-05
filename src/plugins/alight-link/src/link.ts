@@ -19,24 +19,24 @@ import AlightAutoLink from './autolink';
  * and {@link module:link/linkui~AlightLinkUI link UI feature}.
  */
 export default class AlightLink extends Plugin {
-	/**
-	 * @inheritDoc
-	 */
-	public static get requires() {
-		return [AlightLinkEditing, AlightLinkUI, AlightAutoLink] as const;
-	}
+  /**
+   * @inheritDoc
+   */
+  public static get requires() {
+    return [AlightLinkEditing, AlightLinkUI, AlightAutoLink] as const;
+  }
 
-	/**
-	 * @inheritDoc
-	 */
-	public static get pluginName() {
-		return 'AlightLink' as const;
-	}
+  /**
+   * @inheritDoc
+   */
+  public static get pluginName() {
+    return 'AlightLink' as const;
+  }
 
-	/**
-	 * @inheritDoc
-	 */
-	public static override get isOfficialPlugin(): true {
-		return true;
-	}
+  /**
+   * @inheritDoc
+   */
+  public static override get isOfficialPlugin(): true {
+    return true;
+  }
 }

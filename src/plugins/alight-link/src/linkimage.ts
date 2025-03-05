@@ -20,24 +20,24 @@ import '../theme/AlightLinkImage.css';
  * and {@link module:link/AlightLinkImageui~AlightLinkImageUI link image UI feature}.
  */
 export default class AlightLinkImage extends Plugin {
-	/**
-	 * @inheritDoc
-	 */
-	public static get requires() {
-		return [AlightLinkImageEditing, AlightLinkImageUI] as const;
-	}
+  /**
+   * @inheritDoc
+   */
+  public static get requires() {
+    return [AlightLinkImageEditing, AlightLinkImageUI] as const;
+  }
 
-	/**
-	 * @inheritDoc
-	 */
-	public static get pluginName() {
-		return 'AlightLinkImage' as const;
-	}
+  /**
+   * @inheritDoc
+   */
+  public static get pluginName() {
+    return 'AlightLinkImage' as const;
+  }
 
-	/**
-	 * @inheritDoc
-	 */
-	public static override get isOfficialPlugin(): true {
-		return true;
-	}
+  /**
+   * @inheritDoc
+   */
+  public static override get isOfficialPlugin(): true {
+    return true;
+  }
 }

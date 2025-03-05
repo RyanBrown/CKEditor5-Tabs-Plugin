@@ -10,12 +10,12 @@
 /* global window */
 
 import type {
-	DowncastConversionApi,
-	Element,
-	Schema,
-	ViewAttributeElement,
-	ViewNode,
-	ViewDocumentFragment
+  DowncastConversionApi,
+  Element,
+  Schema,
+  ViewAttributeElement,
+  ViewNode,
+  ViewDocumentFragment
 } from 'ckeditor5/src/engine';
 
 import type { Editor } from 'ckeditor5/src/core';
@@ -23,9 +23,9 @@ import type { LocaleTranslate } from 'ckeditor5/src/utils';
 import type { BookmarkEditing } from '@ckeditor/ckeditor5-bookmark';
 
 import type {
-	LinkDecoratorAutomaticDefinition,
-	LinkDecoratorDefinition,
-	LinkDecoratorManualDefinition
+  LinkDecoratorAutomaticDefinition,
+  LinkDecoratorDefinition,
+  LinkDecoratorManualDefinition
 } from './linkconfig';
 
 import type { LinkActionsViewOptions } from './ui/linkactionsview';
@@ -44,9 +44,9 @@ const EMAIL_REG_EXP = /^[\S]+@((?![-_])(?:[-\w\u00a1-\uffff]{0,63}[^-_]\.))+(?:[
 const PROTOCOL_REG_EXP = /^((\w+:(\/{2,})?)|(\W))/i;
 
 const DEFAULT_LINK_PROTOCOLS = [
-	'https?',
-	'ftps?',
-	'mailto'
+  'https?',
+  'ftps?',
+  'mailto'
 ];
 
 /**
@@ -58,19 +58,19 @@ export const LINK_KEYSTROKE = 'Ctrl+K';
  * Returns `true` if a given view node is the link element.
  */
 export function isLinkElement(node: ViewNode | ViewDocumentFragment): boolean {
-	return node.is('attributeElement') && !!node.getCustomProperty('alight-link');
+  return node.is('attributeElement') && !!node.getCustomProperty('alight-link');
 }
 
 /**
  * Creates a link {@link module:engine/view/attributeelement~AttributeElement} with the provided `href` attribute.
  */
 export function createLinkElement(href: string, { writer }: DowncastConversionApi): ViewAttributeElement {
-	// Priority 5 - https://github.com/ckeditor/ckeditor5-link/issues/121.
-	const linkElement = writer.createAttributeElement('a', { href }, { priority: 5 });
+  // Priority 5 - https://github.com/ckeditor/ckeditor5-link/issues/121.
+  const linkElement = writer.createAttributeElement('a', { href }, { priority: 5 });
 
-	writer.setCustomProperty('alight-link', true, linkElement);
+  writer.setCustomProperty('alight-link', true, linkElement);
 
-	return linkElement;
+  return linkElement;
 }
 
 /**
@@ -83,21 +83,21 @@ export function createLinkElement(href: string, { writer }: DowncastConversionAp
  * @internal
  */
 export function ensureSafeUrl(url: unknown, allowedProtocols: Array<string> = DEFAULT_LINK_PROTOCOLS): string {
-	const urlString = String(url);
+  const urlString = String(url);
 
-	const protocolsList = allowedProtocols.join('|');
-	const customSafeRegex = new RegExp(`${SAFE_URL_TEMPLATE.replace('<protocols>', protocolsList)}`, 'i');
+  const protocolsList = allowedProtocols.join('|');
+  const customSafeRegex = new RegExp(`${SAFE_URL_TEMPLATE.replace('<protocols>', protocolsList)}`, 'i');
 
-	return isSafeUrl(urlString, customSafeRegex) ? urlString : '#';
+  return isSafeUrl(urlString, customSafeRegex) ? urlString : '#';
 }
 
 /**
  * Checks whether the given URL is safe for the user (does not contain any malicious code).
  */
 function isSafeUrl(url: string, customRegexp: RegExp): boolean {
-	const normalizedUrl = url.replace(ATTRIBUTE_WHITESPACES, '');
+  const normalizedUrl = url.replace(ATTRIBUTE_WHITESPACES, '');
 
-	return !!normalizedUrl.match(customRegexp);
+  return !!normalizedUrl.match(customRegexp);
 }
 
 /**
@@ -112,23 +112,23 @@ function isSafeUrl(url: string, customRegexp: RegExp): boolean {
  * @param decorators The decorator reference where the label values should be localized.
  */
 export function getLocalizedDecorators(
-	t: LocaleTranslate,
-	decorators: Array<NormalizedLinkDecoratorDefinition>
+  t: LocaleTranslate,
+  decorators: Array<NormalizedLinkDecoratorDefinition>
 ): Array<NormalizedLinkDecoratorDefinition> {
-	const localizedDecoratorsLabels: Record<string, string> = {
-		'Open in a new tab': t('Open in a new tab'),
-		'Downloadable': t('Downloadable')
-	};
+  const localizedDecoratorsLabels: Record<string, string> = {
+    'Open in a new tab': t('Open in a new tab'),
+    'Downloadable': t('Downloadable')
+  };
 
-	decorators.forEach(decorator => {
-		if ('label' in decorator && localizedDecoratorsLabels[decorator.label]) {
-			decorator.label = localizedDecoratorsLabels[decorator.label];
-		}
+  decorators.forEach(decorator => {
+    if ('label' in decorator && localizedDecoratorsLabels[decorator.label]) {
+      decorator.label = localizedDecoratorsLabels[decorator.label];
+    }
 
-		return decorator;
-	});
+    return decorator;
+  });
 
-	return decorators;
+  return decorators;
 }
 
 /**
@@ -136,39 +136,39 @@ export function getLocalizedDecorators(
  * is used as the attribute's name in the model.
  */
 export function normalizeDecorators(decorators?: Record<string, LinkDecoratorDefinition>): Array<NormalizedLinkDecoratorDefinition> {
-	const retArray: Array<NormalizedLinkDecoratorDefinition> = [];
+  const retArray: Array<NormalizedLinkDecoratorDefinition> = [];
 
-	if (decorators) {
-		for (const [key, value] of Object.entries(decorators)) {
-			const decorator = Object.assign(
-				{},
-				value,
-				{ id: `link${upperFirst(key)}` }
-			);
+  if (decorators) {
+    for (const [key, value] of Object.entries(decorators)) {
+      const decorator = Object.assign(
+        {},
+        value,
+        { id: `link${upperFirst(key)}` }
+      );
 
-			retArray.push(decorator);
-		}
-	}
+      retArray.push(decorator);
+    }
+  }
 
-	return retArray;
+  return retArray;
 }
 
 /**
  * Returns `true` if the specified `element` can be linked (the element allows the `alightLinkHref` attribute).
  */
 export function isLinkableElement(element: Element | null, schema: Schema): element is Element {
-	if (!element) {
-		return false;
-	}
+  if (!element) {
+    return false;
+  }
 
-	return schema.checkAttribute(element.name, 'alightLinkHref');
+  return schema.checkAttribute(element.name, 'alightLinkHref');
 }
 
 /**
  * Returns `true` if the specified `value` is an email.
  */
 export function isEmail(value: string): boolean {
-	return EMAIL_REG_EXP.test(value);
+  return EMAIL_REG_EXP.test(value);
 }
 
 /**
@@ -179,65 +179,65 @@ export function isEmail(value: string): boolean {
  * * or the link is an email address.
  */
 export function addLinkProtocolIfApplicable(link: string, defaultProtocol?: string): string {
-	const protocol = isEmail(link) ? 'mailto:' : defaultProtocol;
-	const isProtocolNeeded = !!protocol && !linkHasProtocol(link);
+  const protocol = isEmail(link) ? 'mailto:' : defaultProtocol;
+  const isProtocolNeeded = !!protocol && !linkHasProtocol(link);
 
-	return link && isProtocolNeeded ? protocol + link : link;
+  return link && isProtocolNeeded ? protocol + link : link;
 }
 
 /**
  * Checks if protocol is already included in the link.
  */
 export function linkHasProtocol(link: string): boolean {
-	return PROTOCOL_REG_EXP.test(link);
+  return PROTOCOL_REG_EXP.test(link);
 }
 
 /**
  * Opens the link in a new browser tab.
  */
 export function openLink(link: string): void {
-	window.open(link, '_blank', 'noopener');
+  window.open(link, '_blank', 'noopener');
 }
 
 /**
  * Creates the bookmark callbacks for handling link opening experience.
  */
 export function createBookmarkCallbacks(editor: Editor): LinkActionsViewOptions {
-	const bookmarkEditing: BookmarkEditing | null = editor.plugins.has('BookmarkEditing') ?
-		editor.plugins.get('BookmarkEditing') :
-		null;
+  const bookmarkEditing: BookmarkEditing | null = editor.plugins.has('BookmarkEditing') ?
+    editor.plugins.get('BookmarkEditing') :
+    null;
 
-	/**
-	 * Returns `true` when bookmark `id` matches the hash from `link`.
-	 */
-	function isScrollableToTarget(link: string | undefined): boolean {
-		return !!link &&
-			link.startsWith('#') &&
-			!!bookmarkEditing &&
-			!!bookmarkEditing.getElementForBookmarkId(link.slice(1));
-	}
+  /**
+   * Returns `true` when bookmark `id` matches the hash from `link`.
+   */
+  function isScrollableToTarget(link: string | undefined): boolean {
+    return !!link &&
+      link.startsWith('#') &&
+      !!bookmarkEditing &&
+      !!bookmarkEditing.getElementForBookmarkId(link.slice(1));
+  }
 
-	/**
-	 * Scrolls the view to the desired bookmark or open a link in new window.
-	 */
-	function scrollToTarget(link: string): void {
-		const bookmarkId = link.slice(1);
-		const modelBookmark = bookmarkEditing!.getElementForBookmarkId(bookmarkId);
+  /**
+   * Scrolls the view to the desired bookmark or open a link in new window.
+   */
+  function scrollToTarget(link: string): void {
+    const bookmarkId = link.slice(1);
+    const modelBookmark = bookmarkEditing!.getElementForBookmarkId(bookmarkId);
 
-		editor.model.change(writer => {
-			writer.setSelection(modelBookmark!, 'on');
-		});
+    editor.model.change(writer => {
+      writer.setSelection(modelBookmark!, 'on');
+    });
 
-		editor.editing.view.scrollToTheSelection({
-			alignToTop: true,
-			forceScroll: true
-		});
-	}
+    editor.editing.view.scrollToTheSelection({
+      alignToTop: true,
+      forceScroll: true
+    });
+  }
 
-	return {
-		isScrollableToTarget,
-		scrollToTarget
-	};
+  return {
+    isScrollableToTarget,
+    scrollToTarget
+  };
 }
 
 export type NormalizedLinkDecoratorAutomaticDefinition = LinkDecoratorAutomaticDefinition & { id: string };

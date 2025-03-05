@@ -20,9 +20,9 @@ export { default as AlightLinkCommand } from './linkcommand';
 export { default as AlightUnlinkCommand } from './unlinkcommand';
 
 export {
-	addLinkProtocolIfApplicable,
-	ensureSafeUrl,
-	isLinkableElement
+  addLinkProtocolIfApplicable,
+  ensureSafeUrl,
+  isLinkableElement
 } from './utils';
 
 export type { LinkConfig, LinkDecoratorDefinition } from './linkconfig';

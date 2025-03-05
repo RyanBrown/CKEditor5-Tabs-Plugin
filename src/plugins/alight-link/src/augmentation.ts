@@ -4,42 +4,42 @@
  */
 
 import type {
-	LinkConfig,
-	AlightAutoLink,
-	AlightLink,
-	AlightLinkEditing,
-	AlightLinkImage,
-	AlightLinkImageEditing,
-	AlightLinkImageUI,
-	AlightLinkUI,
-	AlightLinkCommand,
-	AlightUnlinkCommand
+  LinkConfig,
+  AlightAutoLink,
+  AlightLink,
+  AlightLinkEditing,
+  AlightLinkImage,
+  AlightLinkImageEditing,
+  AlightLinkImageUI,
+  AlightLinkUI,
+  AlightLinkCommand,
+  AlightUnlinkCommand
 } from './index';
 
 declare module '@ckeditor/ckeditor5-core' {
-	interface EditorConfig {
+  interface EditorConfig {
 
-		/**
-		 * The configuration of the {@link module:link/link~AlightLink} feature.
-		 *
-		 * Read more in {@link module:link/linkconfig~LinkConfig}.
-		 */
-		link?: LinkConfig;
-	}
+    /**
+     * The configuration of the {@link module:link/link~AlightLink} feature.
+     *
+     * Read more in {@link module:link/linkconfig~LinkConfig}.
+     */
+    link?: LinkConfig;
+  }
 
-	interface PluginsMap {
-		[AlightAutoLink.pluginName]: AlightAutoLink;
-		[AlightLink.pluginName]: AlightLink;
-		[AlightLinkEditing.pluginName]: AlightLinkEditing;
-		[AlightLinkImage.pluginName]: AlightLinkImage;
-		[AlightLinkImageEditing.pluginName]: AlightLinkImageEditing;
-		[AlightLinkImageUI.pluginName]: AlightLinkImageUI;
-		[AlightLinkUI.pluginName]: AlightLinkUI;
-	}
+  interface PluginsMap {
+    [AlightAutoLink.pluginName]: AlightAutoLink;
+    [AlightLink.pluginName]: AlightLink;
+    [AlightLinkEditing.pluginName]: AlightLinkEditing;
+    [AlightLinkImage.pluginName]: AlightLinkImage;
+    [AlightLinkImageEditing.pluginName]: AlightLinkImageEditing;
+    [AlightLinkImageUI.pluginName]: AlightLinkImageUI;
+    [AlightLinkUI.pluginName]: AlightLinkUI;
+  }
 
-	interface CommandsMap {
-		// Use string literal for the command name to avoid conflicts
-		'alight-link': AlightLinkCommand;
-		'alight-unlink': AlightUnlinkCommand;
-	}
+  interface CommandsMap {
+    // Use string literal for the command name to avoid conflicts
+    'alight-link': AlightLinkCommand;
+    'alight-unlink': AlightUnlinkCommand;
+  }
 }
