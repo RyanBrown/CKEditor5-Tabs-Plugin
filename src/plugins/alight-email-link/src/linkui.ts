@@ -391,23 +391,12 @@ export default class AlightEmailLinkUI extends Plugin {
 		// Create modal if it doesn't exist
 		if (!this._modalDialog) {
 			this._modalDialog = new CkAlightModalDialog({
-				title: t('Email Link'),
-				width: '400px',
-				height: 'auto',
-				draggable: true,
-				modal: true,
-				closeOnEscape: true,
-				closeOnClickOutside: true,
+				title: t('Create Email Link'),
+				width: '500px',
+				contentClass: 'cka-email-link-content',
 				buttons: [
-					{
-						label: t('Save'),
-						isPrimary: true,
-						closeOnClick: false
-					},
-					{
-						label: t('Cancel'),
-						variant: 'outlined'
-					}
+					{ label: t('Save'), isPrimary: true, closeOnClick: false },
+					{ label: t('Cancel'), variant: 'outlined' }
 				]
 			});
 
@@ -535,20 +524,20 @@ export default class AlightEmailLinkUI extends Plugin {
 	 */
 	private _createFormHTML(t: any, isEditing: boolean): string {
 		return `
-            <div class="cka-form-container" style="padding: 1em 0;">
-                <div class="cka-form-group" style="margin-bottom: 1em;">
-                    <label for="ck-email-input" style="display: block; margin-bottom: 0.5em; font-weight: bold;">${t('Email Address')}</label>
-                    <input id="ck-email-input" type="email" class="cka-input" style="width: 100%; padding: 0.5em; border: 1px solid #c4c4c4; border-radius: 4px;">
-                    <div id="ck-email-error" style="color: #d1344e; font-size: 0.8em; margin-top: 0.5em; display: none;"></div>
-                    <div style="color: #707070; font-size: 0.8em; margin-top: 0.5em;">${t('Enter a valid email address or a mailto: link')}</div>
-                </div>
-                <div class="cka-form-group">
-                    <label for="ck-organization-input" style="display: block; margin-bottom: 0.5em; font-weight: bold;">${t('Organization Name')}</label>
-                    <input id="ck-organization-input" type="text" class="cka-input" style="width: 100%; padding: 0.5em; border: 1px solid #c4c4c4; border-radius: 4px;">
-                    <div style="color: #707070; font-size: 0.8em; margin-top: 0.5em;">${t('Optional: Will be appended to link text in parentheses')}</div>
-                </div>
-            </div>
-        `;
+			<div class="cka-form-container">
+				<div class="cka-form-group">
+					<label for="ck-email-input" class="cka-input-label">${t('Email Address')}</label>
+					<input id="ck-email-input" type="email" class="cka-input-text cka-width-100" placeholder="${t('user@example.com')}"/>
+					<div id="ck-email-error" class="cka-error-message"></div>
+					<div class="cka-error-message">${t('Enter a valid email address or a mailto: link')}</div>
+				</div>
+				<div class="cka-form-group mt-3">
+					<label for="ck-organization-input" class="cka-input-label">${t('Organization Name (optional)')}</label>
+					<input id="ck-organization-input" type="text" class="cka-input-text cka-width-100" placeholder="${t('Organization name')}"/>
+					<div class="cka-note-text">${t('Organization Name (optional): Specify the third-party organization to inform users about the email\'s origin.')}</div>
+				</div>
+			</div>
+		`;
 	}
 
 	/**
