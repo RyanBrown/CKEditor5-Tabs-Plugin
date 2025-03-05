@@ -98,8 +98,8 @@ export default class AlightEmailLinkCommand extends Command {
    *
    * @fires execute
    * @param href AlightEmailLink destination.
-   * @param options Options including manual decorator attributes and organization name.
-   */
+ * @param options Options including manual decorator attributes and organization name.
+ */
   public override execute(href: string, options: LinkOptions = {}): void {
     const model = this.editor.model;
     const selection = model.document.selection;
@@ -128,24 +128,18 @@ export default class AlightEmailLinkCommand extends Command {
 
         // When selection is inside text with `alightEmailLinkHref` attribute.
         if (selection.hasAttribute('alightEmailLinkHref')) {
-          const linkText = extractTextFromSelection(selection);
           // Then update `alightEmailLinkHref` value.
-          let linkRange = findAttributeRange(
+          const linkRange = findAttributeRange(
             position,
             'alightEmailLinkHref',
             selection.getAttribute('alightEmailLinkHref'),
             model
           );
 
-          if (selection.getAttribute('alightEmailLinkHref') === linkText) {
-            linkRange = this._updateLinkContent(model, writer, linkRange, href, organization);
-          } else {
-            // Update the link text for organization
-            this._appendOrganizationToLink(writer, linkRange, organization);
-          }
-
+          // Update href attribute
           writer.setAttribute('alightEmailLinkHref', href, linkRange);
 
+          // Apply decorators
           truthyManualDecorators.forEach(item => {
             writer.setAttribute(item, true, linkRange);
           });
@@ -167,10 +161,10 @@ export default class AlightEmailLinkCommand extends Command {
             attributes.set(item, true);
           });
 
-          // If organization is provided, create the display text with it
+          // Create display text with organization if provided
           let displayText = href;
           if (organization) {
-            displayText = `${href} (${organization})`;
+            displayText = organization ? `${href} (${organization})` : href;
           }
 
           const { end: positionAfter } = model.insertContent(
@@ -189,98 +183,46 @@ export default class AlightEmailLinkCommand extends Command {
         });
       } else {
         // If selection has non-collapsed ranges, we change attribute on nodes inside those ranges
-        // omitting nodes where the `alightEmailLinkHref` attribute is disallowed.
         const ranges = model.schema.getValidRanges(selection.getRanges(), 'alightEmailLinkHref');
 
-        // But for the first, check whether the `alightEmailLinkHref` attribute is allowed on selected blocks (e.g. the "image" element).
-        const allowedRanges = [];
-
-        for (const element of selection.getSelectedBlocks()) {
-          if (model.schema.checkAttribute(element, 'alightEmailLinkHref')) {
-            allowedRanges.push(writer.createRangeOn(element));
-          }
-        }
-
-        // Ranges that accept the `alightEmailLinkHref` attribute.
-        const rangesToUpdate = allowedRanges.slice();
-
-        // For all selection ranges we want to check whether given range is inside an element that accepts the `alightEmailLinkHref` attribute.
-        for (const range of ranges) {
-          if (this._isRangeToUpdate(range, allowedRanges)) {
-            rangesToUpdate.push(range);
-          }
-        }
-
-        for (const range of rangesToUpdate) {
-          let linkRange = range;
-
-          // Update link text if there's an organization
-          if (organization) {
-            this._appendOrganizationToLink(writer, linkRange, organization);
-          }
-
-          if (rangesToUpdate.length === 1) {
-            // Current text of the link in the document.
-            const linkText = extractTextFromSelection(selection);
-
-            if (selection.getAttribute('alightEmailLinkHref') === linkText) {
-              linkRange = this._updateLinkContent(model, writer, range, href, organization);
-              writer.setSelection(writer.createSelection(linkRange));
+        // Get the selected text content
+        let selectedText = '';
+        for (const range of selection.getRanges()) {
+          for (const item of range.getItems()) {
+            if (item.is('$text') || item.is('$textProxy')) {
+              selectedText += item.data;
             }
           }
+        }
 
-          writer.setAttribute('alightEmailLinkHref', href, linkRange);
+        // Create the new text with organization if provided
+        let finalText = selectedText;
+        if (organization) {
+          // Only append the organization if it's not already there
+          if (!finalText.endsWith(`)`) || !finalText.includes(`(${organization})`)) {
+            finalText = `${selectedText} (${organization})`;
+          }
+        }
 
+        // Process each range
+        for (const range of ranges) {
+          // First, remove the old content
+          writer.remove(range);
+
+          // Then insert the new content with the organization
+          const attributes = { alightEmailLinkHref: href } as any;
+
+          // Add decorators
           truthyManualDecorators.forEach(item => {
-            writer.setAttribute(item, true, linkRange);
+            attributes[item] = true;
           });
 
-          falsyManualDecorators.forEach(item => {
-            writer.removeAttribute(item, linkRange);
-          });
+          // Insert the new content
+          const newText = writer.createText(finalText, attributes);
+          model.insertContent(newText, range.start);
         }
       }
     });
-  }
-
-  /**
-   * Updates the link text with organization name in parentheses.
-   * This method uses proper Writer operations to update the text.
-   */
-  private _appendOrganizationToLink(writer: Writer, range: Range, organization: string): void {
-    if (!organization) {
-      return;
-    }
-
-    // Get the text nodes in the range
-    const textNodes = Array.from(range.getItems()).filter(item => item.is('$text'));
-
-    if (textNodes.length === 0) {
-      return;
-    }
-
-    // For simplicity, get the combined text and process it
-    let combinedText = '';
-    for (const node of textNodes) {
-      combinedText += node.data;
-    }
-
-    // Check if there's already an organization
-    const match = combinedText.match(/^(.*?)(?:\s*\(([^)]*)\))?$/);
-    if (!match) {
-      return;
-    }
-
-    const baseText = match[1].trim(); // Trim to ensure clean spacing
-    const newText = `${baseText} (${organization})`;
-
-    // Remove all existing text nodes in the range
-    for (const node of textNodes) {
-      writer.remove(node);
-    }
-
-    // Insert new text with organization at the start of the range
-    writer.insertText(newText, range.start);
   }
 
   /**
@@ -297,70 +239,5 @@ export default class AlightEmailLinkCommand extends Command {
     }
 
     return selection.getAttribute(decoratorName) as boolean | undefined;
-  }
-
-  /**
-   * Checks whether specified `range` is inside an element that accepts the `alightEmailLinkHref` attribute.
-   */
-  private _isRangeToUpdate(range: Range, allowedRanges: Array<Range>): boolean {
-    for (const allowedRange of allowedRanges) {
-      // A range is inside an element that will have the `alightEmailLinkHref` attribute. Do not modify its nodes.
-      if (allowedRange.containsRange(range)) {
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  /**
-   * Updates the link content with href and organization if provided.
-   */
-  private _updateLinkContent(
-    model: Model,
-    writer: Writer,
-    range: Range,
-    href: string,
-    organization: string
-  ): Range {
-    let text = href;
-
-    // If organization is provided, add it to the link text
-    if (organization) {
-      text = `${href} (${organization})`;
-    }
-
-    // Remove all content in the range
-    writer.remove(range);
-
-    // Create a new text node with attributes
-    const attributeValue = { alightEmailLinkHref: href } as any;
-    const textNode = writer.createText(text, attributeValue);
-
-    // Insert the new text node at the range start
-    return model.insertContent(textNode, range.start);
-  }
-}
-
-// Returns a text of a link under the collapsed selection or a selection that contains the entire link.
-function extractTextFromSelection(selection: DocumentSelection): string | null {
-  if (selection.isCollapsed) {
-    const firstPosition = selection.getFirstPosition();
-
-    return firstPosition!.textNode && firstPosition!.textNode.data;
-  } else {
-    const rangeItems = Array.from(selection.getFirstRange()!.getItems());
-
-    if (rangeItems.length > 1) {
-      return null;
-    }
-
-    const firstNode = rangeItems[0];
-
-    if (firstNode.is('$text') || firstNode.is('$textProxy')) {
-      return firstNode.data;
-    }
-
-    return null;
   }
 }

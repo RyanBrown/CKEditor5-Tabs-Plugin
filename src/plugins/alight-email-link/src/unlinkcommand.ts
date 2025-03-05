@@ -14,7 +14,7 @@ import { isLinkableElement } from './utils';
 import type { Range, Writer } from '@ckeditor/ckeditor5-engine';
 
 /**
- * The unlink command. It is used by the {@link module:link/link~AlightEmailLink link plugin}.
+ * The unlink command. It is used by the {@link module:link/link~AlightEmailLink link feature}.
  * Enhanced to remove organization names from links.
  */
 export default class AlightEmailUnlinkCommand extends Command {
@@ -77,40 +77,44 @@ export default class AlightEmailUnlinkCommand extends Command {
 
   /**
    * Removes organization name from text in the given range.
-   * This method uses proper Writer operations to update the text.
+   * Specifically looks for text ending with " (Organization Name)" and removes that part.
    * 
    * @param writer The model writer.
    * @param range The range containing link text.
    */
   private _removeOrganizationNameFromText(writer: Writer, range: Range): void {
-    // Get all text nodes in the range
-    const textNodes = Array.from(range.getItems()).filter(item => item.is('$text'));
+    // Get all text in the range as an array of nodes
+    const textNodes = Array.from(range.getItems()).filter(item => item.is('$text') || item.is('$textProxy'));
 
     if (textNodes.length === 0) {
       return;
     }
 
-    // For simplicity, get the combined text and process it
-    let combinedText = '';
+    // Combine all text into a single string
+    let fullText = '';
     for (const node of textNodes) {
-      combinedText += node.data;
+      fullText += node.data;
     }
 
-    // Look for text with organization name pattern: "text (organization)"
-    const orgPattern = /^(.*?)\s*\([^)]+\)$/;
-    const match = combinedText.match(orgPattern);
+    // Look specifically for text ending with " (Something)" pattern
+    const orgPattern = /^(.*?)[ ]+\([^)]+\)$/;
+    const match = fullText.match(orgPattern);
 
     if (match) {
-      // Extract the text without the organization part
-      const cleanText = match[1].trim(); // Trim to ensure clean spacing
+      // Get the base text without the organization name
+      const baseText = match[1];
 
-      // Remove all existing text nodes in the range
-      for (const node of textNodes) {
-        writer.remove(node);
+      try {
+        // Remove all existing text nodes
+        for (const node of textNodes) {
+          writer.remove(node);
+        }
+
+        // Insert just the base text without organization name
+        writer.insertText(baseText, range.start);
+      } catch (error) {
+        console.error('Error removing organization name from link:', error);
       }
-
-      // Insert the clean text at the start of the range
-      writer.insertText(cleanText, range.start);
     }
   }
 }
