@@ -213,6 +213,14 @@ export default class AlightEmailLinkUI extends Plugin {
     const unlinkCommand = editor.commands.get('alight-email-unlink') as AlightEmailUnlinkCommand;
 
     actionsView.bind('href').to(linkCommand, 'value');
+
+    // actionsView.bind('href').to(linkCommand, 'value', value => {
+    //   if (value && value.startsWith('mailto:')) {
+    //     return value.substring(7); // Remove the mailto: prefix in link preview
+    //   }
+    //   return value;
+    // });
+
     actionsView.editButtonView.bind('isEnabled').to(linkCommand);
     actionsView.unlinkButtonView.bind('isEnabled').to(unlinkCommand);
 
