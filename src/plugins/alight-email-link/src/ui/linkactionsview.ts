@@ -1,25 +1,9 @@
 /**
- * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
+ * A simplified LinkActionsView for the Email Link plugin.
  */
-
-/**
- * @module link/ui/linkactionsview
- */
-
 import { ButtonView, View, ViewCollection, FocusCycler, type FocusableView } from 'ckeditor5/src/ui';
-import { FocusTracker, KeystrokeHandler, type LocaleTranslate, type Locale } from 'ckeditor5/src/utils';
+import { FocusTracker, KeystrokeHandler, type Locale } from 'ckeditor5/src/utils';
 import { icons } from 'ckeditor5/src/core';
-
-import { ensureSafeUrl, openLink } from '../utils';
-
-// See: #8833.
-// eslint-disable-next-line ckeditor5-rules/ckeditor-imports
-import '@ckeditor/ckeditor5-ui/theme/components/responsive-form/responsiveform.css';
-import '../../theme/linkactions.css';
-
-import unlinkIcon from '../../theme/icons/unlink.svg';
-import type { LinkConfig } from '../linkconfig';
 
 /**
  * The link actions view class. This view displays the link preview, allows
@@ -68,56 +52,44 @@ export default class LinkActionsView extends View {
 	 */
 	private readonly _focusCycler: FocusCycler;
 
-	private readonly _linkConfig: LinkConfig;
-
-	private readonly _options?: LinkActionsViewOptions;
-
-	declare public t: LocaleTranslate;
-
 	/**
 	 * @inheritDoc
 	 */
-	constructor(locale: Locale, linkConfig: LinkConfig = {}, options?: LinkActionsViewOptions) {
+	constructor(locale: Locale) {
 		super(locale);
 
 		const t = locale.t;
 
-		this._options = options;
+		this.set('href', undefined);
+
+		// Create a custom unlink icon
+		const unlinkIcon = '<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="m11.077 15 .991-1.416a.75.75 0 1 1 1.229.86l-1.148 1.64a.748.748 0 0 1-.217.206 5.251 5.251 0 0 1-8.503-5.955.741.741 0 0 1 .12-.274l1.147-1.639a.75.75 0 1 1 1.228.86L4.933 10.7l.006.003a3.75 3.75 0 0 0 6.132 4.294l.006.004zm5.494-5.335a.748.748 0 0 1-.12.274l-1.147 1.639a.75.75 0 1 1-1.228-.86l.86-1.23a3.75 3.75 0 0 0-6.144-4.301l-.86 1.229a.75.75 0 0 1-1.229-.86l1.148-1.64a.748.748 0 0 1 .217-.206 5.251 5.251 0 0 1 8.503 5.955zm-4.563-2.532a.75.75 0 0 1 .184 1.045l-3.155 4.505a.75.75 0 1 1-1.229-.86l3.155-4.506a.75.75 0 0 1 1.045-.184z"/><path d="M16.927 17.695a.75.75 0 0 1-1.075 1.045l-11.5-11.5a.75.75 0 0 1 1.075-1.045l11.5 11.5z"/></svg>';
+
+		// Create preview button
 		this.previewButtonView = this._createPreviewButton();
 		this.unlinkButtonView = this._createButton(t('Unlink'), unlinkIcon, 'unlink');
 		this.editButtonView = this._createButton(t('Edit link'), icons.pencil, 'edit');
-
-		this.set('href', undefined);
-
-		this._linkConfig = linkConfig;
 
 		this._focusCycler = new FocusCycler({
 			focusables: this._focusables,
 			focusTracker: this.focusTracker,
 			keystrokeHandler: this.keystrokes,
 			actions: {
-				// Navigate fields backwards using the Shift + Tab keystroke.
 				focusPrevious: 'shift + tab',
-
-				// Navigate fields forwards using the Tab key.
 				focusNext: 'tab'
 			}
 		});
 
 		this.setTemplate({
 			tag: 'div',
-
 			attributes: {
 				class: [
 					'ck',
 					'ck-link-actions',
 					'ck-responsive-form'
 				],
-
-				// https://github.com/ckeditor/ckeditor5-link/issues/90
 				tabindex: '-1'
 			},
-
 			children: [
 				this.previewButtonView,
 				this.editButtonView,
@@ -169,13 +141,8 @@ export default class LinkActionsView extends View {
 
 	/**
 	 * Creates a button view.
-	 *
-	 * @param label The button label.
-	 * @param icon The button icon.
-	 * @param eventName An event name that the `ButtonView#execute` event will be delegated to.
-	 * @returns The button view instance.
 	 */
-	private _createButton(label: string, icon: string, eventName?: string): ButtonView {
+	private _createButton(label: string, icon: string, eventName: string): ButtonView {
 		const button = new ButtonView(this.locale);
 
 		button.set({
@@ -191,16 +158,15 @@ export default class LinkActionsView extends View {
 
 	/**
 	 * Creates a link href preview button.
-	 *
-	 * @returns The button view instance.
 	 */
 	private _createPreviewButton(): ButtonView {
 		const button = new ButtonView(this.locale);
 		const bind = this.bindTemplate;
-		const t = this.t;
+		const t = this.t!;
 
 		button.set({
-			withText: true
+			withText: true,
+			tooltip: t('Open link in new tab')
 		});
 
 		button.extendTemplate({
@@ -209,35 +175,17 @@ export default class LinkActionsView extends View {
 					'ck',
 					'ck-link-actions__preview'
 				],
-				href: bind.to('href', href => href && ensureSafeUrl(href, this._linkConfig.allowedProtocols)),
+				href: bind.to('href'),
 				target: '_blank',
 				rel: 'noopener noreferrer'
-			},
-			on: {
-				click: bind.to(evt => {
-					if (this._options && this._options.isScrollableToTarget(this.href)) {
-						evt.preventDefault();
-						this._options.scrollToTarget(this.href!);
-					} else {
-						openLink(this.href!);
-					}
-				})
 			}
-		});
-
-		button.bind('tooltip').to(this, 'href', href => {
-			if (this._options && this._options.isScrollableToTarget(href)) {
-				return t('Scroll to target');
-			}
-
-			return t('Open link in new tab');
 		});
 
 		button.bind('label').to(this, 'href', href => {
 			return href || t('This link has no URL');
 		});
 
-		button.bind('isEnabled').to(this, 'href', href => !!href);
+		button.bind('isEnabled').to(this, 'href', href => Boolean(href));
 
 		button.template!.tag = 'a';
 
@@ -266,10 +214,9 @@ export type UnlinkEvent = {
 };
 
 /**
- * The options that are passed to the {@link ~LinkActionsView#constructor} constructor.
+ * Options interface for the link actions view.
  */
-export type LinkActionsViewOptions = {
-
+export interface LinkActionsViewOptions {
 	/**
 	 * Returns `true` when bookmark `id` matches the hash from `link`.
 	 */
@@ -279,4 +226,4 @@ export type LinkActionsViewOptions = {
 	 * Scrolls the view to the desired bookmark or open a link in new window.
 	 */
 	scrollToTarget: (href: string) => void;
-};
+}

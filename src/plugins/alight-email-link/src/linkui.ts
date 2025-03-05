@@ -1,10 +1,20 @@
-// Modified AlightEmailLinkUI class to use CkAlightModalDialog
+// LinkUI with both Balloon and Modal Dialog
 import { Plugin } from 'ckeditor5/src/core';
-import { ClickObserver, type ViewAttributeElement, type ViewDocumentClickEvent } from 'ckeditor5/src/engine';
-import { ButtonView, MenuBarMenuListItemButtonView } from 'ckeditor5/src/ui';
+import {
+	ClickObserver,
+	type ViewAttributeElement,
+	type ViewDocumentClickEvent
+} from 'ckeditor5/src/engine';
+import {
+	ButtonView,
+	ContextualBalloon,
+	MenuBarMenuListItemButtonView,
+	clickOutsideHandler
+} from 'ckeditor5/src/ui';
 import { isWidget } from 'ckeditor5/src/widget';
 
 import AlightEmailLinkEditing from './linkediting';
+import LinkActionsView from './ui/linkactionsview';
 import type AlightEmailLinkCommand from './linkcommand';
 import type AlightEmailUnlinkCommand from './unlinkcommand';
 import { addLinkProtocolIfApplicable, isLinkElement, LINK_KEYSTROKE } from './utils';
@@ -17,8 +27,8 @@ const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 /**
  * The link UI plugin. It introduces the `'link'` and `'unlink'` buttons and support for the <kbd>Ctrl+K</kbd> keystroke.
- *
- * It uses a modal dialog instead of the original balloon interface.
+ * 
+ * Uses a balloon for unlink actions, and a modal dialog for create/edit functions.
  */
 export default class AlightEmailLinkUI extends Plugin {
 	/**
@@ -27,10 +37,25 @@ export default class AlightEmailLinkUI extends Plugin {
 	private _modalDialog: CkAlightModalDialog | null = null;
 
 	/**
+	 * The actions view displayed inside of the balloon.
+	 */
+	public actionsView: LinkActionsView | null = null;
+
+	/**
+	 * The contextual balloon plugin instance.
+	 */
+	private _balloon!: ContextualBalloon;
+
+	/**
+	 * Track if we are currently updating the UI to prevent recursive calls
+	 */
+	private _isUpdatingUI: boolean = false;
+
+	/**
 	 * @inheritDoc
 	 */
 	public static get requires() {
-		return [AlightEmailLinkEditing] as const;
+		return [AlightEmailLinkEditing, ContextualBalloon] as const;
 	}
 
 	/**
@@ -55,6 +80,10 @@ export default class AlightEmailLinkUI extends Plugin {
 		const t = this.editor.t;
 
 		editor.editing.view.addObserver(ClickObserver);
+		this._balloon = editor.plugins.get(ContextualBalloon);
+
+		// Create the actions view for the balloon
+		this.actionsView = this._createActionsView();
 
 		// Create toolbar buttons.
 		this._createToolbarLinkButton();
@@ -86,6 +115,9 @@ export default class AlightEmailLinkUI extends Plugin {
 				return markerElement;
 			}
 		});
+
+		// Enable balloon-modal interactions
+		this._enableBalloonInteractions();
 
 		// Add the information about the keystrokes to the accessibility database.
 		editor.accessibility.addKeystrokeInfos({
@@ -120,6 +152,10 @@ export default class AlightEmailLinkUI extends Plugin {
 		if (this._modalDialog) {
 			this._modalDialog.destroy();
 			this._modalDialog = null;
+		}
+
+		if (this.actionsView) {
+			this.actionsView.destroy();
 		}
 	}
 
@@ -161,10 +197,44 @@ export default class AlightEmailLinkUI extends Plugin {
 		view.bind('isEnabled').to(command, 'isEnabled');
 		view.bind('isOn').to(command, 'value', value => !!value);
 
-		// Show the modal dialog on button click.
+		// Show the modal dialog on button click for creating new links
 		this.listenTo(view, 'execute', () => this._showUI());
 
 		return view;
+	}
+
+	/**
+	 * Creates the {@link module:link/ui/linkactionsview~LinkActionsView} instance.
+	 */
+	private _createActionsView(): LinkActionsView {
+		const editor = this.editor;
+		const actionsView = new LinkActionsView(editor.locale);
+		const linkCommand = editor.commands.get('alight-email-link') as AlightEmailLinkCommand;
+		const unlinkCommand = editor.commands.get('alight-email-unlink') as AlightEmailUnlinkCommand;
+
+		actionsView.bind('href').to(linkCommand, 'value');
+		actionsView.editButtonView.bind('isEnabled').to(linkCommand);
+		actionsView.unlinkButtonView.bind('isEnabled').to(unlinkCommand);
+
+		// Execute editing in a modal dialog after clicking the "Edit" button
+		this.listenTo(actionsView, 'edit', () => {
+			this._hideUI();
+			this._showUI(true);
+		});
+
+		// Execute unlink command after clicking on the "Unlink" button
+		this.listenTo(actionsView, 'unlink', () => {
+			editor.execute('alight-email-unlink');
+			this._hideUI();
+		});
+
+		// Close the balloon on Esc key press
+		actionsView.keystrokes.set('Esc', (data, cancel) => {
+			this._hideUI();
+			cancel();
+		});
+
+		return actionsView;
 	}
 
 	/**
@@ -183,16 +253,17 @@ export default class AlightEmailLinkUI extends Plugin {
 		const editor = this.editor;
 		const viewDocument = editor.editing.view.document;
 
-		// Handle click on view document and show modal when selection is placed inside the link element.
+		// Handle click on view document and show balloon when selection is placed inside the link element.
 		this.listenTo<ViewDocumentClickEvent>(viewDocument, 'click', () => {
 			const selectedLink = this._getSelectedLinkElement();
 
 			if (selectedLink) {
-				this._showUI(true);
+				// Show balloon with actions (edit/unlink) when clicking on a link
+				this._showBalloon();
 			}
 		});
 
-		// Handle the `Ctrl+K` keystroke and show the modal.
+		// Handle the `Ctrl+K` keystroke and show the modal dialog for new links.
 		editor.keystrokes.set(LINK_KEYSTROKE, (keyEvtData, cancel) => {
 			// Prevent focusing the search bar in FF, Chrome and Edge.
 			cancel();
@@ -201,6 +272,110 @@ export default class AlightEmailLinkUI extends Plugin {
 				this._showUI();
 			}
 		});
+	}
+
+	/**
+	 * Enable interactions between the balloon and modal interface.
+	 */
+	private _enableBalloonInteractions(): void {
+		// Skip if actionsView is not initialized yet
+		if (!this.actionsView) {
+			return;
+		}
+
+		// Allow clicking outside the balloon to close it
+		clickOutsideHandler({
+			emitter: this.actionsView,
+			activator: () => this._areActionsInPanel,
+			contextElements: () => [this._balloon.view.element!],
+			callback: () => this._hideUI()
+		});
+	}
+
+	/**
+	 * Shows balloon with link actions.
+	 */
+	private _showBalloon(): void {
+		if (this.actionsView && this._balloon && !this._balloon.hasView(this.actionsView)) {
+			this._balloon.add({
+				view: this.actionsView,
+				position: this._getBalloonPositionData()
+			});
+
+			// Begin responding to UI updates
+			this._startUpdatingUI();
+		}
+	}
+
+	/**
+	 * Returns positioning options for the balloon.
+	 */
+	private _getBalloonPositionData() {
+		const view = this.editor.editing.view;
+		const viewDocument = view.document;
+		let target = null;
+
+		// Get the position based on selected link
+		const targetLink = this._getSelectedLinkElement();
+
+		if (targetLink) {
+			target = view.domConverter.mapViewToDom(targetLink);
+		} else {
+			target = view.domConverter.viewRangeToDom(viewDocument.selection.getFirstRange()!);
+		}
+
+		return { target };
+	}
+
+	/**
+	 * Determines whether the balloon is visible in the editor.
+	 */
+	private get _areActionsInPanel(): boolean {
+		return !!this.actionsView && !!this._balloon && this._balloon.hasView(this.actionsView);
+	}
+
+	/**
+	 * Makes the UI respond to editor document changes.
+	 */
+	private _startUpdatingUI(): void {
+		if (this._isUpdatingUI) {
+			return;
+		}
+
+		const editor = this.editor;
+		let prevSelectedLink = this._getSelectedLinkElement();
+
+		const update = () => {
+			// Prevent recursive updates
+			if (this._isUpdatingUI) {
+				return;
+			}
+
+			this._isUpdatingUI = true;
+
+			try {
+				const selectedLink = this._getSelectedLinkElement();
+
+				// Hide the panel if the selection moved out of the link element
+				if (prevSelectedLink && !selectedLink) {
+					this._hideUI();
+				} else if (this._areActionsInPanel) {
+					// Update the balloon position as the selection changes
+					this._balloon.updatePosition(this._getBalloonPositionData());
+				}
+
+				prevSelectedLink = selectedLink;
+			} finally {
+				this._isUpdatingUI = false;
+			}
+		};
+
+		this.listenTo(editor.ui, 'update', update);
+
+		// Only listen to balloon changes if we have a balloon
+		if (this._balloon) {
+			this.listenTo(this._balloon, 'change:visibleView', update);
+		}
 	}
 
 	/**
@@ -326,6 +501,33 @@ export default class AlightEmailLinkUI extends Plugin {
 				emailInput.focus();
 			}
 		}, 100);
+	}
+
+	/**
+	 * Hides the UI.
+	 */
+	private _hideUI(): void {
+		// Prevent recursive calls
+		if (this._isUpdatingUI) {
+			return;
+		}
+
+		this._isUpdatingUI = true;
+
+		try {
+			// Hide the balloon if it's showing
+			if (this.actionsView && this._balloon && this._balloon.hasView(this.actionsView)) {
+				this._balloon.remove(this.actionsView);
+				this.stopListening(this.editor.ui, 'update');
+				if (this._balloon) {
+					this.stopListening(this._balloon, 'change:visibleView');
+				}
+			}
+		} catch (error) {
+			console.error('Error hiding UI:', error);
+		} finally {
+			this._isUpdatingUI = false;
+		}
 	}
 
 	/**
