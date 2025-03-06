@@ -11,12 +11,12 @@ import { Plugin } from '@ckeditor/ckeditor5-core';
 import AlightExternalLinkPluginEditing from './linkediting';
 import AlightExternalLinkPluginUI from './linkui';
 import AlightExternalLinkPluginAutoLink from './autolink';
+import './styles/styles.scss';
 
 /**
- * The link plugin.
+ * The Alight External link plugin.
  *
- * This is a "glue" plugin that loads the {@link module:link/linkediting~AlightExternalLinkPluginEditing link editing feature}
- * and {@link module:link/linkui~AlightExternalLinkPluginUI link UI feature}.
+ * This is a "glue" plugin that loads the modified link editing and UI features.
  */
 export default class AlightExternalLinkPlugin extends Plugin {
   /**
@@ -38,5 +38,12 @@ export default class AlightExternalLinkPlugin extends Plugin {
    */
   public static override get isOfficialPlugin(): true {
     return true;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public init(): void {
+    // The UI component is already registered by AlightExternalLinkPluginUI plugin
   }
 }

@@ -142,7 +142,7 @@ export interface LinkConfig {
    * 	.create( editorElement, {
    * 		link: {
    * 			decorators: {
-   * 				isExternal: {
+   * 				isEmail: {
    * 					mode: 'automatic',
    * 					callback: url => url.startsWith( 'http://' ),
    * 					attributes: {

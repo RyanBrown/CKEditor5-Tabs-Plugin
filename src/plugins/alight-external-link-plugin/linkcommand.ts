@@ -4,7 +4,7 @@
  */
 
 /**
- * @module link/AlightExternalLinkPluginCommand
+ * Modified AlightExternalLinkPluginCommand to support organization name
  */
 
 import { Command } from '@ckeditor/ckeditor5-core';
@@ -17,7 +17,16 @@ import { isLinkableElement } from './utils';
 import type ManualDecorator from './utils/manualdecorator';
 
 /**
+ * Interface for link options including organization name
+ */
+interface LinkOptions {
+  [key: string]: boolean | string | undefined;
+  organization?: string;
+}
+
+/**
  * The link command. It is used by the {@link module:link/link~AlightExternalLinkPlugin link feature}.
+ * Enhanced to support organization name.
  */
 export default class AlightExternalLinkPluginCommand extends Command {
   /**
@@ -87,69 +96,27 @@ export default class AlightExternalLinkPluginCommand extends Command {
    *
    * When the selection is collapsed and inside the text with the `alightExternalLinkHref` attribute, the attribute value will be updated.
    *
-   * # Decorators and model attribute management
-   *
-   * There is an optional argument to this command that applies or removes model
-   * {@glink framework/architecture/editing-engine#text-attributes text attributes} brought by
-   * {@link module:link/utils/manualdecorator~ManualDecorator manual link decorators}.
-   *
-   * Text attribute names in the model correspond to the entries in the {@link module:link/linkconfig~LinkConfig#decorators
-   * configuration}.
-   * For every decorator configured, a model text attribute exists with the "link" prefix. For example, a `'linkMyDecorator'` attribute
-   * corresponds to `'myDecorator'` in the configuration.
-   *
-   * To learn more about link decorators, check out the {@link module:link/linkconfig~LinkConfig#decorators `config.link.decorators`}
-   * documentation.
-   *
-   * Here is how to manage decorator attributes with the link command:
-   *
-   * ```ts
-   * const AlightExternalLinkPluginCommand = editor.commands.get( 'link' );
-   *
-   * // Adding a new decorator attribute.
-   * AlightExternalLinkPluginCommand.execute( 'http://example.com', {
-   * 	linkIsExternal: true
-   * } );
-   *
-   * // Removing a decorator attribute from the selection.
-   * AlightExternalLinkPluginCommand.execute( 'http://example.com', {
-   * 	linkIsExternal: false
-   * } );
-   *
-   * // Adding multiple decorator attributes at the same time.
-   * AlightExternalLinkPluginCommand.execute( 'http://example.com', {
-   * 	linkIsExternal: true,
-   * 	linkIsDownloadable: true,
-   * } );
-   *
-   * // Removing and adding decorator attributes at the same time.
-   * AlightExternalLinkPluginCommand.execute( 'http://example.com', {
-   * 	linkIsExternal: false,
-   * 	linkFoo: true,
-   * 	linkIsDownloadable: false,
-   * } );
-   * ```
-   *
-   * **Note**: If the decorator attribute name is not specified, its state remains untouched.
-   *
-   * **Note**: {@link module:link/AlightExternalLinkPluginUnlinkCommand~AlightExternalLinkPluginUnlinkCommand#execute `AlightExternalLinkPluginUnlinkCommand#execute()`} removes all
-   * decorator attributes.
-   *
    * @fires execute
-   * @param href AlightExternalLinkPlugin destination.
-   * @param manualDecoratorIds The information about manual decorator attributes to be applied or removed upon execution.
+     * @param href AlightExternalLinkPlugin destination.
+   * @param options Options including manual decorator attributes and organization name.
    */
-  public override execute(href: string, manualDecoratorIds: Record<string, boolean> = {}): void {
+  public override execute(href: string, options: LinkOptions = {}): void {
     const model = this.editor.model;
     const selection = model.document.selection;
-    // Stores information about manual decorators to turn them on/off when command is applied.
+
+    // Extract organization option - explicitly handle empty string for organization removal
+    const organization = options.organization !== undefined ? options.organization : '';
+
+    // Extract decorator options
     const truthyManualDecorators: Array<string> = [];
     const falsyManualDecorators: Array<string> = [];
 
-    for (const name in manualDecoratorIds) {
-      if (manualDecoratorIds[name]) {
+    for (const name in options) {
+      if (name === 'organization') continue; // Skip organization name
+
+      if (options[name] === true) {
         truthyManualDecorators.push(name);
-      } else {
+      } else if (options[name] === false) {
         falsyManualDecorators.push(name);
       }
     }
@@ -161,30 +128,54 @@ export default class AlightExternalLinkPluginCommand extends Command {
 
         // When selection is inside text with `alightExternalLinkHref` attribute.
         if (selection.hasAttribute('alightExternalLinkHref')) {
-          const linkText = extractTextFromSelection(selection);
-          // Then update `alightExternalLinkHref` value.
-          let linkRange = findAttributeRange(position, 'alightExternalLinkHref', selection.getAttribute('alightExternalLinkHref'), model);
+          // Get the link range
+          const linkRange = findAttributeRange(
+            position,
+            'alightExternalLinkHref',
+            selection.getAttribute('alightExternalLinkHref'),
+            model
+          );
 
-          if (selection.getAttribute('alightExternalLinkHref') === linkText) {
-            linkRange = this._updateLinkContent(model, writer, linkRange, href);
+          // First, collect the current link text without organization name
+          let baseText = '';
+          const textNodes = Array.from(linkRange.getItems()).filter(item => item.is('$text') || item.is('$textProxy'));
+
+          for (const node of textNodes) {
+            baseText += node.data;
           }
 
-          writer.setAttribute('alightExternalLinkHref', href, linkRange);
+          // Remove organization part if present
+          const orgPattern = /^(.*?)(?:\s*\([^)]+\))?$/;
+          const match = baseText.match(orgPattern);
 
+          if (match) {
+            baseText = match[1].trim();
+          }
+
+          // Create new text with or without organization
+          let newText = baseText;
+          if (organization) {
+            newText = `${baseText} (${organization})`;
+          }
+
+          // Remove all existing content first
+          writer.remove(linkRange);
+
+          // Insert new content with proper attribute
+          const attributes = { alightExternalLinkHref: href } as any;
+
+          // Add decorators
           truthyManualDecorators.forEach(item => {
-            writer.setAttribute(item, true, linkRange);
+            attributes[item] = true;
           });
 
-          falsyManualDecorators.forEach(item => {
-            writer.removeAttribute(item, linkRange);
-          });
+          const newTextNode = writer.createText(newText, attributes);
+          model.insertContent(newTextNode, linkRange.start);
 
-          // Put the selection at the end of the updated link.
-          writer.setSelection(writer.createPositionAfter(linkRange.end.nodeBefore!));
+          // Put the selection at the end of the updated link
+          writer.setSelection(writer.createPositionAt(linkRange.start.parent, linkRange.start.offset + newText.length));
         }
         // If not then insert text node with `alightExternalLinkHref` attribute in place of caret.
-        // However, since selection is collapsed, attribute value will be used as data for text node.
-        // So, if `href` is empty, do not create text node.
         else if (href !== '') {
           const attributes = toMap(selection.getAttributes());
 
@@ -194,10 +185,18 @@ export default class AlightExternalLinkPluginCommand extends Command {
             attributes.set(item, true);
           });
 
-          const { end: positionAfter } = model.insertContent(writer.createText(href, attributes), position);
+          // Create display text with organization if provided
+          let displayText = href;
+          if (organization) {
+            displayText = `${href} (${organization})`;
+          }
+
+          const { end: positionAfter } = model.insertContent(
+            writer.createText(displayText, attributes as any),
+            position
+          );
 
           // Put the selection at the end of the inserted link.
-          // Using end of range returned from insertContent in case nodes with the same attributes got merged.
           writer.setSelection(positionAfter);
         }
 
@@ -208,51 +207,50 @@ export default class AlightExternalLinkPluginCommand extends Command {
         });
       } else {
         // If selection has non-collapsed ranges, we change attribute on nodes inside those ranges
-        // omitting nodes where the `alightExternalLinkHref` attribute is disallowed.
         const ranges = model.schema.getValidRanges(selection.getRanges(), 'alightExternalLinkHref');
 
-        // But for the first, check whether the `alightExternalLinkHref` attribute is allowed on selected blocks (e.g. the "image" element).
-        const allowedRanges = [];
+        // Get the selected text content without any organization parts
+        let selectedText = '';
 
-        for (const element of selection.getSelectedBlocks()) {
-          if (model.schema.checkAttribute(element, 'alightExternalLinkHref')) {
-            allowedRanges.push(writer.createRangeOn(element));
-          }
-        }
-
-        // Ranges that accept the `alightExternalLinkHref` attribute. Since we will iterate over `allowedRanges`, let's clone it.
-        const rangesToUpdate = allowedRanges.slice();
-
-        // For all selection ranges we want to check whether given range is inside an element that accepts the `alightExternalLinkHref` attribute.
-        // If so, we don't want to propagate applying the attribute to its children.
-        for (const range of ranges) {
-          if (this._isRangeToUpdate(range, allowedRanges)) {
-            rangesToUpdate.push(range);
-          }
-        }
-
-        for (const range of rangesToUpdate) {
-          let linkRange = range;
-
-          if (rangesToUpdate.length === 1) {
-            // Current text of the link in the document.
-            const linkText = extractTextFromSelection(selection);
-
-            if (selection.getAttribute('alightExternalLinkHref') === linkText) {
-              linkRange = this._updateLinkContent(model, writer, range, href);
-              writer.setSelection(writer.createSelection(linkRange));
+        // Extract just the base text without organizations
+        for (const range of selection.getRanges()) {
+          for (const item of range.getItems()) {
+            if (item.is('$text') || item.is('$textProxy')) {
+              selectedText += item.data;
             }
           }
+        }
 
-          writer.setAttribute('alightExternalLinkHref', href, linkRange);
+        // Remove existing organization name if present
+        const orgPattern = /^(.*?)(?:\s*\([^)]+\))?$/;
+        const match = selectedText.match(orgPattern);
 
+        if (match) {
+          selectedText = match[1].trim(); // Use only the text without organization
+        }
+
+        // Create the new text with the new organization if provided
+        let finalText = selectedText;
+        if (organization) {
+          finalText = `${selectedText} (${organization})`;
+        }
+
+        // Process each range
+        for (const range of ranges) {
+          // First, remove the old content
+          writer.remove(range);
+
+          // Then insert the new content with the organization
+          const attributes = { alightExternalLinkHref: href } as any;
+
+          // Add decorators
           truthyManualDecorators.forEach(item => {
-            writer.setAttribute(item, true, linkRange);
+            attributes[item] = true;
           });
 
-          falsyManualDecorators.forEach(item => {
-            writer.removeAttribute(item, linkRange);
-          });
+          // Insert the new content
+          const newText = writer.createText(finalText, attributes);
+          model.insertContent(newText, range.start);
         }
       }
     });
@@ -260,75 +258,17 @@ export default class AlightExternalLinkPluginCommand extends Command {
 
   /**
    * Provides information whether a decorator with a given name is present in the currently processed selection.
-   *
-   * @param decoratorName The name of the manual decorator used in the model
-   * @returns The information whether a given decorator is currently present in the selection.
    */
   private _getDecoratorStateFromModel(decoratorName: string): boolean | undefined {
     const model = this.editor.model;
     const selection = model.document.selection;
     const selectedElement = selection.getSelectedElement();
 
-    // A check for the `AlightExternalLinkPluginImage` plugin. If the selection contains an element, get values from the element.
-    // Currently the selection reads attributes from text nodes only. See #7429 and #7465.
+    // A check for the `AlightExternalLinkPluginImage` plugin.
     if (isLinkableElement(selectedElement, model.schema)) {
       return selectedElement.getAttribute(decoratorName) as boolean | undefined;
     }
 
     return selection.getAttribute(decoratorName) as boolean | undefined;
-  }
-
-  /**
-   * Checks whether specified `range` is inside an element that accepts the `alightExternalLinkHref` attribute.
-   *
-   * @param range A range to check.
-   * @param allowedRanges An array of ranges created on elements where the attribute is accepted.
-   */
-  private _isRangeToUpdate(range: Range, allowedRanges: Array<Range>): boolean {
-    for (const allowedRange of allowedRanges) {
-      // A range is inside an element that will have the `alightExternalLinkHref` attribute. Do not modify its nodes.
-      if (allowedRange.containsRange(range)) {
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  /**
-   * Updates selected link with a new value as its content and as its href attribute.
-   *
-   * @param model Model is need to insert content.
-   * @param writer Writer is need to create text element in model.
-   * @param range A range where should be inserted content.
-   * @param href A link value which should be in the href attribute and in the content.
-   */
-  private _updateLinkContent(model: Model, writer: Writer, range: Range, href: string): Range {
-    const text = writer.createText(href, { alightExternalLinkHref: href });
-
-    return model.insertContent(text, range);
-  }
-}
-
-// Returns a text of a link under the collapsed selection or a selection that contains the entire link.
-function extractTextFromSelection(selection: DocumentSelection): string | null {
-  if (selection.isCollapsed) {
-    const firstPosition = selection.getFirstPosition();
-
-    return firstPosition!.textNode && firstPosition!.textNode.data;
-  } else {
-    const rangeItems = Array.from(selection.getFirstRange()!.getItems());
-
-    if (rangeItems.length > 1) {
-      return null;
-    }
-
-    const firstNode = rangeItems[0];
-
-    if (firstNode.is('$text') || firstNode.is('$textProxy')) {
-      return firstNode.data;
-    }
-
-    return null;
   }
 }

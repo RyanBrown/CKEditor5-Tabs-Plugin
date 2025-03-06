@@ -165,7 +165,7 @@ export function isLinkableElement(element: Element | null, schema: Schema): elem
 }
 
 /**
- * Returns `true` if the specified `value` is an email.
+ * Returns `true` if the specified `value` is an external email.
  */
 export function isEmail(value: string): boolean {
   return EMAIL_REG_EXP.test(value);

@@ -5,7 +5,7 @@
 
 /**
  * @module link/AlightExternalLinkPluginImageediting
-*/
+ */
 
 import {
   Plugin,

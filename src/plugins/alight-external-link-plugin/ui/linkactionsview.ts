@@ -11,7 +11,7 @@ import { ButtonView, View, ViewCollection, FocusCycler, type FocusableView } fro
 import { FocusTracker, KeystrokeHandler, type LocaleTranslate, type Locale } from 'ckeditor5/src/utils';
 import { icons } from 'ckeditor5/src/core';
 
-import { ensureSafeUrl, openLink } from '../utils';
+import { ensureSafeUrl } from '../utils';
 
 // See: #8833.
 // eslint-disable-next-line ckeditor5-rules/ckeditor-imports
@@ -19,7 +19,6 @@ import '@ckeditor/ckeditor5-ui/theme/components/responsive-form/responsiveform.c
 import '@ckeditor/ckeditor5-link/theme/linkactions.css';
 
 import unlinkIcon from '@ckeditor/ckeditor5-link/theme/icons/unlink.svg';
-import type { LinkConfig } from '../linkconfig';
 
 /**
  * The link actions view class. This view displays the link preview, allows
@@ -68,28 +67,21 @@ export default class LinkActionsView extends View {
    */
   private readonly _focusCycler: FocusCycler;
 
-  private readonly _linkConfig: LinkConfig;
-
-  private readonly _options?: LinkActionsViewOptions;
-
   declare public t: LocaleTranslate;
 
   /**
    * @inheritDoc
    */
-  constructor(locale: Locale, linkConfig: LinkConfig = {}, options?: LinkActionsViewOptions) {
+  constructor(locale: Locale) {
     super(locale);
 
     const t = locale.t;
 
-    this._options = options;
     this.previewButtonView = this._createPreviewButton();
     this.unlinkButtonView = this._createButton(t('Unlink'), unlinkIcon, 'unlink');
     this.editButtonView = this._createButton(t('Edit link'), icons.pencil, 'edit');
 
     this.set('href', undefined);
-
-    this._linkConfig = linkConfig;
 
     this._focusCycler = new FocusCycler({
       focusables: this._focusables,
@@ -98,7 +90,6 @@ export default class LinkActionsView extends View {
       actions: {
         // Navigate fields backwards using the Shift + Tab keystroke.
         focusPrevious: 'shift + tab',
-
         // Navigate fields forwards using the Tab key.
         focusNext: 'tab'
       }
@@ -106,18 +97,15 @@ export default class LinkActionsView extends View {
 
     this.setTemplate({
       tag: 'div',
-
       attributes: {
         class: [
           'ck',
           'ck-link-actions',
           'ck-responsive-form'
         ],
-
         // https://github.com/ckeditor/ckeditor5-link/issues/90
         tabindex: '-1'
       },
-
       children: [
         this.previewButtonView,
         this.editButtonView,
@@ -197,10 +185,11 @@ export default class LinkActionsView extends View {
   private _createPreviewButton(): ButtonView {
     const button = new ButtonView(this.locale);
     const bind = this.bindTemplate;
-    const t = this.t;
+    const t = this.t!;
 
     button.set({
-      withText: true
+      withText: true,
+      tooltip: t('Open email link')
     });
 
     button.extendTemplate({
@@ -209,31 +198,17 @@ export default class LinkActionsView extends View {
           'ck',
           'ck-link-actions__preview'
         ],
-        href: bind.to('href', href => href && ensureSafeUrl(href, this._linkConfig.allowedProtocols)),
+        href: bind.to('href', href => href && ensureSafeUrl(href)),
         target: '_blank',
         rel: 'noopener noreferrer'
       },
-      on: {
-        click: bind.to(evt => {
-          if (this._options && this._options.isScrollableToTarget(this.href)) {
-            evt.preventDefault();
-            this._options.scrollToTarget(this.href!);
-          } else {
-            openLink(this.href!);
-          }
-        })
-      }
-    });
-
-    button.bind('tooltip').to(this, 'href', href => {
-      if (this._options && this._options.isScrollableToTarget(href)) {
-        return t('Scroll to target');
-      }
-
-      return t('Open link in new tab');
     });
 
     button.bind('label').to(this, 'href', href => {
+      // Hide mailto: from display in the UI
+      if (href && href.startsWith('mailto:')) {
+        return href.substring(7); // Remove mailto: prefix for display
+      }
       return href || t('This link has no URL');
     });
 
@@ -269,7 +244,6 @@ export type UnlinkEvent = {
  * The options that are passed to the {@link ~LinkActionsView#constructor} constructor.
  */
 export type LinkActionsViewOptions = {
-
   /**
    * Returns `true` when bookmark `id` matches the hash from `link`.
    */

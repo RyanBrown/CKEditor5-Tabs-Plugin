@@ -77,9 +77,7 @@ export default class AlightExternalLinkPluginImageUI extends Plugin {
   /**
    * Creates a `AlightExternalLinkPluginImageUI` button view.
    *
-   * Clicking this button shows a {@link module:link/linkui~AlightExternalLinkPluginUI#_balloon} attached to the selection.
-   * When an image is already linked, the view shows {@link module:link/linkui~AlightExternalLinkPluginUI#actionsView} or
-   * {@link module:link/linkui~AlightExternalLinkPluginUI#formView} if it is not.
+   * Clicking this button shows a modal dialog for editing the image link.
    */
   private _createToolbarAlightExternalLinkPluginImageButton(): void {
     const editor = this.editor;
@@ -103,12 +101,14 @@ export default class AlightExternalLinkPluginImageUI extends Plugin {
       button.bind('isEnabled').to(linkCommand, 'isEnabled');
       button.bind('isOn').to(linkCommand, 'value', value => !!value);
 
-      // Show the actionsView or formView (both from AlightExternalLinkPluginUI) on button click depending on whether the image is linked already.
+      // Show the modal dialog UI for editing links
       this.listenTo(button, 'execute', () => {
         if (this._isSelectedLinkedImage(editor.model.document.selection)) {
-          plugin._addActionsView();
+          // When an image is already linked, show UI for editing the link
+          plugin.showUI(true);
         } else {
-          plugin._showUI(true);
+          // Otherwise show UI for creating a new link
+          plugin.showUI();
         }
       });
 
