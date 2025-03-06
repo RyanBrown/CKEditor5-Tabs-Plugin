@@ -7,11 +7,11 @@
  * @module link/autolink
  */
 
-import { Plugin } from 'ckeditor5/src/core';
-import type { ClipboardInputTransformationData } from 'ckeditor5/src/clipboard';
-import type { DocumentSelectionChangeEvent, Element, Model, Position, Range, Writer } from 'ckeditor5/src/engine';
-import { Delete, TextWatcher, getLastTextLine, findAttributeRange, type TextWatcherMatchedDataEvent } from 'ckeditor5/src/typing';
-import type { EnterCommand, ShiftEnterCommand } from 'ckeditor5/src/enter';
+import { Plugin } from '@ckeditor/ckeditor5-core';
+import type { ClipboardInputTransformationData } from '@ckeditor/ckeditor5-clipboard';
+import type { DocumentSelectionChangeEvent, Element, Model, Position, Range, Writer } from '@ckeditor/ckeditor5-engine';
+import { Delete, TextWatcher, getLastTextLine, findAttributeRange, type TextWatcherMatchedDataEvent } from '@ckeditor/ckeditor5-typing';
+import type { EnterCommand, ShiftEnterCommand } from '@ckeditor/ckeditor5-enter';
 
 import { addLinkProtocolIfApplicable, linkHasProtocol } from './utils';
 import AlightExternalLinkEditing from './linkediting';

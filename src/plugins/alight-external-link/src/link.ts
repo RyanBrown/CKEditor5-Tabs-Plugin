@@ -7,7 +7,7 @@
  * @module link/link
  */
 
-import { Plugin } from 'ckeditor5/src/core';
+import { Plugin } from '@ckeditor/ckeditor5-core';
 import AlightExternalLinkEditing from './linkediting';
 import AlightExternalLinkUI from './linkui';
 import AlightExternalLinkAutoLink from './autolink';
