@@ -214,13 +214,6 @@ export default class AlightEmailLinkPluginUI extends Plugin {
 
     actionsView.bind('href').to(linkCommand, 'value');
 
-    // actionsView.bind('href').to(linkCommand, 'value', value => {
-    //   if (value && value.startsWith('mailto:')) {
-    //     return value.substring(7); // Remove the mailto: prefix in link preview
-    //   }
-    //   return value;
-    // });
-
     actionsView.editButtonView.bind('isEnabled').to(linkCommand);
     actionsView.unlinkButtonView.bind('isEnabled').to(unlinkCommand);
 
@@ -387,8 +380,8 @@ export default class AlightEmailLinkPluginUI extends Plugin {
   }
 
   /**
-     * Shows the modal dialog for link editing.
-     */
+   * Shows the modal dialog for link editing.
+   */
   private _showUI(isEditing: boolean = false): void {
     const editor = this.editor;
     const t = editor.t;
@@ -444,9 +437,12 @@ export default class AlightEmailLinkPluginUI extends Plugin {
           }
 
           // Execute the command with the organization as custom data
+          // Pass the organization even if empty to ensure removal of existing organization
           editor.execute('alight-email-link', emailLink, { organization });
 
           // Close the modal
+          this._modalDialog!.hide();
+        } else if (label === t('Cancel')) {
           this._modalDialog!.hide();
         }
       });
@@ -480,7 +476,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
             const textNode = children[0];
             if (textNode && textNode.is('$text')) {
               const text = textNode.data || '';
-              const match = text.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
+              const match = text.match(/^(.*?)(?:\s*\(([^)]+)\))?$/);
               if (match && match[2]) {
                 organizationInput.value = match[2];
               }

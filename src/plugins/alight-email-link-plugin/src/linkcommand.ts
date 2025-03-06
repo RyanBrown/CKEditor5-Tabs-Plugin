@@ -97,15 +97,15 @@ export default class AlightEmailLinkPluginCommand extends Command {
    * When the selection is collapsed and inside the text with the `alightEmailLinkPluginHref` attribute, the attribute value will be updated.
    *
    * @fires execute
-   * @param href AlightEmailLinkPlugin destination.
- * @param options Options including manual decorator attributes and organization name.
- */
+     * @param href AlightEmailLinkPlugin destination.
+   * @param options Options including manual decorator attributes and organization name.
+   */
   public override execute(href: string, options: LinkOptions = {}): void {
     const model = this.editor.model;
     const selection = model.document.selection;
 
-    // Extract organization option
-    const organization = options.organization || '';
+    // Extract organization option - explicitly handle empty string for organization removal
+    const organization = options.organization !== undefined ? options.organization : '';
 
     // Extract decorator options
     const truthyManualDecorators: Array<string> = [];
@@ -128,7 +128,7 @@ export default class AlightEmailLinkPluginCommand extends Command {
 
         // When selection is inside text with `alightEmailLinkPluginHref` attribute.
         if (selection.hasAttribute('alightEmailLinkPluginHref')) {
-          // Then update `alightEmailLinkPluginHref` value.
+          // Get the link range
           const linkRange = findAttributeRange(
             position,
             'alightEmailLinkPluginHref',
@@ -136,20 +136,44 @@ export default class AlightEmailLinkPluginCommand extends Command {
             model
           );
 
-          // Update href attribute
-          writer.setAttribute('alightEmailLinkPluginHref', href, linkRange);
+          // First, collect the current link text without organization name
+          let baseText = '';
+          const textNodes = Array.from(linkRange.getItems()).filter(item => item.is('$text') || item.is('$textProxy'));
 
-          // Apply decorators
+          for (const node of textNodes) {
+            baseText += node.data;
+          }
+
+          // Remove organization part if present
+          const orgPattern = /^(.*?)(?:\s*\([^)]+\))?$/;
+          const match = baseText.match(orgPattern);
+
+          if (match) {
+            baseText = match[1].trim();
+          }
+
+          // Create new text with or without organization
+          let newText = baseText;
+          if (organization) {
+            newText = `${baseText} (${organization})`;
+          }
+
+          // Remove all existing content first
+          writer.remove(linkRange);
+
+          // Insert new content with proper attribute
+          const attributes = { alightEmailLinkPluginHref: href } as any;
+
+          // Add decorators
           truthyManualDecorators.forEach(item => {
-            writer.setAttribute(item, true, linkRange);
+            attributes[item] = true;
           });
 
-          falsyManualDecorators.forEach(item => {
-            writer.removeAttribute(item, linkRange);
-          });
+          const newTextNode = writer.createText(newText, attributes);
+          model.insertContent(newTextNode, linkRange.start);
 
-          // Put the selection at the end of the updated link.
-          writer.setSelection(writer.createPositionAfter(linkRange.end.nodeBefore!));
+          // Put the selection at the end of the updated link
+          writer.setSelection(writer.createPositionAt(linkRange.start.parent, linkRange.start.offset + newText.length));
         }
         // If not then insert text node with `alightEmailLinkPluginHref` attribute in place of caret.
         else if (href !== '') {
@@ -164,7 +188,7 @@ export default class AlightEmailLinkPluginCommand extends Command {
           // Create display text with organization if provided
           let displayText = href;
           if (organization) {
-            displayText = organization ? `${href} (${organization})` : href;
+            displayText = `${href} (${organization})`;
           }
 
           const { end: positionAfter } = model.insertContent(
@@ -185,8 +209,10 @@ export default class AlightEmailLinkPluginCommand extends Command {
         // If selection has non-collapsed ranges, we change attribute on nodes inside those ranges
         const ranges = model.schema.getValidRanges(selection.getRanges(), 'alightEmailLinkPluginHref');
 
-        // Get the selected text content
+        // Get the selected text content without any organization parts
         let selectedText = '';
+
+        // Extract just the base text without organizations
         for (const range of selection.getRanges()) {
           for (const item of range.getItems()) {
             if (item.is('$text') || item.is('$textProxy')) {
@@ -195,13 +221,18 @@ export default class AlightEmailLinkPluginCommand extends Command {
           }
         }
 
-        // Create the new text with organization if provided
+        // Remove existing organization name if present
+        const orgPattern = /^(.*?)(?:\s*\([^)]+\))?$/;
+        const match = selectedText.match(orgPattern);
+
+        if (match) {
+          selectedText = match[1].trim(); // Use only the text without organization
+        }
+
+        // Create the new text with the new organization if provided
         let finalText = selectedText;
         if (organization) {
-          // Only append the organization if it's not already there
-          if (!finalText.endsWith(`)`) || !finalText.includes(`(${organization})`)) {
-            finalText = `${selectedText} (${organization})`;
-          }
+          finalText = `${selectedText} (${organization})`;
         }
 
         // Process each range
