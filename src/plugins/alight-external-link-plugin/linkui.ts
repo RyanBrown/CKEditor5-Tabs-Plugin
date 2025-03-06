@@ -25,7 +25,8 @@ import './../ui-components/alight-checkbox-component/alight-checkbox-component';
 import linkIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 
 const VISUAL_SELECTION_MARKER_NAME = 'alight-external-link-ui';
-const URL_REGEX = /^(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/;
+// URL regex that rejects mailto: links
+const URL_REGEX = /^(?!mailto:)(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/;
 
 /**
  * The link UI plugin. It introduces the `'link'` and `'unlink'` buttons and support for the <kbd>Ctrl+K</kbd> keystroke.
@@ -382,10 +383,15 @@ export default class AlightExternalLinkPluginUI extends Plugin {
   }
 
   /**
-   * Validates a URL
+   * Validates a URL, ensuring it's not an email link
    */
   private _validateURL(url: string): boolean {
     if (!url || url.trim() === '') {
+      return false;
+    }
+
+    // Reject if it contains mailto:
+    if (url.toLowerCase().includes('mailto:')) {
       return false;
     }
 
@@ -439,9 +445,13 @@ export default class AlightExternalLinkPluginUI extends Plugin {
           if (!this._validateURL(urlValue)) {
             // Show error message
             if (errorElement) {
-              errorElement.textContent = urlValue.trim() === '' ?
-                t('URL address is required') :
-                t('Please enter a valid URL address');
+              if (urlValue.trim() === '') {
+                errorElement.textContent = t('URL address is required');
+              } else if (urlValue.toLowerCase().includes('mailto:')) {
+                errorElement.textContent = t('Email addresses are not allowed. Please enter a web URL.');
+              } else {
+                errorElement.textContent = t('Please enter a valid URL address');
+              }
               errorElement.style.display = 'block';
             }
             // Focus back on the URL input
@@ -477,6 +487,12 @@ export default class AlightExternalLinkPluginUI extends Plugin {
         const urlPrefixElement = document.getElementById('url-prefix') as HTMLDivElement;
 
         let url = linkCommand.value || '';
+
+        // Skip if this is an email link (shouldn't happen, but just in case)
+        if (url.toLowerCase().startsWith('mailto:')) {
+          this._modalDialog!.hide();
+          return;
+        }
 
         // Handle protocols
         if (url.startsWith('http://')) {
@@ -590,7 +606,11 @@ export default class AlightExternalLinkPluginUI extends Plugin {
             <cka-checkbox id="cka-allow-unsecure-urls">${t('Allow unsecure HTTP URLs')}</cka-checkbox>
           </div>
       
-          <div class="cka-note-text">${t('Organization Name (optional): Specify the third-party organization to inform users about the url address\'s origin.')}</div>
+          <div class="cka-note-text">
+            ${t('Organization Name (optional): Specify the third-party organization to inform users about the link\'s origin.')}
+            <br>
+            ${t('Note: Email addresses are not supported. Please enter web URLs only.')}
+          </div>
         </div>
       </div>
     `;
