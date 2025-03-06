@@ -7,23 +7,23 @@
  * @module link/linkui
  */
 
-import { Plugin, type Editor } from 'ckeditor5/src/core';
+import { Plugin, type Editor } from '@ckeditor/ckeditor5-core';
 import {
   ClickObserver,
   type ViewAttributeElement,
   type ViewDocumentClickEvent,
   type ViewElement,
   type ViewPosition
-} from 'ckeditor5/src/engine';
+} from '@ckeditor/ckeditor5-engine';
 import {
   ButtonView,
   ContextualBalloon,
   CssTransitionDisablerMixin,
   MenuBarMenuListItemButtonView,
   type ViewWithCssTransitionDisabler
-} from 'ckeditor5/src/ui';
-import type { PositionOptions } from 'ckeditor5/src/utils';
-import { isWidget } from 'ckeditor5/src/widget';
+} from '@ckeditor/ckeditor5-ui';
+import type { PositionOptions } from '@ckeditor/ckeditor5-utils';
+import { isWidget } from '@ckeditor/ckeditor5-widget';
 
 import LinkFormView, { type LinkFormValidatorCallback } from './ui/linkformview';
 import LinkActionsView from './ui/linkactionsview';
@@ -36,7 +36,7 @@ import {
   LINK_KEYSTROKE
 } from './utils';
 
-import linkIcon from '../theme/icons/link.svg';
+import linkIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 import { CkAlightModalDialog } from './../../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import type { CkAlightCheckbox } from './../../ui-components/alight-checkbox-component/alight-checkbox-component';
 

@@ -7,11 +7,11 @@
  * @module link/AlightExternalLinkImage
  */
 
-import { Plugin } from 'ckeditor5/src/core';
+import { Plugin } from '@ckeditor/ckeditor5-core';
 import AlightExternalLinkImageEditing from './linkimageediting';
 import AlightExternalLinkImageUI from './linkimageui';
 
-import '../theme/AlightExternalLinkImage.css';
+import '@ckeditor/ckeditor5-link/theme/linkimage.css';
 
 /**
  * The `AlightExternalLinkImage` plugin.

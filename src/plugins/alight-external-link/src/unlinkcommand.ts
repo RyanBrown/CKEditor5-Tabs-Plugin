@@ -7,8 +7,8 @@
  * @module link/AlightExternalLinkUnlinkCommand
  */
 
-import { Command } from 'ckeditor5/src/core';
-import { findAttributeRange } from 'ckeditor5/src/typing';
+import { Command } from '@ckeditor/ckeditor5-core';
+import { findAttributeRange } from '@ckeditor/ckeditor5-typing';
 
 import type AlightExternalLinkCommand from './linkcommand';
 import { isLinkableElement } from './utils';
