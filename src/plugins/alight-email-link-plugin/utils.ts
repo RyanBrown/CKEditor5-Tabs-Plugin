@@ -16,10 +16,10 @@ import type {
   ViewAttributeElement,
   ViewNode,
   ViewDocumentFragment
-} from 'ckeditor5/src/engine';
+} from '@ckeditor/ckeditor5-engine';
 
-import type { Editor } from 'ckeditor5/src/core';
-import type { LocaleTranslate } from 'ckeditor5/src/utils';
+import type { Editor } from '@ckeditor/ckeditor5-core';
+import type { LocaleTranslate } from '@ckeditor/ckeditor5-utils';
 import type { BookmarkEditing } from '@ckeditor/ckeditor5-bookmark';
 
 import type {

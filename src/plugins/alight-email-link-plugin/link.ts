@@ -7,7 +7,7 @@
  * @module link/alightemaillink
  */
 
-import { Plugin } from 'ckeditor5/src/core';
+import { Plugin } from '@ckeditor/ckeditor5-core';
 import AlightEmailLinkPluginEditing from './linkediting';
 import AlightEmailLinkPluginUI from './linkui';
 import AlightEmailAutoLink from './autolink';

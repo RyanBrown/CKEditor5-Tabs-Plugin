@@ -1,17 +1,17 @@
 // LinkUI with both Balloon and Modal Dialog
-import { Plugin } from 'ckeditor5/src/core';
+import { Plugin } from '@ckeditor/ckeditor5-core';
 import {
   ClickObserver,
   type ViewAttributeElement,
   type ViewDocumentClickEvent
-} from 'ckeditor5/src/engine';
+} from '@ckeditor/ckeditor5-engine';
 import {
   ButtonView,
   ContextualBalloon,
   MenuBarMenuListItemButtonView,
   clickOutsideHandler
-} from 'ckeditor5/src/ui';
-import { isWidget } from 'ckeditor5/src/widget';
+} from '@ckeditor/ckeditor5-ui';
+import { isWidget } from '@ckeditor/ckeditor5-widget';
 
 import AlightEmailLinkPluginEditing from './linkediting';
 import LinkActionsView from './ui/linkactionsview';
