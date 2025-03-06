@@ -51,14 +51,6 @@
     font-size: var(--font-size-xl);
     padding: mixins.toRem(20) mixins.toRem(20);
   }
-
-  &.cka-url-input {
-    &::before {
-      content: "https://";
-      background-color: "#fff3cd";
-      color: '#856404';
-    }
-  }
 }
 
 // Validation classes
