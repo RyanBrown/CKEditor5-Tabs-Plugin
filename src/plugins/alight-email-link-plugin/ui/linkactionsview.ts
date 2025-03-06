@@ -16,9 +16,9 @@ import { ensureSafeUrl } from '../utils';
 // See: #8833.
 // eslint-disable-next-line ckeditor5-rules/ckeditor-imports
 import '@ckeditor/ckeditor5-ui/theme/components/responsive-form/responsiveform.css';
-import '../../theme/linkactions.css';
+import '@ckeditor/ckeditor5-link/theme/linkactions.css';
 
-import unlinkIcon from '../../theme/icons/unlink.svg';
+import unlinkIcon from '@ckeditor/ckeditor5-link/theme/icons/unlink.svg';
 
 /**
  * The link actions view class. This view displays the link preview, allows

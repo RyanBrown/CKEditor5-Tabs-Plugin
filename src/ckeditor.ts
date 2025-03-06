@@ -44,7 +44,7 @@ import {
 } from '@ckeditor/ckeditor5-image';
 import { Indent, IndentBlock } from '@ckeditor/ckeditor5-indent';
 import { TextPartLanguage } from '@ckeditor/ckeditor5-language';
-import { Link, LinkImage } from '@ckeditor/ckeditor5-link';
+// import { Link, LinkImage } from '@ckeditor/ckeditor5-link';
 import { List, ListProperties, TodoList } from '@ckeditor/ckeditor5-list';
 import { MediaEmbed, MediaEmbedToolbar } from '@ckeditor/ckeditor5-media-embed';
 import { Paragraph } from '@ckeditor/ckeditor5-paragraph';
@@ -79,7 +79,7 @@ import AlightTabsPlugin from './plugins/alight-tabs-plugin/alight-tabs-plugin';
 // import AlightEmailLinkPlugin from './plugins/alight-email-link-plugin/alight-email-link-plugin';
 import AlightLink from './plugins/alight-link/src/link';
 import AlightExternalLink from './plugins/alight-external-link/src/link';
-import AlightEmailLinkPlugin from './plugins/alight-email-link-plugin/src/link';
+import AlightEmailLinkPlugin from './plugins/alight-email-link-plugin/link';
 
 // Import custom styles for headings, style definitions and custom plugins
 import './styles/styles.scss';
@@ -169,8 +169,8 @@ class Editor extends ClassicEditor {
     Indent,
     IndentBlock,
     Italic,
-    Link,
-    LinkImage,
+    // Link,
+    // LinkImage,
     List,
     ListProperties,
     MediaEmbed,
@@ -225,7 +225,7 @@ class Editor extends ClassicEditor {
         'superscript',
         '|',
         'horizontalLine',
-        'link',
+        // 'link',
         '|',
         'bulletedList',
         'numberedList',

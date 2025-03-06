@@ -45,7 +45,7 @@ import {
   type NormalizedLinkDecoratorManualDefinition
 } from './utils';
 
-import '../theme/link.css';
+import '@ckeditor/ckeditor5-link/theme/link.css';
 
 const HIGHLIGHT_CLASS = 'ck-link_selected';
 const DECORATOR_AUTOMATIC = 'automatic';

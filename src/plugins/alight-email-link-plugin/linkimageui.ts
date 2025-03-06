@@ -23,7 +23,7 @@ import type AlightEmailLinkPluginCommand from './linkcommand';
 
 import { LINK_KEYSTROKE } from './utils';
 
-import linkIcon from '../theme/icons/link.svg';
+import linkIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 
 /**
  * The link image UI plugin.

@@ -18,9 +18,9 @@ import LinkActionsView from './ui/linkactionsview';
 import type AlightEmailLinkPluginCommand from './linkcommand';
 import type AlightEmailUnlinkCommand from './unlinkcommand';
 import { addLinkProtocolIfApplicable, isLinkElement, LINK_KEYSTROKE } from './utils';
-import CkAlightModalDialog from '../../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
+import CkAlightModalDialog from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 
-import linkIcon from '../theme/icons/link.svg';
+import linkIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 
 const VISUAL_SELECTION_MARKER_NAME = 'alight-email-link-ui';
 const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;

@@ -11,7 +11,7 @@ import { Plugin } from 'ckeditor5/src/core';
 import AlightEmailLinkPluginImageEditing from './linkimageediting';
 import AlightEmailLinkPluginImageUI from './linkimageui';
 
-import '../theme/AlightEmailLinkPluginImage.css';
+import '@ckeditor/ckeditor5-link/theme/linkimage.css';
 
 /**
  * The `AlightEmailLinkPluginImage` plugin.

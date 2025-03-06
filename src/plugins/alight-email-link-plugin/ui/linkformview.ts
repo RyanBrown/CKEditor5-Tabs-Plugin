@@ -33,7 +33,7 @@ import type ManualDecorator from '../utils/manualdecorator';
 // See: #8833.
 // eslint-disable-next-line ckeditor5-rules/ckeditor-imports
 import '@ckeditor/ckeditor5-ui/theme/components/responsive-form/responsiveform.css';
-import '../../theme/linkform.css';
+import '@ckeditor/ckeditor5-link/theme/linkform.css';
 
 /**
  * The link form view controller class.
