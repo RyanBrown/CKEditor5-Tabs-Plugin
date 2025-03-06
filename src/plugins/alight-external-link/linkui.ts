@@ -37,8 +37,8 @@ import {
 } from './utils';
 
 import linkIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
-import { CkAlightModalDialog } from './../../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
-import type { CkAlightCheckbox } from './../../ui-components/alight-checkbox-component/alight-checkbox-component';
+import { CkAlightModalDialog } from './../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
+import type { CkAlightCheckbox } from './../ui-components/alight-checkbox-component/alight-checkbox-component';
 
 const VISUAL_SELECTION_MARKER_NAME = 'alight-external-link-ui';
 
