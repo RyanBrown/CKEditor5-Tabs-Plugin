@@ -27,7 +27,7 @@ import {
 } from 'ckeditor5/src/utils';
 import { icons } from 'ckeditor5/src/core';
 
-import type AlightExternalLinkCommand from '../linkcommand';
+import type AlightExternalLinkPluginCommand from '../linkcommand';
 import type ManualDecorator from '../utils/manualdecorator';
 
 // See: #8833.
@@ -68,7 +68,7 @@ export default class LinkFormView extends View {
 
   /**
    * A collection of {@link module:ui/button/switchbuttonview~SwitchButtonView},
-   * which corresponds to {@link module:link/AlightExternalLinkCommand~AlightExternalLinkCommand#manualDecorators manual decorators}
+   * which corresponds to {@link module:link/AlightExternalLinkPluginCommand~AlightExternalLinkPluginCommand#manualDecorators manual decorators}
    * configured in the editor.
    */
   private readonly _manualDecoratorSwitches: ViewCollection<SwitchButtonView>;
@@ -99,10 +99,10 @@ export default class LinkFormView extends View {
    * Also see {@link #render}.
    *
    * @param locale The localization services instance.
-   * @param AlightExternalLinkCommand Reference to {@link module:link/AlightExternalLinkCommand~AlightExternalLinkCommand}.
+   * @param AlightExternalLinkPluginCommand Reference to {@link module:link/AlightExternalLinkPluginCommand~AlightExternalLinkPluginCommand}.
    * @param validators  Form validators used by {@link #isValid}.
    */
-  constructor(locale: Locale, AlightExternalLinkCommand: AlightExternalLinkCommand, validators: Array<LinkFormValidatorCallback>) {
+  constructor(locale: Locale, AlightExternalLinkPluginCommand: AlightExternalLinkPluginCommand, validators: Array<LinkFormValidatorCallback>) {
     super(locale);
 
     const t = locale.t;
@@ -112,8 +112,8 @@ export default class LinkFormView extends View {
     this.saveButtonView = this._createButton(t('Save'), icons.check, 'ck-button-save');
     this.saveButtonView.type = 'submit';
     this.cancelButtonView = this._createButton(t('Cancel'), icons.cancel, 'ck-button-cancel', 'cancel');
-    this._manualDecoratorSwitches = this._createManualDecoratorSwitches(AlightExternalLinkCommand);
-    this.children = this._createFormChildren(AlightExternalLinkCommand.manualDecorators);
+    this._manualDecoratorSwitches = this._createManualDecoratorSwitches(AlightExternalLinkPluginCommand);
+    this.children = this._createFormChildren(AlightExternalLinkPluginCommand.manualDecorators);
 
     this._focusCycler = new FocusCycler({
       focusables: this._focusables,
@@ -130,7 +130,7 @@ export default class LinkFormView extends View {
 
     const classList = ['ck', 'ck-link-form', 'ck-responsive-form'];
 
-    if (AlightExternalLinkCommand.manualDecorators.length) {
+    if (AlightExternalLinkPluginCommand.manualDecorators.length) {
       classList.push('ck-link-form_layout-vertical', 'ck-vertical-form');
     }
 
@@ -150,7 +150,7 @@ export default class LinkFormView extends View {
 
   /**
    * Obtains the state of the {@link module:ui/button/switchbuttonview~SwitchButtonView switch buttons} representing
-   * {@link module:link/AlightExternalLinkCommand~AlightExternalLinkCommand#manualDecorators manual link decorators}
+   * {@link module:link/AlightExternalLinkPluginCommand~AlightExternalLinkPluginCommand#manualDecorators manual link decorators}
    * in the {@link module:link/ui/linkformview~LinkFormView}.
    *
    * @returns Key-value pairs, where the key is the name of the decorator and the value is its state.
@@ -251,7 +251,7 @@ export default class LinkFormView extends View {
     const labeledInput = new LabeledFieldView(this.locale, createLabeledInputText);
 
     labeledInput.fieldView.inputMode = 'url';
-    labeledInput.label = t('AlightExternalLink URL');
+    labeledInput.label = t('AlightExternalLinkPlugin URL');
 
     return labeledInput;
   }
@@ -289,15 +289,15 @@ export default class LinkFormView extends View {
 
   /**
    * Populates {@link module:ui/viewcollection~ViewCollection} of {@link module:ui/button/switchbuttonview~SwitchButtonView}
-   * made based on {@link module:link/AlightExternalLinkCommand~AlightExternalLinkCommand#manualDecorators}.
+   * made based on {@link module:link/AlightExternalLinkPluginCommand~AlightExternalLinkPluginCommand#manualDecorators}.
    *
-   * @param AlightExternalLinkCommand A reference to the link command.
+   * @param AlightExternalLinkPluginCommand A reference to the link command.
    * @returns ViewCollection of switch buttons.
    */
-  private _createManualDecoratorSwitches(AlightExternalLinkCommand: AlightExternalLinkCommand): ViewCollection<SwitchButtonView> {
+  private _createManualDecoratorSwitches(AlightExternalLinkPluginCommand: AlightExternalLinkPluginCommand): ViewCollection<SwitchButtonView> {
     const switches = this.createCollection<SwitchButtonView>();
 
-    for (const manualDecorator of AlightExternalLinkCommand.manualDecorators) {
+    for (const manualDecorator of AlightExternalLinkPluginCommand.manualDecorators) {
       const switchButton: SwitchButtonView & { name?: string } = new SwitchButtonView(this.locale);
 
       switchButton.set({
@@ -306,7 +306,7 @@ export default class LinkFormView extends View {
         withText: true
       });
 
-      switchButton.bind('isOn').toMany([manualDecorator, AlightExternalLinkCommand], 'value', (decoratorValue, commandValue) => {
+      switchButton.bind('isOn').toMany([manualDecorator, AlightExternalLinkPluginCommand], 'value', (decoratorValue, commandValue) => {
         return commandValue === undefined && decoratorValue === undefined ? !!manualDecorator.defaultValue : !!decoratorValue;
       });
 
@@ -323,7 +323,7 @@ export default class LinkFormView extends View {
   /**
    * Populates the {@link #children} collection of the form.
    *
-   * If {@link module:link/AlightExternalLinkCommand~AlightExternalLinkCommand#manualDecorators manual decorators} are configured in the editor, it creates an
+   * If {@link module:link/AlightExternalLinkPluginCommand~AlightExternalLinkPluginCommand#manualDecorators manual decorators} are configured in the editor, it creates an
    * additional `View` wrapping all {@link #_manualDecoratorSwitches} switch buttons corresponding
    * to these decorators.
    *

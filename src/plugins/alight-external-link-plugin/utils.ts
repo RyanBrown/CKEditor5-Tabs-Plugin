@@ -50,7 +50,7 @@ const DEFAULT_LINK_PROTOCOLS = [
 ];
 
 /**
- * A keystroke used by the {@link module:link/linkui~AlightExternalLinkUI link UI feature}.
+ * A keystroke used by the {@link module:link/linkui~AlightExternalLinkPluginUI link UI feature}.
  */
 export const LINK_KEYSTROKE = 'Ctrl+K';
 

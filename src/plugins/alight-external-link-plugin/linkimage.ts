@@ -4,34 +4,34 @@
  */
 
 /**
- * @module link/AlightExternalLinkImage
+ * @module link/AlightExternalLinkPluginImage
  */
 
 import { Plugin } from '@ckeditor/ckeditor5-core';
-import AlightExternalLinkImageEditing from './linkimageediting';
-import AlightExternalLinkImageUI from './linkimageui';
+import AlightExternalLinkPluginImageEditing from './linkimageediting';
+import AlightExternalLinkPluginImageUI from './linkimageui';
 
 import '@ckeditor/ckeditor5-link/theme/linkimage.css';
 
 /**
- * The `AlightExternalLinkImage` plugin.
+ * The `AlightExternalLinkPluginImage` plugin.
  *
- * This is a "glue" plugin that loads the {@link module:link/AlightExternalLinkImageediting~AlightExternalLinkImageEditing link image editing feature}
- * and {@link module:link/AlightExternalLinkImageui~AlightExternalLinkImageUI link image UI feature}.
+ * This is a "glue" plugin that loads the {@link module:link/AlightExternalLinkPluginImageediting~AlightExternalLinkPluginImageEditing link image editing feature}
+ * and {@link module:link/AlightExternalLinkPluginImageui~AlightExternalLinkPluginImageUI link image UI feature}.
  */
-export default class AlightExternalLinkImage extends Plugin {
+export default class AlightExternalLinkPluginImage extends Plugin {
   /**
    * @inheritDoc
    */
   public static get requires() {
-    return [AlightExternalLinkImageEditing, AlightExternalLinkImageUI] as const;
+    return [AlightExternalLinkPluginImageEditing, AlightExternalLinkPluginImageUI] as const;
   }
 
   /**
    * @inheritDoc
    */
   public static get pluginName() {
-    return 'AlightExternalLinkImage' as const;
+    return 'AlightExternalLinkPluginImage' as const;
   }
 
   /**

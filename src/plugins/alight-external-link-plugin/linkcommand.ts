@@ -4,7 +4,7 @@
  */
 
 /**
- * @module link/AlightExternalLinkCommand
+ * @module link/AlightExternalLinkPluginCommand
  */
 
 import { Command } from '@ckeditor/ckeditor5-core';
@@ -17,9 +17,9 @@ import { isLinkableElement } from './utils';
 import type ManualDecorator from './utils/manualdecorator';
 
 /**
- * The link command. It is used by the {@link module:link/link~AlightExternalLink link feature}.
+ * The link command. It is used by the {@link module:link/link~AlightExternalLinkPlugin link feature}.
  */
-export default class AlightExternalLinkCommand extends Command {
+export default class AlightExternalLinkPluginCommand extends Command {
   /**
    * The value of the `'alightExternalLinkHref'` attribute if the start of the selection is located in a node with this attribute.
    *
@@ -59,7 +59,7 @@ export default class AlightExternalLinkCommand extends Command {
     const selection = model.document.selection;
     const selectedElement = selection.getSelectedElement() || first(selection.getSelectedBlocks());
 
-    // A check for any integration that allows linking elements (e.g. `AlightExternalLinkImage`).
+    // A check for any integration that allows linking elements (e.g. `AlightExternalLinkPluginImage`).
     // Currently the selection reads attributes from text nodes only. See #7429 and #7465.
     if (isLinkableElement(selectedElement, model.schema)) {
       this.value = selectedElement.getAttribute('alightExternalLinkHref') as string | undefined;
@@ -104,26 +104,26 @@ export default class AlightExternalLinkCommand extends Command {
    * Here is how to manage decorator attributes with the link command:
    *
    * ```ts
-   * const AlightExternalLinkCommand = editor.commands.get( 'link' );
+   * const AlightExternalLinkPluginCommand = editor.commands.get( 'link' );
    *
    * // Adding a new decorator attribute.
-   * AlightExternalLinkCommand.execute( 'http://example.com', {
+   * AlightExternalLinkPluginCommand.execute( 'http://example.com', {
    * 	linkIsExternal: true
    * } );
    *
    * // Removing a decorator attribute from the selection.
-   * AlightExternalLinkCommand.execute( 'http://example.com', {
+   * AlightExternalLinkPluginCommand.execute( 'http://example.com', {
    * 	linkIsExternal: false
    * } );
    *
    * // Adding multiple decorator attributes at the same time.
-   * AlightExternalLinkCommand.execute( 'http://example.com', {
+   * AlightExternalLinkPluginCommand.execute( 'http://example.com', {
    * 	linkIsExternal: true,
    * 	linkIsDownloadable: true,
    * } );
    *
    * // Removing and adding decorator attributes at the same time.
-   * AlightExternalLinkCommand.execute( 'http://example.com', {
+   * AlightExternalLinkPluginCommand.execute( 'http://example.com', {
    * 	linkIsExternal: false,
    * 	linkFoo: true,
    * 	linkIsDownloadable: false,
@@ -132,11 +132,11 @@ export default class AlightExternalLinkCommand extends Command {
    *
    * **Note**: If the decorator attribute name is not specified, its state remains untouched.
    *
-   * **Note**: {@link module:link/AlightExternalLinkUnlinkCommand~AlightExternalLinkUnlinkCommand#execute `AlightExternalLinkUnlinkCommand#execute()`} removes all
+   * **Note**: {@link module:link/AlightExternalLinkPluginUnlinkCommand~AlightExternalLinkPluginUnlinkCommand#execute `AlightExternalLinkPluginUnlinkCommand#execute()`} removes all
    * decorator attributes.
    *
    * @fires execute
-   * @param href AlightExternalLink destination.
+   * @param href AlightExternalLinkPlugin destination.
    * @param manualDecoratorIds The information about manual decorator attributes to be applied or removed upon execution.
    */
   public override execute(href: string, manualDecoratorIds: Record<string, boolean> = {}): void {
@@ -269,7 +269,7 @@ export default class AlightExternalLinkCommand extends Command {
     const selection = model.document.selection;
     const selectedElement = selection.getSelectedElement();
 
-    // A check for the `AlightExternalLinkImage` plugin. If the selection contains an element, get values from the element.
+    // A check for the `AlightExternalLinkPluginImage` plugin. If the selection contains an element, get values from the element.
     // Currently the selection reads attributes from text nodes only. See #7429 and #7465.
     if (isLinkableElement(selectedElement, model.schema)) {
       return selectedElement.getAttribute(decoratorName) as boolean | undefined;

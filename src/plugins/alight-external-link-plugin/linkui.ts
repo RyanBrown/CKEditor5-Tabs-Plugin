@@ -27,8 +27,8 @@ import { isWidget } from '@ckeditor/ckeditor5-widget';
 
 import LinkFormView, { type LinkFormValidatorCallback } from './ui/linkformview';
 import LinkActionsView from './ui/linkactionsview';
-import type AlightExternalLinkCommand from './linkcommand';
-import type AlightExternalLinkUnlinkCommand from './unlinkcommand';
+import type AlightExternalLinkPluginCommand from './linkcommand';
+import type AlightExternalLinkPluginUnlinkCommand from './unlinkcommand';
 import {
   addLinkProtocolIfApplicable,
   isLinkElement,
@@ -48,7 +48,7 @@ const VISUAL_SELECTION_MARKER_NAME = 'alight-external-link-ui';
  * It uses the
  * {@link module:ui/panel/balloon/contextualballoon~ContextualBalloon contextual balloon plugin}.
  */
-export default class AlightExternalLinkUI extends Plugin {
+export default class AlightExternalLinkPluginUI extends Plugin {
   /**
    * The actions view displayed inside of the balloon.
    */
@@ -80,7 +80,7 @@ export default class AlightExternalLinkUI extends Plugin {
    * @inheritDoc
    */
   public static get pluginName() {
-    return 'AlightExternalLinkUI' as const;
+    return 'AlightExternalLinkPluginUI' as const;
   }
 
   /**
@@ -187,7 +187,7 @@ export default class AlightExternalLinkUI extends Plugin {
   private _createLinkDialog(): CkAlightModalDialog {
     const editor = this.editor;
     const t = editor.t;
-    const linkCommand = editor.commands.get('alight-external-link') as AlightExternalLinkCommand;
+    const linkCommand = editor.commands.get('alight-external-link') as AlightExternalLinkPluginCommand;
     const validators = getFormValidators(editor);
 
     const dialog = new CkAlightModalDialog({
@@ -393,8 +393,8 @@ export default class AlightExternalLinkUI extends Plugin {
       editor.config.get('link'),
       createBookmarkCallbacks(editor)
     );
-    const linkCommand = editor.commands.get('alight-external-link') as AlightExternalLinkCommand;
-    const unlinkCommand = editor.commands.get('alight-external-unlink') as AlightExternalLinkUnlinkCommand;
+    const linkCommand = editor.commands.get('alight-external-link') as AlightExternalLinkPluginCommand;
+    const unlinkCommand = editor.commands.get('alight-external-unlink') as AlightExternalLinkPluginUnlinkCommand;
 
     actionsView.bind('href').to(linkCommand, 'value');
     actionsView.editButtonView.bind('isEnabled').to(linkCommand);
@@ -431,7 +431,7 @@ export default class AlightExternalLinkUI extends Plugin {
    */
   private _createFormView(): LinkFormView & ViewWithCssTransitionDisabler {
     const editor = this.editor;
-    const linkCommand = editor.commands.get('alight-external-link') as AlightExternalLinkCommand;
+    const linkCommand = editor.commands.get('alight-external-link') as AlightExternalLinkPluginCommand;
     const formView = new (CssTransitionDisablerMixin(LinkFormView))(editor.locale, linkCommand, getFormValidators(editor)) as any;
 
     formView.urlInputView.fieldView.bind('value').to(linkCommand, 'value');
@@ -473,13 +473,13 @@ export default class AlightExternalLinkUI extends Plugin {
   }
 
   /**
-   * Creates a toolbar AlightExternalLink button. Clicking this button will show
+   * Creates a toolbar AlightExternalLinkPlugin button. Clicking this button will show
    * a {@link #_balloon} attached to the selection.
    */
   private _createToolbarLinkButton(): void {
     const editor = this.editor;
 
-    editor.ui.componentFactory.add('alightExternalLink', () => {
+    editor.ui.componentFactory.add('alightExternalLinkPlugin', () => {
       const button = this._createButton(ButtonView);
 
       button.set({
@@ -489,7 +489,7 @@ export default class AlightExternalLinkUI extends Plugin {
       return button;
     });
 
-    editor.ui.componentFactory.add('menuBar:alightExternalLink', () => {
+    editor.ui.componentFactory.add('menuBar:alightExternalLinkPlugin', () => {
       const button = this._createButton(MenuBarMenuListItemButtonView);
 
       button.set({
@@ -601,7 +601,7 @@ export default class AlightExternalLinkUI extends Plugin {
     }
 
     // Update URL value if editing an existing link
-    const linkCommand = this.editor.commands.get('alight-external-link') as AlightExternalLinkCommand;
+    const linkCommand = this.editor.commands.get('alight-external-link') as AlightExternalLinkPluginCommand;
     const urlInput = this._linkDialog.element?.querySelector('#cka-link-url-input') as HTMLInputElement;
 
     if (urlInput) {
@@ -650,7 +650,7 @@ export default class AlightExternalLinkUI extends Plugin {
     }
 
     const editor = this.editor;
-    const linkCommand = editor.commands.get('alight-external-link') as AlightExternalLinkCommand;
+    const linkCommand = editor.commands.get('alight-external-link') as AlightExternalLinkPluginCommand;
 
     this.formView!.disableCssTransitions();
     this.formView!.resetFormStatus();
@@ -684,7 +684,7 @@ export default class AlightExternalLinkUI extends Plugin {
    * switch buttons responsible for manual decorator handling is restored.
    */
   private _closeFormView(): void {
-    const linkCommand = this.editor.commands.get('alight-external-link') as AlightExternalLinkCommand;
+    const linkCommand = this.editor.commands.get('alight-external-link') as AlightExternalLinkPluginCommand;
 
     // Restore manual decorator states to represent the current model state. This case is important to reset the switch buttons
     // when the user cancels the editing form.
@@ -1020,7 +1020,7 @@ export default class AlightExternalLinkUI extends Plugin {
  * Returns a link element if there's one among the ancestors of the provided `Position`.
  *
  * @param View position to analyze.
- * @returns AlightExternalLink element at the position or null.
+ * @returns AlightExternalLinkPlugin element at the position or null.
  */
 function findLinkElementAncestor(position: ViewPosition): ViewAttributeElement | null {
   return position.getAncestors().find((ancestor): ancestor is ViewAttributeElement => isLinkElement(ancestor)) || null;
@@ -1038,7 +1038,7 @@ function getFormValidators(editor: Editor): Array<LinkFormValidatorCallback> {
   return [
     form => {
       if (!allowCreatingEmptyLinks && !form.url!.length) {
-        return t('AlightExternalLink URL must not be empty.');
+        return t('AlightExternalLinkPlugin URL must not be empty.');
       }
     }
   ];

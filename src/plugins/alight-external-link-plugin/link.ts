@@ -8,29 +8,29 @@
  */
 
 import { Plugin } from '@ckeditor/ckeditor5-core';
-import AlightExternalLinkEditing from './linkediting';
-import AlightExternalLinkUI from './linkui';
-import AlightExternalLinkAutoLink from './autolink';
+import AlightExternalLinkPluginEditing from './linkediting';
+import AlightExternalLinkPluginUI from './linkui';
+import AlightExternalLinkPluginAutoLink from './autolink';
 
 /**
  * The link plugin.
  *
- * This is a "glue" plugin that loads the {@link module:link/linkediting~AlightExternalLinkEditing link editing feature}
- * and {@link module:link/linkui~AlightExternalLinkUI link UI feature}.
+ * This is a "glue" plugin that loads the {@link module:link/linkediting~AlightExternalLinkPluginEditing link editing feature}
+ * and {@link module:link/linkui~AlightExternalLinkPluginUI link UI feature}.
  */
-export default class AlightExternalLink extends Plugin {
+export default class AlightExternalLinkPlugin extends Plugin {
   /**
    * @inheritDoc
    */
   public static get requires() {
-    return [AlightExternalLinkEditing, AlightExternalLinkUI, AlightExternalLinkAutoLink] as const;
+    return [AlightExternalLinkPluginEditing, AlightExternalLinkPluginUI, AlightExternalLinkPluginAutoLink] as const;
   }
 
   /**
    * @inheritDoc
    */
   public static get pluginName() {
-    return 'AlightExternalLink' as const;
+    return 'AlightExternalLinkPlugin' as const;
   }
 
   /**

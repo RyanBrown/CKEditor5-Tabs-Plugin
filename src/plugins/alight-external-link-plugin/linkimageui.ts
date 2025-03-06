@@ -4,7 +4,7 @@
  */
 
 /**
- * @module link/AlightExternalLinkImageui
+ * @module link/AlightExternalLinkPluginImageui
  */
 
 import { ButtonView } from '@ckeditor/ckeditor5-ui';
@@ -17,9 +17,9 @@ import type {
 
 import type { ImageUtils } from '@ckeditor/ckeditor5-image';
 
-import AlightExternalLinkUI from './linkui';
-import AlightExternalLinkEditing from './linkediting';
-import type AlightExternalLinkCommand from './linkcommand';
+import AlightExternalLinkPluginUI from './linkui';
+import AlightExternalLinkPluginEditing from './linkediting';
+import type AlightExternalLinkPluginCommand from './linkcommand';
 
 import { LINK_KEYSTROKE } from './utils';
 
@@ -28,22 +28,22 @@ import linkIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 /**
  * The link image UI plugin.
  *
- * This plugin provides the `'AlightExternalLinkImage'` button that can be displayed in the {@link module:image/imagetoolbar~ImageToolbar}.
+ * This plugin provides the `'AlightExternalLinkPluginImage'` button that can be displayed in the {@link module:image/imagetoolbar~ImageToolbar}.
  * It can be used to wrap images in links.
  */
-export default class AlightExternalLinkImageUI extends Plugin {
+export default class AlightExternalLinkPluginImageUI extends Plugin {
   /**
    * @inheritDoc
    */
   public static get requires() {
-    return [AlightExternalLinkEditing, AlightExternalLinkUI, 'ImageBlockEditing'] as const;
+    return [AlightExternalLinkPluginEditing, AlightExternalLinkPluginUI, 'ImageBlockEditing'] as const;
   }
 
   /**
    * @inheritDoc
    */
   public static get pluginName() {
-    return 'AlightExternalLinkImageUI' as const;
+    return 'AlightExternalLinkPluginImageUI' as const;
   }
 
   /**
@@ -65,34 +65,34 @@ export default class AlightExternalLinkImageUI extends Plugin {
         // Prevent browser navigation when clicking a linked image.
         data.preventDefault();
 
-        // Block the `AlightExternalLinkUI` plugin when an image was clicked.
+        // Block the `AlightExternalLinkPluginUI` plugin when an image was clicked.
         // In such a case, we'd like to display the image toolbar.
         evt.stop();
       }
     }, { priority: 'high' });
 
-    this._createToolbarAlightExternalLinkImageButton();
+    this._createToolbarAlightExternalLinkPluginImageButton();
   }
 
   /**
-   * Creates a `AlightExternalLinkImageUI` button view.
+   * Creates a `AlightExternalLinkPluginImageUI` button view.
    *
-   * Clicking this button shows a {@link module:link/linkui~AlightExternalLinkUI#_balloon} attached to the selection.
-   * When an image is already linked, the view shows {@link module:link/linkui~AlightExternalLinkUI#actionsView} or
-   * {@link module:link/linkui~AlightExternalLinkUI#formView} if it is not.
+   * Clicking this button shows a {@link module:link/linkui~AlightExternalLinkPluginUI#_balloon} attached to the selection.
+   * When an image is already linked, the view shows {@link module:link/linkui~AlightExternalLinkPluginUI#actionsView} or
+   * {@link module:link/linkui~AlightExternalLinkPluginUI#formView} if it is not.
    */
-  private _createToolbarAlightExternalLinkImageButton(): void {
+  private _createToolbarAlightExternalLinkPluginImageButton(): void {
     const editor = this.editor;
     const t = editor.t;
 
-    editor.ui.componentFactory.add('AlightExternalLinkImage', locale => {
+    editor.ui.componentFactory.add('AlightExternalLinkPluginImage', locale => {
       const button = new ButtonView(locale);
-      const plugin = editor.plugins.get('AlightExternalLinkUI');
-      const linkCommand = editor.commands.get('alight-external-link') as AlightExternalLinkCommand;
+      const plugin = editor.plugins.get('AlightExternalLinkPluginUI');
+      const linkCommand = editor.commands.get('alight-external-link') as AlightExternalLinkPluginCommand;
 
       button.set({
         isEnabled: true,
-        label: t('AlightExternalLink image'),
+        label: t('AlightExternalLinkPlugin image'),
         icon: linkIcon,
         keystroke: LINK_KEYSTROKE,
         tooltip: true,
@@ -103,7 +103,7 @@ export default class AlightExternalLinkImageUI extends Plugin {
       button.bind('isEnabled').to(linkCommand, 'isEnabled');
       button.bind('isOn').to(linkCommand, 'value', value => !!value);
 
-      // Show the actionsView or formView (both from AlightExternalLinkUI) on button click depending on whether the image is linked already.
+      // Show the actionsView or formView (both from AlightExternalLinkPluginUI) on button click depending on whether the image is linked already.
       this.listenTo(button, 'execute', () => {
         if (this._isSelectedLinkedImage(editor.model.document.selection)) {
           plugin._addActionsView();

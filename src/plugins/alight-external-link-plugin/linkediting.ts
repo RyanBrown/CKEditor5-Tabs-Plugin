@@ -30,8 +30,8 @@ import {
 } from '@ckeditor/ckeditor5-clipboard';
 import { keyCodes, env } from '@ckeditor/ckeditor5-utils';
 
-import AlightExternalLinkCommand from './linkcommand';
-import AlightExternalLinkUnlinkCommand from './unlinkcommand';
+import AlightExternalLinkPluginCommand from './linkcommand';
+import AlightExternalLinkPluginUnlinkCommand from './unlinkcommand';
 import ManualDecorator from './utils/manualdecorator';
 import {
   createLinkElement,
@@ -58,12 +58,12 @@ const EXTERNAL_LINKS_REGEXP = /^(https?:)?\/\//;
  * It introduces the `alightExternalLinkHref="url"` attribute in the model which renders to the view as a `<a href="url">` element
  * as well as `'link'` and `'unlink'` commands.
  */
-export default class AlightExternalLinkEditing extends Plugin {
+export default class AlightExternalLinkPluginEditing extends Plugin {
   /**
    * @inheritDoc
    */
   public static get pluginName() {
-    return 'AlightExternalLinkEditing' as const;
+    return 'AlightExternalLinkPluginEditing' as const;
   }
 
   /**
@@ -128,8 +128,8 @@ export default class AlightExternalLinkEditing extends Plugin {
       });
 
     // Create linking commands.
-    editor.commands.add('alight-external-link', new AlightExternalLinkCommand(editor));
-    editor.commands.add('alight-external-unlink', new AlightExternalLinkUnlinkCommand(editor));
+    editor.commands.add('alight-external-link', new AlightExternalLinkPluginCommand(editor));
+    editor.commands.add('alight-external-unlink', new AlightExternalLinkPluginUnlinkCommand(editor));
 
     const linkDecorators = getLocalizedDecorators(editor.t, normalizeDecorators(editor.config.get('link.decorators')));
 
@@ -167,8 +167,8 @@ export default class AlightExternalLinkEditing extends Plugin {
   private _enableAutomaticDecorators(automaticDecoratorDefinitions: Array<NormalizedLinkDecoratorAutomaticDefinition>): void {
     const editor = this.editor;
     // Store automatic decorators in the command instance as we do the same with manual decorators.
-    // Thanks to that, `AlightExternalLinkImageEditing` plugin can re-use the same definitions.
-    const command = editor.commands.get('alight-external-link') as AlightExternalLinkCommand;
+    // Thanks to that, `AlightExternalLinkPluginImageEditing` plugin can re-use the same definitions.
+    const command = editor.commands.get('alight-external-link') as AlightExternalLinkPluginCommand;
     const automaticDecorators = command.automaticDecorators;
 
     // Adds a default decorator for external links.
@@ -194,7 +194,7 @@ export default class AlightExternalLinkEditing extends Plugin {
   /**
    * Processes an array of configured {@link module:link/linkconfig~LinkDecoratorManualDefinition manual decorators},
    * transforms them into {@link module:link/utils/manualdecorator~ManualDecorator} instances and stores them in the
-   * {@link module:link/AlightExternalLinkCommand~AlightExternalLinkCommand#manualDecorators} collection (a model for manual decorators state).
+   * {@link module:link/AlightExternalLinkPluginCommand~AlightExternalLinkPluginCommand#manualDecorators} collection (a model for manual decorators state).
    *
    * Also registers an {@link module:engine/conversion/downcasthelpers~DowncastHelpers#attributeToElement attribute-to-element}
    * converter for each manual decorator and extends the {@link module:engine/model/schema~Schema model's schema}
@@ -206,7 +206,7 @@ export default class AlightExternalLinkEditing extends Plugin {
     }
 
     const editor = this.editor;
-    const command = editor.commands.get('alight-external-link') as AlightExternalLinkCommand;
+    const command = editor.commands.get('alight-external-link') as AlightExternalLinkPluginCommand;
     const manualDecorators = command.manualDecorators;
 
     manualDecoratorDefinitions.forEach(decoratorDefinition => {
@@ -220,7 +220,7 @@ export default class AlightExternalLinkEditing extends Plugin {
       editor.conversion.for('downcast').attributeToElement({
         model: decorator.id,
         view: (manualDecoratorValue, { writer, schema }, { item }) => {
-          // Manual decorators for block links are handled e.g. in AlightExternalLinkImageEditing.
+          // Manual decorators for block links are handled e.g. in AlightExternalLinkPluginImageEditing.
           if (!(item.is('selection') || schema.isInline(item))) {
             return;
           }
@@ -304,7 +304,7 @@ export default class AlightExternalLinkEditing extends Plugin {
 
     // Open link on Alt+Enter.
     this.listenTo<ViewDocumentKeyDownEvent>(viewDocument, 'keydown', (evt, data) => {
-      const command = editor.commands.get('alight-external-link') as AlightExternalLinkCommand;
+      const command = editor.commands.get('alight-external-link') as AlightExternalLinkPluginCommand;
       const url = command.value;
       const shouldOpen = !!url && data.keyCode === keyCodes.enter && data.altKey;
 

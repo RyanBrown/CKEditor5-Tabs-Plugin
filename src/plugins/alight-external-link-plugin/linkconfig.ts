@@ -10,12 +10,12 @@
 import type { ArrayOrItem } from '@ckeditor/ckeditor5-utils';
 
 /**
- * The configuration of the {@link module:link/link~AlightExternalLink link feature}.
+ * The configuration of the {@link module:link/link~AlightExternalLinkPlugin link feature}.
  *
  * ```ts
  * ClassicEditor
  * 	.create( editorElement, {
- * 		link:  ... // AlightExternalLink feature configuration.
+ * 		link:  ... // AlightExternalLinkPlugin feature configuration.
  * 	} )
  * 	.then( ... )
  * 	.catch( ... );
@@ -131,7 +131,7 @@ export interface LinkConfig {
    * * {@link module:link/linkconfig~LinkDecoratorManualDefinition Manual} &ndash; They allow users to control link attributes
    * individually, using the editor UI.
    *
-   * AlightExternalLink decorators are defined as objects with key-value pairs, where the key is the name provided for a given decorator and the
+   * AlightExternalLinkPlugin decorators are defined as objects with key-value pairs, where the key is the name provided for a given decorator and the
    * value is the decorator definition.
    *
    * The name of the decorator also corresponds to the {@glink framework/architecture/editing-engine#text-attributes text
@@ -221,7 +221,7 @@ export type LinkDecoratorDefinition = LinkDecoratorAutomaticDefinition | LinkDec
 export interface LinkDecoratorAutomaticDefinition {
 
   /**
-   * AlightExternalLink decorator type. It is `'automatic'` for all automatic decorators.
+   * AlightExternalLinkPlugin decorator type. It is `'automatic'` for all automatic decorators.
    */
   mode: 'automatic';
 
@@ -275,7 +275,7 @@ export interface LinkDecoratorAutomaticDefinition {
 export interface LinkDecoratorManualDefinition {
 
   /**
-   * AlightExternalLink decorator type. It is `'manual'` for all manual decorators.
+   * AlightExternalLinkPlugin decorator type. It is `'manual'` for all manual decorators.
    */
   mode: 'manual';
 

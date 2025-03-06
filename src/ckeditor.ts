@@ -78,7 +78,7 @@ import AlightTabsPlugin from './plugins/alight-tabs-plugin/alight-tabs-plugin';
 // import AlightExistingDocumentLinkPlugin from './plugins/alight-existing-document-link-plugin/alight-existing-document-link-plugin';
 // import AlightEmailLinkPlugin from './plugins/alight-email-link-plugin/alight-email-link-plugin';
 import AlightLink from './plugins/alight-link/src/link';
-import AlightExternalLink from './plugins/alight-external-link-plugin/link';
+import AlightExternalLinkPlugin from './plugins/alight-external-link-plugin/link';
 import AlightEmailLinkPlugin from './plugins/alight-email-link-plugin/link';
 
 // Import custom styles for headings, style definitions and custom plugins
@@ -209,7 +209,7 @@ class Editor extends ClassicEditor {
     // AlightExistingDocumentLinkPlugin,
     // AlightEmailLinkPlugin,
     AlightLink,
-    AlightExternalLink,
+    AlightExternalLinkPlugin,
     AlightEmailLinkPlugin,
   ];
 
@@ -272,7 +272,7 @@ class Editor extends ClassicEditor {
         // 'alightExistingDocumentLinkPlugin',
         // 'alightNewDocumentLinkPlugin',
         'alightLink',
-        'alightExternalLink',
+        'alightExternalLinkPlugin',
         'alightEmailLinkPlugin',
       ],
       shouldNotGroupWhenFull: true,

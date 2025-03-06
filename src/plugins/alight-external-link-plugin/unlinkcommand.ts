@@ -4,19 +4,19 @@
  */
 
 /**
- * @module link/AlightExternalLinkUnlinkCommand
+ * @module link/AlightExternalLinkPluginUnlinkCommand
  */
 
 import { Command } from '@ckeditor/ckeditor5-core';
 import { findAttributeRange } from '@ckeditor/ckeditor5-typing';
 
-import type AlightExternalLinkCommand from './linkcommand';
+import type AlightExternalLinkPluginCommand from './linkcommand';
 import { isLinkableElement } from './utils';
 
 /**
- * The unlink command. It is used by the {@link module:link/link~AlightExternalLink link plugin}.
+ * The unlink command. It is used by the {@link module:link/link~AlightExternalLinkPlugin link plugin}.
  */
-export default class AlightExternalLinkUnlinkCommand extends Command {
+export default class AlightExternalLinkPluginUnlinkCommand extends Command {
   /**
    * @inheritDoc
    */
@@ -25,7 +25,7 @@ export default class AlightExternalLinkUnlinkCommand extends Command {
     const selection = model.document.selection;
     const selectedElement = selection.getSelectedElement();
 
-    // A check for any integration that allows linking elements (e.g. `AlightExternalLinkImage`).
+    // A check for any integration that allows linking elements (e.g. `AlightExternalLinkPluginImage`).
     // Currently the selection reads attributes from text nodes only. See #7429 and #7465.
     if (isLinkableElement(selectedElement, model.schema)) {
       this.isEnabled = model.schema.checkAttribute(selectedElement, 'alightExternalLinkHref');
@@ -51,7 +51,7 @@ export default class AlightExternalLinkUnlinkCommand extends Command {
     const editor = this.editor;
     const model = this.editor.model;
     const selection = model.document.selection;
-    const linkCommand = editor.commands.get('alight-external-link') as AlightExternalLinkCommand | undefined;
+    const linkCommand = editor.commands.get('alight-external-link') as AlightExternalLinkPluginCommand | undefined;
 
     model.change(writer => {
       // Get ranges to unlink.

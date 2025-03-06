@@ -4,7 +4,7 @@
  */
 
 /**
- * @module link/AlightExternalLinkImageediting
+ * @module link/AlightExternalLinkPluginImageediting
 */
 
 import {
@@ -23,9 +23,9 @@ import {
 } from '@ckeditor/ckeditor5-engine';
 import { toMap } from '@ckeditor/ckeditor5-utils';
 
-import AlightExternalLinkEditing from './linkediting';
+import AlightExternalLinkPluginEditing from './linkediting';
 import type ManualDecorator from './utils/manualdecorator';
-import type AlightExternalLinkCommand from './linkcommand';
+import type AlightExternalLinkPluginCommand from './linkcommand';
 
 import type { ImageUtils } from '@ckeditor/ckeditor5-image';
 
@@ -35,19 +35,19 @@ import type { ImageUtils } from '@ckeditor/ckeditor5-image';
  * It accepts the `alightExternalLinkHref="url"` attribute in the model for the {@link module:image/image~Image `<imageBlock>`} element
  * which allows linking images.
  */
-export default class AlightExternalLinkImageEditing extends Plugin {
+export default class AlightExternalLinkPluginImageEditing extends Plugin {
   /**
    * @inheritDoc
    */
   public static get requires() {
-    return ['ImageEditing', 'ImageUtils', AlightExternalLinkEditing] as const;
+    return ['ImageEditing', 'ImageUtils', AlightExternalLinkPluginEditing] as const;
   }
 
   /**
    * @inheritDoc
    */
   public static get pluginName() {
-    return 'AlightExternalLinkImageEditing' as const;
+    return 'AlightExternalLinkPluginImageEditing' as const;
   }
 
   /**
@@ -71,7 +71,7 @@ export default class AlightExternalLinkImageEditing extends Plugin {
     editor.conversion.for('upcast').add(upcastLink(editor));
     editor.conversion.for('downcast').add(downcastImageLink(editor));
 
-    // Definitions for decorators are provided by the `link` command and the `AlightExternalLinkEditing` plugin.
+    // Definitions for decorators are provided by the `link` command and the `AlightExternalLinkPluginEditing` plugin.
     this._enableAutomaticDecorators();
     this._enableManualDecorators();
   }
@@ -82,7 +82,7 @@ export default class AlightExternalLinkImageEditing extends Plugin {
    */
   private _enableAutomaticDecorators(): void {
     const editor = this.editor;
-    const command = editor.commands.get('alight-external-link') as AlightExternalLinkCommand;
+    const command = editor.commands.get('alight-external-link') as AlightExternalLinkPluginCommand;
     const automaticDecorators = command.automaticDecorators;
 
     if (automaticDecorators.length) {
@@ -96,7 +96,7 @@ export default class AlightExternalLinkImageEditing extends Plugin {
    */
   private _enableManualDecorators(): void {
     const editor = this.editor;
-    const command = editor.commands.get('alight-external-link') as AlightExternalLinkCommand;
+    const command = editor.commands.get('alight-external-link') as AlightExternalLinkPluginCommand;
 
     for (const decorator of command.manualDecorators) {
       if (editor.plugins.has('ImageBlockEditing')) {
@@ -147,7 +147,7 @@ function upcastLink(editor: Editor): (dispatcher: UpcastDispatcher) => void {
         return;
       }
 
-      // There's an image inside an <a> element - we consume it so it won't be picked up by the AlightExternalLink plugin.
+      // There's an image inside an <a> element - we consume it so it won't be picked up by the AlightExternalLinkPlugin plugin.
       const consumableAttributes = { attributes: ['href'] };
 
       // Consume the `href` attribute so the default one will not convert it to $text attribute.

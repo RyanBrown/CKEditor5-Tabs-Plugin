@@ -14,7 +14,7 @@ import { Delete, TextWatcher, getLastTextLine, findAttributeRange, type TextWatc
 import type { EnterCommand, ShiftEnterCommand } from '@ckeditor/ckeditor5-enter';
 
 import { addLinkProtocolIfApplicable, linkHasProtocol } from './utils';
-import AlightExternalLinkEditing from './linkediting';
+import AlightExternalLinkPluginEditing from './linkediting';
 
 const MIN_LINK_LENGTH_WITH_SPACE_AT_END = 4; // Ie: "t.co " (length 5).
 
@@ -70,19 +70,19 @@ const URL_GROUP_IN_MATCH = 2;
 /**
  * The autolink plugin.
  */
-export default class AlightExternalLinkAutoLink extends Plugin {
+export default class AlightExternalLinkPluginAutoLink extends Plugin {
   /**
    * @inheritDoc
    */
   public static get requires() {
-    return [Delete, AlightExternalLinkEditing] as const;
+    return [Delete, AlightExternalLinkPluginEditing] as const;
   }
 
   /**
    * @inheritDoc
    */
   public static get pluginName() {
-    return 'AlightExternalLinkAutoLink' as const;
+    return 'AlightExternalLinkPluginAutoLink' as const;
   }
 
   /**
@@ -158,10 +158,10 @@ export default class AlightExternalLinkAutoLink extends Plugin {
     const model = editor.model;
     const selection = model.document.selection;
     const clipboardPipeline = editor.plugins.get('ClipboardPipeline');
-    const AlightExternalLinkCommand = editor.commands.get('link')!;
+    const AlightExternalLinkPluginCommand = editor.commands.get('link')!;
 
     clipboardPipeline.on('inputTransformation', (evt, data: ClipboardInputTransformationData) => {
-      if (!this.isEnabled || !AlightExternalLinkCommand.isEnabled || selection.isCollapsed || data.method !== 'paste') {
+      if (!this.isEnabled || !AlightExternalLinkPluginCommand.isEnabled || selection.isCollapsed || data.method !== 'paste') {
         // Abort if we are disabled or the selection is collapsed.
         return;
       }
@@ -186,7 +186,7 @@ export default class AlightExternalLinkAutoLink extends Plugin {
       if (matches && matches[2] === newLink) {
         model.change(writer => {
           this._selectEntireLinks(writer, selectedRange);
-          AlightExternalLinkCommand.execute(newLink);
+          AlightExternalLinkPluginCommand.execute(newLink);
         });
 
         evt.stop();

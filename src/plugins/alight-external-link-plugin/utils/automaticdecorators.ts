@@ -59,7 +59,7 @@ export default class AutomaticDecorators {
           return;
         }
 
-        // Automatic decorators for block links are handled e.g. in AlightExternalLinkImageEditing.
+        // Automatic decorators for block links are handled e.g. in AlightExternalLinkPluginImageEditing.
         if (!(data.item.is('selection') || conversionApi.schema.isInline(data.item))) {
           return;
         }
