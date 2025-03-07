@@ -1,0 +1,46 @@
+// src/plugins/alight-email-link-plugin/styles/alight-email-link-plugin.scss
+@use './../../../styles/mixins' as mixins;
+
+.cka-external-link-content {
+  padding: var(--spacing-xl) var(--spacing-xl) 0;
+}
+
+
+.cka-prefix-input {
+  align-items: center;
+  border-radius: 0;
+  border: 1px solid var(--neutral-dove-gray);
+  display: flex;
+  width: 100%;
+
+  .cka-url-prefix-text {
+    background-color: var(--gray-100);
+    border-right: 1px solid var(--neutral-dove-gray);
+    color: var(--neutral-steel);
+    font-family: monospace;
+    min-width: mixins.toRem(100);
+    padding: mixins.toRem(6) mixins.toRem(16);
+    text-align: right;
+    user-select: none;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+
+    &.unsecure {
+      color: #856404;
+      background-color: var(--warning-background);
+    }
+  }
+
+  .cka-prefix-input-text {
+    appearance: none;
+    background: var(--neutral-white);
+    border: none;
+    color: var(--gray-700);
+    flex-grow: 1;
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-base);
+    outline: none;
+    padding: mixins.toRem(9) mixins.toRem(16);
+    transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
+    width: 100%;
+  }
+}
