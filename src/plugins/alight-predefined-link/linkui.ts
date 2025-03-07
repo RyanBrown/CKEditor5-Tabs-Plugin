@@ -19,14 +19,11 @@ import type AlightPredefinedLinkCommand from './linkcommand';
 import type AlightExternalUnlinkCommand from './unlinkcommand';
 import { addLinkProtocolIfApplicable, isLinkElement, LINK_KEYSTROKE } from './utils';
 import CkAlightModalDialog from './../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
-import type { CkAlightCheckbox } from './../ui-components/alight-checkbox-component/alight-checkbox-component';
 import './../ui-components/alight-checkbox-component/alight-checkbox-component';
 
 import linkIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 
 const VISUAL_SELECTION_MARKER_NAME = 'alight-predefined-link-ui';
-// URL regex that rejects mailto: links
-const URL_REGEX = /^(?!mailto:)(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/;
 
 /**
  * The link UI plugin. It introduces the `'link'` and `'unlink'` buttons and support for the <kbd>Ctrl+K</kbd> keystroke.
@@ -383,30 +380,12 @@ export default class AlightPredefinedLinkUI extends Plugin {
   }
 
   /**
-   * Validates a URL, ensuring it's not an email link
-   */
-  private _validateURL(url: string): boolean {
-    if (!url || url.trim() === '') {
-      return false;
-    }
-
-    // Reject if it contains mailto:
-    if (url.toLowerCase().includes('mailto:')) {
-      return false;
-    }
-
-    return URL_REGEX.test(url);
-  }
-
-  /**
    * Shows the modal dialog for link editing.
    */
   private _showUI(isEditing: boolean = false): void {
     const editor = this.editor;
     const t = editor.t;
     const linkCommand = editor.commands.get('alight-predefined-link') as AlightPredefinedLinkCommand;
-    const defaultProtocol = editor.config.get('link.defaultProtocol');
-    const selectedLink = this._getSelectedLinkElement();
 
     // Create modal if it doesn't exist
     if (!this._modalDialog) {
@@ -423,46 +402,6 @@ export default class AlightPredefinedLinkUI extends Plugin {
       // Handle Save button click
       this._modalDialog.on('buttonClick', (label: string) => {
         if (label === t('Save')) {
-          const urlInput = document.getElementById('cka-link-url-input') as HTMLInputElement;
-          const organizationInput = document.getElementById('cka-link-org-name-input') as HTMLInputElement;
-
-          const urlPrefix = document.getElementById('url-prefix')?.textContent || 'https://';
-          let urlValue = urlInput.value.trim();
-          const organization = organizationInput.value.trim();
-
-          // Don't add the prefix if URL already has a protocol
-          if (!urlValue.startsWith('http://') && !urlValue.startsWith('https://')) {
-            urlValue = urlPrefix + urlValue;
-          }
-
-          // Clear any previous error messages
-          const errorElement = document.getElementById('cka-url-error');
-          if (errorElement) {
-            errorElement.style.display = 'none';
-          }
-
-          // Validate URL
-          if (!this._validateURL(urlValue)) {
-            // Show error message
-            if (errorElement) {
-              if (urlValue.trim() === '') {
-                errorElement.textContent = t('URL address is required');
-              } else if (urlValue.toLowerCase().includes('mailto:')) {
-                errorElement.textContent = t('Email addresses are not allowed. Please enter a web URL.');
-              } else {
-                errorElement.textContent = t('Please enter a valid URL address');
-              }
-              errorElement.style.display = 'block';
-            }
-            // Focus back on the URL input
-            urlInput.focus();
-            return;
-          }
-
-          // Execute the command with the organization as custom data
-          // Pass the organization even if empty to ensure removal of existing organization
-          editor.execute('alight-predefined-link', urlValue, { organization });
-
           // Close the modal
           this._modalDialog!.hide();
         } else if (label === t('Cancel')) {
@@ -478,84 +417,8 @@ export default class AlightPredefinedLinkUI extends Plugin {
     const formHTML = this._createFormHTML(t, isEditing);
     this._modalDialog.setContent(formHTML);
 
-    // Set values if we're editing
-    if (isEditing && linkCommand.value) {
-      setTimeout(() => {
-        const urlInput = document.getElementById('cka-link-url-input') as HTMLInputElement;
-        const organizationInput = document.getElementById('cka-link-org-name-input') as HTMLInputElement;
-        const allowUnsecureCheckbox = document.getElementById('cka-allow-unsecure-urls') as CkAlightCheckbox;
-        const urlPrefixElement = document.getElementById('url-prefix') as HTMLDivElement;
-
-        let url = linkCommand.value || '';
-
-        // Skip if this is an email link (shouldn't happen, but just in case)
-        if (url.toLowerCase().startsWith('mailto:')) {
-          this._modalDialog!.hide();
-          return;
-        }
-
-        // Handle protocols
-        if (url.startsWith('http://')) {
-          url = url.substring(7); // Remove http:// prefix
-          if (allowUnsecureCheckbox) {
-            allowUnsecureCheckbox.checked = true;
-          }
-          if (urlPrefixElement) {
-            urlPrefixElement.textContent = 'http://';
-            urlPrefixElement.classList.add('unsecure');
-          }
-        } else if (url.startsWith('https://')) {
-          url = url.substring(8); // Remove https:// prefix
-        }
-
-        urlInput.value = url;
-
-        // Get organization from the selection - need to extract from text
-        const selectedElement = this._getSelectedLinkElement();
-        if (selectedElement && selectedElement.is('attributeElement')) {
-          const children = Array.from(selectedElement.getChildren());
-          if (children.length > 0) {
-            const textNode = children[0];
-            if (textNode && textNode.is('$text')) {
-              const text = textNode.data || '';
-              const match = text.match(/^(.*?)(?:\s*\(([^)]+)\))?$/);
-              if (match && match[2]) {
-                organizationInput.value = match[2];
-              }
-            }
-          }
-        }
-      }, 50);
-    }
-
     // Show the modal
     this._modalDialog.show();
-
-    // Set up event listener for checkbox changes
-    setTimeout(() => {
-      const urlPrefixElement = document.getElementById('url-prefix') as HTMLDivElement;
-      const allowUnsecureCheckbox = document.getElementById('cka-allow-unsecure-urls') as CkAlightCheckbox;
-
-      // Add event listener for checkbox changes
-      const handleCheckboxChange = () => {
-        const isChecked = allowUnsecureCheckbox.checked;
-        if (isChecked) {
-          urlPrefixElement.textContent = 'http://';
-          urlPrefixElement.classList.add('unsecure');
-        } else {
-          urlPrefixElement.textContent = 'https://';
-          urlPrefixElement.classList.remove('unsecure');
-        }
-      };
-
-      allowUnsecureCheckbox.addEventListener('change', handleCheckboxChange);
-
-      // Focus the URL input
-      const urlInput = document.getElementById('cka-link-url-input') as HTMLInputElement;
-      if (urlInput) {
-        urlInput.focus();
-      }
-    }, 100);
   }
 
   /**
@@ -590,29 +453,7 @@ export default class AlightPredefinedLinkUI extends Plugin {
    */
   private _createFormHTML(t: any, isEditing: boolean): string {
     return `
-      <div class="cka-url-form-container">
-        <div class="cka-url-form-url-container">
-          <label for="cka-link-url-input" class="cka-input-label">${t('URL')}</label>
-          <div class="cka-prefix-input">
-            <div id="url-prefix" class="cka-url-prefix-text">https://</div>
-            <input id="cka-link-url-input" type="text" class="cka-input-text cka-prefix-input-text" placeholder="${t('example.com')}" required/>
-          </div>
-          <div id="cka-url-error" class="cka-error-message" style="display:none;">${t('Please enter a valid web address.')}</div>
-
-          <label for="cka-link-org-name-input" class="cka-input-label mt-3">${t('Organization Name (optional)')}</label>
-          <input id="cka-link-org-name-input" type="text" class="cka-input-text cka-width-100" placeholder="${t('Organization Name')}"/>
-      
-          <div class="cka-checkbox-container mt-3">
-            <cka-checkbox id="cka-allow-unsecure-urls">${t('Allow unsecure HTTP URLs')}</cka-checkbox>
-          </div>
-      
-          <div class="cka-note-text">
-            ${t('Organization Name (optional): Specify the third-party organization to inform users about the link\'s origin.')}
-            <br>
-            ${t('Note: Email addresses are not supported. Please enter web URLs only.')}
-          </div>
-        </div>
-      </div>
+      <h1>Predefined Link Modal</h1>
     `;
   }
 
