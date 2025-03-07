@@ -137,7 +137,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     });
 
     // Register the UI component
-    editor.ui.componentFactory.add('AlightEmailLinkPlugin', locale => {
+    editor.ui.componentFactory.add('alightEmailLinkPlugin', locale => {
       return this._createButton(ButtonView);
     });
   }
@@ -165,7 +165,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
   private _createToolbarLinkButton(): void {
     const editor = this.editor;
 
-    editor.ui.componentFactory.add('menuBar:AlightEmailLinkPlugin', () => {
+    editor.ui.componentFactory.add('menuBar:alightEmailLinkPlugin', () => {
       const button = this._createButton(MenuBarMenuListItemButtonView);
 
       button.set({

@@ -71,9 +71,9 @@ import AlightPastePlugin from './plugins/alight-paste-plugin/alight-paste-plugin
 import AlightPopulationPlugin from './plugins/alight-population-plugin/alight-population-plugin';
 import AlightTabsPlugin from './plugins/alight-tabs-plugin/alight-tabs-plugin';
 
-// import AlightParentLinkPlugin from './plugins/alight-parent-link-plugin/alight-parent-link-plugin';
+import AlightParentLinkPlugin from './plugins/alight-parent-link-plugin/alight-parent-link-plugin';
 // import AlightPredefinedLinkPlugin from './plugins/alight-predefined-link-plugin/alight-predefined-link-plugin';
-// import AlightNewDocumentLinkPlugin from './plugins/alight-new-document-link-plugin/alight-new-document-link-plugin';
+import AlightNewDocumentLinkPlugin from './plugins/alight-new-document-link-plugin/alight-new-document-link-plugin';
 // import AlightExistingDocumentLinkPlugin from './plugins/alight-existing-document-link-plugin/alight-existing-document-link-plugin';
 import AlightLink from './plugins/alight-link/src/link';
 import AlightExternalLinkPlugin from './plugins/alight-external-link-plugin/link';
@@ -200,9 +200,9 @@ class Editor extends ClassicEditor {
     AlightPastePlugin,
     AlightPopulationPlugin,
     AlightTabsPlugin,
-    // AlightParentLinkPlugin,
+    AlightParentLinkPlugin,
     // AlightPredefinedLinkPlugin,
-    // AlightNewDocumentLinkPlugin,
+    AlightNewDocumentLinkPlugin,
     // AlightExistingDocumentLinkPlugin,
     AlightLink,
     AlightExternalLinkPlugin,
@@ -261,10 +261,10 @@ class Editor extends ClassicEditor {
         'alightPastePlugin',
         'alightImagePlugin',
         'alightPopulationPlugin',
-        // 'alightParentLinkPlugin',
-        // 'alightPredefinedLinkPlugin',
-        // 'alightExistingDocumentLinkPlugin',
-        // 'alightNewDocumentLinkPlugin',
+        'alightParentLinkPlugin',
+        'alightPredefinedLinkPlugin',
+        'alightExistingDocumentLinkPlugin',
+        'alightNewDocumentLinkPlugin',
         'alightLink',
         'alightExternalLinkPlugin',
         'alightEmailLinkPlugin',

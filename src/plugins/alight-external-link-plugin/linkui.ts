@@ -140,7 +140,7 @@ export default class AlightExternalLinkPluginUI extends Plugin {
     });
 
     // Register the UI component
-    editor.ui.componentFactory.add('AlightExternalLinkPlugin', locale => {
+    editor.ui.componentFactory.add('alightExternalLinkPlugin', locale => {
       return this._createButton(ButtonView);
     });
   }
@@ -168,7 +168,7 @@ export default class AlightExternalLinkPluginUI extends Plugin {
   private _createToolbarLinkButton(): void {
     const editor = this.editor;
 
-    editor.ui.componentFactory.add('menuBar:AlightExternalLinkPlugin', () => {
+    editor.ui.componentFactory.add('menuBar:alightExternalLinkPlugin', () => {
       const button = this._createButton(MenuBarMenuListItemButtonView);
 
       button.set({

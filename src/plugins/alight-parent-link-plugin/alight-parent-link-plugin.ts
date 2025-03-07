@@ -14,31 +14,64 @@ import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 import { Locale } from '@ckeditor/ckeditor5-utils';
 import { ModalPluginInterface } from './../interfaces/custom-plugin-interfaces';
 
-export default class AlightParentLinkPluginUI extends Plugin {
+export default class AlightParentLinkPlugin extends Plugin {
+  // Define link plugins configuration in a single place
+  // To disable a plugin, comment out its entry
+  private static readonly LINK_PLUGINS = [
+    {
+      name: 'AlightExternalLinkPlugin',
+      uiName: 'AlightExternalLinkPluginUI',
+      command: 'alightExternalLinkPlugin',
+      label: 'External Site',
+      order: 1
+    },
+    // {
+    //   name: 'AlightPredefinedLinkPlugin',
+    //   uiName: 'AlightPredefinedLinkPluginUI',
+    //   command: 'alightPredefinedLinkPlugin',
+    //   label: 'Predefined Link',
+    //   order: 2
+    // },
+    {
+      name: 'AlightEmailLinkPlugin',
+      uiName: 'AlightEmailLinkPluginUI',
+      command: 'alightEmailLinkPlugin',
+      label: 'Email',
+      order: 3
+    },
+    // {
+    //   name: 'AlightExistingDocumentLinkPlugin',
+    //   uiName: 'AlightExistingDocumentLinkPluginUI',
+    //   command: 'alightExistingDocumentLinkPlugin',
+    //   label: 'Existing Document',
+    //   order: 4
+    // },
+    // {
+    //   name: 'AlightNewDocumentLinkPlugin',
+    //   uiName: 'AlightNewDocumentLinkPluginUI',
+    //   command: 'alightNewDocumentLinkPlugin',
+    //   label: 'New Document',
+    //   order: 5
+    // }
+  ];
+
   // Define the plugin name for CKEditor registration
   static get pluginName() {
-    return 'AlightParentLinkPluginUI';
+    return 'AlightParentLinkPlugin';
   }
 
   // Specify the required child plugins that this parent plugin depends on
   static get requires() {
-    return [
-      'AlightEmailLinkPlugin',
-      'AlightEmailLinkPluginUI',
-      'AlightExistingDocumentLinkPlugin',
-      'AlightExistingDocumentLinkPluginUI',
-      'AlightGenericLinkPlugin',
-      'AlightGenericLinkPluginUI',
-      'AlightNewDocumentLinkPlugin',
-      'AlightNewDocumentLinkPluginUI',
-      'AlightPredefinedLinkPlugin',
-      'AlightPredefinedLinkPluginUI',
-    ];
+    // Get both the main plugins and UI plugins
+    const pluginNames = AlightParentLinkPlugin.LINK_PLUGINS.map(plugin => plugin.name);
+    const uiPluginNames = AlightParentLinkPlugin.LINK_PLUGINS.map(plugin => plugin.uiName);
+
+    // Combine and filter out any undefined values
+    return [...pluginNames, ...uiPluginNames].filter(Boolean);
   }
 
   init() {
     const editor = this.editor;
-    const t = editor.t;
 
     // Register the dropdown component factory
     editor.ui.componentFactory.add('alightParentLinkPlugin', (locale) => {
@@ -89,24 +122,24 @@ export default class AlightParentLinkPluginUI extends Plugin {
    */
   private _createListView(locale: Locale | undefined, dropdown: DropdownView): ListView {
     const listView = new ListView(locale);
+    const t = this.editor.t;
 
     // Add header and separator
     listView.items.add(this._createHeaderView(locale));
     listView.items.add(new ListSeparatorView(locale));
 
-    // Define available link types and their configurations
-    // The order of the list is set here
-    const childPlugins = [
-      { label: 'External Site', command: 'alightGenericLinkPlugin', pluginName: 'AlightGenericLinkPluginUI' },
-      { label: 'Predefined Link', command: 'alightPredefinedLinkPlugin', pluginName: 'AlightPredefinedLinkPluginUI' },
-      { label: 'Email', command: 'applyEmailLinkPlugin', pluginName: 'AlightEmailLinkPluginUI' },
-      { label: 'Existing Document', command: 'alightExistingDocumentLinkPlugin', pluginName: 'AlightExistingDocumentLinkPluginUI' },
-      { label: 'New Document', command: 'alightNewDocumentLinkPlugin', pluginName: 'AlightNewDocumentLinkPluginUI' },
-    ];
+    // Sort plugins by order property
+    const sortedPlugins = [...AlightParentLinkPlugin.LINK_PLUGINS].sort((a, b) => a.order - b.order);
 
     // Create list items for each link type
-    childPlugins.forEach((plugin) => {
-      listView.items.add(this._createListItem(locale, plugin, dropdown));
+    sortedPlugins.forEach((plugin) => {
+      // Translate the label
+      const translatedPlugin = {
+        ...plugin,
+        label: t(plugin.label)
+      };
+
+      listView.items.add(this._createListItem(locale, translatedPlugin, dropdown));
     });
 
     return listView;
@@ -140,7 +173,11 @@ export default class AlightParentLinkPluginUI extends Plugin {
    * @param dropdown - The parent dropdown view
    * @returns ListItemView containing the link type button
    */
-  private _createListItem(locale: Locale | undefined, item: { label: string; command: string; pluginName: string }, dropdown: DropdownView): ListItemView {
+  private _createListItem(
+    locale: Locale | undefined,
+    item: { label: string; command: string; name: string; uiName: string },
+    dropdown: DropdownView
+  ): ListItemView {
     const listItem = new ListItemView(locale);
     const button = new ButtonView(locale);
 
@@ -152,8 +189,19 @@ export default class AlightParentLinkPluginUI extends Plugin {
       dropdown.isOpen = false;
 
       try {
-        // Try to get the plugin
-        const plugin = this.editor.plugins.get(item.pluginName) as ModalPluginInterface;
+        // First, try to get the UI plugin which has the showUI method
+        if (item.uiName && this.editor.plugins.has(item.uiName)) {
+          const uiPlugin = this.editor.plugins.get(item.uiName);
+
+          // Check if the UI plugin has a showUI method
+          if (uiPlugin && typeof (uiPlugin as any).showUI === 'function') {
+            (uiPlugin as any).showUI();
+            return;
+          }
+        }
+
+        // If UI plugin doesn't exist or doesn't have showUI, try the main plugin
+        const plugin = this.editor.plugins.get(item.name) as ModalPluginInterface;
 
         // Check if the plugin has a _showModal method
         if (plugin && typeof plugin._showModal === 'function') {
@@ -161,15 +209,15 @@ export default class AlightParentLinkPluginUI extends Plugin {
           return;
         }
 
-        // Fallback to using command if _showModal is not available
+        // Fallback to using command if neither UI method is available
         const command = this.editor.commands.get(item.command);
         if (command) {
           this.editor.execute(item.command);
         } else {
-          console.warn(`Command ${item.command} not found for plugin ${item.pluginName}`);
+          console.warn(`Command ${item.command} not found for plugin ${item.name}`);
         }
       } catch (error) {
-        console.error(`Error showing modal for ${item.pluginName}:`, error);
+        console.error(`Error showing modal for ${item.name}:`, error);
       }
     });
 
@@ -184,7 +232,7 @@ export default class AlightParentLinkPluginUI extends Plugin {
       }
     } catch (e) {
       // If binding fails, keep the button enabled
-      console.warn(`Could not bind button state for ${item.pluginName}`, e);
+      console.warn(`Could not bind button state for ${item.name}`, e);
     }
 
     listItem.children.add(button);
