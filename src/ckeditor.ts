@@ -71,10 +71,12 @@ import AlightPastePlugin from './plugins/alight-paste-plugin/alight-paste-plugin
 import AlightPopulationPlugin from './plugins/alight-population-plugin/alight-population-plugin';
 import AlightTabsPlugin from './plugins/alight-tabs-plugin/alight-tabs-plugin';
 
-import AlightParentLinkPlugin from './plugins/alight-parent-link-plugin/alight-parent-link-plugin';
-// import AlightPredefinedLinkPlugin from './plugins/alight-predefined-link-plugin/alight-predefined-link-plugin';
+// Link Specific plugins
+import AlightParentLinkPlugin from './plugins/alight-parent-link-plugin'; // Use the index file
+import type { LinkPluginConfig } from './plugins/alight-parent-link-plugin'; // Import type
+import AlightPredefinedLinkPlugin from './plugins/alight-predefined-link-plugin/alight-predefined-link-plugin';
 import AlightNewDocumentLinkPlugin from './plugins/alight-new-document-link-plugin/alight-new-document-link-plugin';
-// import AlightExistingDocumentLinkPlugin from './plugins/alight-existing-document-link-plugin/alight-existing-document-link-plugin';
+import AlightExistingDocumentLinkPlugin from './plugins/alight-existing-document-link-plugin/alight-existing-document-link-plugin';
 import AlightLink from './plugins/alight-link/src/link';
 import AlightExternalLinkPlugin from './plugins/alight-external-link-plugin/link';
 import AlightEmailLinkPlugin from './plugins/alight-email-link-plugin/link';
@@ -201,9 +203,9 @@ class Editor extends ClassicEditor {
     AlightPopulationPlugin,
     AlightTabsPlugin,
     AlightParentLinkPlugin,
-    // AlightPredefinedLinkPlugin,
+    AlightPredefinedLinkPlugin,
     AlightNewDocumentLinkPlugin,
-    // AlightExistingDocumentLinkPlugin,
+    AlightExistingDocumentLinkPlugin,
     AlightLink,
     AlightExternalLinkPlugin,
     AlightEmailLinkPlugin,
@@ -262,14 +264,54 @@ class Editor extends ClassicEditor {
         'alightImagePlugin',
         'alightPopulationPlugin',
         'alightParentLinkPlugin',
-        'alightPredefinedLinkPlugin',
-        'alightExistingDocumentLinkPlugin',
-        'alightNewDocumentLinkPlugin',
+        //'alightPredefinedLinkPlugin',
+        //'alightExistingDocumentLinkPlugin',
+        // 'alightNewDocumentLinkPlugin',
         'alightLink',
-        'alightExternalLinkPlugin',
-        'alightEmailLinkPlugin',
+        // 'alightExternalLinkPlugin',
+        // 'alightEmailLinkPlugin',
       ],
       shouldNotGroupWhenFull: true,
+    },
+    // Link plugins configuration - developers can override this
+    alightParentLinkPlugin: {
+      linkPlugins: [
+        {
+          name: 'AlightExternalLinkPlugin',
+          command: 'alight-external-link',
+          label: 'External Site',
+          order: 1,
+          enabled: true
+        },
+        {
+          name: 'AlightEmailLinkPlugin',
+          command: 'alight-email-link',
+          label: 'Email',
+          order: 2,
+          enabled: true
+        },
+        {
+          name: 'AlightPredefinedLinkPlugin',
+          command: 'alightPredefinedLinkPlugin',
+          label: 'Predefined Link',
+          order: 3,
+          enabled: false
+        },
+        {
+          name: 'AlightExistingDocumentLinkPlugin',
+          command: 'alightExistingDocumentLinkPlugin',
+          label: 'Existing Document',
+          order: 4,
+          enabled: false
+        },
+        {
+          name: 'AlightNewDocumentLinkPlugin',
+          command: 'alightNewDocumentLinkPlugin',
+          label: 'New Document',
+          order: 5,
+          enabled: false
+        }
+      ]
     },
     htmlSupport: {
       allow: [

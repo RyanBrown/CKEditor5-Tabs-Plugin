@@ -14,46 +14,88 @@ import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 import { Locale } from '@ckeditor/ckeditor5-utils';
 import { ModalPluginInterface } from './../interfaces/custom-plugin-interfaces';
 
+/**
+ * Interface for a link plugin configuration
+ */
+export interface LinkPluginConfig {
+  name: string;
+  command: string;
+  label: string;
+  order: number;
+  uiName?: string;
+  enabled?: boolean;
+}
+
 export default class AlightParentLinkPlugin extends Plugin {
-  // Define link plugins configuration in a single place
-  // To disable a plugin, comment out its entry
-  private static readonly LINK_PLUGINS = [
+  // Define the default link plugins configuration
+  private static readonly DEFAULT_LINK_PLUGINS: LinkPluginConfig[] = [
     {
       name: 'AlightExternalLinkPlugin',
       uiName: 'AlightExternalLinkPluginUI',
       command: 'alightExternalLinkPlugin',
       label: 'External Site',
-      order: 1
+      order: 1,
+      enabled: true
     },
-    // {
-    //   name: 'AlightPredefinedLinkPlugin',
-    //   uiName: 'AlightPredefinedLinkPluginUI',
-    //   command: 'alightPredefinedLinkPlugin',
-    //   label: 'Predefined Link',
-    //   order: 2
-    // },
+    {
+      name: 'AlightPredefinedLinkPlugin',
+      uiName: 'AlightPredefinedLinkPluginUI',
+      command: 'alightPredefinedLinkPlugin',
+      label: 'Predefined Link',
+      order: 2,
+      enabled: false
+    },
     {
       name: 'AlightEmailLinkPlugin',
       uiName: 'AlightEmailLinkPluginUI',
       command: 'alightEmailLinkPlugin',
       label: 'Email',
-      order: 3
+      order: 3,
+      enabled: true
     },
-    // {
-    //   name: 'AlightExistingDocumentLinkPlugin',
-    //   uiName: 'AlightExistingDocumentLinkPluginUI',
-    //   command: 'alightExistingDocumentLinkPlugin',
-    //   label: 'Existing Document',
-    //   order: 4
-    // },
-    // {
-    //   name: 'AlightNewDocumentLinkPlugin',
-    //   uiName: 'AlightNewDocumentLinkPluginUI',
-    //   command: 'alightNewDocumentLinkPlugin',
-    //   label: 'New Document',
-    //   order: 5
-    // }
+    {
+      name: 'AlightExistingDocumentLinkPlugin',
+      uiName: 'AlightExistingDocumentLinkPluginUI',
+      command: 'alightExistingDocumentLinkPlugin',
+      label: 'Existing Document',
+      order: 4,
+      enabled: false
+    },
+    {
+      name: 'AlightNewDocumentLinkPlugin',
+      uiName: 'AlightNewDocumentLinkPluginUI',
+      command: 'alightNewDocumentLinkPlugin',
+      label: 'New Document',
+      order: 5,
+      enabled: true
+    }
   ];
+
+  // Get the active link plugins from config or use defaults
+  private get linkPlugins(): LinkPluginConfig[] {
+    const editor = this.editor;
+    const userConfig = editor.config.get('alightParentLinkPlugin.linkPlugins') as LinkPluginConfig[] | undefined;
+
+    // If no user config is provided, use the defaults
+    if (!userConfig) {
+      return AlightParentLinkPlugin.DEFAULT_LINK_PLUGINS.filter(plugin => plugin.enabled);
+    }
+
+    // If user provided config, merge it with defaults to ensure all required properties
+    return userConfig.map(userPlugin => {
+      // Find the corresponding default plugin (if any)
+      const defaultPlugin = AlightParentLinkPlugin.DEFAULT_LINK_PLUGINS.find(
+        defaultPlugin => defaultPlugin.name === userPlugin.name
+      );
+
+      // Return merged plugin config with user settings taking precedence
+      return {
+        ...defaultPlugin,  // Default settings as fallback
+        ...userPlugin,     // User settings take precedence
+        enabled: userPlugin.enabled !== false // Enabled by default unless explicitly disabled
+      };
+    }).filter(plugin => plugin.enabled);
+  }
 
   // Define the plugin name for CKEditor registration
   static get pluginName() {
@@ -62,12 +104,12 @@ export default class AlightParentLinkPlugin extends Plugin {
 
   // Specify the required child plugins that this parent plugin depends on
   static get requires() {
-    // Get both the main plugins and UI plugins
-    const pluginNames = AlightParentLinkPlugin.LINK_PLUGINS.map(plugin => plugin.name);
-    const uiPluginNames = AlightParentLinkPlugin.LINK_PLUGINS.map(plugin => plugin.uiName);
-
-    // Combine and filter out any undefined values
-    return [...pluginNames, ...uiPluginNames].filter(Boolean);
+    // This will be populated at runtime based on the config
+    return [...new Set([
+      // Include all possible plugin names and UI names from the defaults
+      ...AlightParentLinkPlugin.DEFAULT_LINK_PLUGINS.map(plugin => plugin.name),
+      ...AlightParentLinkPlugin.DEFAULT_LINK_PLUGINS.map(plugin => plugin.uiName).filter(Boolean)
+    ])];
   }
 
   init() {
@@ -128,8 +170,8 @@ export default class AlightParentLinkPlugin extends Plugin {
     listView.items.add(this._createHeaderView(locale));
     listView.items.add(new ListSeparatorView(locale));
 
-    // Sort plugins by order property
-    const sortedPlugins = [...AlightParentLinkPlugin.LINK_PLUGINS].sort((a, b) => a.order - b.order);
+    // Get the configured link plugins and sort them by order
+    const sortedPlugins = [...this.linkPlugins].sort((a, b) => a.order - b.order);
 
     // Create list items for each link type
     sortedPlugins.forEach((plugin) => {
@@ -175,7 +217,7 @@ export default class AlightParentLinkPlugin extends Plugin {
    */
   private _createListItem(
     locale: Locale | undefined,
-    item: { label: string; command: string; name: string; uiName: string },
+    item: LinkPluginConfig,
     dropdown: DropdownView
   ): ListItemView {
     const listItem = new ListItemView(locale);
@@ -189,7 +231,7 @@ export default class AlightParentLinkPlugin extends Plugin {
       dropdown.isOpen = false;
 
       try {
-        // First, try to get the UI plugin which has the showUI method
+        // First, try to get the UI plugin if available
         if (item.uiName && this.editor.plugins.has(item.uiName)) {
           const uiPlugin = this.editor.plugins.get(item.uiName);
 
@@ -201,11 +243,17 @@ export default class AlightParentLinkPlugin extends Plugin {
         }
 
         // If UI plugin doesn't exist or doesn't have showUI, try the main plugin
-        const plugin = this.editor.plugins.get(item.name) as ModalPluginInterface;
+        const plugin = this.editor.plugins.get(item.name);
 
-        // Check if the plugin has a _showModal method
-        if (plugin && typeof plugin._showModal === 'function') {
-          plugin._showModal();
+        // Check if the plugin has a showUI method
+        if (plugin && typeof (plugin as any).showUI === 'function') {
+          (plugin as any).showUI();
+          return;
+        }
+
+        // Check if the plugin has a _showModal method (for legacy plugins)
+        if (plugin && typeof (plugin as any)._showModal === 'function') {
+          (plugin as any)._showModal();
           return;
         }
 
