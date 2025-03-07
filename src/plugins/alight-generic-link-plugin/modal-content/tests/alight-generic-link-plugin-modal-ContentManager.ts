@@ -1,1 +1,0 @@
-// src/plugins/alight-generic-link-plugin/modal-content/tests/alight-generic-link-plugin-modal-ContentManager.ts
