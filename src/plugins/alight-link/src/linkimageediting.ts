@@ -12,10 +12,10 @@ import {
   type Editor
 } from 'ckeditor5/src/core';
 import {
+  Element,
   Matcher,
   type UpcastElementEvent,
   type Node,
-  type Element,
   type DowncastAttributeEvent,
   type ViewElement,
   type DowncastDispatcher,
@@ -311,7 +311,9 @@ function upcastImageLinkManualDecorator(editor: Editor, decorator: ManualDecorat
       // See the body of the `upcastLink()` function.
       const modelElement = data.modelCursor.nodeBefore as Element || data.modelCursor.parent;
 
-      conversionApi.writer.setAttribute(decorator.id, true, modelElement);
+      if (modelElement instanceof Element) {
+        conversionApi.writer.setAttribute(decorator.id, true, modelElement);
+      }
     }, { priority: 'high' });
     // Using the same priority that `upcastLink()` converter guarantees that the linked image was properly converted.
   };

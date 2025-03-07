@@ -73,10 +73,8 @@ import AlightTabsPlugin from './plugins/alight-tabs-plugin/alight-tabs-plugin';
 
 // import AlightParentLinkPlugin from './plugins/alight-parent-link-plugin/alight-parent-link-plugin';
 // import AlightPredefinedLinkPlugin from './plugins/alight-predefined-link-plugin/alight-predefined-link-plugin';
-// import AlightGenericLinkPlugin from './plugins/alight-generic-link-plugin/alight-generic-link-plugin';
 // import AlightNewDocumentLinkPlugin from './plugins/alight-new-document-link-plugin/alight-new-document-link-plugin';
 // import AlightExistingDocumentLinkPlugin from './plugins/alight-existing-document-link-plugin/alight-existing-document-link-plugin';
-// import AlightEmailLinkPlugin from './plugins/alight-email-link-plugin/alight-email-link-plugin';
 import AlightLink from './plugins/alight-link/src/link';
 import AlightExternalLinkPlugin from './plugins/alight-external-link-plugin/link';
 import AlightEmailLinkPlugin from './plugins/alight-email-link-plugin/link';
@@ -203,11 +201,9 @@ class Editor extends ClassicEditor {
     AlightPopulationPlugin,
     AlightTabsPlugin,
     // AlightParentLinkPlugin,
-    // AlightGenericLinkPlugin,
     // AlightPredefinedLinkPlugin,
     // AlightNewDocumentLinkPlugin,
     // AlightExistingDocumentLinkPlugin,
-    // AlightEmailLinkPlugin,
     AlightLink,
     AlightExternalLinkPlugin,
     AlightEmailLinkPlugin,
@@ -266,9 +262,7 @@ class Editor extends ClassicEditor {
         'alightImagePlugin',
         'alightPopulationPlugin',
         // 'alightParentLinkPlugin',
-        // 'alightGenericLinkPlugin',
         // 'alightPredefinedLinkPlugin',
-        // 'alightEmailLinkPlugin',
         // 'alightExistingDocumentLinkPlugin',
         // 'alightNewDocumentLinkPlugin',
         'alightLink',
