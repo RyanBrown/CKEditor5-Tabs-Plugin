@@ -45,7 +45,7 @@ export default class AlightExternalUnlinkCommand extends Command {
     const editor = this.editor;
     const model = this.editor.model;
     const selection = model.document.selection;
-    const linkCommand = editor.commands.get('alight-email-link') as AlightExternalLinkPluginCommand | undefined;
+    const linkCommand = editor.commands.get('alight-external-link') as AlightExternalLinkPluginCommand | undefined;
 
     model.change(writer => {
       // Get ranges to unlink.
