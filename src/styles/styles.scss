@@ -273,11 +273,6 @@ $spacing-values: (
   width: 50%;
 }
 
-// Predefined and Existing Docs modal class
-.cka-links-container {
-  padding: 0 var(--spacing-l);
-}
-
 // Loading styles
 .cka-loading-container {
   align-items: center;
@@ -302,6 +297,48 @@ $spacing-values: (
 
     100% {
       transform: rotate(360deg);
+    }
+  }
+}
+
+// Predefined and Existing Docs styles
+.cka-link-item {
+  align-items: center;
+  border-bottom: 1px solid var(--gray-400);
+  display: flex;
+  padding: 0;
+  transition: background-color 0.15s;
+
+  &:hover {
+    background-color: var(--neutral-gallery);
+    cursor: pointer;
+  }
+
+  &:last-of-type {
+    border-bottom: none;
+    padding-bottom: 1.75rem;
+  }
+
+  >.radio-container {
+    margin-left: 2rem;
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 1.5rem var(--spacing-xl) 1.5rem .5rem;
+    width: 100%;
+
+    li {
+      &.hide-overflow {
+        box-sizing: border-box;
+        display: block;
+        max-width: 90%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        width: 100%;
+      }
     }
   }
 }

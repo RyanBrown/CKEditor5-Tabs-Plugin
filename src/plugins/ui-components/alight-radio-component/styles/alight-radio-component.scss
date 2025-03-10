@@ -80,6 +80,10 @@ cka-radio-button {
 
     .label-text {
       color: var(--primary);
+
+      &:empty {
+        display: none;
+      }
     }
   }
 
@@ -106,5 +110,9 @@ cka-radio-button {
   // Label text transitions
   .label-text {
     transition: color 0.3s;
+
+    &:empty {
+      display: none;
+    }
   }
 }

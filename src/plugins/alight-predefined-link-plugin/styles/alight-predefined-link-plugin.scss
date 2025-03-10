@@ -8,30 +8,6 @@
   position: relative;
 }
 
-.cka-link-item {
-  align-items: center;
-  border-bottom: 1px solid var(--gray-400);
-  display: flex;
-  padding: 1rem;
-  transition: background-color 0.15s;
-
-  &:hover {
-    background-color: var(--neutral-gallery);
-    cursor: pointer;
-  }
-
-  &:last-of-type {
-    border-bottom: none;
-    padding-bottom: 1.25rem;
-  }
-
-  ul {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-}
-
 .ck.ck-link-actions .ck-button.ck-link-actions__preview.cka-disabled-link-preview .ck-button__label {
   color: var(--neutral-black);
   cursor: default;

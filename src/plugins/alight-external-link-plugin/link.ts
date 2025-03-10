@@ -11,7 +11,7 @@ import { Plugin } from '@ckeditor/ckeditor5-core';
 import AlightExternalLinkPluginEditing from './linkediting';
 import AlightExternalLinkPluginUI from './linkui';
 import AlightExternalLinkPluginAutoLink from './autolink';
-import './styles/styles.scss';
+import './styles/alight-external-link-plugin.scss';
 
 /**
  * The Alight External link plugin.

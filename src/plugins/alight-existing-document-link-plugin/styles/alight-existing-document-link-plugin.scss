@@ -7,27 +7,3 @@
   padding: 0 !important;
   position: relative;
 }
-
-.cka-link-item {
-  align-items: center;
-  border-bottom: 1px solid var(--gray-400);
-  display: flex;
-  padding: 1rem;
-  transition: background-color 0.15s;
-
-  &:hover {
-    background-color: #fafafa;
-    cursor: pointer;
-  }
-
-  &:last-of-type {
-    border-bottom: none;
-    padding-bottom: 1.25rem;
-  }
-
-  ul {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-}

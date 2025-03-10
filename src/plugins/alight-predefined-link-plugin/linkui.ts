@@ -561,7 +561,6 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
     if (!contentElement.querySelector('#links-container')) {
       const linksContainer = document.createElement('div');
       linksContainer.id = 'links-container';
-      linksContainer.className = 'cka-links-container';
       contentElement.appendChild(linksContainer);
     }
 
@@ -591,7 +590,6 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
 
     const linksContainer = document.createElement('div');
     linksContainer.id = 'links-container';
-    linksContainer.className = 'cka-links-container';
     linksContainer.innerHTML = `
       <div class="cka-loading-container">
         <div class="cka-loading-spinner"></div>
@@ -613,7 +611,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
   private async _showUI(isEditing: boolean = false): Promise<void> {
     const editor = this.editor;
     const t = editor.t;
-    const linkCommand = editor.commands.get('alight-predefined-link') as AlightPredefinedLinkPluginCommand;
+    const linkCommand = editor.commands.get('cka-predefined-link') as AlightPredefinedLinkPluginCommand;
 
     // Get current link URL if editing
     let initialUrl = '';

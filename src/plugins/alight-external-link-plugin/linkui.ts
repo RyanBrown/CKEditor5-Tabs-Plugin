@@ -441,6 +441,10 @@ export default class AlightExternalLinkPluginUI extends Plugin {
             errorElement.style.display = 'none';
           }
 
+          if (urlInput) {
+            urlInput.classList.remove('invalid');
+          }
+
           // Validate URL
           if (!this._validateURL(urlValue)) {
             // Show error message
@@ -454,8 +458,21 @@ export default class AlightExternalLinkPluginUI extends Plugin {
               }
               errorElement.style.display = 'block';
             }
+
+            // Add invalid class to the .cka-prefix-input container
+            setTimeout(() => {
+              // Find the prefix input container by class
+              const prefixInputContainer = document.querySelector('.cka-prefix-input');
+              if (prefixInputContainer) {
+                prefixInputContainer.classList.add('invalid');
+                console.log('Added invalid class to prefix input container:', prefixInputContainer.className);
+              } else {
+                console.log('Could not find .cka-prefix-input element');
+              }
+            }, 10);
+
             // Focus back on the URL input
-            urlInput.focus();
+            if (urlInput) urlInput.focus();
             return;
           }
 

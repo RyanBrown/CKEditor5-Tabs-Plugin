@@ -11,7 +11,7 @@ import { Plugin } from '@ckeditor/ckeditor5-core';
 import AlightPredefinedLinkPluginEditing from './linkediting';
 import AlightPredefinedLinkPluginUI from './linkui';
 import AlightPredefinedLinkPluginAutoLink from './autolink';
-import './styles/styles.scss';
+import './styles/alight-predefined-link-plugin.scss';
 
 /**
  * The Alight Predefined link plugin.

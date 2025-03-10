@@ -4,7 +4,6 @@ import { PredefinedLink } from './linkmodal-modal-types';
 import { SearchManager } from './linkmodal-SearchManager';
 import { PaginationManager } from './linkmodal-PaginationManager';
 import '../../ui-components/alight-radio-component/alight-radio-component';
-import './../styles/styles.scss';
 
 export class ContentManager implements ILinkManager {
   private selectedLink: PredefinedLink | null = null;
@@ -139,7 +138,7 @@ export class ContentManager implements ILinkManager {
     return `
     ${searchContainerMarkup}
     ${currentUrlInfo}
-    <div id="links-container" class="cka-links-container">
+    <div id="links-container">
       ${linksMarkup}
     </div>
     ${paginationMarkup}
@@ -161,44 +160,27 @@ export class ContentManager implements ILinkManager {
     `;
     }
 
-    // Use the matching link to display detailed information
+    // Use the shared link markup function but customize for current link context
     return `
     <div class="current-url-info">
       <h3>Current Link</h3>
-      <div class="cka-link-item selected" data-link-name="${matchingLink.predefinedLinkName}">
-        <div class="radio-container">
-          <cka-radio-button 
-            name="current-link" 
-            value="${matchingLink.predefinedLinkName}" 
-            checked
-          >
-          </cka-radio-button>
-        </div>
-        <ul>
-          <li><strong>${matchingLink.predefinedLinkName}</strong></li>
-          <li><strong>Description:</strong> ${matchingLink.predefinedLinkDescription}</li>
-          <li><strong>Base/Client Specific:</strong> ${matchingLink.baseOrClientSpecific}</li>
-          <li><strong>Page Type:</strong> ${matchingLink.pageType}</li>
-          <li><strong>Destination:</strong> ${matchingLink.destination}</li>
-          <li><strong>Page Code:</strong> ${matchingLink.pageCode}</li>
-          <li><strong>Domain:</strong> ${matchingLink.domain}</li>
-          <li><strong>Unique ID:</strong> ${matchingLink.uniqueId}</li>
-          <li><strong>Attribute Name:</strong> ${matchingLink.attributeName}</li>
-          <li><strong>Attribute Value:</strong> ${matchingLink.attributeValue}</li>
-        </ul>
-      </div>
+      ${this.buildLinkItemMarkup(matchingLink, true, 'current-link')}
     </div>
   `;
   }
 
-  private buildLinkItemMarkup(link: PredefinedLink): string {
-    const isSelected = this.selectedLink?.predefinedLinkName === link.predefinedLinkName;
+  private buildLinkItemMarkup(
+    link: PredefinedLink,
+    forceSelected: boolean = false,
+    radioGroupName: string = 'link-selection'
+  ): string {
+    const isSelected = forceSelected || this.selectedLink?.predefinedLinkName === link.predefinedLinkName;
 
     return `
       <div class="cka-link-item ${isSelected ? 'selected' : ''}" data-link-name="${link.predefinedLinkName}">
         <div class="radio-container">
           <cka-radio-button 
-            name="link-selection" 
+            name="${radioGroupName}" 
             value="${link.predefinedLinkName}" 
             ${isSelected ? 'checked' : ''}
           >
@@ -209,8 +191,8 @@ export class ContentManager implements ILinkManager {
           <li><strong>Description:</strong> ${link.predefinedLinkDescription}</li>
           <li><strong>Base/Client Specific:</strong> ${link.baseOrClientSpecific}</li>
           <li><strong>Page Type:</strong> ${link.pageType}</li>
-          <li><strong>Destination:</strong> ${link.destination}</li>
-          <li><strong>Page Code:</strong> ${link.pageCode}</li>
+          <li class="hide-overflow"><strong>Destination:</strong> ${link.destination}</li>
+          ${link.pageCode ? `<li><strong>Page Code:</strong> ${link.pageCode}</li>` : ''}
           <li><strong>Domain:</strong> ${link.domain}</li>
           <li><strong>Unique ID:</strong> ${link.uniqueId}</li>
           <li><strong>Attribute Name:</strong> ${link.attributeName}</li>
