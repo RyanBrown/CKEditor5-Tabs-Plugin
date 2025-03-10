@@ -6,6 +6,7 @@ export { default as AlightEmailLinkPluginImage } from './linkimage';
 export { default as AlightEmailLinkPluginImageEditing } from './linkimageediting';
 export { default as AlightEmailLinkPluginImageUI } from './linkimageui';
 export { default as AlightEmailAutoLink } from './autolink';
+export { default as EmailLinkHandler } from './emaillinkhandler';
 export { default as LinkActionsView } from './ui/linkactionsview';
 export { default as LinkFormView } from './ui/linkformview';
 export { default as AlightEmailLinkPluginCommand } from './linkcommand';

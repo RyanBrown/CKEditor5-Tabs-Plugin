@@ -3,6 +3,7 @@ import { Plugin } from '@ckeditor/ckeditor5-core';
 import AlightEmailLinkPluginEditing from './linkediting';
 import AlightEmailLinkPluginUI from './linkui';
 import AlightEmailAutoLink from './autolink';
+import EmailLinkHandler from './emaillinkhandler'; // Import the new email handler
 import './styles/alight-email-link-plugin.scss';
 
 /**
@@ -15,7 +16,12 @@ export default class AlightEmailLinkPlugin extends Plugin {
    * @inheritDoc
    */
   public static get requires() {
-    return [AlightEmailLinkPluginEditing, AlightEmailLinkPluginUI, AlightEmailAutoLink] as const;
+    return [
+      AlightEmailLinkPluginEditing,
+      AlightEmailLinkPluginUI,
+      AlightEmailAutoLink,
+      EmailLinkHandler // Add the email link handler
+    ] as const;
   }
 
   /**

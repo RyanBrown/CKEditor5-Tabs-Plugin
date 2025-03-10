@@ -5,64 +5,18 @@ import type { DocumentSelectionChangeEvent, Element, Model, Position, Range, Wri
 import { Delete, TextWatcher, getLastTextLine, findAttributeRange, type TextWatcherMatchedDataEvent } from '@ckeditor/ckeditor5-typing';
 import type { EnterCommand, ShiftEnterCommand } from '@ckeditor/ckeditor5-enter';
 
-import { addLinkProtocolIfApplicable, linkHasProtocol } from './utils';
+import { addLinkProtocolIfApplicable, linkHasProtocol, isEmail } from './utils';
 import AlightEmailLinkPluginEditing from './linkediting';
 
 const MIN_LINK_LENGTH_WITH_SPACE_AT_END = 4; // Ie: "t.co " (length 5).
 
-// This was a tweak from https://gist.github.com/dperini/729294.
-const URL_REG_EXP = new RegExp(
-  // Group 1: Line start or after a space.
-  '(^|\\s)' +
-  // Group 2: Detected URL (or e-mail).
-  '(' +
-  // Protocol identifier or short syntax "//"
-  // a. Full form http://user@foo.bar.baz:8080/foo/bar.html#baz?foo=bar
-  '(' +
-  '(?:(?:(?:https?|ftp):)?\\/\\/)' +
-  // BasicAuth using user:pass (optional)
-  '(?:\\S+(?::\\S*)?@)?' +
-  '(?:' +
-  // IP address dotted notation octets
-  // excludes loopback network 0.0.0.0
-  // excludes reserved space >= 224.0.0.0
-  // excludes network & broadcast addresses
-  // (first & last IP address of each class)
-  '(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])' +
-  '(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}' +
-  '(?:\\.(?:[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))' +
-  '|' +
-  '(' +
-  // Do not allow `www.foo` - see https://github.com/ckeditor/ckeditor5/issues/8050.
-  '((?!www\\.)|(www\\.))' +
-  // Host & domain names.
-  '(?![-_])(?:[-_a-z0-9\\u00a1-\\uffff]{1,63}\\.)+' +
-  // TLD identifier name.
-  '(?:[a-z\\u00a1-\\uffff]{2,63})' +
-  ')' +
-  ')' +
-  // port number (optional)
-  '(?::\\d{2,5})?' +
-  // resource path (optional)
-  '(?:[/?#]\\S*)?' +
-  ')' +
-  '|' +
-  // b. Short form (either www.example.com or example@example.com)
-  '(' +
-  '(www.|(\\S+@))' +
-  // Host & domain names.
-  '((?![-_])(?:[-_a-z0-9\\u00a1-\\uffff]{1,63}\\.))+' +
-  // TLD identifier name.
-  '(?:[a-z\\u00a1-\\uffff]{2,63})' +
-  ')' +
-  ')$', 'i');
-
-const URL_GROUP_IN_MATCH = 2;
+// Improved email detection regex
+const EMAIL_REG_EXP = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/i;
 
 /**
- * The autolink plugin.
+ * Enhanced autolink plugin with better email detection
  */
-export default class AlightEmailAutoLink extends Plugin {
+export default class EnhancedEmailAutoLink extends Plugin {
   /**
    * @inheritDoc
    */
@@ -74,7 +28,7 @@ export default class AlightEmailAutoLink extends Plugin {
    * @inheritDoc
    */
   public static get pluginName() {
-    return 'AlightEmailAutoLink' as const;
+    return 'EnhancedEmailAutoLink' as const;
   }
 
   /**
@@ -97,6 +51,7 @@ export default class AlightEmailAutoLink extends Plugin {
     });
 
     this._enableTypingHandling();
+    this._enableEmailDetection();
   }
 
   /**
@@ -109,10 +64,69 @@ export default class AlightEmailAutoLink extends Plugin {
   }
 
   /**
-   * For given position, returns a range that includes the whole link that contains the position.
-   *
-   * If position is not inside a link, returns `null`.
+   * Enables special handling for email addresses
    */
+  private _enableEmailDetection(): void {
+    const editor = this.editor;
+    const clipboardPipeline = editor.plugins.get('ClipboardPipeline');
+
+    // Listen for paste events
+    clipboardPipeline.on('inputTransformation', (evt, data: ClipboardInputTransformationData) => {
+      if (!this.isEnabled || data.method !== 'paste') {
+        return;
+      }
+
+      const text = data.dataTransfer.getData('text/plain');
+
+      // Check if the pasted text is an email address
+      if (text && EMAIL_REG_EXP.test(text.trim())) {
+        // Don't create the email link yet, just let the email be pasted
+        // We'll detect it in the document and auto-link it
+        setTimeout(() => {
+          this._detectAndLinkEmails();
+        }, 0);
+      }
+    });
+  }
+
+  /**
+   * Searches the document for unlinked email addresses and converts them to mailto: links
+   */
+  private _detectAndLinkEmails(): void {
+    const editor = this.editor;
+    const model = editor.model;
+
+    model.change(writer => {
+      const range = model.createRangeIn(model.document.getRoot()!);
+
+      for (const item of range.getItems()) {
+        if (item.is('$text') && !item.hasAttribute('alightEmailLinkPluginHref')) {
+          const text = item.data;
+
+          // Look for email pattern in the text
+          const match = text.match(EMAIL_REG_EXP);
+
+          if (match) {
+            const email = match[0];
+            const startIndex = text.indexOf(email);
+            const endIndex = startIndex + email.length;
+
+            // Create range for the email part
+            const start = model.createPositionAt(item.parent!, item.startOffset! + startIndex);
+            const end = model.createPositionAt(item.parent!, item.startOffset! + endIndex);
+            const emailRange = model.createRange(start, end);
+
+            // Add mailto: prefix and set attribute
+            writer.setAttribute('alightEmailLinkPluginHref', 'mailto:' + email, emailRange);
+          }
+        }
+      }
+    });
+  }
+
+  // Rest of the AutoLink implementation...
+  // (keeping existing methods from the original AutoLink class)
+
   private _expandLinkRange(model: Model, position: Position): Range | null {
     if (position.textNode && position.textNode.hasAttribute('alightEmailLinkPluginHref')) {
       return findAttributeRange(position, 'alightEmailLinkPluginHref', position.textNode.getAttribute('alightEmailLinkPluginHref'), model);
@@ -150,7 +164,7 @@ export default class AlightEmailAutoLink extends Plugin {
     const model = editor.model;
     const selection = model.document.selection;
     const clipboardPipeline = editor.plugins.get('ClipboardPipeline');
-    const AlightEmailLinkPluginCommand = editor.commands.get('link')!;
+    const AlightEmailLinkPluginCommand = editor.commands.get('alight-email-link')!;
 
     clipboardPipeline.on('inputTransformation', (evt, data: ClipboardInputTransformationData) => {
       if (!this.isEnabled || !AlightEmailLinkPluginCommand.isEnabled || selection.isCollapsed || data.method !== 'paste') {
@@ -168,14 +182,25 @@ export default class AlightEmailAutoLink extends Plugin {
       const newLink = data.dataTransfer.getData('text/plain');
 
       if (!newLink) {
-        // Abort if there is no plain text on the clipboard.
         return;
       }
 
-      const matches = newLink.match(URL_REG_EXP);
+      // Check if it's an email address
+      if (EMAIL_REG_EXP.test(newLink.trim())) {
+        model.change(writer => {
+          this._selectEntireLinks(writer, selectedRange);
+          AlightEmailLinkPluginCommand.execute('mailto:' + newLink.trim());
+        });
+
+        evt.stop();
+        return;
+      }
+
+      // Handle regular URLs (original logic)
+      const matches = newLink.match(/^(https?:\/\/|www\.)\S+$/i);
 
       // If the text in the clipboard has a URL, and that URL is the whole clipboard.
-      if (matches && matches[2] === newLink) {
+      if (matches && matches[0] === newLink) {
         model.change(writer => {
           this._selectEntireLinks(writer, selectedRange);
           AlightEmailLinkPluginCommand.execute(newLink);
@@ -208,19 +233,29 @@ export default class AlightEmailAutoLink extends Plugin {
         mappedText = mappedText.slice(0, -1);
       }
 
-      // 4. Check text before last typed <kbd>Space</kbd> or punctuation.
+      // 4. First check for email
+      if (EMAIL_REG_EXP.test(mappedText)) {
+        return {
+          url: mappedText,
+          removedTrailingCharacters: text.length - mappedText.length,
+          isEmail: true
+        };
+      }
+
+      // 5. Otherwise check for URL
       const url = getUrlAtTextEnd(mappedText);
 
       if (url) {
         return {
           url,
-          removedTrailingCharacters: text.length - mappedText.length
+          removedTrailingCharacters: text.length - mappedText.length,
+          isEmail: false
         };
       }
     });
 
-    watcher.on<TextWatcherMatchedDataEvent<{ url: string; removedTrailingCharacters: number }>>('matched:data', (evt, data) => {
-      const { batch, range, url, removedTrailingCharacters } = data;
+    watcher.on<TextWatcherMatchedDataEvent<{ url: string; removedTrailingCharacters: number; isEmail?: boolean }>>('matched:data', (evt, data) => {
+      const { batch, range, url, removedTrailingCharacters, isEmail } = data;
 
       if (!batch.isTyping) {
         return;
@@ -231,7 +266,12 @@ export default class AlightEmailAutoLink extends Plugin {
 
       const linkRange = editor.model.createRange(linkStart, linkEnd);
 
-      this._applyAutoLink(url, linkRange);
+      // For emails, always add mailto: prefix
+      if (isEmail) {
+        this._applyAutoLink('mailto:' + url, linkRange);
+      } else {
+        this._applyAutoLink(url, linkRange);
+      }
     });
 
     watcher.bind('isEnabled').to(this);
@@ -294,6 +334,18 @@ export default class AlightEmailAutoLink extends Plugin {
     const model = this.editor.model;
     const { text, range } = getLastTextLine(rangeToCheck, model);
 
+    // First check for email
+    if (EMAIL_REG_EXP.test(text)) {
+      const linkRange = model.createRange(
+        range.start,
+        range.end
+      );
+
+      this._applyAutoLink('mailto:' + text, linkRange);
+      return;
+    }
+
+    // Then check for URL
     const url = getUrlAtTextEnd(text);
 
     if (url) {
@@ -318,7 +370,7 @@ export default class AlightEmailAutoLink extends Plugin {
     const defaultProtocol = this.editor.config.get('link.defaultProtocol');
     const fullUrl = addLinkProtocolIfApplicable(url, defaultProtocol);
 
-    if (!this.isEnabled || !isLinkAllowedOnRange(range, model) || !linkHasProtocol(fullUrl) || linkIsAlreadySet(range)) {
+    if (!this.isEnabled || !isLinkAllowedOnRange(range, model) || (url.startsWith('mailto:') ? false : !linkHasProtocol(fullUrl)) || linkIsAlreadySet(range)) {
       return;
     }
 
@@ -332,14 +384,14 @@ export default class AlightEmailAutoLink extends Plugin {
    * @param range The text range to apply the link attribute to.
    */
   private _persistAutoLink(url: string, range: Range): void {
-    const model = this.editor.model;
+    const model = this.editor;
     const deletePlugin = this.editor.plugins.get('Delete');
 
     // Enqueue change to make undo step.
-    model.enqueueChange(writer => {
+    model.model.enqueueChange(writer => {
       writer.setAttribute('alightEmailLinkPluginHref', url, range);
 
-      model.enqueueChange(() => {
+      model.model.enqueueChange(() => {
         deletePlugin.requestUndoOnBackspace();
       });
     });
@@ -352,9 +404,10 @@ function isSingleSpaceAtTheEnd(text: string): boolean {
 }
 
 function getUrlAtTextEnd(text: string): string | null {
-  const match = URL_REG_EXP.exec(text);
+  // Check for URL pattern
+  const urlMatch = text.match(/(?:https?:\/\/|www\.)[^\s]+$/i);
 
-  return match ? match[URL_GROUP_IN_MATCH] : null;
+  return urlMatch ? urlMatch[0] : null;
 }
 
 function isLinkAllowedOnRange(range: Range, model: Model): boolean {

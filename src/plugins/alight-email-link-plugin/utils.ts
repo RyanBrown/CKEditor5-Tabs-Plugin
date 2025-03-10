@@ -26,8 +26,8 @@ const ATTRIBUTE_WHITESPACES = /[\u0000-\u0020\u00A0\u1680\u180E\u2000-\u2029\u20
 
 const SAFE_URL_TEMPLATE = '^(?:(?:<protocols>):|[^a-z]|[a-z+.-]+(?:[^a-z+.:-]|$))';
 
-// Simplified email test - should be run over previously found URL.
-const EMAIL_REG_EXP = /^[\S]+@((?![-_])(?:[-\w\u00a1-\uffff]{0,63}[^-_]\.))+(?:[a-z\u00a1-\uffff]{2,})$/i;
+// Enhanced email detection regex
+const ENHANCED_EMAIL_REG_EXP = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/i;
 
 // The regex checks for the protocol syntax ('xxxx://' or 'xxxx:')
 // or non-word characters at the beginning of the link ('/', '#' etc.).
@@ -156,9 +156,17 @@ export function isLinkableElement(element: Element | null, schema: Schema): elem
 
 /**
  * Returns `true` if the specified `value` is an email.
+ * Enhanced version with better pattern matching.
  */
 export function isEmail(value: string): boolean {
-  return EMAIL_REG_EXP.test(value);
+  // First check if it's already a mailto: link
+  if (value.startsWith('mailto:')) {
+    // Validate the part after mailto:
+    return ENHANCED_EMAIL_REG_EXP.test(value.substring(7));
+  }
+
+  // Then check if it looks like an email address with the enhanced pattern
+  return ENHANCED_EMAIL_REG_EXP.test(value);
 }
 
 /**
@@ -169,6 +177,11 @@ export function isEmail(value: string): boolean {
  * * or the link is an email address.
  */
 export function addLinkProtocolIfApplicable(link: string, defaultProtocol?: string): string {
+  // For emails, ensure mailto: is always added
+  if (isEmail(link) && !link.startsWith('mailto:')) {
+    return 'mailto:' + link;
+  }
+
   const protocol = isEmail(link) ? 'mailto:' : defaultProtocol;
   const isProtocolNeeded = !!protocol && !linkHasProtocol(link);
 
@@ -228,6 +241,62 @@ export function createBookmarkCallbacks(editor: Editor): LinkActionsViewOptions 
     isScrollableToTarget,
     scrollToTarget
   };
+}
+
+/**
+ * Converts a string to a valid mailto link if it's an email address
+ */
+export function ensureMailtoLink(value: string): string {
+  // If it's already a mailto link, return as is
+  if (value.startsWith('mailto:')) {
+    return value;
+  }
+
+  // If it's an email address, add mailto:
+  if (isEmail(value)) {
+    return 'mailto:' + value;
+  }
+
+  // Otherwise return the original string
+  return value;
+}
+
+/**
+ * Extracts email address from a mailto link
+ */
+export function extractEmail(mailtoLink: string): string {
+  if (mailtoLink.startsWith('mailto:')) {
+    return mailtoLink.substring(7);
+  }
+  return mailtoLink;
+}
+
+/**
+ * Extracts organization name from a link text that has format "email (organization)"
+ */
+export function extractOrganization(linkText: string): string | null {
+  const match = linkText.match(/^(.*?)(?:\s*\(([^)]+)\))?$/);
+  if (match && match[2]) {
+    return match[2];
+  }
+  return null;
+}
+
+/**
+ * Formats email with organization
+ */
+export function formatEmailWithOrganization(email: string, organization: string | null): string {
+  if (!organization) {
+    return email;
+  }
+  return `${email} (${organization})`;
+}
+
+/**
+ * Checks if a URL is a mailto link
+ */
+export function isMailtoLink(url: string): boolean {
+  return url.startsWith('mailto:');
 }
 
 export type NormalizedLinkDecoratorAutomaticDefinition = LinkDecoratorAutomaticDefinition & { id: string };
