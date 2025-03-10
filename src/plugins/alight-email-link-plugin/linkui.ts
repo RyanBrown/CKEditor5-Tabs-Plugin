@@ -393,7 +393,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     if (!this._modalDialog) {
       this._modalDialog = new CkAlightModalDialog({
         title: t('Create Email Link'),
-        width: '500px',
+        width: '32rem',
         contentClass: 'cka-email-link-content',
         buttons: [
           { label: t('Save'), isPrimary: true, closeOnClick: false },
@@ -410,10 +410,13 @@ export default class AlightEmailLinkPluginUI extends Plugin {
           const email = emailInput.value.trim();
           const organization = organizationInput.value.trim();
 
-          // Clear any previous error messages
+          // Clear any previous error messages and invalid class
           const errorElement = document.getElementById('ck-email-error');
           if (errorElement) {
             errorElement.style.display = 'none';
+          }
+          if (emailInput) {
+            emailInput.classList.remove('invalid'); // Remove invalid class initially
           }
 
           // Validate email
@@ -425,8 +428,11 @@ export default class AlightEmailLinkPluginUI extends Plugin {
                 t('Please enter a valid email address');
               errorElement.style.display = 'block';
             }
-            // Focus back on the email input
-            emailInput.focus();
+            // Add invalid class to email input
+            if (emailInput) {
+              emailInput.classList.add('invalid'); // Add invalid class
+              emailInput.focus(); // Focus back on the email input
+            }
             return;
           }
 
