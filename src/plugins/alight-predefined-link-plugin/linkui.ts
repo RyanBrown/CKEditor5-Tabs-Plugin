@@ -1,4 +1,4 @@
-// Modified linkui.ts file with API service integration
+// src/plugins/alight-predefined-link-plugin/linkui.ts
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import {
   ClickObserver,

@@ -1,4 +1,4 @@
-// src/plugins/alight-predefined-link/ui/linkmodal-SearchManager.ts
+// src/plugins/alight-predefined-link-plugin/ui/linkmodal-SearchManager.ts
 import { AlightOverlayPanel } from '../../ui-components/alight-overlay-panel-component/alight-overlay-panel';
 import { PaginationManager } from './linkmodal-PaginationManager';
 import { PredefinedLink, SelectedFilters } from './linkmodal-modal-types';

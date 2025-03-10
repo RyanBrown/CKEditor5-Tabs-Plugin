@@ -1,4 +1,4 @@
-// src/plugins/alight-predefined-link/ui/linkmodal-PaginationManager.ts
+// src/plugins/alight-predefined-link-plugin/ui/linkmodal-PaginationManager.ts
 import { CkAlightSelectMenu } from '../../ui-components/alight-select-menu-component/alight-select-menu-component';
 
 export class PaginationManager {

@@ -1,4 +1,4 @@
-// src/plugins/alight-predefined-link/ui/linkmodal-ContentManager.ts
+// src/plugins/alight-predefined-link-plugin/ui/linkmodal-ContentManager.ts
 import { ILinkManager } from './linkmodal-ILinkManager';
 import { PredefinedLink } from './linkmodal-modal-types';
 import { SearchManager } from './linkmodal-SearchManager';

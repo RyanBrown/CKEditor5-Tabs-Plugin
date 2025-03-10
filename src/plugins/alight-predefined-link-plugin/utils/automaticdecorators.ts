@@ -1,12 +1,4 @@
-/**
- * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
- */
-
-/**
- * @module link/utils/automaticdecorators
- */
-
+// src/plugins/alight-predefined-link-plugin/utils/automaticdecorators.ts
 import { toMap, type ArrayOrItem } from '@ckeditor/ckeditor5-utils';
 import type { DowncastAttributeEvent, DowncastDispatcher, Element, ViewElement } from '@ckeditor/ckeditor5-engine';
 import type { NormalizedLinkDecoratorAutomaticDefinition } from '../utils';
