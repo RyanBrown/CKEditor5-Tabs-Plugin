@@ -594,7 +594,6 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
     linksContainer.className = 'cka-links-container';
     linksContainer.innerHTML = `
       <div class="cka-loading-container">
-        <p>Loading predefined links...</p>
         <div class="cka-loading-spinner"></div>
       </div>
     `;
@@ -735,7 +734,6 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
       if (linksContainer) {
         linksContainer.innerHTML = `
         <div class="cka-error-state">
-          <p>Error loading predefined links.</p>
           <p class="cka-error-details">${error.message || 'Unknown error'}</p>
         </div>
       `;

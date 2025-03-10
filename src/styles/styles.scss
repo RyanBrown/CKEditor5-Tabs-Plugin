@@ -277,3 +277,31 @@ $spacing-values: (
 .cka-links-container {
   padding: 0 var(--spacing-l);
 }
+
+// Loading styles
+.cka-loading-container {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+
+  .cka-loading-spinner {
+    animation: spin 2s linear infinite;
+    border-radius: 50%;
+    border: mixins.toRem(4) solid rgba(#666666, 0.2);
+    border-top: mixins.toRem(4) solid var(--neutral-steel);
+    display: flex;
+    height: mixins.toRem(32);
+    width: mixins.toRem(32);
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+}

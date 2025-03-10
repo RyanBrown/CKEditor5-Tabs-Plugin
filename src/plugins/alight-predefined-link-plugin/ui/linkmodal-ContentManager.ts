@@ -109,7 +109,6 @@ export class ContentManager implements ILinkManager {
     if (this.predefinedLinksData.length === 0) {
       return `
       <div class="cka-loading-container">
-        <p>Loading predefined links...</p>
         <div class="cka-loading-spinner"></div>
       </div>
     `;
