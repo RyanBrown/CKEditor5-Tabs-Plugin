@@ -156,12 +156,32 @@ export default class AlightPredefinedLinkUI extends Plugin {
       return this._createButton(ButtonView);
     });
 
+    // Listen for command execution to show balloon
     const linkCommand = editor.commands.get('alight-predefined-link') as AlightPredefinedLinkCommand;
-    this.listenTo(linkCommand, 'executed', (evt, data) => {
-      // Show balloon after link is created
-      // Use setTimeout to ensure the UI updates after command execution
-      setTimeout(() => this._showBalloon(), 50);
+
+    // If executed event is available, use it
+    if (typeof linkCommand.on === 'function') {
+      this.listenTo(linkCommand, 'executed', () => {
+        // Let the model update before showing the balloon
+        setTimeout(() => this._checkAndShowBalloon(), 50);
+      });
+    }
+
+    // Also listen to selection changes to detect when user enters a link or clicks on it
+    this.listenTo(editor.editing.view.document, 'selectionChange', () => {
+      // Use a small delay to ensure the selection is fully updated
+      setTimeout(() => this._checkAndShowBalloon(), 10);
     });
+  }
+
+  /**
+   * Checks if the current selection is in a link and shows the balloon if needed
+   */
+  private _checkAndShowBalloon(): void {
+    const selectedLink = this._getSelectedLinkElement();
+    if (selectedLink) {
+      this._showBalloon();
+    }
   }
 
   /**
@@ -327,6 +347,12 @@ export default class AlightPredefinedLinkUI extends Plugin {
    */
   private _showBalloon(): void {
     if (this.actionsView && this._balloon && !this._balloon.hasView(this.actionsView)) {
+      // Make sure the link is still selected before showing balloon
+      const selectedLink = this._getSelectedLinkElement();
+      if (!selectedLink) {
+        return;
+      }
+
       this._balloon.add({
         view: this.actionsView,
         position: this._getBalloonPositionData()
@@ -411,8 +437,6 @@ export default class AlightPredefinedLinkUI extends Plugin {
   /**
    * Shows the modal dialog for link editing.
    */
-  // In linkui.ts, modify the _showUI method
-
   private _showUI(isEditing: boolean = false): void {
     const editor = this.editor;
     const t = editor.t;
@@ -468,9 +492,8 @@ export default class AlightPredefinedLinkUI extends Plugin {
             // Hide the modal after creating the link
             this._modalDialog?.hide();
 
-            // NEW CODE: Show the balloon after link creation
-            // Use setTimeout to ensure the UI updates after command execution
-            setTimeout(() => this._showBalloon(), 50);
+            // Explicitly force balloon to show after link creation
+            setTimeout(() => this._checkAndShowBalloon(), 50);
           } else {
             // Show some feedback that no link was selected
             console.warn('No link selected');
