@@ -1,12 +1,4 @@
-/**
- * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
- */
-
-/**
- * @module link/autolink
- */
-
+// src/plugins/alight-external-link-plugin/autolink.ts
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import type { ClipboardInputTransformationData } from '@ckeditor/ckeditor5-clipboard';
 import type { DocumentSelectionChangeEvent, Element, Model, Position, Range, Writer } from '@ckeditor/ckeditor5-engine';
