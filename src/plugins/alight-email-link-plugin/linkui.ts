@@ -1,4 +1,4 @@
-// LinkUI with both Balloon and Modal Dialog
+// src/plugins/alight-email-link-plugin/linkui.ts
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import {
   ClickObserver,

@@ -1,12 +1,4 @@
-/**
- * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
- */
-
-/**
- * @module link
- */
-
+// src/plugins/alight-email-link-plugin/index.ts
 export { default as AlightEmailLinkPlugin } from './link';
 export { default as AlightEmailLinkPluginEditing } from './linkediting';
 export { default as AlightEmailLinkPluginUI } from './linkui';

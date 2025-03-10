@@ -1,12 +1,4 @@
-/**
- * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
- */
-
-/**
- * @module link/utils/manualdecorator
- */
-
+// src/plugins/alight-email-link-plugin/utils/manualdecorator.ts
 import { ObservableMixin, type ArrayOrItem } from '@ckeditor/ckeditor5-utils';
 import type { MatcherObjectPattern } from '@ckeditor/ckeditor5-engine';
 import type { NormalizedLinkDecoratorManualDefinition } from '../utils';
