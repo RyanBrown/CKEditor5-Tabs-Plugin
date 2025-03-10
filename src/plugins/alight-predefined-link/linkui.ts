@@ -155,6 +155,13 @@ export default class AlightPredefinedLinkUI extends Plugin {
     editor.ui.componentFactory.add('alightPredefinedLink', locale => {
       return this._createButton(ButtonView);
     });
+
+    const linkCommand = editor.commands.get('alight-predefined-link') as AlightPredefinedLinkCommand;
+    this.listenTo(linkCommand, 'executed', (evt, data) => {
+      // Show balloon after link is created
+      // Use setTimeout to ensure the UI updates after command execution
+      setTimeout(() => this._showBalloon(), 50);
+    });
   }
 
   /**
@@ -404,6 +411,8 @@ export default class AlightPredefinedLinkUI extends Plugin {
   /**
    * Shows the modal dialog for link editing.
    */
+  // In linkui.ts, modify the _showUI method
+
   private _showUI(isEditing: boolean = false): void {
     const editor = this.editor;
     const t = editor.t;
@@ -458,6 +467,10 @@ export default class AlightPredefinedLinkUI extends Plugin {
 
             // Hide the modal after creating the link
             this._modalDialog?.hide();
+
+            // NEW CODE: Show the balloon after link creation
+            // Use setTimeout to ensure the UI updates after command execution
+            setTimeout(() => this._showBalloon(), 50);
           } else {
             // Show some feedback that no link was selected
             console.warn('No link selected');

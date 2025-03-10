@@ -26,7 +26,7 @@ interface LinkOptions {
 
 /**
  * The link command. It is used by the {@link module:link/link~AlightPredefinedLink link feature}.
- * Enhanced to support organization name.
+ * Enhanced to support organization name and dispatch events.
  */
 export default class AlightPredefinedLinkCommand extends Command {
   /**
@@ -50,6 +50,16 @@ export default class AlightPredefinedLinkCommand extends Command {
    * that are used by the {@glink features/link link} and the {@glink features/images/images-linking linking images} features.
    */
   public readonly automaticDecorators = new AutomaticDecorators();
+
+  /**
+   * Fires an event with the specified name and data.
+   * 
+   * @param eventName The name of the event to fire
+   * @param data Additional data to pass with the event
+   */
+  private _fireEvent(eventName: string, data: any = {}): void {
+    this.fire(eventName, data);
+  }
 
   /**
    * Synchronizes the state of {@link #manualDecorators} with the currently present elements in the model.
@@ -97,7 +107,7 @@ export default class AlightPredefinedLinkCommand extends Command {
    * When the selection is collapsed and inside the text with the `alightPredefinedLinkHref` attribute, the attribute value will be updated.
    *
    * @fires execute
-     * @param href AlightPredefinedLink destination.
+   * @param href AlightPredefinedLink destination.
    * @param options Options including manual decorator attributes and organization name.
    */
   public override execute(href: string, options: LinkOptions = {}): void {
@@ -254,6 +264,9 @@ export default class AlightPredefinedLinkCommand extends Command {
         }
       }
     });
+
+    // Fire an event after command execution to notify UI
+    this._fireEvent('executed', { href, options });
   }
 
   /**
