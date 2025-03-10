@@ -1,4 +1,4 @@
-// LinkUI with both Balloon and Modal Dialog
+// LinkUI with both Balloon and Modal Dialog - Updated to use AlightPredefinedLinkPlugin modal content
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import {
   ClickObserver,
@@ -20,6 +20,11 @@ import type AlightExternalUnlinkCommand from './unlinkcommand';
 import { addLinkProtocolIfApplicable, isLinkElement, LINK_KEYSTROKE } from './utils';
 import CkAlightModalDialog from './../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import './../ui-components/alight-checkbox-component/alight-checkbox-component';
+// Import ContentManager and PredefinedLink types from the alight-predefined-link-plugin
+import { ContentManager } from './../../plugins/alight-predefined-link-plugin/modal-content/predefined-link-modal-ContentManager';
+import { PredefinedLink } from './../../plugins/alight-predefined-link-plugin/modal-content/predefined-link-modal-types';
+// Import predefined links data
+import predefinedLinksData from './../../data/predefined-test-data.json';
 
 import linkIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 
@@ -35,6 +40,16 @@ export default class AlightPredefinedLinkUI extends Plugin {
    * The modal dialog instance.
    */
   private _modalDialog: CkAlightModalDialog | null = null;
+
+  /**
+   * The content manager instance for the modal dialog.
+   */
+  private _linkManager: ContentManager | null = null;
+
+  /**
+   * The predefined links data.
+   */
+  private _predefinedLinksData: PredefinedLink[] = predefinedLinksData.predefinedLinksDetails;
 
   /**
    * The actions view displayed inside of the balloon.
@@ -248,6 +263,13 @@ export default class AlightPredefinedLinkUI extends Plugin {
   }
 
   /**
+   * Find predefined link by URL
+   */
+  private _findPredefinedLinkByUrl(url: string): PredefinedLink | null {
+    return this._predefinedLinksData.find(link => link.destination === url) || null;
+  }
+
+  /**
    * Attaches actions that control whether the modal dialog should be displayed.
    */
   private _enableUIActivators(): void {
@@ -387,35 +409,72 @@ export default class AlightPredefinedLinkUI extends Plugin {
     const t = editor.t;
     const linkCommand = editor.commands.get('alight-predefined-link') as AlightPredefinedLinkCommand;
 
+    // Get current link URL if editing
+    let initialUrl = '';
+    if (isEditing && linkCommand.value) {
+      initialUrl = linkCommand.value as string;
+    }
+
     // Create modal if it doesn't exist
     if (!this._modalDialog) {
       this._modalDialog = new CkAlightModalDialog({
-        title: t('Create Predefined Link'),
-        width: '500px',
-        contentClass: 'cka-external-link-content',
+        title: isEditing ? t('Edit Predefined Link') : t('Predefined Link'),
+        modal: true,
+        width: '80vw',
+        height: 'auto',
+        contentClass: 'predefined-link-content',
         buttons: [
-          { label: t('Save'), isPrimary: true, closeOnClick: false },
-          { label: t('Cancel'), variant: 'outlined' }
+          {
+            label: t('Cancel'),
+            variant: 'outlined',
+            shape: 'round',
+            disabled: false
+          },
+          {
+            label: t('Continue'),
+            variant: 'default',
+            isPrimary: true,
+            shape: 'round',
+            closeOnClick: false,
+            disabled: false
+          }
         ]
       });
 
-      // Handle Save button click
+      // Handle modal button clicks
       this._modalDialog.on('buttonClick', (label: string) => {
-        if (label === t('Save')) {
-          // Close the modal
-          this._modalDialog!.hide();
-        } else if (label === t('Cancel')) {
-          this._modalDialog!.hide();
+        if (label === t('Cancel')) {
+          this._modalDialog?.hide();
+          return;
+        }
+
+        if (label === t('Continue')) {
+          // Get the selected link from the content manager
+          const selectedLink = this._linkManager?.getSelectedLink();
+
+          if (selectedLink) {
+            // Create the link in the editor using the built-in link command
+            linkCommand.execute(selectedLink.destination);
+
+            // Hide the modal after creating the link
+            this._modalDialog?.hide();
+          } else {
+            // Show some feedback that no link was selected
+            console.warn('No link selected');
+            // You could add UI feedback here
+          }
         }
       });
+    } else {
+      // Update title if modal already exists
+      this._modalDialog.setTitle(isEditing ? t('Edit Predefined Link') : t('Predefined Link'));
     }
 
-    // Update modal title based on whether we're editing or creating
-    this._modalDialog.setTitle(isEditing ? t('Edit Predefined Link') : t('Create Predefined Link'));
+    // Create a new instance of ContentManager with the initial URL
+    this._linkManager = new ContentManager(initialUrl);
 
-    // Prepare the form HTML
-    const formHTML = this._createFormHTML(t, isEditing);
-    this._modalDialog.setContent(formHTML);
+    // Set the content to the modal dialog using the getContent method
+    this._modalDialog.setContent(this._linkManager.getContent());
 
     // Show the modal
     this._modalDialog.show();
@@ -446,15 +505,6 @@ export default class AlightPredefinedLinkUI extends Plugin {
     } finally {
       this._isUpdatingUI = false;
     }
-  }
-
-  /**
-   * Creates the HTML for the form inside the modal.
-   */
-  private _createFormHTML(t: any, isEditing: boolean): string {
-    return `
-      <h1>Predefined Link Modal</h1>
-    `;
   }
 
   /**
