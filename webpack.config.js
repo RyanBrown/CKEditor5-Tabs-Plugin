@@ -17,7 +17,7 @@ module.exports = new SpeedMeasurePlugin().wrap({
 
     output: {
         // The name under which the editor will be exported.
-        library: 'CKSource',
+        library: 'AlightEditor',
 
         path: path.resolve(__dirname, 'build'),
         filename: 'ckeditor.js',

@@ -3,7 +3,7 @@ import { Editor } from '@ckeditor/ckeditor5-core';
 import Command from '@ckeditor/ckeditor5-core/src/command';
 import { DocumentSelection } from '@ckeditor/ckeditor5-engine';
 
-export default class alightCopyPluginPluginCommand extends Command {
+export default class alightCopyPluginCommand extends Command {
   constructor(editor: Editor) {
     super(editor);
   }

@@ -74,14 +74,13 @@ import AlightTabsPlugin from './plugins/alight-tabs-plugin/alight-tabs-plugin';
 // Link Specific plugins
 import AlightParentLinkPlugin from './plugins/alight-parent-link-plugin'; // Use the index file
 import type { LinkPluginConfig } from './plugins/alight-parent-link-plugin'; // Import type
-import AlightPredefinedLinkPlugin from './plugins/alight-predefined-link-plugin/alight-predefined-link-plugin';
+import AlightPredefinedLinkPlugin from './plugins/alight-predefined-link-plugin/link';
 import AlightNewDocumentLinkPlugin from './plugins/alight-new-document-link-plugin/alight-new-document-link-plugin';
 import AlightExistingDocumentLinkPlugin from './plugins/alight-existing-document-link-plugin/alight-existing-document-link-plugin';
 import AlightLink from './plugins/alight-link/src/link';
 import AlightExternalLinkPlugin from './plugins/alight-external-link-plugin/link';
 import AlightEmailLinkPlugin from './plugins/alight-email-link-plugin/link';
 
-import AlightPredefinedLink from './plugins/alight-predefined-link/link';
 
 // Import custom styles for headings, style definitions and custom plugins
 import './styles/styles.scss';
@@ -141,7 +140,7 @@ const awldsColorPalette = [
   { label: 'Info Background', color: '#dbe8ff' },
 ];
 
-class Editor extends ClassicEditor {
+class AlightEditor extends ClassicEditor {
   public static override builtinPlugins = [
     AccessibilityHelp,
     Alignment,
@@ -211,7 +210,6 @@ class Editor extends ClassicEditor {
     AlightLink,
     AlightExternalLinkPlugin,
     AlightEmailLinkPlugin,
-    AlightPredefinedLink,
   ];
 
   public static override defaultConfig: EditorConfig = {
@@ -267,13 +265,12 @@ class Editor extends ClassicEditor {
         'alightImagePlugin',
         'alightPopulationPlugin',
         'alightParentLinkPlugin',
-        //'alightPredefinedLinkPlugin',
+        'alightPredefinedLinkPlugin',
         //'alightExistingDocumentLinkPlugin',
         // 'alightNewDocumentLinkPlugin',
         'alightLink',
         // 'alightExternalLinkPlugin',
         // 'alightEmailLinkPlugin',
-        'alightPredefinedLink'
       ],
       shouldNotGroupWhenFull: true,
     },
@@ -417,4 +414,4 @@ class Editor extends ClassicEditor {
   };
 }
 
-export default { Editor, EditorWatchdog };
+export default AlightEditor;
