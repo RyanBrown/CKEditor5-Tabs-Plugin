@@ -19,6 +19,10 @@
     cursor: not-allowed;
   }
 
+  &.cka-text-no-wrap {
+    white-space: nowrap;
+  }
+
   &:enabled {
     &:hover {
       background: var(--primary-hover);

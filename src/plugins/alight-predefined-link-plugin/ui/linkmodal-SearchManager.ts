@@ -47,7 +47,7 @@ export class SearchManager {
         />
         <button id="reset-search-btn" class="cka-button cka-button-rounded cka-button-text"><i class="fa-regular fa-xmark"></i></button>
         <button id="${this.advancedSearchTriggerId}" 
-                class="cka-button cka-button-rounded cka-button-text"
+                class="cka-button cka-button-rounded cka-button-text cka-text-no-wrap"
                 data-panel-id="advanced-search-panel">
           Advanced Search
         </button>
@@ -56,7 +56,7 @@ export class SearchManager {
       <div class="cka-overlay-panel" data-id="advanced-search-panel">
         <header>
           <h3>Advanced Search</h3>
-          <button class="cka-close-btn">&times;</button>
+          <button class="cka-close-btn"><i class="fa-regular fa-xmark"></i></button>
         </header>
         <main class="advanced-search-content">
           ${this.createAdvancedSearchFilters()}

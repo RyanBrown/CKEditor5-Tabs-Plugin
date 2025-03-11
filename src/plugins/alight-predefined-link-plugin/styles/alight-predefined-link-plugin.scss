@@ -24,6 +24,14 @@
   }
 }
 
+.cka-no-results {
+  align-items: center;
+  display: flex;
+  font-size: 1.25rem;
+  justify-content: center;
+  padding: 1rem var(--spacing-xl);
+}
+
 .ck.ck-link-actions .ck-button.ck-link-actions__preview.cka-disabled-link-preview .ck-button__label {
   color: var(--neutral-black);
   cursor: default;
