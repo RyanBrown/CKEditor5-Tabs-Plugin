@@ -535,18 +535,6 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
   private _createCustomContent(): HTMLElement {
     const container = document.createElement('div');
 
-    const searchContainer = document.createElement('div');
-    searchContainer.id = 'search-container-root';
-    searchContainer.className = 'cka-search-container';
-    searchContainer.innerHTML = `
-      <div class="cka-search-input-container">
-        <input type="text" id="search-input" class="cka-search-input" placeholder="Search by link name..." />
-        <button id="reset-search-btn" class="cka-button cka-button-rounded cka-button-text">
-          <i class="fa-regular fa-xmark"></i>
-        </button>
-      </div>
-    `;
-
     const linksContainer = document.createElement('div');
     linksContainer.id = 'links-container';
     linksContainer.innerHTML = `
@@ -559,7 +547,6 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
     paginationContainer.id = 'pagination-container';
     paginationContainer.className = 'cka-pagination';
 
-    container.appendChild(searchContainer);
     container.appendChild(linksContainer);
     container.appendChild(paginationContainer);
 

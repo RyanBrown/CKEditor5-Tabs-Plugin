@@ -38,6 +38,11 @@
   }
 }
 
+.pagination-controls {
+  align-items: center;
+  display: flex;
+}
+
 .ck.ck-link-actions .ck-button.ck-link-actions__preview.cka-disabled-link-preview .ck-button__label {
   color: var(--neutral-black);
   cursor: default;

@@ -86,7 +86,7 @@ export class PaginationManager {
       <article id="pagination" class="pagination-controls">
         <button 
           id="first-page" 
-          class="first pagination-btn cka-button cka-button-text" 
+          class="cka-button cka-button-icon-only cka-button-text first"
           data-page="1" 
           ${this.currentPage === 1 ? 'disabled' : ''}
           aria-label="First page"
@@ -95,7 +95,7 @@ export class PaginationManager {
         </button>
         <button 
           id="prev-page" 
-          class="previous pagination-btn cka-button cka-button-text" 
+          class="cka-button cka-button-icon-only cka-button-text previous"
           data-page="${this.currentPage - 1}" 
           ${this.currentPage === 1 ? 'disabled' : ''}
           aria-label="Previous page"
@@ -105,7 +105,7 @@ export class PaginationManager {
         <div id="page-select-container" class="cka-select-menu-wrap" role="navigation"></div>
         <button 
           id="next-page" 
-          class="next pagination-btn cka-button cka-button-text" 
+          class="cka-button cka-button-icon-only cka-button-text next"
           data-page="${this.currentPage + 1}" 
           ${this.currentPage === totalPages ? 'disabled' : ''}
           aria-label="Next page"
@@ -114,7 +114,7 @@ export class PaginationManager {
         </button>
         <button 
           id="last-page" 
-          class="last pagination-btn cka-button cka-button-text" 
+          class="cka-button cka-button-icon-only cka-button-text last"
           data-page="${totalPages}" 
           ${this.currentPage === totalPages ? 'disabled' : ''}
           aria-label="Last page"
@@ -135,7 +135,7 @@ export class PaginationManager {
 
     newPaginationDiv.addEventListener('click', (e: Event) => {
       const target = e.target as HTMLElement;
-      if (!target.matches('.pagination-btn') || target.hasAttribute('disabled')) return;
+      if (!target.matches('.cka-button') || target.hasAttribute('disabled')) return;
 
       const pageAttr = target.getAttribute('data-page');
       if (!pageAttr) return;

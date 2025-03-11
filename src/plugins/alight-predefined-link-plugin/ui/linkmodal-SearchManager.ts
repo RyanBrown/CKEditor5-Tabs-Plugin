@@ -45,7 +45,7 @@ export class SearchManager {
           placeholder="Search by link name..." 
           value="${this.currentSearchQuery}"
         />
-        <button id="reset-search-btn" class="cka-button cka-button-rounded cka-button-text" style="display: none;">
+        <button id="reset-search-btn" class="cka-button cka-button-rounded cka-button-secondary cka-button-icon-only cka-button-text" style="display: none;">
           <i class="fa-regular fa-xmark"></i>
         </button>
         <button id="${this.advancedSearchTriggerId}" 
