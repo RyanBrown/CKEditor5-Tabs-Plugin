@@ -376,6 +376,10 @@ export class CkAlightModalDialog {
   private centerDialog(): void {
     if (!this.dialog || this.maximized) return;
 
+    // Reset any previous transform to avoid conflicts
+    this.dialog.style.transform = '';
+
+    // Apply centering position
     this.dialog.style.left = '50%';
     this.dialog.style.top = '50%';
     this.dialog.style.transform = 'translate(-50%, -50%)';
@@ -878,13 +882,14 @@ export class CkAlightModalDialog {
 
     // Set initial animation state
     if (this.dialog) {
-      // For center position, maintain the translate transform while changing scale
-      const transform = this.options.position === 'center'
-        ? 'translate(-50%, -50%) scale(0.7)'
-        : 'scale(0.7)';
+      // For center position, use the transform from centerDialog
+      const transform = this.dialog.style.transform;
+
+      // Save the current transform and add the scaling effect
+      const startTransform = transform ? transform + ' scale(0.7)' : 'scale(0.7)';
 
       this.dialog.style.opacity = '0';
-      this.dialog.style.transform = transform;
+      this.dialog.style.transform = startTransform;
 
       // Set transition for animation
       this.dialog.style.transition = this.options.transitionOptions;
@@ -892,13 +897,11 @@ export class CkAlightModalDialog {
       // Trigger animation
       setTimeout(() => {
         if (this.dialog) {
-          // Maintain centering transform when scaling to 1
-          const finalTransform = this.options.position === 'center'
-            ? 'translate(-50%, -50%) scale(1)'
-            : 'scale(1)';
+          // Return to the normal transform (centering or other positioning)
+          const finalTransform = transform ? transform + ' scale(1)' : 'scale(1)';
 
           this.dialog.style.opacity = '1';
-          this.dialog.style.transform = finalTransform;  // CHANGED: Use the finalTransform variable
+          this.dialog.style.transform = finalTransform;
         }
 
         // Focus the dialog or primary button (accessibility)
@@ -942,10 +945,9 @@ export class CkAlightModalDialog {
 
     // Start hide animation
     if (this.dialog) {
-      // Use the same transform logic as in show() but with scale 0.7
-      const hideTransform = this.options.position === 'center'
-        ? 'translate(-50%, -50%) scale(0.7)'
-        : 'scale(0.7)';
+      // Get the current transform and add scaling
+      const currentTransform = this.dialog.style.transform;
+      const hideTransform = currentTransform.replace(/scale\([^)]*\)/g, '') + ' scale(0.7)';
 
       this.dialog.style.opacity = '0';
       this.dialog.style.transform = hideTransform;
