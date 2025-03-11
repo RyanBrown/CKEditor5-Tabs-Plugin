@@ -35,7 +35,7 @@ export class SearchManager {
   }
 
   private injectSearchUI(searchContainer: HTMLElement): void {
-    // Basic search UI
+    // Updated search UI with reset button initially hidden
     searchContainer.innerHTML = `
       <div class="cka-search-input-container">
         <input 
@@ -45,7 +45,9 @@ export class SearchManager {
           placeholder="Search by link name..." 
           value="${this.currentSearchQuery}"
         />
-        <button id="reset-search-btn" class="cka-button cka-button-rounded cka-button-text"><i class="fa-regular fa-xmark"></i></button>
+        <button id="reset-search-btn" class="cka-button cka-button-rounded cka-button-text" style="display: none;">
+          <i class="fa-regular fa-xmark"></i>
+        </button>
         <button id="${this.advancedSearchTriggerId}" 
                 class="cka-button cka-button-rounded cka-button-text cka-text-no-wrap"
                 data-panel-id="advanced-search-panel">
@@ -72,7 +74,30 @@ export class SearchManager {
       </div>
     `;
 
-    this.searchInput = searchContainer.querySelector('#search-input');
+    this.searchInput = searchContainer.querySelector('#search-input') as HTMLInputElement;
+    const resetButton = searchContainer.querySelector('#reset-search-btn') as HTMLButtonElement;
+
+    // Add event listeners for search input and reset button
+    if (this.searchInput && resetButton) {
+      // Ensure reset button visibility is tied to input value
+      this.searchInput.addEventListener('input', () => {
+        this.currentSearchQuery = this.searchInput.value;
+        resetButton.style.display = this.searchInput.value.length > 0 ? 'inline-flex' : 'none';
+        // Optionally trigger search on input change (debounced if needed)
+      });
+
+      // Clear input and hide reset button when clicked
+      resetButton.addEventListener('click', () => {
+        this.searchInput.value = '';
+        this.currentSearchQuery = '';
+        resetButton.style.display = 'none';
+        this.searchInput.dispatchEvent(new Event('input')); // Trigger input event
+        this.updateFilteredData(); // Update search results
+      });
+
+      // Ensure reset button is hidden initially, even if there's a value from currentSearchQuery
+      resetButton.style.display = this.searchInput.value.length > 0 ? 'inline-flex' : 'none';
+    }
   }
 
   private createAdvancedSearchFilters(): string {
@@ -149,8 +174,6 @@ export class SearchManager {
   private setupEventListeners(container: HTMLElement): void {
     // Basic search functionality
     container.querySelector('#search-btn')?.addEventListener('click', () => this.performSearch());
-    container.querySelector('#reset-search-btn')?.addEventListener('click', () => this.reset());
-
     // Add enter key listener for search input
     this.searchInput?.addEventListener('keypress', (e: KeyboardEvent) => {
       if (e.key === 'Enter') {
@@ -170,7 +193,7 @@ export class SearchManager {
     // Handle the clear filters button click
     document.querySelectorAll('#clear-filters').forEach(button => {
       button.addEventListener('click', () => {
-        this.clearFilters(container); // Pass container to update UI
+        this.clearFilters(container);
       });
     });
 
@@ -260,5 +283,11 @@ export class SearchManager {
       domain: []
     };
     this.updateFilteredData();
+
+    // Ensure reset button is hidden after reset
+    const resetButton = document.querySelector('#reset-search-btn') as HTMLButtonElement;
+    if (resetButton) {
+      resetButton.style.display = 'none';
+    }
   }
 }
