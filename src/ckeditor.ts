@@ -265,7 +265,7 @@ class AlightEditor extends ClassicEditor {
         'alightImagePlugin',
         'alightPopulationPlugin',
         'alightParentLinkPlugin',
-        'alightPredefinedLinkPlugin',
+        // 'alightPredefinedLinkPlugin',
         //'alightExistingDocumentLinkPlugin',
         // 'alightNewDocumentLinkPlugin',
         'alightLink',
@@ -285,32 +285,32 @@ class AlightEditor extends ClassicEditor {
           enabled: true
         },
         {
-          name: 'AlightEmailLinkPlugin',
-          command: 'alight-email-link',
-          label: 'Email',
+          name: 'AlightPredefinedLinkPlugin',
+          command: 'alightPredefinedLinkPlugin',
+          label: 'Predefined Link',
           order: 2,
           enabled: true
         },
         {
-          name: 'AlightPredefinedLinkPlugin',
-          command: 'alightPredefinedLinkPlugin',
-          label: 'Predefined Link',
+          name: 'AlightEmailLinkPlugin',
+          command: 'alight-email-link',
+          label: 'Email',
           order: 3,
-          enabled: false
+          enabled: true
         },
         {
           name: 'AlightExistingDocumentLinkPlugin',
           command: 'alightExistingDocumentLinkPlugin',
           label: 'Existing Document',
           order: 4,
-          enabled: false
+          enabled: true
         },
         {
           name: 'AlightNewDocumentLinkPlugin',
           command: 'alightNewDocumentLinkPlugin',
           label: 'New Document',
           order: 5,
-          enabled: false
+          enabled: true
         }
       ]
     },
