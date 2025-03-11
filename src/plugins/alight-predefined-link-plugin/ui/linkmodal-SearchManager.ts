@@ -170,7 +170,7 @@ export class SearchManager {
     // Handle the clear filters button click
     document.querySelectorAll('#clear-filters').forEach(button => {
       button.addEventListener('click', () => {
-        this.clearFilters();
+        this.clearFilters(container); // Pass container to update UI
       });
     });
 
@@ -202,22 +202,28 @@ export class SearchManager {
     this.updateFilteredData();
   }
 
-  private clearFilters(): void {
+  private clearFilters(container: HTMLElement): void {
+    // Reset all filters
     this.selectedFilters = {
       baseOrClientSpecific: [],
       pageType: [],
       domain: []
     };
 
-    // Update all checkboxes in the document
-    document.querySelectorAll('cka-checkbox').forEach(checkbox => {
-      (checkbox as any).checked = false;
-    });
+    // Uncheck all checkboxes within the advanced search panel
+    const advancedSearchPanel = container.querySelector('.cka-overlay-panel[data-id="advanced-search-panel"]');
+    if (advancedSearchPanel) {
+      document.querySelectorAll('cka-checkbox').forEach(checkbox => {
+        (checkbox as any).checked = false;
+      });
+    }
+
+    // Update the filtered data and UI
+    this.updateFilteredData();
   }
 
   private applyFilters(): void {
     this.updateFilteredData();
-    // Fixed: Use hide() method instead of close()
     this.overlayPanel?.hide();
   }
 

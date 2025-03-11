@@ -32,6 +32,12 @@
   padding: 1rem var(--spacing-xl);
 }
 
+.filter-section {
+  h4:first-of-type {
+    margin-top: 0;
+  }
+}
+
 .ck.ck-link-actions .ck-button.ck-link-actions__preview.cka-disabled-link-preview .ck-button__label {
   color: var(--neutral-black);
   cursor: default;
