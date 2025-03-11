@@ -572,6 +572,11 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
     const t = editor.t;
     const linkCommand = editor.commands.get('alight-predefined-link') as AlightPredefinedLinkPluginCommand;
 
+    // Store the current selection to restore it later
+    const originalSelection = editor.model.document.selection;
+    const firstRange = originalSelection.getFirstRange();
+    const hasText = !originalSelection.isCollapsed && firstRange !== null;
+
     // Get current link URL if editing
     let initialUrl = '';
     let initialLink: PredefinedLink | null = null;
@@ -608,13 +613,18 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
           return;
         }
 
-        if (label === t('Continue')) {
+        if (label === t('Save')) {
           // Get the selected link from the content manager
           const selectedLink = this._linkManager?.getSelectedLink();
           console.log('Selected link:', selectedLink);
 
           if (selectedLink && selectedLink.destination) {
-            // Create the link in the editor using the built-in link command
+            // The issue is in how we apply the link - we need to use the link command's execute
+            // method correctly by providing any necessary options and letting it maintain
+            // the existing selection rather than inserting new text
+
+            // Apply the link to the current selection
+            // For non-collapsed selections, this will keep the text but add the link attribute
             linkCommand.execute(selectedLink.destination);
 
             // Hide the modal after creating the link
@@ -668,10 +678,10 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
         const linksContainer = customContent.querySelector('#links-container');
         if (linksContainer) {
           linksContainer.innerHTML = `
-            <div class="cka-empty-state">
-              <p>No predefined links available.</p>
-            </div>
-          `;
+          <div class="cka-empty-state">
+            <p>No predefined links available.</p>
+          </div>
+        `;
         }
         return;
       }
@@ -688,10 +698,10 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
       const linksContainer = customContent.querySelector('#links-container');
       if (linksContainer) {
         linksContainer.innerHTML = `
-          <div class="cka-error-state">
-            <p class="cka-error-details">${error.message || 'Unknown error'}</p>
-          </div>
-        `;
+        <div class="cka-error-state">
+          <p class="cka-error-details">${error.message || 'Unknown error'}</p>
+        </div>
+      `;
       }
     }
   }

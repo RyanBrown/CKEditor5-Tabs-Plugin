@@ -84,22 +84,22 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
   }
 
   /**
-   * Executes the command.
-   *
-   * When the selection is non-collapsed, the `alightPredefinedLinkPluginHref` attribute will be applied to nodes inside the selection, but only to
-   * those nodes where the `alightPredefinedLinkPluginHref` attribute is allowed (disallowed nodes will be omitted).
-   *
-   * When the selection is collapsed and is not inside the text with the `alightPredefinedLinkPluginHref` attribute, a
-   * new {@link module:engine/model/text~Text text node} with the `alightPredefinedLinkPluginHref` attribute will be inserted in place of the caret, but
-   * only if such element is allowed in this place. The `_data` of the inserted text will equal the `href` parameter.
-   * The selection will be updated to wrap the just inserted text node.
-   *
-   * When the selection is collapsed and inside the text with the `alightPredefinedLinkPluginHref` attribute, the attribute value will be updated.
-   *
-   * @fires execute
-   * @param href AlightPredefinedLinkPlugin destination.
-   * @param options Options including manual decorator attributes.
-   */
+ * Executes the command.
+ *
+ * When the selection is non-collapsed, the `alightPredefinedLinkPluginHref` attribute will be applied to nodes inside the selection, but only to
+ * those nodes where the `alightPredefinedLinkPluginHref` attribute is allowed (disallowed nodes will be omitted).
+ *
+ * When the selection is collapsed and is not inside the text with the `alightPredefinedLinkPluginHref` attribute, a
+ * new {@link module:engine/model/text~Text text node} with the `alightPredefinedLinkPluginHref` attribute will be inserted in place of the caret, but
+ * only if such element is allowed in this place. The `_data` of the inserted text will equal the `href` parameter.
+ * The selection will be updated to wrap the just inserted text node.
+ *
+ * When the selection is collapsed and inside the text with the `alightPredefinedLinkPluginHref` attribute, the attribute value will be updated.
+ *
+ * @fires execute
+ * @param href AlightPredefinedLinkPlugin destination.
+ * @param options Options including manual decorator attributes.
+ */
   public override execute(href: string, options: LinkOptions = {}): void {
     const model = this.editor.model;
     const selection = model.document.selection;
@@ -131,22 +131,21 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
             model
           );
 
-          // Remove the old link
-          writer.remove(linkRange);
+          // Update the existing link with the new href
+          writer.setAttribute('alightPredefinedLinkPluginHref', href, linkRange);
 
-          // Create the new link
-          const attributes = { alightPredefinedLinkPluginHref: href } as any;
-
-          // Add decorators
+          // Set truthyManualDecorators attributes
           truthyManualDecorators.forEach(item => {
-            attributes[item] = true;
+            writer.setAttribute(item, true, linkRange);
           });
 
-          const newTextNode = writer.createText(href, attributes);
-          model.insertContent(newTextNode, linkRange.start);
+          // Remove falsyManualDecorators attributes
+          falsyManualDecorators.forEach(item => {
+            writer.removeAttribute(item, linkRange);
+          });
 
-          // Put the selection at the end of the updated link
-          writer.setSelection(writer.createPositionAt(linkRange.start.parent, linkRange.start.offset + href.length));
+          // Put the selection back where it was
+          writer.setSelection(position);
         }
         // If not then insert text node with `alightPredefinedLinkPluginHref` attribute in place of caret.
         else if (href !== '') {
@@ -174,24 +173,23 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
         });
       } else {
         // If selection has non-collapsed ranges, we change attribute on nodes inside those ranges
+        // WITHOUT REMOVING THEM - just applying the href attribute
         const ranges = model.schema.getValidRanges(selection.getRanges(), 'alightPredefinedLinkPluginHref');
 
         // Process each range
         for (const range of ranges) {
-          // First, remove the old content
-          writer.remove(range);
+          // Set the alightPredefinedLinkPluginHref attribute on the selected text
+          writer.setAttribute('alightPredefinedLinkPluginHref', href, range);
 
-          // Then insert the new content with the link
-          const attributes = { alightPredefinedLinkPluginHref: href } as any;
-
-          // Add decorators
+          // Set truthyManualDecorators attributes
           truthyManualDecorators.forEach(item => {
-            attributes[item] = true;
+            writer.setAttribute(item, true, range);
           });
 
-          // Insert the new content
-          const newText = writer.createText(href, attributes);
-          model.insertContent(newText, range.start);
+          // Remove falsyManualDecorators attributes
+          falsyManualDecorators.forEach(item => {
+            writer.removeAttribute(item, range);
+          });
         }
       }
     });
