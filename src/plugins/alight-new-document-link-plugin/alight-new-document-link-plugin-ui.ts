@@ -73,19 +73,8 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin implements Mod
         modal: true,
         contentClass: 'new-document-content',
         buttons: [
-          {
-            label: 'Clear',
-            variant: 'outlined',
-            shape: 'round',
-          },
-          {
-            label: 'Submit',
-            variant: 'default',
-            isPrimary: true,
-            shape: 'round',
-            closeOnClick: false,  // Keep this false to handle closing manually
-            disabled: true // Initially disabled until form is valid
-          }
+          { label: 'Clear' },
+          { label: 'Continue' }
         ]
       });
 
@@ -98,7 +87,7 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin implements Mod
           return;
         }
 
-        if (data.button === 'Submit' && this._formManager) {
+        if (data.button === 'Continue' && this._formManager) {
           // Validate form before submission
           const validation = this._formManager.validateForm();
           if (validation.isValid) {

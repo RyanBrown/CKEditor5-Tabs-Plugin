@@ -407,14 +407,14 @@ export default class AlightExternalLinkPluginUI extends Plugin {
         width: '500px',
         contentClass: 'cka-external-link-content',
         buttons: [
-          { label: t('Save'), isPrimary: true, closeOnClick: false },
-          { label: t('Cancel'), variant: 'outlined' }
+          { label: t('Cancel'), variant: 'outlined' },
+          { label: t('Continue'), isPrimary: true }
         ]
       });
 
       // Handle Save button click
       this._modalDialog.on('buttonClick', (label: string) => {
-        if (label === t('Save')) {
+        if (label === t('Continue')) {
           const urlInput = document.getElementById('cka-link-url-input') as HTMLInputElement;
           const organizationInput = document.getElementById('cka-link-org-name-input') as HTMLInputElement;
 

@@ -601,18 +601,8 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
         height: 'auto',
         contentClass: 'cka-predefined-link-content',
         buttons: [
-          {
-            label: t('Cancel'),
-            variant: 'outlined',
-            shape: 'round'
-          },
-          {
-            label: t('Continue'),
-            isPrimary: true,
-            closeOnClick: false,
-            variant: 'default',
-            shape: 'round'
-          }
+          { label: t('Cancel') },
+          { label: t('Continue'), isPrimary: true }
         ]
       });
 
