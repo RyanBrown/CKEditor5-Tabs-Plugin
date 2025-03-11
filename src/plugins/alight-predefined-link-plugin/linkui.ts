@@ -21,7 +21,7 @@ import { isLinkElement } from './utils';
 import CkAlightModalDialog from './../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import './../ui-components/alight-checkbox-component/alight-checkbox-component';
 
-// Import the new ContentManager and types from the updated location
+// Import the ContentManager and types from the updated location
 import { ContentManager } from './ui/linkmodal-ContentManager';
 import { PredefinedLink } from './ui/linkmodal-modal-types';
 
@@ -379,29 +379,6 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
     this._showUI(isEditing);
   }
 
-  // Find predefined link by URL using the links service
-  private async _findPredefinedLinkByUrl(url: string): Promise<PredefinedLink | null> {
-    if (!this._linksService) {
-      console.warn('Links service not initialized');
-      return null;
-    }
-
-    try {
-      // Fetch all predefined links
-      const links = await this._linksService.getPredefinedLinks();
-
-      // Find the matching link by URL - compare regardless of trailing slash or protocol differences
-      return links.find(link => {
-        const normalizedDestination = this._normalizeUrl(link.destination as string);
-        const normalizedUrl = this._normalizeUrl(url);
-        return normalizedDestination === normalizedUrl;
-      }) || null;
-    } catch (error) {
-      console.error('Error finding predefined link by URL:', error);
-      return null;
-    }
-  }
-
   // Normalize URL for comparison by removing trailing slashes and normalizing protocol
   private _normalizeUrl(url: string): string {
     if (!url) return '';
@@ -413,6 +390,29 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
     normalized = normalized.replace(/^https?:\/\//, '');
 
     return normalized.toLowerCase();
+  }
+
+  // Find predefined link by URL using the links service
+  private async _findPredefinedLinkByUrl(url: string): Promise<PredefinedLink | null> {
+    if (!this._linksService) {
+      console.warn('Links service not initialized');
+      return null;
+    }
+
+    try {
+      // Fetch all predefined links
+      const links = await this._fetchPredefinedLinks();
+
+      // Find the matching link by URL - compare regardless of trailing slash or protocol differences
+      return links.find(link => {
+        const normalizedDestination = this._normalizeUrl(link.destination as string);
+        const normalizedUrl = this._normalizeUrl(url);
+        return normalizedDestination === normalizedUrl;
+      }) || null;
+    } catch (error) {
+      console.error('Error finding predefined link by URL:', error);
+      return null;
+    }
   }
 
   // Attaches actions that control whether the modal dialog should be displayed.

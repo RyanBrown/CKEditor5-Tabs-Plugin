@@ -36,9 +36,9 @@
     display: flex;
     flex-direction: column;
     flex-grow: 1;
+    height: 100%;
     overflow: auto;
     padding: 1rem;
-    height: 100%;
   }
 
   footer {
@@ -57,11 +57,11 @@
   }
 
   .cka-overlay-header {
-    padding: 1rem;
+    align-items: center;
     border-bottom: 1px solid var(--gray-300);
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    padding: 1rem;
 
     &.cka-hidden {
       display: none;
@@ -69,18 +69,18 @@
   }
 
   .cka-overlay-content {
-    padding: 1rem;
-    overflow-y: auto;
     flex: 1;
     height: 100%;
+    overflow-y: auto;
+    padding: 1rem;
   }
 
   .cka-overlay-footer {
-    padding: 1rem;
     border-top: 1px solid var(--gray-300);
     display: flex;
-    justify-content: flex-end;
     gap: 0.5rem;
+    justify-content: flex-end;
+    padding: 1rem;
 
     &.cka-hidden {
       display: none;
@@ -90,11 +90,11 @@
   .cka-close-btn {
     background: none;
     border: none;
-    padding: 0.5rem;
+    color: var(--secondary);
     cursor: pointer;
     font-size: 1.5rem;
     line-height: 1;
-    color: var(--secondary);
+    padding: 0.5rem;
     transition: color 0.2s;
 
     &:hover {

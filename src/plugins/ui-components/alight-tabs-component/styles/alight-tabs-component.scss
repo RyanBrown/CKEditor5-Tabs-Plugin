@@ -27,36 +27,36 @@
   position: relative;
   transition: all 0.2s;
   white-space: nowrap;
-}
 
-.cka-tab-button:hover {
-  color: #3B82F6;
-  background-color: rgba(59, 130, 246, 0.04);
-}
+  &:hover {
+    color: #3B82F6;
+    background-color: rgba(59, 130, 246, 0.04);
+  }
 
-.cka-tab-button.active {
-  color: #3B82F6;
-}
+  &.active {
+    color: #3B82F6;
 
-.cka-tab-button.active::after {
-  animation: slideIn 0.2s ease-out;
-  background-color: #3B82F6;
-  bottom: -2px;
-  content: '';
-  height: 2px;
-  left: 0;
-  position: absolute;
-  width: 100%;
+    &::after {
+      animation: slideIn 0.2s ease-out;
+      background-color: #3B82F6;
+      bottom: -2px;
+      content: '';
+      height: 2px;
+      left: 0;
+      position: absolute;
+      width: 100%;
+    }
+  }
 }
 
 .cka-tab-content {
   animation: fadeIn 0.3s ease-out;
   display: none;
   padding: 1.5rem;
-}
 
-.cka-tab-content.active {
-  display: block;
+  &.active {
+    display: block;
+  }
 }
 
 .cka-close-button {
@@ -74,11 +74,11 @@
   margin-left: 8px;
   padding: 0;
   width: 16px;
-}
 
-.cka-close-button:hover {
-  background: var(--secondary);
-  color: var(--neutral-white);
+  &:hover {
+    background: var(--secondary);
+    color: var(--neutral-white);
+  }
 }
 
 .cka-scroll-button {
@@ -96,25 +96,27 @@
   transform: translateY(-50%);
   width: 24px;
   z-index: 1;
+
+  &.left {
+    left: -12px;
+  }
+
+  &.right {
+    right: -12px;
+  }
+
+  &:hover {
+    background: var(--gray-150);
+  }
 }
 
-.cka-scroll-button.left {
-  left: -12px;
-}
+.cka-tabs-header {
+  &.scrollable {
+    overflow-x: hidden;
+    position: relative;
 
-.cka-scroll-button.right {
-  right: -12px;
-}
-
-.cka-scroll-button:hover {
-  background: var(--gray-150);
-}
-
-.cka-tabs-header.scrollable {
-  overflow-x: hidden;
-  position: relative;
-}
-
-.cka-tabs-header.scrollable .cka-scroll-button {
-  display: flex;
+    .cka-scroll-button {
+      display: flex;
+    }
+  }
 }

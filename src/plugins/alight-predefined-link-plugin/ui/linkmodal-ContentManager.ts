@@ -43,6 +43,19 @@ export class ContentManager implements ILinkManager {
     };
   }
 
+  // Helper for URL normalization - this is used by external callers
+  public normalizeUrl(url: string): string {
+    if (!url) return '';
+
+    // Remove trailing slash
+    let normalized = url.endsWith('/') ? url.slice(0, -1) : url;
+
+    // Simplify protocol for comparison
+    normalized = normalized.replace(/^https?:\/\//, '');
+
+    return normalized.toLowerCase();
+  }
+
   private handleSearchResults = (filteredData: PredefinedLink[]): void => {
     console.log('Search results updated:', filteredData.length, 'items');
 
