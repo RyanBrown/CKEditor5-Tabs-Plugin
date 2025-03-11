@@ -135,10 +135,12 @@ export class SearchManager {
       return;
     }
 
+    // Fixed: Use the updated PanelConfig properties
     this.overlayPanel = new AlightOverlayPanel(triggerEl as HTMLElement, {
       width: '600px',
       height: 'auto',
-      onOpen: () => {
+      // Use correct callback name from updated API
+      onShow: () => {
         this.setupAdvancedSearchListeners(container);
       }
     });
@@ -215,7 +217,8 @@ export class SearchManager {
 
   private applyFilters(): void {
     this.updateFilteredData();
-    this.overlayPanel?.close();
+    // Fixed: Use hide() method instead of close()
+    this.overlayPanel?.hide();
   }
 
   private updateFilteredData(): void {

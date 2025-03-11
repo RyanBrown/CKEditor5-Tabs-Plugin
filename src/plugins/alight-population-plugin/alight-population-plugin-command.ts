@@ -1,7 +1,7 @@
 // src/plugins/alight-population-plugin/alight-population-plugin-command.ts
 import type Editor from '@ckeditor/ckeditor5-core/src/editor/editor';
 import Command from '@ckeditor/ckeditor5-core/src/command';
-import CkAlightModalDialog from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
+import { CkAlightModalDialog } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import type { ArrayOrItem } from '@ckeditor/ckeditor5-utils';
 
 interface DialogButton {

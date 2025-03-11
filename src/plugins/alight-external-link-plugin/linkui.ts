@@ -18,7 +18,7 @@ import LinkActionsView from './ui/linkactionsview';
 import type AlightExternalLinkPluginCommand from './linkcommand';
 import type AlightExternalUnlinkCommand from './unlinkcommand';
 import { addLinkProtocolIfApplicable, isLinkElement } from './utils'; // Removed LINK_KEYSTROKE import
-import CkAlightModalDialog from './../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
+import { CkAlightModalDialog } from './../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import type { CkAlightCheckbox } from './../ui-components/alight-checkbox-component/alight-checkbox-component';
 import './../ui-components/alight-checkbox-component/alight-checkbox-component';
 

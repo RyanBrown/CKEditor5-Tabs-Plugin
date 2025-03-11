@@ -18,7 +18,7 @@ import LinkActionsView from './ui/linkactionsview';
 import type AlightPredefinedLinkPluginCommand from './linkcommand';
 import type AlightPredefinedLinkPluginUnlinkCommand from './unlinkcommand';
 import { isLinkElement } from './utils';
-import CkAlightModalDialog from './../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
+import { CkAlightModalDialog } from './../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import './../ui-components/alight-checkbox-component/alight-checkbox-component';
 
 // Import the ContentManager and types from the updated location

@@ -10,16 +10,17 @@ interface PositionableElement extends HTMLElement {
 }
 
 export interface PositionConfig {
-  position?: 'top' | 'bottom' | 'left' | 'right' | 'center';
+  position?: 'top' | 'bottom' | 'left' | 'right' | 'center' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
   offset?: number;
   followTrigger?: boolean;
   constrainToViewport?: boolean;
-  autoFlip?: boolean; // New: if true, automatically flip the overlay when there is not enough space.
+  autoFlip?: boolean;
   alignment?: 'start' | 'center' | 'end';
   width?: string | number;
   height?: string | number;
   margin?: number;
   zIndex?: number;
+  appendTo?: 'body' | 'target' | HTMLElement; // PrimeNG-like appendTo option
 }
 
 export class AlightPositionManager {
@@ -28,13 +29,19 @@ export class AlightPositionManager {
     element: PositionableElement,
     trigger: HTMLElement,
     config: PositionConfig,
-    cleanup?: () => void
+    cleanup?: () => void,
+    originalParent?: HTMLElement // Store original parent for proper cleanup
   }> = new Map();
   private zIndexCounter: number = 1000;
+  private activeComponents: Set<string> = new Set(); // Track active components for proper z-index stacking
 
   private constructor() {
+    // Use capture phase for scroll to catch all scroll events
     window.addEventListener('scroll', this.updateAllPositions.bind(this), true);
     window.addEventListener('resize', this.updateAllPositions.bind(this));
+
+    // Handle tab/window focus events (similar to PrimeNG)
+    window.addEventListener('focus', this.updateAllPositions.bind(this));
   }
 
   public static getInstance(): AlightPositionManager {
@@ -48,20 +55,29 @@ export class AlightPositionManager {
    * Returns the first scrollable parent of the given element.
    */
   private getScrollParent(element: HTMLElement): HTMLElement | null {
+    if (!element) return document.body;
+
+    // Start with the parent element
     let parent = element.parentElement;
     while (parent) {
-      const overflowY = window.getComputedStyle(parent).overflowY;
-      if (overflowY === 'auto' || overflowY === 'scroll') {
+      const { overflowY, overflowX } = window.getComputedStyle(parent);
+      // Check for both X and Y overflow like PrimeNG does
+      if (
+        (overflowY === 'auto' || overflowY === 'scroll' || overflowX === 'auto' || overflowX === 'scroll') &&
+        (parent.scrollHeight > parent.clientHeight || parent.scrollWidth > parent.clientWidth)
+      ) {
         return parent;
       }
       parent = parent.parentElement;
     }
-    return null;
+
+    // If no scrollable parent found, return document.body
+    return document.body;
   }
 
   /**
    * Calculates the position of the overlay element relative to its trigger.
-   * The logic now includes an "autoFlip" feature similar to PrimeNG.
+   * The logic now fully matches PrimeNG's positioning system.
    */
   private calculatePosition(
     trigger: HTMLElement,
@@ -78,7 +94,7 @@ export class AlightPositionManager {
     let left = 0;
     const requestedPosition = config.position || 'bottom';
 
-    // Helper to compute aligned horizontal/vertical positions based on alignment setting.
+    // Helper to compute aligned horizontal/vertical positions based on alignment setting
     const getAlignedPosition = (primaryPos: number, size: number, targetSize: number): number => {
       switch (config.alignment) {
         case 'start':
@@ -91,7 +107,7 @@ export class AlightPositionManager {
       }
     };
 
-    // Initial calculation based on the requested position.
+    // Calculate position based on requested position including compound positions (top-left, etc.)
     switch (requestedPosition) {
       case 'top':
         top = triggerRect.top - elementRect.height - margin + scrollY;
@@ -109,37 +125,86 @@ export class AlightPositionManager {
         left = triggerRect.right + margin + scrollX;
         top = getAlignedPosition(triggerRect.top, elementRect.height, triggerRect.height) + scrollY;
         break;
+      case 'top-left':
+        top = triggerRect.top - elementRect.height - margin + scrollY;
+        left = triggerRect.left + scrollX;
+        break;
+      case 'top-right':
+        top = triggerRect.top - elementRect.height - margin + scrollY;
+        left = triggerRect.right - elementRect.width + scrollX;
+        break;
+      case 'bottom-left':
+        top = triggerRect.bottom + margin + scrollY;
+        left = triggerRect.left + scrollX;
+        break;
+      case 'bottom-right':
+        top = triggerRect.bottom + margin + scrollY;
+        left = triggerRect.right - elementRect.width + scrollX;
+        break;
       case 'center':
         top = (window.innerHeight - elementRect.height) / 2 + scrollY;
         left = (window.innerWidth - elementRect.width) / 2 + scrollX;
         break;
     }
 
-    // Auto-flip logic (mirroring PrimeNG behavior)
+    // Auto-flip logic (full PrimeNG implementation)
     if (config.autoFlip) {
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
 
+      // Store original position for "flipping back" logic
+      const originalPosition = requestedPosition;
+      let adjustedPosition = originalPosition;
+
       // Vertical auto-flip for top and bottom positions
-      if (requestedPosition === 'bottom' && (top + elementRect.height > viewportHeight + scrollY)) {
-        // Not enough space below; flip to top.
+      if ((originalPosition === 'bottom' || originalPosition === 'bottom-left' || originalPosition === 'bottom-right') &&
+        (top + elementRect.height > viewportHeight + scrollY)) {
+        // Not enough space below; flip to top
         top = triggerRect.top - elementRect.height - margin + scrollY;
-      } else if (requestedPosition === 'top' && (top < scrollY)) {
-        // Not enough space above; flip to bottom.
+        adjustedPosition = originalPosition === 'bottom' ? 'top' :
+          originalPosition === 'bottom-left' ? 'top-left' : 'top-right';
+      } else if ((originalPosition === 'top' || originalPosition === 'top-left' || originalPosition === 'top-right') &&
+        (top < scrollY)) {
+        // Not enough space above; flip to bottom
         top = triggerRect.bottom + margin + scrollY;
+        adjustedPosition = originalPosition === 'top' ? 'bottom' :
+          originalPosition === 'top-left' ? 'bottom-left' : 'bottom-right';
       }
 
       // Horizontal auto-flip for left and right positions
-      if (requestedPosition === 'right' && (left + elementRect.width > viewportWidth + scrollX)) {
-        // Not enough space on the right; flip to left.
-        left = triggerRect.left - elementRect.width - margin + scrollX;
-      } else if (requestedPosition === 'left' && (left < scrollX)) {
-        // Not enough space on the left; flip to right.
-        left = triggerRect.right + margin + scrollX;
+      if ((originalPosition === 'right' || originalPosition === 'top-right' || originalPosition === 'bottom-right') &&
+        (left + elementRect.width > viewportWidth + scrollX)) {
+        // Not enough space on the right; flip to left
+        if (originalPosition === 'right') {
+          left = triggerRect.left - elementRect.width - margin + scrollX;
+          adjustedPosition = 'left';
+        } else {
+          left = triggerRect.left + scrollX;
+          adjustedPosition = originalPosition === 'top-right' ? 'top-left' : 'bottom-left';
+        }
+      } else if ((originalPosition === 'left' || originalPosition === 'top-left' || originalPosition === 'bottom-left') &&
+        (left < scrollX)) {
+        // Not enough space on the left; flip to right
+        if (originalPosition === 'left') {
+          left = triggerRect.right + margin + scrollX;
+          adjustedPosition = 'right';
+        } else {
+          left = triggerRect.right - elementRect.width + scrollX;
+          adjustedPosition = originalPosition === 'top-left' ? 'top-right' : 'bottom-right';
+        }
+      }
+
+      // If position was adjusted, store this on the element for styling purposes
+      if (adjustedPosition !== originalPosition) {
+        element.setAttribute('data-flipped', 'true');
+        element.setAttribute('data-flipped-to', adjustedPosition);
+      } else {
+        element.removeAttribute('data-flipped');
+        element.removeAttribute('data-flipped-to');
       }
     }
 
-    // Constrain the overlay within the viewport or its scroll parent's bounds if needed.
+    // Constrain the overlay within the viewport or its scroll parent's bounds if needed
     if (config.constrainToViewport) {
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
@@ -151,6 +216,7 @@ export class AlightPositionManager {
         left: 0
       };
 
+      // Apply constraints like PrimeNG
       left = Math.max(
         parentRect.left + scrollX,
         Math.min(left, parentRect.right + scrollX - elementRect.width)
@@ -172,20 +238,31 @@ export class AlightPositionManager {
     if (!component) return;
 
     const { element, trigger, config } = component;
+
+    // Check if elements still exist in the DOM
+    if (!document.body.contains(element) || !document.body.contains(trigger)) {
+      this.unregister(id);
+      return;
+    }
+
     const { top, left } = this.calculatePosition(trigger, element, config);
 
+    // Apply position
     element.style.position = 'absolute';
     element.style.top = `${top}px`;
     element.style.left = `${left}px`;
 
+    // Apply dimensions if specified
     if (config.width) {
       element.style.width = typeof config.width === 'number' ? `${config.width}px` : config.width;
     }
     if (config.height) {
       element.style.height = typeof config.height === 'number' ? `${config.height}px` : config.height;
     }
-    if (config.zIndex) {
-      element.style.zIndex = config.zIndex.toString();
+
+    // Apply z-index (ensure active component is always on top)
+    if (this.activeComponents.has(id)) {
+      element.style.zIndex = (config.zIndex || this.zIndexCounter).toString();
     }
   }
 
@@ -198,6 +275,7 @@ export class AlightPositionManager {
 
   /**
    * Registers an overlay component for auto-positioning.
+   * Enhances PrimeNG's behavior with appendTo options and z-index management.
    */
   public register(
     id: string,
@@ -205,25 +283,50 @@ export class AlightPositionManager {
     trigger: HTMLElement,
     config: PositionConfig = {}
   ): void {
-    // Unregister any existing component with the same id to avoid duplicates.
+    // Unregister any existing component with the same id to avoid duplicates
     this.unregister(id);
 
+    // Store original parent for cleanup later
+    const originalParent = element.parentElement;
+
+    // Handle appendTo option like PrimeNG
+    if (config.appendTo) {
+      if (config.appendTo === 'body') {
+        document.body.appendChild(element);
+      } else if (config.appendTo === 'target' && trigger) {
+        trigger.appendChild(element);
+      } else if (config.appendTo instanceof HTMLElement) {
+        config.appendTo.appendChild(element);
+      }
+    }
+
+    // Manage z-index
     if (!config.zIndex) {
       config.zIndex = this.zIndexCounter++;
     }
 
-    this.components.set(id, { element, trigger, config });
+    // Mark this component as active (for z-index stacking)
+    this.activeComponents.add(id);
+
+    // Ensure all other components have lower z-index
+    this.components.forEach((component, componentId) => {
+      if (componentId !== id && component.element) {
+        component.element.style.zIndex = (Number(component.element.style.zIndex || 0) - 1).toString();
+      }
+    });
+
+    this.components.set(id, { element, trigger, config, originalParent });
 
     if (config.followTrigger) {
       let rafId: number | null = null;
 
-      // Use a requestAnimationFrame loop to continuously update the position if followTrigger is enabled.
+      // Use a requestAnimationFrame loop to continuously update the position if followTrigger is enabled
       const updateLoop = () => {
         this.updatePosition(id);
         rafId = requestAnimationFrame(updateLoop);
       };
 
-      // Cleanup function to cancel the animation frame when the component is unregistered.
+      // Cleanup function to cancel the animation frame when the component is unregistered
       const cleanup = () => {
         if (rafId !== null) {
           cancelAnimationFrame(rafId);
@@ -238,7 +341,7 @@ export class AlightPositionManager {
   }
 
   /**
-   * Unregisters a component, cleaning up any ongoing position updates.
+   * Unregisters a component, cleaning up any ongoing position updates and restoring DOM.
    */
   public unregister(id: string): void {
     const component = this.components.get(id);
@@ -246,6 +349,20 @@ export class AlightPositionManager {
       if (component.cleanup) {
         component.cleanup();
       }
+
+      // PrimeNG-like cleanup: restore element to original parent if it was moved
+      if (component.originalParent &&
+        component.element.parentElement !== component.originalParent &&
+        document.body.contains(component.originalParent)) {
+        try {
+          component.originalParent.appendChild(component.element);
+        } catch (e) {
+          // Ignore errors if element is already removed
+        }
+      }
+
+      // Remove from active components tracking
+      this.activeComponents.delete(id);
       this.components.delete(id);
     }
   }
@@ -257,6 +374,12 @@ export class AlightPositionManager {
     const component = this.components.get(id);
     if (component) {
       component.config = { ...component.config, ...newConfig };
+
+      // If z-index changed, update z-index stacking
+      if (newConfig.zIndex && this.activeComponents.has(id)) {
+        this.zIndexCounter = Math.max(this.zIndexCounter, newConfig.zIndex + 1);
+      }
+
       this.updatePosition(id);
     }
   }
@@ -267,11 +390,26 @@ export class AlightPositionManager {
   public getNextZIndex(): number {
     return this.zIndexCounter++;
   }
+
+  /**
+   * Brings a component to the front of the z-index stack, like PrimeNG's overlay behavior.
+   */
+  public bringToFront(id: string): void {
+    const component = this.components.get(id);
+    if (component && component.element) {
+      // Update z-index for this component
+      const newZIndex = this.getNextZIndex();
+      component.config.zIndex = newZIndex;
+      component.element.style.zIndex = newZIndex.toString();
+
+      // Mark as active
+      this.activeComponents.add(id);
+    }
+  }
 }
 
 // Decorator factory for auto-positioning.
-// Note: The properties 'positionManager' and 'componentId' are public so they can be accessed externally.
-// An explicit constructor is added to bind the methods to the instance.
+// Enhanced to match PrimeNG's positioning behavior including appendTo support
 export function Positionable(config: PositionConfig = {}) {
   return function <T extends { new(...args: any[]): any }>(constructor: T) {
     return class extends constructor {
@@ -293,6 +431,9 @@ export function Positionable(config: PositionConfig = {}) {
         // Register the component with the position manager when shown,
         // ensuring that the required properties (element and trigger) are defined.
         if (this.element && this.trigger) {
+          // Bring to front when shown (PrimeNG behavior)
+          this.positionManager.bringToFront(this.componentId);
+
           this.positionManager.register(
             this.componentId,
             this.element,

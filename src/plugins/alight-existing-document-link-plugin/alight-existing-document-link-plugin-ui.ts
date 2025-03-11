@@ -225,7 +225,6 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
         modal: true,
         width: '80vw',
         height: 'auto',
-        closeOnClickOutside: false,
         contentClass: 'cka-existing-document-link-content',
         buttons: [
           {
