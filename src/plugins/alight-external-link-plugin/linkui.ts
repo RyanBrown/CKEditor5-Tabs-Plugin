@@ -17,7 +17,7 @@ import AlightExternalLinkPluginEditing from './linkediting';
 import LinkActionsView from './ui/linkactionsview';
 import type AlightExternalLinkPluginCommand from './linkcommand';
 import type AlightExternalUnlinkCommand from './unlinkcommand';
-import { addLinkProtocolIfApplicable, isLinkElement, LINK_KEYSTROKE } from './utils';
+import { addLinkProtocolIfApplicable, isLinkElement } from './utils'; // Removed LINK_KEYSTROKE import
 import CkAlightModalDialog from './../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import type { CkAlightCheckbox } from './../ui-components/alight-checkbox-component/alight-checkbox-component';
 import './../ui-components/alight-checkbox-component/alight-checkbox-component';
@@ -126,10 +126,6 @@ export default class AlightExternalLinkPluginUI extends Plugin {
     editor.accessibility.addKeystrokeInfos({
       keystrokes: [
         {
-          label: t('Create External Link'),
-          keystroke: LINK_KEYSTROKE
-        },
-        {
           label: t('Move out of a link'),
           keystroke: [
             ['arrowleft', 'arrowleft'],
@@ -192,7 +188,6 @@ export default class AlightExternalLinkPluginUI extends Plugin {
     view.set({
       label: t('Alight External Link'),
       icon: linkIcon,
-      keystroke: LINK_KEYSTROKE,
       isToggleable: true,
       withText: true
     });
@@ -266,17 +261,8 @@ export default class AlightExternalLinkPluginUI extends Plugin {
         this._showBalloon();
       }
     });
-
-    // Handle the `Ctrl+K` keystroke and show the modal dialog for new links.
-    editor.keystrokes.set(LINK_KEYSTROKE, (keyEvtData, cancel) => {
-      // Prevent focusing the search bar in FF, Chrome and Edge.
-      cancel();
-
-      if (editor.commands.get('alight-external-link')!.isEnabled) {
-        this._showUI();
-      }
-    });
   }
+
 
   /**
    * Enable interactions between the balloon and modal interface.
@@ -396,6 +382,12 @@ export default class AlightExternalLinkPluginUI extends Plugin {
     }
 
     return URL_REGEX.test(url);
+  }
+
+  private _isExternalLink(linkElement: ViewAttributeElement | null): boolean {
+    if (!linkElement) return false;
+    const href = linkElement.getAttribute('href') || '';
+    return href && !href.startsWith('mailto:') && this._validateURL(href);
   }
 
   /**
@@ -576,7 +568,7 @@ export default class AlightExternalLinkPluginUI extends Plugin {
   }
 
   /**
-   * Hides the UI.
+   * Hides the UI
    */
   private _hideUI(): void {
     // Prevent recursive calls
@@ -642,9 +634,11 @@ export default class AlightExternalLinkPluginUI extends Plugin {
     const selection = view.document.selection;
     const selectedElement = selection.getSelectedElement();
 
+    let linkElement: ViewAttributeElement | null = null;
+
     // The selection is collapsed or some widget is selected (especially inline widget).
-    if (selection.isCollapsed || selectedElement && isWidget(selectedElement)) {
-      return findLinkElementAncestor(selection.getFirstPosition()!);
+    if (selection.isCollapsed || (selectedElement && isWidget(selectedElement))) {
+      linkElement = findLinkElementAncestor(selection.getFirstPosition()!);
     } else {
       // The range for fully selected link is usually anchored in adjacent text nodes.
       // Trim it to get closer to the actual link element.
@@ -652,17 +646,12 @@ export default class AlightExternalLinkPluginUI extends Plugin {
       const startLink = findLinkElementAncestor(range.start);
       const endLink = findLinkElementAncestor(range.end);
 
-      if (!startLink || startLink != endLink) {
-        return null;
-      }
-
-      // Check if the link element is fully selected.
-      if (view.createRangeIn(startLink).getTrimmed().isEqual(range)) {
-        return startLink;
-      } else {
-        return null;
+      if (startLink && startLink === endLink && view.createRangeIn(startLink).getTrimmed().isEqual(range)) {
+        linkElement = startLink;
       }
     }
+
+    return this._isExternalLink(linkElement) ? linkElement : null;
   }
 }
 

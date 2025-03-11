@@ -17,7 +17,7 @@ import AlightEmailLinkPluginEditing from './linkediting';
 import LinkActionsView from './ui/linkactionsview';
 import type AlightEmailLinkPluginCommand from './linkcommand';
 import type AlightEmailUnlinkCommand from './unlinkcommand';
-import { addLinkProtocolIfApplicable, isLinkElement, LINK_KEYSTROKE } from './utils';
+import { addLinkProtocolIfApplicable, isLinkElement } from './utils'; // Removed LINK_KEYSTROKE import
 import CkAlightModalDialog from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 
 import linkIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
@@ -119,13 +119,9 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     // Enable balloon-modal interactions
     this._enableBalloonInteractions();
 
-    // Add the information about the keystrokes to the accessibility database.
+    // Add the information about the keystrokes to the accessibility database
     editor.accessibility.addKeystrokeInfos({
       keystrokes: [
-        {
-          label: t('Create Email Link'),
-          keystroke: LINK_KEYSTROKE
-        },
         {
           label: t('Move out of a link'),
           keystroke: [
@@ -189,7 +185,6 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     view.set({
       label: t('Alight Email Link'),
       icon: linkIcon,
-      keystroke: LINK_KEYSTROKE,
       isToggleable: true,
       withText: true
     });
@@ -254,23 +249,13 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     const editor = this.editor;
     const viewDocument = editor.editing.view.document;
 
-    // Handle click on view document and show balloon when selection is placed inside the link element.
+    // Handle click on view document to show balloon
     this.listenTo<ViewDocumentClickEvent>(viewDocument, 'click', () => {
       const selectedLink = this._getSelectedLinkElement();
 
       if (selectedLink) {
         // Show balloon with actions (edit/unlink) when clicking on a link
         this._showBalloon();
-      }
-    });
-
-    // Handle the `Ctrl+K` keystroke and show the modal dialog for new links.
-    editor.keystrokes.set(LINK_KEYSTROKE, (keyEvtData, cancel) => {
-      // Prevent focusing the search bar in FF, Chrome and Edge.
-      cancel();
-
-      if (editor.commands.get('alight-email-link')!.isEnabled) {
-        this._showUI();
       }
     });
   }
@@ -380,8 +365,8 @@ export default class AlightEmailLinkPluginUI extends Plugin {
   }
 
   /**
-   * Shows the modal dialog for link editing.
-   */
+  * Shows the modal dialog for link editing.
+  */
   private _showUI(isEditing: boolean = false): void {
     const editor = this.editor;
     const t = editor.t;
@@ -541,7 +526,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
           <label for="ck-email-input" class="cka-input-label">${t('Email Address')}</label>
           <input id="ck-email-input" type="email" class="cka-input-text cka-width-100" placeholder="${t('user@example.com')}" required/>
           <div id="ck-email-error" class="cka-error-message"></div>
-					<div class="cka-error-message">${t('Enter a valid email address or a mailto: link')}</div>
+          <div class="cka-error-message">${t('Enter a valid email address or a mailto: link')}</div>
         </div>
         <div class="cka-form-group mt-3">
           <label for="ck-organization-input" class="cka-input-label">${t('Organization Name (optional)')}</label>

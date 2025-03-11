@@ -265,7 +265,7 @@ class AlightEditor extends ClassicEditor {
         'alightImagePlugin',
         'alightPopulationPlugin',
         'alightParentLinkPlugin',
-        // 'alightPredefinedLinkPlugin',
+        'alightPredefinedLinkPlugin',
         //'alightExistingDocumentLinkPlugin',
         // 'alightNewDocumentLinkPlugin',
         'alightLink',

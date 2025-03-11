@@ -17,13 +17,12 @@ import AlightPredefinedLinkPluginEditing from './linkediting';
 import LinkActionsView from './ui/linkactionsview';
 import type AlightPredefinedLinkPluginCommand from './linkcommand';
 import type AlightPredefinedLinkPluginUnlinkCommand from './unlinkcommand';
-import { isLinkElement, LINK_KEYSTROKE } from './utils';
+import { isLinkElement } from './utils';
 import CkAlightModalDialog from './../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import './../ui-components/alight-checkbox-component/alight-checkbox-component';
 
 // Import the new ContentManager and types from the updated location
 import { ContentManager } from './ui/linkmodal-ContentManager';
-import { ILinkManager } from './ui/linkmodal-ILinkManager';
 import { PredefinedLink } from './ui/linkmodal-modal-types';
 
 // Import the services
@@ -138,10 +137,6 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
     // Add the information about the keystrokes to the accessibility database.
     editor.accessibility.addKeystrokeInfos({
       keystrokes: [
-        {
-          label: t('Create Predefined Link'),
-          keystroke: LINK_KEYSTROKE
-        },
         {
           label: t('Move out of a link'),
           keystroke: [
@@ -289,7 +284,6 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
     }
   }
 
-
   public override destroy(): void {
     super.destroy();
 
@@ -330,7 +324,6 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
     view.set({
       label: t('Alight Predefined Link'),
       icon: linkIcon,
-      keystroke: LINK_KEYSTROKE,
       isToggleable: true,
       withText: true
     });
@@ -436,16 +429,6 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
         this._showBalloon();
       }
     });
-
-    // Handle the `Ctrl+K` keystroke and show the modal dialog for new links.
-    editor.keystrokes.set(LINK_KEYSTROKE, (keyEvtData, cancel) => {
-      // Prevent focusing the search bar in FF, Chrome and Edge.
-      cancel();
-
-      if (editor.commands.get('alight-predefined-link')!.isEnabled) {
-        this._showUI();
-      }
-    });
   }
 
   // Enable interactions between the balloon and modal interface.
@@ -548,30 +531,6 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
     }
   }
 
-  // Sets up ContentManager with necessary structure
-  private _setupContentManagerStructure(contentElement: HTMLElement): void {
-    // Make sure we have the required containers
-    if (!contentElement.querySelector('#search-container-root')) {
-      const searchContainer = document.createElement('div');
-      searchContainer.id = 'search-container-root';
-      searchContainer.className = 'cka-search-container';
-      contentElement.insertBefore(searchContainer, contentElement.firstChild);
-    }
-
-    if (!contentElement.querySelector('#links-container')) {
-      const linksContainer = document.createElement('div');
-      linksContainer.id = 'links-container';
-      contentElement.appendChild(linksContainer);
-    }
-
-    if (!contentElement.querySelector('#pagination-container')) {
-      const paginationContainer = document.createElement('div');
-      paginationContainer.id = 'pagination-container';
-      paginationContainer.className = 'cka-pagination';
-      contentElement.appendChild(paginationContainer);
-    }
-  }
-
   // Custom HTML content for the predefined links
   private _createCustomContent(): HTMLElement {
     const container = document.createElement('div');
@@ -611,7 +570,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
   private async _showUI(isEditing: boolean = false): Promise<void> {
     const editor = this.editor;
     const t = editor.t;
-    const linkCommand = editor.commands.get('cka-predefined-link') as AlightPredefinedLinkPluginCommand;
+    const linkCommand = editor.commands.get('alight-predefined-link') as AlightPredefinedLinkPluginCommand;
 
     // Get current link URL if editing
     let initialUrl = '';
@@ -670,9 +629,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
             // Show an alert to the user
             const alertDiv = document.createElement('div');
             alertDiv.className = 'cka-alert cka-alert-error';
-            alertDiv.innerHTML = `
-            <p>Please select a link first.</p>
-          `;
+            alertDiv.innerHTML = `<p>Please select a link first.</p>`;
 
             // Find the container for the alert and show it
             const modalContent = this._modalDialog?.element;
@@ -711,10 +668,10 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
         const linksContainer = customContent.querySelector('#links-container');
         if (linksContainer) {
           linksContainer.innerHTML = `
-          <div class="cka-empty-state">
-            <p>No predefined links available.</p>
-          </div>
-        `;
+            <div class="cka-empty-state">
+              <p>No predefined links available.</p>
+            </div>
+          `;
         }
         return;
       }
@@ -731,15 +688,15 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
       const linksContainer = customContent.querySelector('#links-container');
       if (linksContainer) {
         linksContainer.innerHTML = `
-        <div class="cka-error-state">
-          <p class="cka-error-details">${error.message || 'Unknown error'}</p>
-        </div>
-      `;
+          <div class="cka-error-state">
+            <p class="cka-error-details">${error.message || 'Unknown error'}</p>
+          </div>
+        `;
       }
     }
   }
 
-  // Hides the UI.
+  // Hides the UI
   private _hideUI(): void {
     // Prevent recursive calls
     if (this._isUpdatingUI) {
