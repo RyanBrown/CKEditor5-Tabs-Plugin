@@ -49,6 +49,9 @@ export class ModalView extends AlightUIBaseComponent implements ModalViewPropert
   // Add flag to track if already added to DOM
   private isAddedToDOM: boolean = false;
 
+  // Add a class property to store the original body overflow
+  private originalBodyOverflow: string = '';
+
   constructor(locale: Locale) {
     super(locale);
 
@@ -258,9 +261,27 @@ export class ModalView extends AlightUIBaseComponent implements ModalViewPropert
     }
   }
 
+  // Method to disable scrolling
+  private _disableBodyScroll(): void {
+    // Save current body overflow style
+    this.originalBodyOverflow = document.body.style.overflow;
+
+    // Disable scrolling
+    document.body.style.overflow = 'hidden';
+  }
+
+  // Method to restore scrolling
+  private _restoreBodyScroll(): void {
+    // Restore original overflow style
+    document.body.style.overflow = this.originalBodyOverflow;
+  }
+
   // Show the modal with animation (PrimeNG behavior)
   public show(): void {
     if (this.isVisible) return;
+
+    // Disable body scrolling when modal is shown
+    this._disableBodyScroll();
 
     // Create modal mask if modal
     if (this.isModal) {
@@ -327,10 +348,17 @@ export class ModalView extends AlightUIBaseComponent implements ModalViewPropert
           this.modalMask = null;
         }
 
+        // Restore body scrolling when modal is hidden
+        this._restoreBodyScroll();
+
         this.fire('hide');
       }, this.transitionDuration);
     } else {
       this.set('isVisible', false);
+
+      // Restore body scrolling when modal is hidden
+      this._restoreBodyScroll();
+
       this.fire('hide');
     }
   }
@@ -726,6 +754,11 @@ export class ModalView extends AlightUIBaseComponent implements ModalViewPropert
 
   // PrimeNG-like cleanup
   override destroy(): void {
+    // Restore body scrolling when modal is destroyed
+    if (this.isVisible) {
+      this._restoreBodyScroll();
+    }
+
     // Remove modal mask
     if (this.modalMask && document.body.contains(this.modalMask)) {
       document.body.removeChild(this.modalMask);

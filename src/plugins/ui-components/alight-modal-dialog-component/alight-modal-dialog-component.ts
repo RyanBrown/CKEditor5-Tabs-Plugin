@@ -102,6 +102,12 @@ export class CkAlightModalDialog {
   // Track if DOM elements have been added to document
   private isAddedToDOM: boolean = false;
 
+  // Property to store the original body overflow and padding
+  private originalBodyScrollStyles = {
+    overflow: '',
+    paddingRight: ''
+  };
+
   // Public property to maintain backward compatibility
   public element: HTMLElement | null = null;
 
@@ -166,6 +172,31 @@ export class CkAlightModalDialog {
 
     // Make sure dialog is hidden initially
     this._hideWithoutAnimation();
+  }
+
+  // Method to lock scrolling with padding adjustment to prevent layout shift
+  private _lockBodyScroll(): void {
+    if (document.body.style.overflow !== 'hidden') {
+      // Store original values
+      this.originalBodyScrollStyles = {
+        overflow: document.body.style.overflow,
+        paddingRight: document.body.style.paddingRight
+      };
+
+      // Get the scrollbar width to prevent layout shift when scrollbar disappears
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+
+      // Apply styles to prevent scroll with padding compensation
+      document.body.style.overflow = 'hidden';
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+  }
+
+  // Method to unlock scrolling
+  private _unlockBodyScroll(): void {
+    // Restore original body styles
+    document.body.style.overflow = this.originalBodyScrollStyles.overflow;
+    document.body.style.paddingRight = this.originalBodyScrollStyles.paddingRight;
   }
 
   // Method to update dialog properties (API similar to PrimeNG)
@@ -843,6 +874,11 @@ export class CkAlightModalDialog {
     if (this.isDestroyed) return;
     if (this.visible) return;
 
+    // Lock body scrolling when modal is shown
+    if (this.options.modal) {
+      this._lockBodyScroll();
+    }
+
     // Store previously focused element to restore focus when closing (accessibility)
     this.previousActiveElement = document.activeElement;
 
@@ -969,6 +1005,11 @@ export class CkAlightModalDialog {
         this.overlay.style.display = 'none';
       }
 
+      // Unlock body scrolling
+      if (this.options.modal) {
+        this._unlockBodyScroll();
+      }
+
       // Emit hide event
       this.emit('hide');
 
@@ -987,6 +1028,11 @@ export class CkAlightModalDialog {
 
   public destroy(): void {
     if (this.isDestroyed) return;
+
+    // Ensure body scroll is unlocked if destroyed while visible
+    if (this.visible && this.options.modal) {
+      this._unlockBodyScroll();
+    }
 
     // Hide first if visible
     if (this.visible) {
