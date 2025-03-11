@@ -89,16 +89,16 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin implements Mod
         ]
       });
 
-      // Properly connect button clicks to form submission
-      this._modalDialog.on('buttonClick', async (label: string) => {
+      // Properly connect button clicks to form submission using the new event system
+      this._modalDialog.on('buttonClick', async (data: { button: string; }) => {
         if (this._isSubmitting) return;
 
-        if (label === 'Clear') {
+        if (data.button === 'Clear') {
           this._formManager?.resetForm();
           return;
         }
 
-        if (label === 'Submit' && this._formManager) {
+        if (data.button === 'Submit' && this._formManager) {
           // Validate form before submission
           const validation = this._formManager.validateForm();
           if (validation.isValid) {
@@ -127,8 +127,10 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin implements Mod
       return;
     }
 
-    const submitButton = this._modalDialog.element?.querySelector('.cka-button-primary');
-    const clearButton = this._modalDialog.element?.querySelector('.cka-button-outlined');
+    // Find buttons using the new API
+    const modalElement = this._modalDialog.getElement();
+    const submitButton = modalElement?.querySelector('.cka-button-primary');
+    const clearButton = modalElement?.querySelector('.cka-button-outlined');
 
     try {
       this._isSubmitting = true;
@@ -150,7 +152,7 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin implements Mod
 
       if (!validation.isValid) {
         // Show field-level error messages
-        const formContainer = this._modalDialog.element?.querySelector('.new-document-content');
+        const formContainer = this._modalDialog.getContentElement();
         if (formContainer) {
           // Clear any existing error messages
           formContainer.querySelectorAll('.cka-error-message').forEach(msg => {

@@ -601,19 +601,29 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
         height: 'auto',
         contentClass: 'cka-predefined-link-content',
         buttons: [
-          { label: t('Cancel'), variant: 'outlined' },
-          { label: t('Continue'), isPrimary: true, closeOnClick: false }
+          {
+            label: t('Cancel'),
+            variant: 'outlined',
+            shape: 'round'
+          },
+          {
+            label: t('Continue'),
+            isPrimary: true,
+            closeOnClick: false,
+            variant: 'default',
+            shape: 'round'
+          }
         ]
       });
 
-      // Handle modal button clicks
-      this._modalDialog.on('buttonClick', (label: string) => {
-        if (label === t('Cancel')) {
+      // Handle button clicks via the buttonClick event
+      this._modalDialog.on('buttonClick', (data: { button: string; }) => {
+        if (data.button === t('Cancel')) {
           this._modalDialog?.hide();
           return;
         }
 
-        if (label === t('Continue')) {
+        if (data.button === t('Continue')) {
           // Get the selected link from the content manager
           const selectedLink = this._linkManager?.getSelectedLink();
           console.log('Selected link:', selectedLink);
@@ -642,7 +652,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
             alertDiv.innerHTML = `<p>Please select a link first.</p>`;
 
             // Find the container for the alert and show it
-            const modalContent = this._modalDialog?.element;
+            const modalContent = this._modalDialog?.getElement();
             if (modalContent) {
               // Insert at the top
               modalContent.insertBefore(alertDiv, modalContent.firstChild);

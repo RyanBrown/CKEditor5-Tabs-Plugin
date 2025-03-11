@@ -119,11 +119,11 @@ export class CkAlightModalDialog {
     // Default options with PrimeNG-like defaults
     this.options = {
       id: this.uniqueId,
-      title: 'Dialog',
+      title: 'Modal Title',
       modal: true,
-      draggable: true, // PrimeNG default is true
-      resizable: true, // PrimeNG default is true
-      maximizable: true, // PrimeNG default is false, but changed for feature parity
+      draggable: false,
+      resizable: false,
+      maximizable: false,
       width: '50vw', // PrimeNG default
       height: 'auto',
       style: {},
@@ -131,7 +131,7 @@ export class CkAlightModalDialog {
       position: 'center',
       closeOnEscape: true,
       closeOnClick: false,
-      dismissableMask: true, // PrimeNG default is true
+      dismissableMask: false, // PrimeNG default is true
       closeOnClickOutside: true, // For backward compatibility
       headerClass: '',
       contentClass: '',
@@ -414,7 +414,7 @@ export class CkAlightModalDialog {
       dialogClasses.push(...this.options.styleClass.split(' '));
     }
 
-    const headerDisplay = this.options.showHeader ? 'block' : 'none';
+    const headerDisplay = this.options.showHeader ? 'flex' : 'none';
 
     const content = `
       <div class="${dialogClasses.join(' ')}" style="width: ${this.options.width}; height: ${this.options.height}; z-index: ${this.zIndex};">
@@ -842,7 +842,7 @@ export class CkAlightModalDialog {
     // Store previously focused element to restore focus when closing (accessibility)
     this.previousActiveElement = document.activeElement;
 
-    // Emit beforeShow event (PrimeNG behavior)
+    // Emit beforeShow event
     const beforeShowEvent = this.emit('beforeShow');
 
     // Check if event was cancelled
@@ -856,8 +856,7 @@ export class CkAlightModalDialog {
     // Show overlay and container
     if (this.options.modal && this.overlay) {
       this.overlay.style.display = 'block';
-
-      // Animate overlay (PrimeNG behavior)
+      // Animate overlay
       setTimeout(() => {
         if (this.overlay) {
           this.overlay.style.opacity = '0.4';
@@ -870,13 +869,22 @@ export class CkAlightModalDialog {
       this.container.style.display = 'block';
     }
 
-    // Position dialog
-    this.positionDialog();
+    // Position dialog with centering as a priority
+    if (this.options.position === 'center') {
+      this.centerDialog();
+    } else {
+      this.positionDialog();
+    }
 
     // Set initial animation state
     if (this.dialog) {
+      // For center position, maintain the translate transform while changing scale
+      const transform = this.options.position === 'center'
+        ? 'translate(-50%, -50%) scale(0.7)'
+        : 'scale(0.7)';
+
       this.dialog.style.opacity = '0';
-      this.dialog.style.transform = 'scale(0.7)';
+      this.dialog.style.transform = transform;
 
       // Set transition for animation
       this.dialog.style.transition = this.options.transitionOptions;
@@ -884,8 +892,13 @@ export class CkAlightModalDialog {
       // Trigger animation
       setTimeout(() => {
         if (this.dialog) {
+          // Maintain centering transform when scaling to 1
+          const finalTransform = this.options.position === 'center'
+            ? 'translate(-50%, -50%) scale(1)'
+            : 'scale(1)';
+
           this.dialog.style.opacity = '1';
-          this.dialog.style.transform = 'scale(1)';
+          this.dialog.style.transform = finalTransform;  // CHANGED: Use the finalTransform variable
         }
 
         // Focus the dialog or primary button (accessibility)

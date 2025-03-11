@@ -381,14 +381,14 @@ export default class AlightEmailLinkPluginUI extends Plugin {
         width: '32rem',
         contentClass: 'cka-email-link-content',
         buttons: [
-          { label: t('Save'), isPrimary: true, closeOnClick: false },
-          { label: t('Cancel'), variant: 'outlined' }
+          { label: t('Continue') },
+          { label: t('Cancel') }
         ]
       });
 
-      // Handle Save button click
-      this._modalDialog.on('buttonClick', (label: string) => {
-        if (label === t('Save')) {
+      // Handle button clicks via the buttonClick event
+      this._modalDialog.on('buttonClick', (data: { button: string; }) => {
+        if (data.button === t('Continue')) {
           const emailInput = document.getElementById('ck-email-input') as HTMLInputElement;
           const organizationInput = document.getElementById('ck-organization-input') as HTMLInputElement;
 
@@ -433,7 +433,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
 
           // Close the modal
           this._modalDialog!.hide();
-        } else if (label === t('Cancel')) {
+        } else if (data.button === t('Cancel')) {
           this._modalDialog!.hide();
         }
       });
