@@ -1,10 +1,10 @@
 // src/plugins/alight-new-document-link-plugin/alight-new-document-link-plugin-command.ts
 import Command from '@ckeditor/ckeditor5-core/src/command';
+import AlightNewDocumentLinkPluginUI from './alight-new-document-link-plugin-ui';
 
 /**
  * Command for the AlightNewDocumentLinkPlugin.
- * This is a simple command that's always enabled and doesn't actually modify content.
- * The actual document creation logic is handled by the UI component.
+ * Handles opening the modal dialog for creating new documents.
  */
 export default class AlightNewDocumentLinkPluginCommand extends Command {
   /**
@@ -20,12 +20,14 @@ export default class AlightNewDocumentLinkPluginCommand extends Command {
 
   /**
    * Executes the command.
-   * In this case, the command doesn't do anything as the actual logic 
-   * is handled in the UI plugin's _showModal method.
+   * Gets the UI plugin instance and calls its _showModal method.
    */
-  override execute(): boolean {
-    // The actual functionality is in the UI plugin's _showModal method
-    return true;
+  override execute(initialValue?: { url?: string; orgName?: string; email?: string }): void {
+    // Get the UI plugin instance
+    const uiPlugin = this.editor.plugins.get(AlightNewDocumentLinkPluginUI);
+
+    // Show the modal with any provided initial values
+    uiPlugin._showModal(initialValue);
   }
 
   /**

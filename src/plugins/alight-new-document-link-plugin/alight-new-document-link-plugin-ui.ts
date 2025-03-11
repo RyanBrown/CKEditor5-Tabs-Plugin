@@ -1,7 +1,7 @@
 // src/plugins/alight-new-document-link-plugin/alight-new-document-link-plugin-ui.ts
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { ButtonView } from '@ckeditor/ckeditor5-ui';
-import { CkAlightModalDialog } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
+import { CkAlightModalDialog, DialogButton } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import { ContentManager } from './modal-content/alight-new-document-link-plugin-modal-ContentManager';
 import { Notification } from '@ckeditor/ckeditor5-ui';
 import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
@@ -68,38 +68,44 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin implements Mod
    */
   public async _showModal(initialValue?: { url?: string; orgName?: string; email?: string }): Promise<void> {
     if (!this._modalDialog) {
+      // Define button configuration using the new DialogButton interface
+      const buttons: DialogButton[] = [
+        {
+          label: 'Clear',
+          variant: 'outlined',
+          shape: 'round',
+          closeOnClick: false,
+        },
+        {
+          label: 'Continue',
+          variant: 'default',
+          shape: 'round',
+          isPrimary: true,
+          closeOnClick: false,
+        }
+      ];
+
+      // Create modal with enhanced configuration
       this._modalDialog = new CkAlightModalDialog({
         title: 'Create a New Document',
         modal: true,
-        contentClass: 'new-document-content',
-        buttons: [
-          { label: 'Clear' },
-          { label: 'Continue' }
-        ]
+        width: '80vw',
+        contentClass: 'cka-new-document-content',
+        buttons: buttons
       });
 
-      // Properly connect button clicks to form submission using the new event system
-      this._modalDialog.on('buttonClick', async (data: { button: string; }) => {
-        if (this._isSubmitting) return;
-
-        if (data.button === 'Clear') {
-          this._formManager?.resetForm();
-          return;
-        }
-
-        if (data.button === 'Continue' && this._formManager) {
-          // Validate form before submission
-          const validation = this._formManager.validateForm();
-          if (validation.isValid) {
-            await this._handleFormSubmission();
-          }
-        }
-      });
+      // Set up event handlers using the improved event system
+      this._setupModalEventHandlers();
 
       // Set up form manager reference to modal for button state updates
       if (this._formManager) {
         this._formManager.setModalDialog(this._modalDialog);
       }
+    } else {
+      // Update existing modal if needed
+      this._modalDialog.setProps({
+        title: 'Create a New Document'
+      });
     }
 
     // Set modal content using form manager
@@ -107,8 +113,50 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin implements Mod
       const container = document.createElement('div');
       this._formManager.renderContent(container);
       this._modalDialog.setContent(container);
+
+      // Show the modal with animation
       this._modalDialog.show();
     }
+  }
+
+  private _setupModalEventHandlers(): void {
+    if (!this._modalDialog) return;
+
+    // Button click handler
+    this._modalDialog.on('buttonClick', async (data: { button: string; }) => {
+      if (this._isSubmitting) return;
+
+      if (data.button === 'Clear') {
+        this._formManager?.resetForm();
+        return;
+      }
+
+      if (data.button === 'Continue' && this._formManager) {
+        // Validate form before submission
+        const validation = this._formManager.validateForm();
+        if (validation.isValid) {
+          await this._handleFormSubmission();
+        }
+      }
+    });
+
+    // Modal lifecycle events
+    this._modalDialog.on('show', () => {
+      console.log('Document creation modal is now visible');
+    });
+
+    this._modalDialog.on('hide', () => {
+      console.log('Document creation modal is now hidden');
+
+      // Fire a custom event when modal is closed
+      this.fire('modalClosed');
+    });
+
+    // Handle before hide to potentially prevent closing with unsaved changes
+    this._modalDialog.on('beforeHide', () => {
+      // Could implement "unsaved changes" check here if needed
+      return true; // Allow closing
+    });
   }
 
   private async _handleFormSubmission(): Promise<void> {
@@ -116,94 +164,134 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin implements Mod
       return;
     }
 
-    // Find buttons using the new API
+    // Access buttons through modal's API
     const modalElement = this._modalDialog.getElement();
-    const submitButton = modalElement?.querySelector('.cka-button-primary');
-    const clearButton = modalElement?.querySelector('.cka-button-outlined');
+    if (!modalElement) return;
+
+    // Get buttons
+    const submitButton = modalElement.querySelector('.continue-button') as HTMLButtonElement;
+    const clearButton = modalElement.querySelector('.clear-button') as HTMLButtonElement;
 
     try {
       this._isSubmitting = true;
 
-      // Disable buttons during submission
-      if (submitButton instanceof HTMLButtonElement) {
-        submitButton.disabled = true;
-        submitButton.classList.add('loading');
-      }
-      if (clearButton instanceof HTMLButtonElement) {
-        clearButton.disabled = true;
-      }
+      // Update UI to show submission in progress
+      this._updateButtonsForSubmission(submitButton, clearButton, true);
 
       // Get form validation result
       const validation = this._formManager.validateForm();
 
-      // Log the form data before submission
-      console.log('Form data before submission:', this._formManager.getFormData());
-
+      // Show validation errors if not valid
       if (!validation.isValid) {
-        // Show field-level error messages
-        const formContainer = this._modalDialog.getContentElement();
-        if (formContainer) {
-          // Clear any existing error messages
-          formContainer.querySelectorAll('.cka-error-message').forEach(msg => {
-            msg.classList.remove('visible');
-          });
-
-          // Show specific error messages
-          Object.entries(validation.errors || {}).forEach(([field, message]) => {
-            const errorElement = formContainer.querySelector(`.${field}-error`);
-            if (errorElement) {
-              errorElement.textContent = message;
-              errorElement.classList.add('visible');
-            }
-          });
-        }
+        this._showValidationErrors();
         return;
       }
 
+      // Log the form data before submission
+      const formData = this._formManager.getFormData();
+      console.log('Form data before submission:', formData);
+
+      // Submit the form
       const result = await this._formManager.submitForm();
 
-      // Log the submission result
-      console.log('Form submission result:', result);
+      // Create custom event with the result data
+      const customEvent = {
+        documentUrl: result.url,
+        documentId: result.id,
+        documentTitle: formData.documentTitle,
+        formData: formData
+      };
 
-      // Show success feedback using the notification system
+      // Dispatch document created event to the editor
+      this.editor.editing.view.document.fire('newDocumentCreated', customEvent);
+
+      // Show success notification
       const notification = this.editor.plugins.get(Notification);
-      notification.showSuccess('Document uploaded successfully');
+      notification.showSuccess(`Document "${formData.documentTitle}" created successfully`);
 
       // Reset the form
       this._formManager.resetForm();
 
-      // Close modal after a short delay to ensure reset is complete
+      // Close modal after a short delay
       setTimeout(() => {
         this._modalDialog?.hide();
-      }, 100);
+      }, 500);
 
     } catch (error) {
-      // Log any errors
       console.error('Form submission error:', error);
 
-      // Show error using the notification system
+      // Show error notification with details
       const notification = this.editor.plugins.get(Notification);
       notification.showWarning(
-        error instanceof Error ? error.message : 'An unexpected error occurred'
+        error instanceof Error ?
+          `Error creating document: ${error.message}` :
+          'An unexpected error occurred while creating the document'
       );
 
     } finally {
+      // Reset UI state
+      this._updateButtonsForSubmission(submitButton, clearButton, false);
       this._isSubmitting = false;
+    }
+  }
 
-      // Re-enable buttons
-      if (submitButton instanceof HTMLButtonElement) {
+  private _updateButtonsForSubmission(submitButton: HTMLButtonElement | null, clearButton: HTMLButtonElement | null, isSubmitting: boolean): void {
+    if (submitButton) {
+      submitButton.disabled = isSubmitting;
+      if (isSubmitting) {
+        submitButton.classList.add('loading');
+      } else {
         submitButton.classList.remove('loading');
-        submitButton.disabled = false;
-      }
-      if (clearButton instanceof HTMLButtonElement) {
-        clearButton.disabled = false;
       }
     }
+
+    if (clearButton) {
+      clearButton.disabled = isSubmitting;
+    }
+  }
+
+  private _showValidationErrors(): void {
+    if (!this._modalDialog || !this._formManager) return;
+
+    const formContainer = this._modalDialog.getContentElement();
+    if (!formContainer) return;
+
+    // Clear any existing error messages
+    formContainer.querySelectorAll('.cka-error-message').forEach(msg => {
+      msg.classList.remove('visible');
+    });
+
+    // Show specific error messages
+    const validation = this._formManager.validateForm();
+    if (validation.errors) {
+      Object.entries(validation.errors).forEach(([field, message]) => {
+        const errorElement = formContainer.querySelector(`.${field}-error`);
+        if (errorElement) {
+          errorElement.textContent = message;
+          errorElement.classList.add('visible');
+        }
+      });
+    }
+
+    // Re-enable UI elements
+    this._isSubmitting = false;
+    const submitButton = this._modalDialog.getElement()?.querySelector('.continue-button') as HTMLButtonElement;
+    const clearButton = this._modalDialog.getElement()?.querySelector('.clear-button') as HTMLButtonElement;
+    this._updateButtonsForSubmission(submitButton, clearButton, false);
   }
 
   public override destroy(): void {
     super.destroy();
-    this._modalDialog?.destroy();
-    this._formManager?.destroy();
+
+    // Ensure proper cleanup
+    if (this._modalDialog) {
+      this._modalDialog.destroy();
+      this._modalDialog = undefined;
+    }
+
+    if (this._formManager) {
+      this._formManager.destroy();
+      this._formManager = undefined;
+    }
   }
 }
