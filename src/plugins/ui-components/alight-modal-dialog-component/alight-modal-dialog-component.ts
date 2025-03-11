@@ -942,8 +942,13 @@ export class CkAlightModalDialog {
 
     // Start hide animation
     if (this.dialog) {
+      // Use the same transform logic as in show() but with scale 0.7
+      const hideTransform = this.options.position === 'center'
+        ? 'translate(-50%, -50%) scale(0.7)'
+        : 'scale(0.7)';
+
       this.dialog.style.opacity = '0';
-      this.dialog.style.transform = 'scale(0.7)';
+      this.dialog.style.transform = hideTransform;
     }
 
     if (this.overlay) {
@@ -1143,6 +1148,7 @@ export class CkAlightModalDialog {
         if (this.originalStyles.top) {
           this.dialog.style.top = this.originalStyles.top;
         }
+        this.dialog.style.transform = 'none'; // Reset transform for non-centered dialogs
       }
 
       this.dialog.style.borderRadius = '';
