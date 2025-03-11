@@ -167,8 +167,8 @@ export class ContentManager implements ILinkManager {
     if (!matchingLink) {
       return `
       <div class="current-url-info">
-        <p><strong>Current URL:</strong> ${this.initialUrl}</p>
-        <p><em>This URL is not in the predefined links list.</em></p>
+        <h3><strong>Current Link URL:</strong> ${this.initialUrl}</h3>
+        <div class="cka-note-message">This URL is not in the predefined links list.</div>
       </div>
     `;
     }
@@ -176,7 +176,7 @@ export class ContentManager implements ILinkManager {
     // Use the shared link markup function but customize for current link context
     return `
     <div class="current-url-info">
-      <h3>Current Link</h3>
+      <h3>Current Selected Link</h3>
       ${this.buildLinkItemMarkup(matchingLink, true, 'current-link')}
     </div>
   `;

@@ -602,7 +602,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
         contentClass: 'cka-predefined-link-content',
         buttons: [
           { label: t('Cancel'), variant: 'outlined' },
-          { label: t('Save'), isPrimary: true, closeOnClick: false }
+          { label: t('Continue'), isPrimary: true, closeOnClick: false }
         ]
       });
 
@@ -613,7 +613,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
           return;
         }
 
-        if (label === t('Save')) {
+        if (label === t('Continue')) {
           // Get the selected link from the content manager
           const selectedLink = this._linkManager?.getSelectedLink();
           console.log('Selected link:', selectedLink);
