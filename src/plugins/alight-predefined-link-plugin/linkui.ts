@@ -665,7 +665,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
         const linksContainer = customContent.querySelector('#links-container');
         if (linksContainer) {
           linksContainer.innerHTML = `
-          <div class="cka-empty-state">
+          <div class="cka-no-results">
             <p>No predefined links available.</p>
           </div>
         `;

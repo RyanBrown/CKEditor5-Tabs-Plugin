@@ -1,6 +1,5 @@
 // src/plugins/alight-parent-link-plugin/index.ts
 
-// Export the main plugin
 export { default } from './alight-parent-link-plugin';
 export type { LinkPluginConfig } from './alight-parent-link-plugin';
 

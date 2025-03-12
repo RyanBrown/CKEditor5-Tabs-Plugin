@@ -1,5 +1,4 @@
 // src/plugins/alight-parent-link-plugin/augmentation.ts
-
 /**
  * This file extends TypeScript interface for EditorConfig to include our custom configuration.
  */
