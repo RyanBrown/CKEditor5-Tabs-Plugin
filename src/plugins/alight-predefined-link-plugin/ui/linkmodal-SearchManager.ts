@@ -160,11 +160,9 @@ export class SearchManager {
       return;
     }
 
-    // Fixed: Use the updated PanelConfig properties
     this.overlayPanel = new AlightOverlayPanel(triggerEl as HTMLElement, {
       width: '600px',
       height: 'auto',
-      // Use correct callback name from updated API
       onShow: () => {
         this.setupAdvancedSearchListeners(container);
       }
