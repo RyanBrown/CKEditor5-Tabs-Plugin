@@ -138,7 +138,7 @@ export class CkAlightModalDialog {
       closeOnEscape: true,
       closeOnClick: false,
       dismissableMask: false, // PrimeNG default is true
-      closeOnClickOutside: true, // For backward compatibility
+      closeOnClickOutside: false, // For backward compatibility
       headerClass: '',
       contentClass: '',
       footerClass: '',

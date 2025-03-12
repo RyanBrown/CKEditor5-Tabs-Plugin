@@ -40,11 +40,6 @@ const DEFAULT_LINK_PROTOCOLS = [
 ];
 
 /**
- * A keystroke used by the {@link module:link/linkui~AlightEmailLinkPluginUI link UI feature}.
- */
-export const LINK_KEYSTROKE = 'Ctrl+K';
-
-/**
  * Returns `true` if a given view node is the link element.
  */
 export function isLinkElement(node: ViewNode | ViewDocumentFragment): boolean {

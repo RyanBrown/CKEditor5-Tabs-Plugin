@@ -17,16 +17,17 @@ import AlightEmailLinkPluginEditing from './linkediting';
 import LinkActionsView from './ui/linkactionsview';
 import type AlightEmailLinkPluginCommand from './linkcommand';
 import type AlightEmailUnlinkCommand from './unlinkcommand';
-import { addLinkProtocolIfApplicable, isLinkElement } from './utils'; // Removed LINK_KEYSTROKE import
+import { addLinkProtocolIfApplicable, isLinkElement } from './utils';
 import { CkAlightModalDialog } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 
 import linkIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 
+// Use a unique marker name to avoid conflicts with standard link plugin
 const VISUAL_SELECTION_MARKER_NAME = 'alight-email-link-ui';
 const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 /**
- * The link UI plugin. It introduces the `'link'` and `'unlink'` buttons and support for the <kbd>Ctrl+K</kbd> keystroke.
+ * The link UI plugin. It introduces the `'alight-email-link'` and `'alight-email-unlink'` buttons.
  * 
  * Uses a balloon for unlink actions, and a modal dialog for create/edit functions.
  */
@@ -93,7 +94,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     editor.conversion.for('editingDowncast').markerToHighlight({
       model: VISUAL_SELECTION_MARKER_NAME,
       view: {
-        classes: ['ck-fake-link-selection']
+        classes: ['ck-fake-alight-email-link-selection']
       }
     });
 
@@ -108,7 +109,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
         const markerElement = writer.createUIElement('span');
 
         writer.addClass(
-          ['ck-fake-link-selection', 'ck-fake-link-selection_collapsed'],
+          ['ck-fake-alight-email-link-selection', 'ck-fake-alight-email-link-selection_collapsed'],
           markerElement
         );
 
@@ -123,7 +124,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     editor.accessibility.addKeystrokeInfos({
       keystrokes: [
         {
-          label: t('Move out of a link'),
+          label: t('Move out of an email link'),
           keystroke: [
             ['arrowleft', 'arrowleft'],
             ['arrowright', 'arrowright']
@@ -134,7 +135,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
 
     // Register the UI component
     editor.ui.componentFactory.add('alightEmailLinkPlugin', locale => {
-      return this._createButton(ButtonView);
+      return this.createButtonView(locale);
     });
   }
 
@@ -153,6 +154,13 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     if (this.actionsView) {
       this.actionsView.destroy();
     }
+  }
+
+  /**
+   * Creates a button view for the plugin
+   */
+  public createButtonView(locale: any): ButtonView {
+    return this._createButton(ButtonView);
   }
 
   /**
@@ -183,10 +191,12 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     const t = locale.t;
 
     view.set({
-      label: t('Alight Email Link'),
+      label: t('Email Link'),
       icon: linkIcon,
       isToggleable: true,
-      withText: true
+      withText: true,
+      // Add a custom class to differentiate from standard link button
+      class: 'ck-alight-email-link-button'
     });
 
     view.bind('isEnabled').to(command, 'isEnabled');
@@ -207,6 +217,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     const linkCommand = editor.commands.get('alight-email-link') as AlightEmailLinkPluginCommand;
     const unlinkCommand = editor.commands.get('alight-email-unlink') as AlightEmailUnlinkCommand;
 
+    // This is the key binding - ensure it's correctly bound to the command's value
     actionsView.bind('href').to(linkCommand, 'value');
 
     actionsView.editButtonView.bind('isEnabled').to(linkCommand);
@@ -253,9 +264,13 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     this.listenTo<ViewDocumentClickEvent>(viewDocument, 'click', () => {
       const selectedLink = this._getSelectedLinkElement();
 
-      if (selectedLink) {
-        // Show balloon with actions (edit/unlink) when clicking on a link
-        this._showBalloon();
+      // Only handle our custom email links, not standard links
+      if (selectedLink && selectedLink.hasAttribute('href')) {
+        const href = selectedLink.getAttribute('href');
+        if (typeof href === 'string' && href.startsWith('mailto:')) {
+          // Show balloon with actions (edit/unlink) when clicking on a link
+          this._showBalloon();
+        }
       }
     });
   }
@@ -371,7 +386,6 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     const editor = this.editor;
     const t = editor.t;
     const linkCommand = editor.commands.get('alight-email-link') as AlightEmailLinkPluginCommand;
-    const defaultProtocol = editor.config.get('link.defaultProtocol');
     const selectedLink = this._getSelectedLinkElement();
 
     // Create modal if it doesn't exist
@@ -381,7 +395,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
         width: '32rem',
         contentClass: 'cka-email-link-content',
         buttons: [
-          { label: t('Continue') },
+          { label: t('Continue'), isPrimary: true, closeOnClick: false },
           { label: t('Cancel') }
         ]
       });
@@ -392,6 +406,10 @@ export default class AlightEmailLinkPluginUI extends Plugin {
           const emailInput = document.getElementById('ck-email-input') as HTMLInputElement;
           const organizationInput = document.getElementById('ck-organization-input') as HTMLInputElement;
 
+          if (!emailInput || !organizationInput) {
+            return;
+          }
+
           const email = emailInput.value.trim();
           const organization = organizationInput.value.trim();
 
@@ -400,9 +418,8 @@ export default class AlightEmailLinkPluginUI extends Plugin {
           if (errorElement) {
             errorElement.style.display = 'none';
           }
-          if (emailInput) {
-            emailInput.classList.remove('invalid');
-          }
+
+          emailInput.classList.remove('invalid');
 
           // Validate email
           if (!this._validateEmail(email)) {
@@ -414,10 +431,8 @@ export default class AlightEmailLinkPluginUI extends Plugin {
               errorElement.style.display = 'block';
             }
             // Add invalid class to email input
-            if (emailInput) {
-              emailInput.classList.add('invalid');
-              emailInput.focus();
-            }
+            emailInput.classList.add('invalid');
+            emailInput.focus();
             return;
           }
 
@@ -432,61 +447,71 @@ export default class AlightEmailLinkPluginUI extends Plugin {
           editor.execute('alight-email-link', emailLink, { organization });
 
           // Close the modal
-          this._modalDialog!.hide();
+          if (this._modalDialog) {
+            this._modalDialog.hide();
+          }
         } else if (data.button === t('Cancel')) {
-          this._modalDialog!.hide();
+          if (this._modalDialog) {
+            this._modalDialog.hide();
+          }
         }
       });
     }
 
     // Update modal title based on whether we're editing or creating
-    this._modalDialog.setTitle(isEditing ? t('Edit Email Link') : t('Create Email Link'));
+    if (this._modalDialog) {
+      this._modalDialog.setTitle(isEditing ? t('Edit Email Link') : t('Create Email Link'));
 
-    // Prepare the form HTML
-    const formHTML = this._createFormHTML(t, isEditing);
-    this._modalDialog.setContent(formHTML);
+      // Prepare the form HTML
+      const formHTML = this._createFormHTML(t, isEditing);
+      this._modalDialog.setContent(formHTML);
 
-    // Set values if we're editing
-    if (isEditing && linkCommand.value) {
-      setTimeout(() => {
-        const emailInput = document.getElementById('ck-email-input') as HTMLInputElement;
-        const organizationInput = document.getElementById('ck-organization-input') as HTMLInputElement;
+      // Set values if we're editing
+      if (isEditing && linkCommand.value) {
+        setTimeout(() => {
+          const emailInput = document.getElementById('ck-email-input') as HTMLInputElement;
+          const organizationInput = document.getElementById('ck-organization-input') as HTMLInputElement;
 
-        let email = linkCommand.value || '';
-        if (email.startsWith('mailto:')) {
-          email = email.substring(7); // Remove mailto: prefix
-        }
+          if (!emailInput || !organizationInput) {
+            return;
+          }
 
-        emailInput.value = email;
+          let email = linkCommand.value || '';
+          if (email.startsWith('mailto:')) {
+            email = email.substring(7); // Remove mailto: prefix
+          }
 
-        // Get organization from the selection - need to extract from text
-        const selectedElement = this._getSelectedLinkElement();
-        if (selectedElement && selectedElement.is('attributeElement')) {
-          const children = Array.from(selectedElement.getChildren());
-          if (children.length > 0) {
-            const textNode = children[0];
-            if (textNode && textNode.is('$text')) {
-              const text = textNode.data || '';
-              const match = text.match(/^(.*?)(?:\s*\(([^)]+)\))?$/);
-              if (match && match[2]) {
-                organizationInput.value = match[2];
+          emailInput.value = email;
+
+          // Get organization from the selection - need to extract from text
+          const selectedElement = this._getSelectedLinkElement();
+          if (selectedElement && selectedElement.is('attributeElement')) {
+            const children = Array.from(selectedElement.getChildren());
+            if (children.length > 0) {
+              const textNode = children[0];
+              if (textNode && textNode.is('$text')) {
+                const text = textNode.data || '';
+                const match = text.match(/^(.*?)(?:\s*\(([^)]+)\))?$/);
+                if (match && match[2]) {
+                  organizationInput.value = match[2];
+                }
               }
             }
           }
-        }
-      }, 50);
-    }
-
-    // Show the modal
-    this._modalDialog.show();
-
-    // Focus the email input
-    setTimeout(() => {
-      const emailInput = document.getElementById('ck-email-input') as HTMLInputElement;
-      if (emailInput) {
-        emailInput.focus();
+        }, 50);
       }
-    }, 100);
+
+      // Show the modal
+      this._modalDialog.show();
+
+      // Focus the email input
+      setTimeout(() => {
+        const emailInput = document.getElementById('ck-email-input') as HTMLInputElement;
+        if (emailInput) {
+          emailInput.focus();
+        }
+      }, 100);
+    }
   }
 
   /**
@@ -519,7 +544,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
   /**
    * Creates the HTML for the form inside the modal.
    */
-  private _createFormHTML(t: any, isEditing: boolean): string {
+  private _createFormHTML(t: Function, isEditing: boolean): string {
     return `
       <div class="cka-form-container">
         <div class="cka-form-group">
@@ -565,7 +590,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     const selectedElement = selection.getSelectedElement();
 
     // The selection is collapsed or some widget is selected (especially inline widget).
-    if (selection.isCollapsed || selectedElement && isWidget(selectedElement)) {
+    if (selection.isCollapsed || (selectedElement && isWidget(selectedElement))) {
       return findLinkElementAncestor(selection.getFirstPosition()!);
     } else {
       // The range for fully selected link is usually anchored in adjacent text nodes.

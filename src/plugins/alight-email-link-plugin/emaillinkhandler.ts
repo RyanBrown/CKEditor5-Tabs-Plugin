@@ -1,6 +1,13 @@
 // src/plugins/alight-email-link-plugin/emaillinkhandler.ts
 import { Plugin } from '@ckeditor/ckeditor5-core';
+import type {
+  Element,
+  UpcastElementEvent,
+  ViewElement,
+  UpcastConversionApi
+} from '@ckeditor/ckeditor5-engine';
 import AlightEmailLinkPluginEditing from './linkediting';
+import { isEmail } from './utils';
 
 /**
  * Email Link Handler plugin to ensure all mailto: links are processed
@@ -30,8 +37,14 @@ export default class EmailLinkHandler extends Plugin {
     // Override the standard link command
     this._interceptLinkCommands();
 
+    // Prevent default link plugin from handling mailto links in upcast conversion
+    this._preventDefaultEmailLinkUpcast();
+
     // Handle pasted mailto: links
     this._enableMailtoLinkDetection();
+
+    // Monitor for conflicting link attributes and resolve them
+    this._handleConflictingLinks();
   }
 
   /**
@@ -51,7 +64,7 @@ export default class EmailLinkHandler extends Plugin {
 
     // Monkey patch the execute method of the link command
     const originalExecute = originalLinkCommand.execute;
-    originalLinkCommand.execute = function (href, options = {}) {
+    originalLinkCommand.execute = function (href: string, options = {}) {
       // If the link is a mailto link, use our custom email link command
       if (href && typeof href === 'string' && (href.startsWith('mailto:') ||
         href.includes('@') && !href.includes('://') && !href.startsWith('/'))) {
@@ -68,6 +81,36 @@ export default class EmailLinkHandler extends Plugin {
         originalExecute.call(this, href, options);
       }
     };
+  }
+
+  /**
+   * Prevents the default link plugin from handling mailto: links in upcast conversion
+   */
+  private _preventDefaultEmailLinkUpcast(): void {
+    const editor = this.editor;
+
+    // Add a high-priority custom element-to-attribute converter for mailto links
+    editor.conversion.for('upcast').elementToAttribute({
+      view: {
+        name: 'a',
+        attributes: {
+          href: /^mailto:|.*@.*$/
+        }
+      },
+      model: {
+        key: 'alightEmailLinkPluginHref',
+        value: (viewElement: ViewElement) => {
+          const href = viewElement.getAttribute('href');
+          if (typeof href !== 'string') {
+            return null;
+          }
+
+          // Ensure mailto: prefix
+          return href.startsWith('mailto:') ? href : 'mailto:' + href;
+        }
+      },
+      converterPriority: 'highest'
+    });
   }
 
   /**
@@ -112,6 +155,49 @@ export default class EmailLinkHandler extends Plugin {
           this._convertStandardMailtoLinks();
         }, 0);
       }
+    }, { priority: 'high' });
+  }
+
+  /**
+   * Monitors for conflicting link attributes and resolves them
+   */
+  private _handleConflictingLinks(): void {
+    const editor = this.editor;
+    const model = editor.model;
+
+    // Monitor document changes to detect conflicting links
+    model.document.on('change', () => {
+      // Don't check during selection changes only
+      const changes = model.document.differ.getChanges();
+      if (changes.length === 0) {
+        return;
+      }
+
+      model.change(writer => {
+        const root = model.document.getRoot();
+        if (!root) return;
+
+        const range = model.createRangeIn(root);
+
+        for (const item of range.getItems()) {
+          // Check for conflicting attributes (both linkHref and alightEmailLinkPluginHref)
+          if (item.is('$text') &&
+            item.hasAttribute('linkHref') &&
+            item.hasAttribute('alightEmailLinkPluginHref')) {
+
+            const linkHref = item.getAttribute('linkHref');
+
+            // If it's an email link, keep only our attribute
+            if (linkHref && typeof linkHref === 'string' &&
+              (linkHref.startsWith('mailto:') || isEmail(linkHref))) {
+              writer.removeAttribute('linkHref', item);
+            } else {
+              // Otherwise, keep the standard link attribute
+              writer.removeAttribute('alightEmailLinkPluginHref', item);
+            }
+          }
+        }
+      });
     });
   }
 
@@ -122,9 +208,8 @@ export default class EmailLinkHandler extends Plugin {
     // Remove mailto: prefix for validation
     const email = text.startsWith('mailto:') ? text.substring(7) : text;
 
-    // Simple email validation regex
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    return emailRegex.test(email.trim());
+    // Use the same email validation as in utils.ts
+    return isEmail(email);
   }
 
   /**
@@ -137,7 +222,10 @@ export default class EmailLinkHandler extends Plugin {
 
     // Find all links with mailto: in the model
     model.change(writer => {
-      const range = model.createRangeIn(model.document.getRoot()!);
+      const root = model.document.getRoot();
+      if (!root) return;
+
+      const range = model.createRangeIn(root);
 
       for (const item of range.getItems()) {
         if (item.is('$text') && item.hasAttribute('linkHref')) {

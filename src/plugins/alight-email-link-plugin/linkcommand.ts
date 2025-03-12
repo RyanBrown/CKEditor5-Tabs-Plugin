@@ -5,7 +5,7 @@ import { Collection, first, toMap } from '@ckeditor/ckeditor5-utils';
 import type { Range, DocumentSelection, Model, Writer } from '@ckeditor/ckeditor5-engine';
 
 import AutomaticDecorators from './utils/automaticdecorators';
-import { isLinkableElement } from './utils';
+import { isLinkableElement, isEmail, ensureMailtoLink } from './utils';
 import type ManualDecorator from './utils/manualdecorator';
 
 /**
@@ -89,10 +89,13 @@ export default class AlightEmailLinkPluginCommand extends Command {
    * When the selection is collapsed and inside the text with the `alightEmailLinkPluginHref` attribute, the attribute value will be updated.
    *
    * @fires execute
-     * @param href AlightEmailLinkPlugin destination.
+   * @param href Email link destination.
    * @param options Options including manual decorator attributes and organization name.
    */
   public override execute(href: string, options: LinkOptions = {}): void {
+    // Always ensure this is a mailto link
+    href = ensureMailtoLink(href);
+
     const model = this.editor.model;
     const selection = model.document.selection;
 
@@ -178,9 +181,9 @@ export default class AlightEmailLinkPluginCommand extends Command {
           });
 
           // Create display text with organization if provided
-          let displayText = href;
+          let displayText = href.startsWith('mailto:') ? href.substring(7) : href;
           if (organization) {
-            displayText = `${href} (${organization})`;
+            displayText = `${displayText} (${organization})`;
           }
 
           const { end: positionAfter } = model.insertContent(

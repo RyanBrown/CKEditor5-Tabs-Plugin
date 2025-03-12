@@ -1,12 +1,9 @@
 // src/plugins/alight-email-link-plugin/augmentation.ts
 import type {
-  LinkConfig,
+  AlightEmailLinkConfig,
   AlightEmailAutoLink,
   AlightEmailLinkPlugin,
   AlightEmailLinkPluginEditing,
-  AlightEmailLinkPluginImage,
-  AlightEmailLinkPluginImageEditing,
-  AlightEmailLinkPluginImageUI,
   AlightEmailLinkPluginUI,
   AlightEmailLinkPluginCommand,
   AlightEmailUnlinkCommand
@@ -20,16 +17,13 @@ declare module '@ckeditor/ckeditor5-core' {
      *
      * Read more in {@link module:link/linkconfig~LinkConfig}.
      */
-    link?: LinkConfig;
+    link?: AlightEmailLinkConfig;
   }
 
   interface PluginsMap {
     [AlightEmailAutoLink.pluginName]: AlightEmailAutoLink;
     [AlightEmailLinkPlugin.pluginName]: AlightEmailLinkPlugin;
     [AlightEmailLinkPluginEditing.pluginName]: AlightEmailLinkPluginEditing;
-    [AlightEmailLinkPluginImage.pluginName]: AlightEmailLinkPluginImage;
-    [AlightEmailLinkPluginImageEditing.pluginName]: AlightEmailLinkPluginImageEditing;
-    [AlightEmailLinkPluginImageUI.pluginName]: AlightEmailLinkPluginImageUI;
     [AlightEmailLinkPluginUI.pluginName]: AlightEmailLinkPluginUI;
   }
 

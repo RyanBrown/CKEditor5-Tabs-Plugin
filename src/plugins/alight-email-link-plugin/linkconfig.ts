@@ -15,7 +15,7 @@ import type { ArrayOrItem } from '@ckeditor/ckeditor5-utils';
  *
  * See {@link module:core/editor/editorconfig~EditorConfig all editor options}.
  */
-export interface LinkConfig {
+export interface AlightEmailLinkConfig {
 
   /**
    * When set, the editor will add the given protocol to the link when the user creates a link without one.

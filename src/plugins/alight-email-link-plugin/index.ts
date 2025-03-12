@@ -2,9 +2,6 @@
 export { default as AlightEmailLinkPlugin } from './link';
 export { default as AlightEmailLinkPluginEditing } from './linkediting';
 export { default as AlightEmailLinkPluginUI } from './linkui';
-export { default as AlightEmailLinkPluginImage } from './linkimage';
-export { default as AlightEmailLinkPluginImageEditing } from './linkimageediting';
-export { default as AlightEmailLinkPluginImageUI } from './linkimageui';
 export { default as AlightEmailAutoLink } from './autolink';
 export { default as EmailLinkHandler } from './emaillinkhandler';
 export { default as LinkActionsView } from './ui/linkactionsview';
@@ -18,6 +15,6 @@ export {
   isLinkableElement
 } from './utils';
 
-export type { LinkConfig, LinkDecoratorDefinition } from './linkconfig';
+export type { AlightEmailLinkConfig, LinkDecoratorDefinition } from './linkconfig';
 
 import './augmentation';
