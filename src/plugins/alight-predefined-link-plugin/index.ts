@@ -2,9 +2,6 @@
 export { default as AlightPredefinedLinkPlugin } from './link';
 export { default as AlightPredefinedLinkPluginEditing } from './linkediting';
 export { default as AlightPredefinedLinkPluginUI } from './linkui';
-export { default as AlightPredefinedLinkPluginImage } from './linkimage';
-export { default as AlightPredefinedLinkPluginImageEditing } from './linkimageediting';
-export { default as AlightPredefinedLinkPluginImageUI } from './linkimageui';
 export { default as AlightPredefinedLinkPluginAutoLink } from './autolink';
 export { default as LinkActionsView } from './ui/linkactionsview';
 export { default as LinkFormView } from './ui/linkformview';

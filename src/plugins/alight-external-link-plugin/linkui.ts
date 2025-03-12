@@ -407,8 +407,8 @@ export default class AlightExternalLinkPluginUI extends Plugin {
         width: '500px',
         contentClass: 'cka-external-link-content',
         buttons: [
-          { label: t('Cancel'), variant: 'outlined' },
-          { label: t('Continue'), isPrimary: true }
+          { label: t('Continue'), isPrimary: true, closeOnClick: false },
+          { label: t('Cancel') }
         ]
       });
 
