@@ -29,16 +29,16 @@
   white-space: nowrap;
 
   &:hover {
-    color: #3B82F6;
+    color: var(--primary);
     background-color: rgba(59, 130, 246, 0.04);
   }
 
   &.active {
-    color: #3B82F6;
+    color: var(--primary);
 
     &::after {
       animation: slideIn 0.2s ease-out;
-      background-color: #3B82F6;
+      background-color: var(--primary);
       bottom: -2px;
       content: '';
       height: 2px;
