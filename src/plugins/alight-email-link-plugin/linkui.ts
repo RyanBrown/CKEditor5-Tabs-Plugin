@@ -401,7 +401,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
             errorElement.style.display = 'none';
           }
           if (emailInput) {
-            emailInput.classList.remove('invalid'); // Remove invalid class initially
+            emailInput.classList.remove('invalid');
           }
 
           // Validate email
@@ -415,8 +415,8 @@ export default class AlightEmailLinkPluginUI extends Plugin {
             }
             // Add invalid class to email input
             if (emailInput) {
-              emailInput.classList.add('invalid'); // Add invalid class
-              emailInput.focus(); // Focus back on the email input
+              emailInput.classList.add('invalid');
+              emailInput.focus();
             }
             return;
           }
