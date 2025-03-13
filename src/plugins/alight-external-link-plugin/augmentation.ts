@@ -1,15 +1,12 @@
 // src/plugins/alight-external-link-plugin/augmentation.ts
 import type {
-  LinkConfig,
-  AlightExternalLinkPluginAutoLink,
+  AlightExternalLinkConfig,
+  AlightExternalAutoLink,
   AlightExternalLinkPlugin,
   AlightExternalLinkPluginEditing,
-  AlightExternalLinkPluginImage,
-  AlightExternalLinkPluginImageEditing,
-  AlightExternalLinkPluginImageUI,
   AlightExternalLinkPluginUI,
   AlightExternalLinkPluginCommand,
-  AlightExternalLinkPluginUnlinkCommand
+  AlightExternalUnlinkCommand
 } from './index';
 
 declare module '@ckeditor/ckeditor5-core' {
@@ -20,22 +17,19 @@ declare module '@ckeditor/ckeditor5-core' {
      *
      * Read more in {@link module:link/linkconfig~LinkConfig}.
      */
-    link?: LinkConfig;
+    link?: AlightExternalLinkConfig;
   }
 
   interface PluginsMap {
-    [AlightExternalLinkPluginAutoLink.pluginName]: AlightExternalLinkPluginAutoLink;
+    [AlightExternalAutoLink.pluginName]: AlightExternalAutoLink;
     [AlightExternalLinkPlugin.pluginName]: AlightExternalLinkPlugin;
     [AlightExternalLinkPluginEditing.pluginName]: AlightExternalLinkPluginEditing;
-    [AlightExternalLinkPluginImage.pluginName]: AlightExternalLinkPluginImage;
-    [AlightExternalLinkPluginImageEditing.pluginName]: AlightExternalLinkPluginImageEditing;
-    [AlightExternalLinkPluginImageUI.pluginName]: AlightExternalLinkPluginImageUI;
     [AlightExternalLinkPluginUI.pluginName]: AlightExternalLinkPluginUI;
   }
 
   interface CommandsMap {
     // Use string literal for the command name to avoid conflicts
     'alight-external-link': AlightExternalLinkPluginCommand;
-    'alight-external-unlink': AlightExternalLinkPluginUnlinkCommand;
+    'alight-external-unlink': AlightExternalUnlinkCommand;
   }
 }

@@ -49,20 +49,20 @@ const URL_REG_EXP = new RegExp(
   '|' +
   // b. Short form (either www.example.com or example@example.com)
   '(' +
-  '(www.|(\\S+@))' +
+  '(www.|)' +
   // Host & domain names.
   '((?![-_])(?:[-_a-z0-9\\u00a1-\\uffff]{1,63}\\.))+' +
   // TLD identifier name.
   '(?:[a-z\\u00a1-\\uffff]{2,63})' +
   ')' +
-  ')$', 'i');
+  ')', 'i');
 
 const URL_GROUP_IN_MATCH = 2;
 
 /**
- * The autolink plugin.
+ * Enhanced autolink plugin with better URL detection
  */
-export default class AlightExternalLinkPluginAutoLink extends Plugin {
+export default class AlightExternalAutoLink extends Plugin {
   /**
    * @inheritDoc
    */
@@ -74,7 +74,7 @@ export default class AlightExternalLinkPluginAutoLink extends Plugin {
    * @inheritDoc
    */
   public static get pluginName() {
-    return 'AlightExternalLinkPluginAutoLink' as const;
+    return 'AlightExternalAutoLink' as const;
   }
 
   /**
@@ -114,8 +114,8 @@ export default class AlightExternalLinkPluginAutoLink extends Plugin {
    * If position is not inside a link, returns `null`.
    */
   private _expandLinkRange(model: Model, position: Position): Range | null {
-    if (position.textNode && position.textNode.hasAttribute('alightExternalLinkHref')) {
-      return findAttributeRange(position, 'alightExternalLinkHref', position.textNode.getAttribute('alightExternalLinkHref'), model);
+    if (position.textNode && position.textNode.hasAttribute('alightExternalLinkPluginHref')) {
+      return findAttributeRange(position, 'alightExternalLinkPluginHref', position.textNode.getAttribute('alightExternalLinkPluginHref'), model);
     } else {
       return null;
     }
@@ -150,7 +150,7 @@ export default class AlightExternalLinkPluginAutoLink extends Plugin {
     const model = editor.model;
     const selection = model.document.selection;
     const clipboardPipeline = editor.plugins.get('ClipboardPipeline');
-    const AlightExternalLinkPluginCommand = editor.commands.get('link')!;
+    const AlightExternalLinkPluginCommand = editor.commands.get('alight-external-link')!;
 
     clipboardPipeline.on('inputTransformation', (evt, data: ClipboardInputTransformationData) => {
       if (!this.isEnabled || !AlightExternalLinkPluginCommand.isEnabled || selection.isCollapsed || data.method !== 'paste') {
@@ -168,14 +168,14 @@ export default class AlightExternalLinkPluginAutoLink extends Plugin {
       const newLink = data.dataTransfer.getData('text/plain');
 
       if (!newLink) {
-        // Abort if there is no plain text on the clipboard.
         return;
       }
 
-      const matches = newLink.match(URL_REG_EXP);
+      // Handle regular URLs
+      const matches = newLink.match(/^(https?:\/\/|www\.)\S+$/i);
 
       // If the text in the clipboard has a URL, and that URL is the whole clipboard.
-      if (matches && matches[2] === newLink) {
+      if (matches && matches[0] === newLink) {
         model.change(writer => {
           this._selectEntireLinks(writer, selectedRange);
           AlightExternalLinkPluginCommand.execute(newLink);
@@ -208,7 +208,7 @@ export default class AlightExternalLinkPluginAutoLink extends Plugin {
         mappedText = mappedText.slice(0, -1);
       }
 
-      // 4. Check text before last typed <kbd>Space</kbd> or punctuation.
+      // 4. Check for URL
       const url = getUrlAtTextEnd(mappedText);
 
       if (url) {
@@ -294,6 +294,7 @@ export default class AlightExternalLinkPluginAutoLink extends Plugin {
     const model = this.editor.model;
     const { text, range } = getLastTextLine(rangeToCheck, model);
 
+    // Check for URL
     const url = getUrlAtTextEnd(text);
 
     if (url) {
@@ -332,14 +333,14 @@ export default class AlightExternalLinkPluginAutoLink extends Plugin {
    * @param range The text range to apply the link attribute to.
    */
   private _persistAutoLink(url: string, range: Range): void {
-    const model = this.editor.model;
+    const model = this.editor;
     const deletePlugin = this.editor.plugins.get('Delete');
 
     // Enqueue change to make undo step.
-    model.enqueueChange(writer => {
-      writer.setAttribute('alightExternalLinkHref', url, range);
+    model.model.enqueueChange(writer => {
+      writer.setAttribute('alightExternalLinkPluginHref', url, range);
 
-      model.enqueueChange(() => {
+      model.model.enqueueChange(() => {
         deletePlugin.requestUndoOnBackspace();
       });
     });
@@ -352,16 +353,17 @@ function isSingleSpaceAtTheEnd(text: string): boolean {
 }
 
 function getUrlAtTextEnd(text: string): string | null {
-  const match = URL_REG_EXP.exec(text);
+  // Check for URL pattern
+  const urlMatch = text.match(/(?:https?:\/\/|www\.)[^\s]+$/i);
 
-  return match ? match[URL_GROUP_IN_MATCH] : null;
+  return urlMatch ? urlMatch[0] : null;
 }
 
 function isLinkAllowedOnRange(range: Range, model: Model): boolean {
-  return model.schema.checkAttributeInSelection(model.createSelection(range), 'alightExternalLinkHref');
+  return model.schema.checkAttributeInSelection(model.createSelection(range), 'alightExternalLinkPluginHref');
 }
 
 function linkIsAlreadySet(range: Range): boolean {
   const item = range.start.nodeAfter;
-  return !!item && item.hasAttribute('alightExternalLinkHref');
+  return !!item && item.hasAttribute('alightExternalLinkPluginHref');
 }

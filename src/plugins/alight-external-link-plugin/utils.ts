@@ -26,8 +26,8 @@ const ATTRIBUTE_WHITESPACES = /[\u0000-\u0020\u00A0\u1680\u180E\u2000-\u2029\u20
 
 const SAFE_URL_TEMPLATE = '^(?:(?:<protocols>):|[^a-z]|[a-z+.-]+(?:[^a-z+.:-]|$))';
 
-// Simplified email test - should be run over previously found URL.
-const EMAIL_REG_EXP = /^[\S]+@((?![-_])(?:[-\w\u00a1-\uffff]{0,63}[^-_]\.))+(?:[a-z\u00a1-\uffff]{2,})$/i;
+// URL validation regex
+const URL_REG_EXP = /^(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/i;
 
 // The regex checks for the protocol syntax ('xxxx://' or 'xxxx:')
 // or non-word characters at the beginning of the link ('/', '#' etc.).
@@ -38,11 +38,6 @@ const DEFAULT_LINK_PROTOCOLS = [
   'ftps?',
   'mailto'
 ];
-
-/**
- * A keystroke used by the {@link module:link/linkui~AlightExternalLinkPluginUI link UI feature}.
- */
-export const LINK_KEYSTROKE = 'Ctrl+K';
 
 /**
  * Returns `true` if a given view node is the link element.
@@ -144,35 +139,32 @@ export function normalizeDecorators(decorators?: Record<string, LinkDecoratorDef
 }
 
 /**
- * Returns `true` if the specified `element` can be linked (the element allows the `alightExternalLinkHref` attribute).
+ * Returns `true` if the specified `element` can be linked (the element allows the `alightExternalLinkPluginHref` attribute).
  */
 export function isLinkableElement(element: Element | null, schema: Schema): element is Element {
   if (!element) {
     return false;
   }
 
-  return schema.checkAttribute(element.name, 'alightExternalLinkHref');
+  return schema.checkAttribute(element.name, 'alightExternalLinkPluginHref');
 }
 
 /**
- * Returns `true` if the specified `value` is an external email.
+ * Returns `true` if the specified `value` is a valid URL.
  */
-export function isEmail(value: string): boolean {
-  return EMAIL_REG_EXP.test(value);
+export function isValidUrl(value: string): boolean {
+  return URL_REG_EXP.test(value);
 }
 
 /**
  * Adds the protocol prefix to the specified `link` when:
- *
- * * it does not contain it already, and there is a {@link module:link/linkconfig~LinkConfig#defaultProtocol `defaultProtocol` }
- * configuration value provided,
- * * or the link is an email address.
+ * it does not contain it already, and there is a {@link module:link/linkconfig~LinkConfig#defaultProtocol `defaultProtocol` }
+ * configuration value provided.
  */
 export function addLinkProtocolIfApplicable(link: string, defaultProtocol?: string): string {
-  const protocol = isEmail(link) ? 'mailto:' : defaultProtocol;
-  const isProtocolNeeded = !!protocol && !linkHasProtocol(link);
+  const isProtocolNeeded = defaultProtocol && !linkHasProtocol(link);
 
-  return link && isProtocolNeeded ? protocol + link : link;
+  return link && isProtocolNeeded ? defaultProtocol + link : link;
 }
 
 /**
@@ -228,6 +220,74 @@ export function createBookmarkCallbacks(editor: Editor): LinkActionsViewOptions 
     isScrollableToTarget,
     scrollToTarget
   };
+}
+
+/**
+ * Ensures URL has a protocol (either http:// or https://)
+ */
+export function ensureUrlProtocol(url: string, preferHttps: boolean = true): string {
+  if (!url) return url;
+
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+
+  return (preferHttps ? 'https://' : 'http://') + url;
+}
+
+/**
+ * Extracts domain from URL for display purposes
+ */
+export function extractDomain(url: string): string {
+  if (!url) return url;
+
+  try {
+    // Remove protocol if present
+    let domain = url;
+    if (domain.startsWith('http://')) {
+      domain = domain.substring(7);
+    } else if (domain.startsWith('https://')) {
+      domain = domain.substring(8);
+    }
+
+    // Remove path, query, etc.
+    const endOfDomain = domain.indexOf('/');
+    if (endOfDomain !== -1) {
+      domain = domain.substring(0, endOfDomain);
+    }
+
+    return domain;
+  } catch (error) {
+    return url;
+  }
+}
+
+/**
+ * Extracts organization name from a link text that has format "domain (organization)"
+ */
+export function extractOrganization(linkText: string): string | null {
+  const match = linkText.match(/^(.*?)(?:\s*\(([^)]+)\))?$/);
+  if (match && match[2]) {
+    return match[2];
+  }
+  return null;
+}
+
+/**
+ * Formats URL with organization
+ */
+export function formatUrlWithOrganization(url: string, organization: string | null): string {
+  if (!organization) {
+    return url;
+  }
+  return `${url} (${organization})`;
+}
+
+/**
+ * Checks if a URL is external (starts with http:// or https://)
+ */
+export function isExternalUrl(url: string): boolean {
+  return /^https?:\/\//.test(url);
 }
 
 export type NormalizedLinkDecoratorAutomaticDefinition = LinkDecoratorAutomaticDefinition & { id: string };

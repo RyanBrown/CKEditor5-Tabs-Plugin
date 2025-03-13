@@ -17,19 +17,18 @@ import AlightExternalLinkPluginEditing from './linkediting';
 import LinkActionsView from './ui/linkactionsview';
 import type AlightExternalLinkPluginCommand from './linkcommand';
 import type AlightExternalUnlinkCommand from './unlinkcommand';
-import { addLinkProtocolIfApplicable, isLinkElement } from './utils'; // Removed LINK_KEYSTROKE import
+import { addLinkProtocolIfApplicable, isLinkElement, isValidUrl } from './utils';
 import { CkAlightModalDialog } from './../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import type { CkAlightCheckbox } from './../ui-components/alight-checkbox-component/alight-checkbox-component';
 import './../ui-components/alight-checkbox-component/alight-checkbox-component';
 
 import linkIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 
+// Use a unique marker name to avoid conflicts with standard link plugin
 const VISUAL_SELECTION_MARKER_NAME = 'alight-external-link-ui';
-// URL regex that rejects mailto: links
-const URL_REGEX = /^(?!mailto:)(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/;
 
 /**
- * The link UI plugin. It introduces the `'link'` and `'unlink'` buttons and support for the <kbd>Ctrl+K</kbd> keystroke.
+ * The link UI plugin. It introduces the `'alight-external-link'` and `'alight-external-unlink'` buttons.
  * 
  * Uses a balloon for unlink actions, and a modal dialog for create/edit functions.
  */
@@ -96,7 +95,7 @@ export default class AlightExternalLinkPluginUI extends Plugin {
     editor.conversion.for('editingDowncast').markerToHighlight({
       model: VISUAL_SELECTION_MARKER_NAME,
       view: {
-        classes: ['ck-fake-link-selection']
+        classes: ['ck-fake-alight-external-link-selection']
       }
     });
 
@@ -111,7 +110,7 @@ export default class AlightExternalLinkPluginUI extends Plugin {
         const markerElement = writer.createUIElement('span');
 
         writer.addClass(
-          ['ck-fake-link-selection', 'ck-fake-link-selection_collapsed'],
+          ['ck-fake-alight-external-link-selection', 'ck-fake-alight-external-link-selection_collapsed'],
           markerElement
         );
 
@@ -122,7 +121,7 @@ export default class AlightExternalLinkPluginUI extends Plugin {
     // Enable balloon-modal interactions
     this._enableBalloonInteractions();
 
-    // Add the information about the keystrokes to the accessibility database.
+    // Add the information about the keystrokes to the accessibility database
     editor.accessibility.addKeystrokeInfos({
       keystrokes: [
         {
@@ -137,7 +136,7 @@ export default class AlightExternalLinkPluginUI extends Plugin {
 
     // Register the UI component
     editor.ui.componentFactory.add('alightExternalLinkPlugin', locale => {
-      return this._createButton(ButtonView);
+      return this.createButtonView(locale);
     });
   }
 
@@ -156,6 +155,13 @@ export default class AlightExternalLinkPluginUI extends Plugin {
     if (this.actionsView) {
       this.actionsView.destroy();
     }
+  }
+
+  /**
+   * Creates a button view for the plugin
+   */
+  public createButtonView(locale: any): ButtonView {
+    return this._createButton(ButtonView);
   }
 
   /**
@@ -186,10 +192,12 @@ export default class AlightExternalLinkPluginUI extends Plugin {
     const t = locale.t;
 
     view.set({
-      label: t('Alight External Link'),
+      label: t('External Link'),
       icon: linkIcon,
       isToggleable: true,
-      withText: true
+      withText: true,
+      // Add a custom class to differentiate from standard link button
+      class: 'ck-alight-external-link-button'
     });
 
     view.bind('isEnabled').to(command, 'isEnabled');
@@ -210,6 +218,7 @@ export default class AlightExternalLinkPluginUI extends Plugin {
     const linkCommand = editor.commands.get('alight-external-link') as AlightExternalLinkPluginCommand;
     const unlinkCommand = editor.commands.get('alight-external-unlink') as AlightExternalUnlinkCommand;
 
+    // This is the key binding - ensure it's correctly bound to the command's value
     actionsView.bind('href').to(linkCommand, 'value');
 
     actionsView.editButtonView.bind('isEnabled').to(linkCommand);
@@ -252,17 +261,20 @@ export default class AlightExternalLinkPluginUI extends Plugin {
     const editor = this.editor;
     const viewDocument = editor.editing.view.document;
 
-    // Handle click on view document and show balloon when selection is placed inside the link element.
+    // Handle click on view document to show balloon
     this.listenTo<ViewDocumentClickEvent>(viewDocument, 'click', () => {
       const selectedLink = this._getSelectedLinkElement();
 
-      if (selectedLink) {
-        // Show balloon with actions (edit/unlink) when clicking on a link
-        this._showBalloon();
+      // Only handle our custom external links
+      if (selectedLink && selectedLink.hasAttribute('href')) {
+        const href = selectedLink.getAttribute('href');
+        if (typeof href === 'string' && (href.startsWith('http://') || href.startsWith('https://'))) {
+          // Show balloon with actions (edit/unlink) when clicking on a link
+          this._showBalloon();
+        }
       }
     });
   }
-
 
   /**
    * Enable interactions between the balloon and modal interface.
@@ -369,25 +381,25 @@ export default class AlightExternalLinkPluginUI extends Plugin {
   }
 
   /**
-   * Validates a URL, ensuring it's not an email link
+   * Validates a URL
    */
   private _validateURL(url: string): boolean {
     if (!url || url.trim() === '') {
       return false;
     }
 
-    // Reject if it contains mailto:
-    if (url.toLowerCase().includes('mailto:')) {
-      return false;
-    }
-
-    return URL_REGEX.test(url);
+    // Match both with and without protocol
+    return isValidUrl(url);
   }
 
+  /**
+   * Checks if the link element is an external link
+   */
   private _isExternalLink(linkElement: ViewAttributeElement | null): boolean {
     if (!linkElement) return false;
-    const href = linkElement.getAttribute('href') || '';
-    return href && !href.startsWith('mailto:') && this._validateURL(href);
+
+    const href = linkElement.getAttribute('href');
+    return typeof href === 'string' && (href.startsWith('http://') || href.startsWith('https://'));
   }
 
   /**
@@ -397,24 +409,23 @@ export default class AlightExternalLinkPluginUI extends Plugin {
     const editor = this.editor;
     const t = editor.t;
     const linkCommand = editor.commands.get('alight-external-link') as AlightExternalLinkPluginCommand;
-    const defaultProtocol = editor.config.get('link.defaultProtocol');
     const selectedLink = this._getSelectedLinkElement();
 
     // Create modal if it doesn't exist
     if (!this._modalDialog) {
       this._modalDialog = new CkAlightModalDialog({
         title: t('Create External Link'),
-        width: '500px',
+        width: '32rem',
         contentClass: 'cka-external-link-content',
         buttons: [
-          { label: t('Cancel'), variant: 'outlined' },
-          { label: t('Continue'), isPrimary: true }
+          { label: t('Continue'), isPrimary: true, closeOnClick: false },
+          { label: t('Cancel') }
         ]
       });
 
-      // Handle Save button click
-      this._modalDialog.on('buttonClick', (label: string) => {
-        if (label === t('Continue')) {
+      // Handle button clicks via the buttonClick event
+      this._modalDialog.on('buttonClick', (data: { button: string; }) => {
+        if (data.button === t('Continue')) {
           const urlInput = document.getElementById('cka-link-url-input') as HTMLInputElement;
           const organizationInput = document.getElementById('cka-link-org-name-input') as HTMLInputElement;
 
@@ -443,8 +454,6 @@ export default class AlightExternalLinkPluginUI extends Plugin {
             if (errorElement) {
               if (urlValue.trim() === '') {
                 errorElement.textContent = t('URL address is required');
-              } else if (urlValue.toLowerCase().includes('mailto:')) {
-                errorElement.textContent = t('Email addresses are not allowed. Please enter a web URL.');
               } else {
                 errorElement.textContent = t('Please enter a valid URL address');
               }
@@ -457,9 +466,6 @@ export default class AlightExternalLinkPluginUI extends Plugin {
               const prefixInputContainer = document.querySelector('.cka-prefix-input');
               if (prefixInputContainer) {
                 prefixInputContainer.classList.add('invalid');
-                console.log('Added invalid class to prefix input container:', prefixInputContainer.className);
-              } else {
-                console.log('Could not find .cka-prefix-input element');
               }
             }, 10);
 
@@ -473,102 +479,100 @@ export default class AlightExternalLinkPluginUI extends Plugin {
           editor.execute('alight-external-link', urlValue, { organization });
 
           // Close the modal
-          this._modalDialog!.hide();
-        } else if (label === t('Cancel')) {
-          this._modalDialog!.hide();
+          if (this._modalDialog) {
+            this._modalDialog.hide();
+          }
+        } else if (data.button === t('Cancel')) {
+          if (this._modalDialog) {
+            this._modalDialog.hide();
+          }
         }
       });
     }
 
     // Update modal title based on whether we're editing or creating
-    this._modalDialog.setTitle(isEditing ? t('Edit External Link') : t('Create External Link'));
+    if (this._modalDialog) {
+      this._modalDialog.setTitle(isEditing ? t('Edit External Link') : t('Create External Link'));
 
-    // Prepare the form HTML
-    const formHTML = this._createFormHTML(t, isEditing);
-    this._modalDialog.setContent(formHTML);
+      // Prepare the form HTML
+      const formHTML = this._createFormHTML(t, isEditing);
+      this._modalDialog.setContent(formHTML);
 
-    // Set values if we're editing
-    if (isEditing && linkCommand.value) {
-      setTimeout(() => {
-        const urlInput = document.getElementById('cka-link-url-input') as HTMLInputElement;
-        const organizationInput = document.getElementById('cka-link-org-name-input') as HTMLInputElement;
-        const allowUnsecureCheckbox = document.getElementById('cka-allow-unsecure-urls') as CkAlightCheckbox;
-        const urlPrefixElement = document.getElementById('url-prefix') as HTMLDivElement;
+      // Set values if we're editing
+      if (isEditing && linkCommand.value) {
+        setTimeout(() => {
+          const urlInput = document.getElementById('cka-link-url-input') as HTMLInputElement;
+          const organizationInput = document.getElementById('cka-link-org-name-input') as HTMLInputElement;
+          const allowUnsecureCheckbox = document.getElementById('cka-allow-unsecure-urls') as CkAlightCheckbox;
 
-        let url = linkCommand.value || '';
+          if (!urlInput || !organizationInput) {
+            return;
+          }
 
-        // Skip if this is an email link (shouldn't happen, but just in case)
-        if (url.toLowerCase().startsWith('mailto:')) {
-          this._modalDialog!.hide();
-          return;
-        }
+          let url = linkCommand.value || '';
 
-        // Handle protocols
-        if (url.startsWith('http://')) {
-          url = url.substring(7); // Remove http:// prefix
+          // Set the URL input value
+          urlInput.value = url.replace(/^https?:\/\//, ''); // Remove protocol for display
+
+          // Check if it's http:// and set the checkbox
           if (allowUnsecureCheckbox) {
-            allowUnsecureCheckbox.checked = true;
+            allowUnsecureCheckbox.checked = url.startsWith('http://');
+            // Trigger the change event manually
+            const changeEvent = new Event('change');
+            allowUnsecureCheckbox.dispatchEvent(changeEvent);
           }
-          if (urlPrefixElement) {
-            urlPrefixElement.textContent = 'http://';
-            urlPrefixElement.classList.add('unsecure');
-          }
-        } else if (url.startsWith('https://')) {
-          url = url.substring(8); // Remove https:// prefix
-        }
 
-        urlInput.value = url;
-
-        // Get organization from the selection - need to extract from text
-        const selectedElement = this._getSelectedLinkElement();
-        if (selectedElement && selectedElement.is('attributeElement')) {
-          const children = Array.from(selectedElement.getChildren());
-          if (children.length > 0) {
-            const textNode = children[0];
-            if (textNode && textNode.is('$text')) {
-              const text = textNode.data || '';
-              const match = text.match(/^(.*?)(?:\s*\(([^)]+)\))?$/);
-              if (match && match[2]) {
-                organizationInput.value = match[2];
+          // Get organization from the selection - need to extract from text
+          const selectedElement = this._getSelectedLinkElement();
+          if (selectedElement && selectedElement.is('attributeElement')) {
+            const children = Array.from(selectedElement.getChildren());
+            if (children.length > 0) {
+              const textNode = children[0];
+              if (textNode && textNode.is('$text')) {
+                const text = textNode.data || '';
+                const match = text.match(/^(.*?)(?:\s*\(([^)]+)\))?$/);
+                if (match && match[2]) {
+                  organizationInput.value = match[2];
+                }
               }
             }
           }
-        }
-      }, 50);
-    }
-
-    // Show the modal
-    this._modalDialog.show();
-
-    // Set up event listener for checkbox changes
-    setTimeout(() => {
-      const urlPrefixElement = document.getElementById('url-prefix') as HTMLDivElement;
-      const allowUnsecureCheckbox = document.getElementById('cka-allow-unsecure-urls') as CkAlightCheckbox;
-
-      // Add event listener for checkbox changes
-      const handleCheckboxChange = () => {
-        const isChecked = allowUnsecureCheckbox.checked;
-        if (isChecked) {
-          urlPrefixElement.textContent = 'http://';
-          urlPrefixElement.classList.add('unsecure');
-        } else {
-          urlPrefixElement.textContent = 'https://';
-          urlPrefixElement.classList.remove('unsecure');
-        }
-      };
-
-      allowUnsecureCheckbox.addEventListener('change', handleCheckboxChange);
-
-      // Focus the URL input
-      const urlInput = document.getElementById('cka-link-url-input') as HTMLInputElement;
-      if (urlInput) {
-        urlInput.focus();
+        }, 50);
       }
-    }, 100);
+
+      // Show the modal
+      this._modalDialog.show();
+
+      // Set up event listener for checkbox changes
+      setTimeout(() => {
+        const urlPrefixElement = document.getElementById('url-prefix') as HTMLDivElement;
+        const allowUnsecureCheckbox = document.getElementById('cka-allow-unsecure-urls') as CkAlightCheckbox;
+
+        // Add event listener for checkbox changes
+        const handleCheckboxChange = () => {
+          const isChecked = allowUnsecureCheckbox.checked;
+          if (isChecked) {
+            urlPrefixElement.textContent = 'http://';
+            urlPrefixElement.classList.add('unsecure');
+          } else {
+            urlPrefixElement.textContent = 'https://';
+            urlPrefixElement.classList.remove('unsecure');
+          }
+        };
+
+        allowUnsecureCheckbox.addEventListener('change', handleCheckboxChange);
+
+        // Focus the URL input
+        const urlInput = document.getElementById('cka-link-url-input') as HTMLInputElement;
+        if (urlInput) {
+          urlInput.focus();
+        }
+      }, 100);
+    }
   }
 
   /**
-   * Hides the UI
+   * Hides the UI.
    */
   private _hideUI(): void {
     // Prevent recursive calls
@@ -597,7 +601,7 @@ export default class AlightExternalLinkPluginUI extends Plugin {
   /**
    * Creates the HTML for the form inside the modal.
    */
-  private _createFormHTML(t: any, isEditing: boolean): string {
+  private _createFormHTML(t: Function, isEditing: boolean): string {
     return `
       <div class="cka-url-form-container">
         <div class="cka-url-form-url-container">
@@ -617,8 +621,6 @@ export default class AlightExternalLinkPluginUI extends Plugin {
       
           <div class="cka-note-text">
             ${t('Organization Name (optional): Specify the third-party organization to inform users about the link\'s origin.')}
-            <br>
-            ${t('Note: Email addresses are not supported. Please enter web URLs only.')}
           </div>
         </div>
       </div>
@@ -634,11 +636,9 @@ export default class AlightExternalLinkPluginUI extends Plugin {
     const selection = view.document.selection;
     const selectedElement = selection.getSelectedElement();
 
-    let linkElement: ViewAttributeElement | null = null;
-
     // The selection is collapsed or some widget is selected (especially inline widget).
     if (selection.isCollapsed || (selectedElement && isWidget(selectedElement))) {
-      linkElement = findLinkElementAncestor(selection.getFirstPosition()!);
+      return findLinkElementAncestor(selection.getFirstPosition()!);
     } else {
       // The range for fully selected link is usually anchored in adjacent text nodes.
       // Trim it to get closer to the actual link element.
@@ -646,12 +646,17 @@ export default class AlightExternalLinkPluginUI extends Plugin {
       const startLink = findLinkElementAncestor(range.start);
       const endLink = findLinkElementAncestor(range.end);
 
-      if (startLink && startLink === endLink && view.createRangeIn(startLink).getTrimmed().isEqual(range)) {
-        linkElement = startLink;
+      if (!startLink || startLink != endLink) {
+        return null;
+      }
+
+      // Check if the link element is fully selected.
+      if (view.createRangeIn(startLink).getTrimmed().isEqual(range)) {
+        return startLink;
+      } else {
+        return null;
       }
     }
-
-    return this._isExternalLink(linkElement) ? linkElement : null;
   }
 }
 

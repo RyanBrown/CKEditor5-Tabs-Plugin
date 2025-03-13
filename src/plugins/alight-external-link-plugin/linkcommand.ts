@@ -5,7 +5,7 @@ import { Collection, first, toMap } from '@ckeditor/ckeditor5-utils';
 import type { Range, DocumentSelection, Model, Writer } from '@ckeditor/ckeditor5-engine';
 
 import AutomaticDecorators from './utils/automaticdecorators';
-import { isLinkableElement } from './utils';
+import { isLinkableElement, isValidUrl, ensureUrlProtocol } from './utils';
 import type ManualDecorator from './utils/manualdecorator';
 
 /**
@@ -22,7 +22,7 @@ interface LinkOptions {
  */
 export default class AlightExternalLinkPluginCommand extends Command {
   /**
-   * The value of the `'alightExternalLinkHref'` attribute if the start of the selection is located in a node with this attribute.
+   * The value of the `'alightExternalLinkPluginHref'` attribute if the start of the selection is located in a node with this attribute.
    *
    * @observable
    * @readonly
@@ -63,11 +63,11 @@ export default class AlightExternalLinkPluginCommand extends Command {
     // A check for any integration that allows linking elements (e.g. `AlightExternalLinkPluginImage`).
     // Currently the selection reads attributes from text nodes only. See #7429 and #7465.
     if (isLinkableElement(selectedElement, model.schema)) {
-      this.value = selectedElement.getAttribute('alightExternalLinkHref') as string | undefined;
-      this.isEnabled = model.schema.checkAttribute(selectedElement, 'alightExternalLinkHref');
+      this.value = selectedElement.getAttribute('alightExternalLinkPluginHref') as string | undefined;
+      this.isEnabled = model.schema.checkAttribute(selectedElement, 'alightExternalLinkPluginHref');
     } else {
-      this.value = selection.getAttribute('alightExternalLinkHref') as string | undefined;
-      this.isEnabled = model.schema.checkAttributeInSelection(selection, 'alightExternalLinkHref');
+      this.value = selection.getAttribute('alightExternalLinkPluginHref') as string | undefined;
+      this.isEnabled = model.schema.checkAttributeInSelection(selection, 'alightExternalLinkPluginHref');
     }
 
     for (const manualDecorator of this.manualDecorators) {
@@ -78,21 +78,24 @@ export default class AlightExternalLinkPluginCommand extends Command {
   /**
    * Executes the command.
    *
-   * When the selection is non-collapsed, the `alightExternalLinkHref` attribute will be applied to nodes inside the selection, but only to
-   * those nodes where the `alightExternalLinkHref` attribute is allowed (disallowed nodes will be omitted).
+   * When the selection is non-collapsed, the `alightExternalLinkPluginHref` attribute will be applied to nodes inside the selection, but only to
+   * those nodes where the `alightExternalLinkPluginHref` attribute is allowed (disallowed nodes will be omitted).
    *
-   * When the selection is collapsed and is not inside the text with the `alightExternalLinkHref` attribute, a
-   * new {@link module:engine/model/text~Text text node} with the `alightExternalLinkHref` attribute will be inserted in place of the caret, but
+   * When the selection is collapsed and is not inside the text with the `alightExternalLinkPluginHref` attribute, a
+   * new {@link module:engine/model/text~Text text node} with the `alightExternalLinkPluginHref` attribute will be inserted in place of the caret, but
    * only if such element is allowed in this place. The `_data` of the inserted text will equal the `href` parameter.
    * The selection will be updated to wrap the just inserted text node.
    *
-   * When the selection is collapsed and inside the text with the `alightExternalLinkHref` attribute, the attribute value will be updated.
+   * When the selection is collapsed and inside the text with the `alightExternalLinkPluginHref` attribute, the attribute value will be updated.
    *
    * @fires execute
-     * @param href AlightExternalLinkPlugin destination.
+   * @param href Link destination.
    * @param options Options including manual decorator attributes and organization name.
    */
   public override execute(href: string, options: LinkOptions = {}): void {
+    // Ensure the URL has a protocol
+    href = ensureUrlProtocol(href, !href.startsWith('http://'));
+
     const model = this.editor.model;
     const selection = model.document.selection;
 
@@ -118,13 +121,13 @@ export default class AlightExternalLinkPluginCommand extends Command {
       if (selection.isCollapsed) {
         const position = selection.getFirstPosition()!;
 
-        // When selection is inside text with `alightExternalLinkHref` attribute.
-        if (selection.hasAttribute('alightExternalLinkHref')) {
+        // When selection is inside text with `alightExternalLinkPluginHref` attribute.
+        if (selection.hasAttribute('alightExternalLinkPluginHref')) {
           // Get the link range
           const linkRange = findAttributeRange(
             position,
-            'alightExternalLinkHref',
-            selection.getAttribute('alightExternalLinkHref'),
+            'alightExternalLinkPluginHref',
+            selection.getAttribute('alightExternalLinkPluginHref'),
             model
           );
 
@@ -144,6 +147,11 @@ export default class AlightExternalLinkPluginCommand extends Command {
             baseText = match[1].trim();
           }
 
+          // If baseText is just a URL, use a prettier display version
+          if (isValidUrl(baseText) && (baseText.startsWith('http://') || baseText.startsWith('https://'))) {
+            baseText = baseText.replace(/^https?:\/\//, '');
+          }
+
           // Create new text with or without organization
           let newText = baseText;
           if (organization) {
@@ -154,7 +162,7 @@ export default class AlightExternalLinkPluginCommand extends Command {
           writer.remove(linkRange);
 
           // Insert new content with proper attribute
-          const attributes = { alightExternalLinkHref: href } as any;
+          const attributes = { alightExternalLinkPluginHref: href } as any;
 
           // Add decorators
           truthyManualDecorators.forEach(item => {
@@ -167,20 +175,20 @@ export default class AlightExternalLinkPluginCommand extends Command {
           // Put the selection at the end of the updated link
           writer.setSelection(writer.createPositionAt(linkRange.start.parent, linkRange.start.offset + newText.length));
         }
-        // If not then insert text node with `alightExternalLinkHref` attribute in place of caret.
+        // If not then insert text node with `alightExternalLinkPluginHref` attribute in place of caret.
         else if (href !== '') {
           const attributes = toMap(selection.getAttributes());
 
-          attributes.set('alightExternalLinkHref', href);
+          attributes.set('alightExternalLinkPluginHref', href);
 
           truthyManualDecorators.forEach(item => {
             attributes.set(item, true);
           });
 
-          // Create display text with organization if provided
-          let displayText = href;
+          // Create display text for the link
+          let displayText = href.replace(/^https?:\/\//, ''); // Show without protocol
           if (organization) {
-            displayText = `${href} (${organization})`;
+            displayText = `${displayText} (${organization})`;
           }
 
           const { end: positionAfter } = model.insertContent(
@@ -192,14 +200,14 @@ export default class AlightExternalLinkPluginCommand extends Command {
           writer.setSelection(positionAfter);
         }
 
-        // Remove the `alightExternalLinkHref` attribute and all link decorators from the selection.
+        // Remove the `alightExternalLinkPluginHref` attribute and all link decorators from the selection.
         // It stops adding a new content into the link element.
-        ['alightExternalLinkHref', ...truthyManualDecorators, ...falsyManualDecorators].forEach(item => {
+        ['alightExternalLinkPluginHref', ...truthyManualDecorators, ...falsyManualDecorators].forEach(item => {
           writer.removeSelectionAttribute(item);
         });
       } else {
         // If selection has non-collapsed ranges, we change attribute on nodes inside those ranges
-        const ranges = model.schema.getValidRanges(selection.getRanges(), 'alightExternalLinkHref');
+        const ranges = model.schema.getValidRanges(selection.getRanges(), 'alightExternalLinkPluginHref');
 
         // Get the selected text content without any organization parts
         let selectedText = '';
@@ -221,6 +229,11 @@ export default class AlightExternalLinkPluginCommand extends Command {
           selectedText = match[1].trim(); // Use only the text without organization
         }
 
+        // If the selected text is a URL, simplify it for display
+        if (isValidUrl(selectedText) && (selectedText.startsWith('http://') || selectedText.startsWith('https://'))) {
+          selectedText = selectedText.replace(/^https?:\/\//, '');
+        }
+
         // Create the new text with the new organization if provided
         let finalText = selectedText;
         if (organization) {
@@ -233,7 +246,7 @@ export default class AlightExternalLinkPluginCommand extends Command {
           writer.remove(range);
 
           // Then insert the new content with the organization
-          const attributes = { alightExternalLinkHref: href } as any;
+          const attributes = { alightExternalLinkPluginHref: href } as any;
 
           // Add decorators
           truthyManualDecorators.forEach(item => {

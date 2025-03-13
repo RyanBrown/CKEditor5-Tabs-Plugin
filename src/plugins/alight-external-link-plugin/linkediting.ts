@@ -23,7 +23,7 @@ import {
 import { keyCodes, env } from '@ckeditor/ckeditor5-utils';
 
 import AlightExternalLinkPluginCommand from './linkcommand';
-import AlightExternalLinkPluginUnlinkCommand from './unlinkcommand';
+import AlightExternalUnlinkCommand from './unlinkcommand';
 import ManualDecorator from './utils/manualdecorator';
 import {
   createLinkElement,
@@ -36,19 +36,21 @@ import {
   type NormalizedLinkDecoratorAutomaticDefinition,
   type NormalizedLinkDecoratorManualDefinition
 } from './utils';
+import { AlightExternalLinkPluginConfig } from './link';
+import type { LinkDecoratorDefinition } from './linkconfig';
 
 import '@ckeditor/ckeditor5-link/theme/link.css';
 
-const HIGHLIGHT_CLASS = 'ck-link_selected';
+const HIGHLIGHT_CLASS = 'ck-alight-external-link_selected';
 const DECORATOR_AUTOMATIC = 'automatic';
 const DECORATOR_MANUAL = 'manual';
 const EXTERNAL_LINKS_REGEXP = /^(https?:)?\/\//;
 
 /**
- * The link engine feature.
+ * The external link engine feature.
  *
- * It introduces the `alightExternalLinkHref="url"` attribute in the model which renders to the view as a `<a href="url">` element
- * as well as `'link'` and `'unlink'` commands.
+ * It introduces the `alightExternalLinkPluginHref="url"` attribute in the model which renders to the view as a `<a href="url">` element
+ * as well as `'alight-external-link'` and `'alight-external-unlink'` commands.
  */
 export default class AlightExternalLinkPluginEditing extends Plugin {
   /**
@@ -79,9 +81,14 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
   constructor(editor: Editor) {
     super(editor);
 
-    editor.config.define('link', {
+    // Use a separate config namespace to avoid conflicts with standard link plugin
+    editor.config.define('alightExternalLink', {
       allowCreatingEmptyLinks: false,
-      addTargetToExternalLinks: false
+      addTargetToExternalLinks: false,
+      defaultProtocol: 'https://',
+      toolbar: {
+        shouldAppearInToolbar: true
+      }
     });
   }
 
@@ -90,21 +97,33 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
    */
   public init(): void {
     const editor = this.editor;
-    const allowedProtocols = this.editor.config.get('link.allowedProtocols');
+    const config = editor.config.get('alightExternalLink') as AlightExternalLinkPluginConfig;
+    const allowedProtocols = config?.allowedProtocols ||
+      (editor.config.get('link.allowedProtocols') as string[] ||
+        ['https?', 'ftps?', 'mailto']);
 
     // Allow link attribute on all inline nodes.
-    editor.model.schema.extend('$text', { allowAttributes: 'alightExternalLinkHref' });
+    editor.model.schema.extend('$text', { allowAttributes: 'alightExternalLinkPluginHref' });
 
+    // Add a high-priority dataDowncast converter
     editor.conversion.for('dataDowncast')
-      .attributeToElement({ model: 'alightExternalLinkHref', view: createLinkElement });
-
-    editor.conversion.for('editingDowncast')
       .attributeToElement({
-        model: 'alightExternalLinkHref', view: (href, conversionApi) => {
-          return createLinkElement(ensureSafeUrl(href, allowedProtocols), conversionApi);
-        }
+        model: 'alightExternalLinkPluginHref',
+        view: createLinkElement,
+        converterPriority: 'high'
       });
 
+    // Add a high-priority editingDowncast converter
+    editor.conversion.for('editingDowncast')
+      .attributeToElement({
+        model: 'alightExternalLinkPluginHref',
+        view: (href, conversionApi) => {
+          return createLinkElement(ensureSafeUrl(href, allowedProtocols), conversionApi);
+        },
+        converterPriority: 'high'
+      });
+
+    // Upcast converter for all links
     editor.conversion.for('upcast')
       .elementToAttribute({
         view: {
@@ -114,28 +133,30 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
           }
         },
         model: {
-          key: 'alightExternalLinkHref',
+          key: 'alightExternalLinkPluginHref',
           value: (viewElement: ViewElement) => viewElement.getAttribute('href')
-        }
+        },
+        converterPriority: 'normal'
       });
 
     // Create linking commands.
     editor.commands.add('alight-external-link', new AlightExternalLinkPluginCommand(editor));
-    editor.commands.add('alight-external-unlink', new AlightExternalLinkPluginUnlinkCommand(editor));
+    editor.commands.add('alight-external-unlink', new AlightExternalUnlinkCommand(editor));
 
-    const linkDecorators = getLocalizedDecorators(editor.t, normalizeDecorators(editor.config.get('link.decorators')));
+    const decoratorsConfig = config?.decorators as Record<string, LinkDecoratorDefinition> || {};
+    const linkDecorators = getLocalizedDecorators(editor.t, normalizeDecorators(decoratorsConfig));
 
     this._enableAutomaticDecorators(linkDecorators
       .filter((item): item is NormalizedLinkDecoratorAutomaticDefinition => item.mode === DECORATOR_AUTOMATIC));
     this._enableManualDecorators(linkDecorators
       .filter((item): item is NormalizedLinkDecoratorManualDefinition => item.mode === DECORATOR_MANUAL));
 
-    // Enable two-step caret movement for `alightExternalLinkHref` attribute.
+    // Enable two-step caret movement for `alightExternalLinkPluginHref` attribute.
     const twoStepCaretMovementPlugin = editor.plugins.get(TwoStepCaretMovement);
-    twoStepCaretMovementPlugin.registerAttribute('alightExternalLinkHref');
+    twoStepCaretMovementPlugin.registerAttribute('alightExternalLinkPluginHref');
 
-    // Setup highlight over selected link.
-    inlineHighlight(editor, 'alightExternalLinkHref', 'a', HIGHLIGHT_CLASS);
+    // Setup highlight over selected link with a unique class to avoid conflicts
+    inlineHighlight(editor, 'alightExternalLinkPluginHref', 'a', HIGHLIGHT_CLASS);
 
     // Handle link following by CTRL+click or ALT+ENTER
     this._enableLinkOpen();
@@ -154,7 +175,7 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
    * {@link module:link/utils/automaticdecorators~AutomaticDecorators#getDispatcher} method.
    *
    * **Note**: This method also activates the automatic external link decorator if enabled with
-   * {@link module:link/linkconfig~LinkConfig#addTargetToExternalLinks `config.link.addTargetToExternalLinks`}.
+   * {@link module:link/linkconfig~LinkConfig#addTargetToExternalLinks `config.alightExternalLink.addTargetToExternalLinks`}.
    */
   private _enableAutomaticDecorators(automaticDecoratorDefinitions: Array<NormalizedLinkDecoratorAutomaticDefinition>): void {
     const editor = this.editor;
@@ -163,10 +184,12 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
     const command = editor.commands.get('alight-external-link') as AlightExternalLinkPluginCommand;
     const automaticDecorators = command.automaticDecorators;
 
+    const config = editor.config.get('alightExternalLink') as AlightExternalLinkPluginConfig;
+
     // Adds a default decorator for external links.
-    if (editor.config.get('link.addTargetToExternalLinks')) {
+    if (config?.addTargetToExternalLinks) {
       automaticDecorators.add({
-        id: 'linkIsEmail',
+        id: 'linkIsExternal',
         mode: DECORATOR_AUTOMATIC,
         callback: url => !!url && EXTERNAL_LINKS_REGEXP.test(url),
         attributes: {
@@ -218,14 +241,16 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
           }
 
           if (manualDecoratorValue) {
-            const element = writer.createAttributeElement('a', decorator.attributes, { priority: 5 });
+            const element = writer.createAttributeElement('a', decorator.attributes || {}, { priority: 5 });
 
             if (decorator.classes) {
               writer.addClass(decorator.classes, element);
             }
 
-            for (const key in decorator.styles) {
-              writer.setStyle(key, decorator.styles[key], element);
+            if (decorator.styles) {
+              for (const key in decorator.styles) {
+                writer.setStyle(key, decorator.styles[key], element);
+              }
             }
 
             writer.setCustomProperty('alight-external-link', true, element);
@@ -238,7 +263,7 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
       editor.conversion.for('upcast').elementToAttribute({
         view: {
           name: 'a',
-          ...decorator._createPattern()
+          ...(decorator._createPattern?.() || {})
         },
         model: {
           key: decorator.id
@@ -272,19 +297,24 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
         return;
       }
 
-      let clickedElement: Element | null = data.domTarget;
-
-      if (clickedElement.tagName.toLowerCase() != 'a') {
-        clickedElement = clickedElement.closest('a');
-      }
+      const clickedElement = data.domTarget as Element;
 
       if (!clickedElement) {
         return;
       }
 
-      const url = clickedElement.getAttribute('href');
+      let linkElement = clickedElement;
+      if (clickedElement.tagName.toLowerCase() != 'a') {
+        linkElement = clickedElement.closest('a') as Element;
+      }
 
-      if (!url) {
+      if (!linkElement) {
+        return;
+      }
+
+      const url = linkElement.getAttribute('href');
+
+      if (!url || typeof url !== 'string') {
         return;
       }
 
@@ -311,7 +341,7 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
   }
 
   /**
-   * Watches the DocumentSelection attribute changes and removes link decorator attributes when the alightExternalLinkHref attribute is removed.
+   * Watches the DocumentSelection attribute changes and removes link decorator attributes when the alightExternalLinkPluginHref attribute is removed.
    *
    * This is to ensure that there is no left-over link decorator attributes on the document selection that is no longer in a link.
    */
@@ -321,7 +351,7 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
     const selection = model.document.selection;
 
     this.listenTo<DocumentSelectionChangeAttributeEvent>(selection, 'change:attribute', (evt, { attributeKeys }) => {
-      if (!attributeKeys.includes('alightExternalLinkHref') || selection.hasAttribute('alightExternalLinkHref')) {
+      if (!attributeKeys.includes('alightExternalLinkPluginHref') || selection.hasAttribute('alightExternalLinkPluginHref')) {
         return;
       }
 
@@ -337,7 +367,9 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
   private _enableClipboardIntegration(): void {
     const editor = this.editor;
     const model = editor.model;
-    const defaultProtocol = this.editor.config.get('link.defaultProtocol');
+    const config = editor.config.get('alightExternalLink') as AlightExternalLinkPluginConfig;
+    const defaultProtocol = config?.defaultProtocol ||
+      (editor.config.get('link.defaultProtocol') as string | undefined);
 
     if (!defaultProtocol) {
       return;
@@ -348,10 +380,12 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
         const range = writer.createRangeIn(data.content);
 
         for (const item of range.getItems()) {
-          if (item.hasAttribute('alightExternalLinkHref')) {
-            const newLink = addLinkProtocolIfApplicable(item.getAttribute('alightExternalLinkHref') as string, defaultProtocol);
+          if (item.hasAttribute('alightExternalLinkPluginHref')) {
+            const href = item.getAttribute('alightExternalLinkPluginHref');
+            if (typeof href !== 'string') continue;
 
-            writer.setAttribute('alightExternalLinkHref', newLink, item);
+            const newLink = addLinkProtocolIfApplicable(href, defaultProtocol);
+            writer.setAttribute('alightExternalLinkPluginHref', newLink, item);
           }
         }
       });
@@ -361,11 +395,11 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
 
 /**
  * Make the selection free of link-related model attributes.
- * All link-related model attributes start with "link". That includes not only "alightExternalLinkHref"
+ * All link-related model attributes start with "link" or "alightExternal". That includes not only "alightExternalLinkPluginHref"
  * but also all decorator attributes (they have dynamic names), or even custom plugins.
  */
 function removeLinkAttributesFromSelection(writer: Writer, linkAttributes: Array<string>): void {
-  writer.removeSelectionAttribute('alightExternalLinkHref');
+  writer.removeSelectionAttribute('alightExternalLinkPluginHref');
 
   for (const attribute of linkAttributes) {
     writer.removeSelectionAttribute(attribute);
@@ -376,7 +410,10 @@ function removeLinkAttributesFromSelection(writer: Writer, linkAttributes: Array
  * Returns an array containing names of the attributes allowed on `$text` that describes the link item.
  */
 function getLinkAttributesAllowedOnText(schema: Schema): Array<string> {
-  const textAttributes = schema.getDefinition('$text')!.allowAttributes;
+  const textAttributes = schema.getDefinition('$text')?.allowAttributes || [];
 
-  return textAttributes.filter(attribute => attribute.startsWith('link'));
+  return textAttributes.filter(attribute =>
+    typeof attribute === 'string' &&
+    (attribute.startsWith('link') || attribute.startsWith('alightExternal'))
+  );
 }

@@ -15,7 +15,7 @@ import type { ArrayOrItem } from '@ckeditor/ckeditor5-utils';
  *
  * See {@link module:core/editor/editorconfig~EditorConfig all editor options}.
  */
-export interface LinkConfig {
+export interface AlightExternalLinkConfig {
 
   /**
    * When set, the editor will add the given protocol to the link when the user creates a link without one.
@@ -83,7 +83,7 @@ export interface LinkConfig {
 
   /**
    * When set to `true`, the `target="blank"` and `rel="noopener noreferrer"` attributes are automatically added to all external links
-   * in the editor. "External links" are all links in the editor content starting with `http`, `https`, or `//`.
+   * in the editor. "Email links" are all links in the editor content starting with `http`, `https`, or `//`.
    *
    * ```ts
    * ClassicEditor
@@ -127,7 +127,7 @@ export interface LinkConfig {
    * value is the decorator definition.
    *
    * The name of the decorator also corresponds to the {@glink framework/architecture/editing-engine#text-attributes text
-   * attribute} in the model. For instance, the `isExternal` decorator below is represented as a `linkIsExternal` attribute in the model.
+   * attribute} in the model. For instance, the `isEmail` decorator below is represented as a `linkIsEmail` attribute in the model.
    *
    * ```ts
    * ClassicEditor

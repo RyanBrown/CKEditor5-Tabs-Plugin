@@ -21,17 +21,17 @@ export default class AlightExternalUnlinkCommand extends Command {
 
     // A check for any integration that allows linking elements (e.g. `AlightExternalLinkPluginImage`).
     if (isLinkableElement(selectedElement, model.schema)) {
-      this.isEnabled = model.schema.checkAttribute(selectedElement, 'alightExternalLinkHref');
+      this.isEnabled = model.schema.checkAttribute(selectedElement, 'alightExternalLinkPluginHref');
     } else {
-      this.isEnabled = model.schema.checkAttributeInSelection(selection, 'alightExternalLinkHref');
+      this.isEnabled = model.schema.checkAttributeInSelection(selection, 'alightExternalLinkPluginHref');
     }
   }
 
   /**
    * Executes the command.
    *
-   * When the selection is collapsed, it removes the `alightExternalLinkHref` attribute from each node with the same `alightExternalLinkHref` attribute value.
-   * When the selection is non-collapsed, it removes the `alightExternalLinkHref` attribute from each node in selected ranges.
+   * When the selection is collapsed, it removes the `alightExternalLinkPluginHref` attribute from each node with the same `alightExternalLinkPluginHref` attribute value.
+   * When the selection is non-collapsed, it removes the `alightExternalLinkPluginHref` attribute from each node in selected ranges.
    * Additionally, it removes organization names from the text content.
    */
   public override execute(): void {
@@ -45,18 +45,18 @@ export default class AlightExternalUnlinkCommand extends Command {
       const rangesToUnlink = selection.isCollapsed ?
         [findAttributeRange(
           selection.getFirstPosition()!,
-          'alightExternalLinkHref',
-          selection.getAttribute('alightExternalLinkHref'),
+          'alightExternalLinkPluginHref',
+          selection.getAttribute('alightExternalLinkPluginHref'),
           model
         )] :
-        model.schema.getValidRanges(selection.getRanges(), 'alightExternalLinkHref');
+        model.schema.getValidRanges(selection.getRanges(), 'alightExternalLinkPluginHref');
 
-      // Remove `alightExternalLinkHref` attribute from specified ranges.
+      // Remove `alightExternalLinkPluginHref` attribute from specified ranges.
       for (const range of rangesToUnlink) {
         // Before removing the attribute, let's remove any organization name from the text
         this._removeOrganizationNameFromText(writer, range);
 
-        writer.removeAttribute('alightExternalLinkHref', range);
+        writer.removeAttribute('alightExternalLinkPluginHref', range);
 
         // If there are registered custom attributes, then remove them during unlink.
         if (linkCommand) {

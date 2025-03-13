@@ -3,7 +3,7 @@ import { ButtonView, View, ViewCollection, FocusCycler, type FocusableView } fro
 import { FocusTracker, KeystrokeHandler, type LocaleTranslate, type Locale } from 'ckeditor5/src/utils';
 import { icons } from 'ckeditor5/src/core';
 
-import { ensureSafeUrl } from '../utils';
+import { ensureSafeUrl, extractDomain } from '../utils';
 
 // See: #8833.
 // eslint-disable-next-line ckeditor5-rules/ckeditor-imports
@@ -181,7 +181,7 @@ export default class LinkActionsView extends View {
 
     button.set({
       withText: true,
-      tooltip: t('Open email link')
+      tooltip: t('Open link in new tab')
     });
 
     button.extendTemplate({
@@ -197,11 +197,7 @@ export default class LinkActionsView extends View {
     });
 
     button.bind('label').to(this, 'href', href => {
-      // Hide mailto: from display in the UI
-      if (href && href.startsWith('mailto:')) {
-        return href.substring(7); // Remove mailto: prefix for display
-      }
-      return href || t('This link has no URL');
+      return href ? extractDomain(href) : t('This link has no URL');
     });
 
     button.bind('isEnabled').to(this, 'href', href => !!href);
