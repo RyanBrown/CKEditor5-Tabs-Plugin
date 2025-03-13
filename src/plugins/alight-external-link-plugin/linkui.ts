@@ -504,22 +504,28 @@ export default class AlightExternalLinkPluginUI extends Plugin {
           const urlInput = document.getElementById('cka-link-url-input') as HTMLInputElement;
           const organizationInput = document.getElementById('cka-link-org-name-input') as HTMLInputElement;
           const allowUnsecureCheckbox = document.getElementById('cka-allow-unsecure-urls') as CkAlightCheckbox;
+          const urlPrefixElement = document.getElementById('url-prefix') as HTMLDivElement;
 
-          if (!urlInput || !organizationInput) {
+          if (!urlInput || !organizationInput || !allowUnsecureCheckbox || !urlPrefixElement) {
             return;
           }
 
           let url = linkCommand.value || '';
+          const isHttp = url.startsWith('http://');
 
-          // Set the URL input value
-          urlInput.value = url.replace(/^https?:\/\//, ''); // Remove protocol for display
+          // Set the URL input value (without protocol)
+          urlInput.value = url.replace(/^https?:\/\//, '');
 
-          // Check if it's http:// and set the checkbox
-          if (allowUnsecureCheckbox) {
-            allowUnsecureCheckbox.checked = url.startsWith('http://');
-            // Trigger the change event manually
-            const changeEvent = new Event('change');
-            allowUnsecureCheckbox.dispatchEvent(changeEvent);
+          // Check the box if it's http://
+          allowUnsecureCheckbox.checked = isHttp;
+
+          // Manually update the prefix text and class
+          if (isHttp) {
+            urlPrefixElement.textContent = 'http://';
+            urlPrefixElement.classList.add('unsecure');
+          } else {
+            urlPrefixElement.textContent = 'https://';
+            urlPrefixElement.classList.remove('unsecure');
           }
 
           // Get organization from the selection - need to extract from text
