@@ -20,14 +20,13 @@ export default class AlightNewDocumentLinkPluginCommand extends Command {
 
   /**
    * Executes the command.
-   * Gets the UI plugin instance and calls its _showModal method.
    */
-  override execute(initialValue?: { url?: string; orgName?: string; email?: string }): void {
+  override execute(): void {
     // Get the UI plugin instance
-    const uiPlugin = this.editor.plugins.get(AlightNewDocumentLinkPluginUI);
+    const alightNewDocumentLinkPlugin = this.editor.plugins.get(AlightNewDocumentLinkPluginUI);
 
-    // Show the modal with any provided initial values
-    uiPlugin._showModal(initialValue);
+    // Show the modal
+    alightNewDocumentLinkPlugin._showModal();
   }
 
   /**

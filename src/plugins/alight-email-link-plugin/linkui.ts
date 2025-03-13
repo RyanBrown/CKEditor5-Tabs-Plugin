@@ -515,7 +515,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
   }
 
   /**
-   * Hides the UI.
+   * Hides the UI
    */
   private _hideUI(): void {
     // Prevent recursive calls

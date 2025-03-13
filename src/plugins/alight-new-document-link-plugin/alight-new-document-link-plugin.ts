@@ -19,7 +19,7 @@ export default class AlightNewDocumentLinkPlugin extends Plugin {
     editor.commands.add('alightNewDocumentLinkPlugin', new AlightNewDocumentLinkPluginCommand(editor));
 
     // Get UI plugin instance to access it elsewhere if needed
-    const uiPlugin = editor.plugins.get(AlightNewDocumentLinkPluginUI);
+    const alightNewDocumentLinkPlugin = editor.plugins.get(AlightNewDocumentLinkPluginUI);
 
     // Listen for document creation events (fired from the UI plugin)
     this.listenTo(editor.editing.view.document, 'newDocumentCreated', (evt, data) => {
@@ -35,7 +35,7 @@ export default class AlightNewDocumentLinkPlugin extends Plugin {
     });
 
     // Listen for modal closed event
-    this.listenTo(uiPlugin, 'modalClosed', () => {
+    this.listenTo(alightNewDocumentLinkPlugin, 'modalClosed', () => {
       console.log('Document creation modal was closed');
     });
   }
