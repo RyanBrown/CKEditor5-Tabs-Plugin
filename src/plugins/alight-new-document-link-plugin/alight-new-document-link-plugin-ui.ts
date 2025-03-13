@@ -6,9 +6,8 @@ import { ContentManager } from './modal-content/alight-new-document-link-plugin-
 import { Notification } from '@ckeditor/ckeditor5-ui';
 import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 import './styles/alight-new-document-link-plugin.scss';
-import { ModalPluginInterface } from './../interfaces/custom-plugin-interfaces';
 
-export default class AlightNewDocumentLinkPluginUI extends Plugin implements ModalPluginInterface {
+export default class AlightNewDocumentLinkPluginUI extends Plugin {
   private _modalDialog?: CkAlightModalDialog;
   private _formManager?: ContentManager;
   private _isSubmitting: boolean = false;

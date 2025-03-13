@@ -12,7 +12,6 @@ import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
 import View from '@ckeditor/ckeditor5-ui/src/view';
 import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 import { Locale } from '@ckeditor/ckeditor5-utils';
-import { ModalPluginInterface } from './../interfaces/custom-plugin-interfaces';
 
 /**
  * Interface for a link plugin configuration

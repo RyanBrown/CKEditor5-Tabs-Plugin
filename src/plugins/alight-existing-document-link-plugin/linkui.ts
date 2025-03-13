@@ -225,7 +225,7 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
       // and extract the actual links from it
       let processedLinks: any[] = [];
 
-      for (const rawLink of rawLinks as APILinkResponse[]) {
+      for (const rawLink of rawLinks as unknown as APILinkResponse[]) {
         if (rawLink.predefinedLinksDetails && Array.isArray(rawLink.predefinedLinksDetails)) {
           // The API response has nested predefinedLinksDetails - extract and process those
           console.log(`Found ${rawLink.predefinedLinksDetails.length} nested links for ${rawLink.pageCode}`);

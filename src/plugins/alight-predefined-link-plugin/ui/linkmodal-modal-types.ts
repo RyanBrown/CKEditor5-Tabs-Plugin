@@ -1,5 +1,6 @@
 // src/plugins/alight-predefined-link-plugin/ui/linkmodal-modal-types.ts
 export interface PredefinedLink {
+  predefinedLinksDetails: boolean;
   predefinedLinkName: string;
   predefinedLinkDescription: string;
   baseOrClientSpecific: string;
