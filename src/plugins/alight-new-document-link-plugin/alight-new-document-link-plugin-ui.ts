@@ -65,7 +65,7 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
    * 
    * @param initialValue Optional initial values (not used in this plugin, but included for API consistency)
    */
-  public async _showModal(initialValue?: { url?: string; orgName?: string; email?: string }): Promise<void> {
+  public async _showModal(): Promise<void> {
     const t = this.editor.t;
 
     if (!this._modalDialog) {
