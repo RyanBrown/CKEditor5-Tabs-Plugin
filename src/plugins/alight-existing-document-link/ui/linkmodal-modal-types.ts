@@ -10,6 +10,10 @@ export interface ExistingDocumentLink {
   uniqueId: string | number;
   attributeName: string;
   attributeValue: string;
+  title: string;
+  population: string;
+  locale: string;
+  fileType: string;
 }
 
 export interface DocumentLink {
@@ -31,4 +35,12 @@ export interface SelectedFilters {
   baseOrClientSpecific: string[];
   pageType: string[];
   domain: string[];
+}
+
+
+export interface ExistingDocSelectedFilters {
+  [key: string]: string[];
+  fileType: string[];
+  population: string[];
+  locale: string[];
 }

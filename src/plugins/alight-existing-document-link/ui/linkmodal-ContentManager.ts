@@ -200,16 +200,10 @@ export class ContentManager implements ILinkManager {
           </cka-radio-button>
         </div>
         <ul>
-          <li><strong>${link.existingDocumentLinkName}</strong></li>
-          <li><strong>Description:</strong> ${link.existingDocumentLinkDescription}</li>
-          <li><strong>Base/Client Specific:</strong> ${link.baseOrClientSpecific}</li>
-          <li><strong>Page Type:</strong> ${link.pageType}</li>
-          <li class="hide-overflow"><strong>Destination:</strong> ${link.destination}</li>
-          ${link.pageCode ? `<li><strong>Page Code:</strong> ${link.pageCode}</li>` : ''}
-          <li><strong>Domain:</strong> ${link.domain}</li>
-          <li><strong>Unique ID:</strong> ${link.uniqueId}</li>
-          <li><strong>Attribute Name:</strong> ${link.attributeName}</li>
-          <li><strong>Attribute Value:</strong> ${link.attributeValue}</li>
+          <li><strong>${link.title}</strong></li>
+          <li><strong>Population:</strong> ${link.population}</li>
+          <li><strong>Language:</strong> ${link.locale}</li>
+          <li><strong>File Type:</strong> ${link.fileType}</li>
         </ul>
       </div>
     `;
