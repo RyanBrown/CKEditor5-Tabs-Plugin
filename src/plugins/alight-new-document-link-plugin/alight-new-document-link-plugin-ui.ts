@@ -69,19 +69,8 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
     if (!this._modalDialog) {
       // Define button configuration using the DialogButton interface
       const buttons: DialogButton[] = [
-        {
-          label: 'Continue',
-          variant: 'default',
-          shape: 'round',
-          isPrimary: true,
-          closeOnClick: false,
-        },
-        {
-          label: 'Clear',
-          variant: 'outlined',
-          shape: 'round',
-          closeOnClick: false,
-        },
+        { label: t('Continue'), isPrimary: true, closeOnClick: false },
+        { label: t('Cancel') }
       ];
 
       // Create modal with enhanced configuration
