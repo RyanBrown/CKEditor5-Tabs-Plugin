@@ -4,6 +4,9 @@ import type {
   AlightExternalLinkPluginAutoLink,
   AlightExternalLinkPlugin,
   AlightExternalLinkPluginEditing,
+  AlightExternalLinkPluginImage,
+  AlightExternalLinkPluginImageEditing,
+  AlightExternalLinkPluginImageUI,
   AlightExternalLinkPluginUI,
   AlightExternalLinkPluginCommand,
   AlightExternalLinkPluginUnlinkCommand
@@ -24,6 +27,9 @@ declare module '@ckeditor/ckeditor5-core' {
     [AlightExternalLinkPluginAutoLink.pluginName]: AlightExternalLinkPluginAutoLink;
     [AlightExternalLinkPlugin.pluginName]: AlightExternalLinkPlugin;
     [AlightExternalLinkPluginEditing.pluginName]: AlightExternalLinkPluginEditing;
+    [AlightExternalLinkPluginImage.pluginName]: AlightExternalLinkPluginImage;
+    [AlightExternalLinkPluginImageEditing.pluginName]: AlightExternalLinkPluginImageEditing;
+    [AlightExternalLinkPluginImageUI.pluginName]: AlightExternalLinkPluginImageUI;
     [AlightExternalLinkPluginUI.pluginName]: AlightExternalLinkPluginUI;
   }
 
