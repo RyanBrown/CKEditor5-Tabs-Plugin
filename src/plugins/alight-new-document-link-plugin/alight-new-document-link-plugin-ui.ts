@@ -67,21 +67,21 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
    */
   public async _showModal(initialValue?: { url?: string; orgName?: string; email?: string }): Promise<void> {
     if (!this._modalDialog) {
-      // Define button configuration using the new DialogButton interface
+      // Define button configuration using the DialogButton interface
       const buttons: DialogButton[] = [
-        {
-          label: 'Clear',
-          variant: 'outlined',
-          shape: 'round',
-          closeOnClick: false,
-        },
         {
           label: 'Continue',
           variant: 'default',
           shape: 'round',
           isPrimary: true,
           closeOnClick: false,
-        }
+        },
+        {
+          label: 'Clear',
+          variant: 'outlined',
+          shape: 'round',
+          closeOnClick: false,
+        },
       ];
 
       // Create modal with enhanced configuration
@@ -90,7 +90,7 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
         modal: true,
         width: '80vw',
         contentClass: 'cka-new-document-content',
-        buttons: buttons
+        buttons: buttons,
       });
 
       // Set up event handlers using the improved event system
@@ -135,6 +135,8 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
         const validation = this._formManager.validateForm();
         if (validation.isValid) {
           await this._handleFormSubmission();
+        } else {
+          this._showValidationErrors();
         }
       }
     });
