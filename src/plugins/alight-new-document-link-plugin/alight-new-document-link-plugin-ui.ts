@@ -66,6 +66,8 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
    * @param initialValue Optional initial values (not used in this plugin, but included for API consistency)
    */
   public async _showModal(initialValue?: { url?: string; orgName?: string; email?: string }): Promise<void> {
+    const t = this.editor.t;
+
     if (!this._modalDialog) {
       // Define button configuration using the DialogButton interface
       const buttons: DialogButton[] = [
@@ -92,7 +94,7 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
     } else {
       // Update existing modal if needed
       this._modalDialog.setProps({
-        title: 'Create a New Document'
+        title: t('Create a New Document')
       });
     }
 
