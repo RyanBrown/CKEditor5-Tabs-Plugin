@@ -77,7 +77,7 @@ import type { LinkPluginConfig } from './plugins/alight-parent-link-plugin'; // 
 import AlightPredefinedLinkPlugin from './plugins/alight-predefined-link-plugin/link';
 import AlightNewDocumentLinkPlugin from './plugins/alight-new-document-link-plugin/alight-new-document-link-plugin';
 // import AlightExistingDocumentLinkPlugin from './plugins/alight-existing-document-link-plugin/alight-existing-document-link-plugin';
-import AlightExistingDocumentLinkPlugin from './plugins/alight-existing-document-link/link';
+import AlightExistingDocumentLinkPlugin from './plugins/alight-existing-document-link-plugin/link';
 import AlightLink from './plugins/alight-link/src/link';
 import AlightExternalLinkPlugin from './plugins/alight-external-link-plugin/link';
 import AlightEmailLinkPlugin from './plugins/alight-email-link-plugin/link';
