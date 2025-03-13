@@ -3,7 +3,7 @@ import { ButtonView, View, ViewCollection, FocusCycler, type FocusableView } fro
 import { FocusTracker, KeystrokeHandler, type LocaleTranslate, type Locale } from 'ckeditor5/src/utils';
 import { icons } from 'ckeditor5/src/core';
 
-import { ensureSafeUrl, extractDomain } from '../utils';
+import { ensureSafeUrl } from '../utils';
 
 // See: #8833.
 // eslint-disable-next-line ckeditor5-rules/ckeditor-imports
@@ -197,7 +197,8 @@ export default class LinkActionsView extends View {
     });
 
     button.bind('label').to(this, 'href', href => {
-      return href ? extractDomain(href) : t('This link has no URL');
+      // Show full URL including the protocol
+      return href || t('This link has no URL');
     });
 
     button.bind('isEnabled').to(this, 'href', href => !!href);
