@@ -42,7 +42,7 @@ export class SearchManager {
           type="text" 
           id="search-input" 
           class="cka-search-input" 
-          placeholder="Search by link name..." 
+          placeholder="Search by document title..." 
           value="${this.currentSearchQuery}"
         />
         <button id="reset-search-btn" class="cka-button cka-button-rounded cka-button-secondary cka-button-icon-only cka-button-text" style="display: none;">
