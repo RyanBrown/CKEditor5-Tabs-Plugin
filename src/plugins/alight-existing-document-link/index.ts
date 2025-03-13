@@ -2,9 +2,6 @@
 export { default as AlightExistingDocumentLinkPlugin } from './link';
 export { default as AlightExistingDocumentLinkPluginEditing } from './linkediting';
 export { default as AlightExistingDocumentLinkPluginUI } from './linkui';
-export { default as AlightExistingDocumentLinkPluginImage } from './linkimage';
-export { default as AlightExistingDocumentLinkPluginImageEditing } from './linkimageediting';
-export { default as AlightExistingDocumentLinkPluginImageUI } from './linkimageui';
 export { default as AlightExistingDocumentLinkPluginAutoLink } from './autolink';
 export { default as LinkActionsView } from './ui/linkactionsview';
 export { default as LinkFormView } from './ui/linkformview';

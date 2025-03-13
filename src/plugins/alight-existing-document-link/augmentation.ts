@@ -4,9 +4,6 @@ import type {
   AlightExistingDocumentLinkPluginAutoLink,
   AlightExistingDocumentLinkPlugin,
   AlightExistingDocumentLinkPluginEditing,
-  AlightExistingDocumentLinkPluginImage,
-  AlightExistingDocumentLinkPluginImageEditing,
-  AlightExistingDocumentLinkPluginImageUI,
   AlightExistingDocumentLinkPluginUI,
   AlightExistingDocumentLinkPluginCommand,
   AlightExistingDocumentLinkPluginUnlinkCommand
@@ -27,9 +24,6 @@ declare module '@ckeditor/ckeditor5-core' {
     [AlightExistingDocumentLinkPluginAutoLink.pluginName]: AlightExistingDocumentLinkPluginAutoLink;
     [AlightExistingDocumentLinkPlugin.pluginName]: AlightExistingDocumentLinkPlugin;
     [AlightExistingDocumentLinkPluginEditing.pluginName]: AlightExistingDocumentLinkPluginEditing;
-    [AlightExistingDocumentLinkPluginImage.pluginName]: AlightExistingDocumentLinkPluginImage;
-    [AlightExistingDocumentLinkPluginImageEditing.pluginName]: AlightExistingDocumentLinkPluginImageEditing;
-    [AlightExistingDocumentLinkPluginImageUI.pluginName]: AlightExistingDocumentLinkPluginImageUI;
     [AlightExistingDocumentLinkPluginUI.pluginName]: AlightExistingDocumentLinkPluginUI;
   }
 

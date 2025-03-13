@@ -40,13 +40,13 @@ interface APILinkResponse {
   pageType?: string;
   pageCode?: string;
   domain?: string;
-  existingDocumentLinkName?: string;
-  existingDocumentLinkDescription?: string;
+  predefinedLinkName?: string;
+  predefinedLinkDescription?: string;
   destination?: string;
   uniqueId?: string | number;
   attributeName?: string;
   attributeValue?: string;
-  existingDocumentLinksDetails?: Array<{
+  predefinedLinksDetails?: Array<{
     linkName?: string;
     name?: string;
     description?: string;
@@ -197,15 +197,15 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
 
       // Fallback to create a basic links service with a dummy implementation
       this._linksService = {
-        getExistingDocumentLinks: async () => {
+        getPredefinedLinks: async () => {
           return [];
         }
       } as LinksService;
     }
   }
 
-  // Fetch existing document links from the service
-  private async _fetchExistingDocumentLinks(): Promise<ExistingDocumentLink[]> {
+  // Fetch predefined links from the service
+  private async _fetchPredefinedLinks(): Promise<ExistingDocumentLink[]> {
     if (!this._linksService) {
       console.warn('Links service not initialized');
       return [];
@@ -213,25 +213,25 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
 
     try {
       // Get links from the service
-      const rawLinks = await this._linksService.getExistingDocumentLinks();
+      const rawLinks = await this._linksService.getPredefinedLinks();
 
       // If we got empty links, return empty array
       if (!rawLinks || rawLinks.length === 0) {
-        console.warn('No existing document links returned from service');
+        console.warn('No predefined links returned from service');
         return [];
       }
 
-      // Check if we have the nested existingDocumentLinksDetails structure
+      // Check if we have the nested predefinedLinksDetails structure
       // and extract the actual links from it
       let processedLinks: any[] = [];
 
       for (const rawLink of rawLinks as APILinkResponse[]) {
-        if (rawLink.existingDocumentLinksDetails && Array.isArray(rawLink.existingDocumentLinksDetails)) {
-          // The API response has nested existingDocumentLinksDetails - extract and process those
-          console.log(`Found ${rawLink.existingDocumentLinksDetails.length} nested links for ${rawLink.pageCode}`);
+        if (rawLink.predefinedLinksDetails && Array.isArray(rawLink.predefinedLinksDetails)) {
+          // The API response has nested predefinedLinksDetails - extract and process those
+          console.log(`Found ${rawLink.predefinedLinksDetails.length} nested links for ${rawLink.pageCode}`);
 
           // Process each nested link and add parent data
-          rawLink.existingDocumentLinksDetails.forEach((nestedLink) => {
+          rawLink.predefinedLinksDetails.forEach((nestedLink) => {
             processedLinks.push({
               // Base properties from parent link
               baseOrClientSpecific: rawLink.baseOrClientSpecific || 'base',
@@ -240,8 +240,8 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
               domain: rawLink.domain || '',
 
               // Properties from nested link
-              existingDocumentLinkName: nestedLink.linkName || nestedLink.name || 'Unnamed Link',
-              existingDocumentLinkDescription: nestedLink.description || '',
+              predefinedLinkName: nestedLink.linkName || nestedLink.name || 'Unnamed Link',
+              predefinedLinkDescription: nestedLink.description || '',
               destination: nestedLink.url || nestedLink.destination || '',
               uniqueId: nestedLink.id || nestedLink.uniqueId || '',
               attributeName: nestedLink.attributeName || '',
@@ -257,8 +257,8 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
       // Process links directly without transformation
       const links = processedLinks.filter(link =>
         link.destination && link.destination.trim() !== '' &&
-        (link.existingDocumentLinkName || link.name) &&
-        (link.existingDocumentLinkName || link.name).trim() !== ''
+        (link.predefinedLinkName || link.name) &&
+        (link.predefinedLinkName || link.name).trim() !== ''
       );
 
       console.log(`Final links: ${links.length}`);
@@ -392,16 +392,16 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
     return normalized.toLowerCase();
   }
 
-  // Find existing document link by URL using the links service
-  private async _findExistingDocumentLinkByUrl(url: string): Promise<ExistingDocumentLink | null> {
+  // Find predefined link by URL using the links service
+  private async _findPredefinedLinkByUrl(url: string): Promise<ExistingDocumentLink | null> {
     if (!this._linksService) {
       console.warn('Links service not initialized');
       return null;
     }
 
     try {
-      // Fetch all existing document links
-      const links = await this._fetchExistingDocumentLinks();
+      // Fetch all predefined links
+      const links = await this._fetchPredefinedLinks();
 
       // Find the matching link by URL - compare regardless of trailing slash or protocol differences
       return links.find(link => {
@@ -573,7 +573,7 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
 
       // Try to find the link data from the API
       try {
-        initialLink = await this._findExistingDocumentLinkByUrl(initialUrl);
+        initialLink = await this._findPredefinedLinkByUrl(initialUrl);
       } catch (error) {
         console.error('Error fetching link data:', error);
       }
@@ -656,11 +656,11 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
 
     // Then fetch data and initialize the content manager in the background
     try {
-      // Fetch existing document links from the service
-      const existingDocumentLinks = await this._fetchExistingDocumentLinks();
-      console.log('Fetched existing document links:', existingDocumentLinks);
+      // Fetch predefined links from the service
+      const predefinedLinks = await this._fetchPredefinedLinks();
+      console.log('Fetched predefined links:', predefinedLinks);
 
-      if (existingDocumentLinks.length === 0) {
+      if (predefinedLinks.length === 0) {
         // Show message if no links found
         const linksContainer = customContent.querySelector('#links-container');
         if (linksContainer) {
@@ -673,8 +673,8 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
         return;
       }
 
-      // Create the ContentManager with the initialUrl and existing document links data
-      this._linkManager = new ContentManager(initialUrl, existingDocumentLinks);
+      // Create the ContentManager with the initialUrl and predefined links data
+      this._linkManager = new ContentManager(initialUrl, predefinedLinks);
 
       // Initialize the ContentManager with the content element
       this._linkManager.renderContent(customContent);
