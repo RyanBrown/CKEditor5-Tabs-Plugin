@@ -253,12 +253,12 @@ export class ContentManager implements LinkManager {
   private updateSubmitButtonState(): void {
     if (!this.modalDialog) return;
 
-    const validation = this.formValidator.validateForm(this.formData);
     const submitButton = this.modalDialog.element?.querySelector('.cka-button-primary');
 
     if (submitButton) {
-      submitButton.disabled = !validation.isValid;
-      submitButton.classList.toggle('cka-button-disabled', !validation.isValid);
+      // Always enable the button regardless of validation result
+      submitButton.disabled = false;
+      submitButton.classList.remove('cka-button-disabled');
     }
   }
 
@@ -445,15 +445,16 @@ export class ContentManager implements LinkManager {
       msg.classList.remove('visible');
     });
 
+    // Near the end of renderContent method, change this part:
     requestAnimationFrame(() => {
       this.initializeLanguageSelect();
       this.attachEventListeners();
 
-      // Initialize submit button state without showing validation errors
+      // Initialize submit button as ENABLED instead of disabled
       const submitButton = this.modalDialog?.element?.querySelector('.cka-button-primary');
       if (submitButton) {
-        submitButton.disabled = true;
-        submitButton.classList.add('cka-button-disabled');
+        submitButton.disabled = false; // Change to false
+        submitButton.classList.remove('cka-button-disabled'); // Remove the disabled class
       }
     });
   }
@@ -568,8 +569,8 @@ export class ContentManager implements LinkManager {
     // Update submit button state
     const submitButton = this.modalDialog?.element?.querySelector('.cka-button-primary');
     if (submitButton) {
-      submitButton.disabled = true;
-      submitButton.classList.add('cka-button-disabled');
+      submitButton.disabled = false;
+      submitButton.classList.remove('cka-button-disabled');
     }
   }
 
