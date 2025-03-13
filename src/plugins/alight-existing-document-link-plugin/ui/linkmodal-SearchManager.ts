@@ -161,7 +161,7 @@ export class SearchManager {
     }
 
     this.overlayPanel = new AlightOverlayPanel(triggerEl as HTMLElement, {
-      width: '600px',
+      width: '38rem',
       height: 'auto',
       onShow: () => {
         this.setupAdvancedSearchListeners(container);

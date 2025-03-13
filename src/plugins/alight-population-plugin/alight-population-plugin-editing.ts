@@ -13,7 +13,7 @@ export default class AlightPopulationPluginEditing extends Plugin {
         title: 'System Populations',
         modalType: 'systemPopulations',
         modalOptions: {
-          width: '600px',
+          width: '38rem',
           draggable: true,
           resizable: true,
         },

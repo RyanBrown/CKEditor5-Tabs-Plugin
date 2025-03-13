@@ -2,7 +2,6 @@
 /**
  * This file extends TypeScript interface for EditorConfig to include our custom configuration.
  */
-import type { EditorConfig } from '@ckeditor/ckeditor5-core';
 import type { LinkPluginConfig } from './alight-parent-link-plugin';
 
 // Augment the EditorConfig interface from CKEditor
