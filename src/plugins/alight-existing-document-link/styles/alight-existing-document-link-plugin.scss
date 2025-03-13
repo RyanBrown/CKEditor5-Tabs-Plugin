@@ -1,0 +1,45 @@
+// src/plugins/alight-existing-document-link/styles/alight-existing-document-link-plugin.scss
+@use './../../../styles/mixins' as mixins;
+
+.cka-existing-document-link-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+  position: relative;
+}
+
+.current-url-info {
+  background-color: #eef5ff;
+  border-bottom: 1px solid var(--gray-400);
+
+  h3 {
+    border-bottom: 2px solid var(--gray-400);
+    font-weight: var(--font-weight-normal);
+    margin: 0;
+    padding: 1rem var(--spacing-xl);
+  }
+
+  .cka-note-message {
+    padding: 1rem var(--spacing-xl);
+  }
+}
+
+.cka-no-results {
+  align-items: center;
+  display: flex;
+  font-size: 1.25rem;
+  justify-content: center;
+  padding: 1rem var(--spacing-xl);
+}
+
+.pagination-controls {
+  align-items: center;
+  display: flex;
+}
+
+.ck.ck-link-actions .ck-button.ck-link-actions__preview.cka-disabled-link-preview .ck-button__label {
+  color: var(--neutral-black);
+  cursor: default;
+  font-weight: bold;
+  pointer-events: none;
+}

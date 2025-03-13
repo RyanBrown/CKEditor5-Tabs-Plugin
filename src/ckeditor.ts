@@ -279,7 +279,7 @@ class AlightEditor extends ClassicEditor {
       linkPlugins: [
         {
           name: 'AlightExternalLinkPlugin',
-          command: 'alight-external-link',
+          command: 'alightExternalLinkPlugin',
           label: 'External Site',
           order: 1,
           enabled: true
@@ -293,7 +293,7 @@ class AlightEditor extends ClassicEditor {
         },
         {
           name: 'AlightEmailLinkPlugin',
-          command: 'alight-email-link',
+          command: 'alightEmailLinkPlugin',
           label: 'Email',
           order: 3,
           enabled: true

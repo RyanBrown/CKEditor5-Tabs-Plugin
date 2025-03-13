@@ -43,7 +43,7 @@ export default class AlightParentLinkPlugin extends Plugin {
       command: 'alightPredefinedLinkPlugin',
       label: 'Predefined Link',
       order: 2,
-      enabled: false
+      enabled: true
     },
     {
       name: 'AlightEmailLinkPlugin',
@@ -59,7 +59,7 @@ export default class AlightParentLinkPlugin extends Plugin {
       command: 'alightExistingDocumentLinkPlugin',
       label: 'Existing Document',
       order: 4,
-      enabled: false
+      enabled: true
     },
     {
       name: 'AlightNewDocumentLinkPlugin',
