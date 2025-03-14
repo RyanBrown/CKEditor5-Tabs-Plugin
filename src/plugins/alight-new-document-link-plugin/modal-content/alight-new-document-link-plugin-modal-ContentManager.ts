@@ -36,7 +36,7 @@ export class ContentManager implements ILinkManager {
     this.formSubmissionHandler = new FormSubmissionHandler();
   }
 
-  public setModalContents = async (sourceDataType: string, postProcess: () => void): Promise<void> => {
+  public setModalContents = async (sourceDataType: string, postProcess: () => void = () => { }): Promise<void> => {
     const start = Date.now();
     await this._docsService.getCategories().then(response =>
       this.categoryMap = new Map(response.map(value => [`id-${value.replace(" ", "")}`, value] as [string, string])),
