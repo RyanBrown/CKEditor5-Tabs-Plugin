@@ -1,0 +1,1 @@
+// src/plugins/ui-components/alight-modal-dialog-component/tests/alight-modal-dialog-component-view.spec.ts

@@ -1,0 +1,1 @@
+// src/plugins/ui-components/alight-overlay-panel-component/tests/alight-overlay-panel.spec.ts

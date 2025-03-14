@@ -1,0 +1,1 @@
+// src/plugins/ui-components/alight-checkbox-component/tests/alight-checkbox-component-view.spec.ts
