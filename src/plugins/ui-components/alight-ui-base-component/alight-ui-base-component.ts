@@ -1,3 +1,4 @@
+// src/plugins/ui-components/alight-ui-base-component/alight-ui-base-component.ts
 import { View } from '@ckeditor/ckeditor5-ui';
 import type { Locale } from '@ckeditor/ckeditor5-utils';
 import type { BaseEvent } from '@ckeditor/ckeditor5-utils/src/emittermixin';
