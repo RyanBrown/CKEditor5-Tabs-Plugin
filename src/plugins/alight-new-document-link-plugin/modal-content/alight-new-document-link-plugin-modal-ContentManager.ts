@@ -41,7 +41,7 @@ export class ContentManager implements ILinkManager {
     await this._docsService.getCategories().then(response =>
       this.categoryMap = new Map(response.map(value => [`id-${value.replace(" ", "")}`, value] as [string, string])),
       error => {
-        console.log(`NewDocContentManager.setModalContents -> error: ${error}`);
+        console.log(`(NewDocContentManager.setModalContents -> error: ${error}`);
       }).finally(() => {
         postProcess();
         console.log(`(NewDocContentManager.setModalContents -> ${sourceDataType} loaded (${Date.now() - start} ms.)`);
