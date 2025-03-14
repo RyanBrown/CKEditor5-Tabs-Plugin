@@ -35,10 +35,10 @@ export class ContentManager implements ILinkManager {
     );
   }
 
-  public getSelectedLink(): { serverFilePath: string; title: string } | null {
+  public getSelectedLink(): { destination: string; title: string } | null {
     if (!this.selectedLink) return null;
     return {
-      serverFilePath: this.selectedLink.serverFilePath,
+      destination: this.selectedLink.serverFilePath,
       title: this.selectedLink.title
     };
   }

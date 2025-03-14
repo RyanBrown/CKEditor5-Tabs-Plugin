@@ -1,4 +1,4 @@
-// src/plugins/alight-existing-document-link/ui/linkmodal-modal-types.ts
+// src/plugins/alight-existing-document-link-plugin/ui/linkmodal-modal-types.ts
 export interface DocumentLink {
   serverFilePath: string;
   title: string;

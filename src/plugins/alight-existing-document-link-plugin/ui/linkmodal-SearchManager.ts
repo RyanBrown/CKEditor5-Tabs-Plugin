@@ -1,7 +1,7 @@
 // src/plugins/alight-existing-document-link/ui/linkmodal-SearchManager.ts
 import { AlightOverlayPanel } from '../../ui-components/alight-overlay-panel-component/alight-overlay-panel';
 import { PaginationManager } from './linkmodal-PaginationManager';
-import { ExistingDocumentLink, SelectedFilters } from './linkmodal-modal-types';
+import { DocumentLink, SelectedFilters } from './linkmodal-modal-types';
 
 export class SearchManager {
   private currentSearchQuery = '';
@@ -10,14 +10,14 @@ export class SearchManager {
   private searchInput: HTMLInputElement | null = null;
 
   private selectedFilters: SelectedFilters = {
-    baseOrClientSpecific: [],
-    pageType: [],
-    domain: []
+    fileType: [],
+    population: [],
+    locale: []
   };
 
   constructor(
-    private existingDocumentLinksData: ExistingDocumentLink[],
-    private onSearch: (filteredData: ExistingDocumentLink[]) => void,
+    private existingDocumentLinksData: DocumentLink[],
+    private onSearch: (filteredData: DocumentLink[]) => void,
     private paginationManager: PaginationManager
   ) { }
 
@@ -102,23 +102,23 @@ export class SearchManager {
 
   private createAdvancedSearchFilters(): string {
     // Extract unique filter values from existing document links data
-    const baseOrClientSpecificOptions = Array.from(
-      new Set(this.existingDocumentLinksData.map(item => item.baseOrClientSpecific))
+    const fileTypeOptions = Array.from(
+      new Set(this.existingDocumentLinksData.map(item => item.fileType))
     ).filter(Boolean).sort();
 
-    const pageTypeOptions = Array.from(
-      new Set(this.existingDocumentLinksData.map(item => item.pageType))
+    const populationOptions = Array.from(
+      new Set(this.existingDocumentLinksData.map(item => item.population))
     ).filter(Boolean).sort();
 
-    const domainOptions = Array.from(
-      new Set(this.existingDocumentLinksData.map(item => item.domain))
+    const localeOptions = Array.from(
+      new Set(this.existingDocumentLinksData.map(item => item.locale))
     ).filter(Boolean).sort();
 
     return `
       <div class="search-filters">
-        ${this.createFilterSection('Base/Client Specific', 'baseOrClientSpecific', baseOrClientSpecificOptions)}
-        ${this.createFilterSection('Page Type', 'pageType', pageTypeOptions)}
-        ${this.createFilterSection('Domain', 'domain', domainOptions)}
+        ${this.createFilterSection('File Type', 'fileType', fileTypeOptions)}
+        ${this.createFilterSection('Population', 'population', populationOptions)}
+        ${this.createFilterSection('Locale', 'locale', localeOptions)}
       </div>
     `;
   }
@@ -212,7 +212,7 @@ export class SearchManager {
         if (isChecked && !this.selectedFilters[filterType].includes(value)) {
           this.selectedFilters[filterType].push(value);
         } else if (!isChecked) {
-          this.selectedFilters[filterType] = this.selectedFilters[filterType].filter(v => v !== value);
+          this.selectedFilters[filterType] = this.selectedFilters[filterType].filter((v: string) => v !== value);
         }
       }
     });
@@ -226,9 +226,9 @@ export class SearchManager {
   private clearFilters(container: HTMLElement): void {
     // Reset all filters
     this.selectedFilters = {
-      baseOrClientSpecific: [],
-      pageType: [],
-      domain: []
+      fileType: [],
+      population: [],
+      locale: []
     };
 
     // Uncheck all checkboxes within the advanced search panel
@@ -251,17 +251,17 @@ export class SearchManager {
   private updateFilteredData(): void {
     const filteredData = this.existingDocumentLinksData.filter(link => {
       const matchesSearch = !this.currentSearchQuery ||
-        link.existingDocumentLinkName.toLowerCase().includes(this.currentSearchQuery.toLowerCase()) ||
-        (link.existingDocumentLinkDescription && link.existingDocumentLinkDescription.toLowerCase().includes(this.currentSearchQuery.toLowerCase())) ||
-        (link.destination && link.destination.toLowerCase().includes(this.currentSearchQuery.toLowerCase()));
+        link.title.toLowerCase().includes(this.currentSearchQuery.toLowerCase()) ||
+        (link.documentDescription && link.documentDescription.toLowerCase().includes(this.currentSearchQuery.toLowerCase())) ||
+        (link.serverFilePath && link.serverFilePath.toLowerCase().includes(this.currentSearchQuery.toLowerCase()));
 
       const matchesFilters =
-        (this.selectedFilters.baseOrClientSpecific.length === 0 ||
-          this.selectedFilters.baseOrClientSpecific.includes(link.baseOrClientSpecific)) &&
-        (this.selectedFilters.pageType.length === 0 ||
-          this.selectedFilters.pageType.includes(link.pageType)) &&
-        (this.selectedFilters.domain.length === 0 ||
-          this.selectedFilters.domain.includes(link.domain));
+        (this.selectedFilters.fileType.length === 0 ||
+          this.selectedFilters.fileType.includes(link.fileType)) &&
+        (this.selectedFilters.population.length === 0 ||
+          this.selectedFilters.population.includes(link.population)) &&
+        (this.selectedFilters.locale.length === 0 ||
+          this.selectedFilters.locale.includes(link.locale));
 
       return matchesSearch && matchesFilters;
     });
@@ -276,9 +276,9 @@ export class SearchManager {
     }
     this.currentSearchQuery = '';
     this.selectedFilters = {
-      baseOrClientSpecific: [],
-      pageType: [],
-      domain: []
+      fileType: [],
+      population: [],
+      locale: []
     };
     this.updateFilteredData();
 

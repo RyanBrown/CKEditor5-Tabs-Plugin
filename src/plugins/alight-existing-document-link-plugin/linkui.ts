@@ -194,6 +194,7 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
         return [];
       }
 
+      // Process each link directly
       const processedLinks = rawLinks.map(link => ({
         serverFilePath: link.serverFilePath || '',
         title: link.title || '',
@@ -562,7 +563,7 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
             // Show an alert to the user
             const alertDiv = document.createElement('div');
             alertDiv.className = 'cka-alert cka-alert-error';
-            alertDiv.innerHTML = `<div class="cka-alert-error-message">Please select a link</div>`;
+            alertDiv.innerHTML = `<div class="cka-alert-warning">Please select a link</div>`;
 
             // Find the container for the alert and show it
             const modalContent = this._modalDialog?.getElement();
