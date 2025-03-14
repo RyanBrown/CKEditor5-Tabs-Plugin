@@ -8,6 +8,12 @@ import { CkAlightChipsMenu } from '../../ui-components/alight-chips-menu-compone
 import '../../ui-components/alight-checkbox-component/alight-checkbox-component';
 import { DocsService } from '../../../services/docs-service';
 
+// Define a consistent interface for category items
+interface CategoryItem {
+  id: string;
+  label: string;
+}
+
 export class ContentManager implements ILinkManager {
   private container: HTMLElement | null = null;
   private languageSelect: CkAlightSelectMenu<{ value: string; label: string }> | null = null;
@@ -17,7 +23,9 @@ export class ContentManager implements ILinkManager {
   private formSubmissionHandler: FormSubmissionHandler;
   private hasUserInteracted = false;
   private _docsService: DocsService = new DocsService();
-  private categoryMap: Map<string, string>;
+
+  // Update categoryMap to use a consistent structure
+  private categories: CategoryItem[] = [];
 
   private formData = {
     language: 'en',
@@ -25,7 +33,7 @@ export class ContentManager implements ILinkManager {
     documentTitle: '',
     searchTags: [] as string[],
     description: '',
-    categoryMap: new Map<string, string>(),
+    categories: [] as string[], // Change to array of selected category IDs
     contentLibraryAccess: false,
     worklifeLink: false,
     showInSearch: true
@@ -38,14 +46,19 @@ export class ContentManager implements ILinkManager {
 
   public setModalContents = async (sourceDataType: string, postProcess: () => void = () => { }): Promise<void> => {
     const start = Date.now();
-    await this._docsService.getCategories().then(response =>
-      this.categoryMap = new Map(response.map(value => [`id-${value.replace(" ", "")}`, value] as [string, string])),
-      error => {
-        console.log(`(NewDocContentManager.setModalContents -> error: ${error}`);
-      }).finally(() => {
-        postProcess();
-        console.log(`(NewDocContentManager.setModalContents -> ${sourceDataType} loaded (${Date.now() - start} ms.)`);
-      });
+    try {
+      const categoryList = await this._docsService.getCategories();
+      // Transform categories into the consistent format
+      this.categories = categoryList.map(value => ({
+        id: `id-${value.replace(/\s+/g, "")}`, // Ensure consistent ID format
+        label: value
+      }));
+    } catch (error) {
+      console.log(`(NewDocContentManager.setModalContents -> error: ${error}`);
+    } finally {
+      postProcess();
+      console.log(`(NewDocContentManager.setModalContents -> ${sourceDataType} loaded (${Date.now() - start} ms.)`);
+    }
   }
 
   private createCardHTML(content: string): string {
@@ -58,7 +71,7 @@ export class ContentManager implements ILinkManager {
       ${this.createCardHTML(`
         <label for="language-select-container" class="cka-input-label">Language</label>
         <div id="language-select-container" class="cka-width-50"></div>
-        <div class="cka-error-message">Choose a language to continue.</div>
+        <div class="cka-error-message language-error">Choose a language to continue.</div>
       `)}
     `;
   }
@@ -136,10 +149,13 @@ export class ContentManager implements ILinkManager {
         <a href="#" class="cka-categories-toggle">Choose Categories</a>
         <div class="cka-categories-wrapper hidden">
           <ul class="cka-choose-categories-list">
-            ${Array.from(this.categoryMap).map(([key, value]) => `
+            ${this.categories.map(category => `
               <li>
-                <cka-checkbox id="${key}" ${this.formData.categoryMap.has(`${key}`) ? 'initialvalue="true"' : ''}>
-                  ${value}
+                <cka-checkbox 
+                  id="${category.id}" 
+                  ${this.formData.categories.includes(category.id) ? 'initialvalue="true"' : ''}
+                >
+                  ${category.label}
                 </cka-checkbox>
               </li>
             `).join('')}
@@ -315,8 +331,13 @@ export class ContentManager implements ILinkManager {
       // Add click handler to ensure file input is clickable
       const wrapper = fileInput.closest('.cka-file-input-wrapper');
       if (wrapper) {
-        wrapper.addEventListener('click', () => {
-          fileInput.click();
+        wrapper.addEventListener('click', (e) => {
+          // Only trigger click if the event target is the wrapper itself
+          // and not the file input (prevents double triggering)
+          if (e.target === wrapper || !fileInput.contains(e.target as Node)) {
+            e.preventDefault();
+            fileInput.click();
+          }
         });
       }
     }
@@ -385,8 +406,8 @@ export class ContentManager implements ILinkManager {
     this.initializeCheckbox('showInSearch', 'showInSearch');
 
     // Categories
-    this.categoryMap.forEach((value, key) => {
-      this.initializeCheckbox(key, 'categories', value);
+    this.categories.forEach(category => {
+      this.initializeCategoryCheckbox(category.id);
     });
 
     // Categories toggle
@@ -401,29 +422,35 @@ export class ContentManager implements ILinkManager {
     }
   }
 
-  private initializeCheckbox(id: string, dataKey: string, value?: string): void {
+  // Separate method for category checkboxes to handle them specifically
+  private initializeCategoryCheckbox(categoryId: string): void {
+    const checkbox = this.container?.querySelector(`#${categoryId}`) as CkAlightCheckbox;
+    if (checkbox) {
+      checkbox.addEventListener('change', (e: Event) => {
+        this.hasUserInteracted = true;
+        const customEvent = e as CustomEvent;
+
+        if (customEvent.detail) {
+          // Add category ID if it's not already in the list
+          if (!this.formData.categories.includes(categoryId)) {
+            this.formData.categories.push(categoryId);
+          }
+        } else {
+          // Remove category ID from the list
+          this.formData.categories = this.formData.categories.filter(id => id !== categoryId);
+        }
+      });
+    }
+  }
+
+  private initializeCheckbox(id: string, dataKey: string): void {
     const checkbox = this.container?.querySelector(`#${id}`) as CkAlightCheckbox;
     if (checkbox) {
       checkbox.addEventListener('change', (e: Event) => {
         this.hasUserInteracted = true;
         const customEvent = e as CustomEvent;
-        if (value) {
-          // Handle array-based checkboxes (like categories)
-          if (customEvent.detail) {
-            const formDataArray = this.formData[dataKey as keyof typeof this.formData] as string[] | null;
-            if (formDataArray && !formDataArray.includes(value)) {
-              formDataArray.push(value);
-            }
-          } else {
-            const formDataArray = this.formData[dataKey as keyof typeof this.formData] as string[] | null;
-            if (formDataArray) {
-              this.formData[dataKey as keyof typeof this.formData] = formDataArray.filter((v: string) => v !== value) as never;
-            }
-          }
-        } else {
-          // Handle boolean checkboxes
-          this.formData[dataKey as keyof typeof this.formData] = customEvent.detail as never;
-        }
+        // Handle boolean checkboxes
+        this.formData[dataKey as keyof typeof this.formData] = customEvent.detail as never;
       });
     }
   }
@@ -493,7 +520,7 @@ export class ContentManager implements ILinkManager {
       documentTitle: '',
       searchTags: [],
       description: '',
-      categoryMap: new Map<string, string>(),
+      categories: [], // Reset to empty array
       contentLibraryAccess: false,
       worklifeLink: false,
       showInSearch: true
@@ -592,7 +619,7 @@ export class ContentManager implements ILinkManager {
       documentTitle: this.formData.documentTitle.trim(),
       searchTags: [...this.formData.searchTags],
       description: this.formData.description.trim(),
-      categoryMap: [...this.formData.categoryMap],
+      categories: [...this.formData.categories], // Create a copy of the categories array
       contentLibraryAccess: this.formData.contentLibraryAccess,
       worklifeLink: this.formData.worklifeLink,
       showInSearch: this.formData.showInSearch
