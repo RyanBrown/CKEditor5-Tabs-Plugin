@@ -36,12 +36,12 @@ export class ContentManager implements ILinkManager {
     this.formSubmissionHandler = new FormSubmissionHandler();
   }
 
-  public async setModalContents(sourceDataType: string, postProcess: () => void): Promise<void> {
+  public setModalContents = async (sourceDataType: string, postProcess: () => void): Promise<void> => {
     const start = Date.now();
     await this._docsService.getCategories().then(response =>
-      this.categoryMap = new Map(response.map(value => [`${value.replace(" ", "")}`, value] as [string, string])),
+      this.categoryMap = new Map(response.map(value => [`id-${value.replace(" ", "")}`, value] as [string, string])),
       error => {
-        console.error(`NewDocContentManager.setModalContents -> error: ${error}`);
+        console.log(`NewDocContentManager.setModalContents -> error: ${error}`);
       }).finally(() => {
         postProcess();
         console.log(`(NewDocContentManager.setModalContents -> ${sourceDataType} loaded (${Date.now() - start} ms.)`);
@@ -136,13 +136,10 @@ export class ContentManager implements ILinkManager {
         <a href="#" class="cka-categories-toggle">Choose Categories</a>
         <div class="cka-categories-wrapper hidden">
           <ul class="cka-choose-categories-list">
-            ${mockCategories.map(category => `
+            ${Array.from(this.categoryMap).map(([key, value]) => `
               <li>
-                <cka-checkbox 
-                  id="category-${category.id}"
-                  ${this.formData.categories.includes(category.id) ? 'initialvalue="true"' : ''}
-                >
-                  ${category.label}
+                <cka-checkbox id="${key}" ${this.formData.categoryMap.has(`${key}`) ? 'initialvalue="true"' : ''}>
+                  ${value}
                 </cka-checkbox>
               </li>
             `).join('')}
@@ -388,8 +385,8 @@ export class ContentManager implements ILinkManager {
     this.initializeCheckbox('showInSearch', 'showInSearch');
 
     // Categories
-    mockCategories.forEach(category => {
-      this.initializeCheckbox(`category-${category.id}`, 'categories', category.id);
+    this.categoryMap.forEach((value, key) => {
+      this.initializeCheckbox(key, 'categories', value);
     });
 
     // Categories toggle
@@ -463,7 +460,7 @@ export class ContentManager implements ILinkManager {
       this.initializeLanguageSelect();
       this.attachEventListeners();
 
-      // Initialize submit button as ENABLED instead of disabled
+      // Initialize submit button as state without showing validation errors
       const submitButton = this.modalDialog?.element?.querySelector('.cka-button-primary');
       if (submitButton) {
         submitButton.disabled = false;
@@ -496,7 +493,7 @@ export class ContentManager implements ILinkManager {
       documentTitle: '',
       searchTags: [],
       description: '',
-      categories: [],
+      categoryMap: new Map<string, string>(),
       contentLibraryAccess: false,
       worklifeLink: false,
       showInSearch: true
@@ -595,7 +592,7 @@ export class ContentManager implements ILinkManager {
       documentTitle: this.formData.documentTitle.trim(),
       searchTags: [...this.formData.searchTags],
       description: this.formData.description.trim(),
-      categories: [...this.formData.categories],
+      categoryMap: [...this.formData.categoryMap],
       contentLibraryAccess: this.formData.contentLibraryAccess,
       worklifeLink: this.formData.worklifeLink,
       showInSearch: this.formData.showInSearch
