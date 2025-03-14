@@ -10,7 +10,7 @@ export interface DocumentLink {
   updatedBy: string;
   upointLink: string;
   documentDescription: string;
-  expiryDate: number;
+  expiryDate: string;
 }
 
 export interface DocumentResponse {

@@ -206,7 +206,7 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
         updatedBy: link.updatedBy || '',
         upointLink: link.upointLink || '',
         documentDescription: link.documentDescription || '',
-        expiryDate: typeof link.expiryDate === 'number' ? Date.parse(link.expiryDate) : link.expiryDate
+        expiryDate: link.expiryDate || ''
       }));
 
       console.log(`Final links: ${processedLinks.length}`);
