@@ -460,7 +460,7 @@ export class ContentManager implements ILinkManager {
       this.initializeLanguageSelect();
       this.attachEventListeners();
 
-      // Initialize submit button as state without showing validation errors
+      // Initialize submit button state without showing validation errors
       const submitButton = this.modalDialog?.element?.querySelector('.cka-button-primary');
       if (submitButton) {
         submitButton.disabled = false;
