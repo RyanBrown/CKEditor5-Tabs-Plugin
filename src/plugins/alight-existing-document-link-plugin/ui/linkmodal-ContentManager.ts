@@ -23,7 +23,7 @@ export class ContentManager implements ILinkManager {
     // If we have an initial URL, try to find and preselect the matching link
     if (initialUrl) {
       this.selectedLink = this.existingDocumentLinksData.find(
-        link => link.destination === initialUrl
+        link => link.serverFilePath === initialUrl
       ) || null;
     }
 
@@ -35,11 +35,11 @@ export class ContentManager implements ILinkManager {
     );
   }
 
-  public getSelectedLink(): { destination: string; title: string } | null {
+  public getSelectedLink(): { serverFilePath: string; title: string } | null {
     if (!this.selectedLink) return null;
     return {
-      destination: this.selectedLink.destination,
-      title: this.selectedLink.existingDocumentLinkName
+      serverFilePath: this.selectedLink.serverFilePath,
+      title: this.selectedLink.title
     };
   }
 
@@ -62,7 +62,7 @@ export class ContentManager implements ILinkManager {
     this.filteredLinksData = filteredData;
 
     // Maintain selected link if still in filtered results, otherwise clear selection
-    if (this.selectedLink && !filteredData.some(link => link.existingDocumentLinkName === this.selectedLink?.existingDocumentLinkName)) {
+    if (this.selectedLink && !filteredData.some(link => link.serverFilePath === this.selectedLink?.serverFilePath)) {
       this.selectedLink = null;
     }
 
@@ -109,7 +109,7 @@ export class ContentManager implements ILinkManager {
 
     // Ensure radio buttons reflect current selection
     if (this.selectedLink) {
-      const selectedRadio = container.querySelector(`cka-radio-button[value="${this.selectedLink.existingDocumentLinkName}"]`) as any;
+      const selectedRadio = container.querySelector(`cka-radio-button[value="${this.selectedLink.serverFilePath}"]`) as any;
       if (selectedRadio) {
         selectedRadio.checked = true;
       }
@@ -161,7 +161,7 @@ export class ContentManager implements ILinkManager {
   private buildCurrentUrlInfoMarkup(): string {
     // Find the matching link for this URL
     const matchingLink = this.existingDocumentLinksData.find(link =>
-      link.destination === this.initialUrl
+      link.serverFilePath === this.initialUrl
     );
 
     if (!matchingLink) {
@@ -183,18 +183,18 @@ export class ContentManager implements ILinkManager {
   }
 
   private buildLinkItemMarkup(
-    link: ExistingDocumentLink,
+    link: DocumentLink,
     forceSelected: boolean = false,
     radioGroupName: string = 'link-selection'
   ): string {
-    const isSelected = forceSelected || this.selectedLink?.existingDocumentLinkName === link.existingDocumentLinkName;
+    const isSelected = forceSelected || this.selectedLink?.serverFilePath === link.serverFilePath;
 
     return `
-      <div class="cka-link-item ${isSelected ? 'selected' : ''}" data-link-name="${link.existingDocumentLinkName}">
+      <div class="cka-link-item ${isSelected ? 'selected' : ''}" data-link-name="${link.serverFilePath}">
         <div class="radio-container">
           <cka-radio-button 
             name="${radioGroupName}" 
-            value="${link.existingDocumentLinkName}" 
+            value="${link.serverFilePath}" 
             ${isSelected ? 'checked' : ''}
           >
           </cka-radio-button>
@@ -243,7 +243,7 @@ export class ContentManager implements ILinkManager {
 
   private handleLinkSelection(linkName: string, linkItem: HTMLElement): void {
     this.selectedLink = this.existingDocumentLinksData.find(
-      link => link.existingDocumentLinkName === linkName
+      link => link.serverFilePath === linkName
     ) || null;
 
     // Update selected state visually

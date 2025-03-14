@@ -26,7 +26,6 @@ import { ContentManager } from './ui/linkmodal-ContentManager';
 import { DocumentLink } from './ui/linkmodal-modal-types';
 
 // Import the services
-import { LinksService } from './../../services/links-service';
 import { DocsService } from './../../services/docs-service';
 import { SessionService } from './../../services/session-service';
 
@@ -43,7 +42,7 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
   private _modalDialog: CkAlightModalDialog | null = null;
   private _linkManager: ContentManager | null = null;
 
-  private _linksService: LinksService | null = null;
+  private _docsService: DocsService | null = null;
   public actionsView: LinkActionsView | null = null;
 
   private _balloon!: ContextualBalloon;
@@ -165,29 +164,29 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
       }
 
       // Initialize links service with the session service
-      this._linksService = new LinksService(sessionService);
+      this._docsService = new DocsService(sessionService);
     } catch (error) {
       console.error('Error initializing services:', error);
 
       // Fallback to create a basic links service with a dummy implementation
-      this._linksService = {
-        getPredefinedLinks: async () => {
+      this._docsService = {
+        getDocumentLinks: async () => {
           return [];
         }
-      } as LinksService;
+      } as DocsService;
     }
   }
 
   // Fetch document links from the service
   private async _fetchDocumentLinks(): Promise<DocumentLink[]> {
-    if (!this._linksService) {
+    if (!this._docsService) {
       console.warn('Links service not initialized');
       return [];
     }
 
     try {
       // Get links from the service
-      const rawLinks = await this._linksService.getPredefinedLinks();
+      const rawLinks = await this._docsService.getDocumentLinks();
 
       // If we got empty links, return empty array
       if (!rawLinks || rawLinks.length === 0) {
@@ -195,55 +194,23 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
         return [];
       }
 
-      // Check if we have the nested predefinedLinksDetails structure
-      // and extract the actual links from it
-      let processedLinks: any[] = [];
+      const processedLinks = rawLinks.map(link => ({
+        serverFilePath: link.serverFilePath || '',
+        title: link.title || '',
+        fileId: link.fileId || '',
+        fileType: link.fileType || '',
+        population: link.population || '',
+        locale: link.locale || '',
+        lastUpdated: typeof link.lastUpdated === 'number' ? Date.parse(link.lastUpdated) : link.lastUpdated,
+        updatedBy: link.updatedBy || '',
+        upointLink: link.upointLink || '',
+        documentDescription: link.documentDescription || '',
+        expiryDate: typeof link.expiryDate === 'number' ? Date.parse(link.expiryDate) : link.expiryDate
+      }));
 
-      for (const rawLink of rawLinks as unknown as DocumentLink[]) {
-        if (rawLink.predefinedLinksDetails && Array.isArray(rawLink.predefinedLinksDetails)) {
-          // The API response has nested predefinedLinksDetails - extract and process those
-          console.log(`Found ${rawLink.predefinedLinksDetails.length} nested links for ${rawLink.pageCode}`);
+      console.log(`Final links: ${processedLinks.length}`);
 
-          // Process each nested link and add parent data
-          rawLink.predefinedLinksDetails.forEach((nestedLink) => {
-            processedLinks.push({
-              // Base properties from parent link
-              baseOrClientSpecific: rawLink.baseOrClientSpecific || 'base',
-              pageType: rawLink.pageType || 'Unknown',
-              pageCode: rawLink.pageCode || '',
-              domain: rawLink.domain || '',
-
-              // Properties from nested link
-              predefinedLinkName: nestedLink.linkName || nestedLink.name || 'Unnamed Link',
-              predefinedLinkDescription: nestedLink.description || '',
-              destination: nestedLink.url || nestedLink.destination || '',
-              uniqueId: nestedLink.id || nestedLink.uniqueId || '',
-              attributeName: nestedLink.attributeName || '',
-              attributeValue: nestedLink.attributeValue || ''
-            });
-          });
-        } else {
-          // Standard link without nesting
-          processedLinks.push(rawLink);
-        }
-      }
-
-      // Process links directly without transformation
-      const links = processedLinks.filter(link =>
-        link.destination && link.destination.trim() !== '' &&
-        (link.predefinedLinkName || link.name) &&
-        (link.predefinedLinkName || link.name).trim() !== ''
-      );
-
-      console.log(`Final links: ${links.length}`);
-
-      // Return empty array if no valid links
-      if (links.length === 0) {
-        console.warn('No valid links found');
-        return [];
-      }
-
-      return links;
+      return processedLinks;
     } catch (error) {
       console.error('Error fetching existing document links:', error);
       return [];
@@ -367,8 +334,8 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
   }
 
   // Find document link by URL using the links service
-  private async _findPredefinedLinkByUrl(url: string): Promise<DocumentLink | null> {
-    if (!this._linksService) {
+  private async _findDocumentLinkByUrl(url: string): Promise<DocumentLink | null> {
+    if (!this._docsService) {
       console.warn('Links service not initialized');
       return null;
     }
@@ -379,7 +346,7 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
 
       // Find the matching link by URL - compare regardless of trailing slash or protocol differences
       return links.find(link => {
-        const normalizedDestination = this._normalizeUrl(link.destination as string);
+        const normalizedDestination = this._normalizeUrl(link.serverFilePath as string);
         const normalizedUrl = this._normalizeUrl(url);
         return normalizedDestination === normalizedUrl;
       }) || null;
@@ -547,7 +514,7 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
 
       // Try to find the link data from the API
       try {
-        initialLink = await this._findPredefinedLinkByUrl(initialUrl);
+        initialLink = await this._findDocumentLinkByUrl(initialUrl);
       } catch (error) {
         console.error('Error fetching link data:', error);
       }
@@ -567,7 +534,7 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
         ]
       });
 
-      // Handle button clicks via the buttonClick event
+      // Handle modal button clicks
       this._modalDialog.on('buttonClick', (data: { button: string; }) => {
         if (data.button === t('Cancel')) {
           this._modalDialog?.hide();
@@ -580,12 +547,7 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
           console.log('Selected link:', selectedLink);
 
           if (selectedLink && selectedLink.destination) {
-            // The issue is in how we apply the link - we need to use the link command's execute
-            // method correctly by providing any necessary options and letting it maintain
-            // the existing selection rather than inserting new text
-
-            // Apply the link to the current selection
-            // For non-collapsed selections, this will keep the text but add the link attribute
+            // Create the link in the editor using the built-in link command
             linkCommand.execute(selectedLink.destination);
 
             // Hide the modal after creating the link
@@ -600,7 +562,7 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
             // Show an alert to the user
             const alertDiv = document.createElement('div');
             alertDiv.className = 'cka-alert cka-alert-error';
-            alertDiv.innerHTML = `<p>Please select a link first.</p>`;
+            alertDiv.innerHTML = `<div class="cka-alert-error-message">Please select a link</div>`;
 
             // Find the container for the alert and show it
             const modalContent = this._modalDialog?.getElement();
@@ -611,7 +573,7 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
               // Remove after a delay
               setTimeout(() => {
                 alertDiv.remove();
-              }, 3000);
+              }, 10000);
             }
           }
         }
@@ -631,10 +593,10 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
     // Then fetch data and initialize the content manager in the background
     try {
       // Fetch document links from the service
-      const predefinedLinks = await this._fetchDocumentLinks();
-      console.log('Fetched document links:', predefinedLinks);
+      const documentLinks = await this._fetchDocumentLinks();
+      console.log('Fetched document links:', documentLinks);
 
-      if (predefinedLinks.length === 0) {
+      if (documentLinks.length === 0) {
         // Show message if no links found
         const linksContainer = customContent.querySelector('#links-container');
         if (linksContainer) {
@@ -648,7 +610,7 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
       }
 
       // Create the ContentManager with the initialUrl and document links data
-      this._linkManager = new ContentManager(initialUrl, predefinedLinks);
+      this._linkManager = new ContentManager(initialUrl, documentLinks);
 
       // Initialize the ContentManager with the content element
       this._linkManager.renderContent(customContent);
