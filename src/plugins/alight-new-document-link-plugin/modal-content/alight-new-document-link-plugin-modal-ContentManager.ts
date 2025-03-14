@@ -445,7 +445,6 @@ export class ContentManager implements LinkManager {
       msg.classList.remove('visible');
     });
 
-    // Near the end of renderContent method, change this part:
     requestAnimationFrame(() => {
       this.initializeLanguageSelect();
       this.attachEventListeners();
@@ -453,8 +452,8 @@ export class ContentManager implements LinkManager {
       // Initialize submit button as ENABLED instead of disabled
       const submitButton = this.modalDialog?.element?.querySelector('.cka-button-primary');
       if (submitButton) {
-        submitButton.disabled = false; // Change to false
-        submitButton.classList.remove('cka-button-disabled'); // Remove the disabled class
+        submitButton.disabled = false;
+        submitButton.classList.remove('cka-button-disabled');
       }
     });
   }

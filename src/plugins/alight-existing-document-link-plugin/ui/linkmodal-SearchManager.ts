@@ -35,7 +35,7 @@ export class SearchManager {
   }
 
   private injectSearchUI(searchContainer: HTMLElement): void {
-    // Updated search UI with reset button initially hidden
+    // Basic search UI
     searchContainer.innerHTML = `
       <div class="cka-search-input-container">
         <input 

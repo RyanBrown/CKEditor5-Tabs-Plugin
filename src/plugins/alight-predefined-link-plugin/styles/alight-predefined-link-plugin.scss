@@ -32,6 +32,12 @@
   padding: 1rem var(--spacing-xl);
 }
 
+.filter-section {
+  h4:first-of-type {
+    margin-top: 0;
+  }
+}
+
 .pagination-controls {
   align-items: center;
   display: flex;
@@ -46,5 +52,6 @@
 
 .cka-alert-warning {
   background-color: var(--warning);
+  font-weight: var(--font-weight-bold);
   padding: 1rem var(--spacing-xl);
 }
