@@ -24,12 +24,12 @@ $cka-dialog-border-radius: 0;
   display: flex;
   flex-direction: column;
   max-height: 90vh;
-  min-width: 300px;
   max-width: 80vw;
-  width: 100%;
+  min-width: 300px;
   position: absolute;
   transform-origin: center;
   transition: transform 0.2s;
+  width: 100%;
 }
 
 .cka-dialog-header {

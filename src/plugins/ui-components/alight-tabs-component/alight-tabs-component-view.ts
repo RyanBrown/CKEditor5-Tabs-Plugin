@@ -1,5 +1,3 @@
-// alight-tabs-component-view.ts - Update class references
-// In TabView template
 // src/plugins/ui-components/views/tabs/tab-view.ts
 import { View, ViewCollection } from '@ckeditor/ckeditor5-ui';
 import type { Locale } from '@ckeditor/ckeditor5-utils';
