@@ -26,7 +26,7 @@ import { ContentManager } from './ui/linkmodal-ContentManager';
 import { PredefinedLink } from './ui/linkmodal-modal-types';
 
 // Import the services
-import { DocsService } from './../../services/docs-service';
+import { LinkService } from './../../services/links-service';
 import { SessionService } from './../../services/session-service';
 
 import linkIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
@@ -42,7 +42,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
   private _modalDialog: CkAlightModalDialog | null = null;
   private _linkManager: ContentManager | null = null;
 
-  private _docsService: DocsService | null = null;
+  private _linkService: LinkService | null = null;
   public actionsView: LinkActionsView | null = null;
 
   private _balloon!: ContextualBalloon;
@@ -164,29 +164,29 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
       }
 
       // Initialize links service with the session service
-      this._docsService = new DocsService(sessionService);
+      this._linkService = new LinkService(sessionService);
     } catch (error) {
       console.error('Error initializing services:', error);
 
       // Fallback to create a basic links service with a dummy implementation
-      this._docsService = {
+      this._linkService = {
         getPredefinedLinks: async () => {
           return [];
         }
-      } as DocsService;
+      } as LinkService;
     }
   }
 
   // Fetch predefined links from the service
   private async _fetchPredefinedLinks(): Promise<PredefinedLink[]> {
-    if (!this._docsService) {
+    if (!this._linkService) {
       console.warn('Links service not initialized');
       return [];
     }
 
     try {
       // Get links from the service
-      const rawLinks = await this._docsService.getPredefinedLinks();
+      const rawLinks = await this._linkService.getPredefinedLinks();
 
       // If we got empty links, return empty array
       if (!rawLinks || rawLinks.length === 0) {
@@ -367,14 +367,14 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
 
   // Find predefined link by URL using the links service
   private async _findPredefinedLinkByUrl(url: string): Promise<PredefinedLink | null> {
-    if (!this._docsService) {
+    if (!this._linkService) {
       console.warn('Links service not initialized');
       return null;
     }
 
     try {
       // Fetch all predefined links
-      const links = await this._fetchPredefinedLinks();
+      const links = await this._linkService.getPredefinedLinks();
 
       // Find the matching link by URL - compare regardless of trailing slash or protocol differences
       return links.find(link => {
@@ -566,7 +566,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
         ]
       });
 
-      // Handle button clicks via the buttonClick event
+      // Handle modal button clicks
       this._modalDialog.on('buttonClick', (data: { button: string; }) => {
         if (data.button === t('Cancel')) {
           this._modalDialog?.hide();
@@ -579,12 +579,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
           console.log('Selected link:', selectedLink);
 
           if (selectedLink && selectedLink.destination) {
-            // The issue is in how we apply the link - we need to use the link command's execute
-            // method correctly by providing any necessary options and letting it maintain
-            // the existing selection rather than inserting new text
-
-            // Apply the link to the current selection
-            // For non-collapsed selections, this will keep the text but add the link attribute
+            // Create the link in the editor using the built-in link command
             linkCommand.execute(selectedLink.destination);
 
             // Hide the modal after creating the link
@@ -599,7 +594,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
             // Show an alert to the user
             const alertDiv = document.createElement('div');
             alertDiv.className = 'cka-alert cka-alert-error';
-            alertDiv.innerHTML = `<div class="cka-alert-warning">Please select a link first.</div>`;
+            alertDiv.innerHTML = `<div class="cka-alert-warning">Please select a link</div>`;
 
             // Find the container for the alert and show it
             const modalContent = this._modalDialog?.getElement();
@@ -610,7 +605,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
               // Remove after a delay
               setTimeout(() => {
                 alertDiv.remove();
-              }, 7500);
+              }, 10000);
             }
           }
         }
