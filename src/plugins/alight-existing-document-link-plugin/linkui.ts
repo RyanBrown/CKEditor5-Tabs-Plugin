@@ -202,11 +202,11 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
         fileType: link.fileType || '',
         population: link.population || '',
         locale: link.locale || '',
-        lastUpdated: typeof link.lastUpdated === 'number' ? Date.parse(link.lastUpdated) : link.lastUpdated,
+        lastUpdated: typeof link.lastUpdated === 'string' ? Date.parse(link.lastUpdated) : link.lastUpdated,
         updatedBy: link.updatedBy || '',
         upointLink: link.upointLink || '',
         documentDescription: link.documentDescription || '',
-        expiryDate: link.expiryDate || ''
+        expiryDate: link.expiryDate || '',
       }));
 
       console.log(`Final links: ${processedLinks.length}`);
