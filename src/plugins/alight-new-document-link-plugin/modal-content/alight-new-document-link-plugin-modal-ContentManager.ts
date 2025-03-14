@@ -1,14 +1,14 @@
 // src/plugins/alight-new-document-link-plugin/modal-content/alight-new-document-link-plugin-modal-ContentManager.ts
-import { LinkManager } from './interfaces/alight-new-document-link-plugin-modal-LinkManager';
+import { ILinkManager } from '../../../plugins-alight-common/ILinkManager';
 import { FormValidator, ValidationResult } from './validation/alight-new-document-link-plugin-modal-form-validation';
 import { FormSubmissionHandler } from './submission/alight-new-document-link-plugin-modal-form-submission';
 import { CkAlightSelectMenu } from '../../ui-components/alight-select-menu-component/alight-select-menu-component';
 import { CkAlightCheckbox } from '../../ui-components/alight-checkbox-component/alight-checkbox-component';
 import { CkAlightChipsMenu } from '../../ui-components/alight-chips-menu-component/alight-chips-menu-component';
 import '../../ui-components/alight-checkbox-component/alight-checkbox-component';
-import { mockCategories } from './json/categories';
+import { DocsService } from '../../../services/docs-service';
 
-export class ContentManager implements LinkManager {
+export class ContentManager implements ILinkManager {
   private container: HTMLElement | null = null;
   private languageSelect: CkAlightSelectMenu<{ value: string; label: string }> | null = null;
   private modalDialog: any = null;
@@ -16,6 +16,8 @@ export class ContentManager implements LinkManager {
   private formValidator: FormValidator;
   private formSubmissionHandler: FormSubmissionHandler;
   private hasUserInteracted = false;
+  private _docsService: DocsService = new DocsService();
+  private categoryMap: Map<string, string>;
 
   private formData = {
     language: 'en',
@@ -23,7 +25,7 @@ export class ContentManager implements LinkManager {
     documentTitle: '',
     searchTags: [] as string[],
     description: '',
-    categories: [] as string[],
+    categoryMap: new Map<string, string>(),
     contentLibraryAccess: false,
     worklifeLink: false,
     showInSearch: true
@@ -32,6 +34,18 @@ export class ContentManager implements LinkManager {
   constructor() {
     this.formValidator = new FormValidator();
     this.formSubmissionHandler = new FormSubmissionHandler();
+  }
+
+  public async setModalContents(sourceDataType: string, postProcess: () => void): Promise<void> {
+    const start = Date.now();
+    await this._docsService.getCategories().then(response =>
+      this.categoryMap = new Map(response.map(value => [`${value.replace(" ", "")}`, value] as [string, string])),
+      error => {
+        console.error(`NewDocContentManager.setModalContents -> error: ${error}`);
+      }).finally(() => {
+        postProcess();
+        console.log(`(NewDocContentManager.setModalContents -> ${sourceDataType} loaded (${Date.now() - start} ms.)`);
+      });
   }
 
   private createCardHTML(content: string): string {
