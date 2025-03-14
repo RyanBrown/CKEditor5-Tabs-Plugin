@@ -26,7 +26,7 @@ import { ContentManager } from './ui/linkmodal-ContentManager';
 import { PredefinedLink } from './ui/linkmodal-modal-types';
 
 // Import the services
-import { LinkService } from './../../services/links-service';
+import { LinksService } from './../../services/links-service';
 import { SessionService } from './../../services/session-service';
 
 import linkIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
@@ -42,7 +42,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
   private _modalDialog: CkAlightModalDialog | null = null;
   private _linkManager: ContentManager | null = null;
 
-  private _linkService: LinkService | null = null;
+  private _linksService: LinksService | null = null;
   public actionsView: LinkActionsView | null = null;
 
   private _balloon!: ContextualBalloon;
@@ -164,29 +164,29 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
       }
 
       // Initialize links service with the session service
-      this._linkService = new LinkService(sessionService);
+      this._linksService = new LinksService(sessionService);
     } catch (error) {
       console.error('Error initializing services:', error);
 
       // Fallback to create a basic links service with a dummy implementation
-      this._linkService = {
+      this._linksService = {
         getPredefinedLinks: async () => {
           return [];
         }
-      } as LinkService;
+      } as LinksService;
     }
   }
 
   // Fetch predefined links from the service
   private async _fetchPredefinedLinks(): Promise<PredefinedLink[]> {
-    if (!this._linkService) {
+    if (!this._linksService) {
       console.warn('Links service not initialized');
       return [];
     }
 
     try {
       // Get links from the service
-      const rawLinks = await this._linkService.getPredefinedLinks();
+      const rawLinks = await this._linksService.getPredefinedLinks();
 
       // If we got empty links, return empty array
       if (!rawLinks || rawLinks.length === 0) {
@@ -198,7 +198,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
       // and extract the actual links from it
       let processedLinks: any[] = [];
 
-      for (const rawLink of rawLinks as unknown as DocumentLink[]) {
+      for (const rawLink of rawLinks as unknown as PredefinedLink[]) {
         if (rawLink.predefinedLinksDetails && Array.isArray(rawLink.predefinedLinksDetails)) {
           // The API response has nested predefinedLinksDetails - extract and process those
           console.log(`Found ${rawLink.predefinedLinksDetails.length} nested links for ${rawLink.pageCode}`);
@@ -367,14 +367,14 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
 
   // Find predefined link by URL using the links service
   private async _findPredefinedLinkByUrl(url: string): Promise<PredefinedLink | null> {
-    if (!this._linkService) {
+    if (!this._linksService) {
       console.warn('Links service not initialized');
       return null;
     }
 
     try {
       // Fetch all predefined links
-      const links = await this._linkService.getPredefinedLinks();
+      const links = await this._linksService.getPredefinedLinks();
 
       // Find the matching link by URL - compare regardless of trailing slash or protocol differences
       return links.find(link => {

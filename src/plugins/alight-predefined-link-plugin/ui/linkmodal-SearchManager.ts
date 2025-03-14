@@ -212,7 +212,7 @@ export class SearchManager {
         if (isChecked && !this.selectedFilters[filterType].includes(value)) {
           this.selectedFilters[filterType].push(value);
         } else if (!isChecked) {
-          this.selectedFilters[filterType] = this.selectedFilters[filterType].filter(v => v !== value);
+          this.selectedFilters[filterType] = this.selectedFilters[filterType].filter((v: string) => v !== value);
         }
       }
     });
