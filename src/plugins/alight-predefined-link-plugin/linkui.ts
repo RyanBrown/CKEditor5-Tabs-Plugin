@@ -26,39 +26,12 @@ import { ContentManager } from './ui/linkmodal-ContentManager';
 import { PredefinedLink } from './ui/linkmodal-modal-types';
 
 // Import the services
-import { LinksService } from './../../services/links-service';
 import { DocsService } from './../../services/docs-service';
 import { SessionService } from './../../services/session-service';
 
 import linkIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 
 const VISUAL_SELECTION_MARKER_NAME = 'alight-predefined-link-ui';
-
-// Define an extended API response type to handle the nested structure
-interface APILinkResponse {
-  baseOrClientSpecific?: string;
-  pageType?: string;
-  pageCode?: string;
-  domain?: string;
-  predefinedLinkName?: string;
-  predefinedLinkDescription?: string;
-  destination?: string;
-  uniqueId?: string | number;
-  attributeName?: string;
-  attributeValue?: string;
-  predefinedLinksDetails?: Array<{
-    linkName?: string;
-    name?: string;
-    description?: string;
-    url?: string;
-    destination?: string;
-    id?: string | number;
-    uniqueId?: string | number;
-    attributeName?: string;
-    attributeValue?: string;
-  }>;
-  [key: string]: any; // Allow any other properties
-}
 
 /**
  * The link UI plugin. It introduces the `'link'` and `'unlink'` buttons and support for the <kbd>Ctrl+K</kbd> keystroke.
@@ -69,7 +42,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
   private _modalDialog: CkAlightModalDialog | null = null;
   private _linkManager: ContentManager | null = null;
 
-  private _linksService: LinksService | null = null;
+  private _docsService: DocsService | null = null;
   public actionsView: LinkActionsView | null = null;
 
   private _balloon!: ContextualBalloon;
@@ -191,29 +164,29 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
       }
 
       // Initialize links service with the session service
-      this._linksService = new LinksService(sessionService);
+      this._docsService = new DocsService(sessionService);
     } catch (error) {
       console.error('Error initializing services:', error);
 
       // Fallback to create a basic links service with a dummy implementation
-      this._linksService = {
+      this._docsService = {
         getPredefinedLinks: async () => {
           return [];
         }
-      } as LinksService;
+      } as DocsService;
     }
   }
 
   // Fetch predefined links from the service
   private async _fetchPredefinedLinks(): Promise<PredefinedLink[]> {
-    if (!this._linksService) {
+    if (!this._docsService) {
       console.warn('Links service not initialized');
       return [];
     }
 
     try {
       // Get links from the service
-      const rawLinks = await this._linksService.getPredefinedLinks();
+      const rawLinks = await this._docsService.getPredefinedLinks();
 
       // If we got empty links, return empty array
       if (!rawLinks || rawLinks.length === 0) {
@@ -225,7 +198,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
       // and extract the actual links from it
       let processedLinks: any[] = [];
 
-      for (const rawLink of rawLinks as unknown as APILinkResponse[]) {
+      for (const rawLink of rawLinks as unknown as DocumentLink[]) {
         if (rawLink.predefinedLinksDetails && Array.isArray(rawLink.predefinedLinksDetails)) {
           // The API response has nested predefinedLinksDetails - extract and process those
           console.log(`Found ${rawLink.predefinedLinksDetails.length} nested links for ${rawLink.pageCode}`);
@@ -394,7 +367,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
 
   // Find predefined link by URL using the links service
   private async _findPredefinedLinkByUrl(url: string): Promise<PredefinedLink | null> {
-    if (!this._linksService) {
+    if (!this._docsService) {
       console.warn('Links service not initialized');
       return null;
     }

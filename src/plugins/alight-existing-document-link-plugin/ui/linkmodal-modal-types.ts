@@ -1,27 +1,16 @@
 // src/plugins/alight-existing-document-link/ui/linkmodal-modal-types.ts
-export interface ExistingDocumentLink {
-  existingDocumentLinkName: string;
-  existingDocumentLinkDescription: string;
-  baseOrClientSpecific: string;
-  pageType: string;
-  destination: string;
-  pageCode: string;
-  domain: string;
-  uniqueId: string | number;
-  attributeName: string;
-  attributeValue: string;
+export interface DocumentLink {
+  serverFilePath: string;
   title: string;
+  fileId: string;
+  fileType: string;
   population: string;
   locale: string;
-  fileType: string;
-}
-
-export interface DocumentLink {
-  documentId: string;
-  documentName: string;
+  lastUpdated: number;
+  updatedBy: string;
+  upointLink: string;
   documentDescription: string;
-  documentType: string;
-  documentUrl: string;
+  expiryDate: number;
 }
 
 export interface DocumentResponse {
@@ -30,15 +19,12 @@ export interface DocumentResponse {
   documentList: DocumentLink[];
 }
 
-export interface SelectedFilters {
-  [key: string]: string[];
-  baseOrClientSpecific: string[];
-  pageType: string[];
-  domain: string[];
+export interface LinkSelection {
+  destination: string;
+  title: string;
 }
 
-
-export interface ExistingDocSelectedFilters {
+export interface SelectedFilters {
   [key: string]: string[];
   fileType: string[];
   population: string[];

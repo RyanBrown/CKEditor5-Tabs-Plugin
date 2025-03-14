@@ -1,21 +1,21 @@
 // src/plugins/alight-existing-document-link/ui/linkmodal-ContentManager.ts
 import { ILinkManager } from './linkmodal-ILinkManager';
-import { ExistingDocumentLink } from './linkmodal-modal-types';
+import { DocumentLink } from './linkmodal-modal-types';
 import { SearchManager } from './linkmodal-SearchManager';
 import { PaginationManager } from './linkmodal-PaginationManager';
 import '../../ui-components/alight-radio-component/alight-radio-component';
 
 export class ContentManager implements ILinkManager {
-  private selectedLink: ExistingDocumentLink | null = null;
-  private existingDocumentLinksData: ExistingDocumentLink[] = [];
-  private filteredLinksData: ExistingDocumentLink[] = [];
+  private selectedLink: DocumentLink | null = null;
+  private existingDocumentLinksData: DocumentLink[] = [];
+  private filteredLinksData: DocumentLink[] = [];
   private searchManager: SearchManager;
   private paginationManager: PaginationManager;
   private container: HTMLElement | null = null;
   private initialUrl: string = '';
   private loadingIndicator: HTMLElement | null = null;
 
-  constructor(initialUrl: string = '', existingDocumentLinksData: ExistingDocumentLink[] = []) {
+  constructor(initialUrl: string = '', existingDocumentLinksData: DocumentLink[] = []) {
     this.initialUrl = initialUrl;
     this.existingDocumentLinksData = existingDocumentLinksData;
     this.filteredLinksData = [...this.existingDocumentLinksData];
@@ -56,7 +56,7 @@ export class ContentManager implements ILinkManager {
     return normalized.toLowerCase();
   }
 
-  private handleSearchResults = (filteredData: ExistingDocumentLink[]): void => {
+  private handleSearchResults = (filteredData: DocumentLink[]): void => {
     console.log('Search results updated:', filteredData.length, 'items');
 
     this.filteredLinksData = filteredData;

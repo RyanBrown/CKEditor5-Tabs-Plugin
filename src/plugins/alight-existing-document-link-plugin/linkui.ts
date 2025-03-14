@@ -23,7 +23,7 @@ import './../ui-components/alight-checkbox-component/alight-checkbox-component';
 
 // Import the ContentManager and types from the updated location
 import { ContentManager } from './ui/linkmodal-ContentManager';
-import { ExistingDocumentLink } from './ui/linkmodal-modal-types';
+import { DocumentLink } from './ui/linkmodal-modal-types';
 
 // Import the services
 import { LinksService } from './../../services/links-service';
@@ -33,32 +33,6 @@ import { SessionService } from './../../services/session-service';
 import linkIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 
 const VISUAL_SELECTION_MARKER_NAME = 'alight-existing-document-link-ui';
-
-// Define an extended API response type to handle the nested structure
-interface APILinkResponse {
-  baseOrClientSpecific?: string;
-  pageType?: string;
-  pageCode?: string;
-  domain?: string;
-  predefinedLinkName?: string;
-  predefinedLinkDescription?: string;
-  destination?: string;
-  uniqueId?: string | number;
-  attributeName?: string;
-  attributeValue?: string;
-  predefinedLinksDetails?: Array<{
-    linkName?: string;
-    name?: string;
-    description?: string;
-    url?: string;
-    destination?: string;
-    id?: string | number;
-    uniqueId?: string | number;
-    attributeName?: string;
-    attributeValue?: string;
-  }>;
-  [key: string]: any; // Allow any other properties
-}
 
 /**
  * The link UI plugin. It introduces the `'link'` and `'unlink'` buttons and support for the <kbd>Ctrl+K</kbd> keystroke.
@@ -204,8 +178,8 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
     }
   }
 
-  // Fetch predefined links from the service
-  private async _fetchPredefinedLinks(): Promise<ExistingDocumentLink[]> {
+  // Fetch document links from the service
+  private async _fetchDocumentLinks(): Promise<DocumentLink[]> {
     if (!this._linksService) {
       console.warn('Links service not initialized');
       return [];
@@ -217,7 +191,7 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
 
       // If we got empty links, return empty array
       if (!rawLinks || rawLinks.length === 0) {
-        console.warn('No predefined links returned from service');
+        console.warn('No document links returned from service');
         return [];
       }
 
@@ -225,7 +199,7 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
       // and extract the actual links from it
       let processedLinks: any[] = [];
 
-      for (const rawLink of rawLinks as unknown as APILinkResponse[]) {
+      for (const rawLink of rawLinks as unknown as DocumentLink[]) {
         if (rawLink.predefinedLinksDetails && Array.isArray(rawLink.predefinedLinksDetails)) {
           // The API response has nested predefinedLinksDetails - extract and process those
           console.log(`Found ${rawLink.predefinedLinksDetails.length} nested links for ${rawLink.pageCode}`);
@@ -392,16 +366,16 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
     return normalized.toLowerCase();
   }
 
-  // Find predefined link by URL using the links service
-  private async _findPredefinedLinkByUrl(url: string): Promise<ExistingDocumentLink | null> {
+  // Find document link by URL using the links service
+  private async _findPredefinedLinkByUrl(url: string): Promise<DocumentLink | null> {
     if (!this._linksService) {
       console.warn('Links service not initialized');
       return null;
     }
 
     try {
-      // Fetch all predefined links
-      const links = await this._fetchPredefinedLinks();
+      // Fetch all document links
+      const links = await this._fetchDocumentLinks();
 
       // Find the matching link by URL - compare regardless of trailing slash or protocol differences
       return links.find(link => {
@@ -566,7 +540,7 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
 
     // Get current link URL if editing
     let initialUrl = '';
-    let initialLink: ExistingDocumentLink | null = null;
+    let initialLink: DocumentLink | null = null;
 
     if (isEditing && linkCommand.value) {
       initialUrl = linkCommand.value as string;
@@ -656,9 +630,9 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
 
     // Then fetch data and initialize the content manager in the background
     try {
-      // Fetch predefined links from the service
-      const predefinedLinks = await this._fetchPredefinedLinks();
-      console.log('Fetched predefined links:', predefinedLinks);
+      // Fetch document links from the service
+      const predefinedLinks = await this._fetchDocumentLinks();
+      console.log('Fetched document links:', predefinedLinks);
 
       if (predefinedLinks.length === 0) {
         // Show message if no links found
@@ -673,7 +647,7 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
         return;
       }
 
-      // Create the ContentManager with the initialUrl and predefined links data
+      // Create the ContentManager with the initialUrl and document links data
       this._linkManager = new ContentManager(initialUrl, predefinedLinks);
 
       // Initialize the ContentManager with the content element
