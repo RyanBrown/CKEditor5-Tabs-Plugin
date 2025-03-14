@@ -167,7 +167,7 @@ export class AlightOverlayPanel {
     }
 
     // Show panel
-    panel.style.display = 'block';
+    panel.style.display = 'flex'; // block
 
     // Trigger animation
     setTimeout(() => {

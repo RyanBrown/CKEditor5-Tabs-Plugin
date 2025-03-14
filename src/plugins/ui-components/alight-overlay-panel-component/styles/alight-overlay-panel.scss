@@ -13,9 +13,17 @@
   max-width: 400px;
   min-height: 400px;
   min-width: 200px;
+  opacity: 0;
   overflow: hidden;
   position: absolute;
+  transform: translateY(-10px);
+  transition: opacity 0.2s, transform 0.2s;
   width: 100%;
+
+  &.cka-active {
+    opacity: 1;
+    transform: translateY(0);
+  }
 
   header {
     align-items: center;
@@ -42,6 +50,7 @@
   }
 
   footer {
+    background-color: var(--neutral-white);
     border-top: 1px solid var(--neutral-athens-gray);
     display: flex;
     flex-shrink: 0;
@@ -100,17 +109,5 @@
     &:hover {
       color: var(--gray-800);
     }
-  }
-}
-
-// Animation classes
-.cka-overlay-panel {
-  opacity: 0;
-  transform: translateY(-10px);
-  transition: opacity 0.2s, transform 0.2s;
-
-  &.cka-active {
-    opacity: 1;
-    transform: translateY(0);
   }
 }

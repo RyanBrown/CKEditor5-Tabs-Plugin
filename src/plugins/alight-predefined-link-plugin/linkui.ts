@@ -626,7 +626,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
             // Show an alert to the user
             const alertDiv = document.createElement('div');
             alertDiv.className = 'cka-alert cka-alert-error';
-            alertDiv.innerHTML = `<p>Please select a link first.</p>`;
+            alertDiv.innerHTML = `<div class="cka-alert-warning">Please select a link first.</div>`;
 
             // Find the container for the alert and show it
             const modalContent = this._modalDialog?.getElement();
@@ -637,7 +637,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
               // Remove after a delay
               setTimeout(() => {
                 alertDiv.remove();
-              }, 3000);
+              }, 7500);
             }
           }
         }

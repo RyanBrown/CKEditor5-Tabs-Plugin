@@ -43,3 +43,8 @@
   font-weight: bold;
   pointer-events: none;
 }
+
+.cka-alert-warning {
+  background-color: var(--warning);
+  padding: 1rem var(--spacing-xl);
+}
