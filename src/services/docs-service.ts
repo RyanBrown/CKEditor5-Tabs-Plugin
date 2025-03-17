@@ -1,8 +1,8 @@
 // src/services/docs-service.ts
-import existingDocSampleData from './../data/existing-document-test-data.json';
+import existingDocSampleData from './../data/existing-document-link-sample-data.json';
 import categorySampleData from './../data/category-sample-data.json';
 import { DataSourceDocs, IReadSourceDocs } from '../data-sources/custom-source/data-source-docs';
-import { DocumentLink } from './../plugins/alight-predefined-link-plugin/ui/linkmodal-modal-types';
+import { DocumentLink } from './../plugins/alight-existing-document-link-plugin/ui/linkmodal-modal-types';
 import { HttpService } from "./http-service";
 import { IReadSource, IWriteSource } from "../data-sources/base-source/data-source";
 
