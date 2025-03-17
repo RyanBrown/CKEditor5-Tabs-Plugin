@@ -49,7 +49,7 @@ export class ContentManager implements ILinkManager {
     try {
       const categoryList = await this._docsService.getCategories();
       // Transform categories into the consistent format
-      this.categories = categoryList.map(value => ({
+      this.categories = categoryList.map((value: string) => ({
         id: `id-${value.replace(/\s+/g, "")}`, // Ensure consistent ID format
         label: value
       }));
