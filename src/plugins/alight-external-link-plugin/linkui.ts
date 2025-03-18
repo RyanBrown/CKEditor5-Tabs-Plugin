@@ -418,8 +418,8 @@ export default class AlightExternalLinkPluginUI extends Plugin {
         width: '32rem',
         contentClass: 'cka-external-link-content',
         buttons: [
-          { label: t('Continue'), isPrimary: true, closeOnClick: false },
-          { label: t('Cancel') }
+          { label: t('Cancel') },
+          { label: t('Continue'), isPrimary: true, closeOnClick: false }
         ]
       });
 

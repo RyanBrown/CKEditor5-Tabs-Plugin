@@ -330,6 +330,19 @@ $spacing-values: (
     width: 100%;
 
     li {
+      font-size: var(--font-size-sm);
+
+      &:first-child {
+        font-size: var(--font-size-lg);
+        font-weight: var(--font-weight-bold);
+      }
+
+      &.wrap-text {
+        max-width: 80%;
+        white-space: break-spaces;
+        word-wrap: break-word;
+      }
+
       &.hide-overflow {
         box-sizing: border-box;
         display: block;

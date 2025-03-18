@@ -522,8 +522,8 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
         height: 'auto',
         contentClass: 'cka-existing-document-link-content',
         buttons: [
-          { label: t('Continue'), isPrimary: true, closeOnClick: false },
-          { label: t('Cancel') }
+          { label: t('Cancel') },
+          { label: t('Continue'), isPrimary: true, closeOnClick: false }
         ]
       });
 
