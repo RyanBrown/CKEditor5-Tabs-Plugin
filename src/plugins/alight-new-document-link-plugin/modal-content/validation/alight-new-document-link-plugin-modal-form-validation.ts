@@ -29,8 +29,13 @@ export class FormValidator {
       errors['title'] = 'Please enter a document title';
     } else if (formData.documentTitle.length > 250) {
       errors['title'] = 'Title must be less than 250 characters';
-    } else if (/[\\[\]:><\/\|\?"*,]/.test(formData.documentTitle)) {
-      errors['title'] = 'Title contains invalid characters';
+    } else {
+      // Check for invalid characters and identify them in the error message
+      const invalidChars = formData.documentTitle.match(/[\\[\]:><\/\|\?"*,]/g);
+      if (invalidChars) {
+        const uniqueInvalidChars = [...new Set(invalidChars)].join(', ');
+        errors['title'] = `Title contains invalid characters: ${uniqueInvalidChars}`;
+      }
     }
 
     // Description validation
@@ -67,8 +72,13 @@ export class FormValidator {
           errors[fieldName] = 'Please enter a document title';
         } else if (value.length > 250) {
           errors[fieldName] = 'Title must be less than 250 characters';
-        } else if (/[\\[\]:><\/\|\?"*,]/.test(value)) {
-          errors[fieldName] = 'Title contains invalid characters';
+        } else {
+          // Check for invalid characters and identify them in the error message
+          const invalidChars = value.match(/[\\[\]:><\/\|\?"*,]/g);
+          if (invalidChars) {
+            const uniqueInvalidChars = [...new Set(invalidChars)].join(', ');
+            errors[fieldName] = `Title contains invalid characters: ${uniqueInvalidChars}`;
+          }
         }
         break;
 
