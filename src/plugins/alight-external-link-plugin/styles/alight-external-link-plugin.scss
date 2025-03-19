@@ -33,11 +33,13 @@
     border-right: 1px solid var(--neutral-dove-gray);
     color: var(--neutral-steel);
     font-family: monospace;
+    font-size: 1rem;
+    line-height: 1.6;
     min-width: mixins.toRem(100);
     padding: mixins.toRem(6) mixins.toRem(16);
     text-align: right;
-    user-select: none;
     transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+    user-select: none;
 
     &.unsecure {
       color: #856404;
