@@ -548,14 +548,17 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     const hasValue = emailInput.value.trim().length > 0;
 
     // Find the continue button directly in the DOM
-    const continueBtn = document.querySelector(`.cka-button-primary`) as HTMLButtonElement;
-    if (continueBtn) {
+    const continueButton = this._modalDialog.getElement()?.querySelector('.cka-dialog-footer-buttons button:last-child') as HTMLButtonElement;
+
+    if (continueButton) {
+      // Update the disabled property
+      continueButton.disabled = !hasValue;
+
+      // Update classes for visual indication
       if (hasValue) {
-        continueBtn.removeAttribute('disabled');
-        continueBtn.classList.remove('cka-button-disabled');
+        continueButton.removeAttribute('disabled');
       } else {
-        continueBtn.setAttribute('disabled', 'disabled');
-        continueBtn.classList.add('cka-button-disabled');
+        continueButton.setAttribute('disabled', 'disabled');
       }
     }
   }

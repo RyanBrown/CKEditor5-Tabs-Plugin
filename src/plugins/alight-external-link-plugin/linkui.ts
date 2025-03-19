@@ -596,16 +596,15 @@ export default class AlightExternalLinkPluginUI extends Plugin {
     const continueButton = this._modalDialog.getElement()?.querySelector('.cka-dialog-footer-buttons button:last-child') as HTMLButtonElement;
 
     if (urlInput && continueButton) {
-      const hasText = urlInput.value.trim().length > 0;
+      const hasValue = urlInput.value.trim().length > 0;
 
       // Set disabled property directly on the button
-      continueButton.disabled = !hasText;
+      continueButton.disabled = !hasValue;
 
-      // Also update the CSS class for visual indication
-      if (hasText) {
-        continueButton.classList.remove('ck-disabled');
+      if (hasValue) {
+        continueButton.removeAttribute('disabled');
       } else {
-        continueButton.classList.add('ck-disabled');
+        continueButton.setAttribute('disabled', 'disabled');
       }
     }
   }
