@@ -419,7 +419,7 @@ export default class AlightExternalLinkPluginUI extends Plugin {
         contentClass: 'cka-external-link-content',
         buttons: [
           { label: t('Cancel') },
-          { label: t('Continue'), isPrimary: true, closeOnClick: false }
+          { label: t('Continue'), isPrimary: true, closeOnClick: false, disabled: true }
         ]
       });
 
@@ -543,16 +543,20 @@ export default class AlightExternalLinkPluginUI extends Plugin {
               }
             }
           }
+
+          // Update continue button state based on URL value
+          this._updateContinueButtonState();
         }, 50);
       }
 
       // Show the modal
       this._modalDialog.show();
 
-      // Set up event listener for checkbox changes
+      // Set up event listener for checkbox changes and URL input
       setTimeout(() => {
         const urlPrefixElement = document.getElementById('url-prefix') as HTMLDivElement;
         const allowUnsecureCheckbox = document.getElementById('cka-allow-unsecure-urls') as CkAlightCheckbox;
+        const urlInput = document.getElementById('cka-link-url-input') as HTMLInputElement;
 
         // Add event listener for checkbox changes
         const handleCheckboxChange = () => {
@@ -568,12 +572,41 @@ export default class AlightExternalLinkPluginUI extends Plugin {
 
         allowUnsecureCheckbox.addEventListener('change', handleCheckboxChange);
 
+        // Add event listener for URL input changes
+        urlInput.addEventListener('input', () => {
+          this._updateContinueButtonState();
+        });
+
         // Focus the URL input
-        const urlInput = document.getElementById('cka-link-url-input') as HTMLInputElement;
         if (urlInput) {
           urlInput.focus();
         }
       }, 100);
+    }
+  }
+
+  /**
+   * Updates the Continue button state based on the URL input value
+   * Enables button only if there's at least one character in the input
+   */
+  private _updateContinueButtonState(): void {
+    if (!this._modalDialog) return;
+
+    const urlInput = document.getElementById('cka-link-url-input') as HTMLInputElement;
+    const continueButton = this._modalDialog.getElement()?.querySelector('.cka-dialog-footer-buttons button:last-child') as HTMLButtonElement;
+
+    if (urlInput && continueButton) {
+      const hasText = urlInput.value.trim().length > 0;
+
+      // Set disabled property directly on the button
+      continueButton.disabled = !hasText;
+
+      // Also update the CSS class for visual indication
+      if (hasText) {
+        continueButton.classList.remove('ck-disabled');
+      } else {
+        continueButton.classList.add('ck-disabled');
+      }
     }
   }
 
