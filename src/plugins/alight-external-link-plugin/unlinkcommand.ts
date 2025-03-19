@@ -60,6 +60,9 @@ export default class AlightExternalUnlinkCommand extends Command {
 
         // If there are registered custom attributes, then remove them during unlink.
         if (linkCommand) {
+          // Clear the organization property in the command
+          linkCommand.organization = undefined;
+
           for (const manualDecorator of linkCommand.manualDecorators) {
             writer.removeAttribute(manualDecorator.id, range);
           }
@@ -77,7 +80,9 @@ export default class AlightExternalUnlinkCommand extends Command {
    */
   private _removeOrganizationNameFromText(writer: Writer, range: Range): void {
     // Get all text in the range as an array of nodes
-    const textNodes = Array.from(range.getItems()).filter(item => item.is('$text') || item.is('$textProxy'));
+    const textNodes = Array.from(range.getItems()).filter(item =>
+      item.is('$text') || item.is('$textProxy')
+    );
 
     if (textNodes.length === 0) {
       return;
@@ -97,16 +102,77 @@ export default class AlightExternalUnlinkCommand extends Command {
       // Get the base text without the organization name
       const baseText = match[1];
 
-      try {
-        // Remove all existing text nodes
+      // If we only have one text node, we can simply update its data
+      if (textNodes.length === 1) {
+        const node = textNodes[0];
+        // Create a new node with the same attributes but updated text
+        const attrs: Record<string, unknown> = {};
+        for (const [key, value] of node.getAttributes()) {
+          if (key !== 'alightExternalLinkPluginHref') {
+            attrs[key] = value;
+          }
+        }
+
+        // Remove the old node and insert the new one
+        writer.remove(node);
+        writer.insert(writer.createText(baseText, attrs), range.start);
+      } else {
+        // We need to handle multiple text nodes
+        // First, find out where the org part starts
+        const orgStartPos = baseText.length;
+
+        // Track accumulated length
+        let currentPos = 0;
+        const textsToKeep: Array<{ text: string, node: any }> = [];
+
+        // Go through all text nodes and keep only the parts before the org name
+        for (const node of textNodes) {
+          const nodeStart = currentPos;
+          const nodeEnd = currentPos + node.data.length;
+
+          // If this node ends before the org part starts, keep it all
+          if (nodeEnd <= orgStartPos) {
+            textsToKeep.push({
+              text: node.data,
+              node: node
+            });
+          }
+          // If this node contains the start of the org part, keep only the part before
+          else if (nodeStart < orgStartPos) {
+            const textToKeep = node.data.substring(0, orgStartPos - nodeStart);
+            if (textToKeep.length > 0) {
+              textsToKeep.push({
+                text: textToKeep,
+                node: node
+              });
+            }
+          }
+          // Otherwise this node is part of the org, skip it
+
+          currentPos = nodeEnd;
+        }
+
+        // Remove all nodes
         for (const node of textNodes) {
           writer.remove(node);
         }
 
-        // Insert just the base text without organization name
-        writer.insertText(baseText, range.start);
-      } catch (error) {
-        console.error('Error removing organization name from link:', error);
+        // Insert the parts we want to keep
+        let insertPos = range.start;
+        for (const text of textsToKeep) {
+          // Get attributes from the original node
+          const attrs: Record<string, unknown> = {};
+          for (const [key, value] of text.node.getAttributes()) {
+            if (key !== 'alightExternalLinkPluginHref') {
+              attrs[key] = value;
+            }
+          }
+
+          // Create and insert the new node
+          const newNode = writer.createText(text.text, attrs);
+          writer.insert(newNode, insertPos);
+          insertPos = insertPos.getShiftedBy(text.text.length);
+        }
       }
     }
   }

@@ -290,6 +290,180 @@ export function isExternalUrl(url: string): boolean {
   return /^https?:\/\//.test(url);
 }
 
+/**
+ * Extracts the organization name from a link text.
+ * @param text The link text to extract from
+ * @returns The organization name or null if none found
+ */
+export function extractOrganizationName(text: string): string | null {
+  if (!text) return null;
+
+  // Match pattern like "text (Organization Name)" where the organization is in parentheses
+  const match = text.match(/^(.*?)\s+\(([^)]+)\)$/);
+  if (match && match[2]) {
+    return match[2];
+  }
+  return null;
+}
+
+/**
+ * Combines text with an organization name
+ * @param text The base text
+ * @param organization The organization name to add
+ * @returns Text with organization in parentheses
+ */
+export function addOrganizationToText(text: string, organization: string | null | undefined): string {
+  if (!text) return '';
+  if (!organization) return text;
+
+  return `${text} (${organization})`;
+}
+
+/**
+ * Removes the organization name from link text
+ * @param text The text with possible organization name
+ * @returns Text without organization
+ */
+export function removeOrganizationFromText(text: string): string {
+  if (!text) return '';
+
+  // Remove the organization part which is in parentheses at the end
+  return text.replace(/\s+\([^)]+\)$/, '');
+}
+
+/**
+ * Gets only the domain part from a URL
+ * @param url The URL to process
+ * @returns Simplified domain display
+ */
+export function getDomainForDisplay(url: string): string {
+  if (!url) return '';
+
+  // Remove protocol
+  let domain = url.replace(/^https?:\/\//, '');
+
+  // Remove paths, query params, etc.
+  const firstSlash = domain.indexOf('/');
+  if (firstSlash > 0) {
+    domain = domain.substring(0, firstSlash);
+  }
+
+  // If domain starts with www., remove it for cleaner display
+  domain = domain.replace(/^www\./, '');
+
+  return domain;
+}
+
+/**
+ * Creates a formatted display text for links with optional organization
+ * @param url The URL to format
+ * @param organization Optional organization name
+ * @returns Formatted display text
+ */
+export function createLinkDisplayText(url: string, organization?: string): string {
+  const domain = getDomainForDisplay(url);
+
+  if (organization) {
+    return addOrganizationToText(domain, organization);
+  }
+
+  return domain;
+}
+
+// Add these utility functions to src/plugins/alight-external-link-plugin/utils.ts
+
+import type { Writer, Node, Position } from '@ckeditor/ckeditor5-engine';
+
+/**
+ * Collects formatting attributes from text nodes
+ * @param nodes The text nodes to collect attributes from
+ * @param excludeAttributes Attribute names to exclude from collection
+ * @returns Object with collected attributes
+ */
+export function collectFormattingAttributes(
+  nodes: Array<any>,  // Changed from Node to any to fix type errors
+  excludeAttributes: string[] = []
+): Record<string, unknown> {
+  if (!nodes.length) return {};
+
+  const attributes: Record<string, unknown> = {};
+  const firstNode = nodes[0];
+
+  // Verify the node has getAttributes method before using it
+  if (firstNode && typeof firstNode.getAttributes === 'function') {
+    // Get attributes from the first node as baseline
+    for (const [key, value] of firstNode.getAttributes()) {
+      if (!excludeAttributes.includes(key)) {
+        attributes[key] = value;
+      }
+    }
+  }
+
+  return attributes;
+}
+
+/**
+ * Preserves formatting when replacing text in a range
+ * @param writer The writer instance
+ * @param range The range to replace text in
+ * @param newText The new text content
+ * @param excludeAttributes Attributes to exclude when copying formatting
+ * @returns Position after the inserted text
+ */
+export function replaceTextPreservingFormatting(
+  writer: Writer,
+  range: any,
+  newText: string,
+  excludeAttributes: string[] = []
+): Position {
+  // Get all text nodes in the range
+  const textNodes = Array.from(range.getItems()).filter(
+    (item: any) => item && (
+      (typeof item.is === 'function' && (item.is('$text') || item.is('$textProxy')))
+    )
+  );
+
+  // Collect formatting attributes from existing nodes
+  const formattingAttributes = collectFormattingAttributes(textNodes, excludeAttributes);
+
+  // Remove all existing nodes first
+  writer.remove(range);
+
+  // Create and insert new text with preserved formatting
+  const newTextNode = writer.createText(newText, formattingAttributes);
+  writer.insert(newTextNode, range.start);
+
+  // Return position after the inserted text
+  return writer.createPositionAt(
+    range.start.parent,
+    range.start.offset + newText.length
+  );
+}
+
+/**
+ * Updates link text with organization while preserving formatting
+ * @param writer The writer instance
+ * @param range The range of the link text
+ * @param baseText The base text without organization
+ * @param organization Optional organization to add
+ * @param excludeAttributes Attributes to exclude when preserving formatting
+ * @returns Position after the inserted text
+ */
+export function updateLinkTextWithOrganization(
+  writer: Writer,
+  range: any,
+  baseText: string,
+  organization?: string,
+  excludeAttributes: string[] = ['alightExternalLinkPluginHref']
+): Position {
+  let finalText = baseText;
+  if (organization) {
+    finalText = addOrganizationToText(baseText, organization);
+  }
+
+  return replaceTextPreservingFormatting(writer, range, finalText, excludeAttributes);
+}
+
 export type NormalizedLinkDecoratorAutomaticDefinition = LinkDecoratorAutomaticDefinition & { id: string };
 export type NormalizedLinkDecoratorManualDefinition = LinkDecoratorManualDefinition & { id: string };
 export type NormalizedLinkDecoratorDefinition = NormalizedLinkDecoratorAutomaticDefinition | NormalizedLinkDecoratorManualDefinition;

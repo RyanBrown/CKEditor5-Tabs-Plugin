@@ -30,6 +30,13 @@ export default class AlightExternalLinkPluginCommand extends Command {
   declare public value: string | undefined;
 
   /**
+   * The organization name associated with the current link, if any.
+   * @observable
+   * @readonly
+   */
+  declare public organization: string | undefined;
+
+  /**
    * A collection of {@link module:link/utils/manualdecorator~ManualDecorator manual decorators}
    * corresponding to the {@link module:link/linkconfig~LinkConfig#decorators decorator configuration}.
    *
@@ -72,6 +79,62 @@ export default class AlightExternalLinkPluginCommand extends Command {
 
     for (const manualDecorator of this.manualDecorators) {
       manualDecorator.value = this._getDecoratorStateFromModel(manualDecorator.id);
+    }
+
+    // Update the organization property by extracting it from the link text
+    this._refreshOrganization();
+  }
+
+  /**
+   * Extracts the organization name from the current link text and updates the organization property.
+   * @private
+   */
+  private _refreshOrganization(): void {
+    this.organization = undefined;
+
+    const model = this.editor.model;
+    const selection = model.document.selection;
+
+    if (!selection || !this.value) {
+      return;
+    }
+
+    // Get the range containing the link
+    let linkRange;
+
+    if (selection.isCollapsed) {
+      linkRange = findAttributeRange(
+        selection.getFirstPosition()!,
+        'alightExternalLinkPluginHref',
+        this.value,
+        model
+      );
+    } else {
+      // We're in a selection, so we need to find all ranges with the link attribute
+      const ranges = model.schema.getValidRanges(selection.getRanges(), 'alightExternalLinkPluginHref');
+      linkRange = ranges.next().value; // Get the first range
+
+      if (!linkRange) {
+        return;
+      }
+    }
+
+    if (!linkRange) {
+      return;
+    }
+
+    // Extract all text from the link range
+    let fullText = '';
+    for (const item of linkRange.getItems()) {
+      if (item.is('$text') || item.is('$textProxy')) {
+        fullText += item.data;
+      }
+    }
+
+    // Extract the organization part if it exists
+    const match = fullText.match(/^(.+?)\s+\(([^)]+)\)$/);
+    if (match && match[2]) {
+      this.organization = match[2];
     }
   }
 
@@ -169,6 +232,15 @@ export default class AlightExternalLinkPluginCommand extends Command {
             attributes[item] = true;
           });
 
+          // Get additional formatting attributes (bold, italic, etc.)
+          if (textNodes.length > 0) {
+            for (const [key, value] of textNodes[0].getAttributes()) {
+              if (key !== 'alightExternalLinkPluginHref' && !attributes[key]) {
+                attributes[key] = value;
+              }
+            }
+          }
+
           const newTextNode = writer.createText(newText, attributes);
           model.insertContent(newTextNode, linkRange.start);
 
@@ -242,22 +314,34 @@ export default class AlightExternalLinkPluginCommand extends Command {
 
         // Process each range
         for (const range of ranges) {
-          // First, remove the old content
-          writer.remove(range);
-
-          // Then insert the new content with the organization
+          // Store formatting attributes from the first text node
           const attributes = { alightExternalLinkPluginHref: href } as any;
+          const firstNode = Array.from(range.getItems()).find(item => item.is('$text') || item.is('$textProxy'));
+
+          if (firstNode) {
+            for (const [key, value] of firstNode.getAttributes()) {
+              if (key !== 'alightExternalLinkPluginHref' && !attributes[key]) {
+                attributes[key] = value;
+              }
+            }
+          }
 
           // Add decorators
           truthyManualDecorators.forEach(item => {
             attributes[item] = true;
           });
 
-          // Insert the new content
+          // First, remove the old content
+          writer.remove(range);
+
+          // Then insert the new content with the organization
           const newText = writer.createText(finalText, attributes);
           model.insertContent(newText, range.start);
         }
       }
+
+      // Update the organization property
+      this.organization = organization || undefined;
     });
   }
 

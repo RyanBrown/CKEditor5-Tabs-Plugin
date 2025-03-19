@@ -274,7 +274,7 @@ class AlightEditor extends ClassicEditor {
         // 'alightNewDocumentLinkPlugin',
         // 'alightLink',
         // 'alightExternalLinkPlugin',
-        // 'alightEmailLinkPlugin',
+        'alightEmailLinkPlugin',
       ],
       shouldNotGroupWhenFull: true,
     },

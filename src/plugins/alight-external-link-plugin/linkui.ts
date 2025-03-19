@@ -498,6 +498,8 @@ export default class AlightExternalLinkPluginUI extends Plugin {
       const formHTML = this._createFormHTML(t, isEditing);
       this._modalDialog.setContent(formHTML);
 
+      this._modalDialog.show();
+
       // Set values if we're editing
       if (isEditing && linkCommand.value) {
         setTimeout(() => {
@@ -528,29 +530,15 @@ export default class AlightExternalLinkPluginUI extends Plugin {
             urlPrefixElement.classList.remove('unsecure');
           }
 
-          // Get organization from the selection - need to extract from text
-          const selectedElement = this._getSelectedLinkElement();
-          if (selectedElement && selectedElement.is('attributeElement')) {
-            const children = Array.from(selectedElement.getChildren());
-            if (children.length > 0) {
-              const textNode = children[0];
-              if (textNode && textNode.is('$text')) {
-                const text = textNode.data || '';
-                const match = text.match(/^(.*?)(?:\s*\(([^)]+)\))?$/);
-                if (match && match[2]) {
-                  organizationInput.value = match[2];
-                }
-              }
-            }
+          // Use the stored organization value from the command
+          if (linkCommand.organization !== undefined) {
+            organizationInput.value = linkCommand.organization;
           }
 
           // Update continue button state based on URL value
           this._updateContinueButtonState();
         }, 50);
       }
-
-      // Show the modal
-      this._modalDialog.show();
 
       // Set up event listener for checkbox changes and URL input
       setTimeout(() => {
