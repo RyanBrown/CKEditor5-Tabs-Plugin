@@ -396,7 +396,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
         contentClass: 'cka-email-link-content',
         buttons: [
           { label: t('Cancel') },
-          { label: t('Continue'), isPrimary: true, closeOnClick: false }
+          { label: t('Continue'), isPrimary: true, closeOnClick: false, disabled: true }
         ]
       });
 
@@ -466,6 +466,9 @@ export default class AlightEmailLinkPluginUI extends Plugin {
       const formHTML = this._createFormHTML(t, isEditing);
       this._modalDialog.setContent(formHTML);
 
+      // Show the modal
+      this._modalDialog.show();
+
       // Set values if we're editing
       if (isEditing && linkCommand.value) {
         setTimeout(() => {
@@ -498,19 +501,62 @@ export default class AlightEmailLinkPluginUI extends Plugin {
               }
             }
           }
+
+          // Update continue button state
+          this._updateContinueButtonState();
         }, 50);
       }
 
-      // Show the modal
-      this._modalDialog.show();
-
-      // Focus the email input
+      // Focus the email input and setup listeners
       setTimeout(() => {
         const emailInput = document.getElementById('ck-email-input') as HTMLInputElement;
         if (emailInput) {
           emailInput.focus();
+
+          // Add event listener to the email input to enable/disable the continue button
+          // Use input event for real-time feedback as user types or pastes
+          emailInput.addEventListener('input', () => {
+            this._updateContinueButtonState();
+          });
+
+          // Also listen for blur to catch any edge cases
+          emailInput.addEventListener('blur', () => {
+            this._updateContinueButtonState();
+          });
+
+          // Initial state - continue button should be disabled if email is empty
+          this._updateContinueButtonState();
         }
       }, 100);
+    }
+  }
+
+  /**
+   * Updates the state of the continue button based on email input value
+   */
+  private _updateContinueButtonState(): void {
+    if (!this._modalDialog) {
+      return;
+    }
+
+    const emailInput = document.getElementById('ck-email-input') as HTMLInputElement;
+    if (!emailInput) {
+      return;
+    }
+
+    // Check if the email input has any value (enabling) or is empty (disabling)
+    const hasValue = emailInput.value.trim().length > 0;
+
+    // Find the continue button directly in the DOM
+    const continueBtn = document.querySelector(`.cka-button-primary`) as HTMLButtonElement;
+    if (continueBtn) {
+      if (hasValue) {
+        continueBtn.removeAttribute('disabled');
+        continueBtn.classList.remove('cka-button-disabled');
+      } else {
+        continueBtn.setAttribute('disabled', 'disabled');
+        continueBtn.classList.add('cka-button-disabled');
+      }
     }
   }
 
