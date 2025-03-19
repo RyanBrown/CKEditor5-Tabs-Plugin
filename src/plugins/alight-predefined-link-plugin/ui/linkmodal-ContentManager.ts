@@ -15,6 +15,9 @@ export class ContentManager implements ILinkManager {
   private initialUrl: string = '';
   private loadingIndicator: HTMLElement | null = null;
 
+  // Add callback for link selection events
+  public onLinkSelected: ((link: PredefinedLink | null) => void) | null = null;
+
   constructor(initialUrl: string = '', predefinedLinksData: PredefinedLink[] = []) {
     this.initialUrl = initialUrl;
     this.predefinedLinksData = predefinedLinksData;
@@ -83,6 +86,11 @@ export class ContentManager implements ILinkManager {
     this.searchManager.reset();
     this.selectedLink = null;
     this.filteredLinksData = [...this.predefinedLinksData];
+
+    // Notify of link deselection
+    if (this.onLinkSelected) {
+      this.onLinkSelected(null);
+    }
 
     if (this.container) {
       this.renderContent(this.container);
@@ -268,6 +276,11 @@ export class ContentManager implements ILinkManager {
       if (radio) {
         radio.checked = true;
       }
+    }
+
+    // Call the selection callback if it exists
+    if (this.onLinkSelected) {
+      this.onLinkSelected(this.selectedLink);
     }
   }
 }

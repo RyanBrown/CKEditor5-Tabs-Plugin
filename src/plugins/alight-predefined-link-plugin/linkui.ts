@@ -554,7 +554,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
         contentClass: 'cka-predefined-link-content',
         buttons: [
           { label: t('Cancel') },
-          { label: t('Continue'), isPrimary: true, closeOnClick: false }
+          { label: t('Continue'), isPrimary: true, closeOnClick: false, disabled: true }
         ]
       });
 
@@ -622,10 +622,10 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
         const linksContainer = customContent.querySelector('#links-container');
         if (linksContainer) {
           linksContainer.innerHTML = `
-          <div class="cka-no-results">
-            <p>No predefined links available.</p>
-          </div>
-        `;
+        <div class="cka-no-results">
+          <p>No predefined links available.</p>
+        </div>
+      `;
         }
         return;
       }
@@ -633,8 +633,17 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
       // Create the ContentManager with the initialUrl and predefined links data
       this._linkManager = new ContentManager(initialUrl, predefinedLinks);
 
+      // Pass the modal dialog reference to enable/disable the Continue button
+      // Add an event listener for link selection
+      this._linkManager.onLinkSelected = (link) => {
+        this._updateContinueButtonState(!!link);
+      };
+
       // Initialize the ContentManager with the content element
       this._linkManager.renderContent(customContent);
+
+      // Set initial button state based on whether we have an initial link
+      this._updateContinueButtonState(!!initialLink);
     } catch (error) {
       console.error('Error setting up predefined links:', error);
 
@@ -642,10 +651,33 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
       const linksContainer = customContent.querySelector('#links-container');
       if (linksContainer) {
         linksContainer.innerHTML = `
-        <div class="cka-error-state">
-          <p class="cka-error-details">${error.message || 'Unknown error'}</p>
-        </div>
-      `;
+      <div class="cka-error-state">
+        <p class="cka-error-details">${error.message || 'Unknown error'}</p>
+      </div>
+    `;
+      }
+    }
+  }
+
+  /**
+   * Updates the state of the Continue button based on whether a link is selected
+   * 
+   * @param hasSelection True if a link is selected, false otherwise
+   */
+  private _updateContinueButtonState(hasSelection: boolean): void {
+    if (!this._modalDialog) return;
+
+    const continueButton = this._modalDialog.getElement()?.querySelector('.cka-dialog-footer-buttons button:last-child') as HTMLButtonElement;
+
+    if (continueButton) {
+      // Update the disabled property
+      continueButton.disabled = !hasSelection;
+
+      // Update classes for visual indication
+      if (hasSelection) {
+        continueButton.classList.remove('ck-disabled');
+      } else {
+        continueButton.classList.add('ck-disabled');
       }
     }
   }

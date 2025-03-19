@@ -3,4 +3,5 @@ export interface ILinkManager {
   getSelectedLink(): { destination: string; title: string } | null;
   renderContent(container: HTMLElement): void;
   resetSearch(): void;
+  onLinkSelected?: ((link: any | null) => void) | null;
 }
