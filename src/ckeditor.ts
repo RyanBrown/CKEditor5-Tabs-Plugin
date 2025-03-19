@@ -51,6 +51,7 @@ import { Paragraph } from '@ckeditor/ckeditor5-paragraph';
 import { PasteFromOffice } from '@ckeditor/ckeditor5-paste-from-office';
 import { RemoveFormat } from '@ckeditor/ckeditor5-remove-format';
 import { SelectAll } from '@ckeditor/ckeditor5-select-all';
+import { Style } from '@ckeditor/ckeditor5-style';
 import {
   Table,
   TableCaption,
@@ -85,6 +86,7 @@ import AlightEmailLinkPlugin from './plugins/alight-email-link-plugin/link';
 
 // Import custom styles for headings, style definitions and custom plugins
 import './styles/styles.scss';
+import { title } from 'process';
 
 // import fontawesome
 const script = document.createElement('script');
@@ -182,6 +184,7 @@ class AlightEditor extends ClassicEditor {
     RemoveFormat,
     SelectAll,
     Strikethrough,
+    Style,
     Subscript,
     Superscript,
     Table,
@@ -357,6 +360,40 @@ class AlightEditor extends ClassicEditor {
       colors: awldsColorPalette,
       colorPicker: false,
       columns: 5,
+    },
+    style: {
+      definitions: [
+        { name: "Italic Title", element: "h2", classes: ["italic-title"] },
+        { name: "Subtitle", element: "p", classes: ["subtitle"] },
+        { name: "Special Container", element: "p", classes: ["special-container"] },
+        { name: "Big", element: "big", classes: ["big"] },
+        { name: "Small", element: "small", classes: ["small"] },
+        { name: "Typewriter", element: "tt", classes: ["typewriter"] },
+        { name: "Computer Code", element: "code", classes: ["computer-code"] },
+        { name: "Keyboard Phrase", element: "kbd", classes: ["keyboard-phase"] },
+        { name: "Sample Text", element: "samp", classes: ["sample-text"] },
+        { name: "Variable", element: "var", classes: ["variable"] },
+        { name: "Deleted Text", element: "del", classes: ["deleted-text"] },
+        { name: "Inserted Text", element: "ins", classes: ["inserted-text"] },
+        { name: "Cited Work", element: "cite", classes: ["cited-work"] },
+        { name: "Inline Quotation", element: "q", classes: ["inline-quotation"] },
+        { name: "Language: RTL", element: "span", classes: ["language-rtl"] },
+        { name: "Language: LTR", element: "span", classes: ["language-ltr"] },
+      ]
+    },
+    heading: {
+      options: [
+        { model: "paragraph", title: "Paragraph", class: "ck-heading_paragraph" },
+        { model: "heading1", view: "h1", title: "heading1", class: "ck-heading_heading1" },
+        { model: "heading2", view: "h2", title: "heading2", class: "ck-heading_heading2" },
+        { model: "heading3", view: "h3", title: "heading3", class: "ck-heading_heading3" },
+        { model: "heading4", view: "h4", title: "heading4", class: "ck-heading_heading4" },
+        { model: "heading5", view: "h5", title: "heading5", class: "ck-heading_heading5" },
+        { model: "heading6", view: "h6", title: "heading6", class: "ck-heading_heading6" },
+        { model: "headingFormatted", view: "pre", title: "Formatted", class: "ck-heading_headingFormatted" },
+        { model: "headingAddress", view: "address", title: "Address", class: "ck-heading_headingAddress" },
+        { model: "headingNormalDiv", view: "div", title: "Normal (Div)", class: "ck-heading_headingNormalDiv" },
+      ],
     },
     table: {
       contentToolbar: [
