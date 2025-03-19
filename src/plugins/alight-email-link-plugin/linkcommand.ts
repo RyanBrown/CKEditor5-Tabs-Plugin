@@ -164,6 +164,15 @@ export default class AlightEmailLinkPluginCommand extends Command {
             attributes[item] = true;
           });
 
+          // Get additional formatting attributes (bold, italic, etc.)
+          if (textNodes.length > 0) {
+            for (const [key, value] of textNodes[0].getAttributes()) {
+              if (key !== 'alightEmailLinkPluginHref' && !attributes[key]) {
+                attributes[key] = value;
+              }
+            }
+          }
+
           const newTextNode = writer.createText(newText, attributes);
           model.insertContent(newTextNode, linkRange.start);
 
@@ -176,9 +185,10 @@ export default class AlightEmailLinkPluginCommand extends Command {
 
           attributes.set('alightEmailLinkPluginHref', href);
 
-          truthyManualDecorators.forEach(item => {
-            attributes.set(item, true);
-          });
+          // Add manual decorator attributes
+          for (const decorator of truthyManualDecorators) {
+            attributes.set(decorator, true);
+          }
 
           // Create display text with organization if provided
           let displayText = href.startsWith('mailto:') ? href.substring(7) : href;
@@ -232,18 +242,27 @@ export default class AlightEmailLinkPluginCommand extends Command {
 
         // Process each range
         for (const range of ranges) {
-          // First, remove the old content
-          writer.remove(range);
-
-          // Then insert the new content with the organization
+          // Store formatting attributes from the first text node
           const attributes = { alightEmailLinkPluginHref: href } as any;
+          const firstNode = Array.from(range.getItems()).find(item => item.is('$text') || item.is('$textProxy'));
+
+          if (firstNode) {
+            for (const [key, value] of firstNode.getAttributes()) {
+              if (key !== 'alightEmailLinkPluginHref') {
+                attributes[key] = value;
+              }
+            }
+          }
 
           // Add decorators
           truthyManualDecorators.forEach(item => {
             attributes[item] = true;
           });
 
-          // Insert the new content
+          // First, remove the old content
+          writer.remove(range);
+
+          // Then insert the new content with the organization
           const newText = writer.createText(finalText, attributes);
           model.insertContent(newText, range.start);
         }

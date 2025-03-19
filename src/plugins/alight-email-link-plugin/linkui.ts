@@ -444,7 +444,10 @@ export default class AlightEmailLinkPluginUI extends Plugin {
 
           // Execute the command with the organization as custom data
           // Pass the organization even if empty to ensure removal of existing organization
-          editor.execute('alight-email-link', emailLink, { organization });
+          // We need to explicitly set organization to an empty string if needed to ensure
+          // it properly removes an existing organization
+          const organizationOption = organization !== undefined ? organization : '';
+          editor.execute('alight-email-link', emailLink, { organization: organizationOption });
 
           // Close the modal
           if (this._modalDialog) {
@@ -486,19 +489,35 @@ export default class AlightEmailLinkPluginUI extends Plugin {
 
           emailInput.value = email;
 
-          // Get organization from the selection - need to extract from text
+          // Get organization from the selection's text content directly
+          const view = this.editor.editing.view;
+          const domConverter = view.domConverter;
           const selectedElement = this._getSelectedLinkElement();
-          if (selectedElement && selectedElement.is('attributeElement')) {
-            const children = Array.from(selectedElement.getChildren());
-            if (children.length > 0) {
-              const textNode = children[0];
-              if (textNode && textNode.is('$text')) {
-                const text = textNode.data || '';
-                const match = text.match(/^(.*?)(?:\s*\(([^)]+)\))?$/);
+
+          if (selectedElement) {
+            try {
+              // Get the DOM element from the view element
+              const domElement = domConverter.mapViewToDom(selectedElement);
+              if (domElement) {
+                // Get the text content directly from the DOM
+                const fullText = domElement.textContent || '';
+
+                // Debug the content we're working with
+                console.log('Link text content:', fullText);
+
+                // Use a more precise regex to extract organization from parentheses at the end
+                const orgRegex = /^(.+?)\s+\(([^)]+)\)$/;
+                const match = fullText.match(orgRegex);
+
                 if (match && match[2]) {
+                  console.log('Found organization:', match[2]);
                   organizationInput.value = match[2];
+                } else {
+                  console.log('No organization found in text:', fullText);
                 }
               }
+            } catch (error) {
+              console.error('Error extracting organization:', error);
             }
           }
 
