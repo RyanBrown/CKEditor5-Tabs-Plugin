@@ -332,6 +332,12 @@ class AlightEditor extends ClassicEditor {
           classes: true,
           styles: true
         },
+        {
+          name: /^(h[1-6])$/,
+          attributes: true, // Allows all attributes, including href from links
+          styles: true,
+          classes: true
+        }
       ]
     },
     language: 'en',
