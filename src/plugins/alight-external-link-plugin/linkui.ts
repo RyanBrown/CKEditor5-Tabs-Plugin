@@ -534,6 +534,7 @@ export default class AlightExternalLinkPluginUI extends Plugin {
           const organizationInput = document.getElementById('cka-link-org-name-input') as HTMLInputElement;
           const allowUnsecureCheckbox = document.getElementById('cka-allow-unsecure-urls') as CkAlightCheckbox;
           const urlPrefixElement = document.getElementById('url-prefix') as HTMLDivElement;
+          const continueButton = this._modalDialog?.getElement()?.querySelector('.cka-dialog-footer-buttons button:last-child') as HTMLButtonElement;
 
           if (!urlInput || !organizationInput || !allowUnsecureCheckbox || !urlPrefixElement) {
             return;
@@ -563,7 +564,14 @@ export default class AlightExternalLinkPluginUI extends Plugin {
           }
 
           // Update continue button state based on URL value
-          this._updateContinueButtonState();
+          // If we're editing, the URL input should already have a value, so enable the Continue button
+          if (urlInput.value.trim().length > 0 && !urlInput.value.includes('@') && continueButton) {
+            continueButton.disabled = false;
+            continueButton.removeAttribute('disabled');
+          } else if (continueButton) {
+            continueButton.disabled = true;
+            continueButton.setAttribute('disabled', 'disabled');
+          }
         }, 50);
       }
 
@@ -619,6 +627,40 @@ export default class AlightExternalLinkPluginUI extends Plugin {
             if (prefixInputContainer && !value.includes('@')) {
               prefixInputContainer.classList.remove('invalid');
             }
+          }
+        });
+
+        // Add blur event listener to show validation message if field is empty
+        urlInput.addEventListener('blur', () => {
+          const value = urlInput.value.trim();
+          const errorElement = document.getElementById('cka-url-error');
+          const prefixInputContainer = document.querySelector('.cka-prefix-input');
+
+          if (value === '') {
+            // Show required field message
+            if (errorElement) {
+              errorElement.textContent = t('URL address is required');
+              errorElement.style.display = 'block';
+            }
+
+            if (prefixInputContainer) {
+              prefixInputContainer.classList.add('invalid');
+            }
+          }
+        });
+
+        // Add focus event listener to clear validation errors when user focuses the field
+        urlInput.addEventListener('focus', () => {
+          const errorElement = document.getElementById('cka-url-error');
+          const prefixInputContainer = document.querySelector('.cka-prefix-input');
+
+          // Hide error message when focusing the field
+          if (errorElement) {
+            errorElement.style.display = 'none';
+          }
+
+          if (prefixInputContainer) {
+            prefixInputContainer.classList.remove('invalid');
           }
         });
 
