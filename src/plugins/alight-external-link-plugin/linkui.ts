@@ -454,6 +454,27 @@ export default class AlightExternalLinkPluginUI extends Plugin {
             urlInput.classList.remove('invalid');
           }
 
+          // Check for email links first
+          if (urlValue.includes('@')) {
+            if (errorElement) {
+              errorElement.textContent = t('Email links are not supported. Use the email link tool for emails.');
+              errorElement.style.display = 'block';
+            }
+
+            // Add invalid class to the .cka-prefix-input container
+            setTimeout(() => {
+              // Find the prefix input container by class
+              const prefixInputContainer = document.querySelector('.cka-prefix-input');
+              if (prefixInputContainer) {
+                prefixInputContainer.classList.add('invalid');
+              }
+            }, 10);
+
+            // Focus back on the URL input
+            if (urlInput) urlInput.focus();
+            return;
+          }
+
           // Validate URL
           if (!this._validateURL(urlValue)) {
             // Show error message
@@ -567,8 +588,38 @@ export default class AlightExternalLinkPluginUI extends Plugin {
         allowUnsecureCheckbox.addEventListener('change', handleCheckboxChange);
 
         // Add event listener for URL input changes
+        // Updated input handler in _showUI method
+
+        // Add event listener for URL input changes
         urlInput.addEventListener('input', () => {
+          // Update continue button state
           this._updateContinueButtonState();
+
+          // Check for email addresses during typing
+          const value = urlInput.value.trim();
+          const errorElement = document.getElementById('cka-url-error');
+          const prefixInputContainer = document.querySelector('.cka-prefix-input');
+
+          if (value.includes('@')) {
+            // Show email error message immediately during typing
+            if (errorElement) {
+              errorElement.textContent = t('Email links are not supported. Use the standard link tool for email links.');
+              errorElement.style.display = 'block';
+            }
+
+            if (prefixInputContainer) {
+              prefixInputContainer.classList.add('invalid');
+            }
+          } else {
+            // Clear error message if no @ symbol
+            if (errorElement && errorElement.textContent.includes('Email links')) {
+              errorElement.style.display = 'none';
+            }
+
+            if (prefixInputContainer && !value.includes('@')) {
+              prefixInputContainer.classList.remove('invalid');
+            }
+          }
         });
 
         // Focus the URL input
@@ -582,6 +633,7 @@ export default class AlightExternalLinkPluginUI extends Plugin {
   /**
    * Updates the Continue button state based on the URL input value
    * Enables button only if there's at least one character in the input
+   * and it's not an email address
    */
   private _updateContinueButtonState(): void {
     if (!this._modalDialog) return;
@@ -590,12 +642,17 @@ export default class AlightExternalLinkPluginUI extends Plugin {
     const continueButton = this._modalDialog.getElement()?.querySelector('.cka-dialog-footer-buttons button:last-child') as HTMLButtonElement;
 
     if (urlInput && continueButton) {
-      const hasValue = urlInput.value.trim().length > 0;
+      const inputValue = urlInput.value.trim();
+      const hasValue = inputValue.length > 0;
+      const isEmail = inputValue.includes('@');
+
+      // Only enable the button if there is a value AND it's not an email
+      const shouldEnable = hasValue && !isEmail;
 
       // Set disabled property directly on the button
-      continueButton.disabled = !hasValue;
+      continueButton.disabled = !shouldEnable;
 
-      if (hasValue) {
+      if (shouldEnable) {
         continueButton.removeAttribute('disabled');
       } else {
         continueButton.setAttribute('disabled', 'disabled');
