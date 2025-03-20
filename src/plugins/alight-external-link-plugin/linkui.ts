@@ -493,52 +493,37 @@ export default class AlightExternalLinkPluginUI extends Plugin {
             urlValue = urlPrefix + urlValue;
           }
 
-          // Clear any previous error messages
-          const errorElement = document.getElementById('cka-url-error');
-          if (errorElement) {
-            errorElement.style.display = 'none';
+          // Validate URL - this is the same logic as before, just now only shown on submit
+          let isValid = true;
+          let errorMessage = '';
+
+          // Check if the URL is empty
+          if (!urlValue || urlValue.trim() === '') {
+            isValid = false;
+            errorMessage = t('URL address is required');
+          }
+          // Check for email links
+          else if (urlValue.includes('@')) {
+            isValid = false;
+            errorMessage = t('Email links are not supported.');
+          }
+          // Run full URL validation (which includes checking for domain)
+          else if (!this._validateURL(urlValue)) {
+            isValid = false;
+            errorMessage = t('Please enter a valid URL address');
           }
 
-          if (urlInput) {
-            urlInput.classList.remove('invalid');
-          }
-
-          // Check for email links first
-          if (urlValue.includes('@')) {
-            if (errorElement) {
-              errorElement.textContent = t('Email links are not supported. Use the email link tool for emails.');
-              errorElement.style.display = 'block';
-            }
-
-            // Add invalid class to the .cka-prefix-input container
-            setTimeout(() => {
-              // Find the prefix input container by class
-              const prefixInputContainer = document.querySelector('.cka-prefix-input');
-              if (prefixInputContainer) {
-                prefixInputContainer.classList.add('invalid');
-              }
-            }, 10);
-
-            // Focus back on the URL input
-            if (urlInput) urlInput.focus();
-            return;
-          }
-
-          // Validate URL
-          if (!this._validateURL(urlValue)) {
+          // If validation fails, show error message
+          if (!isValid) {
             // Show error message
+            const errorElement = document.getElementById('cka-url-error');
             if (errorElement) {
-              if (urlValue.trim() === '') {
-                errorElement.textContent = t('URL address is required');
-              } else {
-                errorElement.textContent = t('Please enter a valid URL address');
-              }
+              errorElement.textContent = errorMessage;
               errorElement.style.display = 'block';
             }
 
-            // Add invalid class to the .cka-prefix-input container
+            // Add invalid class to the input container
             setTimeout(() => {
-              // Find the prefix input container by class
               const prefixInputContainer = document.querySelector('.cka-prefix-input');
               if (prefixInputContainer) {
                 prefixInputContainer.classList.add('invalid');
@@ -550,8 +535,7 @@ export default class AlightExternalLinkPluginUI extends Plugin {
             return;
           }
 
-          // Execute the command with the organization as custom data
-          // Pass the organization even if empty to ensure removal of existing organization
+          // If we get here, the URL is valid, so execute the command
           editor.execute('alight-external-link', urlValue, { organization });
 
           // Close the modal
@@ -645,10 +629,14 @@ export default class AlightExternalLinkPluginUI extends Plugin {
       }
 
       // Set up event listener for checkbox changes and URL input
+      // Update event listeners for URL input
       setTimeout(() => {
         const urlPrefixElement = document.getElementById('url-prefix') as HTMLDivElement;
         const allowUnsecureCheckbox = document.getElementById('cka-allow-unsecure-urls') as CkAlightCheckbox;
         const urlInput = document.getElementById('cka-link-url-input') as HTMLInputElement;
+        const errorElement = document.getElementById('cka-url-error');
+        const prefixInputContainer = document.querySelector('.cka-prefix-input');
+        const continueButton = this._modalDialog?.getElement()?.querySelector('.cka-dialog-footer-buttons button:last-child') as HTMLButtonElement;
 
         // Add event listener for checkbox changes
         const handleCheckboxChange = () => {
@@ -664,83 +652,27 @@ export default class AlightExternalLinkPluginUI extends Plugin {
 
         allowUnsecureCheckbox.addEventListener('change', handleCheckboxChange);
 
-        // Add event listener for URL input changes
-        // Updated input handler in _showUI method
-
-        // Add event listener for URL input changes
+        // Input listener - only hide error messages and update button state
         urlInput.addEventListener('input', () => {
-          // Update continue button state
-          this._updateContinueButtonState();
-
-          // Get value for validation
-          const value = urlInput.value.trim();
-          const errorElement = document.getElementById('cka-url-error');
-          const prefixInputContainer = document.querySelector('.cka-prefix-input');
-
-          // Check for email addresses during typing
-          if (value.includes('@')) {
-            // Show email error message immediately during typing
-            if (errorElement) {
-              errorElement.textContent = t('Email links are not supported. Use the email link tool for email links.');
-              errorElement.style.display = 'block';
-            }
-
-            if (prefixInputContainer) {
-              prefixInputContainer.classList.add('invalid');
-            }
-          } else if (value.length > 0 && !value.includes('.')) {
-            // Show domain error message if user types something without a dot
-            if (errorElement) {
-              errorElement.textContent = t('URLs must include a domain (e.g., example.com)');
-              errorElement.style.display = 'block';
-            }
-
-            if (prefixInputContainer) {
-              prefixInputContainer.classList.add('invalid');
-            }
-          } else {
-            // Clear error message if no validation issues
-            if (errorElement) {
-              errorElement.style.display = 'none';
-            }
-
-            if (prefixInputContainer) {
-              prefixInputContainer.classList.remove('invalid');
-            }
-          }
-        });
-
-        // Add blur event listener to show validation message if field is empty
-        urlInput.addEventListener('blur', () => {
-          const value = urlInput.value.trim();
-          const errorElement = document.getElementById('cka-url-error');
-          const prefixInputContainer = document.querySelector('.cka-prefix-input');
-
-          if (value === '') {
-            // Show required field message
-            if (errorElement) {
-              errorElement.textContent = t('URL address is required');
-              errorElement.style.display = 'block';
-            }
-
-            if (prefixInputContainer) {
-              prefixInputContainer.classList.add('invalid');
-            }
-          }
-        });
-
-        // Add focus event listener to clear validation errors when user focuses the field
-        urlInput.addEventListener('focus', () => {
-          const errorElement = document.getElementById('cka-url-error');
-          const prefixInputContainer = document.querySelector('.cka-prefix-input');
-
-          // Hide error message when focusing the field
+          // Hide any error messages while typing
           if (errorElement) {
             errorElement.style.display = 'none';
           }
 
           if (prefixInputContainer) {
             prefixInputContainer.classList.remove('invalid');
+          }
+
+          // Update continue button based on whether there's any input
+          if (continueButton) {
+            const hasValue = urlInput.value.trim().length > 0;
+            continueButton.disabled = !hasValue;
+
+            if (hasValue) {
+              continueButton.removeAttribute('disabled');
+            } else {
+              continueButton.setAttribute('disabled', 'disabled');
+            }
           }
         });
 
