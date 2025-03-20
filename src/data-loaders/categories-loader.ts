@@ -1,0 +1,1 @@
+// src/data-loaders/categories-loader.ts

@@ -1,4 +1,4 @@
-//src/plugins-alight-common/ILinkManager.ts
+// src/alight-common/ILinkManager.ts
 export interface ILinkManager {
 
   // Renders the current UI (including attaching events) into the container.
