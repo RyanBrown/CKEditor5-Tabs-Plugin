@@ -388,6 +388,11 @@ export default class AlightExternalLinkPluginUI extends Plugin {
       return false;
     }
 
+    // Check if the URL contains a dot (required for a valid domain)
+    if (!url.includes('.')) {
+      return false;
+    }
+
     // Only allow HTTP and HTTPS URLs
     // Check if it already has the protocol
     if (url.startsWith('http://') || url.startsWith('https://')) {
@@ -397,7 +402,6 @@ export default class AlightExternalLinkPluginUI extends Plugin {
     // Otherwise validate without protocol (will be prefixed with http/https later)
     return /^(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/i.test(url);
   }
-
 
   /**
    * Resets all form validations and errors
@@ -668,15 +672,26 @@ export default class AlightExternalLinkPluginUI extends Plugin {
           // Update continue button state
           this._updateContinueButtonState();
 
-          // Check for email addresses during typing
+          // Get value for validation
           const value = urlInput.value.trim();
           const errorElement = document.getElementById('cka-url-error');
           const prefixInputContainer = document.querySelector('.cka-prefix-input');
 
+          // Check for email addresses during typing
           if (value.includes('@')) {
             // Show email error message immediately during typing
             if (errorElement) {
-              errorElement.textContent = t('Email links are not supported. Use the standard link tool for email links.');
+              errorElement.textContent = t('Email links are not supported. Use the email link tool for email links.');
+              errorElement.style.display = 'block';
+            }
+
+            if (prefixInputContainer) {
+              prefixInputContainer.classList.add('invalid');
+            }
+          } else if (value.length > 0 && !value.includes('.')) {
+            // Show domain error message if user types something without a dot
+            if (errorElement) {
+              errorElement.textContent = t('URLs must include a domain (e.g., example.com)');
               errorElement.style.display = 'block';
             }
 
@@ -684,12 +699,12 @@ export default class AlightExternalLinkPluginUI extends Plugin {
               prefixInputContainer.classList.add('invalid');
             }
           } else {
-            // Clear error message if no @ symbol
-            if (errorElement && errorElement.textContent.includes('Email links')) {
+            // Clear error message if no validation issues
+            if (errorElement) {
               errorElement.style.display = 'none';
             }
 
-            if (prefixInputContainer && !value.includes('@')) {
+            if (prefixInputContainer) {
               prefixInputContainer.classList.remove('invalid');
             }
           }
@@ -739,8 +754,8 @@ export default class AlightExternalLinkPluginUI extends Plugin {
 
   /**
    * Updates the Continue button state based on the URL input value
-   * Enables button only if there's at least one character in the input
-   * and it's not an email address
+   * Enables button only if there's at least one character in the input,
+   * it's not an email address, and it has a valid domain (contains a dot)
    */
   private _updateContinueButtonState(): void {
     if (!this._modalDialog) return;
@@ -752,9 +767,10 @@ export default class AlightExternalLinkPluginUI extends Plugin {
       const inputValue = urlInput.value.trim();
       const hasValue = inputValue.length > 0;
       const isEmail = inputValue.includes('@');
+      const hasDot = inputValue.includes('.');
 
-      // Only enable the button if there is a value AND it's not an email
-      const shouldEnable = hasValue && !isEmail;
+      // Only enable the button if there is a value, it's not an email, and it has a dot
+      const shouldEnable = hasValue && !isEmail && hasDot;
 
       // Set disabled property directly on the button
       continueButton.disabled = !shouldEnable;
