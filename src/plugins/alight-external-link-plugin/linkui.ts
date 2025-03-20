@@ -398,6 +398,43 @@ export default class AlightExternalLinkPluginUI extends Plugin {
     return /^(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/i.test(url);
   }
 
+
+  /**
+   * Resets all form validations and errors
+   * Called when the modal is opened
+   */
+  private _resetValidations(): void {
+    setTimeout(() => {
+      // Clear error message
+      const errorElement = document.getElementById('cka-url-error');
+      if (errorElement) {
+        errorElement.style.display = 'none';
+        errorElement.textContent = '';
+      }
+
+      // Remove invalid class from input
+      const prefixInputContainer = document.querySelector('.cka-prefix-input');
+      if (prefixInputContainer) {
+        prefixInputContainer.classList.remove('invalid');
+      }
+
+      // Reset URL input field (only if not in edit mode)
+      if (!this._isEditing) {
+        const urlInput = document.getElementById('cka-link-url-input') as HTMLInputElement;
+        if (urlInput) {
+          urlInput.value = '';
+        }
+      }
+
+      // Make sure Continue button is disabled
+      const continueButton = this._modalDialog?.getElement()?.querySelector('.cka-dialog-footer-buttons button:last-child') as HTMLButtonElement;
+      if (continueButton) {
+        continueButton.disabled = true;
+        continueButton.setAttribute('disabled', 'disabled');
+      }
+    }, 10);
+  }
+
   /**
    * Checks if the link element is an external link
    */
@@ -411,11 +448,19 @@ export default class AlightExternalLinkPluginUI extends Plugin {
   /**
    * Shows the modal dialog for link editing.
    */
+  private _isEditing: boolean = false;
+
+  /**
+   * Shows the modal dialog for link editing.
+   */
   private _showUI(isEditing: boolean = false): void {
     const editor = this.editor;
     const t = editor.t;
     const linkCommand = editor.commands.get('alight-external-link') as AlightExternalLinkPluginCommand;
     const selectedLink = this._getSelectedLinkElement();
+
+    // Store edit mode state
+    this._isEditing = isEditing;
 
     // Create modal if it doesn't exist
     if (!this._modalDialog) {
@@ -515,6 +560,12 @@ export default class AlightExternalLinkPluginUI extends Plugin {
           }
         }
       });
+
+      // Add event listener for when the modal is closed
+      this._modalDialog.on('close', () => {
+        // Reset edit mode when modal is closed
+        this._isEditing = false;
+      });
     }
 
     // Update modal title based on whether we're editing or creating
@@ -527,6 +578,9 @@ export default class AlightExternalLinkPluginUI extends Plugin {
 
       this._modalDialog.show();
 
+      // Reset all validations when showing the modal
+      this._resetValidations();
+
       // Set values if we're editing
       if (isEditing && linkCommand.value) {
         setTimeout(() => {
@@ -535,9 +589,20 @@ export default class AlightExternalLinkPluginUI extends Plugin {
           const allowUnsecureCheckbox = document.getElementById('cka-allow-unsecure-urls') as CkAlightCheckbox;
           const urlPrefixElement = document.getElementById('url-prefix') as HTMLDivElement;
           const continueButton = this._modalDialog?.getElement()?.querySelector('.cka-dialog-footer-buttons button:last-child') as HTMLButtonElement;
+          const errorElement = document.getElementById('cka-url-error');
+          const prefixInputContainer = document.querySelector('.cka-prefix-input');
 
           if (!urlInput || !organizationInput || !allowUnsecureCheckbox || !urlPrefixElement) {
             return;
+          }
+
+          // Clear any validation messages
+          if (errorElement) {
+            errorElement.style.display = 'none';
+          }
+
+          if (prefixInputContainer) {
+            prefixInputContainer.classList.remove('invalid');
           }
 
           let url = linkCommand.value || '';
@@ -714,6 +779,9 @@ export default class AlightExternalLinkPluginUI extends Plugin {
     this._isUpdatingUI = true;
 
     try {
+      // Reset edit mode state
+      this._isEditing = false;
+
       // Hide the balloon if it's showing
       if (this.actionsView && this._balloon && this._balloon.hasView(this.actionsView)) {
         this._balloon.remove(this.actionsView);
@@ -721,6 +789,11 @@ export default class AlightExternalLinkPluginUI extends Plugin {
         if (this._balloon) {
           this.stopListening(this._balloon, 'change:visibleView');
         }
+      }
+
+      // Hide the modal if it's showing
+      if (this._modalDialog && this._modalDialog.isVisible) {
+        this._modalDialog.hide();
       }
     } catch (error) {
       console.error('Error hiding UI:', error);
