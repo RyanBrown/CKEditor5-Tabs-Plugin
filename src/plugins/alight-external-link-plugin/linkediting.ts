@@ -33,6 +33,7 @@ import {
   addLinkProtocolIfApplicable,
   createBookmarkCallbacks,
   openLink,
+  ensureUrlProtocol,
   type NormalizedLinkDecoratorAutomaticDefinition,
   type NormalizedLinkDecoratorManualDefinition
 } from './utils';
@@ -98,9 +99,8 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
   public init(): void {
     const editor = this.editor;
     const config = editor.config.get('alightExternalLink') as AlightExternalLinkPluginConfig;
-    const allowedProtocols = config?.allowedProtocols ||
-      (editor.config.get('link.allowedProtocols') as string[] ||
-        ['https?', 'ftps?', 'mailto']);
+    // Only allow http and https protocols
+    const allowedProtocols = ['https?'];
 
     // Allow link attribute on all inline nodes.
     editor.model.schema.extend('$text', { allowAttributes: 'alightExternalLinkPluginHref' });
@@ -123,7 +123,7 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
         converterPriority: 'high'
       });
 
-    // Upcast converter for all links
+    // Upcast converter for all links - we'll filter non-HTTP/HTTPS later
     editor.conversion.for('upcast')
       .elementToAttribute({
         view: {
@@ -134,7 +134,22 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
         },
         model: {
           key: 'alightExternalLinkPluginHref',
-          value: (viewElement: ViewElement) => viewElement.getAttribute('href')
+          value: (viewElement: ViewElement) => {
+            const href = viewElement.getAttribute('href');
+
+            // Filter out non-HTTP/HTTPS URLs during upcast
+            if (typeof href === 'string') {
+              if (href.startsWith('http://') || href.startsWith('https://')) {
+                return href;
+              } else if (/^www\..+$/i.test(href)) {
+                // For www. links, add the protocol
+                return ensureUrlProtocol(href);
+              }
+              // Otherwise, return null to skip this link
+              return null;
+            }
+            return null;
+          }
         },
         converterPriority: 'normal'
       });

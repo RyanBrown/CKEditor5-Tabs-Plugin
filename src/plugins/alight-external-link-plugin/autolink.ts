@@ -10,16 +10,16 @@ import AlightExternalLinkPluginEditing from './linkediting';
 
 const MIN_LINK_LENGTH_WITH_SPACE_AT_END = 4; // Ie: "t.co " (length 5).
 
-// This was a tweak from https://gist.github.com/dperini/729294.
+// Modified the URL_REG_EXP to only detect HTTP and HTTPS URLs
 const URL_REG_EXP = new RegExp(
   // Group 1: Line start or after a space.
   '(^|\\s)' +
-  // Group 2: Detected URL (or e-mail).
+  // Group 2: Detected URL (HTTP/HTTPS only)
   '(' +
-  // Protocol identifier or short syntax "//"
-  // a. Full form http://user@foo.bar.baz:8080/foo/bar.html#baz?foo=bar
+  // Protocol identifier
   '(' +
-  '(?:(?:(?:https?|ftp):)?\\/\\/)' +
+  // Full form http://user@foo.bar.baz:8080/foo/bar.html#baz?foo=bar
+  '(?:(?:(?:https?):)?\\/\\/)' +
   // BasicAuth using user:pass (optional)
   '(?:\\S+(?::\\S*)?@)?' +
   '(?:' +
@@ -47,9 +47,9 @@ const URL_REG_EXP = new RegExp(
   '(?:[/?#]\\S*)?' +
   ')' +
   '|' +
-  // b. Short form (either www.example.com or example@example.com)
+  // Short form - either www.example.com only
   '(' +
-  '(www.|)' +
+  '(www.)' +
   // Host & domain names.
   '((?![-_])(?:[-_a-z0-9\\u00a1-\\uffff]{1,63}\\.))+' +
   // TLD identifier name.
@@ -171,7 +171,7 @@ export default class AlightExternalAutoLink extends Plugin {
         return;
       }
 
-      // Handle regular URLs
+      // Only handle HTTP/HTTPS URLs
       const matches = newLink.match(/^(https?:\/\/|www\.)\S+$/i);
 
       // If the text in the clipboard has a URL, and that URL is the whole clipboard.
@@ -208,7 +208,7 @@ export default class AlightExternalAutoLink extends Plugin {
         mappedText = mappedText.slice(0, -1);
       }
 
-      // 4. Check for URL
+      // 4. Check for HTTP/HTTPS URL
       const url = getUrlAtTextEnd(mappedText);
 
       if (url) {
@@ -294,7 +294,7 @@ export default class AlightExternalAutoLink extends Plugin {
     const model = this.editor.model;
     const { text, range } = getLastTextLine(rangeToCheck, model);
 
-    // Check for URL
+    // Check for HTTP/HTTPS URL
     const url = getUrlAtTextEnd(text);
 
     if (url) {

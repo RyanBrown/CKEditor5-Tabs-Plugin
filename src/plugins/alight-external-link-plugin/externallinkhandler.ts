@@ -67,15 +67,14 @@ export default class ExternalLinkHandler extends Plugin {
         (href.startsWith('http://') || href.startsWith('https://') || isValidUrl(href))) {
 
         // Ensure URL has protocol
-        if (!href.startsWith('http://') && !href.startsWith('https://')) {
-          href = ensureUrlProtocol(href);
-        }
+        const secureHref = ensureUrlProtocol(href);
 
         // Execute our custom command instead
-        editor.execute('alight-external-link', href, options);
+        editor.execute('alight-external-link', secureHref, options);
       } else {
-        // For non-web links, use the original behavior
-        originalExecute.call(this, href, options);
+        // For non-web links, we'll now block the action since we only support http/https
+        console.warn('AlightExternalLinkPlugin only supports HTTP and HTTPS URLs.');
+        // Don't execute the original command for non-http/https URLs
       }
     };
   }
@@ -100,7 +99,7 @@ export default class ExternalLinkHandler extends Plugin {
       // Get the plain text
       const text = data.dataTransfer.getData('text/plain');
 
-      // If it's a valid URL, handle it
+      // If it's a valid HTTP/HTTPS URL, handle it
       if (text && this._isExternalUrl(text)) {
         // Ensure the URL has a protocol
         const externalLink = ensureUrlProtocol(text);
@@ -163,13 +162,27 @@ export default class ExternalLinkHandler extends Plugin {
               writer.removeAttribute('alightExternalLinkPluginHref', item);
             }
           }
+
+          // Handle non-http/https links in linkHref attribute - convert or remove them
+          if (item.is('$text') && item.hasAttribute('linkHref')) {
+            const linkHref = item.getAttribute('linkHref');
+
+            if (linkHref && typeof linkHref === 'string') {
+              // For non-HTTP/HTTPS links like mailto:, tel:, etc., remove them
+              // as this plugin only supports HTTP/HTTPS
+              if (!linkHref.startsWith('http://') && !linkHref.startsWith('https://') &&
+                !this._isExternalUrl(linkHref)) {
+                writer.removeAttribute('linkHref', item);
+              }
+            }
+          }
         }
       });
     });
   }
 
   /**
-   * Checks if a string is a valid external URL
+   * Checks if a string is a valid external URL (HTTP/HTTPS only)
    */
   private _isExternalUrl(text: string): boolean {
     // Check for http/https URLs
@@ -177,7 +190,7 @@ export default class ExternalLinkHandler extends Plugin {
       return true;
     }
 
-    // Check for valid URLs without protocol
+    // Check for valid URLs without protocol that can be converted to HTTP/HTTPS
     return isValidUrl(text);
   }
 
@@ -200,6 +213,7 @@ export default class ExternalLinkHandler extends Plugin {
         if (item.is('$text') && item.hasAttribute('linkHref')) {
           const href = item.getAttribute('linkHref');
 
+          // Only process HTTP/HTTPS links
           if (typeof href === 'string' &&
             (href.startsWith('http://') || href.startsWith('https://'))) {
             // Get the link range

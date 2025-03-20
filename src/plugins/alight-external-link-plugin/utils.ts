@@ -24,19 +24,18 @@ import { upperFirst } from 'lodash-es';
 
 const ATTRIBUTE_WHITESPACES = /[\u0000-\u0020\u00A0\u1680\u180E\u2000-\u2029\u205f\u3000]/g; // eslint-disable-line no-control-regex
 
+// Modified SAFE_URL_TEMPLATE to only allow http and https protocols
 const SAFE_URL_TEMPLATE = '^(?:(?:<protocols>):|[^a-z]|[a-z+.-]+(?:[^a-z+.:-]|$))';
 
-// URL validation regex
+// Updated URL validation regex to only match HTTP/HTTPS URLs
 const URL_REG_EXP = /^(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/i;
 
-// The regex checks for the protocol syntax ('xxxx://' or 'xxxx:')
-// or non-word characters at the beginning of the link ('/', '#' etc.).
-const PROTOCOL_REG_EXP = /^((\w+:(\/{2,})?)|(\W))/i;
+// Modified to only check for http and https protocols
+const PROTOCOL_REG_EXP = /^(https?:(\/{2,})?)/i;
 
+// Updated default protocols to only include http and https
 const DEFAULT_LINK_PROTOCOLS = [
-  'https?',
-  'ftps?',
-  'mailto'
+  'https?'
 ];
 
 /**
@@ -62,6 +61,7 @@ export function createLinkElement(href: string, { writer }: DowncastConversionAp
  * Returns a safe URL based on a given value.
  *
  * A URL is considered safe if it is safe for the user (does not contain any malicious code).
+ * Only http and https protocols are allowed.
  *
  * If a URL is considered unsafe, a simple `"#"` is returned.
  *
@@ -150,7 +150,7 @@ export function isLinkableElement(element: Element | null, schema: Schema): elem
 }
 
 /**
- * Returns `true` if the specified `value` is a valid URL.
+ * Returns `true` if the specified `value` is a valid HTTP/HTTPS URL.
  */
 export function isValidUrl(value: string): boolean {
   return URL_REG_EXP.test(value);
@@ -160,15 +160,21 @@ export function isValidUrl(value: string): boolean {
  * Adds the protocol prefix to the specified `link` when:
  * it does not contain it already, and there is a {@link module:link/linkconfig~LinkConfig#defaultProtocol `defaultProtocol` }
  * configuration value provided.
+ * 
+ * Only adds HTTP or HTTPS protocols.
  */
 export function addLinkProtocolIfApplicable(link: string, defaultProtocol?: string): string {
-  const isProtocolNeeded = defaultProtocol && !linkHasProtocol(link);
+  // Only add protocol if link doesn't have one and the defaultProtocol is http:// or https://
+  const isProtocolNeeded = defaultProtocol &&
+    (defaultProtocol === 'http://' || defaultProtocol === 'https://') &&
+    !linkHasProtocol(link);
 
   return link && isProtocolNeeded ? defaultProtocol + link : link;
 }
 
 /**
  * Checks if protocol is already included in the link.
+ * Only validates HTTP and HTTPS protocols.
  */
 export function linkHasProtocol(link: string): boolean {
   return PROTOCOL_REG_EXP.test(link);
@@ -285,6 +291,7 @@ export function formatUrlWithOrganization(url: string, organization: string | nu
 
 /**
  * Checks if a URL is external (starts with http:// or https://)
+ * This is always true for the AlightExternalLinkPlugin as we only support http/https.
  */
 export function isExternalUrl(url: string): boolean {
   return /^https?:\/\//.test(url);

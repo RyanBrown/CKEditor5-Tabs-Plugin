@@ -388,8 +388,14 @@ export default class AlightExternalLinkPluginUI extends Plugin {
       return false;
     }
 
-    // Match both with and without protocol
-    return isValidUrl(url);
+    // Only allow HTTP and HTTPS URLs
+    // Check if it already has the protocol
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/i.test(url);
+    }
+
+    // Otherwise validate without protocol (will be prefixed with http/https later)
+    return /^(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/i.test(url);
   }
 
   /**

@@ -156,8 +156,14 @@ export default class AlightExternalLinkPluginCommand extends Command {
    * @param options Options including manual decorator attributes and organization name.
    */
   public override execute(href: string, options: LinkOptions = {}): void {
-    // Ensure the URL has a protocol
+    // Ensure the URL has a protocol and is HTTP/HTTPS only
     href = ensureUrlProtocol(href, !href.startsWith('http://'));
+
+    // If the URL is not HTTP/HTTPS, don't proceed
+    if (!href.startsWith('http://') && !href.startsWith('https://')) {
+      console.warn('AlightExternalLinkPlugin only supports HTTP and HTTPS URLs.');
+      return;
+    }
 
     const model = this.editor.model;
     const selection = model.document.selection;
