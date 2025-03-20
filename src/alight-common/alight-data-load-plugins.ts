@@ -1,7 +1,7 @@
 // src/alight-common/alight-data-load-plugins.ts
 import { ButtonView } from '@ckeditor/ckeditor5-ui';
 import { AlightPlugin } from './alight-plugin';
-import SessionService from '../services/session-service';
+import { SessionService } from '../services/session-service';
 
 export abstract class AlightDataloadPlugin extends AlightPlugin {
 

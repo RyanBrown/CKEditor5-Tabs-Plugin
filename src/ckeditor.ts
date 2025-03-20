@@ -4,7 +4,6 @@
  */
 
 import { ClassicEditor } from '@ckeditor/ckeditor5-editor-classic';
-
 import { AccessibilityHelp } from '@ckeditor/ckeditor5-ui';
 import { Alignment } from '@ckeditor/ckeditor5-alignment';
 import { Autoformat } from '@ckeditor/ckeditor5-autoformat';
@@ -19,19 +18,24 @@ import {
   Underline
 } from '@ckeditor/ckeditor5-basic-styles';
 import { Clipboard } from '@ckeditor/ckeditor5-clipboard';
-import { DataSchema } from '@ckeditor/ckeditor5-html-support';
 import type { EditorConfig } from '@ckeditor/ckeditor5-core';
 import { Essentials } from '@ckeditor/ckeditor5-essentials';
+import { FindAndReplace } from '@ckeditor/ckeditor5-find-and-replace';
 import {
   FontBackgroundColor,
   FontColor,
   FontFamily,
-  FontSize
+  FontSize,
 } from '@ckeditor/ckeditor5-font';
-import { GeneralHtmlSupport } from '@ckeditor/ckeditor5-html-support';
 import { Heading, Title } from '@ckeditor/ckeditor5-heading';
 import { Highlight } from '@ckeditor/ckeditor5-highlight';
 import { HorizontalLine } from '@ckeditor/ckeditor5-horizontal-line';
+import {
+  DataSchema,
+  FullPage,
+  GeneralHtmlSupport,
+  HtmlComment
+} from '@ckeditor/ckeditor5-html-support';
 import {
   AutoImage,
   Image,
@@ -46,11 +50,28 @@ import { Indent, IndentBlock } from '@ckeditor/ckeditor5-indent';
 import { TextPartLanguage } from '@ckeditor/ckeditor5-language';
 // import { Link, LinkImage } from '@ckeditor/ckeditor5-link';
 import { List, ListProperties, TodoList } from '@ckeditor/ckeditor5-list';
+import { Markdown } from '@ckeditor/ckeditor5-markdown-gfm';
 import { MediaEmbed, MediaEmbedToolbar } from '@ckeditor/ckeditor5-media-embed';
+import { Mention } from '@ckeditor/ckeditor5-mention';
+import { PageBreak } from '@ckeditor/ckeditor5-page-break';
 import { Paragraph } from '@ckeditor/ckeditor5-paragraph';
 import { PasteFromOffice } from '@ckeditor/ckeditor5-paste-from-office';
 import { RemoveFormat } from '@ckeditor/ckeditor5-remove-format';
+import { StandardEditingMode } from '@ckeditor/ckeditor5-restricted-editing';
 import { SelectAll } from '@ckeditor/ckeditor5-select-all';
+import { ShowBlocks } from '@ckeditor/ckeditor5-show-blocks';
+import { SourceEditing } from '@ckeditor/ckeditor5-source-editing';
+import {
+  SpecialCharacters,
+  SpecialCharactersArrows,
+  SpecialCharactersCurrency,
+  SpecialCharactersEssentials,
+  SpecialCharactersLatin,
+  SpecialCharactersMathematical,
+  SpecialCharactersPunctuation,
+  SpecialCharactersSuperscript,
+  SpecialCharactersText,
+} from '@ckeditor/ckeditor5-special-characters/src/specialcharacters';
 import { Style } from '@ckeditor/ckeditor5-style';
 import {
   Table,
@@ -87,6 +108,7 @@ import AlightEmailLinkPlugin from './plugins/alight-email-link-plugin/link';
 // Import custom styles for headings, style definitions and custom plugins
 import './styles/styles.scss';
 import { title } from 'process';
+import { HtmlEmbed } from '@ckeditor/ckeditor5-html-embed';
 
 // import fontawesome
 const script = document.createElement('script');
@@ -100,9 +122,9 @@ export const LICENSE_KEY =
 // Use default colors from the AWLDS
 const awldsColorPalette = [
   // primary colors
-  { label: 'Core Water Leaf', color: '#97e8e2' },
+  { label: 'Core Water Leaf', color: '#96e8e2' },
   { label: 'Core Tropical Blue', color: '#c2d9fe' },
-  { label: 'Core Pale Lavender', color: '#e5cefd' },
+  { label: 'Core Pale Lavender', color: '#e5cdfd' },
 
   // secondary colors
   { label: 'Accent Apricot', color: '#ffcbb1' },
@@ -113,7 +135,7 @@ const awldsColorPalette = [
   { label: 'Accent Jordy Blue', color: '#7da7ed' },
   { label: 'Accent Navy Blue', color: '#266de2' },
   { label: 'Accent Pink Orange', color: '#ff9966' },
-  { label: 'Accent Zircon', color: '#f6f9ff' },
+  { label: 'Accent Zircon', color: '#f4f8ff' },
 
   // tertiary colors
   { label: 'Tertiary Cornflower Blue', color: '#639dfe' },
@@ -145,44 +167,79 @@ const awldsColorPalette = [
 
 class AlightEditor extends ClassicEditor {
   public static override builtinPlugins = [
+
+    // Custom Plugins
     AccessibilityHelp,
+    AlightCopyPlugin,
+    AlightEmailLinkPlugin,
+    AlightExistingDocumentLinkPlugin,
+    AlightExternalLinkPlugin,
+    AlightImagePlugin,
+    AlightLink,
+    AlightNewDocumentLinkPlugin,
+    AlightParentLinkPlugin,
+    AlightPastePlugin,
+    AlightPopulationPlugin,
+    AlightPredefinedLinkPlugin,
+    AlightTabsPlugin,
     Alignment,
     Autoformat,
-    Autosave,
     AutoImage,
+    Autosave,
     BlockQuote,
     Bold,
     Clipboard,
     DataSchema,
     Essentials,
+    FindAndReplace,
     FontBackgroundColor,
     FontColor,
     FontFamily,
     FontSize,
+    FullPage,
     GeneralHtmlSupport,
     Heading,
     Highlight,
     HorizontalLine,
+    HtmlComment,
+    HtmlEmbed,
     Image,
     ImageCaption,
+    ImageInsert,
+    ImageInsert,
     ImageResize,
     ImageStyle,
     ImageToolbar,
     ImageUpload,
-    ImageInsert,
     Indent,
     IndentBlock,
     Italic,
-    // Link,
-    // LinkImage,
+    Link,
+    LinkImage,
     List,
     ListProperties,
+    Markdown,
     MediaEmbed,
     MediaEmbedToolbar,
+    Mention,
+    PageBreak,
     Paragraph,
     PasteFromOffice,
+    PastePlainText,
     RemoveFormat,
     SelectAll,
+    ShowBlocks,
+    SourceEditing,
+    SpecialCharacters,
+    SpecialCharactersArrows,
+    SpecialCharactersCurrency,
+    SpecialCharactersEssentials,
+    SpecialCharactersLatin,
+    SpecialCharactersMathematical,
+    SpecialCharactersPunctuation,
+    SpecialCharactersSuperscript,
+    SpecialCharactersText,
+    StandardEditingMode,
     Strikethrough,
     Style,
     Subscript,
@@ -200,20 +257,6 @@ class AlightEditor extends ClassicEditor {
     Underline,
     Undo,
     WordCount,
-
-    // Custom Plugins
-    AlightCopyPlugin,
-    AlightImagePlugin,
-    AlightPastePlugin,
-    AlightPopulationPlugin,
-    AlightTabsPlugin,
-    AlightParentLinkPlugin,
-    AlightPredefinedLinkPlugin,
-    AlightNewDocumentLinkPlugin,
-    AlightExistingDocumentLinkPlugin,
-    AlightLink,
-    AlightExternalLinkPlugin,
-    AlightEmailLinkPlugin,
   ];
 
   public static override defaultConfig: EditorConfig = {
