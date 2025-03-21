@@ -469,7 +469,7 @@ export default class AlightExternalLinkPluginUI extends Plugin {
     // Create modal if it doesn't exist
     if (!this._modalDialog) {
       this._modalDialog = new CkAlightModalDialog({
-        title: t('Create External Link'),
+        title: t('Create external link'),
         width: '32rem',
         contentClass: 'cka-external-link-content',
         buttons: [
@@ -558,7 +558,7 @@ export default class AlightExternalLinkPluginUI extends Plugin {
 
     // Update modal title based on whether we're editing or creating
     if (this._modalDialog) {
-      this._modalDialog.setTitle(isEditing ? t('Edit External Link') : t('Create External Link'));
+      this._modalDialog.setTitle(isEditing ? t('Edit external link') : t('Create external link'));
 
       // Prepare the form HTML
       const formHTML = this._createFormHTML(t, isEditing);

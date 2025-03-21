@@ -391,7 +391,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     // Create modal if it doesn't exist
     if (!this._modalDialog) {
       this._modalDialog = new CkAlightModalDialog({
-        title: t('Create Email Link'),
+        title: t('Create email link'),
         width: '32rem',
         contentClass: 'cka-email-link-content',
         buttons: [
@@ -463,7 +463,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
 
     // Update modal title based on whether we're editing or creating
     if (this._modalDialog) {
-      this._modalDialog.setTitle(isEditing ? t('Edit Email Link') : t('Create Email Link'));
+      this._modalDialog.setTitle(isEditing ? t('Edit email link') : t('Create email link'));
 
       // Prepare the form HTML
       const formHTML = this._createFormHTML(t, isEditing);

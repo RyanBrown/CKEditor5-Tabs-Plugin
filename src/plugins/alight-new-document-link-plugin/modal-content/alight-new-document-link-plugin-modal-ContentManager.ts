@@ -71,7 +71,7 @@ export class ContentManager implements ILinkManager {
       ${this.createCardHTML(`
         <label for="language-select-container" class="cka-input-label">Language</label>
         <div id="language-select-container" class="cka-width-50"></div>
-        <div class="cka-error-message language-error">Choose a language to continue.</div>
+        <div class="cka-error-message">Choose a language to continue.</div>
       `)}
     `;
   }
