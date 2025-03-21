@@ -536,6 +536,12 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
     if (isEditing && linkCommand.value) {
       initialUrl = linkCommand.value as string;
 
+      // Remove the predefined suffix for display
+      if (initialUrl.includes('~predefined_editor_id')) {
+        const displayUrl = initialUrl.replace('~predefined_editor_id', '');
+        console.log('Editing predefined link:', displayUrl);
+      }
+
       // Try to find the link data from the API
       try {
         initialLink = await this._findPredefinedLinkByUrl(initialUrl);

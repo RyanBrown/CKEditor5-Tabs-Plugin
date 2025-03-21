@@ -110,13 +110,15 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         view: {
           name: 'a',
           attributes: {
-            href: true
+            href: true,
+            'data-id': 'predefined-editor'
           }
         },
         model: {
           key: 'alightPredefinedLinkPluginHref',
           value: (viewElement: ViewElement) => viewElement.getAttribute('href')
-        }
+        },
+        converterPriority: 'high'
       });
 
     // Create linking commands.
