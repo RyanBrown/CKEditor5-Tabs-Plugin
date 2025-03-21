@@ -14,7 +14,7 @@ cka-checkbox {
 }
 
 .cka-checkbox {
-  align-items: center;
+  align-items: self-start;
   cursor: pointer;
   display: inline-flex;
   font-family: var(--font-family-body);
@@ -89,7 +89,8 @@ cka-checkbox {
 }
 
 .cka-checkbox-label {
-  line-height: 1;
+  font-size: var(--font-size-sm);
+  line-height: 1.2;
   margin-left: 0.5rem;
   user-select: none;
 }

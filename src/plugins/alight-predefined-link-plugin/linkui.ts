@@ -190,7 +190,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
       // and extract the actual links from it
       let processedLinks: any[] = [];
 
-      for (const rawLink of rawLinks as unknown as PredefinedLink[]) {
+      for (const rawLink of rawLinks as PredefinedLink[]) {
         if (rawLink.predefinedLinksDetails && Array.isArray(rawLink.predefinedLinksDetails)) {
           // The API response has nested predefinedLinksDetails - extract and process those
           console.log(`Found ${rawLink.predefinedLinksDetails.length} nested links for ${rawLink.pageCode}`);
@@ -547,7 +547,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
     // Create modal if it doesn't exist
     if (!this._modalDialog) {
       this._modalDialog = new CkAlightModalDialog({
-        title: isEditing ? t('Edit Predefined Link') : t('Create Predefined Link'),
+        title: isEditing ? t('Edit predefined link') : t('Create predefined link'),
         modal: true,
         width: '80vw',
         height: 'auto',
@@ -601,7 +601,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
       });
     } else {
       // Update title if modal already exists
-      this._modalDialog.setTitle(isEditing ? t('Edit Predefined Link') : t('Create Predefined Link'));
+      this._modalDialog.setTitle(isEditing ? t('Edit predefined link') : t('Create predefined link'));
     }
 
     // Use our custom content first for faster loading
@@ -622,10 +622,10 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
         const linksContainer = customContent.querySelector('#links-container');
         if (linksContainer) {
           linksContainer.innerHTML = `
-        <div class="cka-no-results">
-          <p>No predefined links available.</p>
-        </div>
-      `;
+          <div class="cka-no-results">
+            <p>No predefined links available.</p>
+          </div>
+        `;
         }
         return;
       }

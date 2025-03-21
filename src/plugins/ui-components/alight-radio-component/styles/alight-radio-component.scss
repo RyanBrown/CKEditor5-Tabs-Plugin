@@ -109,6 +109,7 @@ cka-radio-button {
 
   // Label text transitions
   .label-text {
+    font-size: var(--font-size-sm);
     transition: color 0.3s;
 
     &:empty {
