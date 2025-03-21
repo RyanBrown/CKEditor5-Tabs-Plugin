@@ -47,7 +47,7 @@ export function isLinkElement(node: ViewNode | ViewDocumentFragment): boolean {
 
 // Helper function to detect legacy link types
 export function isLegacyEditorLink(url: string): boolean {
-  return url.includes('~public_editor_link') || url.includes('~intranet_editor_link');
+  return url.includes('~public_editor_id') || url.includes('~intranet_editor_id');
 }
 
 /**

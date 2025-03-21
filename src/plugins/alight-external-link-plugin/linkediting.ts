@@ -140,7 +140,7 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
             // Filter links during upcast
             if (typeof href === 'string') {
               // Accept special editor links
-              if (href.includes('~public_editor_link') || href.includes('~intranet_editor_link')) {
+              if (href.includes('~public_editor_id') || href.includes('~intranet_editor_id')) {
                 return href;
               }
 

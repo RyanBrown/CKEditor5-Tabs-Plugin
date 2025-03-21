@@ -159,10 +159,10 @@ export default class AlightExternalLinkPluginCommand extends Command {
     // Check if the current link has a special suffix we need to preserve
     let specialSuffix = '';
     if (this.value) {
-      if (this.value.includes('~public_editor_link')) {
-        specialSuffix = '~public_editor_link';
-      } else if (this.value.includes('~intranet_editor_link')) {
-        specialSuffix = '~intranet_editor_link';
+      if (this.value.includes('~public_editor_id')) {
+        specialSuffix = '~public_editor_id';
+      } else if (this.value.includes('~intranet_editor_id')) {
+        specialSuffix = '~intranet_editor_id';
       }
     }
 
