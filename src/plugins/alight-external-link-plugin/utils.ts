@@ -50,7 +50,10 @@ export function isLinkElement(node: ViewNode | ViewDocumentFragment): boolean {
  */
 export function createLinkElement(href: string, { writer }: DowncastConversionApi): ViewAttributeElement {
   // Priority 5 - https://github.com/ckeditor/ckeditor5-link/issues/121.
-  const linkElement = writer.createAttributeElement('a', { href }, { priority: 5 });
+  const linkElement = writer.createAttributeElement('a', {
+    href,
+    'data-id': 'external_editor'
+  }, { priority: 5 });
 
   writer.setCustomProperty('alight-external-link', true, linkElement);
 

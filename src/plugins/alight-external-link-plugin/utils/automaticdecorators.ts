@@ -60,7 +60,10 @@ export default class AutomaticDecorators {
         const viewSelection = viewWriter.document.selection;
 
         for (const item of this._definitions) {
-          const viewElement = viewWriter.createAttributeElement('a', item.attributes, {
+          // Add data-id to the attributes
+          const attributes = { ...item.attributes, 'data-id': 'external_editor' };
+
+          const viewElement = viewWriter.createAttributeElement('a', attributes, {
             priority: 5
           });
 
@@ -85,69 +88,6 @@ export default class AutomaticDecorators {
           }
         }
       }, { priority: 'high' });
-    };
-  }
-
-  /**
-   * Provides the conversion helper used in the {@link module:engine/conversion/downcasthelpers~DowncastHelpers#add} method
-   * when linking images.
-   *
-   * @returns A dispatcher function used as conversion helper in {@link module:engine/conversion/downcasthelpers~DowncastHelpers#add}.
-   */
-  public getDispatcherForLinkedImage(): (dispatcher: DowncastDispatcher) => void {
-    return dispatcher => {
-      dispatcher.on<DowncastAttributeEvent<Element>>('attribute:alightExternalLinkHref:imageBlock', (evt, data, { writer, mapper }) => {
-        const viewFigure = mapper.toViewElement(data.item)!;
-        const linkInImage = Array.from(viewFigure.getChildren())
-          .find((child): child is ViewElement => child.is('element', 'a'))!;
-
-        // It's not guaranteed that the anchor is present in the image block during execution of this dispatcher.
-        // It might have been removed during the execution of unlink command that runs the image link downcast dispatcher
-        // that is executed before this one and removes the anchor from the image block.
-        if (!linkInImage) {
-          return;
-        }
-
-        for (const item of this._definitions) {
-          const attributes = toMap(item.attributes);
-
-          if (item.callback(data.attributeNewValue as string | null)) {
-            for (const [key, val] of attributes) {
-              // Left for backward compatibility. Since v30 decorator should
-              // accept `classes` and `styles` separately from `attributes`.
-              if (key === 'class') {
-                writer.addClass(val, linkInImage);
-              } else {
-                writer.setAttribute(key, val, linkInImage);
-              }
-            }
-
-            if (item.classes) {
-              writer.addClass(item.classes, linkInImage);
-            }
-
-            for (const key in item.styles) {
-              writer.setStyle(key, item.styles[key], linkInImage);
-            }
-          } else {
-            for (const [key, val] of attributes) {
-              if (key === 'class') {
-                writer.removeClass(val, linkInImage);
-              } else {
-                writer.removeAttribute(key, linkInImage);
-              }
-            }
-
-            if (item.classes) {
-              writer.removeClass(item.classes, linkInImage);
-            }
-
-            for (const key in item.styles) {
-              writer.removeStyle(key, linkInImage);
-            }
-          }
-        }
-      });
     };
   }
 }

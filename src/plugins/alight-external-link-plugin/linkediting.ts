@@ -129,7 +129,8 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
         view: {
           name: 'a',
           attributes: {
-            href: true
+            href: true,
+            'data-id': 'external_editor'
           }
         },
         model: {
