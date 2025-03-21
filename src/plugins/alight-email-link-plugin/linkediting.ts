@@ -118,6 +118,7 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
       .attributeToElement({
         model: 'alightEmailLinkPluginHref',
         view: (href, conversionApi) => {
+          if (!href) return null;
           return createLinkElement(ensureSafeUrl(href, allowedProtocols), conversionApi);
         },
         converterPriority: 'high'
@@ -129,7 +130,8 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
         view: {
           name: 'a',
           attributes: {
-            href: /^mailto:/
+            href: /^mailto:/,
+            'data-id': 'email_editor'
           }
         },
         model: {
@@ -138,6 +140,7 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
         },
         converterPriority: 'high'
       });
+
 
     // General upcast converter for all links
     editor.conversion.for('upcast')
