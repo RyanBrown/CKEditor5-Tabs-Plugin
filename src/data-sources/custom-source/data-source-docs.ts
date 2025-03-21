@@ -25,7 +25,7 @@ export interface IReadSourceDocs extends IReadSource {
 
 export class DataSourceDocs extends DataSourceDocsPaths implements IReadSourceDocs, IWriteSource {
 
-  private static folderPath = `folder-path/UploadedDocs`;
+  private static folderPath = `folder-path/Uploaded_Docs`;
 
   private _dataSourceCategories: DataSourceCategories;
   public get dataSourceCategory(): IReadSource { return this._dataSourceCategories; }

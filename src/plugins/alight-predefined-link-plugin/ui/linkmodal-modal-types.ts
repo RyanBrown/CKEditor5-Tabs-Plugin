@@ -13,20 +13,6 @@ export interface PredefinedLink {
   attributeValue: string;
 }
 
-export interface DocumentLink {
-  documentId: string;
-  documentName: string;
-  documentDescription: string;
-  documentType: string;
-  documentUrl: string;
-}
-
-export interface DocumentResponse {
-  responseStatus: string;
-  branchName: string;
-  documentList: DocumentLink[];
-}
-
 export interface SelectedFilters {
   [key: string]: string[];
   baseOrClientSpecific: string[];

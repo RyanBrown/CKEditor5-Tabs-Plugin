@@ -23,49 +23,20 @@ export abstract class DataSourceRequest extends DataSource implements IDataSourc
   public request = async (sessionToken: string, requestHeader: string, contentType?: string, requestBody?: Record<string, any>): Promise<Response> => {
     try {
       if (sessionToken == null || requestHeader == null) {
-        throw new Error('Must provide both a dummyColleagueSessionToken and dummyRequestHeader');
+        throw new Error('Must provide both dummySessionToken and dummyRequestHeader');
       }
-
-      let url = this.host;
-
-      // Check if this is a Mockaroo API request
-      const isMockaroo = url.includes('mockaroo.com');
-
-      // For Mockaroo, don't append path or handle the URL differently
-      if (!isMockaroo && this.path) {
-        // Add path with proper formatting
-        if (!url.endsWith('/')) {
-          url += '/';
-        }
-        url += this.path;
-      }
-
-      // Handle query parameters
-      if (!isMockaroo && this.queryParams?.length > 0) {
-        url += url.includes('?') ? '&' : '?';
-        url += this.queryParams;
-      }
-
-      const headers: HeadersInit = {
-        'Content-Type': contentType || 'application/json',
-      };
-
-      // Handle headers differently for Mockaroo
-      if (isMockaroo) {
-        headers['X-API-Key'] = sessionToken;
-      } else {
-        headers['dummyColleagueSessionToken'] = sessionToken;
-        headers['dummyRequestHeader'] = requestHeader;
-      }
+      let url = `${this.host}/${this.path}${this.queryParams?.length > 0 ? `?${this.queryParams}` : ''}`;
 
       const options: RequestInit = {
         method: this.requestMethod,
-        headers: headers,
+        headers: {
+          'Content-Type': contentType || 'application/json',
+          'dummySessionToken': sessionToken,
+          'dummyRequestHeader': requestHeader,
+        },
       };
 
-      if (this.requestMethod == HttpRequestMethod.POST && requestBody) {
-        options.body = JSON.stringify(requestBody);
-      }
+      if (this.requestMethod === HttpRequestMethod.POST && requestBody) options.body = JSON.stringify(requestBody);
 
       return await fetch(url, options);
     } catch (error) {
