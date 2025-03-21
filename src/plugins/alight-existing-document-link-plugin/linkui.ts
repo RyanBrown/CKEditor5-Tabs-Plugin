@@ -502,6 +502,12 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
     let initialUrl = '';
     let initialLink: DocumentLink | null = null;
 
+    // Remove the existing document suffix for display
+    if (initialUrl.includes('~existing_document_editor_id')) {
+      const displayUrl = initialUrl.replace('~existing_document_editor_id', '');
+      console.log('Editing existing document link:', displayUrl);
+    }
+
     if (isEditing && linkCommand.value) {
       initialUrl = linkCommand.value as string;
 
