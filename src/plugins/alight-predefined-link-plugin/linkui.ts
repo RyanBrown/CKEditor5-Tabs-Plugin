@@ -287,7 +287,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
     const t = locale.t;
 
     view.set({
-      label: t('Alight Predefined Link'),
+      label: t('Predefined link'),
       icon: linkIcon,
       isToggleable: true,
       withText: true

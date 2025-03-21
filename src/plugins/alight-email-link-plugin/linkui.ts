@@ -191,7 +191,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     const t = locale.t;
 
     view.set({
-      label: t('Email Link'),
+      label: t('Email link'),
       icon: linkIcon,
       isToggleable: true,
       withText: true,

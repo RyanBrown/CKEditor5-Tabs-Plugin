@@ -106,7 +106,7 @@ export default class AlightParentImagePlugin extends Plugin {
     // Configure the dropdown button appearance
     buttonView.set({
       icon: ToolBarIcon,
-      label: t('Parent Link'),
+      label: t('Parent link'),
       tooltip: true,
       withText: true
     });

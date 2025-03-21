@@ -25,7 +25,7 @@ export default class AlightPastePlugin extends Plugin {
       const button = new ButtonView(locale);
 
       button.set({
-        label: t('Paste with Styles'),
+        label: t('Paste with formatting'),
         icon: ToolBarIcon,
         tooltip: true
       });

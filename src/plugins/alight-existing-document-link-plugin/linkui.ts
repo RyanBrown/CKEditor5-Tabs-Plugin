@@ -256,7 +256,7 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
     const t = locale.t;
 
     view.set({
-      label: t('Alight existing document link'),
+      label: t('Existing document link'),
       icon: linkIcon,
       isToggleable: true,
       withText: true
