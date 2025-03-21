@@ -616,15 +616,15 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     return `
       <div class="cka-form-container">
         <div class="cka-form-group">
-          <label for="ck-email-input" class="cka-input-label">${t('Email Address')}</label>
+          <label for="ck-email-input" class="cka-input-label">${t('Email address')}</label>
           <input id="ck-email-input" type="email" class="cka-input-text cka-width-100" placeholder="${t('user@example.com')}" required/>
           <div id="ck-email-error" class="cka-error-message"></div>
           <div class="cka-error-message">${t('Enter a valid email address or a mailto: link')}</div>
         </div>
-        <div class="cka-form-group mt-3">
-          <label for="ck-organization-input" class="cka-input-label">${t('Organization Name (optional)')}</label>
+        <div class="cka-form-group mt-4">
+          <label for="ck-organization-input" class="cka-input-label">${t('Organization name (optional)')}</label>
           <input id="ck-organization-input" type="text" class="cka-input-text cka-width-100" placeholder="${t('Organization name')}"/>
-          <div class="cka-note-text">${t('Organization Name (optional): Specify the third-party organization to inform users about the email\'s origin.')}</div>
+          <div class="cka-note-text mt-1">${t('Specify the third-party organization to inform users about the destination of the link.')}</div>
         </div>
       </div>
     `;

@@ -469,7 +469,7 @@ export default class AlightExternalLinkPluginUI extends Plugin {
     // Create modal if it doesn't exist
     if (!this._modalDialog) {
       this._modalDialog = new CkAlightModalDialog({
-        title: t('Create external link'),
+        title: t('Create external site link'),
         width: '32rem',
         contentClass: 'cka-external-link-content',
         buttons: [
@@ -558,7 +558,7 @@ export default class AlightExternalLinkPluginUI extends Plugin {
 
     // Update modal title based on whether we're editing or creating
     if (this._modalDialog) {
-      this._modalDialog.setTitle(isEditing ? t('Edit external link') : t('Create external link'));
+      this._modalDialog.setTitle(isEditing ? t('Edit external site link') : t('Create external site link'));
 
       // Prepare the form HTML
       const formHTML = this._createFormHTML(t, isEditing);
@@ -762,21 +762,20 @@ export default class AlightExternalLinkPluginUI extends Plugin {
       <div class="cka-url-form-container">
         <div class="cka-url-form-url-container">
           <label for="cka-link-url-input" class="cka-input-label">${t('URL')}</label>
-          <div class="cka-prefix-input">
+          <div class="cka-prefix-input cka-width-100">
             <div id="url-prefix" class="cka-url-prefix-text">https://</div>
             <input id="cka-link-url-input" type="text" class="cka-input-text cka-prefix-input-text" placeholder="${t('example.com')}" required/>
           </div>
           <div id="cka-url-error" class="cka-error-message" style="display:none;">${t('Please enter a valid web address.')}</div>
 
-          <label for="cka-link-org-name-input" class="cka-input-label mt-3">${t('Organization Name (optional)')}</label>
-          <input id="cka-link-org-name-input" type="text" class="cka-input-text cka-width-100" placeholder="${t('Organization Name')}"/>
-      
-          <div class="cka-checkbox-container mt-3">
-            <cka-checkbox id="cka-allow-unsecure-urls">${t('Allow unsecure HTTP URLs')}</cka-checkbox>
+          <div class="cka-form-group mt-4">
+            <label for="cka-link-org-name-input" class="cka-input-label mt-3">${t('Organization Name (optional)')}</label>
+            <input id="cka-link-org-name-input" type="text" class="cka-input-text cka-width-100" placeholder="${t('Organization Name')}"/>
+            <div class="cka-note-text mt-1">${t('Specify the third-party organization to inform users about the destination of the link.')}</div>
           </div>
-      
-          <div class="cka-note-text">
-            ${t('Organization Name (optional): Specify the third-party organization to inform users about the link\'s origin.')}
+
+          <div class="cka-checkbox-container mt-4 mb-2">
+            <cka-checkbox id="cka-allow-unsecure-urls">${t('By selecting this checkbox, you are creating a link that is not secured. For example, http://website.com')}</cka-checkbox>
           </div>
         </div>
       </div>
