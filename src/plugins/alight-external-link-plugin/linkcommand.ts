@@ -5,7 +5,7 @@ import { Collection, first, toMap } from '@ckeditor/ckeditor5-utils';
 import type { Range, DocumentSelection, Model, Writer } from '@ckeditor/ckeditor5-engine';
 
 import AutomaticDecorators from './utils/automaticdecorators';
-import { isLinkableElement, isValidUrl, ensureUrlProtocol } from './utils';
+import { isLinkableElement, isValidUrl, ensureUrlProtocol, isLegacyEditorLink } from './utils';
 import type ManualDecorator from './utils/manualdecorator';
 
 /**
@@ -156,12 +156,27 @@ export default class AlightExternalLinkPluginCommand extends Command {
    * @param options Options including manual decorator attributes and organization name.
    */
   public override execute(href: string, options: LinkOptions = {}): void {
+    // Check if the current link has a special suffix we need to preserve
+    let specialSuffix = '';
+    if (this.value) {
+      if (this.value.includes('~public_editor_link')) {
+        specialSuffix = '~public_editor_link';
+      } else if (this.value.includes('~intranet_editor_link')) {
+        specialSuffix = '~intranet_editor_link';
+      }
+    }
+
     // Ensure the URL has a protocol and is HTTP/HTTPS only
     href = ensureUrlProtocol(href, !href.startsWith('http://'));
 
-    // If the URL is not HTTP/HTTPS, don't proceed
-    if (!href.startsWith('http://') && !href.startsWith('https://')) {
-      console.warn('AlightExternalLinkPlugin only supports HTTP and HTTPS URLs.');
+    // Add the special suffix if needed and not already present
+    if (specialSuffix && !href.includes(specialSuffix)) {
+      href = href + specialSuffix;
+    }
+
+    // If the URL is not HTTP/HTTPS and doesn't have a special suffix, don't proceed
+    if (!href.startsWith('http://') && !href.startsWith('https://') && !isLegacyEditorLink(href)) {
+      console.warn('AlightExternalLinkPlugin only supports HTTP and HTTPS URLs or special editor links.');
       return;
     }
 

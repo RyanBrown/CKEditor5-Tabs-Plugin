@@ -594,6 +594,10 @@ export default class AlightExternalLinkPluginUI extends Plugin {
           }
 
           let url = linkCommand.value || '';
+
+          // Remove special suffixes for display in the UI
+          url = url.replace(/~public_editor_link|~intranet_editor_link/g, '');
+
           const isHttp = url.startsWith('http://');
 
           // Set the URL input value (without protocol)

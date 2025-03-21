@@ -45,6 +45,11 @@ export function isLinkElement(node: ViewNode | ViewDocumentFragment): boolean {
   return node.is('attributeElement') && !!node.getCustomProperty('alight-external-link');
 }
 
+// Helper function to detect legacy link types
+export function isLegacyEditorLink(url: string): boolean {
+  return url.includes('~public_editor_link') || url.includes('~intranet_editor_link');
+}
+
 /**
  * Creates a link {@link module:engine/view/attributeelement~AttributeElement} with the provided `href` attribute.
  */
@@ -156,6 +161,9 @@ export function isLinkableElement(element: Element | null, schema: Schema): elem
  * Returns `true` if the specified `value` is a valid HTTP/HTTPS URL.
  */
 export function isValidUrl(value: string): boolean {
+  if (isLegacyEditorLink(value)) {
+    return true;
+  }
   return URL_REG_EXP.test(value);
 }
 

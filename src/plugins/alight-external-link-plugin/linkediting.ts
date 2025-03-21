@@ -129,8 +129,7 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
         view: {
           name: 'a',
           attributes: {
-            href: true,
-            'data-id': 'external_editor'
+            href: true
           }
         },
         model: {
@@ -138,8 +137,14 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
           value: (viewElement: ViewElement) => {
             const href = viewElement.getAttribute('href');
 
-            // Filter out non-HTTP/HTTPS URLs during upcast
+            // Filter links during upcast
             if (typeof href === 'string') {
+              // Accept special editor links
+              if (href.includes('~public_editor_link') || href.includes('~intranet_editor_link')) {
+                return href;
+              }
+
+              // Accept regular http/https links
               if (href.startsWith('http://') || href.startsWith('https://')) {
                 return href;
               } else if (/^www\..+$/i.test(href)) {
