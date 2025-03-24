@@ -52,13 +52,18 @@ export function isLegacyEditorLink(url: string): boolean {
 
 /**
  * Creates a link {@link module:engine/view/attributeelement~AttributeElement} with the provided `href` attribute.
+ * Adds the organization name attribute if it exists in the model.
  */
-export function createLinkElement(href: string, { writer }: DowncastConversionApi): ViewAttributeElement {
-  // Priority 5 - https://github.com/ckeditor/ckeditor5-link/issues/121.
-  const linkElement = writer.createAttributeElement('a', {
+export function createLinkElement(href: string, { writer, attrs = {} }: DowncastConversionApi & { attrs?: Record<string, string> }): ViewAttributeElement {
+  // Start with default attributes
+  const attributes: Record<string, string> = {
     href,
-    'data-id': 'external_editor'
-  }, { priority: 5 });
+    'data-id': 'external_editor',
+    ...attrs
+  };
+
+  // Priority 5 - https://github.com/ckeditor/ckeditor5-link/issues/121.
+  const linkElement = writer.createAttributeElement('a', attributes, { priority: 5 });
 
   writer.setCustomProperty('alight-external-link', true, linkElement);
 

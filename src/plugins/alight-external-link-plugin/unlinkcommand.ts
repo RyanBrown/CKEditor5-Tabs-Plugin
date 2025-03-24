@@ -58,6 +58,9 @@ export default class AlightExternalUnlinkCommand extends Command {
 
         writer.removeAttribute('alightExternalLinkPluginHref', range);
 
+        // Also remove the organization name attribute
+        writer.removeAttribute('alightExternalLinkPluginOrgName', range);
+
         // If there are registered custom attributes, then remove them during unlink.
         if (linkCommand) {
           // Clear the organization property in the command

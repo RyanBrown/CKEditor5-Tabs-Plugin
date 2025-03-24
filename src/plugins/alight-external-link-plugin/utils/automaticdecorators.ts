@@ -60,8 +60,16 @@ export default class AutomaticDecorators {
         const viewSelection = viewWriter.document.selection;
 
         for (const item of this._definitions) {
-          // Add data-id to the attributes
-          const attributes = { ...item.attributes, 'data-id': 'external_editor' };
+          // Build attributes with data-id and include organization name if present
+          const attributes: Record<string, string> = {
+            ...item.attributes,
+            'data-id': 'external_editor'
+          };
+
+          // Check if the model item has organization name attribute and add it to view
+          if (data.item.is('$text') && data.item.hasAttribute('alightExternalLinkPluginOrgName')) {
+            attributes.orgnameattr = data.item.getAttribute('alightExternalLinkPluginOrgName') as string;
+          }
 
           const viewElement = viewWriter.createAttributeElement('a', attributes, {
             priority: 5

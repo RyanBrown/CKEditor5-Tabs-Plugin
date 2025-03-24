@@ -246,7 +246,14 @@ export default class AlightExternalLinkPluginCommand extends Command {
           writer.remove(linkRange);
 
           // Insert new content with proper attribute
-          const attributes = { alightExternalLinkPluginHref: href } as any;
+          const attributes = {
+            alightExternalLinkPluginHref: href
+          } as any;
+
+          // Add the organization name attribute if provided
+          if (organization) {
+            attributes.alightExternalLinkPluginOrgName = organization;
+          }
 
           // Add decorators
           truthyManualDecorators.forEach(item => {
@@ -256,7 +263,9 @@ export default class AlightExternalLinkPluginCommand extends Command {
           // Get additional formatting attributes (bold, italic, etc.)
           if (textNodes.length > 0) {
             for (const [key, value] of textNodes[0].getAttributes()) {
-              if (key !== 'alightExternalLinkPluginHref' && !attributes[key]) {
+              if (key !== 'alightExternalLinkPluginHref' &&
+                key !== 'alightExternalLinkPluginOrgName' &&
+                !attributes[key]) {
                 attributes[key] = value;
               }
             }
@@ -273,6 +282,11 @@ export default class AlightExternalLinkPluginCommand extends Command {
           const attributes = toMap(selection.getAttributes());
 
           attributes.set('alightExternalLinkPluginHref', href);
+
+          // Add the organization name attribute if provided
+          if (organization) {
+            attributes.set('alightExternalLinkPluginOrgName', organization);
+          }
 
           truthyManualDecorators.forEach(item => {
             attributes.set(item, true);
@@ -295,7 +309,7 @@ export default class AlightExternalLinkPluginCommand extends Command {
 
         // Remove the `alightExternalLinkPluginHref` attribute and all link decorators from the selection.
         // It stops adding a new content into the link element.
-        ['alightExternalLinkPluginHref', ...truthyManualDecorators, ...falsyManualDecorators].forEach(item => {
+        ['alightExternalLinkPluginHref', 'alightExternalLinkPluginOrgName', ...truthyManualDecorators, ...falsyManualDecorators].forEach(item => {
           writer.removeSelectionAttribute(item);
         });
       } else {
@@ -336,12 +350,22 @@ export default class AlightExternalLinkPluginCommand extends Command {
         // Process each range
         for (const range of ranges) {
           // Store formatting attributes from the first text node
-          const attributes = { alightExternalLinkPluginHref: href } as any;
+          const attributes = {
+            alightExternalLinkPluginHref: href
+          } as any;
+
+          // Add the organization name attribute if provided
+          if (organization) {
+            attributes.alightExternalLinkPluginOrgName = organization;
+          }
+
           const firstNode = Array.from(range.getItems()).find(item => item.is('$text') || item.is('$textProxy'));
 
           if (firstNode) {
             for (const [key, value] of firstNode.getAttributes()) {
-              if (key !== 'alightExternalLinkPluginHref' && !attributes[key]) {
+              if (key !== 'alightExternalLinkPluginHref' &&
+                key !== 'alightExternalLinkPluginOrgName' &&
+                !attributes[key]) {
                 attributes[key] = value;
               }
             }

@@ -220,11 +220,24 @@ export default class ExternalLinkHandler extends Plugin {
             const linkRange = this._getLinkRange(item, model);
 
             if (linkRange) {
+              // Check for organization name in the link text
+              let orgName = null;
+              const linkText = this._getLinkText(linkRange);
+              const match = linkText.match(/^(.*?)\s+\(([^)]+)\)$/);
+              if (match && match[2]) {
+                orgName = match[2];
+              }
+
               // Remove the standard link attribute
               writer.removeAttribute('linkHref', linkRange);
 
               // Apply our custom link attribute
               writer.setAttribute('alightExternalLinkPluginHref', href, linkRange);
+
+              // Add organization name attribute if found
+              if (orgName) {
+                writer.setAttribute('alightExternalLinkPluginOrgName', orgName, linkRange);
+              }
             }
           }
         }
@@ -232,6 +245,18 @@ export default class ExternalLinkHandler extends Plugin {
     });
   }
 
+  /**
+   * Gets the text content of a link range
+   */
+  private _getLinkText(linkRange: any): string {
+    let text = '';
+    for (const item of linkRange.getItems()) {
+      if (item.is('$text') || item.is('$textProxy')) {
+        text += item.data;
+      }
+    }
+    return text;
+  }
   /**
    * Gets the range for a link
    */

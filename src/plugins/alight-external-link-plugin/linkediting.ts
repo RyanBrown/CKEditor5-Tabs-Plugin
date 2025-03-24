@@ -105,11 +105,26 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
     // Allow link attribute on all inline nodes.
     editor.model.schema.extend('$text', { allowAttributes: 'alightExternalLinkPluginHref' });
 
+    // Add a schema definition for the organization name attribute
+    editor.model.schema.extend('$text', { allowAttributes: 'alightExternalLinkPluginOrgName' });
+
     // Add a high-priority dataDowncast converter
     editor.conversion.for('dataDowncast')
       .attributeToElement({
         model: 'alightExternalLinkPluginHref',
-        view: createLinkElement,
+        view: (href, conversionApi) => {
+          const linkCommand = editor.commands.get('alight-external-link') as AlightExternalLinkPluginCommand;
+
+          // Build attributes object
+          const attrs: Record<string, string> = {};
+
+          // Use the organization name from the link command if available
+          if (linkCommand && linkCommand.organization) {
+            attrs.orgnameattr = linkCommand.organization;
+          }
+
+          return createLinkElement(href, { ...conversionApi, attrs });
+        },
         converterPriority: 'high'
       });
 
@@ -118,7 +133,17 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
       .attributeToElement({
         model: 'alightExternalLinkPluginHref',
         view: (href, conversionApi) => {
-          return createLinkElement(ensureSafeUrl(href, allowedProtocols), conversionApi);
+          const linkCommand = editor.commands.get('alight-external-link') as AlightExternalLinkPluginCommand;
+
+          // Build attributes object
+          const attrs: Record<string, string> = {};
+
+          // Use the organization name from the link command if available
+          if (linkCommand && linkCommand.organization) {
+            attrs.orgnameattr = linkCommand.organization;
+          }
+
+          return createLinkElement(ensureSafeUrl(href, allowedProtocols), { ...conversionApi, attrs });
         },
         converterPriority: 'high'
       });
@@ -158,6 +183,21 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
           }
         },
         converterPriority: 'normal'
+      });
+
+    // Add upcast converter for organization name attribute
+    editor.conversion.for('upcast')
+      .attributeToAttribute({
+        view: {
+          name: 'a',
+          key: 'orgnameattr'
+        },
+        model: {
+          key: 'alightExternalLinkPluginOrgName',
+          value: (viewElement: ViewElement) => {
+            return viewElement.getAttribute('orgnameattr');
+          }
+        }
       });
 
     // Create linking commands.
@@ -421,6 +461,7 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
  */
 function removeLinkAttributesFromSelection(writer: Writer, linkAttributes: Array<string>): void {
   writer.removeSelectionAttribute('alightExternalLinkPluginHref');
+  writer.removeSelectionAttribute('alightExternalLinkPluginOrgName');
 
   for (const attribute of linkAttributes) {
     writer.removeSelectionAttribute(attribute);
