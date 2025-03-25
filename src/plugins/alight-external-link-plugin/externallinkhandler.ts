@@ -42,6 +42,18 @@ export default class ExternalLinkHandler extends Plugin {
 
     // Monitor for conflicting link attributes and resolve them
     this._handleConflictingLinks();
+
+    // Process existing links to add orgnameattr when needed
+    this._processExistingLinks();
+
+    // Also process links whenever the document is changed or when the editor becomes ready
+    this.listenTo(editor.model.document, 'change', () => {
+      this._processExistingLinks();
+    });
+
+    this.listenTo(editor, 'ready', () => {
+      this._processExistingLinks();
+    });
   }
 
   /**
@@ -182,6 +194,49 @@ export default class ExternalLinkHandler extends Plugin {
   }
 
   /**
+   * Scans the document for links with (org name) in the text but no orgnameattr
+   * and adds the attribute automatically
+   */
+  private _processExistingLinks(): void {
+    const editor = this.editor;
+    const model = editor.model;
+
+    // Scan the entire document for links with organization names in the text
+    model.change(writer => {
+      const root = model.document.getRoot();
+      if (!root) return;
+
+      const range = model.createRangeIn(root);
+
+      for (const item of range.getItems()) {
+        // Only process text nodes that have the alightExternalLinkPluginHref attribute
+        // but don't have the alightExternalLinkPluginOrgName attribute
+        if (item.is('$text') &&
+          item.hasAttribute('alightExternalLinkPluginHref') &&
+          !item.hasAttribute('alightExternalLinkPluginOrgName')) {
+
+          // Try to extract organization name from the text
+          const itemData = item.data;
+          const match = itemData.match(/^(.*?)\s+\(([^)]+)\)$/);
+
+          if (match && match[2]) {
+            const orgName = match[2];
+
+            // Get the range of the entire link
+            const href = item.getAttribute('alightExternalLinkPluginHref');
+            const linkRange = this._getLinkRange(item, model);
+
+            if (linkRange) {
+              // Apply the organization name attribute to the entire link
+              writer.setAttribute('alightExternalLinkPluginOrgName', orgName, linkRange);
+            }
+          }
+        }
+      }
+    });
+  }
+
+  /**
    * Checks if a string is a valid external URL (HTTP/HTTPS only)
    */
   private _isExternalUrl(text: string): boolean {
@@ -198,10 +253,6 @@ export default class ExternalLinkHandler extends Plugin {
    * Finds and converts standard links in the editor content
    * to use the AlightExternalLinkPlugin
    */
-  /**
- * Finds and converts standard links in the editor content
- * to use the AlightExternalLinkPlugin
- */
   private _convertLinks(): void {
     const editor = this.editor;
     const model = editor.model;
@@ -263,11 +314,12 @@ export default class ExternalLinkHandler extends Plugin {
     }
     return text;
   }
+
   /**
    * Gets the range for a link
    */
   private _getLinkRange(textNode: any, model: any): any {
-    const href = textNode.getAttribute('linkHref');
+    const href = textNode.getAttribute('linkHref') || textNode.getAttribute('alightExternalLinkPluginHref');
 
     if (!href) {
       return null;
@@ -283,7 +335,8 @@ export default class ExternalLinkHandler extends Plugin {
     // Extend to previous nodes with the same link
     while (pos.parent.previousSibling &&
       pos.parent.previousSibling.is('$text') &&
-      pos.parent.previousSibling.getAttribute('linkHref') === href) {
+      (pos.parent.previousSibling.getAttribute('linkHref') === href ||
+        pos.parent.previousSibling.getAttribute('alightExternalLinkPluginHref') === href)) {
       pos = model.createPositionBefore(pos.parent.previousSibling);
     }
 
@@ -291,7 +344,8 @@ export default class ExternalLinkHandler extends Plugin {
     pos = endPos;
     while (pos.parent.nextSibling &&
       pos.parent.nextSibling.is('$text') &&
-      pos.parent.nextSibling.getAttribute('linkHref') === href) {
+      (pos.parent.nextSibling.getAttribute('linkHref') === href ||
+        pos.parent.nextSibling.getAttribute('alightExternalLinkPluginHref') === href)) {
       endPos = model.createPositionAfter(pos.parent.nextSibling);
       pos = endPos;
     }

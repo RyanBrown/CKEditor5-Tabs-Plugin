@@ -28,12 +28,12 @@ export default class AlightExternalUnlinkCommand extends Command {
   }
 
   /**
-   * Executes the command.
-   *
-   * When the selection is collapsed, it removes the `alightExternalLinkPluginHref` attribute from each node with the same `alightExternalLinkPluginHref` attribute value.
-   * When the selection is non-collapsed, it removes the `alightExternalLinkPluginHref` attribute from each node in selected ranges.
-   * Additionally, it removes organization names from the text content.
-   */
+    * Executes the command.
+    *
+    * When the selection is collapsed, it removes the `alightExternalLinkPluginHref` attribute from each node with the same `alightExternalLinkPluginHref` attribute value.
+    * When the selection is non-collapsed, it removes the `alightExternalLinkPluginHref` attribute from each node in selected ranges.
+    * Additionally, it removes organization names from the text content.
+    */
   public override execute(): void {
     const editor = this.editor;
     const model = this.editor.model;

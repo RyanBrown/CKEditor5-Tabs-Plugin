@@ -154,6 +154,50 @@ export default class AlightExternalLinkPluginCommand extends Command {
   }
 
   /**
+   * Extracts organization name from text if it follows the pattern "text (organization)"
+   * and applies it as an attribute if not already present
+   * 
+   * @param writer The model writer
+   * @param range The range of the link
+   * @returns The extracted organization name or undefined
+   */
+  private _ensureOrganizationAttribute(writer: Writer, range: Range): string | undefined {
+    // Get all text in the range
+    const textNodes = Array.from(range.getItems()).filter(item =>
+      item.is('$text') || item.is('$textProxy')
+    );
+
+    if (textNodes.length === 0) {
+      return undefined;
+    }
+
+    // Check if any node already has the organization attribute
+    const nodeWithOrg = textNodes.find(node => node.hasAttribute('alightExternalLinkPluginOrgName'));
+    if (nodeWithOrg) {
+      return nodeWithOrg.getAttribute('alightExternalLinkPluginOrgName') as string;
+    }
+
+    // Combine all text into a single string
+    let fullText = '';
+    for (const node of textNodes) {
+      fullText += node.data;
+    }
+
+    // Extract organization pattern from the text
+    const match = fullText.match(/^(.*?)\s+\(([^)]+)\)$/);
+    if (match && match[2]) {
+      const orgName = match[2];
+
+      // Apply the attribute to the entire range
+      writer.setAttribute('alightExternalLinkPluginOrgName', orgName, range);
+
+      return orgName;
+    }
+
+    return undefined;
+  }
+
+  /**
    * Executes the command.
    *
    * When the selection is non-collapsed, the `alightExternalLinkPluginHref` attribute will be applied to nodes inside the selection, but only to
@@ -229,6 +273,15 @@ export default class AlightExternalLinkPluginCommand extends Command {
             selection.getAttribute('alightExternalLinkPluginHref'),
             model
           );
+
+          // NEW CODE: Ensure organization attribute is set if it exists in text
+          if (!organization) {
+            const extractedOrg = this._ensureOrganizationAttribute(writer, linkRange);
+            if (extractedOrg) {
+              // Update the options with the extracted organization
+              options.organization = extractedOrg;
+            }
+          }
 
           // First, collect the current link text without organization name
           let baseText = '';

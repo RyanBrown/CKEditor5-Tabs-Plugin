@@ -82,6 +82,90 @@ export default class AlightExternalLinkPlugin extends Plugin {
 
     // Register toolbar button (if needed)
     this._registerToolbarButton();
+
+    // Process organization names in links after data is loaded
+    this._setupOrgNameProcessing();
+  }
+
+  /**
+   * Sets up event listeners to process organization names in links
+   */
+  private _setupOrgNameProcessing(): void {
+    const editor = this.editor;
+
+    // Process links when the editor data is ready
+    this.listenTo(editor, 'ready', () => {
+      this._processOrgNamesInLinks();
+    });
+
+    // Process links when data is loaded
+    this.listenTo(editor.data, 'loaded', () => {
+      this._processOrgNamesInLinks();
+    });
+  }
+
+  /**
+   * Processes all links in the editor to ensure organization names are properly applied
+   */
+  private _processOrgNamesInLinks(): void {
+    const editor = this.editor;
+    const model = editor.model;
+
+    model.change(writer => {
+      const root = model.document.getRoot();
+      if (!root) return;
+
+      const range = model.createRangeIn(root);
+
+      for (const item of range.getItems()) {
+        // Only process text nodes with links
+        if (item.is('$text') && item.hasAttribute('alightExternalLinkPluginHref')) {
+          // Check if the text has the format "text (org name)" but no org attribute
+          if (!item.hasAttribute('alightExternalLinkPluginOrgName')) {
+            const match = item.data.match(/^(.*?)\s+\(([^)]+)\)$/);
+            if (match && match[2]) {
+              const orgName = match[2];
+
+              // Get the range of the entire link
+              const href = item.getAttribute('alightExternalLinkPluginHref');
+              const linkRange = model.createRange(
+                model.createPositionBefore(item),
+                model.createPositionAfter(item)
+              );
+
+              // Apply the organization name attribute
+              writer.setAttribute('alightExternalLinkPluginOrgName', orgName, linkRange);
+            }
+          }
+          // If there's an org attribute but the text doesn't have it, add it to the text
+          else {
+            const orgName = item.getAttribute('alightExternalLinkPluginOrgName');
+            const match = item.data.match(/^(.*?)\s+\([^)]+\)$/);
+
+            // Only modify if no organization is already in the text
+            if (!match && orgName) {
+              // Extract base text (remove any existing org names)
+              let baseText = item.data;
+
+              // Add the organization name to the text
+              const newText = `${baseText} (${orgName})`;
+
+              // Replace the text while preserving attributes
+              const attributes: Record<string, unknown> = {};
+              for (const [key, value] of item.getAttributes()) {
+                attributes[key] = value;
+              }
+
+              const position = model.createPositionBefore(item);
+
+              // Remove the old text and insert the new one
+              writer.remove(item);
+              writer.insert(writer.createText(newText, attributes), position);
+            }
+          }
+        }
+      }
+    });
   }
 
   /**

@@ -64,10 +64,33 @@ export function createLinkElement(href: string, { writer, attrs = {}, item }: Do
 
   // If no orgnameattr was provided but the text has format "text (org name)", extract the org name
   if (!attributes.orgnameattr && item) {
-    if (item.is && item.is('$text') && item.data) {
+    // First, check if the item has the organization attribute
+    if (item.hasAttribute && item.hasAttribute('alightExternalLinkPluginOrgName')) {
+      attributes.orgnameattr = item.getAttribute('alightExternalLinkPluginOrgName');
+    }
+    // If not, try to extract from text content
+    else if (item.is && item.is('$text') && item.data) {
       const match = item.data.match(/^(.*?)\s+\(([^)]+)\)$/);
       if (match && match[2]) {
         attributes.orgnameattr = match[2];
+      }
+    }
+    // For selection or other types, try to find organization in parent or related text
+    else if (item.getFirstPosition) {
+      // Try to get organization from the selected position
+      const position = item.getFirstPosition();
+      if (position && position.textNode) {
+        // Check if the text node at the position has the organization attribute
+        if (position.textNode.hasAttribute('alightExternalLinkPluginOrgName')) {
+          attributes.orgnameattr = position.textNode.getAttribute('alightExternalLinkPluginOrgName');
+        }
+        // If not, try to extract from text
+        else if (position.textNode.data) {
+          const match = position.textNode.data.match(/^(.*?)\s+\(([^)]+)\)$/);
+          if (match && match[2]) {
+            attributes.orgnameattr = match[2];
+          }
+        }
       }
     }
   }

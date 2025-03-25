@@ -185,6 +185,8 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
         converterPriority: 'normal'
       });
 
+    // Replace the incorrect conversion section in the linkediting.ts file with this:
+
     // Add upcast converter for organization name attribute
     editor.conversion.for('upcast')
       .attributeToAttribute({
@@ -199,6 +201,106 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
           }
         }
       });
+
+    // Enhanced upcast converter to extract organization names from link text
+    editor.conversion.for('upcast').add(dispatcher => {
+      dispatcher.on('element:a', (evt, data, conversionApi) => {
+        // Skip if this is not an upcast process
+        if (!conversionApi.consumable.test(data.viewItem, { name: true })) {
+          return;
+        }
+
+        // Skip if no href attribute or if it's already been consumed
+        if (!data.viewItem.hasAttribute('href') ||
+          !conversionApi.consumable.test(data.viewItem, { attributes: ['href'] })) {
+          return;
+        }
+
+        const href = data.viewItem.getAttribute('href');
+        if (!href || typeof href !== 'string') {
+          return;
+        }
+
+        // Only process http/https links (or legacy editor links)
+        if (!(href.startsWith('http://') ||
+          href.startsWith('https://') ||
+          href.includes('~public_editor_id') ||
+          href.includes('~intranet_editor_id'))) {
+          return;
+        }
+
+        // Check if the link already has an organization name attribute
+        const hasOrgAttr = data.viewItem.hasAttribute('orgnameattr');
+
+        // If it doesn't have an org attribute, try to extract it from the text content
+        if (!hasOrgAttr) {
+          // Get the text content of the link
+          let linkText = '';
+          for (const child of data.viewItem.getChildren()) {
+            if (child.is('$text')) {
+              linkText += child.data;
+            }
+          }
+
+          // Look for text in the format "text (org name)"
+          const match = linkText.match(/^(.*?)\s+\(([^)]+)\)$/);
+          if (match && match[2]) {
+            const orgName = match[2];
+
+            // Set the organization name attribute in the model
+            conversionApi.writer.setAttribute('alightExternalLinkPluginOrgName', orgName, data.modelRange);
+          }
+        }
+      });
+    }, { priority: 'high' });
+
+    // Add a dedicated downcast converter for the organization name attribute - corrected version
+    editor.conversion.for('downcast').attributeToAttribute({
+      model: 'alightExternalLinkPluginOrgName',
+      view: 'orgnameattr'
+    });
+
+    // Run a post-processing step on all links to ensure organization names are properly handled
+    editor.conversion.for('dataDowncast').add(dispatcher => {
+      dispatcher.on('insert:$text', (evt, data, conversionApi) => {
+        // Skip if this is not a text node with a link
+        if (!data.item.hasAttribute('alightExternalLinkPluginHref')) {
+          return;
+        }
+
+        // Skip if the text node has already been consumed
+        if (!conversionApi.consumable.test(data.item, 'insert')) {
+          return;
+        }
+
+        // Get all attributes of the text node
+        const href = data.item.getAttribute('alightExternalLinkPluginHref');
+        const orgName = data.item.getAttribute('alightExternalLinkPluginOrgName');
+
+        // If there's organization in the attribute but not in the text, add it to the text
+        if (orgName && !data.item.data.includes(` (${orgName})`)) {
+          // Only modify if it doesn't already have an organization in the text
+          const match = data.item.data.match(/^(.*?)\s+\([^)]+\)$/);
+          if (!match) {
+            // Create the modified text with the organization name
+            const text = data.item.data + ` (${orgName})`;
+
+            // Map the model text to the view
+            const viewWriter = conversionApi.writer;
+            const viewPosition = conversionApi.mapper.toViewPosition(data.range.start);
+            const viewElement = viewWriter.createText(text);
+
+            // Insert the modified text
+            viewWriter.insert(viewPosition, viewElement);
+
+            // Consume the original text insertion
+            conversionApi.consumable.consume(data.item, 'insert');
+
+            evt.stop();
+          }
+        }
+      }, { priority: 'high' });
+    });
 
     // Create linking commands.
     editor.commands.add('alight-external-link', new AlightExternalLinkPluginCommand(editor));
