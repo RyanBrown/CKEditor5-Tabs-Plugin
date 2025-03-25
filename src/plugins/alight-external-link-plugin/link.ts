@@ -131,6 +131,93 @@ export default class AlightExternalLinkPlugin extends Plugin {
       // Additional processing in the view
       this._processOrgNamesInView();
     });
+
+    // Add a DOM mutation observer to fix any links that might be missed
+    this._setupDomMutationObserver();
+  }
+
+  /**
+   * Sets up a DOM mutation observer to catch any links that might be missed
+   * by the other processing methods
+   */
+  private _setupDomMutationObserver(): void {
+    const editor = this.editor;
+
+    // Wait for editor to be ready before setting up the observer
+    editor.on('ready', () => {
+      setTimeout(() => {
+        const editorElement = editor.editing.view.getDomRoot();
+        if (!editorElement) return;
+
+        // Create a mutation observer to watch for changes to the DOM
+        const observer = new MutationObserver(mutations => {
+          // Process new or changed links
+          const links = editorElement.querySelectorAll('a[data-id="external_editor"]:not([orgnameattr])');
+
+          if (links.length > 0) {
+            links.forEach(link => {
+              // Clean the text by replacing non-breaking spaces
+              const linkText = link.textContent.replace(/\u00A0/g, ' ');
+              const match = linkText.match(/^(.*?)\s+\(([^)]+)\)$/);
+
+              if (match && match[2]) {
+                const orgName = match[2];
+
+                // Set the attribute directly in the DOM
+                link.setAttribute('orgnameattr', orgName);
+
+                // Update the model if possible
+                try {
+                  editor.editing.view.change(writer => {
+                    // Find the corresponding view element
+                    const viewRoot = editor.editing.view.document.getRoot();
+                    if (!viewRoot) return;
+
+                    const range = editor.editing.view.createRangeIn(viewRoot);
+
+                    for (const item of range.getItems()) {
+                      if (item.is('element', 'a') &&
+                        item.getAttribute('data-id') === 'external_editor' &&
+                        !item.hasAttribute('orgnameattr')) {
+
+                        // Check if this is the same DOM element
+                        const domElement = editor.editing.view.domConverter.mapViewToDom(item);
+                        if (domElement === link) {
+                          writer.setAttribute('orgnameattr', orgName, item);
+                          break;
+                        }
+                      }
+                    }
+                  });
+                } catch (error) {
+                  console.warn('Error updating model for link', error);
+                }
+              }
+            });
+          }
+        });
+
+        // Start observing the editor element
+        observer.observe(editorElement, {
+          childList: true,
+          subtree: true,
+          characterData: true,
+          attributes: true,
+          attributeFilter: ['data-id', 'orgnameattr', 'href']
+        });
+
+        // Store observer reference in editor for cleanup
+        editor.set('orgNameMutationObserver', observer);
+      }, 300);
+    });
+
+    // Clean up the observer when the editor is destroyed
+    editor.on('destroy', () => {
+      const observer = editor.get('orgNameMutationObserver');
+      if (observer) {
+        observer.disconnect();
+      }
+    });
   }
 
   /**
@@ -173,7 +260,8 @@ export default class AlightExternalLinkPlugin extends Plugin {
           let linkText = '';
           for (const child of item.getChildren()) {
             if (child.is('$text')) {
-              linkText += child.data;
+              // Replace any non-breaking spaces with regular spaces
+              linkText += child.data.replace(/\u00A0/g, ' ');
             }
           }
 
@@ -230,7 +318,10 @@ export default class AlightExternalLinkPlugin extends Plugin {
         if (item.is('$text') && item.hasAttribute('alightExternalLinkPluginHref')) {
           // Check if the text has the format "text (org name)" but no org attribute
           if (!item.hasAttribute('alightExternalLinkPluginOrgName')) {
-            const match = item.data.match(/^(.*?)\s+\(([^)]+)\)$/);
+            // Replace any non-breaking spaces with regular spaces for consistent matching
+            const normalizedText = item.data.replace(/\u00A0/g, ' ');
+            const match = normalizedText.match(/^(.*?)\s+\(([^)]+)\)$/);
+
             if (match && match[2]) {
               const orgName = match[2];
 
@@ -248,7 +339,9 @@ export default class AlightExternalLinkPlugin extends Plugin {
           // If there's an org attribute but the text doesn't have it, add it to the text
           else {
             const orgName = item.getAttribute('alightExternalLinkPluginOrgName');
-            const match = item.data.match(/^(.*?)\s+\([^)]+\)$/);
+            // Replace any non-breaking spaces with regular spaces for consistent matching
+            const normalizedText = item.data.replace(/\u00A0/g, ' ');
+            const match = normalizedText.match(/^(.*?)\s+\([^)]+\)$/);
 
             // Only modify if no organization is already in the text
             if (!match && orgName) {

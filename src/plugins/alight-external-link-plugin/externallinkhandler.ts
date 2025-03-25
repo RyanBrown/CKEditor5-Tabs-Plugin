@@ -212,32 +212,33 @@ export default class ExternalLinkHandler extends Plugin {
 
       for (const item of range.getItems()) {
         // Only process text nodes that have the alightExternalLinkPluginHref attribute
-        // but don't have the alightExternalLinkPluginOrgName attribute
-        if (item.is('$text') &&
-          item.hasAttribute('alightExternalLinkPluginHref') &&
-          !item.hasAttribute('alightExternalLinkPluginOrgName')) {
-
-          // Try to extract organization name from the text
+        if (item.is('$text') && item.hasAttribute('alightExternalLinkPluginHref')) {
+          // Try to extract organization name from the text - handle both with and without attributes
           const itemData = item.data;
           const match = itemData.match(/^(.*?)\s+\(([^)]+)\)$/);
 
           if (match && match[2]) {
             const orgName = match[2];
 
-            // Get the range of the entire link
-            const href = item.getAttribute('alightExternalLinkPluginHref');
-            const linkRange = this._getLinkRange(item, model);
+            // If the node doesn't have the org name attribute or it's different, update it
+            if (!item.hasAttribute('alightExternalLinkPluginOrgName') ||
+              item.getAttribute('alightExternalLinkPluginOrgName') !== orgName) {
 
-            if (linkRange) {
-              // Apply the organization name attribute to the entire link
-              writer.setAttribute('alightExternalLinkPluginOrgName', orgName, linkRange);
+              // Get the range of the entire link
+              const href = item.getAttribute('alightExternalLinkPluginHref');
+              const linkRange = this._getLinkRange(item, model);
+
+              if (linkRange) {
+                // Apply the organization name attribute to the entire link
+                writer.setAttribute('alightExternalLinkPluginOrgName', orgName, linkRange);
+              }
             }
           }
         }
       }
     });
 
-    // Also attempt to process links in the view
+    // Process links in the view to directly set the attribute in the DOM
     editor.editing.view.change(viewWriter => {
       // Create a range in the entire view document
       const viewRoot = viewDocument.getRoot();
@@ -247,45 +248,91 @@ export default class ExternalLinkHandler extends Plugin {
 
       // Find all links that don't have orgnameattr but have text with (org name) pattern
       for (const item of viewRange.getItems()) {
-        if (item.is('element', 'a') &&
-          item.getAttribute('data-id') === 'external_editor' &&
-          !item.hasAttribute('orgnameattr')) {
-
-          // Extract the text content from the link
+        if (item.is('element', 'a') && item.getAttribute('data-id') === 'external_editor') {
+          // Extract the text content from the link - Handle non-breaking spaces
           let linkText = '';
           for (const child of item.getChildren()) {
             if (child.is('$text')) {
-              linkText += child.data;
+              // Replace any non-breaking spaces with regular spaces
+              linkText += child.data.replace(/\u00A0/g, ' ');
             }
           }
 
-          // Check for organization name pattern
+          // Check for organization name pattern using a more flexible regex
+          // This handles potential non-breaking spaces and other special characters
           const match = linkText.match(/^(.*?)\s+\(([^)]+)\)$/);
           if (match && match[2]) {
             const orgName = match[2];
 
-            // Set the orgnameattr attribute
-            viewWriter.setAttribute('orgnameattr', orgName, item);
+            // Set the orgnameattr attribute if it doesn't exist or is different
+            if (!item.hasAttribute('orgnameattr') || item.getAttribute('orgnameattr') !== orgName) {
+              viewWriter.setAttribute('orgnameattr', orgName, item);
 
-            // Find the corresponding model element and set the attribute there as well
-            const position = view.createPositionBefore(item);
-            const modelPosition = editor.editing.mapper.toModelPosition(position);
+              // Find the corresponding model element and set the attribute there as well
+              try {
+                const position = view.createPositionBefore(item);
+                const modelPosition = editor.editing.mapper.toModelPosition(position);
 
-            if (modelPosition) {
-              model.change(modelWriter => {
-                const node = modelPosition.nodeAfter || modelPosition.textNode;
-                if (node && node.hasAttribute('alightExternalLinkPluginHref')) {
-                  const range = this._getLinkRange(node, model);
-                  if (range) {
-                    modelWriter.setAttribute('alightExternalLinkPluginOrgName', orgName, range);
-                  }
+                if (modelPosition) {
+                  model.change(modelWriter => {
+                    const node = modelPosition.nodeAfter || modelPosition.textNode;
+                    if (node && node.hasAttribute('alightExternalLinkPluginHref')) {
+                      const range = this._getLinkRange(node, model);
+                      if (range) {
+                        modelWriter.setAttribute('alightExternalLinkPluginOrgName', orgName, range);
+                      }
+                    }
+                  });
                 }
-              });
+              } catch (error) {
+                // Ignore errors in the mapping process
+                console.warn('Error mapping view to model:', error);
+              }
             }
           }
         }
       }
     });
+
+    // Extra processing to ensure the DOM elements have the attributes
+    // This is a more direct approach to fix existing links in the DOM
+    setTimeout(() => {
+      // Direct DOM manipulation to ensure orgnameattr is set for existing links
+      const editorElement = editor.editing.view.getDomRoot();
+      if (editorElement) {
+        const links = editorElement.querySelectorAll('a[data-id="external_editor"]:not([orgnameattr])');
+        links.forEach(link => {
+          // Get text content and normalize to handle possible non-breaking spaces
+          const linkText = link.textContent.replace(/\u00A0/g, ' ');
+          const match = linkText.match(/^(.*?)\s+\(([^)]+)\)$/);
+          if (match && match[2]) {
+            const orgName = match[2];
+
+            // Direct DOM update
+            link.setAttribute('orgnameattr', orgName);
+
+            // Also update the model (via a view change)
+            editor.editing.view.change(writer => {
+              // Find the corresponding view element
+              const viewLinks = Array.from(viewRange.getItems()).filter(item =>
+                item.is('element', 'a') &&
+                item.getAttribute('data-id') === 'external_editor' &&
+                !item.hasAttribute('orgnameattr')
+              );
+
+              // Find the matching link by comparing DOM elements
+              for (const viewLink of viewLinks) {
+                const domLink = editor.editing.view.domConverter.mapViewToDom(viewLink);
+                if (domLink === link) {
+                  writer.setAttribute('orgnameattr', orgName, viewLink);
+                  break;
+                }
+              }
+            });
+          }
+        });
+      }
+    }, 100);
   }
 
   /**

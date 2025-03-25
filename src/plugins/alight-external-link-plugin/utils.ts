@@ -53,6 +53,7 @@ export function isLegacyEditorLink(url: string): boolean {
 /**
  * Creates a link {@link module:engine/view/attributeelement~AttributeElement} with the provided `href` attribute.
  * Adds the organization name attribute if it exists in the model or can be extracted from text content.
+ * Handles non-breaking spaces and special characters in organization names.
  */
 export function createLinkElement(href: string, { writer, attrs = {}, item }: DowncastConversionApi & { attrs?: Record<string, string>; item?: any }): ViewAttributeElement {
   // Start with default attributes
@@ -70,7 +71,9 @@ export function createLinkElement(href: string, { writer, attrs = {}, item }: Do
     }
     // If not, try to extract from text content
     else if (item.is && item.is('$text') && item.data) {
-      const match = item.data.match(/^(.*?)\s+\(([^)]+)\)$/);
+      // Replace any non-breaking spaces with regular spaces for consistency
+      const itemData = item.data.replace(/\u00A0/g, ' ');
+      const match = itemData.match(/^(.*?)\s+\(([^)]+)\)$/);
       if (match && match[2]) {
         attributes.orgnameattr = match[2];
       }
@@ -86,7 +89,9 @@ export function createLinkElement(href: string, { writer, attrs = {}, item }: Do
         }
         // If not, try to extract from text
         else if (position.textNode.data) {
-          const match = position.textNode.data.match(/^(.*?)\s+\(([^)]+)\)$/);
+          // Clean text data by replacing non-breaking spaces
+          const textData = position.textNode.data.replace(/\u00A0/g, ' ');
+          const match = textData.match(/^(.*?)\s+\(([^)]+)\)$/);
           if (match && match[2]) {
             attributes.orgnameattr = match[2];
           }
