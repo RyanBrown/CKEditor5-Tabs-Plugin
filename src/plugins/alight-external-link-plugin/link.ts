@@ -1,11 +1,11 @@
 // src/plugins/alight-external-link-plugin/link.ts
 import { Plugin } from '@ckeditor/ckeditor5-core';
-import type { DowncastConversionApi, ViewElement } from '@ckeditor/ckeditor5-engine';
+import type { DowncastConversionApi } from '@ckeditor/ckeditor5-engine';
 import AlightExternalLinkPluginEditing from './linkediting';
 import AlightExternalLinkPluginUI from './linkui';
 import AlightExternalAutoLink from './autolink';
 import ExternalLinkHandler from './externallinkhandler';
-import { createLinkElement, ensureSafeUrl, ensureUrlProtocol } from './utils';
+import { createLinkElement, ensureSafeUrl } from './utils';
 import type AlightExternalLinkPluginCommand from './linkcommand';
 import './styles/alight-external-link-plugin.scss';
 

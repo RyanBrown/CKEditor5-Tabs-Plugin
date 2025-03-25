@@ -17,7 +17,7 @@ import AlightExternalLinkPluginEditing from './linkediting';
 import LinkActionsView from './ui/linkactionsview';
 import type AlightExternalLinkPluginCommand from './linkcommand';
 import type AlightExternalUnlinkCommand from './unlinkcommand';
-import { addLinkProtocolIfApplicable, isLinkElement, isValidUrl } from './utils';
+import { isLinkElement } from './utils';
 import { CkAlightModalDialog } from './../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import type { CkAlightCheckbox } from './../ui-components/alight-checkbox-component/alight-checkbox-component';
 import './../ui-components/alight-checkbox-component/alight-checkbox-component';

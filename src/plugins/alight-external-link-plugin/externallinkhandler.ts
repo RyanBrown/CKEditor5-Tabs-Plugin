@@ -1,6 +1,6 @@
 // src/plugins/alight-external-link-plugin/externallinkhandler.ts
 import { Plugin } from '@ckeditor/ckeditor5-core';
-import { ViewElement, Range } from '@ckeditor/ckeditor5-engine';
+import { Range } from '@ckeditor/ckeditor5-engine';
 import AlightExternalLinkPluginEditing from './linkediting';
 import { isValidUrl, ensureUrlProtocol } from './utils';
 
