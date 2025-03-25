@@ -198,6 +198,10 @@ export default class ExternalLinkHandler extends Plugin {
    * Finds and converts standard links in the editor content
    * to use the AlightExternalLinkPlugin
    */
+  /**
+ * Finds and converts standard links in the editor content
+ * to use the AlightExternalLinkPlugin
+ */
   private _convertLinks(): void {
     const editor = this.editor;
     const model = editor.model;
@@ -221,8 +225,10 @@ export default class ExternalLinkHandler extends Plugin {
 
             if (linkRange) {
               // Check for organization name in the link text
-              let orgName = null;
               const linkText = this._getLinkText(linkRange);
+              let orgName = null;
+
+              // Try to extract org name from text format "text (org name)"
               const match = linkText.match(/^(.*?)\s+\(([^)]+)\)$/);
               if (match && match[2]) {
                 orgName = match[2];

@@ -60,7 +60,7 @@ export default class AutomaticDecorators {
         const viewSelection = viewWriter.document.selection;
 
         for (const item of this._definitions) {
-          // Build attributes with data-id and include organization name if present
+          // Build attributes with data-id
           const attributes: Record<string, string> = {
             ...item.attributes,
             'data-id': 'external_editor'
@@ -70,11 +70,18 @@ export default class AutomaticDecorators {
           if (data.item.is('$text') && data.item.hasAttribute('alightExternalLinkPluginOrgName')) {
             attributes.orgnameattr = data.item.getAttribute('alightExternalLinkPluginOrgName') as string;
           }
+          // Try to extract from text content if no attribute
+          else if (data.item.is('$text') && data.item.data) {
+            const match = data.item.data.match(/^(.*?)\s+\(([^)]+)\)$/);
+            if (match && match[2]) {
+              attributes.orgnameattr = match[2];
+            }
+          }
 
-          const viewElement = viewWriter.createAttributeElement('a', attributes, {
-            priority: 5
-          });
+          // Create link element
+          const viewElement = viewWriter.createAttributeElement('a', attributes, { priority: 5 });
 
+          // Add classes and styles
           if (item.classes) {
             viewWriter.addClass(item.classes, viewElement);
           }
@@ -85,6 +92,7 @@ export default class AutomaticDecorators {
 
           viewWriter.setCustomProperty('alight-external-link', true, viewElement);
 
+          // Apply or remove decoration
           if (item.callback(data.attributeNewValue as string | null)) {
             if (data.item.is('selection')) {
               viewWriter.wrap(viewSelection.getFirstRange()!, viewElement);

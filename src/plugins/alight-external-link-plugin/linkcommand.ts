@@ -99,6 +99,13 @@ export default class AlightExternalLinkPluginCommand extends Command {
       return;
     }
 
+    // Check if the organization is stored in the attribute first
+    if (selection.hasAttribute('alightExternalLinkPluginOrgName')) {
+      this.organization = selection.getAttribute('alightExternalLinkPluginOrgName') as string;
+      return;
+    }
+
+    // If not found in attributes, try to extract from the text
     // Get the range containing the link
     let linkRange;
 
@@ -135,6 +142,14 @@ export default class AlightExternalLinkPluginCommand extends Command {
     const match = fullText.match(/^(.+?)\s+\(([^)]+)\)$/);
     if (match && match[2]) {
       this.organization = match[2];
+
+      // Add the organization attribute to the model if we found it in the text but it's not in the model
+      const hasOrgAttr = selection.hasAttribute('alightExternalLinkPluginOrgName');
+      if (!hasOrgAttr) {
+        model.change(writer => {
+          writer.setAttribute('alightExternalLinkPluginOrgName', match[2], linkRange);
+        });
+      }
     }
   }
 
