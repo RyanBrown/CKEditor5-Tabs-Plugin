@@ -200,6 +200,8 @@ export default class ExternalLinkHandler extends Plugin {
   private _processExistingLinks(): void {
     const editor = this.editor;
     const model = editor.model;
+    const view = editor.editing.view;
+    const viewDocument = view.document;
 
     // Scan the entire document for links with organization names in the text
     model.change(writer => {
@@ -229,6 +231,56 @@ export default class ExternalLinkHandler extends Plugin {
             if (linkRange) {
               // Apply the organization name attribute to the entire link
               writer.setAttribute('alightExternalLinkPluginOrgName', orgName, linkRange);
+            }
+          }
+        }
+      }
+    });
+
+    // Also attempt to process links in the view
+    editor.editing.view.change(viewWriter => {
+      // Create a range in the entire view document
+      const viewRoot = viewDocument.getRoot();
+      if (!viewRoot) return;
+
+      const viewRange = view.createRangeIn(viewRoot);
+
+      // Find all links that don't have orgnameattr but have text with (org name) pattern
+      for (const item of viewRange.getItems()) {
+        if (item.is('element', 'a') &&
+          item.getAttribute('data-id') === 'external_editor' &&
+          !item.hasAttribute('orgnameattr')) {
+
+          // Extract the text content from the link
+          let linkText = '';
+          for (const child of item.getChildren()) {
+            if (child.is('$text')) {
+              linkText += child.data;
+            }
+          }
+
+          // Check for organization name pattern
+          const match = linkText.match(/^(.*?)\s+\(([^)]+)\)$/);
+          if (match && match[2]) {
+            const orgName = match[2];
+
+            // Set the orgnameattr attribute
+            viewWriter.setAttribute('orgnameattr', orgName, item);
+
+            // Find the corresponding model element and set the attribute there as well
+            const position = view.createPositionBefore(item);
+            const modelPosition = editor.editing.mapper.toModelPosition(position);
+
+            if (modelPosition) {
+              model.change(modelWriter => {
+                const node = modelPosition.nodeAfter || modelPosition.textNode;
+                if (node && node.hasAttribute('alightExternalLinkPluginHref')) {
+                  const range = this._getLinkRange(node, model);
+                  if (range) {
+                    modelWriter.setAttribute('alightExternalLinkPluginOrgName', orgName, range);
+                  }
+                }
+              });
             }
           }
         }

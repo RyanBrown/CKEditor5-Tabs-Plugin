@@ -60,32 +60,96 @@ export default class AlightExternalLinkPlugin extends Plugin {
    */
   public init(): void {
     const editor = this.editor;
+    const config = editor.config.get('alightExternalLink') as AlightExternalLinkPluginConfig;
+    // Only allow http and https protocols
+    const allowedProtocols = ['https?'];
 
-    // Set higher priority for this plugin's converters to ensure they take precedence
-    // over the standard link plugin converters
+    // Allow link attribute on all inline nodes.
+    editor.model.schema.extend('$text', { allowAttributes: 'alightExternalLinkPluginHref' });
 
-    // Override dataDowncast using attributeToElement with correct converter priority
-    editor.conversion.for('dataDowncast').attributeToElement({
-      model: 'alightExternalLinkPluginHref',
-      view: (href: string, conversionApi: DowncastConversionApi) => {
-        if (!href) return null;
-        return createLinkElement(href, conversionApi);
-      },
-      converterPriority: 'high'
-    });
+    // Add a schema definition for the organization name attribute
+    editor.model.schema.extend('$text', { allowAttributes: 'alightExternalLinkPluginOrgName' });
 
-    // Register the UI component with a unique name to avoid conflicts
-    editor.ui.componentFactory.add('alightExternalLink', locale => {
-      const view = editor.plugins.get(AlightExternalLinkPluginUI).createButtonView(locale);
-      return view;
-    });
+    // Add a high-priority dataDowncast converter
+    editor.conversion.for('dataDowncast')
+      .attributeToElement({
+        model: 'alightExternalLinkPluginHref',
+        view: (href, conversionApi) => {
+          const linkCommand = editor.commands.get('alight-external-link') as AlightExternalLinkPluginCommand;
 
-    // Register toolbar button (if needed)
-    this._registerToolbarButton();
+          // Build attributes object
+          const attrs: Record<string, string> = {};
 
-    // Process organization names in links after data is loaded
-    this._setupOrgNameProcessing();
-  }
+          // Use the organization name from the link command if available
+          if (linkCommand && linkCommand.organization) {
+            attrs.orgnameattr = linkCommand.organization;
+          }
+
+          return createLinkElement(href, { ...conversionApi, attrs });
+        },
+        converterPriority: 'high'
+      });
+
+    // Add a high-priority editingDowncast converter
+    editor.conversion.for('editingDowncast')
+      .attributeToElement({
+        model: 'alightExternalLinkPluginHref',
+        view: (href, conversionApi) => {
+          const linkCommand = editor.commands.get('alight-external-link') as AlightExternalLinkPluginCommand;
+
+          // Build attributes object
+          const attrs: Record<string, string> = {};
+
+          // Use the organization name from the link command if available
+          if (linkCommand && linkCommand.organization) {
+            attrs.orgnameattr = linkCommand.organization;
+          }
+
+          return createLinkElement(ensureSafeUrl(href, allowedProtocols), { ...conversionApi, attrs });
+        },
+        converterPriority: 'high'
+      });
+
+    // Call the method to set up the organization name extraction
+    this._setupOrganizationNameExtraction();
+
+    // Upcast converter for all links - we'll filter non-HTTP/HTTPS later
+    editor.conversion.for('upcast')
+      .elementToAttribute({
+        view: {
+          name: 'a',
+          attributes: {
+            href: true
+          }
+        },
+        model: {
+          key: 'alightExternalLinkPluginHref',
+          value: (viewElement: ViewElement) => {
+            const href = viewElement.getAttribute('href');
+
+            // Filter links during upcast
+            if (typeof href === 'string') {
+              // Accept special editor links
+              if (href.includes('~public_editor_id') || href.includes('~intranet_editor_id')) {
+                return href;
+              }
+
+              // Accept regular http/https links
+              if (href.startsWith('http://') || href.startsWith('https://')) {
+                return href;
+              } else if (/^www\..+$/i.test(href)) {
+                // For www. links, add the protocol
+                return ensureUrlProtocol(href);
+              }
+              // Otherwise, return null to skip this link
+              return null;
+            }
+            return null;
+          }
+        },
+        converterPriority: 'normal'
+      });
+
 
   /**
    * Sets up event listeners to process organization names in links
@@ -101,6 +165,68 @@ export default class AlightExternalLinkPlugin extends Plugin {
     // Process links when data is loaded
     this.listenTo(editor.data, 'loaded', () => {
       this._processOrgNamesInLinks();
+    });
+  }
+
+  /**
+   * Processes organization names in the view
+   */
+  private _processOrgNamesInView(): void {
+    const editor = this.editor;
+    const view = editor.editing.view;
+
+    view.change(writer => {
+      const viewRoot = view.document.getRoot();
+      if (!viewRoot) return;
+
+      const viewRange = view.createRangeIn(viewRoot);
+
+      // Find all links that don't have orgnameattr but have text with (org name) pattern
+      for (const item of viewRange.getItems()) {
+        if (item.is('element', 'a') &&
+          item.getAttribute('data-id') === 'external_editor' &&
+          !item.hasAttribute('orgnameattr')) {
+
+          // Extract the text content from the link
+          let linkText = '';
+          for (const child of item.getChildren()) {
+            if (child.is('$text')) {
+              linkText += child.data;
+            }
+          }
+
+          // Check for organization name pattern
+          const match = linkText.match(/^(.*?)\s+\(([^)]+)\)$/);
+          if (match && match[2]) {
+            const orgName = match[2];
+
+            // Set the orgnameattr attribute
+            writer.setAttribute('orgnameattr', orgName, item);
+
+            // Find the corresponding model element and set the attribute there as well
+            try {
+              const position = view.createPositionBefore(item);
+              const modelPosition = editor.editing.mapper.toModelPosition(position);
+
+              if (modelPosition) {
+                editor.model.change(modelWriter => {
+                  const node = modelPosition.nodeAfter || modelPosition.textNode;
+                  if (node && node.hasAttribute('alightExternalLinkPluginHref')) {
+                    const linkRange = editor.model.createRange(
+                      editor.model.createPositionBefore(node),
+                      editor.model.createPositionAfter(node)
+                    );
+                    modelWriter.setAttribute('alightExternalLinkPluginOrgName', orgName, linkRange);
+                  }
+                });
+              }
+            } catch (error) {
+              // Ignore errors in the mapping process
+              console.warn('Error mapping view to model:', error);
+            }
+          }
+        }
+      }
     });
   }
 

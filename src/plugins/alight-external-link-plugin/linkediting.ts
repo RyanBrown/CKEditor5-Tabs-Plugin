@@ -376,6 +376,14 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
    * converter for each manual decorator and extends the {@link module:engine/model/schema~Schema model's schema}
    * with adequate model attributes.
    */
+  /**
+   * Processes an array of configured manual decorators,
+   * transforms them into ManualDecorator instances and stores them in the
+   * AlightExternalLinkPluginCommand#manualDecorators collection (a model for manual decorators state).
+   *
+   * Also registers an attribute-to-element converter for each manual decorator 
+   * and extends the model's schema with adequate model attributes.
+   */
   private _enableManualDecorators(manualDecoratorDefinitions: Array<NormalizedLinkDecoratorManualDefinition>): void {
     if (!manualDecoratorDefinitions.length) {
       return;
@@ -430,6 +438,77 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
           key: decorator.id
         }
       });
+    });
+  }
+
+  /**
+ * Enhanced downcast converter for handling organization names
+ * This should be added to the init() method of AlightExternalLinkPluginEditing
+ */
+  private _setupOrganizationNameExtraction(): void {
+    const editor = this.editor;
+
+    editor.conversion.for('downcast').add(dispatcher => {
+      dispatcher.on('attribute:alightExternalLinkPluginHref', (evt, data, conversionApi) => {
+        // Skip if the attribute has been consumed or if it's not inline
+        if (!conversionApi.consumable.test(data.item, 'attribute:alightExternalLinkPluginHref') ||
+          !(data.item.is('selection') || conversionApi.schema.isInline(data.item))) {
+          return;
+        }
+
+        const href = data.attributeNewValue;
+        if (!href) {
+          return;
+        }
+
+        const viewWriter = conversionApi.writer;
+
+        // Prepare attributes for the link element
+        const linkAttributes: Record<string, unknown> = {
+          href,
+          'data-id': 'external_editor'
+        };
+
+        // Check if there's an organization name attribute
+        let orgName: unknown = null;
+        if (data.item.is('$text') && data.item.hasAttribute('alightExternalLinkPluginOrgName')) {
+          orgName = data.item.getAttribute('alightExternalLinkPluginOrgName');
+          linkAttributes['orgnameattr'] = orgName;
+        }
+        // If no org attribute, try to extract it from the text
+        else if (data.item.is('$text')) {
+          const textContent = data.item.data;
+          const match = textContent.match(/^(.*?)\s+\(([^)]+)\)$/);
+
+          if (match && match[2]) {
+            orgName = match[2];
+            linkAttributes['orgnameattr'] = orgName;
+
+            // Update the model with the extracted organization name
+            if (!data.item.hasAttribute('alightExternalLinkPluginOrgName')) {
+              setTimeout(() => {
+                editor.model.change(writer => {
+                  if (evt.source && 'range' in evt.source) {
+                    const modelRange = conversionApi.mapper.toModelRange(evt.source.range);
+                    writer.setAttribute('alightExternalLinkPluginOrgName', orgName, modelRange);
+                  }
+                });
+              }, 0);
+            }
+          }
+        }
+
+        // Create the link element with all attributes
+        const linkElement = viewWriter.createAttributeElement('a', linkAttributes as Record<string, string>, { priority: 5 });
+        viewWriter.setCustomProperty('alight-external-link', true, linkElement);
+
+        // Apply the link element
+        if (data.item.is('selection')) {
+          viewWriter.wrap(conversionApi.mapper.toViewRange(data.range), linkElement);
+        } else {
+          viewWriter.wrap(conversionApi.mapper.toViewRange(data.range), linkElement);
+        }
+      }, { priority: 'high' });
     });
   }
 
