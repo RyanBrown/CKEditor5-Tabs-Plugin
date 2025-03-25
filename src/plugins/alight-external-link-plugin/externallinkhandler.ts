@@ -1,13 +1,6 @@
 // src/plugins/alight-external-link-plugin/externallinkhandler.ts
 import { Plugin } from '@ckeditor/ckeditor5-core';
-import type {
-  Element,
-  UpcastElementEvent,
-  ViewElement,
-  UpcastConversionApi,
-  Range,
-  View
-} from '@ckeditor/ckeditor5-engine';
+import { ViewElement, Range } from '@ckeditor/ckeditor5-engine';
 import AlightExternalLinkPluginEditing from './linkediting';
 import { isValidUrl, ensureUrlProtocol } from './utils';
 
@@ -425,7 +418,7 @@ export default class ExternalLinkHandler extends Plugin {
   /**
    * Gets the range for a link
    */
-  private _getLinkRange(textNode: any, model: any): any {
+  private _getLinkRange(textNode: any, model: any): Range | null {
     const href = textNode.getAttribute('linkHref') || textNode.getAttribute('alightExternalLinkPluginHref');
 
     if (!href) {

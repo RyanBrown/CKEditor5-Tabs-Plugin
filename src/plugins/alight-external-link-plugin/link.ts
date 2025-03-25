@@ -206,19 +206,23 @@ export default class AlightExternalLinkPlugin extends Plugin {
           attributeFilter: ['data-id', 'orgnameattr', 'href']
         });
 
-        // Store observer reference in editor for cleanup
-        editor.set('orgNameMutationObserver', observer);
+        // Store observer reference for cleanup
+        this._mutationObserver = observer;
       }, 300);
     });
 
     // Clean up the observer when the editor is destroyed
     editor.on('destroy', () => {
-      const observer = editor.get('orgNameMutationObserver');
-      if (observer) {
-        observer.disconnect();
+      if (this._mutationObserver) {
+        this._mutationObserver.disconnect();
       }
     });
   }
+
+  /**
+   * Mutation observer instance
+   */
+  private _mutationObserver: MutationObserver | null = null;
 
   /**
    * Sets up event listeners to process organization names in links
