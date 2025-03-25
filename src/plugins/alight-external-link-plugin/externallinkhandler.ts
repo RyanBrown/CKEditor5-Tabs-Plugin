@@ -1,10 +1,12 @@
-// src/plugins/alight-external-link-plugin/ExternalLinkHandler.ts
+// src/plugins/alight-external-link-plugin/externallinkhandler.ts
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import type {
   Element,
   UpcastElementEvent,
   ViewElement,
-  UpcastConversionApi
+  UpcastConversionApi,
+  Range,
+  View
 } from '@ckeditor/ckeditor5-engine';
 import AlightExternalLinkPluginEditing from './linkediting';
 import { isValidUrl, ensureUrlProtocol } from './utils';
@@ -303,7 +305,7 @@ export default class ExternalLinkHandler extends Plugin {
         const links = editorElement.querySelectorAll('a[data-id="external_editor"]:not([orgnameattr])');
         links.forEach(link => {
           // Get text content and normalize to handle possible non-breaking spaces
-          const linkText = link.textContent.replace(/\u00A0/g, ' ');
+          const linkText = link.textContent?.replace(/\u00A0/g, ' ') || '';
           const match = linkText.match(/^(.*?)\s+\(([^)]+)\)$/);
           if (match && match[2]) {
             const orgName = match[2];
@@ -313,19 +315,25 @@ export default class ExternalLinkHandler extends Plugin {
 
             // Also update the model (via a view change)
             editor.editing.view.change(writer => {
-              // Find the corresponding view element
-              const viewLinks = Array.from(viewRange.getItems()).filter(item =>
-                item.is('element', 'a') &&
-                item.getAttribute('data-id') === 'external_editor' &&
-                !item.hasAttribute('orgnameattr')
-              );
+              // Get the view root
+              const viewRoot = editor.editing.view.document.getRoot();
+              if (!viewRoot) return;
+
+              // Create a new range to search in
+              const newViewRange = editor.editing.view.createRangeIn(viewRoot);
 
               // Find the matching link by comparing DOM elements
-              for (const viewLink of viewLinks) {
-                const domLink = editor.editing.view.domConverter.mapViewToDom(viewLink);
-                if (domLink === link) {
-                  writer.setAttribute('orgnameattr', orgName, viewLink);
-                  break;
+              for (const viewItem of newViewRange.getItems()) {
+                if (viewItem.is('element', 'a') &&
+                  viewItem.getAttribute('data-id') === 'external_editor' &&
+                  !viewItem.hasAttribute('orgnameattr')) {
+
+                  // Check if this is the same DOM element
+                  const domLink = editor.editing.view.domConverter.mapViewToDom(viewItem);
+                  if (domLink === link) {
+                    writer.setAttribute('orgnameattr', orgName, viewItem);
+                    break;
+                  }
                 }
               }
             });
@@ -404,7 +412,7 @@ export default class ExternalLinkHandler extends Plugin {
   /**
    * Gets the text content of a link range
    */
-  private _getLinkText(linkRange: any): string {
+  private _getLinkText(linkRange: Range): string {
     let text = '';
     for (const item of linkRange.getItems()) {
       if (item.is('$text') || item.is('$textProxy')) {
