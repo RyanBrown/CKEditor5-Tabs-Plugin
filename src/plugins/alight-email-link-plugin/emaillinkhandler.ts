@@ -1,11 +1,6 @@
 // src/plugins/alight-email-link-plugin/emaillinkhandler.ts
 import { Plugin } from '@ckeditor/ckeditor5-core';
-import type {
-  Element,
-  UpcastElementEvent,
-  ViewElement,
-  UpcastConversionApi
-} from '@ckeditor/ckeditor5-engine';
+import type { ViewElement } from '@ckeditor/ckeditor5-engine';
 import AlightEmailLinkPluginEditing from './linkediting';
 import { isEmail } from './utils';
 

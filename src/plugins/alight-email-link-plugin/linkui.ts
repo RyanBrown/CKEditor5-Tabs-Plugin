@@ -17,7 +17,7 @@ import AlightEmailLinkPluginEditing from './linkediting';
 import LinkActionsView from './ui/linkactionsview';
 import type AlightEmailLinkPluginCommand from './linkcommand';
 import type AlightEmailUnlinkCommand from './unlinkcommand';
-import { addLinkProtocolIfApplicable, isLinkElement } from './utils';
+import { isLinkElement } from './utils';
 import { CkAlightModalDialog } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 
 import linkIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
