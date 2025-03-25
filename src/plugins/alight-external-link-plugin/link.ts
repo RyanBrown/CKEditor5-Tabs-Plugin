@@ -1,11 +1,12 @@
 // src/plugins/alight-external-link-plugin/link.ts
 import { Plugin } from '@ckeditor/ckeditor5-core';
-import type { DowncastConversionApi } from '@ckeditor/ckeditor5-engine';
+import type { DowncastConversionApi, ViewElement } from '@ckeditor/ckeditor5-engine';
 import AlightExternalLinkPluginEditing from './linkediting';
 import AlightExternalLinkPluginUI from './linkui';
 import AlightExternalAutoLink from './autolink';
 import ExternalLinkHandler from './externallinkhandler';
-import { createLinkElement } from './utils';
+import { createLinkElement, ensureSafeUrl, ensureUrlProtocol } from './utils';
+import type AlightExternalLinkPluginCommand from './linkcommand';
 import './styles/alight-external-link-plugin.scss';
 
 /**
@@ -60,96 +61,77 @@ export default class AlightExternalLinkPlugin extends Plugin {
    */
   public init(): void {
     const editor = this.editor;
-    const config = editor.config.get('alightExternalLink') as AlightExternalLinkPluginConfig;
-    // Only allow http and https protocols
     const allowedProtocols = ['https?'];
 
-    // Allow link attribute on all inline nodes.
-    editor.model.schema.extend('$text', { allowAttributes: 'alightExternalLinkPluginHref' });
+    // Set higher priority for this plugin's converters to ensure they take precedence
+    // over the standard link plugin converters
 
-    // Add a schema definition for the organization name attribute
-    editor.model.schema.extend('$text', { allowAttributes: 'alightExternalLinkPluginOrgName' });
+    // Override dataDowncast using attributeToElement with correct converter priority
+    editor.conversion.for('dataDowncast').attributeToElement({
+      model: 'alightExternalLinkPluginHref',
+      view: (href: string, conversionApi: DowncastConversionApi) => {
+        if (!href) return null;
+        const linkCommand = editor.commands.get('alight-external-link') as AlightExternalLinkPluginCommand;
 
-    // Add a high-priority dataDowncast converter
-    editor.conversion.for('dataDowncast')
-      .attributeToElement({
-        model: 'alightExternalLinkPluginHref',
-        view: (href, conversionApi) => {
-          const linkCommand = editor.commands.get('alight-external-link') as AlightExternalLinkPluginCommand;
+        // Build attributes object
+        const attrs: Record<string, string> = {};
 
-          // Build attributes object
-          const attrs: Record<string, string> = {};
+        // Use the organization name from the link command if available
+        if (linkCommand && linkCommand.organization) {
+          attrs.orgnameattr = linkCommand.organization;
+        }
 
-          // Use the organization name from the link command if available
-          if (linkCommand && linkCommand.organization) {
-            attrs.orgnameattr = linkCommand.organization;
-          }
-
-          return createLinkElement(href, { ...conversionApi, attrs });
-        },
-        converterPriority: 'high'
-      });
+        return createLinkElement(href, { ...conversionApi, attrs });
+      },
+      converterPriority: 'high'
+    });
 
     // Add a high-priority editingDowncast converter
-    editor.conversion.for('editingDowncast')
-      .attributeToElement({
-        model: 'alightExternalLinkPluginHref',
-        view: (href, conversionApi) => {
-          const linkCommand = editor.commands.get('alight-external-link') as AlightExternalLinkPluginCommand;
+    editor.conversion.for('editingDowncast').attributeToElement({
+      model: 'alightExternalLinkPluginHref',
+      view: (href: string, conversionApi: DowncastConversionApi) => {
+        if (!href) return null;
+        const linkCommand = editor.commands.get('alight-external-link') as AlightExternalLinkPluginCommand;
 
-          // Build attributes object
-          const attrs: Record<string, string> = {};
+        // Build attributes object
+        const attrs: Record<string, string> = {};
 
-          // Use the organization name from the link command if available
-          if (linkCommand && linkCommand.organization) {
-            attrs.orgnameattr = linkCommand.organization;
-          }
+        // Use the organization name from the link command if available
+        if (linkCommand && linkCommand.organization) {
+          attrs.orgnameattr = linkCommand.organization;
+        }
 
-          return createLinkElement(ensureSafeUrl(href, allowedProtocols), { ...conversionApi, attrs });
-        },
-        converterPriority: 'high'
-      });
+        return createLinkElement(ensureSafeUrl(href, allowedProtocols), { ...conversionApi, attrs });
+      },
+      converterPriority: 'high'
+    });
 
-    // Call the method to set up the organization name extraction
-    this._setupOrganizationNameExtraction();
+    // Register the UI component with a unique name to avoid conflicts
+    editor.ui.componentFactory.add('alightExternalLink', locale => {
+      const view = editor.plugins.get(AlightExternalLinkPluginUI).createButtonView(locale);
+      return view;
+    });
 
-    // Upcast converter for all links - we'll filter non-HTTP/HTTPS later
-    editor.conversion.for('upcast')
-      .elementToAttribute({
-        view: {
-          name: 'a',
-          attributes: {
-            href: true
-          }
-        },
-        model: {
-          key: 'alightExternalLinkPluginHref',
-          value: (viewElement: ViewElement) => {
-            const href = viewElement.getAttribute('href');
+    // Register toolbar button (if needed)
+    this._registerToolbarButton();
 
-            // Filter links during upcast
-            if (typeof href === 'string') {
-              // Accept special editor links
-              if (href.includes('~public_editor_id') || href.includes('~intranet_editor_id')) {
-                return href;
-              }
+    // Process organization names in links after data is loaded
+    this._setupOrgNameProcessing();
 
-              // Accept regular http/https links
-              if (href.startsWith('http://') || href.startsWith('https://')) {
-                return href;
-              } else if (/^www\..+$/i.test(href)) {
-                // For www. links, add the protocol
-                return ensureUrlProtocol(href);
-              }
-              // Otherwise, return null to skip this link
-              return null;
-            }
-            return null;
-          }
-        },
-        converterPriority: 'normal'
-      });
+    // Process links immediately after initialization
+    this._processOrgNamesInLinks();
 
+    // Process links when the editor's content changes
+    this.listenTo(editor.model, 'change', () => {
+      this._processOrgNamesInLinks();
+    });
+
+    // Also process links when the view is rendered
+    this.listenTo(editor.editing.view, 'render', () => {
+      // Additional processing in the view
+      this._processOrgNamesInView();
+    });
+  }
 
   /**
    * Sets up event listeners to process organization names in links
