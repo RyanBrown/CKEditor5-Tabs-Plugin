@@ -185,8 +185,6 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
         converterPriority: 'normal'
       });
 
-    // Replace the incorrect conversion section in the linkediting.ts file with this:
-
     // Add upcast converter for organization name attribute
     editor.conversion.for('upcast')
       .attributeToAttribute({
@@ -252,7 +250,7 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
           }
         }
       });
-    }, { priority: 'high' });
+    });
 
     // Add a dedicated downcast converter for the organization name attribute - corrected version
     editor.conversion.for('downcast').attributeToAttribute({
