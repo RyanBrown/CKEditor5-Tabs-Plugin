@@ -18,7 +18,7 @@ export default class SessionService {
     ]);
   }
 
-  public static create(sessionStorage?: Storage): void {
+  public static create(sessionStorage: Storage): void {
     if (SessionService.instance === null) {
       SessionService.instance = new SessionService(sessionStorage);
     } else {
@@ -39,9 +39,6 @@ export default class SessionService {
   }
   public get apiUrl(): string {
     return this.sessionMap.get(this.apiUrlKey)!;
-  }
-  public static get sessionToken(): string {
-    return SessionService.getInstance().sessionToken;
   }
   public get sessionToken(): string {
     return this.sessionMap.get(this.dummyColleagueSessionTokenKey)!;
