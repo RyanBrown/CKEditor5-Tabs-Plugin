@@ -444,10 +444,10 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
     const linksContainer = document.createElement('div');
     linksContainer.id = 'links-container';
     linksContainer.innerHTML = `
-  < div class="cka-loading-container" >
-    <div class="cka-loading-spinner" > </div>
-      </>
-        `;
+      <div class="cka-loading-container">
+        <div class="cka-loading-spinner"></div>
+      </div>
+    `;
 
     const paginationContainer = document.createElement('div');
     paginationContainer.id = 'pagination-container';
@@ -530,7 +530,7 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
             // Show an alert to the user
             const alertDiv = document.createElement('div');
             alertDiv.className = 'cka-alert cka-alert-error';
-            alertDiv.innerHTML = `< div class="cka-alert-warning" > Please select a link </>`;
+            alertDiv.innerHTML = `<div class="cka-alert-warning">Please select a link</div>`;
 
             // Find the container for the alert and show it
             const modalContent = this._modalDialog?.getElement();
@@ -560,11 +560,7 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
 
     // Then fetch data and initialize the content manager in the background
     try {
-      // Fetch predefined links from the service
-      const predefinedLinks = await this._fetchPredefinedLinks();
-      console.log('Fetched predefined links:', predefinedLinks);
-
-      if (predefinedLinks.length === 0) {
+      if (this._predefinedLinks.length === 0) {
         // Show message if no links found
         const linksContainer = customContent.querySelector('#links-container');
         if (linksContainer) {
@@ -578,7 +574,7 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
       }
 
       // Create the ContentManager with the initialUrl and predefined links data
-      this._linkManager = new ContentManager(initialUrl, predefinedLinks);
+      this._linkManager = new ContentManager(initialUrl, this._predefinedLinks);
 
       // Pass the modal dialog reference to enable/disable the Continue button
       // Add an event listener for link selection

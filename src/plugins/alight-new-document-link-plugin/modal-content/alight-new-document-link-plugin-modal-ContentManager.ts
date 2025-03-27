@@ -6,7 +6,7 @@ import { CkAlightSelectMenu } from '../../ui-components/alight-select-menu-compo
 import { CkAlightCheckbox } from '../../ui-components/alight-checkbox-component/alight-checkbox-component';
 import { CkAlightChipsMenu } from '../../ui-components/alight-chips-menu-component/alight-chips-menu-component';
 import '../../ui-components/alight-checkbox-component/alight-checkbox-component';
-import { DocsService } from '../../../services/docs-service';
+import LinksLoadService from '../../../services/links-load-service';
 
 // Define a consistent interface for category items
 interface CategoryItem {
@@ -22,10 +22,8 @@ export class ContentManager implements ILinkManager {
   private formValidator: FormValidator;
   private formSubmissionHandler: FormSubmissionHandler;
   private hasUserInteracted = false;
-  private _docsService: DocsService = new DocsService();
-
-  // Update categoryMap to use a consistent structure
   private categories: CategoryItem[] = [];
+  private readonly loadService = new LinksLoadService();
 
   private formData = {
     language: 'en',
@@ -44,21 +42,12 @@ export class ContentManager implements ILinkManager {
     this.formSubmissionHandler = new FormSubmissionHandler();
   }
 
-  public setModalContents = async (sourceDataType: string, postProcess: () => void = () => { }): Promise<void> => {
-    const start = Date.now();
-    try {
-      const categoryList = await this._docsService.getCategories();
-      // Transform categories into the consistent format
-      this.categories = categoryList.map((value: string) => ({
-        id: `id-${value.replace(/\s+/g, "")}`, // Ensure consistent ID format
-        label: value
-      }));
-    } catch (error) {
-      console.log(`(NewDocContentManager.setModalContents -> error: ${error}`);
-    } finally {
-      postProcess();
-      console.log(`(NewDocContentManager.setModalContents -> ${sourceDataType} loaded (${Date.now() - start} ms.)`);
-    }
+  public setModalContents = async (): Promise<any[]> => {
+    await this.loadService.loadCategories().then(
+      (data) => this.categories = data.map(category => ({ id: `id-${category}`, label: category })),
+      (error) => console.log(error)
+    );
+    return this.categories;
   }
 
   private createCardHTML(content: string): string {
@@ -520,7 +509,7 @@ export class ContentManager implements ILinkManager {
       documentTitle: '',
       searchTags: [],
       description: '',
-      categories: [], // Reset to empty array
+      categories: [],
       contentLibraryAccess: false,
       worklifeLink: false,
       showInSearch: true
@@ -619,7 +608,7 @@ export class ContentManager implements ILinkManager {
       documentTitle: this.formData.documentTitle.trim(),
       searchTags: [...this.formData.searchTags],
       description: this.formData.description.trim(),
-      categories: [...this.formData.categories], // Create a copy of the categories array
+      categories: [...this.formData.categories],
       contentLibraryAccess: this.formData.contentLibraryAccess,
       worklifeLink: this.formData.worklifeLink,
       showInSearch: this.formData.showInSearch
