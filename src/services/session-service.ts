@@ -2,6 +2,7 @@
 import AlightRequest from "./alight-request";
 
 export default class SessionService {
+
   private readonly apiUrlKey: string = 'apiUrl';
   private readonly dummyColleagueSessionTokenKey: string = 'dummyColleagueSessionToken';
   private readonly dummyRequestHeaderKey: string = 'dummyRequestHeader';
@@ -11,19 +12,15 @@ export default class SessionService {
     [this.dummyColleagueSessionTokenKey, sessionStorage.getItem(this.dummyColleagueSessionTokenKey)!],
     [this.dummyRequestHeaderKey, sessionStorage.getItem(this.dummyRequestHeaderKey)!],
   ]);
-
   public get apiUrl(): string {
     return this._sessionMap.get(this.apiUrlKey)!;
   }
-
   public get sessionToken(): string {
     return this._sessionMap.get(this.dummyColleagueSessionTokenKey)!;
   }
-
   public get requestHeader(): string {
     return this._sessionMap.get(this.dummyRequestHeaderKey)!;
   }
-
   public get clientId(): string {
     try {
       const headerObj = JSON.parse(this._sessionMap.get(this.dummyRequestHeaderKey) || '{}');

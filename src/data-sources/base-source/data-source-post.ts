@@ -2,6 +2,7 @@ import { DataSourceRequest, IDataSourceRequest } from './data-source-request';
 import { HttpRequestMethod } from './http-request-method';
 
 export class DataSourcePost extends DataSourceRequest implements IDataSourceRequest {
+
   public override get requestMethod(): HttpRequestMethod { return HttpRequestMethod.POST; }
 
   private _path: string;

@@ -2,6 +2,7 @@ import { DataSource } from './data-source';
 import { HttpRequestMethod } from './http-request-method';
 
 export interface IDataSourceRequest {
+
   get requestMethod(): HttpRequestMethod; // GET, POST, PUT, etc.
   get queryParams(): string;
   set queryParams(value: string);
@@ -9,6 +10,7 @@ export interface IDataSourceRequest {
 }
 
 export abstract class DataSourceRequest extends DataSource implements IDataSourceRequest {
+
   public abstract get requestMethod(): HttpRequestMethod;
 
   private _queryParams: string;
@@ -23,7 +25,7 @@ export abstract class DataSourceRequest extends DataSource implements IDataSourc
   public request = async (sessionToken: string, requestHeader: string, contentType?: string, requestBody?: Record<string, any>): Promise<Response> => {
     try {
       if (sessionToken == null || requestHeader == null) {
-        throw new Error('Must provide both dummySessionToken and dummyRequestHeader');
+        throw new Error("Must provide both dummySessionToken and dummyRequestHeader");
       }
       let url = `${this.host}/${this.path}${this.queryParams?.length > 0 ? `?${this.queryParams}` : ''}`;
 
@@ -35,9 +37,7 @@ export abstract class DataSourceRequest extends DataSource implements IDataSourc
           'dummyRequestHeader': requestHeader,
         },
       };
-
       if (this.requestMethod === HttpRequestMethod.POST && requestBody) options.body = JSON.stringify(requestBody);
-
       return await fetch(url, options);
     } catch (error) {
       console.error(`DataSource.request -> request failed: <tag>.`, error);
