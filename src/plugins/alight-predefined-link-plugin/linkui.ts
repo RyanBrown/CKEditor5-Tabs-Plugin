@@ -1,5 +1,4 @@
 // src/plugins/alight-predefined-link-plugin/linkui.ts
-import { Plugin } from '@ckeditor/ckeditor5-core';
 import {
   ClickObserver,
   type ViewAttributeElement,
@@ -24,12 +23,11 @@ import './../ui-components/alight-checkbox-component/alight-checkbox-component';
 // Import the ContentManager and types from the updated location
 import { ContentManager } from './ui/linkmodal-ContentManager';
 import { PredefinedLink } from './ui/linkmodal-modal-types';
-
-// Import the services
-import { LinksService } from './../../services/links-service';
-import { SessionService } from './../../services/session-service';
+import { AlightDataLoadPlugin } from './../../alight-common/alight-data-load-plugins';
 
 import linkIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
+import LinksLoadService from '../../services/links-load-service';
+import SessionService from '../../services/session-service';
 
 const VISUAL_SELECTION_MARKER_NAME = 'alight-predefined-link-ui';
 
@@ -38,15 +36,17 @@ const VISUAL_SELECTION_MARKER_NAME = 'alight-predefined-link-ui';
  * 
  * Uses a balloon for unlink actions, and a modal dialog for create/edit functions.
  */
-export default class AlightPredefinedLinkPluginUI extends Plugin {
+export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
   private _modalDialog: CkAlightModalDialog | null = null;
   private _linkManager: ContentManager | null = null;
 
-  private _linksService: LinksService | null = null;
   public actionsView: LinkActionsView | null = null;
 
   private _balloon!: ContextualBalloon;
   private _isUpdatingUI: boolean = false;
+
+  private predefinedLinks: PredefinedLink[];
+  private readonly loadService: LinksLoadService = new LinksLoadService();
 
   public static get requires() {
     return [AlightPredefinedLinkPluginEditing, ContextualBalloon] as const;
@@ -56,6 +56,10 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
     return 'AlightPredefinedLinkPluginUI' as const;
   }
 
+  public static override get pluginName(): string { return 'AlightPredefinedLinkPluginUI' as const; }
+  public override get pluginName(): string { return 'AlightPredefinedLinkPluginUI' as const; }
+  public override get pluginId(): string { return 'AlightPredefinedLinkPlugin'; }
+
   public static override get isOfficialPlugin(): true {
     return true;
   }
@@ -63,9 +67,6 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
   public init(): void {
     const editor = this.editor;
     const t = this.editor.t;
-
-    // Initialize the services
-    this._initServices();
 
     editor.editing.view.addObserver(ClickObserver);
     this._balloon = editor.plugins.get(ContextualBalloon);
@@ -123,6 +124,8 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
     // Register the UI component
     editor.ui.componentFactory.add('alightPredefinedLinkPlugin', locale => {
       return this._createButton(ButtonView);
+      this.setModalContents();
+      return this.buttonView;
     });
 
     // Listen for command execution to show balloon
@@ -134,6 +137,30 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
       setTimeout(() => this._checkAndShowBalloon(), 10);
     });
   }
+
+  protected override setModalContents = (): void => {
+    if (!this.verboseMode) console.log(`Loading predefined links...`);
+    this.loadService.loadPredefinedLinks().then(
+      (data) => {
+        this._predefinedLinks = data;
+        if (!this.verboseMode) console.log(data);
+        this._isReady = true;
+        this._enablePluginButton();
+      },
+      (error) => console.error(error)
+    );
+  }
+
+  private processLinks = (rawLinks: PredefinedLink[]) => {
+    // Check if we have a predefinedLinksDetails structure
+    // and extract the actual links from it
+    let processedLinks: any[] = [];
+
+    for (const rawLink of rawLinks as PredefinedLink[]) {
+      if (rawLink.predefinedLinksDetails && Array.isArray(rawLink.predefinedLinksDetails)) {
+
+      }
+    }
 
   // Initialize the services with config from editor.
   private _initServices(): void {
@@ -271,6 +298,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
       const button = this._createButton(MenuBarMenuListItemButtonView);
 
       button.set({
+        isEnabled: this._isReady,
         role: 'menuitemcheckbox'
       });
 
@@ -283,23 +311,25 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
     const editor = this.editor;
     const locale = editor.locale;
     const command = editor.commands.get('alight-predefined-link')!;
+    this.buttonView = new ButtonClass(editor.locale) as InstanceType<T>;
     const view = new ButtonClass(editor.locale) as InstanceType<T>;
     const t = locale.t;
 
-    view.set({
+    view.buttonView.set({
+      isEnabled: this._isReady,
       label: t('Predefined link'),
       icon: linkIcon,
       isToggleable: true,
       withText: true
     });
 
-    view.bind('isEnabled').to(command, 'isEnabled');
-    view.bind('isOn').to(command, 'value', value => !!value);
+    this.buttonView.bind('isEnabled').to(command, 'isEnabled', (command) => command && this._isReady);
+    this.buttonView.bind('isOn').to(command, 'value', value => !!value);
 
     // Show the modal dialog on button click for creating new links
-    this.listenTo(view, 'execute', () => this._showUI());
+    this.listenTo(this.buttonView, 'execute', () => this._showUI());
 
-    return view;
+    return this.buttonView as InstanceType<T>;
   }
 
   // Creates the {@link module:link/ui/linkactionsview~LinkActionsView} instance.
@@ -359,17 +389,9 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
 
   // Find predefined link by URL using the links service
   private async _findPredefinedLinkByUrl(url: string): Promise<PredefinedLink | null> {
-    if (!this._linksService) {
-      console.warn('Links service not initialized');
-      return null;
-    }
-
     try {
-      // Fetch all predefined links
-      const links = await this._linksService.getPredefinedLinks();
-
       // Find the matching link by URL - compare regardless of trailing slash or protocol differences
-      return links.find(link => {
+      return this._predefinedLinks.find(link => {
         const normalizedDestination = this._normalizeUrl(link.destination as string);
         const normalizedUrl = this._normalizeUrl(url);
         return normalizedDestination === normalizedUrl;
