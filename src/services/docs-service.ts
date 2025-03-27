@@ -17,7 +17,7 @@ export class DocsService extends HttpService {
 
     let dataSource: IReadSource = new DataSourceDocs(this._sessionSvc.apiUrl, this._sessionSvc.clientId);
     return await this.get(dataSource, this._sessionSvc.sessionToken, this._sessionSvc.requestHeader)
-      .then(response => JSON.parse(response).documentList as DocumentLink[]);
+      .then((response: string) => JSON.parse(response).documentList as DocumentLink[]);
   }
 
   public getCategories = async (): Promise<string[]> => {
@@ -27,7 +27,7 @@ export class DocsService extends HttpService {
 
     let dataSource: IReadSourceDocs = new DataSourceDocs(this._sessionSvc.apiUrl, this._sessionSvc.clientId);
     return await this.get(dataSource.dataSourceCategory, this._sessionSvc.sessionToken, this._sessionSvc.requestHeader)
-      .then(response => JSON.parse(response).categoryList as string[]);
+      .then((response: string) => JSON.parse(response).categoryList as string[]);
   }
 
   public saveDocument = async (document: Record<string, any>): Promise<string> => {

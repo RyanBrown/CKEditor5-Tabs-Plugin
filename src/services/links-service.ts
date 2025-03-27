@@ -1,5 +1,5 @@
 // src/services/links-service.ts
-import predefinedLinkSampleData from './../data/predefined-test-data.json';
+import predefinedLinkSampleData from './../data/predefined-link-sample-data.json';
 import { DataSourceLinks } from '../data-sources/custom-source/data-source-links';
 import { PredefinedLink } from './../plugins/alight-predefined-link-plugin/ui/linkmodal-modal-types';
 import { HttpService } from './http-service';
@@ -17,7 +17,7 @@ export class LinksService extends HttpService {
       this._sessionSvc.requestHeader; // For other APIs, use the standard header
 
     return await this.get(dataSource, this._sessionSvc.sessionToken, requestHeader)
-      .then(response => {
+      .then((response: string) => {
         try {
           // Try to parse the response as JSON
           const parsed = JSON.parse(response);
