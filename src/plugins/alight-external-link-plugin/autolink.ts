@@ -336,7 +336,7 @@ export default class AlightExternalAutoLink extends Plugin {
     const model = this.editor;
     const deletePlugin = this.editor.plugins.get('Delete');
 
-    // Enqueue change
+    // Enqueue change to make undo step.
     model.model.enqueueChange(writer => {
       writer.setAttribute('alightExternalLinkPluginHref', url, range);
 

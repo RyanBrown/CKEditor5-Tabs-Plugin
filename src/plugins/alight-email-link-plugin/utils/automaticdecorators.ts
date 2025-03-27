@@ -67,49 +67,21 @@ export default class AutomaticDecorators {
           };
 
           // Check if the model item has organization name attribute and add it to view
-          if (data.item.is && typeof data.item.getAttribute === 'function') {
-            if (data.item.hasAttribute('orgnameattr')) {
-              const orgName = data.item.getAttribute('orgnameattr');
-              if (typeof orgName === 'string') {
-                attributes.orgnameattr = orgName;
-              }
-            }
-            // Try to extract from text content if no attribute
-            else if (data.item.is('$text') && data.item.data) {
-              const match = data.item.data.match(/^(.*?)\s+\(([^)]+)\)$/);
-              if (match && match[2]) {
-                attributes.orgnameattr = match[2];
-
-                // Also add the attribute to the model if possible
-                try {
-                  // For selection, directly set the attribute on the range without consuming
-                  if (data.item.is('selection')) {
-                    // Just set the attribute without consuming
-                    // Use a type assertion to make TypeScript happy
-                    conversionApi.writer.setAttribute('orgnameattr', match[2], data.range as any);
-                  } else {
-                    // For model items, we need to be careful with consuming
-                    // First check if we can consume the attribute
-                    if (conversionApi.consumable.test(data.item, 'attribute:orgnameattr')) {
-                      // Now consume it properly on the item
-                      conversionApi.consumable.consume(data.item, 'attribute:orgnameattr');
-                    }
-
-                    // Set the attribute on the range - we need to use type assertion
-                    conversionApi.writer.setAttribute('orgnameattr', match[2], data.range as any);
-                  }
-                } catch (e) {
-                  // Fail silently if we can't update the model
-                  console.warn('Failed to update orgnameattr in model', e);
-                }
-              }
+          if (data.item.is('$text') && data.item.hasAttribute('alightEmailLinkPluginOrgName')) {
+            attributes.orgnameattr = data.item.getAttribute('alightEmailLinkPluginOrgName') as string;
+          }
+          // Try to extract from text content if no attribute
+          else if (data.item.is('$text') && data.item.data) {
+            const match = data.item.data.match(/^(.*?)\s+\(([^)]+)\)$/);
+            if (match && match[2]) {
+              attributes.orgnameattr = match[2];
             }
           }
 
-          const viewElement = viewWriter.createAttributeElement('a', attributes, {
-            priority: 5
-          });
+          // Create link element
+          const viewElement = viewWriter.createAttributeElement('a', attributes, { priority: 5 });
 
+          // Add classes and styles
           if (item.classes) {
             viewWriter.addClass(item.classes, viewElement);
           }
@@ -120,6 +92,7 @@ export default class AutomaticDecorators {
 
           viewWriter.setCustomProperty('alight-email-link', true, viewElement);
 
+          // Apply or remove decoration
           if (item.callback(data.attributeNewValue as string | null)) {
             if (data.item.is('selection')) {
               viewWriter.wrap(viewSelection.getFirstRange()!, viewElement);

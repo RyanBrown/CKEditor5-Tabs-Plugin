@@ -106,6 +106,15 @@ export default class AlightEmailLinkPlugin extends Plugin {
       converterPriority: 'high'
     });
 
+    // Register the UI component with a unique name to avoid conflicts
+    editor.ui.componentFactory.add('alightEmailLink', locale => {
+      const view = editor.plugins.get(AlightEmailLinkPluginUI).createButtonView(locale);
+      return view;
+    });
+
+    // Register toolbar button (if needed)
+    this._registerToolbarButton();
+
     // Process organization names in links after data is loaded
     this._setupOrgNameProcessing();
 
@@ -117,18 +126,106 @@ export default class AlightEmailLinkPlugin extends Plugin {
       this._processOrgNamesInLinks();
     });
 
-    // Register the UI component with a unique name to avoid conflicts
-    editor.ui.componentFactory.add('alightEmailLink', locale => {
-      const view = editor.plugins.get(AlightEmailLinkPluginUI).createButtonView(locale);
-      return view;
+    // Also process links when the view is rendered
+    this.listenTo(editor.editing.view, 'render', () => {
+      // Additional processing in the view
+      this._processOrgNamesInView();
     });
 
-    // Register toolbar button (if needed)
-    this._registerToolbarButton();
+    // Add a DOM mutation observer to fix any links that might be missed
+    this._setupDomMutationObserver();
   }
 
   /**
-   * Sets up processing of organization names in links
+   * Sets up a DOM mutation observer to catch any links that might be missed
+   * by the other processing methods
+   */
+  private _setupDomMutationObserver(): void {
+    const editor = this.editor;
+
+    // Wait for editor to be ready before setting up the observer
+    editor.on('ready', () => {
+      setTimeout(() => {
+        const editorElement = editor.editing.view.getDomRoot();
+        if (!editorElement) return;
+
+        // Create a mutation observer to watch for changes to the DOM
+        const observer = new MutationObserver(mutations => {
+          // Process new or changed links
+          const links = editorElement.querySelectorAll('a[data-id="email_editor"]:not([orgnameattr])');
+
+          if (links.length > 0) {
+            links.forEach(link => {
+              // Clean the text by replacing non-breaking spaces
+              const linkText = link.textContent.replace(/\u00A0/g, ' ');
+              const match = linkText.match(/^(.*?)\s+\(([^)]+)\)$/);
+
+              if (match && match[2]) {
+                const orgName = match[2];
+
+                // Set the attribute directly in the DOM
+                link.setAttribute('orgnameattr', orgName);
+
+                // Update the model if possible
+                try {
+                  editor.editing.view.change(writer => {
+                    // Find the corresponding view element
+                    const viewRoot = editor.editing.view.document.getRoot();
+                    if (!viewRoot) return;
+
+                    const range = editor.editing.view.createRangeIn(viewRoot);
+
+                    for (const item of range.getItems()) {
+                      if (item.is('element', 'a') &&
+                        item.getAttribute('data-id') === 'email_editor' &&
+                        !item.hasAttribute('orgnameattr')) {
+
+                        // Check if this is the same DOM element
+                        const domElement = editor.editing.view.domConverter.mapViewToDom(item);
+                        if (domElement === link) {
+                          writer.setAttribute('orgnameattr', orgName, item);
+                          break;
+                        }
+                      }
+                    }
+                  });
+                } catch (error) {
+                  console.warn('Error updating model for link', error);
+                }
+              }
+            });
+          }
+        });
+
+        // Start observing the editor element
+        observer.observe(editorElement, {
+          childList: true,
+          subtree: true,
+          characterData: true,
+          attributes: true,
+          attributeFilter: ['data-id', 'orgnameattr', 'href']
+        });
+
+        // Store observer reference for cleanup
+        this._mutationObserver = observer;
+      }, 300);
+    });
+
+    // Clean up the observer when the editor is destroyed
+    editor.on('destroy', () => {
+      if (this._mutationObserver) {
+        this._mutationObserver.disconnect();
+      }
+    });
+  }
+
+  /**
+   * Mutation observer instance
+   */
+  private _mutationObserver: MutationObserver | null = null;
+
+  /**
+   * Sets up event listeners to process organization names in links
    */
   private _setupOrgNameProcessing(): void {
     const editor = this.editor;
@@ -141,6 +238,69 @@ export default class AlightEmailLinkPlugin extends Plugin {
     // Process links when data is loaded
     this.listenTo(editor.data, 'loaded', () => {
       this._processOrgNamesInLinks();
+    });
+  }
+
+  /**
+   * Processes organization names in the view
+   */
+  private _processOrgNamesInView(): void {
+    const editor = this.editor;
+    const view = editor.editing.view;
+
+    view.change(writer => {
+      const viewRoot = view.document.getRoot();
+      if (!viewRoot) return;
+
+      const viewRange = view.createRangeIn(viewRoot);
+
+      // Find all links that don't have orgnameattr but have text with (org name) pattern
+      for (const item of viewRange.getItems()) {
+        if (item.is('element', 'a') &&
+          item.getAttribute('data-id') === 'email_editor' &&
+          !item.hasAttribute('orgnameattr')) {
+
+          // Extract the text content from the link
+          let linkText = '';
+          for (const child of item.getChildren()) {
+            if (child.is('$text')) {
+              // Replace any non-breaking spaces with regular spaces
+              linkText += child.data.replace(/\u00A0/g, ' ');
+            }
+          }
+
+          // Check for organization name pattern
+          const match = linkText.match(/^(.*?)\s+\(([^)]+)\)$/);
+          if (match && match[2]) {
+            const orgName = match[2];
+
+            // Set the orgnameattr attribute
+            writer.setAttribute('orgnameattr', orgName, item);
+
+            // Find the corresponding model element and set the attribute there as well
+            try {
+              const position = view.createPositionBefore(item);
+              const modelPosition = editor.editing.mapper.toModelPosition(position);
+
+              if (modelPosition) {
+                editor.model.change(modelWriter => {
+                  const node = modelPosition.nodeAfter || modelPosition.textNode;
+                  if (node && node.hasAttribute('alightEmailLinkPluginHref')) {
+                    const linkRange = editor.model.createRange(
+                      editor.model.createPositionBefore(node),
+                      editor.model.createPositionAfter(node)
+                    );
+                    modelWriter.setAttribute('alightEmailLinkPluginOrgName', orgName, linkRange);
+                  }
+                });
+              }
+            } catch (error) {
+              // Ignore errors in the mapping process
+              console.warn('Error mapping view to model:', error);
+            }
+          }
+        }
+      }
     });
   }
 
@@ -161,7 +321,7 @@ export default class AlightEmailLinkPlugin extends Plugin {
         // Only process text nodes with links
         if (item.is('$text') && item.hasAttribute('alightEmailLinkPluginHref')) {
           // Check if the text has the format "text (org name)" but no org attribute
-          if (!item.hasAttribute('orgnameattr')) {
+          if (!item.hasAttribute('alightEmailLinkPluginOrgName')) {
             // Replace any non-breaking spaces with regular spaces for consistent matching
             const normalizedText = item.data.replace(/\u00A0/g, ' ');
             const match = normalizedText.match(/^(.*?)\s+\(([^)]+)\)$/);
@@ -171,20 +331,18 @@ export default class AlightEmailLinkPlugin extends Plugin {
 
               // Get the range of the entire link
               const href = item.getAttribute('alightEmailLinkPluginHref');
-              const linkRange = findAttributeRange(
+              const linkRange = model.createRange(
                 model.createPositionBefore(item),
-                'alightEmailLinkPluginHref',
-                href,
-                model
+                model.createPositionAfter(item)
               );
 
               // Apply the organization name attribute
-              writer.setAttribute('orgnameattr', orgName, linkRange);
+              writer.setAttribute('alightEmailLinkPluginOrgName', orgName, linkRange);
             }
           }
           // If there's an org attribute but the text doesn't have it, add it to the text
           else {
-            const orgName = item.getAttribute('orgnameattr');
+            const orgName = item.getAttribute('alightEmailLinkPluginOrgName');
             // Replace any non-breaking spaces with regular spaces for consistent matching
             const normalizedText = item.data.replace(/\u00A0/g, ' ');
             const match = normalizedText.match(/^(.*?)\s+\([^)]+\)$/);
@@ -216,48 +374,6 @@ export default class AlightEmailLinkPlugin extends Plugin {
   }
 
   /**
-   * Helper function to find attribute range
-   */
-  private findAttributeRange(position: any, attributeName: string, attributeValue: any, model: any): any {
-    const node = position.textNode;
-
-    if (!node) {
-      return null;
-    }
-
-    // Get current node's attribute value
-    const nodeAttributeValue = node.getAttribute(attributeName);
-
-    // If the node doesn't have the attribute or it's a different value
-    if (nodeAttributeValue !== attributeValue) {
-      return null;
-    }
-
-    let start = position.clone();
-    let end = position.clone();
-
-    // Find the start position (move backward while attribute value is the same)
-    while (start.textNode && start.textNode.getAttribute(attributeName) === attributeValue) {
-      start = start.getShiftedBy(-1);
-    }
-
-    // Adjust start position - we moved one too far back
-    start = start.getShiftedBy(1);
-
-    // Find the end position (move forward while attribute value is the same)
-    while (end.textNode && end.textNode.getAttribute(attributeName) === attributeValue) {
-      end = end.getShiftedBy(1);
-    }
-
-    // The range must be non-empty
-    if (start.isEqual(end)) {
-      return null;
-    }
-
-    return model.createRange(start, end);
-  }
-
-  /**
    * Registers the toolbar button for the AlightEmailLinkPlugin
    */
   private _registerToolbarButton(): void {
@@ -280,34 +396,4 @@ export default class AlightEmailLinkPlugin extends Plugin {
       });
     }
   }
-}
-
-/**
- * Helper function to find attribute range.
- */
-function findAttributeRange(position: any, attributeName: string, attributeValue: any, model: any): any {
-  // This is a helper implementation that works with the model API
-  const node = position.textNode || position.nodeBefore || position.nodeAfter;
-
-  if (!node || !node.is('$text')) {
-    return null;
-  }
-
-  // Check if the node has the attribute with matching value
-  if (!node.hasAttribute(attributeName) || node.getAttribute(attributeName) !== attributeValue) {
-    return null;
-  }
-
-  // Find start and end positions of the attribute range
-  const start = model.createPositionAt(position.root, node.startOffset);
-  let end = model.createPositionAt(position.root, node.endOffset);
-
-  // Check if there are adjacent nodes with the same attribute
-  let next = node.nextSibling;
-  while (next && next.is('$text') && next.hasAttribute(attributeName) && next.getAttribute(attributeName) === attributeValue) {
-    end = model.createPositionAt(position.root, next.endOffset);
-    next = next.nextSibling;
-  }
-
-  return model.createRange(start, end);
 }

@@ -1,5 +1,5 @@
 // src/plugins/alight-external-link-plugin/utils/automaticdecorators.ts
-import { type ArrayOrItem } from '@ckeditor/ckeditor5-utils';
+import type { ArrayOrItem } from '@ckeditor/ckeditor5-utils';
 import type { DowncastAttributeEvent, DowncastDispatcher } from '@ckeditor/ckeditor5-engine';
 import type { NormalizedLinkDecoratorAutomaticDefinition } from '../utils';
 

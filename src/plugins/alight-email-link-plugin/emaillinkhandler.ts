@@ -1,6 +1,6 @@
 // src/plugins/alight-email-link-plugin/emaillinkhandler.ts
 import { Plugin } from '@ckeditor/ckeditor5-core';
-import type { ViewElement } from '@ckeditor/ckeditor5-engine';
+import { Range, ViewElement } from '@ckeditor/ckeditor5-engine';
 import AlightEmailLinkPluginEditing from './linkediting';
 import { isEmail } from './utils';
 
@@ -40,6 +40,18 @@ export default class EmailLinkHandler extends Plugin {
 
     // Monitor for conflicting link attributes and resolve them
     this._handleConflictingLinks();
+
+    // Process existing links to add orgnameattr when needed
+    this._processExistingLinks();
+
+    // Also process links whenever the document is changed or when the editor becomes ready
+    this.listenTo(editor.model.document, 'change', () => {
+      this._processExistingLinks();
+    });
+
+    this.listenTo(editor, 'ready', () => {
+      this._processExistingLinks();
+    });
   }
 
   /**
@@ -79,8 +91,8 @@ export default class EmailLinkHandler extends Plugin {
   }
 
   /**
-   * Prevents the default link plugin from handling mailto: links in upcast conversion
-   */
+  * Prevents the default link plugin from handling mailto: links in upcast conversion
+  */
   private _preventDefaultEmailLinkUpcast(): void {
     const editor = this.editor;
 
@@ -208,6 +220,154 @@ export default class EmailLinkHandler extends Plugin {
   }
 
   /**
+   * Scans the document for links with (org name) in the text but no orgnameattr
+   * and adds the attribute automatically
+   */
+  private _processExistingLinks(): void {
+    const editor = this.editor;
+    const model = editor.model;
+    const view = editor.editing.view;
+    const viewDocument = view.document;
+
+    // Scan the entire document for links with organization names in the text
+    model.change(writer => {
+      const root = model.document.getRoot();
+      if (!root) return;
+
+      const range = model.createRangeIn(root);
+
+      for (const item of range.getItems()) {
+        // Only process text nodes that have the alightEmailLinkPluginHref attribute
+        if (item.is('$text') && item.hasAttribute('alightEmailLinkPluginHref')) {
+          // Try to extract organization name from the text - handle both with and without attributes
+          const itemData = item.data;
+          const match = itemData.match(/^(.*?)\s+\(([^)]+)\)$/);
+
+          if (match && match[2]) {
+            const orgName = match[2];
+
+            // If the node doesn't have the org name attribute or it's different, update it
+            if (!item.hasAttribute('alightEmailLinkPluginOrgName') ||
+              item.getAttribute('alightEmailLinkPluginOrgName') !== orgName) {
+
+              // Get the range of the entire link
+              const href = item.getAttribute('alightEmailLinkPluginHref');
+              const linkRange = this._getLinkRange(item, model);
+
+              if (linkRange) {
+                // Apply the organization name attribute to the entire link
+                writer.setAttribute('alightEmailLinkPluginOrgName', orgName, linkRange);
+              }
+            }
+          }
+        }
+      }
+    });
+
+    // Process links in the view to directly set the attribute in the DOM
+    editor.editing.view.change(viewWriter => {
+      // Create a range in the entire view document
+      const viewRoot = viewDocument.getRoot();
+      if (!viewRoot) return;
+
+      const viewRange = view.createRangeIn(viewRoot);
+
+      // Find all links that don't have orgnameattr but have text with (org name) pattern
+      for (const item of viewRange.getItems()) {
+        if (item.is('element', 'a') && item.getAttribute('data-id') === 'email_editor') {
+          // Extract the text content from the link - Handle non-breaking spaces
+          let linkText = '';
+          for (const child of item.getChildren()) {
+            if (child.is('$text')) {
+              // Replace any non-breaking spaces with regular spaces
+              linkText += child.data.replace(/\u00A0/g, ' ');
+            }
+          }
+
+          // Check for organization name pattern using a more flexible regex
+          // This handles potential non-breaking spaces and other special characters
+          const match = linkText.match(/^(.*?)\s+\(([^)]+)\)$/);
+          if (match && match[2]) {
+            const orgName = match[2];
+
+            // Set the orgnameattr attribute if it doesn't exist or is different
+            if (!item.hasAttribute('orgnameattr') || item.getAttribute('orgnameattr') !== orgName) {
+              viewWriter.setAttribute('orgnameattr', orgName, item);
+
+              // Find the corresponding model element and set the attribute there as well
+              try {
+                const position = view.createPositionBefore(item);
+                const modelPosition = editor.editing.mapper.toModelPosition(position);
+
+                if (modelPosition) {
+                  model.change(modelWriter => {
+                    const node = modelPosition.nodeAfter || modelPosition.textNode;
+                    if (node && node.hasAttribute('alightEmailLinkPluginHref')) {
+                      const range = this._getLinkRange(node, model);
+                      if (range) {
+                        modelWriter.setAttribute('alightEmailLinkPluginOrgName', orgName, range);
+                      }
+                    }
+                  });
+                }
+              } catch (error) {
+                // Ignore errors in the mapping process
+                console.warn('Error mapping view to model:', error);
+              }
+            }
+          }
+        }
+      }
+    });
+
+    // Extra processing to ensure the DOM elements have the attributes
+    // This is a more direct approach to fix existing links in the DOM
+    setTimeout(() => {
+      // Direct DOM manipulation to ensure orgnameattr is set for existing links
+      const editorElement = editor.editing.view.getDomRoot();
+      if (editorElement) {
+        const links = editorElement.querySelectorAll('a[data-id="email_editor"]:not([orgnameattr])');
+        links.forEach(link => {
+          // Get text content and normalize to handle possible non-breaking spaces
+          const linkText = link.textContent?.replace(/\u00A0/g, ' ') || '';
+          const match = linkText.match(/^(.*?)\s+\(([^)]+)\)$/);
+          if (match && match[2]) {
+            const orgName = match[2];
+
+            // Direct DOM update
+            link.setAttribute('orgnameattr', orgName);
+
+            // Also update the model (via a view change)
+            editor.editing.view.change(writer => {
+              // Get the view root
+              const viewRoot = editor.editing.view.document.getRoot();
+              if (!viewRoot) return;
+
+              // Create a new range to search in
+              const newViewRange = editor.editing.view.createRangeIn(viewRoot);
+
+              // Find the matching link by comparing DOM elements
+              for (const viewItem of newViewRange.getItems()) {
+                if (viewItem.is('element', 'a') &&
+                  viewItem.getAttribute('data-id') === 'email_editor' &&
+                  !viewItem.hasAttribute('orgnameattr')) {
+
+                  // Check if this is the same DOM element
+                  const domLink = editor.editing.view.domConverter.mapViewToDom(viewItem);
+                  if (domLink === link) {
+                    writer.setAttribute('orgnameattr', orgName, viewItem);
+                    break;
+                  }
+                }
+              }
+            });
+          }
+        });
+      }
+    }, 100);
+  }
+
+  /**
    * Finds and converts standard mailto links in the editor content
    * to use the AlightEmailLinkPlugin
    */
@@ -228,14 +388,29 @@ export default class EmailLinkHandler extends Plugin {
 
           if (typeof href === 'string' && href.startsWith('mailto:')) {
             // Get the link range
-            const linkRange = this._getMailtoLinkRange(item, model);
+            const linkRange = this._getLinkRange(item, model);
 
             if (linkRange) {
+              // Check for organization name in the link text
+              const linkText = this._getLinkText(linkRange);
+              let orgName = null;
+
+              // Try to extract org name from text format "text (org name)"
+              const match = linkText.match(/^(.*?)\s+\(([^)]+)\)$/);
+              if (match && match[2]) {
+                orgName = match[2];
+              }
+
               // Remove the standard link attribute
               writer.removeAttribute('linkHref', linkRange);
 
               // Apply our custom link attribute
               writer.setAttribute('alightEmailLinkPluginHref', href, linkRange);
+
+              // Add organization name attribute if found
+              if (orgName) {
+                writer.setAttribute('alightEmailLinkPluginOrgName', orgName, linkRange);
+              }
             }
           }
         }
@@ -244,10 +419,23 @@ export default class EmailLinkHandler extends Plugin {
   }
 
   /**
-   * Gets the range for a mailto link
+   * Gets the text content of a link range
    */
-  private _getMailtoLinkRange(textNode: any, model: any): any {
-    const href = textNode.getAttribute('linkHref');
+  private _getLinkText(linkRange: Range): string {
+    let text = '';
+    for (const item of linkRange.getItems()) {
+      if (item.is('$text') || item.is('$textProxy')) {
+        text += item.data;
+      }
+    }
+    return text;
+  }
+
+  /**
+   * Gets the range for a link
+   */
+  private _getLinkRange(textNode: any, model: any): Range | null {
+    const href = textNode.getAttribute('linkHref') || textNode.getAttribute('alightEmailLinkPluginHref');
 
     if (!href) {
       return null;
@@ -263,7 +451,8 @@ export default class EmailLinkHandler extends Plugin {
     // Extend to previous nodes with the same link
     while (pos.parent.previousSibling &&
       pos.parent.previousSibling.is('$text') &&
-      pos.parent.previousSibling.getAttribute('linkHref') === href) {
+      (pos.parent.previousSibling.getAttribute('linkHref') === href ||
+        pos.parent.previousSibling.getAttribute('alightEmailLinkPluginHref') === href)) {
       pos = model.createPositionBefore(pos.parent.previousSibling);
     }
 
@@ -271,7 +460,8 @@ export default class EmailLinkHandler extends Plugin {
     pos = endPos;
     while (pos.parent.nextSibling &&
       pos.parent.nextSibling.is('$text') &&
-      pos.parent.nextSibling.getAttribute('linkHref') === href) {
+      (pos.parent.nextSibling.getAttribute('linkHref') === href ||
+        pos.parent.nextSibling.getAttribute('alightEmailLinkPluginHref') === href)) {
       endPos = model.createPositionAfter(pos.parent.nextSibling);
       pos = endPos;
     }

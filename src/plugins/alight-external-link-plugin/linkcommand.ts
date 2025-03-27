@@ -274,7 +274,7 @@ export default class AlightExternalLinkPluginCommand extends Command {
             model
           );
 
-          // NEW CODE: Ensure organization attribute is set if it exists in text
+          // Ensure organization attribute is set if it exists in text
           if (!organization) {
             const extractedOrg = this._ensureOrganizationAttribute(writer, linkRange);
             if (extractedOrg) {

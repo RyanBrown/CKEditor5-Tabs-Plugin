@@ -17,7 +17,7 @@ import AlightEmailLinkPluginEditing from './linkediting';
 import LinkActionsView from './ui/linkactionsview';
 import type AlightEmailLinkPluginCommand from './linkcommand';
 import type AlightEmailUnlinkCommand from './unlinkcommand';
-import { isLinkElement, extractOrganizationFromAttribute } from './utils';
+import { isLinkElement } from './utils';
 import { CkAlightModalDialog } from './../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 
 import linkIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
@@ -222,24 +222,8 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     const linkCommand = editor.commands.get('alight-email-link') as AlightEmailLinkPluginCommand;
     const unlinkCommand = editor.commands.get('alight-email-unlink') as AlightEmailUnlinkCommand;
 
-    // We DO NOT bind href directly here - it's now bound in the LinkActionsView constructor
-    // actionsView.bind('href').to(linkCommand, 'value');  <-- REMOVE THIS LINE
-
-    // Instead, update the property when command value changes
-    linkCommand.on('change:value', (evt, name, value) => {
-      actionsView.set('href', value);
-    });
-
-    // Make sure to also update the organization value when it changes
-    linkCommand.on('change:organization', (evt, name, value) => {
-      actionsView.set('organization', value);
-    });
-
-    // Set initial values
-    actionsView.set({
-      href: linkCommand.value,
-      organization: linkCommand.organization
-    });
+    // This is the key binding - ensure it's correctly bound to the command's value
+    actionsView.bind('href').to(linkCommand, 'value');
 
     actionsView.editButtonView.bind('isEnabled').to(linkCommand);
     actionsView.unlinkButtonView.bind('isEnabled').to(unlinkCommand);
@@ -409,7 +393,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     const linkCommand = editor.commands.get('alight-email-link') as AlightEmailLinkPluginCommand;
     const selectedLink = this._getSelectedLinkElement();
 
-    // Store the editing state
+    // Store edit mode state
     this._isEditing = isEditing;
 
     // Create modal if it doesn't exist
@@ -466,10 +450,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
             emailLink = 'mailto:' + emailLink;
           }
 
-          // Execute the command with the organization as custom data
-          // Pass the organization even if empty to ensure removal of existing organization
-          // We need to explicitly set organization to an empty string if needed to ensure
-          // it properly removes an existing organization
+          // If we get here, the URL is valid, so execute the command
           editor.execute('alight-email-link', emailLink, { organization });
 
           // Close the modal
@@ -521,13 +502,6 @@ export default class AlightEmailLinkPluginUI extends Plugin {
           // First try to get organization from the command
           if (linkCommand.organization !== undefined) {
             organizationInput.value = linkCommand.organization;
-          }
-          // If not found in command, try to get from selected link attribute
-          else if (selectedLink) {
-            const orgName = extractOrganizationFromAttribute(selectedLink);
-            if (orgName) {
-              organizationInput.value = orgName;
-            }
           }
 
           // Update continue button state
@@ -636,11 +610,11 @@ export default class AlightEmailLinkPluginUI extends Plugin {
           <label for="ck-email-input" class="cka-input-label">${t('Email address')}</label>
           <input id="ck-email-input" type="email" class="cka-input-text cka-width-100" placeholder="${t('user@example.com')}" required/>
           <div id="ck-email-error" class="cka-error-message" style="display:none;"></div>
-        </div>
-        <div class="cka-form-group mt-4">
-          <label for="ck-organization-input" class="cka-input-label">${t('Organization name (optional)')}</label>
-          <input id="ck-organization-input" type="text" class="cka-input-text cka-width-100" placeholder="${t('Organization name')}"/>
-          <div class="cka-note-text mt-1">${t('Specify the third-party organization to inform users about the destination of the link.')}</div>
+          </div>
+          <div class="cka-form-group mt-4">
+            <label for="ck-organization-input" class="cka-input-label">${t('Organization name (optional)')}</label>
+            <input id="ck-organization-input" type="text" class="cka-input-text cka-width-100" placeholder="${t('Organization name')}"/>
+            <div class="cka-note-text mt-1">${t('Specify the third-party organization to inform users about the destination of the link.')}</div>
         </div>
       </div>
     `;

@@ -54,6 +54,11 @@ export default class AlightExternalLinkPluginUI extends Plugin {
   private _isUpdatingUI: boolean = false;
 
   /**
+   * Shows the modal dialog for link editing.
+   */
+  private _isEditing: boolean = false;
+
+  /**
    * @inheritDoc
    */
   public static get requires() {
@@ -448,11 +453,6 @@ export default class AlightExternalLinkPluginUI extends Plugin {
     const href = linkElement.getAttribute('href');
     return typeof href === 'string' && (href.startsWith('http://') || href.startsWith('https://'));
   }
-
-  /**
-   * Shows the modal dialog for link editing.
-   */
-  private _isEditing: boolean = false;
 
   /**
    * Shows the modal dialog for link editing.
