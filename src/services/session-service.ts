@@ -43,7 +43,6 @@ export default class SessionService {
   public static get sessionToken(): string {
     return SessionService.getInstance().sessionToken;
   }
-
   public get sessionToken(): string {
     return this.sessionMap.get(this.dummyColleagueSessionTokenKey)!;
   }
@@ -51,12 +50,7 @@ export default class SessionService {
     return this.sessionMap.get(this.dummyRequestHeaderKey)!;
   }
   public get clientId(): string {
-    try {
-      const headerObj = JSON.parse(this.sessionMap.get(this.dummyRequestHeaderKey) || '{}');
-      return headerObj?.clientId;
-    } catch (e) {
-      return '';
-    }
+    return JSON.parse(this.sessionMap.get(this.dummyRequestHeaderKey))?.clientId;
   }
 
   // Added method to check if this is a Mockaroo API
