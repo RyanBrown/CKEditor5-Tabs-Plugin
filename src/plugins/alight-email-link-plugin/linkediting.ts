@@ -9,7 +9,8 @@ import type {
   ViewElement,
   ViewDocumentKeyDownEvent,
   ViewDocumentClickEvent,
-  DocumentSelectionChangeAttributeEvent
+  DocumentSelectionChangeAttributeEvent,
+  DowncastConversionApi
 } from '@ckeditor/ckeditor5-engine';
 import {
   Input,
@@ -45,6 +46,10 @@ const HIGHLIGHT_CLASS = 'ck-alight-email-link_selected';
 const DECORATOR_AUTOMATIC = 'automatic';
 const DECORATOR_MANUAL = 'manual';
 const EXTERNAL_LINKS_REGEXP = /^(https?:)?\/\//;
+
+interface ExtendedDowncastConversionApi extends DowncastConversionApi {
+  item?: any; // Using any for now, but a more specific type would be better
+}
 
 /**
  * The email link engine feature.
@@ -102,27 +107,65 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
       (editor.config.get('link.allowedProtocols') as string[] ||
         ['https?', 'ftps?', 'mailto']);
 
-    // Allow link attribute on all inline nodes.
+    // Allow link attributes on all inline nodes.
     editor.model.schema.extend('$text', { allowAttributes: 'alightEmailLinkPluginHref' });
 
-    // Add a high-priority dataDowncast converter
-    editor.conversion.for('dataDowncast')
-      .attributeToElement({
-        model: 'alightEmailLinkPluginHref',
-        view: createLinkElement,
-        converterPriority: 'high'
-      });
+    // Add organization name attribute to the schema
+    editor.model.schema.extend('$text', { allowAttributes: 'orgnameattr' });
 
-    // Add a high-priority editingDowncast converter
-    editor.conversion.for('editingDowncast')
-      .attributeToElement({
-        model: 'alightEmailLinkPluginHref',
-        view: (href, conversionApi) => {
-          if (!href) return null;
-          return createLinkElement(ensureSafeUrl(href, allowedProtocols), conversionApi);
-        },
-        converterPriority: 'high'
-      });
+    // Add dataDowncast converter for the href attribute
+    editor.conversion.for('dataDowncast').attributeToElement({
+      model: 'alightEmailLinkPluginHref',
+      view: (href: string, conversionApi: DowncastConversionApi) => {
+        if (!href) return null;
+
+        // Get the organization name from the model item if available
+        const attrs: Record<string, string> = {};
+        const extendedApi = conversionApi as ExtendedDowncastConversionApi;
+        const item = extendedApi.item;
+
+        if (item && typeof item.getAttribute === 'function' && item.hasAttribute('orgnameattr')) {
+          attrs.orgnameattr = item.getAttribute('orgnameattr');
+        }
+
+        return createLinkElement(href, { ...conversionApi, attrs, item });
+      },
+      converterPriority: 'high'
+    });
+
+    // Add editingDowncast converter for the href attribute
+    editor.conversion.for('editingDowncast').attributeToElement({
+      model: 'alightEmailLinkPluginHref',
+      view: (href: string, conversionApi: DowncastConversionApi) => {
+        if (!href) return null;
+
+        // Get the organization name from the model item if available
+        const attrs: Record<string, string> = {};
+        const extendedApi = conversionApi as ExtendedDowncastConversionApi;
+        const item = extendedApi.item;
+
+        if (item && typeof item.getAttribute === 'function' && item.hasAttribute('orgnameattr')) {
+          attrs.orgnameattr = item.getAttribute('orgnameattr');
+        }
+
+        return createLinkElement(ensureSafeUrl(href, allowedProtocols), { ...conversionApi, attrs, item });
+      },
+      converterPriority: 'high'
+    });
+
+    editor.conversion.for('editingDowncast').attributeToElement({
+      model: 'orgnameattr',
+      view: (value, conversionApi) => {
+        // Create a custom attribute with the org name
+        return conversionApi.writer.createAttributeElement('span', {
+          'orgnameattr': value
+        }, { priority: 6 }); // Higher priority than link converter
+      },
+      converterPriority: 'high'
+    });
+
+    // Add conversion for the organization name attribute
+    this._setupOrganizationNameConverters();
 
     // High-priority upcast converter specifically for mailto links
     editor.conversion.for('upcast')
@@ -141,6 +184,52 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
         converterPriority: 'high'
       });
 
+    // Add upcast converter for organization name attribute
+    editor.conversion.for('upcast').attributeToAttribute({
+      view: {
+        name: 'a',
+        key: 'orgnameattr'
+      },
+      model: 'orgnameattr',
+      converterPriority: 'high'
+    });
+
+    // Add upcast converter to extract organization names from link text
+    editor.conversion.for('upcast').add(dispatcher => {
+      dispatcher.on('element:a', (evt, data, conversionApi) => {
+        // Skip if this is not an upcast process or if the link doesn't have href
+        if (!conversionApi.consumable.test(data.viewItem, { name: true }) ||
+          !data.viewItem.hasAttribute('href') ||
+          !conversionApi.consumable.test(data.viewItem, { attributes: ['href'] })) {
+          return;
+        }
+
+        const href = data.viewItem.getAttribute('href');
+        if (!href || typeof href !== 'string' || !href.startsWith('mailto:')) {
+          return;
+        }
+
+        // Check if the link already has an organization name attribute
+        if (!data.viewItem.hasAttribute('orgnameattr')) {
+          // Get the text content of the link
+          let linkText = '';
+          for (const child of data.viewItem.getChildren()) {
+            if (child.is('$text')) {
+              linkText += child.data;
+            }
+          }
+
+          // Extract organization name from text format "text (org name)"
+          const match = linkText.match(/^(.*?)\s+\(([^)]+)\)$/);
+          if (match && match[2]) {
+            const orgName = match[2];
+
+            // Set the organization name attribute in the model
+            conversionApi.writer.setAttribute('orgnameattr', orgName, data.modelRange);
+          }
+        }
+      });
+    });
 
     // General upcast converter for all links
     editor.conversion.for('upcast')
@@ -191,6 +280,204 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
 
     // Handle adding default protocol to pasted links.
     this._enableClipboardIntegration();
+
+    // Process existing links to add organization name attribute if needed
+    this._setupOrganizationNameProcessing();
+  }
+
+  /**
+   * Setup special converters to handle organization name extraction and application
+   */
+  private _setupOrganizationNameConverters(): void {
+    const editor = this.editor;
+
+    // Add a converter to handle organization name changes
+    editor.conversion.for('downcast').add(dispatcher => {
+      // When orgnameattr attribute changes
+      dispatcher.on('attribute:orgnameattr', (evt, data, conversionApi) => {
+        // Skip if we can't consume it
+        if (!conversionApi.consumable.consume(data.item, evt.name)) {
+          return;
+        }
+
+        // We only care about text nodes with the href attribute
+        if (!data.item.is('$text') || !data.item.hasAttribute('alightEmailLinkPluginHref')) {
+          return;
+        }
+
+        const viewWriter = conversionApi.writer;
+        const viewRange = conversionApi.mapper.toViewRange(data.range);
+
+        // Find the parent 'a' element
+        let linkElement = null;
+        for (const item of viewRange.getItems()) {
+          if (item.is('$text')) {
+            const parent = item.parent;
+            if (parent && parent.is('element', 'a')) {
+              linkElement = parent;
+              break;
+            }
+          }
+        }
+
+        // If we found the link element, update its orgnameattr
+        if (linkElement) {
+          if (data.attributeNewValue) {
+            viewWriter.setAttribute('orgnameattr', data.attributeNewValue, linkElement);
+          } else {
+            viewWriter.removeAttribute('orgnameattr', linkElement);
+          }
+        }
+      });
+
+      // Process links when they're created to ensure organization info is included
+      dispatcher.on('attribute:alightEmailLinkPluginHref', (evt, data, conversionApi) => {
+        if (data.item.is('$text') &&
+          data.attributeNewValue &&
+          data.item.hasAttribute('orgnameattr')) {
+
+          // Consume the org name attribute so it can be applied to the element
+          conversionApi.consumable.consume(data.item, 'attribute:orgnameattr');
+
+          const viewRange = conversionApi.mapper.toViewRange(data.range);
+
+          // Find the newly created 'a' element
+          for (const item of viewRange.getItems()) {
+            if (item.is('$text')) {
+              const parent = item.parent;
+              if (parent && parent.is('element', 'a')) {
+                // Set the orgnameattr on the link element
+                const orgName = data.item.getAttribute('orgnameattr');
+                conversionApi.writer.setAttribute('orgnameattr', orgName, parent);
+                break;
+              }
+            }
+          }
+        }
+      });
+    });
+  }
+
+  /**
+   * Sets up processing of organization names in links
+   */
+  private _setupOrganizationNameProcessing(): void {
+    const editor = this.editor;
+
+    // Process links when editor is ready
+    this.listenTo(editor, 'ready', () => {
+      this._processOrganizationNamesInLinks();
+    });
+
+    // Process links when data is loaded
+    this.listenTo(editor.data, 'loaded', () => {
+      this._processOrganizationNamesInLinks();
+    });
+
+    // Process links when the model changes
+    this.listenTo(editor.model.document, 'change', () => {
+      this._processOrganizationNamesInLinks();
+    });
+  }
+
+  /**
+   * Processes all links in the editor to ensure organization names are properly applied
+   */
+  private _processOrganizationNamesInLinks(): void {
+    const editor = this.editor;
+    const model = editor.model;
+
+    model.change(writer => {
+      const root = model.document.getRoot();
+      if (!root) return;
+
+      const range = model.createRangeIn(root);
+
+      for (const item of range.getItems()) {
+        // Only process text nodes with links
+        if (item.is('$text') && item.hasAttribute('alightEmailLinkPluginHref')) {
+          // Check if the text has the format "text (org name)" but no org attribute
+          if (!item.hasAttribute('orgnameattr')) {
+            // Replace any non-breaking spaces with regular spaces for consistent matching
+            const normalizedText = item.data.replace(/\u00A0/g, ' ');
+            const match = normalizedText.match(/^(.*?)\s+\(([^)]+)\)$/);
+
+            if (match && match[2]) {
+              const orgName = match[2];
+
+              // Get the range of the entire link
+              const href = item.getAttribute('alightEmailLinkPluginHref');
+              const linkRange = findAttributeRange(
+                model.createPositionBefore(item),
+                'alightEmailLinkPluginHref',
+                href,
+                model
+              );
+
+              // Apply the organization name attribute
+              writer.setAttribute('orgnameattr', orgName, linkRange);
+            }
+          }
+          // If there's an org attribute but the text doesn't have it, add it to the text
+          else {
+            const orgName = item.getAttribute('orgnameattr');
+            // Replace any non-breaking spaces with regular spaces for consistent matching
+            const normalizedText = item.data.replace(/\u00A0/g, ' ');
+            const match = normalizedText.match(/^(.*?)\s+\([^)]+\)$/);
+
+            // Only modify if no organization is already in the text
+            if (!match && orgName) {
+              // Extract base text (remove any existing org names)
+              let baseText = item.data;
+
+              // Add the organization name to the text
+              const newText = `${baseText} (${orgName})`;
+
+              // Replace the text while preserving attributes
+              const attributes: Record<string, unknown> = {};
+              for (const [key, value] of item.getAttributes()) {
+                attributes[key] = value;
+              }
+
+              const position = model.createPositionBefore(item);
+
+              // Remove the old text and insert the new one
+              writer.remove(item);
+              writer.insert(writer.createText(newText, attributes), position);
+            }
+          }
+        }
+      }
+    });
+  }
+
+  /**
+   * Helper function to find the attribute range for a specific attribute
+   */
+  private findAttributeRange(position: any, attributeName: string, attributeValue: any, model: any): any {
+    // Get the text node at position
+    const node = position.textNode || position.nodeBefore;
+
+    if (!node || !node.is('$text') || !node.hasAttribute(attributeName)) {
+      return null;
+    }
+
+    // Find the start of the range
+    let start = model.createPositionBefore(node);
+
+    // Find the end of the range
+    let end = model.createPositionAfter(node);
+    let currentNode = node.nextSibling;
+
+    // Expand to include adjacent nodes with the same attribute
+    while (currentNode && currentNode.is('$text') &&
+      currentNode.hasAttribute(attributeName) &&
+      currentNode.getAttribute(attributeName) === attributeValue) {
+      end = model.createPositionAfter(currentNode);
+      currentNode = currentNode.nextSibling;
+    }
+
+    return model.createRange(start, end);
   }
 
   /**
@@ -232,13 +519,9 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
   }
 
   /**
-   * Processes an array of configured {@link module:link/linkconfig~LinkDecoratorManualDefinition manual decorators},
-   * transforms them into {@link module:link/utils/manualdecorator~ManualDecorator} instances and stores them in the
-   * {@link module:link/AlightEmailLinkPluginCommand~AlightEmailLinkPluginCommand#manualDecorators} collection (a model for manual decorators state).
-   *
-   * Also registers an {@link module:engine/conversion/downcasthelpers~DowncastHelpers#attributeToElement attribute-to-element}
-   * converter for each manual decorator and extends the {@link module:engine/model/schema~Schema model's schema}
-   * with adequate model attributes.
+   * Processes an array of configured manual decorators,
+   * transforms them into ManualDecorator instances and stores them in the
+   * AlightEmailLinkPluginCommand#manualDecorators collection (a model for manual decorators state).
    */
   private _enableManualDecorators(manualDecoratorDefinitions: Array<NormalizedLinkDecoratorManualDefinition>): void {
     if (!manualDecoratorDefinitions.length) {
@@ -430,6 +713,7 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
  */
 function removeLinkAttributesFromSelection(writer: Writer, linkAttributes: Array<string>): void {
   writer.removeSelectionAttribute('alightEmailLinkPluginHref');
+  writer.removeSelectionAttribute('orgnameattr');
 
   for (const attribute of linkAttributes) {
     writer.removeSelectionAttribute(attribute);
@@ -446,4 +730,46 @@ function getLinkAttributesAllowedOnText(schema: Schema): Array<string> {
     typeof attribute === 'string' &&
     (attribute.startsWith('link') || attribute.startsWith('alightEmail'))
   );
+}
+
+/**
+ * Helper function to find attribute range.
+ */
+function findAttributeRange(position: any, attributeName: string, attributeValue: any, model: any): any {
+  const node = position.textNode;
+
+  if (!node) {
+    return null;
+  }
+
+  // Get current node's attribute value
+  const nodeAttributeValue = node.getAttribute(attributeName);
+
+  // If the node doesn't have the attribute or it's a different value
+  if (nodeAttributeValue !== attributeValue) {
+    return null;
+  }
+
+  let start = position.clone();
+  let end = position.clone();
+
+  // Find the start position (move backward while attribute value is the same)
+  while (start.textNode && start.textNode.getAttribute(attributeName) === attributeValue) {
+    start = start.getShiftedBy(-1);
+  }
+
+  // Adjust start position - we moved one too far back
+  start = start.getShiftedBy(1);
+
+  // Find the end position (move forward while attribute value is the same)
+  while (end.textNode && end.textNode.getAttribute(attributeName) === attributeValue) {
+    end = end.getShiftedBy(1);
+  }
+
+  // The range must be non-empty
+  if (start.isEqual(end)) {
+    return null;
+  }
+
+  return model.createRange(start, end);
 }

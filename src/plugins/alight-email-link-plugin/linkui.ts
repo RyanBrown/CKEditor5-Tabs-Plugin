@@ -17,8 +17,8 @@ import AlightEmailLinkPluginEditing from './linkediting';
 import LinkActionsView from './ui/linkactionsview';
 import type AlightEmailLinkPluginCommand from './linkcommand';
 import type AlightEmailUnlinkCommand from './unlinkcommand';
-import { isLinkElement } from './utils';
-import { CkAlightModalDialog } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
+import { isLinkElement, extractOrganizationFromAttribute } from './utils';
+import { CkAlightModalDialog } from './../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 
 import linkIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 
@@ -51,6 +51,11 @@ export default class AlightEmailLinkPluginUI extends Plugin {
    * Track if we are currently updating the UI to prevent recursive calls
    */
   private _isUpdatingUI: boolean = false;
+
+  /**
+   * Tracks whether we're editing an existing link (true) or creating a new one (false)
+   */
+  private _isEditing: boolean = false;
 
   /**
    * @inheritDoc
@@ -217,8 +222,24 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     const linkCommand = editor.commands.get('alight-email-link') as AlightEmailLinkPluginCommand;
     const unlinkCommand = editor.commands.get('alight-email-unlink') as AlightEmailUnlinkCommand;
 
-    // This is the key binding - ensure it's correctly bound to the command's value
-    actionsView.bind('href').to(linkCommand, 'value');
+    // We DO NOT bind href directly here - it's now bound in the LinkActionsView constructor
+    // actionsView.bind('href').to(linkCommand, 'value');  <-- REMOVE THIS LINE
+
+    // Instead, update the property when command value changes
+    linkCommand.on('change:value', (evt, name, value) => {
+      actionsView.set('href', value);
+    });
+
+    // Make sure to also update the organization value when it changes
+    linkCommand.on('change:organization', (evt, name, value) => {
+      actionsView.set('organization', value);
+    });
+
+    // Set initial values
+    actionsView.set({
+      href: linkCommand.value,
+      organization: linkCommand.organization
+    });
 
     actionsView.editButtonView.bind('isEnabled').to(linkCommand);
     actionsView.unlinkButtonView.bind('isEnabled').to(unlinkCommand);
@@ -380,13 +401,16 @@ export default class AlightEmailLinkPluginUI extends Plugin {
   }
 
   /**
-  * Shows the modal dialog for link editing.
-  */
+   * Shows the modal dialog for link editing.
+   */
   private _showUI(isEditing: boolean = false): void {
     const editor = this.editor;
     const t = editor.t;
     const linkCommand = editor.commands.get('alight-email-link') as AlightEmailLinkPluginCommand;
     const selectedLink = this._getSelectedLinkElement();
+
+    // Store the editing state
+    this._isEditing = isEditing;
 
     // Create modal if it doesn't exist
     if (!this._modalDialog) {
@@ -446,8 +470,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
           // Pass the organization even if empty to ensure removal of existing organization
           // We need to explicitly set organization to an empty string if needed to ensure
           // it properly removes an existing organization
-          const organizationOption = organization !== undefined ? organization : '';
-          editor.execute('alight-email-link', emailLink, { organization: organizationOption });
+          editor.execute('alight-email-link', emailLink, { organization });
 
           // Close the modal
           if (this._modalDialog) {
@@ -458,6 +481,12 @@ export default class AlightEmailLinkPluginUI extends Plugin {
             this._modalDialog.hide();
           }
         }
+      });
+
+      // Add event listener for when the modal is closed
+      this._modalDialog.on('close', () => {
+        // Reset edit mode when modal is closed
+        this._isEditing = false;
       });
     }
 
@@ -489,35 +518,15 @@ export default class AlightEmailLinkPluginUI extends Plugin {
 
           emailInput.value = email;
 
-          // Get organization from the selection's text content directly
-          const view = this.editor.editing.view;
-          const domConverter = view.domConverter;
-          const selectedElement = this._getSelectedLinkElement();
-
-          if (selectedElement) {
-            try {
-              // Get the DOM element from the view element
-              const domElement = domConverter.mapViewToDom(selectedElement);
-              if (domElement) {
-                // Get the text content directly from the DOM
-                const fullText = domElement.textContent || '';
-
-                // Debug the content we're working with
-                console.log('Link text content:', fullText);
-
-                // Use a more precise regex to extract organization from parentheses at the end
-                const orgRegex = /^(.+?)\s+\(([^)]+)\)$/;
-                const match = fullText.match(orgRegex);
-
-                if (match && match[2]) {
-                  console.log('Found organization:', match[2]);
-                  organizationInput.value = match[2];
-                } else {
-                  console.log('No organization found in text:', fullText);
-                }
-              }
-            } catch (error) {
-              console.error('Error extracting organization:', error);
+          // First try to get organization from the command
+          if (linkCommand.organization !== undefined) {
+            organizationInput.value = linkCommand.organization;
+          }
+          // If not found in command, try to get from selected link attribute
+          else if (selectedLink) {
+            const orgName = extractOrganizationFromAttribute(selectedLink);
+            if (orgName) {
+              organizationInput.value = orgName;
             }
           }
 
@@ -594,6 +603,9 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     this._isUpdatingUI = true;
 
     try {
+      // Reset edit mode state
+      this._isEditing = false;
+
       // Hide the balloon if it's showing
       if (this.actionsView && this._balloon && this._balloon.hasView(this.actionsView)) {
         this._balloon.remove(this.actionsView);
@@ -601,6 +613,11 @@ export default class AlightEmailLinkPluginUI extends Plugin {
         if (this._balloon) {
           this.stopListening(this._balloon, 'change:visibleView');
         }
+      }
+
+      // Hide the modal if it's showing
+      if (this._modalDialog && this._modalDialog.isVisible) {
+        this._modalDialog.hide();
       }
     } catch (error) {
       console.error('Error hiding UI:', error);
@@ -618,8 +635,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
         <div class="cka-form-group">
           <label for="ck-email-input" class="cka-input-label">${t('Email address')}</label>
           <input id="ck-email-input" type="email" class="cka-input-text cka-width-100" placeholder="${t('user@example.com')}" required/>
-          <div id="ck-email-error" class="cka-error-message"></div>
-          <div class="cka-error-message">${t('Enter a valid email address or a mailto: link')}</div>
+          <div id="ck-email-error" class="cka-error-message" style="display:none;"></div>
         </div>
         <div class="cka-form-group mt-4">
           <label for="ck-organization-input" class="cka-input-label">${t('Organization name (optional)')}</label>

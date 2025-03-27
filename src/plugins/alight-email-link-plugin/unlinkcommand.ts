@@ -58,8 +58,16 @@ export default class AlightEmailUnlinkCommand extends Command {
 
         writer.removeAttribute('alightEmailLinkPluginHref', range);
 
+        // Also remove the organization name attribute
+        writer.removeAttribute('orgnameattr', range);
+
         // If there are registered custom attributes, then remove them during unlink.
         if (linkCommand) {
+          // Clear the organization property in the command
+          if (typeof linkCommand.organization !== 'undefined') {
+            linkCommand.organization = undefined;
+          }
+
           for (const manualDecorator of linkCommand.manualDecorators) {
             writer.removeAttribute(manualDecorator.id, range);
           }
@@ -105,7 +113,7 @@ export default class AlightEmailUnlinkCommand extends Command {
         // Create a new node with the same attributes but updated text
         const attrs: Record<string, unknown> = {};
         for (const [key, value] of node.getAttributes()) {
-          if (key !== 'alightEmailLinkPluginHref') {
+          if (key !== 'alightEmailLinkPluginHref' && key !== 'orgnameattr') {
             attrs[key] = value;
           }
         }
@@ -160,7 +168,7 @@ export default class AlightEmailUnlinkCommand extends Command {
           // Get attributes from the original node
           const attrs: Record<string, unknown> = {};
           for (const [key, value] of text.node.getAttributes()) {
-            if (key !== 'alightEmailLinkPluginHref') {
+            if (key !== 'alightEmailLinkPluginHref' && key !== 'orgnameattr') {
               attrs[key] = value;
             }
           }

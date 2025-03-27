@@ -22,6 +22,14 @@ import type { LinkActionsViewOptions } from './ui/linkactionsview';
 
 import { upperFirst } from 'lodash-es';
 
+/**
+ * Extended interface for DowncastConversionApi with our custom properties
+ */
+export interface ExtendedConversionApi extends DowncastConversionApi {
+  attrs?: Record<string, string>;
+  item?: any; // Using any for now, would be better to use a more specific type
+}
+
 const ATTRIBUTE_WHITESPACES = /[\u0000-\u0020\u00A0\u1680\u180E\u2000-\u2029\u205f\u3000]/g; // eslint-disable-line no-control-regex
 
 const SAFE_URL_TEMPLATE = '^(?:(?:<protocols>):|[^a-z]|[a-z+.-]+(?:[^a-z+.:-]|$))';
@@ -47,16 +55,47 @@ export function isLinkElement(node: ViewNode | ViewDocumentFragment): boolean {
 }
 
 /**
- * Creates a link {@link module:engine/view/attributeelement~AttributeElement} with the provided `href` attribute.
+ * Extracts organization name from the orgnameattr attribute
  */
-export function createLinkElement(href: string, { writer }: DowncastConversionApi): ViewAttributeElement {
-  // Priority 5 - https://github.com/ckeditor/ckeditor5-link/issues/121.
-  const linkElement = writer.createAttributeElement('a', {
-    href,
-    'data-id': 'email_editor'
-  }, { priority: 5 });
+export function extractOrganizationFromAttribute(linkElement: ViewAttributeElement | null): string | null {
+  if (linkElement && linkElement.hasAttribute('orgnameattr')) {
+    return linkElement.getAttribute('orgnameattr') as string;
+  }
+  return null;
+}
 
-  writer.setCustomProperty('alight-email-link', true, linkElement);
+/**
+ * Creates a link {@link module:engine/view/attributeelement~AttributeElement} with the provided `href` attribute.
+ * Adds the organization name attribute if it exists in the model or can be extracted from text content.
+ */
+export function createLinkElement(href: string, conversionApi: ExtendedConversionApi): ViewAttributeElement {
+  // Start with default attributes
+  const attributes: Record<string, string> = {
+    href,
+    'data-id': 'email_editor',
+    ...(conversionApi.attrs || {})
+  };
+
+  // If no orgnameattr was provided but the item has the attribute
+  if (!attributes.orgnameattr && conversionApi.item) {
+    // First, check if the item has the organization attribute
+    if (conversionApi.item.hasAttribute && conversionApi.item.hasAttribute('orgnameattr')) {
+      attributes.orgnameattr = conversionApi.item.getAttribute('orgnameattr');
+    }
+    // If not, try to extract from text content
+    else if (conversionApi.item.is && conversionApi.item.is('$text') && conversionApi.item.data) {
+      // Replace any non-breaking spaces with regular spaces for consistency
+      const itemData = conversionApi.item.data.replace(/\u00A0/g, ' ');
+      const match = itemData.match(/^(.*?)\\s+\\(([^)]+)\\)$/);
+      if (match && match[2]) {
+        attributes.orgnameattr = match[2];
+      }
+    }
+  }
+
+  // Create the link element with attributes
+  const linkElement = conversionApi.writer.createAttributeElement('a', attributes, { priority: 5 });
+  conversionApi.writer.setCustomProperty('alight-email-link', true, linkElement);
 
   return linkElement;
 }
@@ -295,6 +334,71 @@ export function formatEmailWithOrganization(email: string, organization: string 
  */
 export function isMailtoLink(url: string): boolean {
   return url.startsWith('mailto:');
+}
+
+/**
+ * Removes the organization name from text, specifically looking for text
+ * with the pattern "text (organization name)"
+ * 
+ * @param text The original text that might contain an organization name
+ * @returns Text with organization name removed
+ */
+export function removeOrganizationName(text: string): string {
+  return text.replace(/\s+\([^)]+\)$/, '');
+}
+
+/**
+ * Adds organization name to text in the format "text (organization name)"
+ * 
+ * @param text The base text
+ * @param organization The organization name to add
+ * @returns Text with organization name appended
+ */
+export function addOrganizationName(text: string, organization: string): string {
+  // First remove any existing organization
+  const baseText = removeOrganizationName(text);
+  return `${baseText} (${organization})`;
+}
+
+/**
+ * Extracts and applies the organization name attribute to links that have the format
+ * "text (org name)" but don't already have the orgnameattr attribute
+ * 
+ * @param textNode The text node to process
+ * @param writer The writer to use for making changes
+ * @returns The organization name if found, or undefined if not found
+ */
+export function extractAndApplyOrganizationName(textNode: any, writer: any): string | undefined {
+  // Skip if not a text node
+  if (!textNode || !textNode.is || !textNode.is('$text')) {
+    return undefined;
+  }
+
+  // Check if the node already has an organization name attribute
+  if (textNode.hasAttribute('orgnameattr')) {
+    return textNode.getAttribute('orgnameattr');
+  }
+
+  // Try to extract from text content
+  const textData = textNode.data;
+  if (!textData) {
+    return undefined;
+  }
+
+  // Look for text format "text (org name)"
+  const match = textData.match(/^(.*?)\s+\(([^)]+)\)$/);
+  if (match && match[2]) {
+    const orgName = match[2];
+
+    // If found, apply it to the text node
+    if (writer) {
+      writer.setAttribute('orgnameattr', orgName, textNode);
+    }
+
+    return orgName;
+  }
+
+  return undefined;
 }
 
 export type NormalizedLinkDecoratorAutomaticDefinition = LinkDecoratorAutomaticDefinition & { id: string };

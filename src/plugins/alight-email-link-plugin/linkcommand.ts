@@ -6,6 +6,7 @@ import { Collection, first, toMap } from '@ckeditor/ckeditor5-utils';
 import AutomaticDecorators from './utils/automaticdecorators';
 import { isLinkableElement, isEmail, ensureMailtoLink } from './utils';
 import type ManualDecorator from './utils/manualdecorator';
+import { Writer } from '@ckeditor/ckeditor5-engine';
 
 /**
  * Interface for link options including organization name
@@ -13,6 +14,17 @@ import type ManualDecorator from './utils/manualdecorator';
 interface LinkOptions {
   [key: string]: boolean | string | undefined;
   organization?: string;
+}
+
+/**
+ * Interface for text nodes in CKEditor
+ */
+interface TextNode {
+  is: (type: string) => boolean;
+  hasAttribute?: (name: string) => boolean;
+  getAttribute?: (name: string) => any;
+  data: string;
+  getAttributes?: () => Iterable<[string, unknown]>;
 }
 
 /**
@@ -27,6 +39,13 @@ export default class AlightEmailLinkPluginCommand extends Command {
    * @readonly
    */
   declare public value: string | undefined;
+
+  /**
+   * The organization name associated with the current link, if any.
+   * @observable
+   * @readonly
+   */
+  declare public organization: string | undefined;
 
   /**
    * A collection of {@link module:link/utils/manualdecorator~ManualDecorator manual decorators}
@@ -72,6 +91,132 @@ export default class AlightEmailLinkPluginCommand extends Command {
     for (const manualDecorator of this.manualDecorators) {
       manualDecorator.value = this._getDecoratorStateFromModel(manualDecorator.id);
     }
+
+    // Update the organization property by extracting it from the selection
+    this._refreshOrganization();
+  }
+
+  /**
+   * Helper method to check if an item is a text node with data
+   * @private
+   */
+  private _isTextNode(item: any): item is TextNode {
+    return item &&
+      typeof item.is === 'function' &&
+      (item.is('$text') || item.is('$textProxy')) &&
+      typeof item.data === 'string';
+  }
+
+  /**
+   * Extracts the organization name from the current link text and updates the organization property.
+   * @private
+   */
+  private _refreshOrganization(): void {
+    this.organization = undefined;
+
+    const model = this.editor.model;
+    const selection = model.document.selection;
+
+    if (!selection || !this.value) {
+      return;
+    }
+
+    // Check if the organization is stored in the attribute first
+    if (selection.hasAttribute('orgnameattr')) {
+      this.organization = selection.getAttribute('orgnameattr') as string;
+      return;
+    }
+
+    // If not found in attributes, try to extract from the text
+    // Get the range containing the link
+    let linkRange;
+
+    if (selection.isCollapsed) {
+      linkRange = findAttributeRange(
+        selection.getFirstPosition()!,
+        'alightEmailLinkPluginHref',
+        this.value,
+        model
+      );
+    } else {
+      // We're in a selection, so we need to find all ranges with the link attribute
+      const ranges = model.schema.getValidRanges(selection.getRanges(), 'alightEmailLinkPluginHref');
+      linkRange = ranges.next().value; // Get the first range
+
+      if (!linkRange) {
+        return;
+      }
+    }
+
+    if (!linkRange) {
+      return;
+    }
+
+    // Extract all text from the link range
+    let fullText = '';
+    for (const item of linkRange.getItems()) {
+      if (this._isTextNode(item)) {
+        fullText += item.data;
+      }
+    }
+
+    // Extract the organization part if it exists
+    const match = fullText.match(/^(.+?)\s+\(([^)]+)\)$/);
+    if (match && match[2]) {
+      this.organization = match[2];
+
+      // Add the organization attribute to the model if we found it in the text but it's not in the model
+      const hasOrgAttr = selection.hasAttribute('orgnameattr');
+      if (!hasOrgAttr) {
+        model.change(writer => {
+          writer.setAttribute('orgnameattr', match[2], linkRange);
+        });
+      }
+    }
+  }
+
+  /**
+   * Extracts organization name from text if it follows the pattern "text (organization)"
+   * and applies it as an attribute if not already present
+   * 
+   * @param writer The model writer
+   * @param range The range of the link
+   * @returns The extracted organization name or undefined
+   */
+  private _ensureOrganizationAttribute(writer: Writer, range: any): string | undefined {
+    // Get all text in the range
+    const textNodes = Array.from(range.getItems()).filter(item => this._isTextNode(item)) as TextNode[];
+
+    if (textNodes.length === 0) {
+      return undefined;
+    }
+
+    // Check if any node already has the organization attribute
+    const nodeWithOrg = textNodes.find(node =>
+      node.hasAttribute && node.hasAttribute('orgnameattr')
+    );
+
+    if (nodeWithOrg && nodeWithOrg.getAttribute) {
+      return nodeWithOrg.getAttribute('orgnameattr') as string;
+    }
+
+    // Combine all text into a single string
+    let fullText = '';
+    for (const node of textNodes) {
+      fullText += node.data;
+    }
+
+    // Extract organization pattern from the text
+    const match = fullText.match(/^(.*?)\s+\(([^)]+)\)$/);
+    if (match && match[2]) {
+      const orgName = match[2];
+      // Apply the attribute to the entire range
+      writer.setAttribute('orgnameattr', orgName, range);
+      // Log to verify this is happening
+      console.log('Applied orgnameattr:', orgName);
+      return orgName;
+    }
+    return undefined;
   }
 
   /**
@@ -132,7 +277,7 @@ export default class AlightEmailLinkPluginCommand extends Command {
 
           // First, collect the current link text without organization name
           let baseText = '';
-          const textNodes = Array.from(linkRange.getItems()).filter(item => item.is('$text') || item.is('$textProxy'));
+          const textNodes = Array.from(linkRange.getItems()).filter(item => this._isTextNode(item)) as TextNode[];
 
           for (const node of textNodes) {
             baseText += node.data;
@@ -156,7 +301,15 @@ export default class AlightEmailLinkPluginCommand extends Command {
           writer.remove(linkRange);
 
           // Insert new content with proper attribute
-          const attributes = { alightEmailLinkPluginHref: href } as any;
+          const attributes: Record<string, unknown> = {
+            alightEmailLinkPluginHref: href
+          };
+
+          // Add the organization name attribute if provided
+          if (organization) {
+            attributes.orgnameattr = organization;
+            console.log('Setting orgnameattr in linkcommand execute:', organization);
+          }
 
           // Add decorators
           truthyManualDecorators.forEach(item => {
@@ -164,9 +317,9 @@ export default class AlightEmailLinkPluginCommand extends Command {
           });
 
           // Get additional formatting attributes (bold, italic, etc.)
-          if (textNodes.length > 0) {
+          if (textNodes.length > 0 && textNodes[0].getAttributes) {
             for (const [key, value] of textNodes[0].getAttributes()) {
-              if (key !== 'alightEmailLinkPluginHref' && !attributes[key]) {
+              if (key !== 'alightEmailLinkPluginHref' && key !== 'orgnameattr' && !attributes[key]) {
                 attributes[key] = value;
               }
             }
@@ -183,6 +336,11 @@ export default class AlightEmailLinkPluginCommand extends Command {
           const attributes = toMap(selection.getAttributes());
 
           attributes.set('alightEmailLinkPluginHref', href);
+
+          // Add orgnameattr if organization exists
+          if (organization) {
+            attributes.set('orgnameattr', organization);
+          }
 
           // Add manual decorator attributes
           for (const decorator of truthyManualDecorators) {
@@ -204,9 +362,8 @@ export default class AlightEmailLinkPluginCommand extends Command {
           writer.setSelection(positionAfter);
         }
 
-        // Remove the `alightEmailLinkPluginHref` attribute and all link decorators from the selection.
-        // It stops adding a new content into the link element.
-        ['alightEmailLinkPluginHref', ...truthyManualDecorators, ...falsyManualDecorators].forEach(item => {
+        // Remove the attributes from the selection
+        ['alightEmailLinkPluginHref', 'orgnameattr', ...truthyManualDecorators, ...falsyManualDecorators].forEach(item => {
           writer.removeSelectionAttribute(item);
         });
       } else {
@@ -219,7 +376,7 @@ export default class AlightEmailLinkPluginCommand extends Command {
         // Extract just the base text without organizations
         for (const range of selection.getRanges()) {
           for (const item of range.getItems()) {
-            if (item.is('$text') || item.is('$textProxy')) {
+            if (this._isTextNode(item)) {
               selectedText += item.data;
             }
           }
@@ -241,13 +398,28 @@ export default class AlightEmailLinkPluginCommand extends Command {
 
         // Process each range
         for (const range of ranges) {
-          // Store formatting attributes from the first text node
-          const attributes = { alightEmailLinkPluginHref: href } as any;
-          const firstNode = Array.from(range.getItems()).find(item => item.is('$text') || item.is('$textProxy'));
+          // Use the _ensureOrganizationAttribute method to handle text processing
+          // This will extract the organization name from text if present
+          const existingOrgName = this._ensureOrganizationAttribute(writer, range);
 
-          if (firstNode) {
+          // If there's an organization option provided, it takes precedence
+          const finalOrgName = options.organization !== undefined ? options.organization : existingOrgName;
+
+          // Store formatting attributes from the first text node
+          const attributes: Record<string, unknown> = {
+            alightEmailLinkPluginHref: href
+          };
+
+          // Add the organization name attribute if provided
+          if (finalOrgName) {
+            attributes.orgnameattr = finalOrgName;
+          }
+
+          const firstNode = Array.from(range.getItems()).find(item => this._isTextNode(item)) as TextNode | undefined;
+
+          if (firstNode && firstNode.getAttributes) {
             for (const [key, value] of firstNode.getAttributes()) {
-              if (key !== 'alightEmailLinkPluginHref') {
+              if (key !== 'alightEmailLinkPluginHref' && key !== 'orgnameattr' && !attributes[key]) {
                 attributes[key] = value;
               }
             }
@@ -266,6 +438,9 @@ export default class AlightEmailLinkPluginCommand extends Command {
           model.insertContent(newText, range.start);
         }
       }
+
+      // Update the organization property
+      this.organization = organization || undefined;
     });
   }
 
