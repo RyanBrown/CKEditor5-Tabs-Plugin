@@ -133,7 +133,7 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
     });
   }
 
-  protected override setModalContents = async (): Promise<void> => {
+  protected override setModalContents = (): void => {
     if (this.verboseMode) console.log(`Loading Existing Document Links...`);
     this.loadService.loadDocumentLinks().then(
       (data) => {
@@ -217,7 +217,7 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
       const button = this._createButton(MenuBarMenuListItemButtonView);
 
       button.set({
-        isEnabled: true,
+        isEnabled: this.isReady,
         role: 'menuitemcheckbox'
       });
 
@@ -230,10 +230,10 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
     const editor = this.editor;
     const locale = editor.locale;
     const command = editor.commands.get('alight-existing-document-link')!;
-    const view = new ButtonClass(editor.locale) as InstanceType<T>;
+    this.buttonView = new ButtonClass(editor.locale) as InstanceType<T>;
     const t = locale.t;
 
-    view.set({
+    this.buttonView.set({
       isEnabled: this.isReady,
       label: t('Existing document link'),
       icon: linkIcon,
@@ -309,7 +309,7 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
   private async _findDocumentLinkByUrl(url: string): Promise<DocumentLink | null> {
     try {
       // Find the matching link by URL - compare regardless of trailing slash or protocol differences
-      return this._documentLinks.find(link => {
+      return this._documentLinks?.find(link => {
         const normalizedDestination = this._normalizeUrl(link.serverFilePath as string);
         const normalizedUrl = this._normalizeUrl(url);
         return normalizedDestination === normalizedUrl;
@@ -559,7 +559,7 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
 
     // Then fetch data and initialize the content manager in the background
     try {
-      if (this._documentLinks.length === 0) {
+      if (this._documentLinks?.length === 0) {
         // Show message if no links found
         const linksContainer = customContent.querySelector('#links-container');
         if (linksContainer) {

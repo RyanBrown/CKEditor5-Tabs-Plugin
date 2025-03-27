@@ -28,7 +28,7 @@ export default class AlightNewDocumentLinkPluginUI extends AlightDataLoadPlugin 
 
   protected override setModalContents = async (): Promise<void> => {
     if (this.verboseMode) console.log(`Loading Categories...`);
-    let categories = await this._formManager?.setModalContents();
+    let categories = await this._formManager.setModalContents();
     if (this.verboseMode) console.log(categories);
     this.isReady = true;
     this._enablePluginButton();
@@ -42,7 +42,10 @@ export default class AlightNewDocumentLinkPluginUI extends AlightDataLoadPlugin 
       this.buttonView = new ButtonView(locale);
       this.setModalContents();
 
+      const command = editor.commands.get('alightNewDocumentLinkPlugin')!;
+
       this.buttonView.set({
+        isEnabled: this.isReady,
         label: t('New Document'),
         icon: ToolBarIcon,
         tooltip: true,
