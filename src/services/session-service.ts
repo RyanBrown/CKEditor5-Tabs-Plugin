@@ -26,7 +26,7 @@ export default class SessionService {
     }
   }
 
-  public static getInstance = (): SessionService => {
+  public static getInstance(): SessionService {
     if (SessionService.instance === null) {
       throw new Error('Instance not yet created. Call create(Storage storage) first.');
     }
