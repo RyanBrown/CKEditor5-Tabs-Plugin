@@ -4,12 +4,12 @@ import { DataSources } from './data-sources';
 import { IReadSource, IWriteSource } from '../base-source/data-source';
 
 class DataSourceDocsPaths extends DataSources {
-
   protected static getPath = `dummy-path/content/documentPath`;
   protected static postPath = `dummy-path/document/files`;
 }
 
 class DataSourceCategories extends DataSourceDocsPaths implements IReadSource {
+
   private static folderPath = `categories-path/Categories`;
 
   constructor(host: string, clientId: string) {

@@ -33,18 +33,18 @@ export default class LinksFetchService extends HttpService {
       return Promise.resolve(existingDocSampleData.documentList as DocumentLink[]);
 
     let dataSource: IReadSource = new DataSourceDocs(this.alightRequest._apiUrl, this.alightRequest._clientId);
-    return this.get(dataSource).then(
-      response => JSON.parse(response).documentList as DocumentLink[]);
+    return this.get(dataSource)
+      .then(response => JSON.parse(response).documentList as DocumentLink[]);
   }
 
   public fetchCategories = (): Promise<string[]> => {
 
     if (this._categorySampleMode)
-      return Promise.resolve(categorySampleData.categories as string[]);
+      return Promise.resolve(categorySampleData.categoryList as string[]);
 
-    let dataSource: IReadSource = new DataSourceDocs(this.alightRequest._apiUrl, this.alightRequest._clientId);
-    return this.get(dataSource).then(
-      response => JSON.parse(response).categories as string[]);
+    let dataSource: IReadSourceDocs = new DataSourceDocs(this.alightRequest._apiUrl, this.alightRequest._clientId);
+    return this.get(dataSource.dataSourceCategory)
+      .then(response => JSON.parse(response).categoryList as string[]);
   }
 
   public saveDocument = (document: Record<string, any>): Promise<string> => {

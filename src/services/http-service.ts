@@ -5,7 +5,6 @@ import AlightRequest from './alight-request';
 export default class HttpService {
 
   public readonly alightRequest: AlightRequest;
-
   constructor(alightRequest: AlightRequest) {
     this.alightRequest = alightRequest;
   }

@@ -13,8 +13,8 @@ export abstract class AlightPlugin extends Plugin {
 
   protected linkPluginsConfig = this.editor.config.get('toolbar.items');
   protected parentLinkPluginConfig = this.editor.config.get('alightParentLinkPlugin.linkPlugin') as LinkPluginConfig[] | undefined;
-  protected get isConfigureActive(): boolean {
-    return this.linkPluginsConfig.find(item => item.toString().toLowerCase() === this.pluginName.toLowerCase()) !== null
-      || this.parentLinkPluginConfig?.find(plugin => plugin.uiName === this.pluginName)?.enabled;
+  protected get isConfiguredActive(): boolean {
+    return this.linkPluginsConfig.find(item => item.toString().toLowerCase() === this.pluginName.toLowerCase()) != null
+      || this.parentLinkPluginConfig.find(plugin => plugin.uiName === this.pluginName)?.enabled;
   }
 }

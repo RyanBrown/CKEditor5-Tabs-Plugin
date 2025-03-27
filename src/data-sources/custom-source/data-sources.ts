@@ -3,7 +3,6 @@ import { DataSourcePost } from '../base-source/data-source-post';
 import { IReadSource, IWriteSource } from '../base-source/data-source';
 
 export abstract class DataSources implements IReadSource, IWriteSource {
-
   protected _get: DataSourceGet;
   protected _post: DataSourcePost;
 

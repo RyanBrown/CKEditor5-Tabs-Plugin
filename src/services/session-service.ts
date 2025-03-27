@@ -7,11 +7,22 @@ export default class SessionService {
   private readonly dummyColleagueSessionTokenKey: string = 'dummyColleagueSessionToken';
   private readonly dummyRequestHeaderKey: string = 'dummyRequestHeader';
 
-  private _sessionMap: Map<string, string> = new Map<string, string>([
-    [this.apiUrlKey, sessionStorage.getItem(this.apiUrlKey)!],
-    [this.dummyColleagueSessionTokenKey, sessionStorage.getItem(this.dummyColleagueSessionTokenKey)!],
-    [this.dummyRequestHeaderKey, sessionStorage.getItem(this.dummyRequestHeaderKey)!],
-  ]);
+  private static instance: SessionService = null;
+  private _sessionMap: Map<string, string>;
+
+  private constructor(sessionStg?: Storage) {
+    this._sessionMap = new Map<string, string>([
+      [this.apiUrlKey, sessionStg?.getItem(this.apiUrlKey)!],
+      [this.dummyColleagueSessionTokenKey, sessionStg?.getItem(this.dummyColleagueSessionTokenKey)!],
+      [this.dummyRequestHeaderKey, sessionStg?.getItem(this.dummyRequestHeaderKey)!],
+    ]);
+  }
+
+  public static getInstance = (sessionStg?: Storage): SessionService => {
+    if (!SessionService.instance)
+      SessionService.instance = new SessionService(sessionStg);
+    return SessionService.instance;
+  }
   public get apiUrl(): string {
     return this._sessionMap.get(this.apiUrlKey)!;
   }
