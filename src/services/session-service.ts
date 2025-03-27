@@ -8,23 +8,22 @@ export default class SessionService {
   private readonly dummyRequestHeaderKey: string = 'dummyRequestHeader';
 
   private static instance: SessionService = null;
-  private _sessionMap: Map<string, string>;
+  private sessionMap: Map<string, string>;
 
   private constructor(sessionStorage?: Storage) {
-    this._sessionMap = new Map<string, string>([
+    this.sessionMap = new Map<string, string>([
       [this.apiUrlKey, sessionStorage.getItem(this.apiUrlKey)!],
       [this.dummyColleagueSessionTokenKey, sessionStorage.getItem(this.dummyColleagueSessionTokenKey)!],
       [this.dummyRequestHeaderKey, sessionStorage.getItem(this.dummyRequestHeaderKey)!],
     ]);
   }
 
-  public static getInstance = (sessionStorage?: Storage): SessionService => {
-    if (!SessionService.instance === null) {
+  public static create(sessionStorage?: Storage): void {
+    if (SessionService.instance === null) {
       SessionService.instance = new SessionService(sessionStorage);
     } else {
       throw new Error('Instance already created');
     }
-    return SessionService.instance;
   }
 
   public static getInstance = (): SessionService => {
@@ -34,18 +33,26 @@ export default class SessionService {
     return SessionService.instance;
   }
 
-  public get apiUrl(): string {
-    return this._sessionMap.get(this.apiUrlKey)!;
+  public static getAlightRequest = (): AlightRequest => SessionService.getInstance().alightRequest;
+  public get alightRequest(): AlightRequest {
+    return new AlightRequest(this.apiUrl, this.requestHeader, this.sessionToken, this.clientId);
   }
+  public get apiUrl(): string {
+    return this.sessionMap.get(this.apiUrlKey)!;
+  }
+  public static get sessionToken(): string {
+    return SessionService.getInstance().sessionToken;
+  }
+
   public get sessionToken(): string {
-    return this._sessionMap.get(this.dummyColleagueSessionTokenKey)!;
+    return this.sessionMap.get(this.dummyColleagueSessionTokenKey)!;
   }
   public get requestHeader(): string {
-    return this._sessionMap.get(this.dummyRequestHeaderKey)!;
+    return this.sessionMap.get(this.dummyRequestHeaderKey)!;
   }
   public get clientId(): string {
     try {
-      const headerObj = JSON.parse(this._sessionMap.get(this.dummyRequestHeaderKey) || '{}');
+      const headerObj = JSON.parse(this.sessionMap.get(this.dummyRequestHeaderKey) || '{}');
       return headerObj?.clientId;
     } catch (e) {
       return '';
