@@ -110,13 +110,15 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
         view: {
           name: 'a',
           attributes: {
-            href: true
+            href: true,
+            'data-id': 'existing-document-editor'
           }
         },
         model: {
           key: 'AlightExistingDocumentLinkPluginHref',
           value: (viewElement: ViewElement) => viewElement.getAttribute('href')
-        }
+        },
+        converterPriority: 'high'
       });
 
     // Create linking commands.

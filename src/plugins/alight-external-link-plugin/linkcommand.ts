@@ -2,10 +2,10 @@
 import { Command } from '@ckeditor/ckeditor5-core';
 import { findAttributeRange } from '@ckeditor/ckeditor5-typing';
 import { Collection, first, toMap } from '@ckeditor/ckeditor5-utils';
-import type { Range, DocumentSelection, Model, Writer } from '@ckeditor/ckeditor5-engine';
+import type { Range, Writer } from '@ckeditor/ckeditor5-engine';
 
 import AutomaticDecorators from './utils/automaticdecorators';
-import { isLinkableElement, isValidUrl, ensureUrlProtocol } from './utils';
+import { isLinkableElement, isValidUrl, ensureUrlProtocol, isLegacyEditorLink } from './utils';
 import type ManualDecorator from './utils/manualdecorator';
 
 /**
@@ -99,6 +99,13 @@ export default class AlightExternalLinkPluginCommand extends Command {
       return;
     }
 
+    // Check if the organization is stored in the attribute first
+    if (selection.hasAttribute('alightExternalLinkPluginOrgName')) {
+      this.organization = selection.getAttribute('alightExternalLinkPluginOrgName') as string;
+      return;
+    }
+
+    // If not found in attributes, try to extract from the text
     // Get the range containing the link
     let linkRange;
 
@@ -135,7 +142,59 @@ export default class AlightExternalLinkPluginCommand extends Command {
     const match = fullText.match(/^(.+?)\s+\(([^)]+)\)$/);
     if (match && match[2]) {
       this.organization = match[2];
+
+      // Add the organization attribute to the model if we found it in the text but it's not in the model
+      const hasOrgAttr = selection.hasAttribute('alightExternalLinkPluginOrgName');
+      if (!hasOrgAttr) {
+        model.change(writer => {
+          writer.setAttribute('alightExternalLinkPluginOrgName', match[2], linkRange);
+        });
+      }
     }
+  }
+
+  /**
+   * Extracts organization name from text if it follows the pattern "text (organization)"
+   * and applies it as an attribute if not already present
+   * 
+   * @param writer The model writer
+   * @param range The range of the link
+   * @returns The extracted organization name or undefined
+   */
+  private _ensureOrganizationAttribute(writer: Writer, range: Range): string | undefined {
+    // Get all text in the range
+    const textNodes = Array.from(range.getItems()).filter(item =>
+      item.is('$text') || item.is('$textProxy')
+    );
+
+    if (textNodes.length === 0) {
+      return undefined;
+    }
+
+    // Check if any node already has the organization attribute
+    const nodeWithOrg = textNodes.find(node => node.hasAttribute('alightExternalLinkPluginOrgName'));
+    if (nodeWithOrg) {
+      return nodeWithOrg.getAttribute('alightExternalLinkPluginOrgName') as string;
+    }
+
+    // Combine all text into a single string
+    let fullText = '';
+    for (const node of textNodes) {
+      fullText += node.data;
+    }
+
+    // Extract organization pattern from the text
+    const match = fullText.match(/^(.*?)\s+\(([^)]+)\)$/);
+    if (match && match[2]) {
+      const orgName = match[2];
+
+      // Apply the attribute to the entire range
+      writer.setAttribute('alightExternalLinkPluginOrgName', orgName, range);
+
+      return orgName;
+    }
+
+    return undefined;
   }
 
   /**
@@ -156,12 +215,27 @@ export default class AlightExternalLinkPluginCommand extends Command {
    * @param options Options including manual decorator attributes and organization name.
    */
   public override execute(href: string, options: LinkOptions = {}): void {
+    // Check if the current link has a special suffix we need to preserve
+    let specialSuffix = '';
+    if (this.value) {
+      if (this.value.includes('~public_editor_id')) {
+        specialSuffix = '~public_editor_id';
+      } else if (this.value.includes('~intranet_editor_id')) {
+        specialSuffix = '~intranet_editor_id';
+      }
+    }
+
     // Ensure the URL has a protocol and is HTTP/HTTPS only
     href = ensureUrlProtocol(href, !href.startsWith('http://'));
 
-    // If the URL is not HTTP/HTTPS, don't proceed
-    if (!href.startsWith('http://') && !href.startsWith('https://')) {
-      console.warn('AlightExternalLinkPlugin only supports HTTP and HTTPS URLs.');
+    // Add the special suffix if needed and not already present
+    if (specialSuffix && !href.includes(specialSuffix)) {
+      href = href + specialSuffix;
+    }
+
+    // If the URL is not HTTP/HTTPS and doesn't have a special suffix, don't proceed
+    if (!href.startsWith('http://') && !href.startsWith('https://') && !isLegacyEditorLink(href)) {
+      console.warn('AlightExternalLinkPlugin only supports HTTP and HTTPS URLs or special editor links.');
       return;
     }
 
@@ -200,6 +274,15 @@ export default class AlightExternalLinkPluginCommand extends Command {
             model
           );
 
+          // Ensure organization attribute is set if it exists in text
+          if (!organization) {
+            const extractedOrg = this._ensureOrganizationAttribute(writer, linkRange);
+            if (extractedOrg) {
+              // Update the options with the extracted organization
+              options.organization = extractedOrg;
+            }
+          }
+
           // First, collect the current link text without organization name
           let baseText = '';
           const textNodes = Array.from(linkRange.getItems()).filter(item => item.is('$text') || item.is('$textProxy'));
@@ -231,7 +314,14 @@ export default class AlightExternalLinkPluginCommand extends Command {
           writer.remove(linkRange);
 
           // Insert new content with proper attribute
-          const attributes = { alightExternalLinkPluginHref: href } as any;
+          const attributes = {
+            alightExternalLinkPluginHref: href
+          } as any;
+
+          // Add the organization name attribute if provided
+          if (organization) {
+            attributes.alightExternalLinkPluginOrgName = organization;
+          }
 
           // Add decorators
           truthyManualDecorators.forEach(item => {
@@ -241,7 +331,9 @@ export default class AlightExternalLinkPluginCommand extends Command {
           // Get additional formatting attributes (bold, italic, etc.)
           if (textNodes.length > 0) {
             for (const [key, value] of textNodes[0].getAttributes()) {
-              if (key !== 'alightExternalLinkPluginHref' && !attributes[key]) {
+              if (key !== 'alightExternalLinkPluginHref' &&
+                key !== 'alightExternalLinkPluginOrgName' &&
+                !attributes[key]) {
                 attributes[key] = value;
               }
             }
@@ -258,6 +350,11 @@ export default class AlightExternalLinkPluginCommand extends Command {
           const attributes = toMap(selection.getAttributes());
 
           attributes.set('alightExternalLinkPluginHref', href);
+
+          // Add the organization name attribute if provided
+          if (organization) {
+            attributes.set('alightExternalLinkPluginOrgName', organization);
+          }
 
           truthyManualDecorators.forEach(item => {
             attributes.set(item, true);
@@ -280,7 +377,7 @@ export default class AlightExternalLinkPluginCommand extends Command {
 
         // Remove the `alightExternalLinkPluginHref` attribute and all link decorators from the selection.
         // It stops adding a new content into the link element.
-        ['alightExternalLinkPluginHref', ...truthyManualDecorators, ...falsyManualDecorators].forEach(item => {
+        ['alightExternalLinkPluginHref', 'alightExternalLinkPluginOrgName', ...truthyManualDecorators, ...falsyManualDecorators].forEach(item => {
           writer.removeSelectionAttribute(item);
         });
       } else {
@@ -321,12 +418,22 @@ export default class AlightExternalLinkPluginCommand extends Command {
         // Process each range
         for (const range of ranges) {
           // Store formatting attributes from the first text node
-          const attributes = { alightExternalLinkPluginHref: href } as any;
+          const attributes = {
+            alightExternalLinkPluginHref: href
+          } as any;
+
+          // Add the organization name attribute if provided
+          if (organization) {
+            attributes.alightExternalLinkPluginOrgName = organization;
+          }
+
           const firstNode = Array.from(range.getItems()).find(item => item.is('$text') || item.is('$textProxy'));
 
           if (firstNode) {
             for (const [key, value] of firstNode.getAttributes()) {
-              if (key !== 'alightExternalLinkPluginHref' && !attributes[key]) {
+              if (key !== 'alightExternalLinkPluginHref' &&
+                key !== 'alightExternalLinkPluginOrgName' &&
+                !attributes[key]) {
                 attributes[key] = value;
               }
             }

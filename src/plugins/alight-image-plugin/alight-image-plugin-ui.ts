@@ -21,7 +21,7 @@ export default class AlightImagePluginUI extends Plugin {
       const buttonView = dropdown.buttonView;
       buttonView.set({
         icon: ToolBarIcon,
-        label: t('Insert Alight Image'),
+        label: t('Insert image'),
         tooltip: true,
         withText: false,
       });
@@ -42,8 +42,8 @@ export default class AlightImagePluginUI extends Plugin {
 
       // Items
       const itemDefinitions = [
-        { label: t('Existing Image'), command: 'imageOption1' },
-        { label: t('Upload Image'), command: 'imageOption2' },
+        { label: t('Existing image'), command: 'imageOption1' },
+        { label: t('Upload image'), command: 'imageOption2' },
       ];
 
       itemDefinitions.forEach((item) => {

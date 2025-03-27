@@ -256,7 +256,7 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
     const t = locale.t;
 
     view.set({
-      label: t('Alight Existing Document Link'),
+      label: t('Existing document link'),
       icon: linkIcon,
       isToggleable: true,
       withText: true
@@ -502,6 +502,12 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
     let initialUrl = '';
     let initialLink: DocumentLink | null = null;
 
+    // Remove the existing document suffix for display
+    if (initialUrl.includes('~existing_document_editor_id')) {
+      const displayUrl = initialUrl.replace('~existing_document_editor_id', '');
+      console.log('Editing existing document link:', displayUrl);
+    }
+
     if (isEditing && linkCommand.value) {
       initialUrl = linkCommand.value as string;
 
@@ -516,7 +522,7 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
     // Create modal if it doesn't exist
     if (!this._modalDialog) {
       this._modalDialog = new CkAlightModalDialog({
-        title: isEditing ? t('Edit Existing Document Link') : t('Create Existing Document Link'),
+        title: isEditing ? t('Edit existing document link') : t('Create existing document link'),
         modal: true,
         width: '80vw',
         height: 'auto',
@@ -570,7 +576,7 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
       });
     } else {
       // Update title if modal already exists
-      this._modalDialog.setTitle(isEditing ? t('Edit Existing Document Link') : t('Create Existing Document Link'));
+      this._modalDialog.setTitle(isEditing ? t('Edit existing document link') : t('Create existing document link'));
     }
 
     // Use our custom content first for faster loading

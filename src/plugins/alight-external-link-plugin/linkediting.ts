@@ -105,11 +105,26 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
     // Allow link attribute on all inline nodes.
     editor.model.schema.extend('$text', { allowAttributes: 'alightExternalLinkPluginHref' });
 
+    // Add a schema definition for the organization name attribute
+    editor.model.schema.extend('$text', { allowAttributes: 'alightExternalLinkPluginOrgName' });
+
     // Add a high-priority dataDowncast converter
     editor.conversion.for('dataDowncast')
       .attributeToElement({
         model: 'alightExternalLinkPluginHref',
-        view: createLinkElement,
+        view: (href, conversionApi) => {
+          const linkCommand = editor.commands.get('alight-external-link') as AlightExternalLinkPluginCommand;
+
+          // Build attributes object
+          const attrs: Record<string, string> = {};
+
+          // Use the organization name from the link command if available
+          if (linkCommand && linkCommand.organization) {
+            attrs.orgnameattr = linkCommand.organization;
+          }
+
+          return createLinkElement(href, { ...conversionApi, attrs });
+        },
         converterPriority: 'high'
       });
 
@@ -118,10 +133,23 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
       .attributeToElement({
         model: 'alightExternalLinkPluginHref',
         view: (href, conversionApi) => {
-          return createLinkElement(ensureSafeUrl(href, allowedProtocols), conversionApi);
+          const linkCommand = editor.commands.get('alight-external-link') as AlightExternalLinkPluginCommand;
+
+          // Build attributes object
+          const attrs: Record<string, string> = {};
+
+          // Use the organization name from the link command if available
+          if (linkCommand && linkCommand.organization) {
+            attrs.orgnameattr = linkCommand.organization;
+          }
+
+          return createLinkElement(ensureSafeUrl(href, allowedProtocols), { ...conversionApi, attrs });
         },
         converterPriority: 'high'
       });
+
+    // Use the custom converter for organization names instead of attributeToAttribute
+    this._setupOrganizationNameExtraction();
 
     // Upcast converter for all links - we'll filter non-HTTP/HTTPS later
     editor.conversion.for('upcast')
@@ -137,8 +165,14 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
           value: (viewElement: ViewElement) => {
             const href = viewElement.getAttribute('href');
 
-            // Filter out non-HTTP/HTTPS URLs during upcast
+            // Filter links during upcast
             if (typeof href === 'string') {
+              // Accept special editor links
+              if (href.includes('~public_editor_id') || href.includes('~intranet_editor_id')) {
+                return href;
+              }
+
+              // Accept regular http/https links
               if (href.startsWith('http://') || href.startsWith('https://')) {
                 return href;
               } else if (/^www\..+$/i.test(href)) {
@@ -153,6 +187,115 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
         },
         converterPriority: 'normal'
       });
+
+    // Add upcast converter for organization name attribute
+    editor.conversion.for('upcast')
+      .attributeToAttribute({
+        view: {
+          name: 'a',
+          key: 'orgnameattr'
+        },
+        model: {
+          key: 'alightExternalLinkPluginOrgName',
+          value: (viewElement: ViewElement) => {
+            return viewElement.getAttribute('orgnameattr');
+          }
+        }
+      });
+
+    // Enhanced upcast converter to extract organization names from link text
+    editor.conversion.for('upcast').add(dispatcher => {
+      dispatcher.on('element:a', (evt, data, conversionApi) => {
+        // Skip if this is not an upcast process
+        if (!conversionApi.consumable.test(data.viewItem, { name: true })) {
+          return;
+        }
+
+        // Skip if no href attribute or if it's already been consumed
+        if (!data.viewItem.hasAttribute('href') ||
+          !conversionApi.consumable.test(data.viewItem, { attributes: ['href'] })) {
+          return;
+        }
+
+        const href = data.viewItem.getAttribute('href');
+        if (!href || typeof href !== 'string') {
+          return;
+        }
+
+        // Only process http/https links (or legacy editor links)
+        if (!(href.startsWith('http://') ||
+          href.startsWith('https://') ||
+          href.includes('~public_editor_id') ||
+          href.includes('~intranet_editor_id'))) {
+          return;
+        }
+
+        // Check if the link already has an organization name attribute
+        const hasOrgAttr = data.viewItem.hasAttribute('orgnameattr');
+
+        // If it doesn't have an org attribute, try to extract it from the text content
+        if (!hasOrgAttr) {
+          // Get the text content of the link
+          let linkText = '';
+          for (const child of data.viewItem.getChildren()) {
+            if (child.is('$text')) {
+              linkText += child.data;
+            }
+          }
+
+          // Look for text in the format "text (org name)"
+          const match = linkText.match(/^(.*?)\s+\(([^)]+)\)$/);
+          if (match && match[2]) {
+            const orgName = match[2];
+
+            // Set the organization name attribute in the model
+            conversionApi.writer.setAttribute('alightExternalLinkPluginOrgName', orgName, data.modelRange);
+          }
+        }
+      });
+    });
+
+    // Run a post-processing step on all links to ensure organization names are properly handled
+    editor.conversion.for('dataDowncast').add(dispatcher => {
+      dispatcher.on('insert:$text', (evt, data, conversionApi) => {
+        // Skip if this is not a text node with a link
+        if (!data.item.hasAttribute('alightExternalLinkPluginHref')) {
+          return;
+        }
+
+        // Skip if the text node has already been consumed
+        if (!conversionApi.consumable.test(data.item, 'insert')) {
+          return;
+        }
+
+        // Get all attributes of the text node
+        const href = data.item.getAttribute('alightExternalLinkPluginHref');
+        const orgName = data.item.getAttribute('alightExternalLinkPluginOrgName');
+
+        // If there's organization in the attribute but not in the text, add it to the text
+        if (orgName && !data.item.data.includes(` (${orgName})`)) {
+          // Only modify if it doesn't already have an organization in the text
+          const match = data.item.data.match(/^(.*?)\s+\([^)]+\)$/);
+          if (!match) {
+            // Create the modified text with the organization name
+            const text = data.item.data + ` (${orgName})`;
+
+            // Map the model text to the view
+            const viewWriter = conversionApi.writer;
+            const viewPosition = conversionApi.mapper.toViewPosition(data.range.start);
+            const viewElement = viewWriter.createText(text);
+
+            // Insert the modified text
+            viewWriter.insert(viewPosition, viewElement);
+
+            // Consume the original text insertion
+            conversionApi.consumable.consume(data.item, 'insert');
+
+            evt.stop();
+          }
+        }
+      }, { priority: 'high' });
+    });
 
     // Create linking commands.
     editor.commands.add('alight-external-link', new AlightExternalLinkPluginCommand(editor));
@@ -222,13 +365,12 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
   }
 
   /**
-   * Processes an array of configured {@link module:link/linkconfig~LinkDecoratorManualDefinition manual decorators},
-   * transforms them into {@link module:link/utils/manualdecorator~ManualDecorator} instances and stores them in the
-   * {@link module:link/AlightExternalLinkPluginCommand~AlightExternalLinkPluginCommand#manualDecorators} collection (a model for manual decorators state).
+   * Processes an array of configured manual decorators,
+   * transforms them into ManualDecorator instances and stores them in the
+   * AlightExternalLinkPluginCommand#manualDecorators collection (a model for manual decorators state).
    *
-   * Also registers an {@link module:engine/conversion/downcasthelpers~DowncastHelpers#attributeToElement attribute-to-element}
-   * converter for each manual decorator and extends the {@link module:engine/model/schema~Schema model's schema}
-   * with adequate model attributes.
+   * Also registers an attribute-to-element converter for each manual decorator 
+   * and extends the model's schema with adequate model attributes.
    */
   private _enableManualDecorators(manualDecoratorDefinitions: Array<NormalizedLinkDecoratorManualDefinition>): void {
     if (!manualDecoratorDefinitions.length) {
@@ -282,6 +424,85 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
         },
         model: {
           key: decorator.id
+        }
+      });
+    });
+  }
+
+  /**
+   * Enhanced downcast converter for handling organization names
+   * This should be added to the init() method of AlightExternalLinkPluginEditing
+   */
+  private _setupOrganizationNameExtraction(): void {
+    const editor = this.editor;
+
+    // Replace the attributeToAttribute converter with a custom downcast converter for organization names
+    editor.conversion.for('downcast').add(dispatcher => {
+      // When alightExternalLinkPluginOrgName attribute changes
+      dispatcher.on('attribute:alightExternalLinkPluginOrgName', (evt, data, conversionApi) => {
+        // Skip if we can't consume it
+        if (!conversionApi.consumable.consume(data.item, evt.name)) {
+          return;
+        }
+
+        // We only care about text nodes with the href attribute
+        if (!data.item.is('$text') || !data.item.hasAttribute('alightExternalLinkPluginHref')) {
+          return;
+        }
+
+        const viewWriter = conversionApi.writer;
+        const orgName = data.attributeNewValue;
+
+        // Get the existing 'a' element for this link in the view
+        const viewRange = conversionApi.mapper.toViewRange(data.range);
+
+        // Find the parent 'a' element
+        let linkElement = null;
+        for (const item of viewRange.getItems()) {
+          if (item.is('$text')) {
+            const parent = item.parent;
+            if (parent && parent.is('element', 'a')) {
+              linkElement = parent;
+              break;
+            }
+          }
+        }
+
+        // If we found the link element, update its orgnameattr
+        if (linkElement) {
+          if (orgName) {
+            viewWriter.setAttribute('orgnameattr', orgName, linkElement);
+          } else {
+            viewWriter.removeAttribute('orgnameattr', linkElement);
+          }
+        }
+      });
+
+      // We also need to handle the case where the href attribute changes
+      dispatcher.on('attribute:alightExternalLinkPluginHref', (evt, data, conversionApi) => {
+        // Since we've already handled this in our primary converter, 
+        // just make sure org name is included if present
+        if (data.item.is('$text') &&
+          data.attributeNewValue &&
+          data.item.hasAttribute('alightExternalLinkPluginOrgName')) {
+
+          // Consume the org name attribute so it can be applied to the element
+          conversionApi.consumable.consume(data.item, 'attribute:alightExternalLinkPluginOrgName');
+
+          const viewRange = conversionApi.mapper.toViewRange(data.range);
+
+          // Find the newly created 'a' element
+          for (const item of viewRange.getItems()) {
+            if (item.is('$text')) {
+              const parent = item.parent;
+              if (parent && parent.is('element', 'a')) {
+                // Set the orgnameattr on the link element
+                const orgName = data.item.getAttribute('alightExternalLinkPluginOrgName');
+                conversionApi.writer.setAttribute('orgnameattr', orgName, parent);
+                break;
+              }
+            }
+          }
         }
       });
     });
@@ -415,6 +636,7 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
  */
 function removeLinkAttributesFromSelection(writer: Writer, linkAttributes: Array<string>): void {
   writer.removeSelectionAttribute('alightExternalLinkPluginHref');
+  writer.removeSelectionAttribute('alightExternalLinkPluginOrgName');
 
   for (const attribute of linkAttributes) {
     writer.removeSelectionAttribute(attribute);

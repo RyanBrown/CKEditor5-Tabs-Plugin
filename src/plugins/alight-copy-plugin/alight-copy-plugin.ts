@@ -25,7 +25,7 @@ export default class AlightCopyPlugin extends Plugin {
       const button = new ButtonView(locale);
 
       button.set({
-        label: t('Copy with Styles'),
+        label: t('Copy with formatting'),
         icon: ToolBarIcon,
         tooltip: true
       });

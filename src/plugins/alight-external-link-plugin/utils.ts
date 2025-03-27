@@ -45,12 +45,63 @@ export function isLinkElement(node: ViewNode | ViewDocumentFragment): boolean {
   return node.is('attributeElement') && !!node.getCustomProperty('alight-external-link');
 }
 
+// Helper function to detect legacy link types
+export function isLegacyEditorLink(url: string): boolean {
+  return url.includes('~public_editor_id') || url.includes('~intranet_editor_id');
+}
+
 /**
  * Creates a link {@link module:engine/view/attributeelement~AttributeElement} with the provided `href` attribute.
+ * Adds the organization name attribute if it exists in the model or can be extracted from text content.
+ * Handles non-breaking spaces and special characters in organization names.
  */
-export function createLinkElement(href: string, { writer }: DowncastConversionApi): ViewAttributeElement {
+export function createLinkElement(href: string, { writer, attrs = {}, item }: DowncastConversionApi & { attrs?: Record<string, string>; item?: any }): ViewAttributeElement {
+  // Start with default attributes
+  const attributes: Record<string, string> = {
+    href,
+    'data-id': 'external_editor',
+    ...attrs
+  };
+
+  // If no orgnameattr was provided but the text has format "text (org name)", extract the org name
+  if (!attributes.orgnameattr && item) {
+    // First, check if the item has the organization attribute
+    if (item.hasAttribute && item.hasAttribute('alightExternalLinkPluginOrgName')) {
+      attributes.orgnameattr = item.getAttribute('alightExternalLinkPluginOrgName');
+    }
+    // If not, try to extract from text content
+    else if (item.is && item.is('$text') && item.data) {
+      // Replace any non-breaking spaces with regular spaces for consistency
+      const itemData = item.data.replace(/\u00A0/g, ' ');
+      const match = itemData.match(/^(.*?)\s+\(([^)]+)\)$/);
+      if (match && match[2]) {
+        attributes.orgnameattr = match[2];
+      }
+    }
+    // For selection or other types, try to find organization in parent or related text
+    else if (item.getFirstPosition) {
+      // Try to get organization from the selected position
+      const position = item.getFirstPosition();
+      if (position && position.textNode) {
+        // Check if the text node at the position has the organization attribute
+        if (position.textNode.hasAttribute('alightExternalLinkPluginOrgName')) {
+          attributes.orgnameattr = position.textNode.getAttribute('alightExternalLinkPluginOrgName');
+        }
+        // If not, try to extract from text
+        else if (position.textNode.data) {
+          // Clean text data by replacing non-breaking spaces
+          const textData = position.textNode.data.replace(/\u00A0/g, ' ');
+          const match = textData.match(/^(.*?)\s+\(([^)]+)\)$/);
+          if (match && match[2]) {
+            attributes.orgnameattr = match[2];
+          }
+        }
+      }
+    }
+  }
+
   // Priority 5 - https://github.com/ckeditor/ckeditor5-link/issues/121.
-  const linkElement = writer.createAttributeElement('a', { href }, { priority: 5 });
+  const linkElement = writer.createAttributeElement('a', attributes, { priority: 5 });
 
   writer.setCustomProperty('alight-external-link', true, linkElement);
 
@@ -153,6 +204,9 @@ export function isLinkableElement(element: Element | null, schema: Schema): elem
  * Returns `true` if the specified `value` is a valid HTTP/HTTPS URL.
  */
 export function isValidUrl(value: string): boolean {
+  if (isLegacyEditorLink(value)) {
+    return true;
+  }
   return URL_REG_EXP.test(value);
 }
 
@@ -375,6 +429,47 @@ export function createLinkDisplayText(url: string, organization?: string): strin
   }
 
   return domain;
+}
+
+/**
+ * Extracts and applies the organization name attribute to links that have the format "text (org name)"
+ * but don't already have the orgnameattr attribute
+ * 
+ * @param textNode The text node to process
+ * @param writer The writer to use for making changes
+ * @returns The organization name if found, or undefined if not found
+ */
+export function extractAndApplyOrganizationName(textNode: any, writer: any): string | undefined {
+  // Skip if not a text node
+  if (!textNode || !textNode.is || !textNode.is('$text')) {
+    return undefined;
+  }
+
+  // Check if the node already has an organization name attribute
+  if (textNode.hasAttribute('alightExternalLinkPluginOrgName')) {
+    return textNode.getAttribute('alightExternalLinkPluginOrgName');
+  }
+
+  // Try to extract from text content
+  const textData = textNode.data;
+  if (!textData) {
+    return undefined;
+  }
+
+  // Look for text format "text (org name)"
+  const match = textData.match(/^(.*?)\s+\(([^)]+)\)$/);
+  if (match && match[2]) {
+    const orgName = match[2];
+
+    // If found, apply it to the text node
+    if (writer) {
+      writer.setAttribute('alightExternalLinkPluginOrgName', orgName, textNode);
+    }
+
+    return orgName;
+  }
+
+  return undefined;
 }
 
 // Add these utility functions to src/plugins/alight-external-link-plugin/utils.ts

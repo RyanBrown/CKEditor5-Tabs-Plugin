@@ -101,6 +101,17 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
    * @param options Options including manual decorator attributes.
    */
   public override execute(href: string, options: LinkOptions = {}): void {
+    // Check if the current link has a predefined editor suffix we need to preserve
+    let predefinedSuffix = '';
+    if (this.value && typeof this.value === 'string' && this.value.includes('~predefined_editor_id')) {
+      predefinedSuffix = '~predefined_editor_id';
+    }
+
+    // Add the predefined suffix if needed and not already present
+    if (predefinedSuffix && !href.includes(predefinedSuffix)) {
+      href = href + predefinedSuffix;
+    }
+
     const model = this.editor.model;
     const selection = model.document.selection;
 

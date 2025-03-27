@@ -16,7 +16,7 @@ const EMAIL_REG_EXP = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/i;
 /**
  * Enhanced autolink plugin with better email detection
  */
-export default class EnhancedEmailAutoLink extends Plugin {
+export default class AlightEmailAutoLink extends Plugin {
   /**
    * @inheritDoc
    */
@@ -28,7 +28,7 @@ export default class EnhancedEmailAutoLink extends Plugin {
    * @inheritDoc
    */
   public static get pluginName() {
-    return 'EnhancedEmailAutoLink' as const;
+    return 'AlightEmailAutoLink' as const;
   }
 
   /**
@@ -124,9 +124,11 @@ export default class EnhancedEmailAutoLink extends Plugin {
     });
   }
 
-  // Rest of the AutoLink implementation...
-  // (keeping existing methods from the original AutoLink class)
-
+  /**
+   * For given position, returns a range that includes the whole link that contains the position.
+   *
+   * If position is not inside a link, returns `null`.
+   */
   private _expandLinkRange(model: Model, position: Position): Range | null {
     if (position.textNode && position.textNode.hasAttribute('alightEmailLinkPluginHref')) {
       return findAttributeRange(position, 'alightEmailLinkPluginHref', position.textNode.getAttribute('alightEmailLinkPluginHref'), model);
@@ -390,6 +392,18 @@ export default class EnhancedEmailAutoLink extends Plugin {
     // Enqueue change to make undo step.
     model.model.enqueueChange(writer => {
       writer.setAttribute('alightEmailLinkPluginHref', url, range);
+
+      // Check for organization name in text
+      const text = Array.from(range.getItems())
+        .filter(item => item.is('$text') || item.is('$textProxy'))
+        .map(item => item.data)
+        .join('');
+
+      // Extract organization name from text
+      const match = text.match(/^(.*?)\s+\(([^)]+)\)$/);
+      if (match && match[2]) {
+        writer.setAttribute('alightEmailLinkPluginOrgName', match[2], range);
+      }
 
       model.model.enqueueChange(() => {
         deletePlugin.requestUndoOnBackspace();

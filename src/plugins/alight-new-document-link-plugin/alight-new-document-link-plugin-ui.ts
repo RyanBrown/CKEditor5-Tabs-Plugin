@@ -77,7 +77,7 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
 
       // Create modal with enhanced configuration
       this._modalDialog = new CkAlightModalDialog({
-        title: 'Create a New Document',
+        title: 'Create new document',
         modal: true,
         width: '80vw',
         contentClass: 'cka-new-document-content',
@@ -94,7 +94,7 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
     } else {
       // Update existing modal if needed
       this._modalDialog.setProps({
-        title: t('Create a New Document')
+        title: t('Create new document')
       });
     }
 

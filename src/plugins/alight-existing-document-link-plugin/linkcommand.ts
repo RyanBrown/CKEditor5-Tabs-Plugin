@@ -101,6 +101,17 @@ export default class AlightExistingDocumentLinkPluginCommand extends Command {
  * @param options Options including manual decorator attributes.
  */
   public override execute(href: string, options: LinkOptions = {}): void {
+    // Check if the current link has a predefined editor suffix we need to preserve
+    let existingDocumentSuffix = '';
+    if (this.value && typeof this.value === 'string' && this.value.includes('~existing_document_editor_id')) {
+      existingDocumentSuffix = '~existing_document_editor_id';
+    }
+
+    // Add the predefined suffix if needed and not already present
+    if (existingDocumentSuffix && !href.includes(existingDocumentSuffix)) {
+      href = href + existingDocumentSuffix;
+    }
+
     const model = this.editor.model;
     const selection = model.document.selection;
 

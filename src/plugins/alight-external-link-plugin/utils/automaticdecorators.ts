@@ -1,6 +1,6 @@
 // src/plugins/alight-external-link-plugin/utils/automaticdecorators.ts
-import { toMap, type ArrayOrItem } from '@ckeditor/ckeditor5-utils';
-import type { DowncastAttributeEvent, DowncastDispatcher, Element, ViewElement } from '@ckeditor/ckeditor5-engine';
+import type { ArrayOrItem } from '@ckeditor/ckeditor5-utils';
+import type { DowncastAttributeEvent, DowncastDispatcher } from '@ckeditor/ckeditor5-engine';
 import type { NormalizedLinkDecoratorAutomaticDefinition } from '../utils';
 
 /**
@@ -60,10 +60,28 @@ export default class AutomaticDecorators {
         const viewSelection = viewWriter.document.selection;
 
         for (const item of this._definitions) {
-          const viewElement = viewWriter.createAttributeElement('a', item.attributes, {
-            priority: 5
-          });
+          // Build attributes with data-id
+          const attributes: Record<string, string> = {
+            ...item.attributes,
+            'data-id': 'external_editor'
+          };
 
+          // Check if the model item has organization name attribute and add it to view
+          if (data.item.is('$text') && data.item.hasAttribute('alightExternalLinkPluginOrgName')) {
+            attributes.orgnameattr = data.item.getAttribute('alightExternalLinkPluginOrgName') as string;
+          }
+          // Try to extract from text content if no attribute
+          else if (data.item.is('$text') && data.item.data) {
+            const match = data.item.data.match(/^(.*?)\s+\(([^)]+)\)$/);
+            if (match && match[2]) {
+              attributes.orgnameattr = match[2];
+            }
+          }
+
+          // Create link element
+          const viewElement = viewWriter.createAttributeElement('a', attributes, { priority: 5 });
+
+          // Add classes and styles
           if (item.classes) {
             viewWriter.addClass(item.classes, viewElement);
           }
@@ -74,6 +92,7 @@ export default class AutomaticDecorators {
 
           viewWriter.setCustomProperty('alight-external-link', true, viewElement);
 
+          // Apply or remove decoration
           if (item.callback(data.attributeNewValue as string | null)) {
             if (data.item.is('selection')) {
               viewWriter.wrap(viewSelection.getFirstRange()!, viewElement);
@@ -85,69 +104,6 @@ export default class AutomaticDecorators {
           }
         }
       }, { priority: 'high' });
-    };
-  }
-
-  /**
-   * Provides the conversion helper used in the {@link module:engine/conversion/downcasthelpers~DowncastHelpers#add} method
-   * when linking images.
-   *
-   * @returns A dispatcher function used as conversion helper in {@link module:engine/conversion/downcasthelpers~DowncastHelpers#add}.
-   */
-  public getDispatcherForLinkedImage(): (dispatcher: DowncastDispatcher) => void {
-    return dispatcher => {
-      dispatcher.on<DowncastAttributeEvent<Element>>('attribute:alightExternalLinkHref:imageBlock', (evt, data, { writer, mapper }) => {
-        const viewFigure = mapper.toViewElement(data.item)!;
-        const linkInImage = Array.from(viewFigure.getChildren())
-          .find((child): child is ViewElement => child.is('element', 'a'))!;
-
-        // It's not guaranteed that the anchor is present in the image block during execution of this dispatcher.
-        // It might have been removed during the execution of unlink command that runs the image link downcast dispatcher
-        // that is executed before this one and removes the anchor from the image block.
-        if (!linkInImage) {
-          return;
-        }
-
-        for (const item of this._definitions) {
-          const attributes = toMap(item.attributes);
-
-          if (item.callback(data.attributeNewValue as string | null)) {
-            for (const [key, val] of attributes) {
-              // Left for backward compatibility. Since v30 decorator should
-              // accept `classes` and `styles` separately from `attributes`.
-              if (key === 'class') {
-                writer.addClass(val, linkInImage);
-              } else {
-                writer.setAttribute(key, val, linkInImage);
-              }
-            }
-
-            if (item.classes) {
-              writer.addClass(item.classes, linkInImage);
-            }
-
-            for (const key in item.styles) {
-              writer.setStyle(key, item.styles[key], linkInImage);
-            }
-          } else {
-            for (const [key, val] of attributes) {
-              if (key === 'class') {
-                writer.removeClass(val, linkInImage);
-              } else {
-                writer.removeAttribute(key, linkInImage);
-              }
-            }
-
-            if (item.classes) {
-              writer.removeClass(item.classes, linkInImage);
-            }
-
-            for (const key in item.styles) {
-              writer.removeStyle(key, linkInImage);
-            }
-          }
-        }
-      });
     };
   }
 }

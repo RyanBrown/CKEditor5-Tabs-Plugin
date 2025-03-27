@@ -1,1 +1,0 @@
-// src/plugins/ui-components/alight-tabs-component/tests/alight-tabs-component.spec.ts

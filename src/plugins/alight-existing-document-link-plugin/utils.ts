@@ -54,9 +54,17 @@ export function isLinkElement(node: ViewNode | ViewDocumentFragment): boolean {
 /**
  * Creates a link {@link module:engine/view/attributeelement~AttributeElement} with the provided `href` attribute.
  */
+// Helper function to detect external document link
+export function isExistingDocumentEditorLink(url: string): boolean {
+  return url.includes('~existing_document_editor_id');
+}
+
 export function createLinkElement(href: string, { writer }: DowncastConversionApi): ViewAttributeElement {
   // Priority 5 - https://github.com/ckeditor/ckeditor5-link/issues/121.
-  const linkElement = writer.createAttributeElement('a', { href }, { priority: 5 });
+  const linkElement = writer.createAttributeElement('a', {
+    href,
+    'data-id': 'predefined-editor'
+  }, { priority: 5 });
 
   writer.setCustomProperty('alight-existing-document-link', true, linkElement);
 

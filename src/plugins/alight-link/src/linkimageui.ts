@@ -92,7 +92,7 @@ export default class AlightLinkImageUI extends Plugin {
 
       button.set({
         isEnabled: true,
-        label: t('AlightLink image'),
+        label: t('Link image'),
         icon: linkIcon,
         keystroke: LINK_KEYSTROKE,
         tooltip: true,

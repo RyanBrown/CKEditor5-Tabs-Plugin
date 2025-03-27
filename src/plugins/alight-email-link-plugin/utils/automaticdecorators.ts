@@ -1,6 +1,6 @@
 // src/plugins/alight-email-link-plugin/utils/automaticdecorators.ts
-import { toMap, type ArrayOrItem } from '@ckeditor/ckeditor5-utils';
-import type { DowncastAttributeEvent, DowncastDispatcher, Element, ViewElement } from '@ckeditor/ckeditor5-engine';
+import type { ArrayOrItem } from '@ckeditor/ckeditor5-utils';
+import type { DowncastAttributeEvent, DowncastDispatcher } from '@ckeditor/ckeditor5-engine';
 import type { NormalizedLinkDecoratorAutomaticDefinition } from '../utils';
 
 /**
@@ -60,10 +60,28 @@ export default class AutomaticDecorators {
         const viewSelection = viewWriter.document.selection;
 
         for (const item of this._definitions) {
-          const viewElement = viewWriter.createAttributeElement('a', item.attributes, {
-            priority: 5
-          });
+          // Build attributes with data-id
+          const attributes: Record<string, string> = {
+            ...item.attributes,
+            'data-id': 'email_editor'
+          };
 
+          // Check if the model item has organization name attribute and add it to view
+          if (data.item.is('$text') && data.item.hasAttribute('alightEmailLinkPluginOrgName')) {
+            attributes.orgnameattr = data.item.getAttribute('alightEmailLinkPluginOrgName') as string;
+          }
+          // Try to extract from text content if no attribute
+          else if (data.item.is('$text') && data.item.data) {
+            const match = data.item.data.match(/^(.*?)\s+\(([^)]+)\)$/);
+            if (match && match[2]) {
+              attributes.orgnameattr = match[2];
+            }
+          }
+
+          // Create link element
+          const viewElement = viewWriter.createAttributeElement('a', attributes, { priority: 5 });
+
+          // Add classes and styles
           if (item.classes) {
             viewWriter.addClass(item.classes, viewElement);
           }
@@ -74,6 +92,7 @@ export default class AutomaticDecorators {
 
           viewWriter.setCustomProperty('alight-email-link', true, viewElement);
 
+          // Apply or remove decoration
           if (item.callback(data.attributeNewValue as string | null)) {
             if (data.item.is('selection')) {
               viewWriter.wrap(viewSelection.getFirstRange()!, viewElement);

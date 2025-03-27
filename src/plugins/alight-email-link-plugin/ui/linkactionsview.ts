@@ -3,7 +3,7 @@ import { ButtonView, View, ViewCollection, FocusCycler, type FocusableView } fro
 import { FocusTracker, KeystrokeHandler, type LocaleTranslate, type Locale } from 'ckeditor5/src/utils';
 import { icons } from 'ckeditor5/src/core';
 
-import { ensureSafeUrl } from '../utils';
+import { ensureSafeUrl, extractEmail } from '../utils';
 
 // See: #8833.
 // eslint-disable-next-line ckeditor5-rules/ckeditor-imports
@@ -50,6 +50,13 @@ export default class LinkActionsView extends View {
   declare public href: string | undefined;
 
   /**
+   * The organization name associated with the link, if any.
+   * 
+   * @observable
+   */
+  declare public organization: string | undefined;
+
+  /**
    * A collection of views that can be focused in the view.
    */
   private readonly _focusables = new ViewCollection<FocusableView>();
@@ -69,11 +76,28 @@ export default class LinkActionsView extends View {
 
     const t = locale.t;
 
-    this.previewButtonView = this._createPreviewButton();
+    // Initialize observable properties
+    this.set({
+      href: undefined,
+      organization: undefined
+    });
+
+    // Create buttons
     this.unlinkButtonView = this._createButton(t('Unlink'), unlinkIcon, 'unlink');
     this.editButtonView = this._createButton(t('Edit link'), icons.pencil, 'edit');
+    this.previewButtonView = this._createPreviewButton();
 
-    this.set('href', undefined);
+    // Listen for property changes to update button label
+    this.on('change:href', () => {
+      this._updateButtonLabel();
+    });
+
+    this.on('change:organization', () => {
+      this._updateButtonLabel();
+    });
+
+    // Initialize the button label
+    this._updateButtonLabel();
 
     this._focusCycler = new FocusCycler({
       focusables: this._focusables,
@@ -148,6 +172,33 @@ export default class LinkActionsView extends View {
   }
 
   /**
+   * Updates the label of the preview button based on the current href and organization
+   */
+  private _updateButtonLabel(): void {
+    const href = this.href;
+    const organization = this.organization;
+    const t = this.t;
+
+    // Create a display label that includes organization if available
+    let displayText = '';
+
+    // Start with the email address (without mailto: prefix)
+    if (href) {
+      displayText = href.startsWith('mailto:') ? extractEmail(href) : href;
+    } else {
+      this.previewButtonView.label = t('This link has no URL');
+      return;
+    }
+
+    // Add organization if available
+    if (organization) {
+      displayText += ` (${organization})`;
+    }
+
+    this.previewButtonView.label = displayText;
+  }
+
+  /**
    * Creates a button view.
    *
    * @param label The button label.
@@ -194,14 +245,6 @@ export default class LinkActionsView extends View {
         target: '_blank',
         rel: 'noopener noreferrer'
       },
-    });
-
-    button.bind('label').to(this, 'href', href => {
-      // Hide mailto: from display in the UI
-      if (href && href.startsWith('mailto:')) {
-        return href.substring(7); // Remove mailto: prefix for display
-      }
-      return href || t('This link has no URL');
     });
 
     button.bind('isEnabled').to(this, 'href', href => !!href);

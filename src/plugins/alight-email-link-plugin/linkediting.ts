@@ -98,18 +98,32 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
   public init(): void {
     const editor = this.editor;
     const config = editor.config.get('alightEmailLink') as AlightEmailLinkPluginConfig;
-    const allowedProtocols = config?.allowedProtocols ||
-      (editor.config.get('link.allowedProtocols') as string[] ||
-        ['https?', 'ftps?', 'mailto']);
+    // Only allow http and https protocols
+    const allowedProtocols = ['mailto'];
 
     // Allow link attribute on all inline nodes.
     editor.model.schema.extend('$text', { allowAttributes: 'alightEmailLinkPluginHref' });
+
+    // Add a schema definition for the organization name attribute
+    editor.model.schema.extend('$text', { allowAttributes: 'alightEmailLinkPluginOrgName' });
 
     // Add a high-priority dataDowncast converter
     editor.conversion.for('dataDowncast')
       .attributeToElement({
         model: 'alightEmailLinkPluginHref',
-        view: createLinkElement,
+        view: (href, conversionApi) => {
+          const linkCommand = editor.commands.get('alight-email-link') as AlightEmailLinkPluginCommand;
+
+          // Build attributes object
+          const attrs: Record<string, string> = {};
+
+          // Use the organization name from the link command if available
+          if (linkCommand && linkCommand.organization) {
+            attrs.orgnameattr = linkCommand.organization;
+          }
+
+          return createLinkElement(href, { ...conversionApi, attrs });
+        },
         converterPriority: 'high'
       });
 
@@ -118,48 +132,144 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
       .attributeToElement({
         model: 'alightEmailLinkPluginHref',
         view: (href, conversionApi) => {
-          return createLinkElement(ensureSafeUrl(href, allowedProtocols), conversionApi);
+          const linkCommand = editor.commands.get('alight-email-link') as AlightEmailLinkPluginCommand;
+
+          // Build attributes object
+          const attrs: Record<string, string> = {};
+
+          // Use the organization name from the link command if available
+          if (linkCommand && linkCommand.organization) {
+            attrs.orgnameattr = linkCommand.organization;
+          }
+
+          return createLinkElement(ensureSafeUrl(href, allowedProtocols), { ...conversionApi, attrs });
         },
         converterPriority: 'high'
       });
 
-    // High-priority upcast converter specifically for mailto links
+    // Use the custom converter for organization names instead of attributeToAttribute
+    this._setupOrganizationNameExtraction();
+
+    // Upcast converter for all links - we'll filter non-HTTP/HTTPS later
     editor.conversion.for('upcast')
       .elementToAttribute({
         view: {
           name: 'a',
           attributes: {
-            href: /^mailto:/
+            href: /^mailto:/,
+            'data-id': 'email_editor'
           }
         },
         model: {
           key: 'alightEmailLinkPluginHref',
-          value: (viewElement: ViewElement) => viewElement.getAttribute('href')
-        },
-        converterPriority: 'high'
-      });
-
-    // General upcast converter for all links
-    editor.conversion.for('upcast')
-      .elementToAttribute({
-        view: {
-          name: 'a',
-          attributes: {
-            href: true
-          }
-        },
-        model: {
-          key: 'alightEmailLinkPluginHref',
-          value: (viewElement: ViewElement) => {
+          value: (viewElement: ViewElement): string | null => {
             const href = viewElement.getAttribute('href');
-            // Only apply this attribute for mailto links
-            if (href && typeof href === 'string' && (href.startsWith('mailto:') || href.includes('@'))) {
-              return href;
-            }
             return null;
+          }
+        },
+        converterPriority: 'normal'
+      });
+
+    // Add upcast converter for organization name attribute
+    editor.conversion.for('upcast')
+      .attributeToAttribute({
+        view: {
+          name: 'a',
+          key: 'orgnameattr'
+        },
+        model: {
+          key: 'alightEmailLinkPluginOrgName',
+          value: (viewElement: ViewElement) => {
+            return viewElement.getAttribute('orgnameattr');
           }
         }
       });
+
+    // Enhanced upcast converter to extract organization names from link text
+    editor.conversion.for('upcast').add(dispatcher => {
+      dispatcher.on('element:a', (evt, data, conversionApi) => {
+        // Skip if this is not an upcast process
+        if (!conversionApi.consumable.test(data.viewItem, { name: true })) {
+          return;
+        }
+
+        // Skip if no href attribute or if it's already been consumed
+        if (!data.viewItem.hasAttribute('href') ||
+          !conversionApi.consumable.test(data.viewItem, { attributes: ['href'] })) {
+          return;
+        }
+
+        const href = data.viewItem.getAttribute('href');
+        if (!href || typeof href !== 'string' || !href.startsWith('mailto:')) {
+          return;
+        }
+
+        // Check if the link already has an organization name attribute
+        const hasOrgAttr = data.viewItem.hasAttribute('orgnameattr');
+
+        // If it doesn't have an org attribute, try to extract it from the text content
+        if (!hasOrgAttr) {
+          // Get the text content of the link
+          let linkText = '';
+          for (const child of data.viewItem.getChildren()) {
+            if (child.is('$text')) {
+              linkText += child.data;
+            }
+          }
+
+          // Look for text in the format "text (org name)"
+          const match = linkText.match(/^(.*?)\s+\(([^)]+)\)$/);
+          if (match && match[2]) {
+            const orgName = match[2];
+
+            // Set the organization name attribute in the model
+            conversionApi.writer.setAttribute('alightEmailLinkPluginOrgName', orgName, data.modelRange);
+          }
+        }
+      });
+    });
+
+    // Run a post-processing step on all links to ensure organization names are properly handled
+    editor.conversion.for('dataDowncast').add(dispatcher => {
+      dispatcher.on('insert:$text', (evt, data, conversionApi) => {
+        // Skip if this is not a text node with a link
+        if (!data.item.hasAttribute('alightEmailLinkPluginHref')) {
+          return;
+        }
+
+        // Skip if the text node has already been consumed
+        if (!conversionApi.consumable.test(data.item, 'insert')) {
+          return;
+        }
+
+        // Get all attributes of the text node
+        const href = data.item.getAttribute('alightEmailLinkPluginHref');
+        const orgName = data.item.getAttribute('alightEmailLinkPluginOrgName');
+
+        // If there's organization in the attribute but not in the text, add it to the text
+        if (orgName && !data.item.data.includes(` (${orgName})`)) {
+          // Only modify if it doesn't already have an organization in the text
+          const match = data.item.data.match(/^(.*?)\s+\([^)]+\)$/);
+          if (!match) {
+            // Create the modified text with the organization name
+            const text = data.item.data + ` (${orgName})`;
+
+            // Map the model text to the view
+            const viewWriter = conversionApi.writer;
+            const viewPosition = conversionApi.mapper.toViewPosition(data.range.start);
+            const viewElement = viewWriter.createText(text);
+
+            // Insert the modified text
+            viewWriter.insert(viewPosition, viewElement);
+
+            // Consume the original text insertion
+            conversionApi.consumable.consume(data.item, 'insert');
+
+            evt.stop();
+          }
+        }
+      }, { priority: 'high' });
+    });
 
     // Create linking commands.
     editor.commands.add('alight-email-link', new AlightEmailLinkPluginCommand(editor));
@@ -196,7 +306,7 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
    * for each one of them. Downcast dispatchers are obtained using the
    * {@link module:link/utils/automaticdecorators~AutomaticDecorators#getDispatcher} method.
    *
-   * **Note**: This method also activates the automatic external link decorator if enabled with
+   * **Note**: This method also activates the automatic email link decorator if enabled with
    * {@link module:link/linkconfig~LinkConfig#addTargetToExternalLinks `config.alightEmailLink.addTargetToExternalLinks`}.
    */
   private _enableAutomaticDecorators(automaticDecoratorDefinitions: Array<NormalizedLinkDecoratorAutomaticDefinition>): void {
@@ -208,7 +318,7 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
 
     const config = editor.config.get('alightEmailLink') as AlightEmailLinkPluginConfig;
 
-    // Adds a default decorator for external links.
+    // Adds a default decorator for email links.
     if (config?.addTargetToExternalLinks) {
       automaticDecorators.add({
         id: 'linkIsEmail',
@@ -229,13 +339,12 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
   }
 
   /**
-   * Processes an array of configured {@link module:link/linkconfig~LinkDecoratorManualDefinition manual decorators},
-   * transforms them into {@link module:link/utils/manualdecorator~ManualDecorator} instances and stores them in the
-   * {@link module:link/AlightEmailLinkPluginCommand~AlightEmailLinkPluginCommand#manualDecorators} collection (a model for manual decorators state).
+   * Processes an array of configured manual decorators,
+   * transforms them into ManualDecorator instances and stores them in the
+   * AlightEmailLinkPluginCommand#manualDecorators collection (a model for manual decorators state).
    *
-   * Also registers an {@link module:engine/conversion/downcasthelpers~DowncastHelpers#attributeToElement attribute-to-element}
-   * converter for each manual decorator and extends the {@link module:engine/model/schema~Schema model's schema}
-   * with adequate model attributes.
+   * Also registers an attribute-to-element converter for each manual decorator 
+   * and extends the model's schema with adequate model attributes.
    */
   private _enableManualDecorators(manualDecoratorDefinitions: Array<NormalizedLinkDecoratorManualDefinition>): void {
     if (!manualDecoratorDefinitions.length) {
@@ -289,6 +398,85 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
         },
         model: {
           key: decorator.id
+        }
+      });
+    });
+  }
+
+  /**
+   * Enhanced downcast converter for handling organization names
+   * This should be added to the init() method of AlightEmailLinkPluginEditing
+   */
+  private _setupOrganizationNameExtraction(): void {
+    const editor = this.editor;
+
+    // Replace the attributeToAttribute converter with a custom downcast converter for organization names
+    editor.conversion.for('downcast').add(dispatcher => {
+      // When alightEmailLinkPluginOrgName attribute changes
+      dispatcher.on('attribute:alightEmailLinkPluginOrgName', (evt, data, conversionApi) => {
+        // Skip if we can't consume it
+        if (!conversionApi.consumable.consume(data.item, evt.name)) {
+          return;
+        }
+
+        // We only care about text nodes with the href attribute
+        if (!data.item.is('$text') || !data.item.hasAttribute('alightEmailLinkPluginHref')) {
+          return;
+        }
+
+        const viewWriter = conversionApi.writer;
+        const orgName = data.attributeNewValue;
+
+        // Get the existing 'a' element for this link in the view
+        const viewRange = conversionApi.mapper.toViewRange(data.range);
+
+        // Find the parent 'a' element
+        let linkElement = null;
+        for (const item of viewRange.getItems()) {
+          if (item.is('$text')) {
+            const parent = item.parent;
+            if (parent && parent.is('element', 'a')) {
+              linkElement = parent;
+              break;
+            }
+          }
+        }
+
+        // If we found the link element, update its orgnameattr
+        if (linkElement) {
+          if (orgName) {
+            viewWriter.setAttribute('orgnameattr', orgName, linkElement);
+          } else {
+            viewWriter.removeAttribute('orgnameattr', linkElement);
+          }
+        }
+      });
+
+      // We also need to handle the case where the href attribute changes
+      dispatcher.on('attribute:alightEmailLinkPluginHref', (evt, data, conversionApi) => {
+        // Since we've already handled this in our primary converter, 
+        // just make sure org name is included if present
+        if (data.item.is('$text') &&
+          data.attributeNewValue &&
+          data.item.hasAttribute('alightEmailLinkPluginOrgName')) {
+
+          // Consume the org name attribute so it can be applied to the element
+          conversionApi.consumable.consume(data.item, 'attribute:alightEmailLinkPluginOrgName');
+
+          const viewRange = conversionApi.mapper.toViewRange(data.range);
+
+          // Find the newly created 'a' element
+          for (const item of viewRange.getItems()) {
+            if (item.is('$text')) {
+              const parent = item.parent;
+              if (parent && parent.is('element', 'a')) {
+                // Set the orgnameattr on the link element
+                const orgName = data.item.getAttribute('alightEmailLinkPluginOrgName');
+                conversionApi.writer.setAttribute('orgnameattr', orgName, parent);
+                break;
+              }
+            }
+          }
         }
       });
     });
@@ -427,6 +615,7 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
  */
 function removeLinkAttributesFromSelection(writer: Writer, linkAttributes: Array<string>): void {
   writer.removeSelectionAttribute('alightEmailLinkPluginHref');
+  writer.removeSelectionAttribute('alightEmailLinkPluginOrgName');
 
   for (const attribute of linkAttributes) {
     writer.removeSelectionAttribute(attribute);

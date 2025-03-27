@@ -340,6 +340,18 @@ export default class AlightExternalAutoLink extends Plugin {
     model.model.enqueueChange(writer => {
       writer.setAttribute('alightExternalLinkPluginHref', url, range);
 
+      // Check for organization name in text
+      const text = Array.from(range.getItems())
+        .filter(item => item.is('$text') || item.is('$textProxy'))
+        .map(item => item.data)
+        .join('');
+
+      // Extract organization name from text
+      const match = text.match(/^(.*?)\s+\(([^)]+)\)$/);
+      if (match && match[2]) {
+        writer.setAttribute('alightExternalLinkPluginOrgName', match[2], range);
+      }
+
       model.model.enqueueChange(() => {
         deletePlugin.requestUndoOnBackspace();
       });
