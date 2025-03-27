@@ -1,25 +1,23 @@
 // src/services/http-service.ts
-import { SessionService } from './session-service';
 import { IReadSource, IWriteSource } from '../data-sources/base-source/data-source';
+import AlightRequest from './alight-request';
+export default class HttpService {
 
-export class HttpService {
+  protected readonly alightRequest: AlightRequest;
 
-  protected readonly _sampleMode: boolean = false;
-
-  protected readonly _sessionSvc: SessionService;
-  constructor(sessionSvc?: SessionService) {
-    this._sessionSvc = sessionSvc ?? new SessionService();
+  constructor(alightRequest?: AlightRequest) {
+    this.alightRequest = alightRequest;
   }
 
-  protected get = async (dataSource: IReadSource, sessionToken: string, requestHeader: string): Promise<string> =>
-    dataSource.load(sessionToken, requestHeader)
+  protected get = async (dataSource: IReadSource): Promise<string> =>
+    dataSource.load(this.alightRequest._sessionToken, this.alightRequest._requestHeader)
       .then(
         async response => await response.text(),
         error => this.handleError(error, true)
       );
 
-  protected post = async (dataSource: IWriteSource, sessionToken: string, requestHeader: string, requestBody: Record<string, any>): Promise<string> =>
-    dataSource.save(sessionToken, requestHeader, null, requestBody)
+  protected post = async (dataSource: IWriteSource, requestBody: Record<string, any>): Promise<string> =>
+    dataSource.save(this.alightRequest._sessionToken, this.alightRequest._requestHeader, null, requestBody)
       .then(
         async response => await response.text(),
         error => this.handleError(error, true)

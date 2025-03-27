@@ -23,7 +23,7 @@ import './../ui-components/alight-checkbox-component/alight-checkbox-component';
 // Import the ContentManager and types from the updated location
 import { ContentManager } from './ui/linkmodal-ContentManager';
 import { PredefinedLink } from './ui/linkmodal-modal-types';
-import { AlightDataLoadPlugin } from './../../alight-common/alight-data-load-plugins';
+import { AlightDataLoadPlugin } from '../../alight-common/alight-data-load-plugin';
 
 import linkIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 import LinksLoadService from '../../services/links-load-service';

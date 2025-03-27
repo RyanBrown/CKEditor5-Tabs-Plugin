@@ -5,5 +5,5 @@ export interface ILinkManager {
   renderContent(container: HTMLElement): void;
 
   // populates links modal with link data described in sourceDataType. postProcess lambda (optional) runs wne done
-  setModalContents(sourceDataType: string, postProcess: () => void): Promise<void>;
+  // setModalContents(sourceDataType: string, postProcess: () => void): Promise<void>;
 }
