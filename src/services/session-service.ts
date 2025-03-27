@@ -10,19 +10,30 @@ export default class SessionService {
   private static instance: SessionService = null;
   private _sessionMap: Map<string, string>;
 
-  private constructor(sessionStg?: Storage) {
+  private constructor(sessionStorage?: Storage) {
     this._sessionMap = new Map<string, string>([
-      [this.apiUrlKey, sessionStg?.getItem(this.apiUrlKey)!],
-      [this.dummyColleagueSessionTokenKey, sessionStg?.getItem(this.dummyColleagueSessionTokenKey)!],
-      [this.dummyRequestHeaderKey, sessionStg?.getItem(this.dummyRequestHeaderKey)!],
+      [this.apiUrlKey, sessionStorage.getItem(this.apiUrlKey)!],
+      [this.dummyColleagueSessionTokenKey, sessionStorage.getItem(this.dummyColleagueSessionTokenKey)!],
+      [this.dummyRequestHeaderKey, sessionStorage.getItem(this.dummyRequestHeaderKey)!],
     ]);
   }
 
-  public static getInstance = (sessionStg?: Storage): SessionService => {
-    if (!SessionService.instance)
-      SessionService.instance = new SessionService(sessionStg);
+  public static getInstance = (sessionStorage?: Storage): SessionService => {
+    if (!SessionService.instance === null) {
+      SessionService.instance = new SessionService(sessionStorage);
+    } else {
+      throw new Error('Instance already created');
+    }
     return SessionService.instance;
   }
+
+  public static getInstance = (): SessionService => {
+    if (SessionService.instance === null) {
+      throw new Error('Instance not yet created. Call create(Storage storage) first.');
+    }
+    return SessionService.instance;
+  }
+
   public get apiUrl(): string {
     return this._sessionMap.get(this.apiUrlKey)!;
   }

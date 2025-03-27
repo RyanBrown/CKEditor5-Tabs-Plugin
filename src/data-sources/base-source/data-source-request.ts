@@ -24,11 +24,9 @@ export abstract class DataSourceRequest extends DataSource implements IDataSourc
 
   public request = async (sessionToken: string, requestHeader: string, contentType?: string, requestBody?: Record<string, any>): Promise<Response> => {
     try {
-      if (sessionToken == null || requestHeader == null) {
+      if (sessionToken == null || requestHeader == null)
         throw new Error("Must provide both dummySessionToken and dummyRequestHeader");
-      }
       let url = `${this.host}/${this.path}${this.queryParams?.length > 0 ? `?${this.queryParams}` : ''}`;
-
       const options: RequestInit = {
         method: this.requestMethod,
         headers: {
