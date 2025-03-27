@@ -138,7 +138,7 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
     this.loadService.loadPredefinedLinks().then(
       (data) => {
         this._predefinedLinks = data;
-        if (!this.verboseMode) console.log(data);
+        if (this.verboseMode) console.log(data);
         this.isReady = true;
         this._enablePluginButton();
       },
@@ -179,125 +179,110 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
         processedLinks.push(rawLink);
       }
     }
-
     // Process links directly without transformation
-    const links = processedLinks.filter(link =>
+    return processedLinks.filter(link =>
       link.destination && link.destination.trim() !== '' &&
       (link.predefinedLinkName || link.name) &&
       (link.predefinedLinkName || link.name).trim() !== ''
     );
-
-    console.log(`Final links: ${links.length}`);
-
-    // Return empty array if no valid links
-    if (links.length === 0) {
-      console.warn('No valid links found');
-      return [];
-    }
-
-    return links;
-  } catch(error) {
-    console.error('Error fetching predefined links:', error);
-    return [];
-  }
-}
+  };
 
   // Checks if the current selection is in a link and shows the balloon if needed
   private _checkAndShowBalloon(): void {
-  const selectedLink = this._getSelectedLinkElement();
-  if(selectedLink) {
-    this._showBalloon();
+    const selectedLink = this._getSelectedLinkElement();
+    if (selectedLink) {
+      this._showBalloon();
+    }
   }
-}
 
   public override destroy(): void {
-  super.destroy();
+    super.destroy();
 
-  // Destroy created UI components
-  if(this._modalDialog) {
-  this._modalDialog.destroy();
-  this._modalDialog = null;
-}
+    // Destroy created UI components
+    if (this._modalDialog) {
+      this._modalDialog.destroy();
+      this._modalDialog = null;
+    }
 
-if (this.actionsView) {
-  this.actionsView.destroy();
-}
+    if (this.actionsView) {
+      this.actionsView.destroy();
+    }
   }
 
   // Creates a toolbar AlightPredefinedLinkPlugin button. Clicking this button will show the modal dialog.
   private _createToolbarLinkButton(): void {
-  const editor = this.editor;
+    const editor = this.editor;
 
-  editor.ui.componentFactory.add('menuBar:alightPredefinedLinkPlugin', () => {
-    const button = this._createButton(MenuBarMenuListItemButtonView);
+    editor.ui.componentFactory.add('menuBar:alightPredefinedLinkPlugin', () => {
+      const button = this._createButton(MenuBarMenuListItemButtonView);
 
-    button.set({
-      isEnabled: this._isReady,
-      role: 'menuitemcheckbox'
+      button.set({
+        isEnabled: this._isReady,
+        role: 'menuitemcheckbox'
+      });
+
+      return button;
     });
-
-    return button;
-  });
-}
+  }
 
   // Creates a button for link command to use either in toolbar or in menu bar.
-  private _createButton<T extends typeof ButtonView>(ButtonClass: T): InstanceType < T > {
-  const editor = this.editor;
-  const locale = editor.locale;
-  const command = editor.commands.get('alight-predefined-link')!;
-  this.buttonView = new ButtonClass(editor.locale) as InstanceType<T>;
-  const view = new ButtonClass(editor.locale) as InstanceType<T>;
-  const t = locale.t;
+  private _createButton<T extends typeof ButtonView>(ButtonClass: T): InstanceType<T> {
+    const editor = this.editor;
+    const locale = editor.locale;
+    const command = editor.commands.get('alight-predefined-link')!;
+    this.buttonView = new ButtonClass(editor.locale) as InstanceType<T>;
+    const view = new ButtonClass(editor.locale) as InstanceType<T>;
+    const t = locale.t;
 
-  view.buttonView.set({
-    isEnabled: this._isReady,
-    label: t('Predefined link'),
-    icon: linkIcon,
-    isToggleable: true,
-    withText: true
-  });
+    this.buttonView.set({
+      isEnabled: this.isReady,
+      label: t('Predefined link'),
+      icon: linkIcon,
+      isToggleable: true,
+      withText: true
+    });
 
-  this.buttonView.bind('isEnabled').to(command, 'isEnabled', (command) => command && this._isReady);
-  this.buttonView.bind('isOn').to(command, 'value', value => !!value);
+    this.buttonView.bind('isEnabled').to(command, 'isEnabled', (command) => command && this.isReady);
+    this.buttonView.bind('isOn').to(command, 'value', value => !!value);
 
-  // Show the modal dialog on button click for creating new links
-  this.listenTo(this.buttonView, 'execute', () => this._showUI());
+    // Show the modal dialog on button click for creating new links
+    this.listenTo(this.buttonView, 'execute', () => this._showUI());
 
-  return this.buttonView as InstanceType<T>;
-}
+    return this.buttonView as InstanceType<T>;
+  }
 
   // Creates the {@link module:link/ui/linkactionsview~LinkActionsView} instance.
   private _createActionsView(): LinkActionsView {
-  const editor = this.editor;
-  const actionsView = new LinkActionsView(editor.locale);
-  const linkCommand = editor.commands.get('alight-predefined-link') as AlightPredefinedLinkPluginCommand;
-  const unlinkCommand = editor.commands.get('alight-predefined-unlink') as AlightPredefinedLinkPluginUnlinkCommand;
+    const editor = this.editor;
+    const actionsView = new LinkActionsView(editor.locale);
+    const linkCommand = editor.commands.get('alight-predefined-link') as AlightPredefinedLinkPluginCommand;
+    const unlinkCommand = editor.commands.get('alight-predefined-unlink') as AlightPredefinedLinkPluginUnlinkCommand;
 
-  actionsView.bind('href').to(linkCommand, 'value');
+    actionsView.bind('href').to(linkCommand, 'value');
 
-  actionsView.editButtonView.bind('isEnabled').to(linkCommand);
-  actionsView.unlinkButtonView.bind('isEnabled').to(unlinkCommand);
+    actionsView.editButtonView.bind('isEnabled').to(linkCommand);
+    actionsView.unlinkButtonView.bind('isEnabled').to(unlinkCommand);
 
-  // Execute editing in a modal dialog after clicking the "Edit" button
-  this.listenTo(actionsView, 'edit', () => {
-    this._hideUI();
-    this._showUI(true);
-  });
+    // Execute editing in a modal dialog after clicking the "Edit" button
+    this.listenTo(actionsView, 'edit', () => {
+      this._hideUI();
+      this._showUI(true);
+    });
 
-  // Execute unlink command after clicking on the "Unlink" button
-  this.listenTo(actionsView, 'unlink', () => {
-    editor.execute('alight-predefined-unlink');
-    this._hideUI();
-  });
+    // Execute unlink command after clicking on the "Unlink" button
+    this.listenTo(actionsView, 'unlink', () => {
+      editor.execute('alight-predefined-unlink');
+      this._hideUI();
+    });
 
-  // Close the balloon on Esc key press
-  actionsView.keystrokes.set('Esc', (data, cancel) => {
-    this._hideUI();
-    cancel();
-  });
+    // Close the balloon on Esc key press
+    actionsView.keystrokes.set('Esc', (data, cancel) => {
+      this._hideUI();
+      cancel();
+    });
 
-  return actionsView;
-}
+    return actionsView;
+  }
 
   /**
    * Public method to show UI - needed for compatibility with linkimageui.ts
@@ -305,320 +290,320 @@ if (this.actionsView) {
    * @param isEditing Whether we're editing an existing link
    */
   public showUI(isEditing: boolean = false): void {
-  this._showUI(isEditing);
-}
+    this._showUI(isEditing);
+  }
 
   // Normalize URL for comparison by removing trailing slashes and normalizing protocol
   private _normalizeUrl(url: string): string {
-  if (!url) return '';
+    if (!url) return '';
 
-  // Remove trailing slash
-  let normalized = url.endsWith('/') ? url.slice(0, -1) : url;
+    // Remove trailing slash
+    let normalized = url.endsWith('/') ? url.slice(0, -1) : url;
 
-  // Simplify protocol for comparison
-  normalized = normalized.replace(/^https?:\/\//, '');
+    // Simplify protocol for comparison
+    normalized = normalized.replace(/^https?:\/\//, '');
 
-  return normalized.toLowerCase();
-}
+    return normalized.toLowerCase();
+  }
 
   // Find predefined link by URL using the links service
-  private async _findPredefinedLinkByUrl(url: string): Promise < PredefinedLink | null > {
-  try {
-    // Find the matching link by URL - compare regardless of trailing slash or protocol differences
-    return this._predefinedLinks.find(link => {
-      const normalizedDestination = this._normalizeUrl(link.destination as string);
-      const normalizedUrl = this._normalizeUrl(url);
-      return normalizedDestination === normalizedUrl;
-    }) || null;
-  } catch(error) {
-    console.error('Error finding predefined link by URL:', error);
-    return null;
+  private async _findPredefinedLinkByUrl(url: string): Promise<PredefinedLink | null> {
+    try {
+      // Find the matching link by URL - compare regardless of trailing slash or protocol differences
+      return this._predefinedLinks.find(link => {
+        const normalizedDestination = this._normalizeUrl(link.destination as string);
+        const normalizedUrl = this._normalizeUrl(url);
+        return normalizedDestination === normalizedUrl;
+      }) || null;
+    } catch (error) {
+      console.error('Error finding predefined link by URL:', error);
+      return null;
+    }
   }
-}
 
   // Attaches actions that control whether the modal dialog should be displayed.
   private _enableUIActivators(): void {
-  const editor = this.editor;
-  const viewDocument = editor.editing.view.document;
+    const editor = this.editor;
+    const viewDocument = editor.editing.view.document;
 
-  // Handle click on view document and show balloon when selection is placed inside the link element.
-  this.listenTo<ViewDocumentClickEvent>(viewDocument, 'click', () => {
-    const selectedLink = this._getSelectedLinkElement();
+    // Handle click on view document and show balloon when selection is placed inside the link element.
+    this.listenTo<ViewDocumentClickEvent>(viewDocument, 'click', () => {
+      const selectedLink = this._getSelectedLinkElement();
 
-    if (selectedLink) {
-      // Show balloon with actions (edit/unlink) when clicking on a link
-      this._showBalloon();
-    }
-  });
-}
+      if (selectedLink) {
+        // Show balloon with actions (edit/unlink) when clicking on a link
+        this._showBalloon();
+      }
+    });
+  }
 
   // Enable interactions between the balloon and modal interface.
   private _enableBalloonInteractions(): void {
-  // Skip if actionsView is not initialized yet
-  if(!this.actionsView) {
-  return;
-}
+    // Skip if actionsView is not initialized yet
+    if (!this.actionsView) {
+      return;
+    }
 
-// Allow clicking outside the balloon to close it
-clickOutsideHandler({
-  emitter: this.actionsView,
-  activator: () => this._areActionsInPanel,
-  contextElements: () => [this._balloon.view.element!],
-  callback: () => this._hideUI()
-});
+    // Allow clicking outside the balloon to close it
+    clickOutsideHandler({
+      emitter: this.actionsView,
+      activator: () => this._areActionsInPanel,
+      contextElements: () => [this._balloon.view.element!],
+      callback: () => this._hideUI()
+    });
   }
 
   // Shows balloon with link actions.
   private _showBalloon(): void {
-  if(this.actionsView && this._balloon && !this._balloon.hasView(this.actionsView)) {
-  // Make sure the link is still selected before showing balloon
-  const selectedLink = this._getSelectedLinkElement();
-  if (!selectedLink) {
-    return;
-  }
+    if (this.actionsView && this._balloon && !this._balloon.hasView(this.actionsView)) {
+      // Make sure the link is still selected before showing balloon
+      const selectedLink = this._getSelectedLinkElement();
+      if (!selectedLink) {
+        return;
+      }
 
-  this._balloon.add({
-    view: this.actionsView,
-    position: this._getBalloonPositionData()
-  });
+      this._balloon.add({
+        view: this.actionsView,
+        position: this._getBalloonPositionData()
+      });
 
-  // Begin responding to UI updates
-  this._startUpdatingUI();
-}
+      // Begin responding to UI updates
+      this._startUpdatingUI();
+    }
   }
 
   // Returns positioning options for the balloon.
   private _getBalloonPositionData() {
-  const view = this.editor.editing.view;
-  const viewDocument = view.document;
-  let target = null;
+    const view = this.editor.editing.view;
+    const viewDocument = view.document;
+    let target = null;
 
-  // Get the position based on selected link
-  const targetLink = this._getSelectedLinkElement();
+    // Get the position based on selected link
+    const targetLink = this._getSelectedLinkElement();
 
-  if (targetLink) {
-    target = view.domConverter.mapViewToDom(targetLink);
-  } else {
-    target = view.domConverter.viewRangeToDom(viewDocument.selection.getFirstRange()!);
+    if (targetLink) {
+      target = view.domConverter.mapViewToDom(targetLink);
+    } else {
+      target = view.domConverter.viewRangeToDom(viewDocument.selection.getFirstRange()!);
+    }
+
+    return { target };
   }
-
-  return { target };
-}
 
   // Determines whether the balloon is visible in the editor.
   private get _areActionsInPanel(): boolean {
-  return !!this.actionsView && !!this._balloon && this._balloon.hasView(this.actionsView);
-}
+    return !!this.actionsView && !!this._balloon && this._balloon.hasView(this.actionsView);
+  }
 
   // Makes the UI respond to editor document changes.
   private _startUpdatingUI(): void {
-  if(this._isUpdatingUI) {
-  return;
-}
-
-const editor = this.editor;
-let prevSelectedLink = this._getSelectedLinkElement();
-
-const update = () => {
-  // Prevent recursive updates
-  if (this._isUpdatingUI) {
-    return;
-  }
-
-  this._isUpdatingUI = true;
-
-  try {
-    const selectedLink = this._getSelectedLinkElement();
-
-    // Hide the panel if the selection moved out of the link element
-    if (prevSelectedLink && !selectedLink) {
-      this._hideUI();
-    } else if (this._areActionsInPanel) {
-      // Update the balloon position as the selection changes
-      this._balloon.updatePosition(this._getBalloonPositionData());
+    if (this._isUpdatingUI) {
+      return;
     }
 
-    prevSelectedLink = selectedLink;
-  } finally {
-    this._isUpdatingUI = false;
-  }
-};
+    const editor = this.editor;
+    let prevSelectedLink = this._getSelectedLinkElement();
 
-this.listenTo(editor.ui, 'update', update);
+    const update = () => {
+      // Prevent recursive updates
+      if (this._isUpdatingUI) {
+        return;
+      }
 
-// Only listen to balloon changes if we have a balloon
-if (this._balloon) {
-  this.listenTo(this._balloon, 'change:visibleView', update);
-}
+      this._isUpdatingUI = true;
+
+      try {
+        const selectedLink = this._getSelectedLinkElement();
+
+        // Hide the panel if the selection moved out of the link element
+        if (prevSelectedLink && !selectedLink) {
+          this._hideUI();
+        } else if (this._areActionsInPanel) {
+          // Update the balloon position as the selection changes
+          this._balloon.updatePosition(this._getBalloonPositionData());
+        }
+
+        prevSelectedLink = selectedLink;
+      } finally {
+        this._isUpdatingUI = false;
+      }
+    };
+
+    this.listenTo(editor.ui, 'update', update);
+
+    // Only listen to balloon changes if we have a balloon
+    if (this._balloon) {
+      this.listenTo(this._balloon, 'change:visibleView', update);
+    }
   }
 
   // Custom HTML content for the predefined links
   private _createCustomContent(): HTMLElement {
-  const container = document.createElement('div');
+    const container = document.createElement('div');
 
-  const linksContainer = document.createElement('div');
-  linksContainer.id = 'links-container';
-  linksContainer.innerHTML = `
-      <div class="cka-loading-container">
-        <div class="cka-loading-spinner"></div>
-      </div>
-    `;
+    const linksContainer = document.createElement('div');
+    linksContainer.id = 'links-container';
+    linksContainer.innerHTML = `
+  < div class="cka-loading-container" >
+    <div class="cka-loading-spinner" > </div>
+      </>
+        `;
 
-  const paginationContainer = document.createElement('div');
-  paginationContainer.id = 'pagination-container';
-  paginationContainer.className = 'cka-pagination';
+    const paginationContainer = document.createElement('div');
+    paginationContainer.id = 'pagination-container';
+    paginationContainer.className = 'cka-pagination';
 
-  container.appendChild(linksContainer);
-  container.appendChild(paginationContainer);
+    container.appendChild(linksContainer);
+    container.appendChild(paginationContainer);
 
-  return container;
-}
+    return container;
+  }
 
   // Shows the modal dialog for link editing.
-  private async _showUI(isEditing: boolean = false): Promise < void> {
-  const editor = this.editor;
-  const t = editor.t;
-  const linkCommand = editor.commands.get('alight-predefined-link') as AlightPredefinedLinkPluginCommand;
+  private async _showUI(isEditing: boolean = false): Promise<void> {
+    const editor = this.editor;
+    const t = editor.t;
+    const linkCommand = editor.commands.get('alight-predefined-link') as AlightPredefinedLinkPluginCommand;
 
-  // Store the current selection to restore it later
-  const originalSelection = editor.model.document.selection;
-  const firstRange = originalSelection.getFirstRange();
-  const hasText = !originalSelection.isCollapsed && firstRange !== null;
+    // Store the current selection to restore it later
+    const originalSelection = editor.model.document.selection;
+    const firstRange = originalSelection.getFirstRange();
+    const hasText = !originalSelection.isCollapsed && firstRange !== null;
 
-  // Get current link URL if editing
-  let initialUrl = '';
-  let initialLink: PredefinedLink | null = null;
+    // Get current link URL if editing
+    let initialUrl = '';
+    let initialLink: PredefinedLink | null = null;
 
-  if(isEditing && linkCommand.value) {
-  initialUrl = linkCommand.value as string;
+    if (isEditing && linkCommand.value) {
+      initialUrl = linkCommand.value as string;
 
-  // Remove the predefined suffix for display
-  if (initialUrl.includes('~predefined_editor_id')) {
-    const displayUrl = initialUrl.replace('~predefined_editor_id', '');
-    console.log('Editing predefined link:', displayUrl);
-  }
+      // Remove the predefined suffix for display
+      if (initialUrl.includes('~predefined_editor_id')) {
+        const displayUrl = initialUrl.replace('~predefined_editor_id', '');
+        console.log('Editing predefined link:', displayUrl);
+      }
 
-  // Try to find the link data from the API
-  try {
-    initialLink = await this._findPredefinedLinkByUrl(initialUrl);
-  } catch (error) {
-    console.error('Error fetching link data:', error);
-  }
-}
-
-// Create modal if it doesn't exist
-if (!this._modalDialog) {
-  this._modalDialog = new CkAlightModalDialog({
-    title: isEditing ? t('Edit predefined link') : t('Create predefined link'),
-    modal: true,
-    width: '80vw',
-    height: 'auto',
-    contentClass: 'cka-predefined-link-content',
-    buttons: [
-      { label: t('Cancel') },
-      { label: t('Continue'), isPrimary: true, closeOnClick: false, disabled: true }
-    ]
-  });
-
-  // Handle modal button clicks
-  this._modalDialog.on('buttonClick', (data: { button: string; }) => {
-    if (data.button === t('Cancel')) {
-      this._modalDialog?.hide();
-      return;
-    }
-
-    if (data.button === t('Continue')) {
-      // Get the selected link from the content manager
-      const selectedLink = this._linkManager?.getSelectedLink();
-      console.log('Selected link:', selectedLink);
-
-      if (selectedLink && selectedLink.destination) {
-        // Create the link in the editor using the built-in link command
-        linkCommand.execute(selectedLink.destination);
-
-        // Hide the modal after creating the link
-        this._modalDialog?.hide();
-      } else {
-        // Show some feedback that no link was selected
-        console.warn('No link selected or missing destination');
-
-        // Show an alert to the user
-        const alertDiv = document.createElement('div');
-        alertDiv.className = 'cka-alert cka-alert-error';
-        alertDiv.innerHTML = `<div class="cka-alert-warning">Please select a link</div>`;
-
-        // Find the container for the alert and show it
-        const modalContent = this._modalDialog?.getElement();
-        if (modalContent) {
-          // Insert at the top
-          modalContent.insertBefore(alertDiv, modalContent.firstChild);
-
-          // Remove after a delay
-          setTimeout(() => {
-            alertDiv.remove();
-          }, 10000);
-        }
+      // Try to find the link data from the API
+      try {
+        initialLink = await this._findPredefinedLinkByUrl(initialUrl);
+      } catch (error) {
+        console.error('Error fetching link data:', error);
       }
     }
-  });
-} else {
-  // Update title if modal already exists
-  this._modalDialog.setTitle(isEditing ? t('Edit predefined link') : t('Create predefined link'));
-}
 
-// Use our custom content first for faster loading
-const customContent = this._createCustomContent();
-this._modalDialog.setContent(customContent);
+    // Create modal if it doesn't exist
+    if (!this._modalDialog) {
+      this._modalDialog = new CkAlightModalDialog({
+        title: isEditing ? t('Edit predefined link') : t('Create predefined link'),
+        modal: true,
+        width: '80vw',
+        height: 'auto',
+        contentClass: 'cka-predefined-link-content',
+        buttons: [
+          { label: t('Cancel') },
+          { label: t('Continue'), isPrimary: true, closeOnClick: false, disabled: true }
+        ]
+      });
 
-// Show the modal right away
-this._modalDialog.show();
+      // Handle modal button clicks
+      this._modalDialog.on('buttonClick', (data: { button: string; }) => {
+        if (data.button === t('Cancel')) {
+          this._modalDialog?.hide();
+          return;
+        }
 
-// Then fetch data and initialize the content manager in the background
-try {
-  // Fetch predefined links from the service
-  const predefinedLinks = await this._fetchPredefinedLinks();
-  console.log('Fetched predefined links:', predefinedLinks);
+        if (data.button === t('Continue')) {
+          // Get the selected link from the content manager
+          const selectedLink = this._linkManager?.getSelectedLink();
+          console.log('Selected link:', selectedLink);
 
-  if (predefinedLinks.length === 0) {
-    // Show message if no links found
-    const linksContainer = customContent.querySelector('#links-container');
-    if (linksContainer) {
-      linksContainer.innerHTML = `
+          if (selectedLink && selectedLink.destination) {
+            // Create the link in the editor using the built-in link command
+            linkCommand.execute(selectedLink.destination);
+
+            // Hide the modal after creating the link
+            this._modalDialog?.hide();
+          } else {
+            // Show some feedback that no link was selected
+            console.warn('No link selected or missing destination');
+
+            // Show an alert to the user
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'cka-alert cka-alert-error';
+            alertDiv.innerHTML = `< div class="cka-alert-warning" > Please select a link </>`;
+
+            // Find the container for the alert and show it
+            const modalContent = this._modalDialog?.getElement();
+            if (modalContent) {
+              // Insert at the top
+              modalContent.insertBefore(alertDiv, modalContent.firstChild);
+
+              // Remove after a delay
+              setTimeout(() => {
+                alertDiv.remove();
+              }, 10000);
+            }
+          }
+        }
+      });
+    } else {
+      // Update title if modal already exists
+      this._modalDialog.setTitle(isEditing ? t('Edit predefined link') : t('Create predefined link'));
+    }
+
+    // Use our custom content first for faster loading
+    const customContent = this._createCustomContent();
+    this._modalDialog.setContent(customContent);
+
+    // Show the modal right away
+    this._modalDialog.show();
+
+    // Then fetch data and initialize the content manager in the background
+    try {
+      // Fetch predefined links from the service
+      const predefinedLinks = await this._fetchPredefinedLinks();
+      console.log('Fetched predefined links:', predefinedLinks);
+
+      if (predefinedLinks.length === 0) {
+        // Show message if no links found
+        const linksContainer = customContent.querySelector('#links-container');
+        if (linksContainer) {
+          linksContainer.innerHTML = `
           <div class="cka-no-results">
             <p>No predefined links available.</p>
           </div>
         `;
-    }
-    return;
-  }
+        }
+        return;
+      }
 
-  // Create the ContentManager with the initialUrl and predefined links data
-  this._linkManager = new ContentManager(initialUrl, predefinedLinks);
+      // Create the ContentManager with the initialUrl and predefined links data
+      this._linkManager = new ContentManager(initialUrl, predefinedLinks);
 
-  // Pass the modal dialog reference to enable/disable the Continue button
-  // Add an event listener for link selection
-  this._linkManager.onLinkSelected = (link) => {
-    this._updateContinueButtonState(!!link);
-  };
+      // Pass the modal dialog reference to enable/disable the Continue button
+      // Add an event listener for link selection
+      this._linkManager.onLinkSelected = (link) => {
+        this._updateContinueButtonState(!!link);
+      };
 
-  // Initialize the ContentManager with the content element
-  this._linkManager.renderContent(customContent);
+      // Initialize the ContentManager with the content element
+      this._linkManager.renderContent(customContent);
 
-  // Set initial button state based on whether we have an initial link
-  this._updateContinueButtonState(!!initialLink);
-} catch (error) {
-  console.error('Error setting up predefined links:', error);
+      // Set initial button state based on whether we have an initial link
+      this._updateContinueButtonState(!!initialLink);
+    } catch (error) {
+      console.error('Error setting up predefined links:', error);
 
-  // Show error message
-  const linksContainer = customContent.querySelector('#links-container');
-  if (linksContainer) {
-    linksContainer.innerHTML = `
+      // Show error message
+      const linksContainer = customContent.querySelector('#links-container');
+      if (linksContainer) {
+        linksContainer.innerHTML = `
       <div class="cka-error-state">
         <p class="cka-error-details">${error.message || 'Unknown error'}</p>
       </div>
     `;
-  }
-}
+      }
+    }
   }
 
   /**
@@ -627,76 +612,76 @@ try {
    * @param hasSelection True if a link is selected, false otherwise
    */
   private _updateContinueButtonState(hasSelection: boolean): void {
-  if(!this._modalDialog) return;
+    if (!this._modalDialog) return;
 
-  const continueButton = this._modalDialog.getElement()?.querySelector('.cka-dialog-footer-buttons button:last-child') as HTMLButtonElement;
+    const continueButton = this._modalDialog.getElement()?.querySelector('.cka-dialog-footer-buttons button:last-child') as HTMLButtonElement;
 
-  if(continueButton) {
-    // Update the disabled property
-    continueButton.disabled = !hasSelection;
+    if (continueButton) {
+      // Update the disabled property
+      continueButton.disabled = !hasSelection;
 
-    // Update classes for visual indication
-    if (hasSelection) {
-      continueButton.classList.remove('ck-disabled');
-    } else {
-      continueButton.classList.add('ck-disabled');
+      // Update classes for visual indication
+      if (hasSelection) {
+        continueButton.classList.remove('ck-disabled');
+      } else {
+        continueButton.classList.add('ck-disabled');
+      }
     }
   }
-}
 
   // Hides the UI
   private _hideUI(): void {
-  // Prevent recursive calls
-  if(this._isUpdatingUI) {
-  return;
-}
-
-this._isUpdatingUI = true;
-
-try {
-  // Hide the balloon if it's showing
-  if (this.actionsView && this._balloon && this._balloon.hasView(this.actionsView)) {
-    this._balloon.remove(this.actionsView);
-    this.stopListening(this.editor.ui, 'update');
-    if (this._balloon) {
-      this.stopListening(this._balloon, 'change:visibleView');
+    // Prevent recursive calls
+    if (this._isUpdatingUI) {
+      return;
     }
-  }
-} catch (error) {
-  console.error('Error hiding UI:', error);
-} finally {
-  this._isUpdatingUI = false;
-}
+
+    this._isUpdatingUI = true;
+
+    try {
+      // Hide the balloon if it's showing
+      if (this.actionsView && this._balloon && this._balloon.hasView(this.actionsView)) {
+        this._balloon.remove(this.actionsView);
+        this.stopListening(this.editor.ui, 'update');
+        if (this._balloon) {
+          this.stopListening(this._balloon, 'change:visibleView');
+        }
+      }
+    } catch (error) {
+      console.error('Error hiding UI:', error);
+    } finally {
+      this._isUpdatingUI = false;
+    }
   }
 
   // Returns the link element under the editing view's selection or `null` if there is none.
   private _getSelectedLinkElement(): ViewAttributeElement | null {
-  const view = this.editor.editing.view;
-  const selection = view.document.selection;
-  const selectedElement = selection.getSelectedElement();
+    const view = this.editor.editing.view;
+    const selection = view.document.selection;
+    const selectedElement = selection.getSelectedElement();
 
-  // The selection is collapsed or some widget is selected (especially inline widget).
-  if (selection.isCollapsed || selectedElement && isWidget(selectedElement)) {
-    return findLinkElementAncestor(selection.getFirstPosition()!);
-  } else {
-    // The range for fully selected link is usually anchored in adjacent text nodes.
-    // Trim it to get closer to the actual link element.
-    const range = selection.getFirstRange()!.getTrimmed();
-    const startLink = findLinkElementAncestor(range.start);
-    const endLink = findLinkElementAncestor(range.end);
-
-    if (!startLink || startLink != endLink) {
-      return null;
-    }
-
-    // Check if the link element is fully selected.
-    if (view.createRangeIn(startLink).getTrimmed().isEqual(range)) {
-      return startLink;
+    // The selection is collapsed or some widget is selected (especially inline widget).
+    if (selection.isCollapsed || selectedElement && isWidget(selectedElement)) {
+      return findLinkElementAncestor(selection.getFirstPosition()!);
     } else {
-      return null;
+      // The range for fully selected link is usually anchored in adjacent text nodes.
+      // Trim it to get closer to the actual link element.
+      const range = selection.getFirstRange()!.getTrimmed();
+      const startLink = findLinkElementAncestor(range.start);
+      const endLink = findLinkElementAncestor(range.end);
+
+      if (!startLink || startLink != endLink) {
+        return null;
+      }
+
+      // Check if the link element is fully selected.
+      if (view.createRangeIn(startLink).getTrimmed().isEqual(range)) {
+        return startLink;
+      } else {
+        return null;
+      }
     }
   }
-}
 }
 
 // Returns a link element if there's one among the ancestors of the provided `Position`.
