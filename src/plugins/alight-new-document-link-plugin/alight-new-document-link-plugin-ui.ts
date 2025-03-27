@@ -1,5 +1,4 @@
 // src/plugins/alight-new-document-link-plugin/alight-new-document-link-plugin-ui.ts
-import { Plugin } from '@ckeditor/ckeditor5-core';
 import { ButtonView } from '@ckeditor/ckeditor5-ui';
 import { CkAlightModalDialog, DialogButton } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import { ContentManager } from './modal-content/alight-new-document-link-plugin-modal-ContentManager';
@@ -42,7 +41,7 @@ export default class AlightNewDocumentLinkPluginUI extends AlightDataLoadPlugin 
       this.buttonView = new ButtonView(locale);
       this.setModalContents();
 
-      const command = editor.commands.get('alightNewDocumentLinkPlugin')!;
+      const command = editor.commands.get('alightNewDocumentLinkPlugin');
 
       this.buttonView.set({
         isEnabled: this.isReady,

@@ -231,7 +231,6 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
     const locale = editor.locale;
     const command = editor.commands.get('alight-predefined-link')!;
     this.buttonView = new ButtonClass(editor.locale) as InstanceType<T>;
-    const view = new ButtonClass(editor.locale) as InstanceType<T>;
     const t = locale.t;
 
     this.buttonView.set({

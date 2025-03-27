@@ -146,47 +146,6 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
     );
   }
 
-  // Fetch document links from the service
-  private async _fetchDocumentLinks(): Promise<DocumentLink[]> {
-    if (!this._docsService) {
-      console.warn('Links service not initialized');
-      return [];
-    }
-
-    try {
-      // Get links from the service
-      const rawLinks = await this._docsService.getDocumentLinks();
-
-      // If we got empty links, return empty array
-      if (!rawLinks || rawLinks.length === 0) {
-        console.warn('No document links returned from service');
-        return [];
-      }
-
-      // Process each link directly
-      const processedLinks = rawLinks.map(link => ({
-        serverFilePath: link.serverFilePath || '',
-        title: link.title || '',
-        fileId: link.fileId || '',
-        fileType: link.fileType || '',
-        population: link.population || '',
-        locale: link.locale || '',
-        lastUpdated: typeof link.lastUpdated === 'string' ? Date.parse(link.lastUpdated) : link.lastUpdated,
-        updatedBy: link.updatedBy || '',
-        upointLink: link.upointLink || '',
-        documentDescription: link.documentDescription || '',
-        expiryDate: link.expiryDate || '',
-      }));
-
-      console.log(`Final links: ${processedLinks.length}`);
-
-      return processedLinks;
-    } catch (error) {
-      console.error('Error fetching existing document links:', error);
-      return [];
-    }
-  }
-
   // Checks if the current selection is in a link and shows the balloon if needed
   private _checkAndShowBalloon(): void {
     const selectedLink = this._getSelectedLinkElement();

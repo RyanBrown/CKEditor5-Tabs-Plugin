@@ -17,7 +17,7 @@ import {
   Superscript,
   Underline
 } from '@ckeditor/ckeditor5-basic-styles';
-import { Clipboard } from '@ckeditor/ckeditor5-clipboard';
+import { Clipboard, PastePlainText } from '@ckeditor/ckeditor5-clipboard';
 import type { EditorConfig } from '@ckeditor/ckeditor5-core';
 import { Essentials } from '@ckeditor/ckeditor5-essentials';
 import { FindAndReplace } from '@ckeditor/ckeditor5-find-and-replace';
@@ -27,9 +27,10 @@ import {
   FontFamily,
   FontSize,
 } from '@ckeditor/ckeditor5-font';
-import { Heading, Title } from '@ckeditor/ckeditor5-heading';
+import { Heading } from '@ckeditor/ckeditor5-heading';
 import { Highlight } from '@ckeditor/ckeditor5-highlight';
 import { HorizontalLine } from '@ckeditor/ckeditor5-horizontal-line';
+import { HtmlEmbed } from '@ckeditor/ckeditor5-html-embed';
 import {
   DataSchema,
   FullPage,
@@ -68,10 +69,8 @@ import {
   SpecialCharactersEssentials,
   SpecialCharactersLatin,
   SpecialCharactersMathematical,
-  SpecialCharactersPunctuation,
-  SpecialCharactersSuperscript,
   SpecialCharactersText,
-} from '@ckeditor/ckeditor5-special-characters/src/specialcharacters';
+} from '@ckeditor/ckeditor5-special-characters';
 import { Style } from '@ckeditor/ckeditor5-style';
 import {
   Table,
@@ -84,7 +83,6 @@ import {
 import { TextTransformation } from '@ckeditor/ckeditor5-typing';
 import { Undo } from '@ckeditor/ckeditor5-undo';
 import { WordCount } from '@ckeditor/ckeditor5-word-count';
-import { EditorWatchdog } from '@ckeditor/ckeditor5-watchdog';
 
 // Custom Plugins
 import AlightCopyPlugin from './plugins/alight-copy-plugin/alight-copy-plugin';
@@ -107,8 +105,7 @@ import AlightEmailLinkPlugin from './plugins/alight-email-link-plugin/link';
 
 // Import custom styles for headings, style definitions and custom plugins
 import './styles/styles.scss';
-import { title } from 'process';
-import { HtmlEmbed } from '@ckeditor/ckeditor5-html-embed';
+import SessionService from './services/session-service';
 
 // import fontawesome
 const script = document.createElement('script');
@@ -166,22 +163,17 @@ const awldsColorPalette = [
 ];
 
 class AlightEditor extends ClassicEditor {
+  public get textContent() { return this.getData().replace(/<[^>]*>/g, ''); }
+
+  constructor(sourceElementOrData: HTMLElement | string, config?: any) {
+    super(sourceElementOrData, config);
+    SessionService.create(sessionStorage);
+  }
+
   public static override builtinPlugins = [
 
     // Custom Plugins
     AccessibilityHelp,
-    AlightCopyPlugin,
-    AlightEmailLinkPlugin,
-    AlightExistingDocumentLinkPlugin,
-    AlightExternalLinkPlugin,
-    AlightImagePlugin,
-    AlightLink,
-    AlightNewDocumentLinkPlugin,
-    AlightParentLinkPlugin,
-    AlightPastePlugin,
-    AlightPopulationPlugin,
-    AlightPredefinedLinkPlugin,
-    AlightTabsPlugin,
     Alignment,
     Autoformat,
     AutoImage,
@@ -236,8 +228,6 @@ class AlightEditor extends ClassicEditor {
     SpecialCharactersEssentials,
     SpecialCharactersLatin,
     SpecialCharactersMathematical,
-    SpecialCharactersPunctuation,
-    SpecialCharactersSuperscript,
     SpecialCharactersText,
     StandardEditingMode,
     Strikethrough,
@@ -252,11 +242,23 @@ class AlightEditor extends ClassicEditor {
     TableToolbar,
     TextPartLanguage,
     TextTransformation,
-    Title,
     TodoList,
     Underline,
     Undo,
     WordCount,
+    // Alight Plugins
+    AlightCopyPlugin,
+    AlightEmailLinkPlugin,
+    AlightExistingDocumentLinkPlugin,
+    AlightExternalLinkPlugin,
+    AlightImagePlugin,
+    AlightLink,
+    AlightNewDocumentLinkPlugin,
+    AlightParentLinkPlugin,
+    AlightPastePlugin,
+    AlightPopulationPlugin,
+    AlightPredefinedLinkPlugin,
+    AlightTabsPlugin,
   ];
 
   public static override defaultConfig: EditorConfig = {
@@ -325,6 +327,7 @@ class AlightEditor extends ClassicEditor {
     alightParentLinkPlugin: {
       linkPlugins: [
         {
+          id: 'alightExternalLinkPlugin',
           name: 'AlightExternalLinkPlugin',
           command: 'alightExternalLinkPlugin',
           label: 'External Site',
@@ -332,6 +335,7 @@ class AlightEditor extends ClassicEditor {
           enabled: true
         },
         {
+          id: 'alightPredefinedLinkPlugin',
           name: 'AlightPredefinedLinkPlugin',
           command: 'alightPredefinedLinkPlugin',
           label: 'Predefined Link',
@@ -339,6 +343,7 @@ class AlightEditor extends ClassicEditor {
           enabled: true
         },
         {
+          id: 'alightEmailLinkPlugin',
           name: 'AlightEmailLinkPlugin',
           command: 'alightEmailLinkPlugin',
           label: 'Email',
@@ -346,6 +351,7 @@ class AlightEditor extends ClassicEditor {
           enabled: true
         },
         {
+          id: 'alightExistingDocumentLinkPlugin',
           name: 'AlightExistingDocumentLinkPlugin',
           command: 'alightExistingDocumentLinkPlugin',
           label: 'Existing Document',
@@ -353,6 +359,7 @@ class AlightEditor extends ClassicEditor {
           enabled: true
         },
         {
+          id: 'alightNewDocumentLinkPlugin',
           name: 'AlightNewDocumentLinkPlugin',
           command: 'alightNewDocumentLinkPlugin',
           label: 'New Document',
