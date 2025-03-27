@@ -217,7 +217,7 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
       const button = this._createButton(MenuBarMenuListItemButtonView);
 
       button.set({
-        isEnabled: this._isReady,
+        isEnabled: this.isReady,
         role: 'menuitemcheckbox'
       });
 
