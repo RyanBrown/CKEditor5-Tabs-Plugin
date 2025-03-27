@@ -1,5 +1,4 @@
 // src/plugins/alight-existing-document-link/linkui.ts
-import { Plugin } from '@ckeditor/ckeditor5-core';
 import {
   ClickObserver,
   type ViewAttributeElement,
@@ -25,11 +24,9 @@ import './../ui-components/alight-checkbox-component/alight-checkbox-component';
 import { ContentManager } from './ui/linkmodal-ContentManager';
 import { DocumentLink } from './ui/linkmodal-modal-types';
 
-// Import the services
-import { DocsService } from './../../services/docs-service';
-import { SessionService } from './../../services/session-service';
-
 import linkIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
+import AlightDataLoadPlugin from '../../alight-common/alight-data-load-plugin';
+import LinksLoadService from '../../services/links-load-service';
 
 const VISUAL_SELECTION_MARKER_NAME = 'alight-existing-document-link-ui';
 
@@ -38,23 +35,25 @@ const VISUAL_SELECTION_MARKER_NAME = 'alight-existing-document-link-ui';
  * 
  * Uses a balloon for unlink actions, and a modal dialog for create/edit functions.
  */
-export default class AlightExistingDocumentLinkPluginUI extends Plugin {
+export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPlugin {
   private _modalDialog: CkAlightModalDialog | null = null;
   private _linkManager: ContentManager | null = null;
 
-  private _docsService: DocsService | null = null;
   public actionsView: LinkActionsView | null = null;
 
   private _balloon!: ContextualBalloon;
   private _isUpdatingUI: boolean = false;
 
+  private _documentLinks: DocumentLink[] = [];
+  private readonly loadService: LinksLoadService = new LinksLoadService();
+
   public static get requires() {
     return [AlightExistingDocumentLinkPluginEditing, ContextualBalloon] as const;
   }
 
-  public static get pluginName() {
-    return 'AlightExistingDocumentLinkPluginUI' as const;
-  }
+  public static override get pluginName(): string { return 'AlightExistingDocumentLinkPluginUI' as const; }
+  public override get pluginName(): string { return AlightExistingDocumentLinkPluginUI.pluginName; }
+  public override get pluginId(): string { return 'AlightExistingDocumentLinkPlugin'; }
 
   public static override get isOfficialPlugin(): true {
     return true;
@@ -63,9 +62,6 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
   public init(): void {
     const editor = this.editor;
     const t = this.editor.t;
-
-    // Initialize the services
-    this._initServices();
 
     editor.editing.view.addObserver(ClickObserver);
     this._balloon = editor.plugins.get(ContextualBalloon);
@@ -122,7 +118,9 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
 
     // Register the UI component
     editor.ui.componentFactory.add('AlightExistingDocumentLinkPlugin', locale => {
-      return this._createButton(ButtonView);
+      this._createButton(ButtonView);
+      this.setModalContents();
+      return this.buttonView;
     });
 
     // Listen for command execution to show balloon
@@ -135,38 +133,17 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
     });
   }
 
-  // Initialize the services with config from editor.
-  private _initServices(): void {
-    try {
-      // Store the session service as a class property so it doesn't get garbage collected
-      const sessionService = new SessionService();
-
-      // Check if apiUrl exists in sessionStorage
-      if (!sessionStorage.getItem('apiUrl')) {
-        // Set a default API URL if none exists
-        sessionStorage.setItem('apiUrl', 'https://example.com/api');
-
-        // Also set dummy values for other required session items
-        if (!sessionStorage.getItem('dummyColleagueSessionToken')) {
-          sessionStorage.setItem('dummyColleagueSessionToken', 'dummy-token');
-        }
-        if (!sessionStorage.getItem('dummyRequestHeader')) {
-          sessionStorage.setItem('dummyRequestHeader', '{"clientId":"dummy-client"}');
-        }
-      }
-
-      // Initialize links service with the session service
-      this._docsService = new DocsService(sessionService);
-    } catch (error) {
-      console.error('Error initializing services:', error);
-
-      // Fallback to create a basic links service with a dummy implementation
-      this._docsService = {
-        getDocumentLinks: async () => {
-          return [];
-        }
-      } as DocsService;
-    }
+  protected override setModalContents = async (): Promise<void> => {
+    if (this.verboseMode) console.log(`Loading Existing Document Links...`);
+    this.loadService.loadDocumentLinks().then(
+      (data) => {
+        this._documentLinks = data;
+        if (this.verboseMode) console.log(data);
+        this.isReady = true;
+        this._enablePluginButton();
+      },
+      (error) => console.log(error)
+    );
   }
 
   // Fetch document links from the service
@@ -240,6 +217,7 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
       const button = this._createButton(MenuBarMenuListItemButtonView);
 
       button.set({
+        isEnabled: true,
         role: 'menuitemcheckbox'
       });
 
@@ -256,19 +234,20 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
     const t = locale.t;
 
     view.set({
+      isEnabled: this.isReady,
       label: t('Existing document link'),
       icon: linkIcon,
       isToggleable: true,
       withText: true
     });
 
-    view.bind('isEnabled').to(command, 'isEnabled');
-    view.bind('isOn').to(command, 'value', value => !!value);
+    this.buttonView.bind('isEnabled').to(command, 'isEnabled', (command) => command && this.isReady);
+    this.buttonView.bind('isOn').to(command, 'value', value => !!value);
 
     // Show the modal dialog on button click for creating new links
-    this.listenTo(view, 'execute', () => this._showUI());
+    this.listenTo(this.buttonView, 'execute', () => this._showUI());
 
-    return view;
+    return this.buttonView as InstanceType<T>;
   }
 
   // Creates the {@link module:link/ui/linkactionsview~LinkActionsView} instance.
@@ -328,17 +307,9 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
 
   // Find document link by URL using the links service
   private async _findDocumentLinkByUrl(url: string): Promise<DocumentLink | null> {
-    if (!this._docsService) {
-      console.warn('Links service not initialized');
-      return null;
-    }
-
     try {
-      // Fetch all document links
-      const links = await this._fetchDocumentLinks();
-
       // Find the matching link by URL - compare regardless of trailing slash or protocol differences
-      return links.find(link => {
+      return this._documentLinks.find(link => {
         const normalizedDestination = this._normalizeUrl(link.serverFilePath as string);
         const normalizedUrl = this._normalizeUrl(url);
         return normalizedDestination === normalizedUrl;
@@ -588,11 +559,7 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
 
     // Then fetch data and initialize the content manager in the background
     try {
-      // Fetch document links from the service
-      const documentLinks = await this._fetchDocumentLinks();
-      console.log('Fetched document links:', documentLinks);
-
-      if (documentLinks.length === 0) {
+      if (this._documentLinks.length === 0) {
         // Show message if no links found
         const linksContainer = customContent.querySelector('#links-container');
         if (linksContainer) {
@@ -606,7 +573,7 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
       }
 
       // Create the ContentManager with the initialUrl and document links data
-      this._linkManager = new ContentManager(initialUrl, documentLinks);
+      this._linkManager = new ContentManager(initialUrl, this._documentLinks);
 
       // Initialize the ContentManager with the content element
       this._linkManager.renderContent(customContent);
