@@ -1,3 +1,4 @@
+// src/alight-common/data-loader.ts
 export abstract class DataLoader {
   protected scriptUrl = async <T, F extends (...args: any[]) => T[] | Promise<T[]>>(dataFunction: F): Promise<string> =>
     URL.createObjectURL(new Blob([`self.onmessage = async (event) => self.postMessage(${JSON.stringify(await dataFunction())})`], { type: 'application/javascript' }));
