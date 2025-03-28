@@ -52,7 +52,7 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
   }
 
   public static override get pluginName(): string { return 'AlightPredefinedLinkPluginUI' as const; }
-  public override get pluginName(): string { return 'AlightPredefinedLinkPluginUI' as const; }
+  public override get pluginName(): string { return AlightPredefinedLinkPluginUI.pluginName; }
   public override get pluginId(): string { return 'AlightPredefinedLinkPlugin'; }
 
   public static override get isOfficialPlugin(): true {
@@ -593,10 +593,10 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
       const linksContainer = customContent.querySelector('#links-container');
       if (linksContainer) {
         linksContainer.innerHTML = `
-      <div class="cka-error-state">
-        <p class="cka-error-details">${error.message || 'Unknown error'}</p>
-      </div>
-    `;
+        <div class="cka-center-modal-message">
+          <p>${error.message || 'Unknown error'}</p>
+        </div>
+      `;
       }
     }
   }

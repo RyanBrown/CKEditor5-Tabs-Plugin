@@ -44,7 +44,7 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
   private _balloon!: ContextualBalloon;
   private _isUpdatingUI: boolean = false;
 
-  private _documentLinks: DocumentLink[] = [];
+  private _documentLinks: DocumentLink[];
   private readonly loadService: LinksLoadService = new LinksLoadService();
 
   public static get requires() {
@@ -134,7 +134,7 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
   }
 
   protected override setModalContents = (): void => {
-    if (this.verboseMode) console.log(`Loading Existing Document Links...`);
+    if (this.verboseMode) console.log(`Loading existing document links...`);
     this.loadService.loadDocumentLinks().then(
       (data) => {
         this._documentLinks = data;
@@ -543,8 +543,8 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
       const linksContainer = customContent.querySelector('#links-container');
       if (linksContainer) {
         linksContainer.innerHTML = `
-        <div class="cka-error-state">
-          <p class="cka-error-details">${error.message || 'Unknown error'}</p>
+        <div class="cka-center-modal-message">
+          <p>${error.message || 'Unknown error'}</p>
         </div>
       `;
       }
