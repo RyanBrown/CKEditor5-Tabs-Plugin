@@ -34,7 +34,7 @@
 
   p.special-container {
     background: #eee;
-    border: 1px solid #ccc;
+    border: 1px solid var(--neutral-athens-gray);
     padding: 5px 10px;
   }
 
@@ -258,7 +258,6 @@ $spacing-values: (
   display: flex;
 }
 
-
 // Text helper classes
 .cka-text-center {
   text-align: center;
@@ -267,6 +266,10 @@ $spacing-values: (
 // Width helper classes
 .cka-width-100 {
   width: 100%;
+}
+
+.cka-width-75 {
+  width: 75%;
 }
 
 .cka-width-50 {
@@ -330,19 +333,6 @@ $spacing-values: (
     width: 100%;
 
     li {
-      font-size: var(--font-size-sm);
-
-      &:first-child {
-        font-size: var(--font-size-lg);
-        font-weight: var(--font-weight-bold);
-      }
-
-      &.wrap-text {
-        max-width: 80%;
-        white-space: break-spaces;
-        word-wrap: break-word;
-      }
-
       &.hide-overflow {
         box-sizing: border-box;
         display: block;
@@ -354,4 +344,13 @@ $spacing-values: (
       }
     }
   }
+}
+
+// Center info text modals
+.cka-center-modal-message {
+  align-items: center;
+  display: flex;
+  font-size: 1.25rem;
+  justify-content: center;
+  padding: 1rem var(--spacing-xl);
 }

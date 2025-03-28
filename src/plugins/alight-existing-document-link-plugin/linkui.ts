@@ -523,7 +523,7 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
         const linksContainer = customContent.querySelector('#links-container');
         if (linksContainer) {
           linksContainer.innerHTML = `
-          <div class="cka-no-results">
+          <div class="cka-center-modal-message">
             <p>No existing document links available.</p>
           </div>
         `;

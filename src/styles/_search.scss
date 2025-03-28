@@ -1,49 +1,6 @@
 // src/plugins/alight-link-plugin/styles/search.scss
 @use './_mixins.scss' as mixins;
 
-// // Flex Layout for Search Bar
-// .cka-search-input {
-//   align-items: center;
-//   display: flex;
-//   margin-bottom: 1rem;
-//   justify-content: space-between;
-
-//   .cka-search-left-col {
-//     margin-right: 0.5rem;
-//   }
-
-//   .cka-search-center-col {
-//     flex-grow: 1;
-//     margin-right: 0.5rem;
-//   }
-// }
-
-// @media screen and (max-width: var(--media-query-768)) {
-//   .cka-search-input {
-//     flex-wrap: wrap;
-//   }
-// }
-
-// .cka-search-main {
-//   display: flex;
-
-//   @media screen and (max-width: var(--media-query-576)) {
-//     flex-wrap: wrap;
-//   }
-// }
-
-// .cka-search-input {
-//   align-items: center;
-//   background-color: var(--neutral-white);
-//   border-radius: 5rem;
-//   border: 1px solid var(--neutral-dove-gray);
-//   display: flex;
-//   flex-grow: 1;
-//   justify-content: space-between;
-//   margin-right: 0.5rem !important;
-//   //   padding: mixins.toRem(9) mixins.toRem(16);
-// }
-
 .cka-search-main {
 
   .p-input-icon-left,
@@ -99,7 +56,7 @@
 .cka-search-container {
   align-items: center;
   background-color: var(--neutral-white);
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid var(--neutral-athens-gray);
   display: flex;
   justify-content: center;
   padding: mixins.toRem(10) var(--spacing-xl);

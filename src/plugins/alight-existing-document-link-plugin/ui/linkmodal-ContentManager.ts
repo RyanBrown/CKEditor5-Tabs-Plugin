@@ -143,7 +143,7 @@ export class ContentManager implements ILinkManager {
       ? currentPageData
         .map(link => this.buildLinkItemMarkup(link))
         .join('')
-      : '<div class="cka-no-results">No results found.</div>';
+      : '<div class="cka-center-modal-message">No results found.</div>';
 
     // Pagination container
     const paginationMarkup = `<div id="pagination-container" class="cka-pagination"></div>`;
