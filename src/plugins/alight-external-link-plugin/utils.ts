@@ -24,13 +24,13 @@ import { upperFirst } from 'lodash-es';
 
 const ATTRIBUTE_WHITESPACES = /[\u0000-\u0020\u00A0\u1680\u180E\u2000-\u2029\u205f\u3000]/g; // eslint-disable-line no-control-regex
 
-// Modified SAFE_URL_TEMPLATE to only allow http and https protocols
+// SAFE_URL_TEMPLATE to only allow http and https protocols
 const SAFE_URL_TEMPLATE = '^(?:(?:<protocols>):|[^a-z]|[a-z+.-]+(?:[^a-z+.:-]|$))';
 
 // Updated URL validation regex to only match HTTP/HTTPS URLs
 const URL_REG_EXP = /^(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/i;
 
-// Modified to only check for http and https protocols
+// Only check for http and https protocols
 const PROTOCOL_REG_EXP = /^(https?:(\/{2,})?)/i;
 
 // Updated default protocols to only include http and https

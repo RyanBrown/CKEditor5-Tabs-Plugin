@@ -44,7 +44,7 @@ export class ContentManager implements ILinkManager {
 
   public setModalContents = async (): Promise<any[]> => {
     await this.loadService.loadCategories().then(
-      (data) => this.categories = data.map(category => ({ id: `id-${category}`, label: category })),
+      (data) => this.categories = data.map((category) => ({ id: `id-${category}`, label: category })),
       (error) => console.log(error)
     );
     return this.categories;
