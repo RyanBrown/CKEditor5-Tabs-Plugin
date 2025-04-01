@@ -168,16 +168,21 @@ export function createPopulationTags(writer: Writer, populationName: string) {
  * @param {Function} callback A predicate function to test each parent.
  * @returns {Node|null} The found parent or null.
  */
-export function findParent(node: Node, callback: (node: Node) => boolean): Node | null {
-  if (!node || !node.parent) return null;
+export function findParent<T>(node: T, callback: (node: any) => boolean): any | null {
+  // Early return for null/undefined
+  if (!node) return null;
 
-  let parent = node.parent;
+  // Get parent, handling different possible structures
+  const parent = (node as any).parent;
+  if (!parent) return null;
 
-  while (parent) {
-    if (callback(parent)) {
-      return parent;
+  let currentParent = parent;
+
+  while (currentParent) {
+    if (callback(currentParent)) {
+      return currentParent;
     }
-    parent = parent.parent;
+    currentParent = currentParent.parent;
   }
 
   return null;
@@ -196,7 +201,8 @@ export function isNodeInPopulation(node: Node): boolean {
   }
 
   // Check if any parent has population tag attributes
-  return !!findParent(node, parent =>
+  // We need to add type casting here to solve the remaining errors
+  return !!findParent(node as any, parent =>
     'hasAttribute' in parent && parent.hasAttribute('population-tag')
   );
 }
@@ -208,6 +214,7 @@ export function isNodeInPopulation(node: Node): boolean {
  * @param {Model} model The editor model.
  * @returns {PopulationTags|null} The population tags or null if not found.
  */
+// Find population tags in a selection range
 export function findPopulationTagsInRange(
   selection: Selection | DocumentSelection,
   model: Model
@@ -222,13 +229,14 @@ export function findPopulationTagsInRange(
   // Find the population tags that contain the selection
   for (const { begin, end, populationName } of populationRanges) {
     // Create a range between the begin and end tags
-    const beginPos = model.createPositionAfter(begin);
-    const endPos = model.createPositionBefore(end);
+    // Add type casting to resolve TypeScript errors
+    const beginPos = model.createPositionAfter(begin as any);
+    const endPos = model.createPositionBefore(end as any);
     const populationRange = model.createRange(beginPos, endPos);
 
     // Check if the selection is within the population range
     if ((selectionRange.start.isAfter(beginPos) && selectionRange.end.isBefore(endPos)) ||
-      selectionRange.containsItem(begin) || selectionRange.containsItem(end)) {
+      selectionRange.containsItem(begin as any) || selectionRange.containsItem(end as any)) {
       return {
         begin,
         end,
