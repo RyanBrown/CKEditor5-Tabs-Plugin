@@ -1,107 +1,210 @@
 // src/plugins/alight-population-plugin/alight-population-plugin-command.ts
-import type Editor from '@ckeditor/ckeditor5-core/src/editor/editor';
-import Command from '@ckeditor/ckeditor5-core/src/command';
-import { CkAlightModalDialog } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
-import type { ArrayOrItem } from '@ckeditor/ckeditor5-utils';
+import { Plugin } from '@ckeditor/ckeditor5-core';
+import { Command } from '@ckeditor/ckeditor5-core';
+import type { Writer } from '@ckeditor/ckeditor5-engine';
+import type { Element, Range, Selection, DocumentSelection, Position } from '@ckeditor/ckeditor5-engine';
+import { findPopulationTagsInRange, isSelectionInPopulation, createPopulationTags } from './alight-population-plugin-utils';
 
-interface DialogButton {
-  label: string;
-  className: string;
-  onClick?: () => void;
-}
+/**
+ * Command for adding population tags around selected content.
+ */
+export class AddPopulationCommand extends Command {
+  /**
+   * @inheritDoc
+   */
+  override refresh() {
+    // The command can be executed when the editor has focus and when selection exists
+    const selection = this.editor.model.document.selection;
 
-interface CommandData {
-  title: string;
-  modalType?: 'systemPopulations';
-  modalOptions?: {
-    modal?: boolean;
-    draggable?: boolean;
-    resizable?: boolean;
-    width?: string;
-    position?: 'center' | 'top' | 'bottom' | 'left' | 'right' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
-    closeOnEscape?: boolean;
-  };
-  buttons?: DialogButton[];
-  loadContent: () => Promise<string>;
-}
+    // Check if the selection contains any disallowed elements
+    const canBeEnabled = this._checkIfSelectionCanBeCovered(selection);
 
-interface SystemPopulationsCommandParam {
-  file: ArrayOrItem<File>;
-}
+    this.isEnabled = canBeEnabled && selection.getFirstRange() !== null;
+  }
 
-export class AlightPopulationPluginCommand extends Command {
-  private dialog: CkAlightModalDialog;
-  private data: CommandData;
-  public readonly isAccessAllowed: boolean = true;
+  /**
+   * Executes the command to add population tags.
+   * 
+   * @param {Object} options The command options.
+   * @param {string} options.populationName The name of the population to add.
+   */
+  override execute({ populationName }: { populationName: string }) {
+    const editor = this.editor;
+    const model = editor.model;
+    const selection = model.document.selection;
 
-  constructor(editor: Editor, data: CommandData) {
-    super(editor);
-    this.data = data;
-    this.dialog = new CkAlightModalDialog({
-      modal: true,
-      draggable: false,
-      resizable: false,
-      width: '38rem',
-      position: 'center',
-      ...data.modalOptions
+    model.change(writer => {
+      // If there's no selection, insert empty population tags at the cursor position
+      if (selection.isCollapsed) {
+        const position = selection.getFirstPosition()!;
+        const emptyPopulationRange = this._insertEmptyPopulation(writer, position, populationName);
+
+        // Set selection between the tags
+        writer.setSelection(emptyPopulationRange);
+        return;
+      }
+
+      // If there's an existing population in the selection, remove it first
+      if (isSelectionInPopulation(selection)) {
+        // Execute the remove population command
+        editor.execute('removePopulation');
+      }
+
+      const ranges = Array.from(selection.getRanges());
+
+      // Process each range in the selection
+      for (const range of ranges) {
+        if (range.isCollapsed) continue;
+
+        // Create population tags for the range
+        this._addPopulationToRange(writer, range, populationName);
+      }
     });
-
-    this.setupDialogButtons();
   }
 
-  protected async _systemPopulations(file: File): Promise<void> {
-    // Add your population upload logic here
-    console.log('Population:', file);
-  }
+  /**
+   * Checks if the selection can be covered with population tags.
+   * 
+   * @param {Selection|DocumentSelection} selection The selection to check.
+   * @returns {boolean} Whether the selection can be covered.
+   */
+  private _checkIfSelectionCanBeCovered(selection: Selection | DocumentSelection): boolean {
+    // List of elements that cannot be inside a population
+    const disallowedElements = [
+      'tabTitle',
+      'sectionTitle',
+      'tableCell'
+    ];
 
-  private setupDialogButtons(): void {
-    if (!this.data.buttons?.length) {
-      const footer = document.createElement('div');
-      footer.className = 'cka-dialog-footer-buttons';
+    // Check if the selection contains any disallowed elements
+    for (const range of selection.getRanges()) {
+      const walker = range.getWalker({ ignoreElementEnd: true });
 
-      const defaultButton = document.createElement('button');
-      defaultButton.className = 'cka-button cka-button-rounded cka-button-sm';
-      defaultButton.textContent = 'Close';
-      defaultButton.onclick = () => this.dialog.hide();
-
-      footer.appendChild(defaultButton);
-      this.dialog.setFooter(footer);
-      return;
+      for (const { item } of walker) {
+        if (item.is('element') && disallowedElements.includes(item.name)) {
+          return false;
+        }
+      }
     }
 
-    const footer = document.createElement('div');
-    footer.className = 'cka-dialog-footer-buttons';
-
-    this.data.buttons.forEach(button => {
-      const btnElement = document.createElement('button');
-      btnElement.className = button.className;
-      btnElement.textContent = button.label;
-      btnElement.onclick = () => {
-        button.onClick?.();
-        this.dialog.hide();
-      };
-      footer.appendChild(btnElement);
-    });
-
-    this.dialog.setFooter(footer);
+    return true;
   }
 
-  public override execute(options: SystemPopulationsCommandParam): void {
-    if (!this.isAccessAllowed) {
-      return;
-    }
+  /**
+   * Inserts empty population tags at the given position.
+   * 
+   * @param {Writer} writer The model writer.
+   * @param {Position} position The position to insert at.
+   * @param {string} populationName The name of the population.
+   * @returns {Range} The range between the inserted tags.
+   */
+  private _insertEmptyPopulation(writer: Writer, position: Position, populationName: string) {
+    // Create markers for population begin and end
+    const beginAttr = {
+      'population-tag': 'begin',
+      'population-name': populationName
+    };
 
-    this.dialog.setTitle(this.data.title);
+    const endAttr = {
+      'population-tag': 'end',
+      'population-name': populationName
+    };
 
-    this.data.loadContent().then(content => {
-      this.dialog.setContent(content);
-    });
+    // Insert begin marker
+    const beginElement = writer.createText('[BEGIN *' + populationName + '*]', beginAttr);
+    writer.insert(beginElement, position);
 
-    this.dialog.show();
+    // Insert a space between markers
+    const spacer = writer.createText(' ');
+    writer.insert(spacer, position);
+
+    // Insert end marker
+    const endElement = writer.createText('[*' + populationName + '* END]', endAttr);
+    writer.insert(endElement, position);
+
+    // Return the range between the markers
+    return writer.createRange(
+      writer.createPositionAfter(beginElement),
+      writer.createPositionBefore(endElement)
+    );
   }
 
-  public override destroy(): void {
-    this.dialog.destroy();
-    super.destroy();
+  /**
+   * Adds population tags to the given range.
+   * 
+   * @param {Writer} writer The model writer.
+   * @param {Range} range The range to add population tags to.
+   * @param {string} populationName The name of the population.
+   */
+  private _addPopulationToRange(writer: Writer, range: Range, populationName: string) {
+    // Get the start and end positions of the range
+    const start = range.start;
+    const end = range.end;
+
+    // Create the population tags
+    const { begin, end: endTag } = createPopulationTags(writer, populationName);
+
+    // Insert the tags at the appropriate positions
+    writer.insert(begin, start);
+    writer.insert(endTag, end);
+  }
+}
+
+/**
+ * Command for removing population tags.
+ */
+export class RemovePopulationCommand extends Command {
+  /**
+   * @inheritDoc
+   */
+  override refresh() {
+    // The command can be executed when the selection is inside a population
+    const selection = this.editor.model.document.selection;
+    this.isEnabled = isSelectionInPopulation(selection);
+  }
+
+  /**
+   * Executes the command to remove population tags.
+   */
+  override execute() {
+    const editor = this.editor;
+    const model = editor.model;
+    const selection = model.document.selection;
+
+    model.change(writer => {
+      // Find population tags in the current selection
+      const populationTags = findPopulationTagsInRange(selection, model);
+
+      if (!populationTags) return;
+
+      // Remove begin and end tags
+      writer.remove(populationTags.begin);
+      writer.remove(populationTags.end);
+    });
+  }
+}
+
+/**
+ * Plugin that registers the commands for the AlightPopulationsPlugin.
+ */
+export default class AlightPopulationPluginCommand extends Plugin {
+  /**
+   * @inheritDoc
+   */
+  static get pluginName() {
+    return 'AlightPopulationPluginCommand';
+  }
+
+  /**
+   * @inheritDoc
+   */
+  init() {
+    const editor = this.editor;
+
+    // Register the Add Population command
+    editor.commands.add('addPopulation', new AddPopulationCommand(editor));
+
+    // Register the Remove Population command
+    editor.commands.add('removePopulation', new RemovePopulationCommand(editor));
   }
 }
