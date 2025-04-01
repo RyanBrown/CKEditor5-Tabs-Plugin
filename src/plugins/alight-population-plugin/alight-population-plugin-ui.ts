@@ -46,8 +46,8 @@ export default class AlightPopulationPluginUI extends Plugin {
     const editor = this.editor;
 
     // Add the "Add Population" button
-    editor.ui.componentFactory.add('addPopulation', locale => {
-      const command = editor.commands.get('addPopulation');
+    editor.ui.componentFactory.add('alightPopulationPlugin', locale => {
+      const command = editor.commands.get('alightPopulationPlugin');
       const buttonView = new ButtonView(locale);
 
       buttonView.set({
@@ -118,7 +118,7 @@ export default class AlightPopulationPluginUI extends Plugin {
     // Update the command states on selection change
     editor.model.document.selection.on('change:range', () => {
       // Refresh the commands
-      editor.commands.get('addPopulation').refresh();
+      editor.commands.get('alightPopulationPlugin').refresh();
       editor.commands.get('removePopulation').refresh();
     });
   }
@@ -226,8 +226,8 @@ export default class AlightPopulationPluginUI extends Plugin {
       if (selectedItem && selectedItem.dataset.name) {
         const populationName = selectedItem.dataset.name;
 
-        // Execute the addPopulation command with the selected population
-        editor.execute('addPopulation', { populationName });
+        // Execute the alightPopulationPlugin command with the selected population
+        editor.execute('alightPopulationPlugin', { populationName });
 
         // Hide the modal
         this._populationModal?.hide();

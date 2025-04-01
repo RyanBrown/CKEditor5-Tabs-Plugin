@@ -202,7 +202,7 @@ export default class AlightPopulationPluginCommand extends Plugin {
     const editor = this.editor;
 
     // Register the Add Population command
-    editor.commands.add('addPopulation', new AddPopulationCommand(editor));
+    editor.commands.add('alightPopulationPlugin', new AddPopulationCommand(editor));
 
     // Register the Remove Population command
     editor.commands.add('removePopulation', new RemovePopulationCommand(editor));
