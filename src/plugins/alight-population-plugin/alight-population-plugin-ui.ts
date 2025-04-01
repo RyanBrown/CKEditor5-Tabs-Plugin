@@ -5,16 +5,20 @@ import { Command } from '@ckeditor/ckeditor5-core';
 import ToolBarIcon from './../../../theme/icons/icon-population.svg';
 import { isSelectionInPopulation } from './alight-population-plugin-utils';
 import { CkAlightModalDialog } from './../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
+import { ContentManager } from './ui/popmodal-ContentManager';
+import { PopulationTagData } from './ui/popmodal-modal-types';
+import AlightDataLoadPlugin from '../../alight-common/alight-data-load-plugin';
+import PopulationLoadService from '../../services/population-load-service';
 
 /**
  * The UI part of the AlightPopulationsPlugin.
  * This plugin handles the toolbar buttons and modal integration.
  */
-export default class AlightPopulationPluginUI extends Plugin {
+export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
   /**
    * @inheritDoc
    */
-  static get pluginName() {
+  static override get pluginName() {
     return 'AlightPopulationPluginUI';
   }
 
@@ -22,6 +26,27 @@ export default class AlightPopulationPluginUI extends Plugin {
    * The modal dialog instance for population selection.
    */
   private _populationModal: CkAlightModalDialog | null = null;
+
+  /**
+   * The content manager for the modal dialog
+   */
+  private _populationManager: ContentManager | null = null;
+
+  /**
+   * The available population tags
+   */
+  private _populationTags: PopulationTagData[] = [];
+
+  /**
+   * The load service for population tags
+   */
+  private readonly loadService: PopulationLoadService = new PopulationLoadService();
+
+  /**
+   * @inheritDoc
+   */
+  public override get pluginName(): string { return AlightPopulationPluginUI.pluginName; }
+  public override get pluginId(): string { return 'AlightPopulationPlugin'; }
 
   /**
    * @inheritDoc
@@ -53,11 +78,12 @@ export default class AlightPopulationPluginUI extends Plugin {
       buttonView.set({
         label: 'Add Population',
         icon: ToolBarIcon,
-        tooltip: true
+        tooltip: true,
+        isEnabled: this.isReady
       });
 
       // Bind button state to command state
-      buttonView.bind('isEnabled').to(command);
+      buttonView.bind('isEnabled').to(command, 'isEnabled', (commandEnabled) => commandEnabled && this.isReady);
 
       // Execute the command when the button is clicked
       buttonView.on('execute', () => {
@@ -88,6 +114,23 @@ export default class AlightPopulationPluginUI extends Plugin {
 
       return buttonView;
     });
+  }
+
+  /**
+   * Loads the population tags data
+   */
+  protected override setModalContents = (): void => {
+    if (this.verboseMode) console.log(`Loading population tags...`);
+
+    this.loadService.loadPopulationTags().then(
+      (data) => {
+        this._populationTags = data;
+        if (this.verboseMode) console.log(data);
+        this.isReady = true;
+        this._enablePluginButton();
+      },
+      (error) => console.log(error)
+    );
   }
 
   /**
@@ -130,136 +173,167 @@ export default class AlightPopulationPluginUI extends Plugin {
    */
   _showPopulationModal(currentPopulation?: string) {
     const editor = this.editor;
+    const t = editor.t;
 
     // Create modal dialog if it doesn't exist
     if (!this._populationModal) {
       this._populationModal = new CkAlightModalDialog({
-        title: 'Choose a Population',
+        title: t('Choose a Population'),
         draggable: true,
         resizable: true,
-        width: '600px',
-        height: '500px',
-        modal: true
-      });
-    }
-
-    // Set the modal title
-    this._populationModal.setTitle(currentPopulation
-      ? `Edit Population: ${currentPopulation}`
-      : 'Choose a Population');
-
-    // Create content for the modal
-    // This is a placeholder - you'd integrate with your actual modal content here
-    const contentContainer = document.createElement('div');
-    contentContainer.className = 'population-modal-content';
-
-    // Add note about pending modal integration
-    const modalNote = document.createElement('p');
-    modalNote.textContent = 'Integration with the Choose a Population modal.';
-    modalNote.style.color = '#666';
-    contentContainer.appendChild(modalNote);
-
-    // Create a simple population selection UI for demonstration
-    const populationList = document.createElement('div');
-    populationList.className = 'population-list';
-
-    // Get sample population options (replace with your actual implementation)
-    const populations = this._getSamplePopulations();
-
-    // If there's a current population, put it at the top
-    if (currentPopulation) {
-      const currentItem = populations.find(pop => pop.name === currentPopulation);
-      if (currentItem) {
-        // Move to the top
-        populations.splice(populations.indexOf(currentItem), 1);
-        populations.unshift(currentItem);
-      }
-    }
-
-    // Create population items
-    populations.forEach(population => {
-      const item = document.createElement('div');
-      item.className = 'population-item';
-
-      if (population.name === currentPopulation) {
-        item.classList.add('selected');
-      }
-
-      item.textContent = population.name;
-      item.dataset.name = population.name;
-
-      item.addEventListener('click', () => {
-        // Remove selected class from all items
-        document.querySelectorAll('.population-item.selected').forEach(
-          el => el.classList.remove('selected')
-        );
-
-        // Add selected class to clicked item
-        item.classList.add('selected');
+        width: '80vw',
+        height: 'auto',
+        modal: true,
+        contentClass: 'cka-population-content',
+        buttons: [
+          { label: t('Cancel') },
+          { label: t('Continue'), isPrimary: true, closeOnClick: false, disabled: true }
+        ]
       });
 
-      populationList.appendChild(item);
-    });
+      // Handle modal button clicks
+      this._populationModal.on('buttonClick', (data: { button: string; }) => {
+        if (data.button === t('Cancel')) {
+          this._populationModal?.hide();
+          return;
+        }
 
-    contentContainer.appendChild(populationList);
+        if (data.button === t('Continue')) {
+          // Get the selected population from the content manager
+          const selectedPopulation = this._populationManager?.getSelectedLink();
 
-    // Set modal content
-    this._populationModal.setContent(contentContainer);
+          if (selectedPopulation && selectedPopulation.destination) {
+            // Execute the add population command with the selected population name
+            editor.execute('alightPopulationPlugin', { populationName: selectedPopulation.title });
 
-    // Add footer with buttons
-    const footer = document.createElement('div');
-    footer.className = 'population-modal-footer';
+            // Hide the modal after creating the population tag
+            this._populationModal?.hide();
+          } else {
+            // Show some feedback that no population was selected
+            console.warn('No population selected');
 
-    const cancelButton = document.createElement('button');
-    cancelButton.textContent = 'Cancel';
-    cancelButton.className = 'cka-button cka-button-outlined';
-    cancelButton.addEventListener('click', () => {
-      this._populationModal?.hide();
-    });
+            // Show an alert to the user
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'cka-alert cka-alert-error';
+            alertDiv.innerHTML = `<div class="cka-alert-warning">Please select a population</div>`;
 
-    const selectButton = document.createElement('button');
-    selectButton.textContent = 'Select';
-    selectButton.className = 'cka-button cka-button-primary';
-    selectButton.addEventListener('click', () => {
-      // Get the selected population
-      const selectedItem = document.querySelector('.population-item.selected') as HTMLElement;
-      if (selectedItem && selectedItem.dataset.name) {
-        const populationName = selectedItem.dataset.name;
+            // Find the container for the alert and show it
+            const modalContent = this._populationModal?.getElement();
+            if (modalContent) {
+              // Insert at the top
+              modalContent.insertBefore(alertDiv, modalContent.firstChild);
 
-        // Execute the alightPopulationPlugin command with the selected population
-        editor.execute('alightPopulationPlugin', { populationName });
+              // Remove after a delay
+              setTimeout(() => {
+                alertDiv.remove();
+              }, 10000);
+            }
+          }
+        }
+      });
+    } else {
+      // Update title if modal already exists
+      this._populationModal.setTitle(
+        currentPopulation ? t('Edit Population: {0}', [currentPopulation]) : t('Choose a Population')
+      );
+    }
 
-        // Hide the modal
-        this._populationModal?.hide();
-      }
-    });
+    // Use custom content first for faster loading
+    const customContent = this._createCustomContent();
+    this._populationModal.setContent(customContent);
 
-    footer.appendChild(cancelButton);
-    footer.appendChild(selectButton);
-
-    this._populationModal.setFooter(footer);
-
-    // Show the modal
+    // Show the modal right away
     this._populationModal.show();
+
+    // Then fetch data and initialize the content manager in the background
+    try {
+      if (this._populationTags.length === 0) {
+        // Show message if no population tags found
+        const tagsContainer = customContent.querySelector('#links-container');
+        if (tagsContainer) {
+          tagsContainer.innerHTML = `
+          <div class="cka-center-modal-message">
+            <p>No population tags available.</p>
+          </div>
+        `;
+        }
+        return;
+      }
+
+      // Create the ContentManager with the current population name and population tags data
+      this._populationManager = new ContentManager(currentPopulation || '', this._populationTags);
+
+      // Add an event listener for population selection
+      this._populationManager.onLinkSelected = (population) => {
+        this._updateContinueButtonState(!!population);
+      };
+
+      // Initialize the ContentManager with the content element
+      this._populationManager.renderContent(customContent);
+
+      // Set initial button state based on whether we have a current population
+      const initialPopulation = this._populationTags.find(tag => tag.populationTagName === currentPopulation);
+      this._updateContinueButtonState(!!initialPopulation);
+    } catch (error) {
+      console.error('Error setting up population tags:', error);
+
+      // Show error message
+      const tagsContainer = customContent.querySelector('#links-container');
+      if (tagsContainer) {
+        tagsContainer.innerHTML = `
+        <div class="cka-center-modal-message">
+          <p>${error.message || 'Unknown error'}</p>
+        </div>
+      `;
+      }
+    }
   }
 
   /**
-   * Gets sample population options.
-   * This is a placeholder. In a real implementation, you'd get this data
-   * from your backend or configuration.
-   * 
-   * @returns {Array<{name: string, id: string}>} Sample population options.
+   * Custom HTML content for the population tags
    */
-  private _getSamplePopulations() {
-    return [
-      { name: 'Admins', id: 'admins' },
-      { name: 'Registered Users', id: 'registered_users' },
-      { name: 'Premium Members', id: 'premium' },
-      { name: 'Content Creators', id: 'creators' },
-      { name: 'Moderators', id: 'mods' },
-      { name: 'New Users', id: 'new_users' },
-      { name: 'Beta Testers', id: 'beta' }
-    ];
+  private _createCustomContent(): HTMLElement {
+    const container = document.createElement('div');
+
+    const tagsContainer = document.createElement('div');
+    tagsContainer.id = 'links-container';
+    tagsContainer.innerHTML = `
+      <div class="cka-loading-container">
+        <div class="cka-loading-spinner"></div>
+      </div>
+    `;
+
+    const paginationContainer = document.createElement('div');
+    paginationContainer.id = 'pagination-container';
+    paginationContainer.className = 'cka-pagination';
+
+    container.appendChild(tagsContainer);
+    container.appendChild(paginationContainer);
+
+    return container;
+  }
+
+  /**
+   * Updates the state of the Continue button based on whether a population is selected
+   * 
+   * @param hasSelection True if a population is selected, false otherwise
+   */
+  private _updateContinueButtonState(hasSelection: boolean): void {
+    if (!this._populationModal) return;
+
+    const continueButton = this._populationModal.getElement()?.querySelector('.cka-dialog-footer-buttons button:last-child') as HTMLButtonElement;
+
+    if (continueButton) {
+      // Update the disabled property
+      continueButton.disabled = !hasSelection;
+
+      // Update classes for visual indication
+      if (hasSelection) {
+        continueButton.classList.remove('ck-disabled');
+      } else {
+        continueButton.classList.add('ck-disabled');
+      }
+    }
   }
 
   /**

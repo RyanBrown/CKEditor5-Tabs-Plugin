@@ -1,15 +1,14 @@
 // src/plugins/alight-population-plugin/styles/alight-population-plugin.scss
 @use './../../../styles/mixins' as mixins;
 
-/* Style for population tags in the editor */
+// Style for population tags in the editor
 .ck-content {
 
-  /* Base styles for all population tags */
-  .population-tag {
+  // Base styles for all population tags
+  .cka-population-tag {
     display: inline-block;
-    color: white;
+    color: var(--neutral-white);
     background-color: #4CAF50;
-    /* Green color */
     border-radius: 3px;
     padding: 2px 6px;
     margin: 2px;
@@ -19,29 +18,28 @@
     cursor: pointer;
     white-space: nowrap;
 
-    /* Apply transition for hover effect */
+    // Apply transition for hover effect
     transition: background-color 0.2s ease;
 
     &:hover {
       background-color: #45a049;
-      /* Darker green on hover */
     }
 
-    /* Specific styles for begin and end tags */
-    &.population-begin {
+    // Specific styles for begin and end tags
+    &.cka-population-begin {
       margin-right: 3px;
 
-      /* For block elements, display above */
+      // For block elements, display above
       .ck-widget+& {
         display: block;
         margin-bottom: 5px;
       }
     }
 
-    &.population-end {
+    &.cka-population-end {
       margin-left: 3px;
 
-      /* For block elements, display below */
+      // For block elements, display below
       +.ck-widget {
         display: block;
         margin-top: 5px;
@@ -49,34 +47,34 @@
     }
   }
 
-  /* Handle specific cases for block elements */
-  table,
-  figure,
-  .image {
+  // Handle specific cases for block elements
+  // table,
+  // figure,
+  // .image {
 
-    /* Tags before block elements should be on their own line */
-    .population-tag.population-begin+&,
-    &+.population-tag.population-end {
-      display: block;
-      margin-top: 5px;
-    }
-  }
+  //   // Tags before block elements should be on their own line
+  //   .cka-population-tag.cka-population-begin+&,
+  //   &+.cka-population-tag.cka-population-end {
+  //     display: block;
+  //     margin-top: 5px;
+  //   }
+  // }
 
-  /* Population modal styles */
+  // Population modal styles
   .population-modal-content {
     padding: 10px;
 
-    .population-list {
+    .cka-population-list {
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      margin: 10px 0;
       max-height: 300px;
       overflow-y: auto;
-      margin: 10px 0;
-      border: 1px solid #ccc;
-      border-radius: 4px;
 
-      .population-item {
-        padding: 8px 12px;
-        cursor: pointer;
+      .cka-population-item {
         border-bottom: 1px solid #eee;
+        cursor: pointer;
+        padding: 8px 12px;
 
         &:last-child {
           border-bottom: none;
@@ -116,8 +114,8 @@
 
       &.select-button {
         background-color: #4CAF50;
-        color: white;
         border: none;
+        color: var(--neutral-white);
 
         &:hover {
           background-color: #45a049;
@@ -127,9 +125,9 @@
   }
 }
 
-/* Extra styles for specific cases */
+// Extra styles for specific cases
 
-/* Inline population tags within text */
+// Inline population tags within text
 .ck-content p,
 .ck-content h1,
 .ck-content h2,
@@ -138,77 +136,77 @@
 .ck-content h5,
 .ck-content h6,
 .ck-content li {
-  .population-tag {
-    vertical-align: baseline;
+  .cka-population-tag {
     line-height: 1;
+    vertical-align: baseline;
   }
 }
 
-/* Population tags around tables */
+// Population tags around tables
 .ck-content table {
-  .population-tag.population-begin {
+  .cka-population-tag.cka-population-begin {
     display: block;
     margin-bottom: 5px;
   }
 
-  .population-tag.population-end {
+  .cka-population-tag.cka-population-end {
     display: block;
     margin-top: 5px;
   }
 }
 
-/* Population tags around sections */
+// Population tags around sections
 .ck-content .section {
-  .population-tag.population-begin {
+  .cka-population-tag.cka-population-begin {
     display: block;
     margin-bottom: 5px;
   }
 
-  .population-tag.population-end {
+  .cka-population-tag.cka-population-end {
     display: block;
     margin-top: 5px;
   }
 }
 
-/* Population tags around tabs */
+// Population tags around tabs
 .ck-content .tab {
-  .population-tag.population-begin {
+  .cka-population-tag.cka-population-begin {
     display: block;
     margin-bottom: 5px;
   }
 
-  .population-tag.population-end {
+  .cka-population-tag.cka-population-end {
     display: block;
     margin-top: 5px;
   }
 }
 
-/* Population tags around images */
+// Population tags around images
 .ck-content .image {
-  .population-tag.population-begin {
+  .cka-population-tag.cka-population-begin {
     display: block;
     margin-bottom: 5px;
   }
 
-  .population-tag.population-end {
+  .cka-population-tag.cka-population-end {
     display: block;
     margin-top: 5px;
   }
 }
 
-/* Modal styles for external content */
+// Modal styles for external content
 .cka-dialog {
-  .population-list {
+  .cka-population-list {
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    margin: 10px 0;
     max-height: 300px;
     overflow-y: auto;
-    margin: 10px 0;
-    border: 1px solid #ccc;
-    border-radius: 4px;
 
-    .population-item {
-      padding: 8px 12px;
-      cursor: pointer;
+    .cka-population-item {
       border-bottom: 1px solid #eee;
+      cursor: pointer;
+      padding: 8px 12px;
 
       &:last-child {
         border-bottom: none;

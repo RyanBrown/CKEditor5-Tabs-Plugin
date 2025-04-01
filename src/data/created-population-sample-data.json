@@ -1,0 +1,160 @@
+{
+  "populationDetails": [
+    {
+      "populationId": "1",
+      "populationName": "V_POP_TEST",
+      "populationTitle": "Test Population 1",
+      "populationDescription": "A test population for initial setup",
+      "lastUpdatedDate": "2025-02-26 06:36:35",
+      "updatedByColleagueName": "John Smith",
+      "updatedByColleagueEmailId": "john.smith@dummy-email.com",
+      "populationFormula": "CDDindvDateRule:V_TEST AND population:ALWAYS_PASS",
+      "populationType": "C",
+      "populationUserFormula": "V_TEST [Rule] AND ALWAYS_PASS [Population]"
+    },
+    {
+      "populationId": "2",
+      "populationName": "V_REGION_US",
+      "populationTitle": "US Region Users",
+      "populationDescription": "Users located in the United States",
+      "lastUpdatedDate": "2025-03-01 14:22:10",
+      "updatedByColleagueName": "Emma Johnson",
+      "updatedByColleagueEmailId": "emma.johnson@dummy-email.com",
+      "populationFormula": "CDDindvLocationRule:US AND population:ACTIVE_USERS",
+      "populationType": "C",
+      "populationUserFormula": "US [Rule] AND ACTIVE_USERS [Population]"
+    },
+    {
+      "populationId": "3",
+      "populationName": "V_SUBSCRIBERS",
+      "populationTitle": "Active Subscribers",
+      "populationDescription": "Users with active subscriptions",
+      "lastUpdatedDate": "2025-01-15 09:45:22",
+      "updatedByColleagueName": "Michael Brown",
+      "updatedByColleagueEmailId": "michael.brown@dummy-email.com",
+      "populationFormula": "CDDindvSubRule:ACTIVE AND population:VERIFIED",
+      "populationType": "C",
+      "populationUserFormula": "ACTIVE [Rule] AND VERIFIED [Population]"
+    },
+    {
+      "populationId": "4",
+      "populationName": "V_NEW_USERS",
+      "populationTitle": "New Users 2025",
+      "populationDescription": "Users registered in 2025",
+      "lastUpdatedDate": "2025-03-10 11:13:47",
+      "updatedByColleagueName": "Sarah Davis",
+      "updatedByColleagueEmailId": "sarah.davis@dummy-email.com",
+      "populationFormula": "CDDindvDateRule:REG_2025 AND population:ONBOARDED",
+      "populationType": "C",
+      "populationUserFormula": "REG_2025 [Rule] AND ONBOARDED [Population]"
+    },
+    {
+      "populationId": "5",
+      "populationName": "V_VIP_MEMBERS",
+      "populationTitle": "VIP Members",
+      "populationDescription": "High-value customers with VIP status",
+      "lastUpdatedDate": "2025-02-14 16:09:33",
+      "updatedByColleagueName": "David Lee",
+      "updatedByColleagueEmailId": "david.lee@dummy-email.com",
+      "populationFormula": "CDDindvStatusRule:VIP AND population:PAYING",
+      "populationType": "C",
+      "populationUserFormula": "VIP [Rule] AND PAYING [Population]"
+    },
+    {
+      "populationId": "6",
+      "populationName": "V_EU_USERS",
+      "populationTitle": "EU Region Users",
+      "populationDescription": "Users located in the European Union",
+      "lastUpdatedDate": "2025-03-20 08:27:19",
+      "updatedByColleagueName": "Sophie Martin",
+      "updatedByColleagueEmailId": "sophie.martin@dummy-email.com",
+      "populationFormula": "CDDindvLocationRule:EU AND population:ACTIVE_USERS",
+      "populationType": "C",
+      "populationUserFormula": "EU [Rule] AND ACTIVE_USERS [Population]"
+    },
+    {
+      "populationId": "7",
+      "populationName": "V_TRIAL_USERS",
+      "populationTitle": "Trial Users",
+      "populationDescription": "Users on a trial period",
+      "lastUpdatedDate": "2025-01-30 13:55:01",
+      "updatedByColleagueName": "James Carter",
+      "updatedByColleagueEmailId": "james.carter@dummy-email.com",
+      "populationFormula": "CDDindvTrialRule:TRIAL AND population:NOT_EXPIRED",
+      "populationType": "C",
+      "populationUserFormula": "TRIAL [Rule] AND NOT_EXPIRED [Population]"
+    },
+    {
+      "populationId": "8",
+      "populationName": "V_ENTERPRISE",
+      "populationTitle": "Enterprise Clients",
+      "populationDescription": "Businesses with enterprise plans",
+      "lastUpdatedDate": "2025-03-05 10:18:44",
+      "updatedByColleagueName": "Laura White",
+      "updatedByColleagueEmailId": "laura.white@dummy-email.com",
+      "populationFormula": "CDDindvPlanRule:ENTERPRISE AND population:VERIFIED",
+      "populationType": "B",
+      "populationUserFormula": "ENTERPRISE [Rule] AND VERIFIED [Population]"
+    },
+    {
+      "populationId": "9",
+      "populationName": "V_STUDENTS",
+      "populationTitle": "Student Users",
+      "populationDescription": "Users identified as students",
+      "lastUpdatedDate": "2025-02-10 15:33:27",
+      "updatedByColleagueName": "Chris Patel",
+      "updatedByColleagueEmailId": "chris.patel@dummy-email.com",
+      "populationFormula": "CDDindvRoleRule:STUDENT AND population:ENROLLED",
+      "populationType": "B",
+      "populationUserFormula": "STUDENT [Rule] AND ENROLLED [Population]"
+    },
+    {
+      "populationId": "10",
+      "populationName": "V_PREMIUM",
+      "populationTitle": "Premium Users",
+      "populationDescription": "Users on premium plans",
+      "lastUpdatedDate": "2025-03-15 12:06:58",
+      "updatedByColleagueName": "Rachel Kim",
+      "updatedByColleagueEmailId": "rachel.kim@dummy-email.com",
+      "populationFormula": "CDDindvPlanRule:PREMIUM AND population:ACTIVE",
+      "populationType": "C",
+      "populationUserFormula": "PREMIUM [Rule] AND ACTIVE [Population]"
+    },
+    {
+      "populationId": "11",
+      "populationName": "V_ASIA_USERS",
+      "populationTitle": "Asia Region Users",
+      "populationDescription": "Users located in Asia",
+      "lastUpdatedDate": "2025-02-20 09:41:13",
+      "updatedByColleagueName": "Hiro Tanaka",
+      "updatedByColleagueEmailId": "hiro.tanaka@dummy-email.com",
+      "populationFormula": "CDDindvLocationRule:ASIA AND population:REGISTERED",
+      "populationType": "C",
+      "populationUserFormula": "ASIA [Rule] AND REGISTERED [Population]"
+    },
+    {
+      "populationId": "12",
+      "populationName": "V_GUESTS",
+      "populationTitle": "Guest Users",
+      "populationDescription": "Non-registered guest users",
+      "lastUpdatedDate": "2025-03-25 17:29:36",
+      "updatedByColleagueName": "Anna Lopez",
+      "updatedByColleagueEmailId": "anna.lopez@dummy-email.com",
+      "populationFormula": "CDDindvStatusRule:GUEST AND population:TEMPORARY",
+      "populationType": "C",
+      "populationUserFormula": "GUEST [Rule] AND TEMPORARY [Population]"
+    },
+    {
+      "populationId": "13",
+      "populationName": "V_ADMIN",
+      "populationTitle": "Admin Users",
+      "populationDescription": "Users with admin privileges",
+      "lastUpdatedDate": "2025-01-25 07:14:09",
+      "updatedByColleagueName": "Tom Nguyen",
+      "updatedByColleagueEmailId": "tom.nguyen@dummy-email.com",
+      "populationFormula": "CDDindvRoleRule:ADMIN AND population:VERIFIED",
+      "populationType": "C",
+      "populationUserFormula": "ADMIN [Rule] AND VERIFIED [Population]"
+    }
+  ]
+}

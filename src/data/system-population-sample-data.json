@@ -1,0 +1,277 @@
+{
+  "expressionDetails": [
+    {
+      "expressionName": "15decPass2",
+      "expressionDescription": "test description",
+      "expressionType": "PORTAL",
+      "expressionRevisions": [
+        {
+          "description": "test description",
+          "expressionValue": "${literal:true:boolean} Equals ${literal:true:boolean}"
+        }
+      ],
+      "overridable": false,
+      "clientFacing": true
+    },
+    {
+      "expressionName": "456_Expr01",
+      "expressionDescription": "Another description",
+      "expressionType": "PORTAL",
+      "expressionRevisions": [
+        {
+          "description": "Another description",
+          "expressionValue": "${databean:hasFeatureExpressionHandler} Equals ${literal:true:boolean}"
+        }
+      ],
+      "overridable": false,
+      "clientFacing": true
+    },
+    {
+      "expressionName": "UserAccess_23",
+      "expressionDescription": "Checks user access level",
+      "expressionType": "SECURITY",
+      "expressionRevisions": [
+        {
+          "description": "Verifies admin status",
+          "expressionValue": "${databean:userRole} Equals ${literal:admin:string}"
+        }
+      ],
+      "overridable": true,
+      "clientFacing": false
+    },
+    {
+      "expressionName": "SubCheck_001",
+      "expressionDescription": "Subscription validation",
+      "expressionType": "PORTAL",
+      "expressionRevisions": [
+        {
+          "description": "Active subscription check",
+          "expressionValue": "${databean:subscriptionStatus} Equals ${literal:active:string}"
+        }
+      ],
+      "overridable": false,
+      "clientFacing": true
+    },
+    {
+      "expressionName": "TrialEnd_99",
+      "expressionDescription": "Trial period status",
+      "expressionType": "PORTAL",
+      "expressionRevisions": [
+        {
+          "description": "Checks if trial is active",
+          "expressionValue": "${databean:trialDaysLeft} GreaterThan ${literal:0:number}"
+        }
+      ],
+      "overridable": true,
+      "clientFacing": true
+    },
+    {
+      "expressionName": "GeoLock_US",
+      "expressionDescription": "Geographic restriction for US",
+      "expressionType": "SECURITY",
+      "expressionRevisions": [
+        {
+          "description": "US-only access",
+          "expressionValue": "${databean:userLocation} Equals ${literal:US:string}"
+        }
+      ],
+      "overridable": false,
+      "clientFacing": false
+    },
+    {
+      "expressionName": "Payment_2025",
+      "expressionDescription": "Payment status check",
+      "expressionType": "PORTAL",
+      "expressionRevisions": [
+        {
+          "description": "Verifies payment completion",
+          "expressionValue": "${databean:paymentStatus} Equals ${literal:paid:string}"
+        }
+      ],
+      "overridable": false,
+      "clientFacing": true
+    },
+    {
+      "expressionName": "FeatureX_Enabled",
+      "expressionDescription": "Feature X availability",
+      "expressionType": "FEATURE",
+      "expressionRevisions": [
+        {
+          "description": "Feature X toggle",
+          "expressionValue": "${databean:featureX} Equals ${literal:true:boolean}"
+        }
+      ],
+      "overridable": true,
+      "clientFacing": true
+    },
+    {
+      "expressionName": "LoginCount_10",
+      "expressionDescription": "Login frequency check",
+      "expressionType": "PORTAL",
+      "expressionRevisions": [
+        {
+          "description": "More than 10 logins",
+          "expressionValue": "${databean:loginCount} GreaterThan ${literal:10:number}"
+        }
+      ],
+      "overridable": false,
+      "clientFacing": false
+    },
+    {
+      "expressionName": "VIP_Status",
+      "expressionDescription": "VIP user validation",
+      "expressionType": "PORTAL",
+      "expressionRevisions": [
+        {
+          "description": "Checks VIP membership",
+          "expressionValue": "${databean:userTier} Equals ${literal:vip:string}"
+        }
+      ],
+      "overridable": false,
+      "clientFacing": true
+    },
+    {
+      "expressionName": "AgeRestrict_18",
+      "expressionDescription": "Age restriction",
+      "expressionType": "SECURITY",
+      "expressionRevisions": [
+        {
+          "description": "User must be 18+",
+          "expressionValue": "${databean:userAge} GreaterThanOrEqual ${literal:18:number}"
+        }
+      ],
+      "overridable": false,
+      "clientFacing": false
+    },
+    {
+      "expressionName": "Promo_Active",
+      "expressionDescription": "Promotion eligibility",
+      "expressionType": "PORTAL",
+      "expressionRevisions": [
+        {
+          "description": "Active promo check",
+          "expressionValue": "${databean:promoCodeStatus} Equals ${literal:active:string}"
+        }
+      ],
+      "overridable": true,
+      "clientFacing": true
+    },
+    {
+      "expressionName": "BetaTester",
+      "expressionDescription": "Beta testing group",
+      "expressionType": "FEATURE",
+      "expressionRevisions": [
+        {
+          "description": "Beta user check",
+          "expressionValue": "${databean:isBetaTester} Equals ${literal:true:boolean}"
+        }
+      ],
+      "overridable": false,
+      "clientFacing": false
+    },
+    {
+      "expressionName": "Renewal_Due",
+      "expressionDescription": "Renewal status",
+      "expressionType": "PORTAL",
+      "expressionRevisions": [
+        {
+          "description": "Checks renewal due",
+          "expressionValue": "${databean:renewalDays} LessThan ${literal:7:number}"
+        }
+      ],
+      "overridable": true,
+      "clientFacing": true
+    },
+    {
+      "expressionName": "Support_Level",
+      "expressionDescription": "Support tier check",
+      "expressionType": "PORTAL",
+      "expressionRevisions": [
+        {
+          "description": "Premium support validation",
+          "expressionValue": "${databean:supportTier} Equals ${literal:premium:string}"
+        }
+      ],
+      "overridable": false,
+      "clientFacing": true
+    },
+    {
+      "expressionName": "Device_Mobile",
+      "expressionDescription": "Mobile device check",
+      "expressionType": "SECURITY",
+      "expressionRevisions": [
+        {
+          "description": "Mobile device restriction",
+          "expressionValue": "${databean:deviceType} Equals ${literal:mobile:string}"
+        }
+      ],
+      "overridable": false,
+      "clientFacing": false
+    },
+    {
+      "expressionName": "Onboarding_Complete",
+      "expressionDescription": "Onboarding status",
+      "expressionType": "PORTAL",
+      "expressionRevisions": [
+        {
+          "description": "Onboarding completion",
+          "expressionValue": "${databean:onboardingStatus} Equals ${literal:complete:string}"
+        }
+      ],
+      "overridable": true,
+      "clientFacing": true
+    },
+    {
+      "expressionName": "Feedback_Provided",
+      "expressionDescription": "Feedback submission check",
+      "expressionType": "PORTAL",
+      "expressionRevisions": [
+        {
+          "description": "User feedback status",
+          "expressionValue": "${databean:feedbackCount} GreaterThan ${literal:0:number}"
+        }
+      ],
+      "overridable": false,
+      "clientFacing": false
+    },
+    {
+      "expressionName": "Plan_Enterprise",
+      "expressionDescription": "Enterprise plan validation",
+      "expressionType": "PORTAL",
+      "expressionRevisions": [
+        {
+          "description": "Enterprise plan check",
+          "expressionValue": "${databean:userPlan} Equals ${literal:enterprise:string}"
+        }
+      ],
+      "overridable": false,
+      "clientFacing": true
+    },
+    {
+      "expressionName": "Session_Active",
+      "expressionDescription": "Active session check",
+      "expressionType": "SECURITY",
+      "expressionRevisions": [
+        {
+          "description": "Verifies active session",
+          "expressionValue": "${databean:sessionStatus} Equals ${literal:active:string}"
+        }
+      ],
+      "overridable": false,
+      "clientFacing": false
+    },
+    {
+      "expressionName": "Lang_EN",
+      "expressionDescription": "English language preference",
+      "expressionType": "PORTAL",
+      "expressionRevisions": [
+        {
+          "description": "English language check",
+          "expressionValue": "${databean:userLanguage} Equals ${literal:en:string}"
+        }
+      ],
+      "overridable": true,
+      "clientFacing": true
+    }
+  ]
+}

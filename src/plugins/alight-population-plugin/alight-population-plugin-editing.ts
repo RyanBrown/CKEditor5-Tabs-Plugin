@@ -48,8 +48,8 @@ export default class AlightPopulationPluginEditing extends Plugin {
     // Allow population tag attributes on text nodes
     schema.extend('$text', {
       allowAttributes: [
-        'population-tag',
-        'population-name'
+        'cka-population-tag',
+        'cka-population-name'
       ]
     });
 
@@ -76,7 +76,7 @@ export default class AlightPopulationPluginEditing extends Plugin {
     conversion.for('upcast').elementToAttribute({
       view: {
         name: 'span',
-        classes: ['population-tag', 'population-begin']
+        classes: ['cka-population-tag', 'cka-population-begin']
       },
       model: {
         key: 'population-tag',
@@ -97,7 +97,7 @@ export default class AlightPopulationPluginEditing extends Plugin {
     conversion.for('upcast').elementToAttribute({
       view: {
         name: 'span',
-        classes: ['population-tag', 'population-end']
+        classes: ['cka-population-tag', 'cka-population-end']
       },
       model: {
         key: 'population-tag',
@@ -118,7 +118,7 @@ export default class AlightPopulationPluginEditing extends Plugin {
         const populationName = String(item.getAttribute('population-name'));
 
         return writer.createContainerElement('span', {
-          class: 'population-tag population-begin',
+          class: 'cka-population-tag cka-population-begin',
           'data-population-name': populationName
         });
       }
@@ -136,7 +136,7 @@ export default class AlightPopulationPluginEditing extends Plugin {
         const populationName = String(item.getAttribute('population-name'));
 
         return writer.createContainerElement('span', {
-          class: 'population-tag population-end',
+          class: 'cka-population-tag cka-population-end',
           'data-population-name': populationName
         });
       }
@@ -192,7 +192,7 @@ export default class AlightPopulationPluginEditing extends Plugin {
   private _createPopulationView(writer: DowncastWriter, type: 'begin' | 'end', populationName: string): ViewElement {
     // Create a container for the tag
     const tagContainer = writer.createContainerElement('span', {
-      class: `population-tag population-${type}`,
+      class: `cka-population-tag cka-population-${type}`,
       'data-population-name': populationName
     });
 

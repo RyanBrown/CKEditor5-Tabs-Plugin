@@ -164,7 +164,7 @@ export function createPopulationTags(writer: Writer, populationName: string) {
 /**
  * Gets the parent element of a given node that matches specified criteria.
  * 
- * @param {Node} node The node to start from.
+ * @param {T} node The node to start from.
  * @param {Function} callback A predicate function to test each parent.
  * @returns {Node|null} The found parent or null.
  */
@@ -201,7 +201,6 @@ export function isNodeInPopulation(node: Node): boolean {
   }
 
   // Check if any parent has population tag attributes
-  // We need to add type casting here to solve the remaining errors
   return !!findParent(node as any, parent =>
     'hasAttribute' in parent && parent.hasAttribute('population-tag')
   );
@@ -214,7 +213,6 @@ export function isNodeInPopulation(node: Node): boolean {
  * @param {Model} model The editor model.
  * @returns {PopulationTags|null} The population tags or null if not found.
  */
-// Find population tags in a selection range
 export function findPopulationTagsInRange(
   selection: Selection | DocumentSelection,
   model: Model
