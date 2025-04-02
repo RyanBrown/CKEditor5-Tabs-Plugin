@@ -48,8 +48,8 @@ export default class AlightPopulationPluginEditing extends Plugin {
     // Allow population tag attributes on text nodes
     schema.extend('$text', {
       allowAttributes: [
-        'cka-population-tag',
-        'cka-population-name'
+        'population-tag',
+        'population-name'
       ]
     });
 
@@ -113,14 +113,21 @@ export default class AlightPopulationPluginEditing extends Plugin {
         values: ['begin']
       },
       view: (modelAttributeValue, { writer }, { item }) => {
-        if (modelAttributeValue !== 'begin') return null;
+        if (!item || modelAttributeValue !== 'begin') return null;
 
-        const populationName = String(item.getAttribute('population-name'));
+        try {
+          const populationName = item.hasAttribute('population-name')
+            ? String(item.getAttribute('population-name'))
+            : '';
 
-        return writer.createContainerElement('span', {
-          class: 'cka-population-tag cka-population-begin',
-          'data-population-name': populationName
-        });
+          return writer.createContainerElement('span', {
+            class: 'cka-population-tag cka-population-begin',
+            'data-population-name': populationName
+          });
+        } catch (error) {
+          console.error('Error in population begin downcast:', error);
+          return null;
+        }
       }
     });
 
@@ -131,14 +138,21 @@ export default class AlightPopulationPluginEditing extends Plugin {
         values: ['end']
       },
       view: (modelAttributeValue, { writer }, { item }) => {
-        if (modelAttributeValue !== 'end') return null;
+        if (!item || modelAttributeValue !== 'end') return null;
 
-        const populationName = String(item.getAttribute('population-name'));
+        try {
+          const populationName = item.hasAttribute('population-name')
+            ? String(item.getAttribute('population-name'))
+            : '';
 
-        return writer.createContainerElement('span', {
-          class: 'cka-population-tag cka-population-end',
-          'data-population-name': populationName
-        });
+          return writer.createContainerElement('span', {
+            class: 'cka-population-tag cka-population-end',
+            'data-population-name': populationName
+          });
+        } catch (error) {
+          console.error('Error in population end downcast:', error);
+          return null;
+        }
       }
     });
 
@@ -150,13 +164,21 @@ export default class AlightPopulationPluginEditing extends Plugin {
         values: ['begin']
       },
       view: (modelAttributeValue, { writer }, { item }) => {
-        if (modelAttributeValue !== 'begin') return null;
+        if (!item || modelAttributeValue !== 'begin') return null;
 
-        const populationName = String(item.getAttribute('population-name'));
-        const populationElement = this._createPopulationView(writer, 'begin', populationName);
+        try {
+          const populationName = item.hasAttribute('population-name')
+            ? String(item.getAttribute('population-name'))
+            : '';
 
-        // Make the tag an uneditable widget
-        return toWidget(populationElement, writer, { label: 'Population begin tag' });
+          const populationElement = this._createPopulationView(writer, 'begin', populationName);
+
+          // Make the tag an uneditable widget
+          return toWidget(populationElement, writer, { label: 'Population begin tag' });
+        } catch (error) {
+          console.error('Error in population begin editing downcast:', error);
+          return null;
+        }
       }
     });
 
@@ -167,13 +189,21 @@ export default class AlightPopulationPluginEditing extends Plugin {
         values: ['end']
       },
       view: (modelAttributeValue, { writer }, { item }) => {
-        if (modelAttributeValue !== 'end') return null;
+        if (!item || modelAttributeValue !== 'end') return null;
 
-        const populationName = String(item.getAttribute('population-name'));
-        const populationElement = this._createPopulationView(writer, 'end', populationName);
+        try {
+          const populationName = item.hasAttribute('population-name')
+            ? String(item.getAttribute('population-name'))
+            : '';
 
-        // Make the tag an uneditable widget
-        return toWidget(populationElement, writer, { label: 'Population end tag' });
+          const populationElement = this._createPopulationView(writer, 'end', populationName);
+
+          // Make the tag an uneditable widget
+          return toWidget(populationElement, writer, { label: 'Population end tag' });
+        } catch (error) {
+          console.error('Error in population end editing downcast:', error);
+          return null;
+        }
       }
     });
 
@@ -193,15 +223,15 @@ export default class AlightPopulationPluginEditing extends Plugin {
     // Create a container for the tag
     const tagContainer = writer.createContainerElement('span', {
       class: `cka-population-tag cka-population-${type}`,
-      'data-population-name': populationName
+      'data-population-name': populationName || ''
     });
 
     // Create the text content for the tag
     let tagContent;
     if (type === 'begin') {
-      tagContent = writer.createText(`[BEGIN *${populationName}*]`);
+      tagContent = writer.createText(`[BEGIN *${populationName || ''}*]`);
     } else {
-      tagContent = writer.createText(`[*${populationName}* END]`);
+      tagContent = writer.createText(`[*${populationName || ''}* END]`);
     }
 
     writer.insert(writer.createPositionAt(tagContainer, 0), tagContent);
@@ -223,7 +253,10 @@ export default class AlightPopulationPluginEditing extends Plugin {
       if (!viewElement) return;
 
       // Check if the clicked element is a population tag
-      const isPopulationTag = viewElement.hasClass && viewElement.hasClass('population-tag');
+      const isPopulationTag = viewElement.hasClass &&
+        (viewElement.hasClass('cka-population-tag') ||
+          viewElement.hasClass('population-tag'));
+
       if (!isPopulationTag) return;
 
       // Get the population name
