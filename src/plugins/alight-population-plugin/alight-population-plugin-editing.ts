@@ -15,6 +15,9 @@ import type {
 /**
  * The editing part of the AlightPopulationsPlugin.
  * This plugin handles the schema definition, conversion and editing logic.
+ * 
+ * IMPORTANT: This implementation uses elements instead of attributes for population tags
+ * to avoid attribute conversion errors.
  */
 export default class AlightPopulationPluginEditing extends Plugin {
   /**
@@ -45,21 +48,17 @@ export default class AlightPopulationPluginEditing extends Plugin {
   private _defineSchema() {
     const schema = this.editor.model.schema;
 
-    // Allow population tag attributes on text nodes
-    schema.extend('$text', {
-      allowAttributes: [
-        'population-tag',
-        'population-name'
-      ]
+    // Register population marker elements
+    schema.register('populationBegin', {
+      isInline: true,
+      allowWhere: '$text',
+      allowAttributes: ['name']
     });
 
-    // Make sure population attributes can be used anywhere text is allowed
-    schema.addAttributeCheck((context) => {
-      // If the element is a text node, allow population attributes
-      if (context.endsWith('$text')) {
-        return true;
-      }
-      return false;
+    schema.register('populationEnd', {
+      isInline: true,
+      allowWhere: '$text',
+      allowAttributes: ['name']
     });
   }
 
@@ -69,141 +68,77 @@ export default class AlightPopulationPluginEditing extends Plugin {
   private _defineConverters() {
     const editor = this.editor;
     const conversion = editor.conversion;
-    const view = editor.editing.view;
 
-    // Set up data upcast converters (for loading content)
-    // Population begin tag upcast
-    conversion.for('upcast').elementToAttribute({
+    // Upcast converters (from HTML to model)
+    // Population begin tag
+    conversion.for('upcast').elementToElement({
       view: {
         name: 'span',
         classes: ['cka-population-tag', 'cka-population-begin']
       },
-      model: {
-        key: 'population-tag',
-        value: () => 'begin'
+      model: (viewElement, { writer }) => {
+        const name = viewElement.getAttribute('data-population-name') || '';
+        return writer.createElement('populationBegin', { name });
       }
     });
 
-    // Population name attribute upcast
-    conversion.for('upcast').attributeToAttribute({
-      view: {
-        name: 'span',
-        key: 'data-population-name'
-      },
-      model: 'population-name'
-    });
-
-    // Population end tag upcast
-    conversion.for('upcast').elementToAttribute({
+    // Population end tag
+    conversion.for('upcast').elementToElement({
       view: {
         name: 'span',
         classes: ['cka-population-tag', 'cka-population-end']
       },
-      model: {
-        key: 'population-tag',
-        value: () => 'end'
+      model: (viewElement, { writer }) => {
+        const name = viewElement.getAttribute('data-population-name') || '';
+        return writer.createElement('populationEnd', { name });
       }
     });
 
-    // Set up data downcast converters (for saving content)
-    // Population begin tag downcast
-    conversion.for('dataDowncast').attributeToElement({
-      model: {
-        key: 'population-tag',
-        values: ['begin']
-      },
-      view: (modelAttributeValue, { writer }, { item }) => {
-        if (!item || modelAttributeValue !== 'begin') return null;
-
-        try {
-          const populationName = item.hasAttribute('population-name')
-            ? String(item.getAttribute('population-name'))
-            : '';
-
-          return writer.createContainerElement('span', {
-            class: 'cka-population-tag cka-population-begin',
-            'data-population-name': populationName
-          });
-        } catch (error) {
-          console.error('Error in population begin downcast:', error);
-          return null;
-        }
+    // Data downcast converters (for saving to HTML)
+    // Population begin tag
+    conversion.for('dataDowncast').elementToElement({
+      model: 'populationBegin',
+      view: (modelElement, { writer }) => {
+        const name = modelElement.getAttribute('name');
+        return writer.createContainerElement('span', {
+          class: 'cka-population-tag cka-population-begin',
+          'data-population-name': name ? String(name) : ''
+        });
       }
     });
 
-    // Population end tag downcast
-    conversion.for('dataDowncast').attributeToElement({
-      model: {
-        key: 'population-tag',
-        values: ['end']
-      },
-      view: (modelAttributeValue, { writer }, { item }) => {
-        if (!item || modelAttributeValue !== 'end') return null;
-
-        try {
-          const populationName = item.hasAttribute('population-name')
-            ? String(item.getAttribute('population-name'))
-            : '';
-
-          return writer.createContainerElement('span', {
-            class: 'cka-population-tag cka-population-end',
-            'data-population-name': populationName
-          });
-        } catch (error) {
-          console.error('Error in population end downcast:', error);
-          return null;
-        }
+    // Population end tag
+    conversion.for('dataDowncast').elementToElement({
+      model: 'populationEnd',
+      view: (modelElement, { writer }) => {
+        const name = modelElement.getAttribute('name');
+        return writer.createContainerElement('span', {
+          class: 'cka-population-tag cka-population-end',
+          'data-population-name': name ? String(name) : ''
+        });
       }
     });
 
-    // Set up editing downcast converters (for displaying in the editor)
-    // Population begin tag editing downcast
-    conversion.for('editingDowncast').attributeToElement({
-      model: {
-        key: 'population-tag',
-        values: ['begin']
-      },
-      view: (modelAttributeValue, { writer }, { item }) => {
-        if (!item || modelAttributeValue !== 'begin') return null;
-
-        try {
-          const populationName = item.hasAttribute('population-name')
-            ? String(item.getAttribute('population-name'))
-            : '';
-
-          const populationElement = this._createPopulationView(writer, 'begin', populationName);
-
-          // Make the tag an uneditable widget
-          return toWidget(populationElement, writer, { label: 'Population begin tag' });
-        } catch (error) {
-          console.error('Error in population begin editing downcast:', error);
-          return null;
-        }
+    // Editing downcast converters (for displaying in editor)
+    // Population begin tag
+    conversion.for('editingDowncast').elementToElement({
+      model: 'populationBegin',
+      view: (modelElement, { writer }) => {
+        const name = modelElement.getAttribute('name');
+        const nameStr = name ? String(name) : '';
+        const tagElement = this._createPopulationView(writer, 'begin', nameStr);
+        return toWidget(tagElement, writer, { label: 'Population begin tag' });
       }
     });
 
-    // Population end tag editing downcast
-    conversion.for('editingDowncast').attributeToElement({
-      model: {
-        key: 'population-tag',
-        values: ['end']
-      },
-      view: (modelAttributeValue, { writer }, { item }) => {
-        if (!item || modelAttributeValue !== 'end') return null;
-
-        try {
-          const populationName = item.hasAttribute('population-name')
-            ? String(item.getAttribute('population-name'))
-            : '';
-
-          const populationElement = this._createPopulationView(writer, 'end', populationName);
-
-          // Make the tag an uneditable widget
-          return toWidget(populationElement, writer, { label: 'Population end tag' });
-        } catch (error) {
-          console.error('Error in population end editing downcast:', error);
-          return null;
-        }
+    // Population end tag
+    conversion.for('editingDowncast').elementToElement({
+      model: 'populationEnd',
+      view: (modelElement, { writer }) => {
+        const name = modelElement.getAttribute('name');
+        const nameStr = name ? String(name) : '';
+        const tagElement = this._createPopulationView(writer, 'end', nameStr);
+        return toWidget(tagElement, writer, { label: 'Population end tag' });
       }
     });
 
@@ -223,15 +158,15 @@ export default class AlightPopulationPluginEditing extends Plugin {
     // Create a container for the tag
     const tagContainer = writer.createContainerElement('span', {
       class: `cka-population-tag cka-population-${type}`,
-      'data-population-name': populationName || ''
+      'data-population-name': populationName
     });
 
     // Create the text content for the tag
     let tagContent;
     if (type === 'begin') {
-      tagContent = writer.createText(`[BEGIN *${populationName || ''}*]`);
+      tagContent = writer.createText(`[BEGIN *${populationName}*]`);
     } else {
-      tagContent = writer.createText(`[*${populationName || ''}* END]`);
+      tagContent = writer.createText(`[*${populationName}* END]`);
     }
 
     writer.insert(writer.createPositionAt(tagContainer, 0), tagContent);

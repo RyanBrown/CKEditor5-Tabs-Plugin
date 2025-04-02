@@ -17,32 +17,41 @@ import type {
  * Interface representing population tag elements.
  */
 export interface PopulationTags {
-  begin: Node;
-  end: Node;
+  begin: ModelElement;
+  end: ModelElement;
   populationName: string;
 }
 
 /**
  * Checks if a selection is within a population.
+ * This is used by the UI to determine if the Remove Population button should be enabled.
  * 
  * @param {Selection|DocumentSelection} selection The selection to check.
  * @returns {boolean} Whether the selection is within a population.
  */
 export function isSelectionInPopulation(selection: Selection | DocumentSelection): boolean {
+  if (!selection) return false;
+
+  // For empty selection, check adjacent nodes
   if (selection.isCollapsed) {
-    // Check if the cursor position has population tags
-    return !!getPopulationAtPosition(selection.getFirstPosition()!);
+    const position = selection.getFirstPosition();
+    if (!position) return false;
+
+    const nodeBefore = position.nodeBefore;
+    const nodeAfter = position.nodeAfter;
+
+    return (nodeBefore && nodeBefore.is('element') && nodeBefore.name === 'populationBegin') ||
+      (nodeAfter && nodeAfter.is('element') && nodeAfter.name === 'populationEnd');
   }
 
-  // For non-collapsed selection, check if the range has population tags
-  for (const range of selection.getRanges()) {
-    // Check if any node in the range has population attributes
-    const walker = range.getWalker({ ignoreElementEnd: true });
+  // For non-empty selection, check if it has population markers
+  const range = selection.getFirstRange();
+  if (!range) return false;
 
-    for (const { item } of walker) {
-      if ('hasAttribute' in item && item.hasAttribute('population-tag')) {
-        return true;
-      }
+  const walker = range.getWalker({ ignoreElementEnd: true });
+  for (const { item } of walker) {
+    if (item.is('element') && (item.name === 'populationBegin' || item.name === 'populationEnd')) {
+      return true;
     }
   }
 
@@ -56,158 +65,31 @@ export function isSelectionInPopulation(selection: Selection | DocumentSelection
  * @returns {Object|null} Population info or null if not in a population.
  */
 export function getPopulationAtPosition(position: Position): { name: string } | null {
+  if (!position) return null;
+
   // Get the node at the position
-  const node = position.textNode || position.nodeAfter || position.nodeBefore;
+  const nodeAfter = position.nodeAfter;
+  const nodeBefore = position.nodeBefore;
 
-  if (!node) return null;
-
-  // Check if the node has population attributes
-  if ('hasAttribute' in node && node.hasAttribute('population-tag') && node.hasAttribute('population-name')) {
+  // Check if the node is a population tag element
+  if (nodeAfter && nodeAfter.is('element') && nodeAfter.name === 'populationBegin') {
     return {
-      name: String(node.getAttribute('population-name'))
+      name: String(nodeAfter.getAttribute('name') || '')
     };
   }
 
-  // Check for population tags in parent nodes
-  let parent = node.parent;
-  while (parent) {
-    if ('hasAttribute' in parent && parent.hasAttribute('population-tag') && parent.hasAttribute('population-name')) {
-      return {
-        name: String(parent.getAttribute('population-name'))
-      };
-    }
-    parent = parent.parent;
+  if (nodeBefore && nodeBefore.is('element') && nodeBefore.name === 'populationEnd') {
+    return {
+      name: String(nodeBefore.getAttribute('name') || '')
+    };
   }
 
   return null;
-}
-
-/**
- * Gets all population ranges in the document.
- * 
- * @param {Model} model The editor model.
- * @returns {Array<PopulationTags>} Array of population tag ranges.
- */
-function getPopulationRangesInDocument(model: Model): PopulationTags[] {
-  const result: PopulationTags[] = [];
-  const doc = model.document;
-  const beginTags: Map<string, Node[]> = new Map();
-
-  // Iterate through all roots in the document
-  for (const rootName of doc.getRootNames()) {
-    const root = doc.getRoot(rootName)!;
-    const range = model.createRangeIn(root);
-    const walker = range.getWalker({ ignoreElementEnd: true });
-
-    // Find all population tags
-    for (const { item } of walker) {
-      if (!item.is('$text') && !item.is('$textProxy')) continue;
-
-      // Check if this node is a population tag
-      if ('hasAttribute' in item && item.hasAttribute('population-tag') && item.hasAttribute('population-name')) {
-        const tagType = String(item.getAttribute('population-tag'));
-        const populationName = String(item.getAttribute('population-name'));
-
-        if (tagType === 'begin') {
-          // Store begin tags in a map keyed by population name
-          if (!beginTags.has(populationName)) {
-            beginTags.set(populationName, []);
-          }
-          beginTags.get(populationName)!.push(item as unknown as Node);
-        } else if (tagType === 'end') {
-          // Find matching begin tag for this end tag
-          const beginTagsArray = beginTags.get(populationName) || [];
-          const beginTag = beginTagsArray.pop();
-
-          if (beginTag) {
-            // Found a matching pair
-            result.push({
-              begin: beginTag,
-              end: item as unknown as Node,
-              populationName
-            });
-          }
-        }
-      }
-    }
-  }
-
-  return result;
-}
-
-/**
- * Creates population tag elements for inserting into the model.
- * 
- * @param {Writer} writer The model writer.
- * @param {string} populationName The name of the population.
- * @returns {Object} The begin and end tag elements.
- */
-export function createPopulationTags(writer: Writer, populationName: string) {
-  // Create the begin tag
-  const beginTag = writer.createText('[BEGIN *' + populationName + '*]', {
-    'population-tag': 'begin',
-    'population-name': populationName
-  });
-
-  // Create the end tag
-  const endTag = writer.createText('[*' + populationName + '* END]', {
-    'population-tag': 'end',
-    'population-name': populationName
-  });
-
-  return {
-    begin: beginTag,
-    end: endTag
-  };
-}
-
-/**
- * Gets the parent element of a given node that matches specified criteria.
- * 
- * @param {T} node The node to start from.
- * @param {Function} callback A predicate function to test each parent.
- * @returns {Node|null} The found parent or null.
- */
-export function findParent<T>(node: T, callback: (node: any) => boolean): any | null {
-  // Early return for null/undefined
-  if (!node) return null;
-
-  // Get parent, handling different possible structures
-  const parent = (node as any).parent;
-  if (!parent) return null;
-
-  let currentParent = parent;
-
-  while (currentParent) {
-    if (callback(currentParent)) {
-      return currentParent;
-    }
-    currentParent = currentParent.parent;
-  }
-
-  return null;
-}
-
-/**
- * Checks if a node is inside a population.
- * 
- * @param {Node} node The node to check.
- * @returns {boolean} Whether the node is inside a population.
- */
-export function isNodeInPopulation(node: Node): boolean {
-  // Check if the node itself has population tag attributes
-  if ('hasAttribute' in node && node.hasAttribute('population-tag')) {
-    return true;
-  }
-
-  // Check if any parent has population tag attributes
-  return !!findParent(node as any, parent =>
-    'hasAttribute' in parent && parent.hasAttribute('population-tag')
-  );
 }
 
 /**
  * Finds population tags in a selection range.
+ * Used by the RemovePopulationCommand to find and remove population tags.
  * 
  * @param {Selection|DocumentSelection} selection The selection to check.
  * @param {Model} model The editor model.
@@ -217,29 +99,71 @@ export function findPopulationTagsInRange(
   selection: Selection | DocumentSelection,
   model: Model
 ): PopulationTags | null {
-  // Get all population tags in the document
-  const populationRanges = getPopulationRangesInDocument(model);
+  if (!selection || !model) return null;
 
-  // Get the selection range
-  const selectionRange = selection.getFirstRange();
-  if (!selectionRange) return null;
+  const range = selection.getFirstRange();
+  if (!range) return null;
 
-  // Find the population tags that contain the selection
-  for (const { begin, end, populationName } of populationRanges) {
-    // Create a range between the begin and end tags
-    // Add type casting to resolve TypeScript errors
-    const beginPos = model.createPositionAfter(begin as any);
-    const endPos = model.createPositionBefore(end as any);
-    const populationRange = model.createRange(beginPos, endPos);
+  // Expand range to include the whole document
+  const root = range.root;
+  const fullRange = model.createRangeIn(root);
 
-    // Check if the selection is within the population range
-    if ((selectionRange.start.isAfter(beginPos) && selectionRange.end.isBefore(endPos)) ||
-      selectionRange.containsItem(begin as any) || selectionRange.containsItem(end as any)) {
-      return {
-        begin,
-        end,
-        populationName
-      };
+  // Find all population begin/end tags in the document
+  const populationBeginTags: ModelElement[] = [];
+  const populationEndTags: Map<string, ModelElement[]> = new Map();
+
+  const walker = fullRange.getWalker({ ignoreElementEnd: true });
+  for (const { item } of walker) {
+    if (item.is('element')) {
+      if (item.name === 'populationBegin') {
+        const name = item.getAttribute('name') as string;
+        populationBeginTags.push(item);
+
+        // Initialize the array for this population name if needed
+        if (!populationEndTags.has(name)) {
+          populationEndTags.set(name, []);
+        }
+      } else if (item.name === 'populationEnd') {
+        const name = item.getAttribute('name') as string;
+
+        // Add this end tag to the array for its name
+        if (!populationEndTags.has(name)) {
+          populationEndTags.set(name, []);
+        }
+        populationEndTags.get(name)!.push(item);
+      }
+    }
+  }
+
+  // Check each begin tag to see if it has a matching end tag that surrounds or intersects with the selection
+  for (const beginTag of populationBeginTags) {
+    const name = beginTag.getAttribute('name') as string;
+    const endTagsForName = populationEndTags.get(name) || [];
+
+    for (const endTag of endTagsForName) {
+      const beginPos = model.createPositionAfter(beginTag);
+      const endPos = model.createPositionBefore(endTag);
+
+      try {
+        const populationRange = model.createRange(beginPos, endPos);
+
+        // Check if selection intersects with this population range
+        if (range.containsRange(populationRange) ||
+          populationRange.containsRange(range) ||
+          populationRange.containsPosition(range.start) ||
+          populationRange.containsPosition(range.end) ||
+          range.containsItem(beginTag) ||
+          range.containsItem(endTag)) {
+          return {
+            begin: beginTag,
+            end: endTag,
+            populationName: name
+          };
+        }
+      } catch (error) {
+        console.error('Error checking range intersection:', error);
+        continue;
+      }
     }
   }
 
