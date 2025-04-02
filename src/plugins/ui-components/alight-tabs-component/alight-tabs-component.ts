@@ -5,8 +5,11 @@ import { ButtonView } from '@ckeditor/ckeditor5-ui';
 import { first } from '@ckeditor/ckeditor5-utils';
 import { Command } from '@ckeditor/ckeditor5-core';
 import type { Editor } from '@ckeditor/ckeditor5-core';
-import type { Element, Writer } from '@ckeditor/ckeditor5-engine';
-import { toWidget, toWidgetEditable } from '@ckeditor/ckeditor5-widget';
+import { toWidget } from '@ckeditor/ckeditor5-widget';
+import { TabsView, TabView, TabPanelView, TabViewConfig } from './alight-tabs-component-view';
+
+// Re-export the needed classes so they can be imported from this file
+export { TabsView, TabView, TabPanelView, TabViewConfig };
 
 export default class AlightTabsComponent extends Plugin {
   public static readonly pluginName = 'AlightTabsComponent' as const;
