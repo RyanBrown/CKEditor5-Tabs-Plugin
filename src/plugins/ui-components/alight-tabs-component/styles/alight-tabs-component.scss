@@ -2,27 +2,23 @@
 @use './../../../../styles/mixins' as mixins;
 
 .cka-tabs {
-  font-family: var(--font-family-base);
-  margin: 20px auto;
-  max-width: 800px;
-  width: 100%;
   display: flex;
   flex-direction: column;
+  font-family: var(--font-family-base);
+  margin: 0 auto;
+  width: 100%;
 }
 
 .cka-tabs-header {
+  -ms-overflow-style: none;
   border-bottom: 2px solid var(--gray-300);
   display: flex;
-  position: relative;
   overflow-x: auto;
+  position: relative;
   scrollbar-width: none;
-  /* Firefox */
-  -ms-overflow-style: none;
-  /* IE and Edge */
 
   &::-webkit-scrollbar {
     display: none;
-    /* Chrome, Safari, Opera */
   }
 }
 
@@ -41,14 +37,14 @@
   color: var(--secondary);
   cursor: pointer;
   display: flex;
+  font-family: inherit;
   font-size: 1rem;
   gap: 0.5rem;
+  outline: none;
   padding: 1rem 1.5rem;
   position: relative;
   transition: all 0.2s;
   white-space: nowrap;
-  font-family: inherit;
-  outline: none;
 
   &:hover {
     color: var(--primary);
@@ -78,11 +74,11 @@
 
 .cka-tab-content {
   animation: fadeIn 0.3s ease-out;
+  background-color: var(--neutral-white);
+  border-top: none;
+  border: 1px solid var(--gray-300);
   display: none;
   padding: 1.5rem;
-  border: 1px solid var(--gray-300);
-  border-top: none;
-  background-color: var(--neutral-white);
 
   &.active {
     display: block;
