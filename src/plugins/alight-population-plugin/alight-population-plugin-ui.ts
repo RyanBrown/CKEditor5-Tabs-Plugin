@@ -43,6 +43,11 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
   private readonly loadService: PopulationLoadService = new PopulationLoadService();
 
   /**
+   * Reference to the button view
+   */
+  protected override buttonView: InstanceType<typeof ButtonView>;
+
+  /**
    * @inheritDoc
    */
   public override get pluginName(): string { return AlightPopulationPluginUI.pluginName; }
@@ -62,6 +67,9 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
 
     // Update buttons states on selection change
     this._enableButtonsStateTracking();
+
+    // Immediately load population tags data
+    this.loadPopulationData();
   }
 
   /**
@@ -73,24 +81,24 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
     // Add the "Add Population" button
     editor.ui.componentFactory.add('alightPopulationPlugin', locale => {
       const command = editor.commands.get('alightPopulationPlugin');
-      const buttonView = new ButtonView(locale);
+      this.buttonView = new ButtonView(locale);
 
-      buttonView.set({
+      this.buttonView.set({
         label: 'Add Population',
         icon: ToolBarIcon,
         tooltip: true,
-        isEnabled: this.isReady
+        isEnabled: false // Start disabled until command is ready
       });
 
       // Bind button state to command state
-      buttonView.bind('isEnabled').to(command, 'isEnabled', (commandEnabled) => commandEnabled && this.isReady);
+      this.buttonView.bind('isEnabled').to(command, 'isEnabled');
 
       // Execute the command when the button is clicked
-      buttonView.on('execute', () => {
+      this.buttonView.on('execute', () => {
         this._showPopulationModal();
       });
 
-      return buttonView;
+      return this.buttonView;
     });
 
     // Add the "Remove Population" button
@@ -119,7 +127,7 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
   /**
    * Loads the population tags data
    */
-  protected override setModalContents = (): void => {
+  private loadPopulationData(): void {
     if (this.verboseMode) console.log(`Loading population tags...`);
 
     this.loadService.loadPopulationTags().then(
@@ -127,10 +135,38 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
         this._populationTags = data;
         if (this.verboseMode) console.log(data);
         this.isReady = true;
+
+        // Enable the button as soon as we have data
         this._enablePluginButton();
       },
-      (error) => console.log(error)
+      (error) => {
+        console.error('Error loading population tags:', error);
+        // Even if there's an error, we might still want to enable the button
+        // with empty data array so the user can see the UI
+        this.isReady = true;
+        this._enablePluginButton();
+      }
     );
+  }
+
+  /**
+   * Override the parent method to ensure the button gets enabled
+   * with the plugin's readiness state
+   */
+  protected override _enablePluginButton = () => {
+    if (this.buttonView) {
+      // The button's isEnabled is already bound to the command's isEnabled
+      // Refresh the command to update its isEnabled state
+      this.editor.commands.get('alightPopulationPlugin').refresh();
+    }
+  }
+
+  /**
+   * Using this method is no longer needed since we're loading data immediately
+   * But keeping it for backwards compatibility - it does nothing now
+   */
+  protected override setModalContents(): void {
+    // This is now a no-op, as we load data in the init method
   }
 
   /**
@@ -174,6 +210,11 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
   _showPopulationModal(currentPopulation?: string) {
     const editor = this.editor;
     const t = editor.t;
+
+    // If data isn't ready yet, start loading it
+    if (this._populationTags.length === 0 && !this.isReady) {
+      this.loadPopulationData();
+    }
 
     // Create modal dialog if it doesn't exist
     if (!this._populationModal) {
@@ -248,32 +289,46 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
     // Then fetch data and initialize the content manager in the background
     try {
       if (this._populationTags.length === 0) {
-        // Show message if no population tags found
+        // Show loading message if no population tags found yet
         const tagsContainer = customContent.querySelector('#links-container');
         if (tagsContainer) {
           tagsContainer.innerHTML = `
-          <div class="cka-center-modal-message">
-            <p>No population tags available.</p>
+          <div class="cka-loading-container">
+            <div class="cka-loading-spinner"></div>
+            <p>Loading population tags...</p>
           </div>
         `;
+
+          // Try to load the data if it's not ready yet
+          if (!this.isReady) {
+            this.loadService.loadPopulationTags().then(
+              (data) => {
+                this._populationTags = data;
+                this.isReady = true;
+                this._enablePluginButton();
+
+                // Once data is loaded, refresh the modal content
+                this._populateModalContent(customContent, currentPopulation);
+              },
+              (error) => {
+                console.error('Error loading population tags:', error);
+                const tagsContainer = customContent.querySelector('#links-container');
+                if (tagsContainer) {
+                  tagsContainer.innerHTML = `
+                <div class="cka-center-modal-message">
+                  <p>Error loading population tags: ${error.message || 'Unknown error'}</p>
+                </div>
+              `;
+                }
+              }
+            );
+          }
+          return;
         }
-        return;
       }
 
-      // Create the ContentManager with the current population name and population tags data
-      this._populationManager = new ContentManager(currentPopulation || '', this._populationTags);
-
-      // Add an event listener for population selection
-      this._populationManager.onLinkSelected = (population) => {
-        this._updateContinueButtonState(!!population);
-      };
-
-      // Initialize the ContentManager with the content element
-      this._populationManager.renderContent(customContent);
-
-      // Set initial button state based on whether we have a current population
-      const initialPopulation = this._populationTags.find(tag => tag.populationTagName === currentPopulation);
-      this._updateContinueButtonState(!!initialPopulation);
+      // If we already have data, populate the modal content
+      this._populateModalContent(customContent, currentPopulation);
     } catch (error) {
       console.error('Error setting up population tags:', error);
 
@@ -287,6 +342,39 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
       `;
       }
     }
+  }
+
+  /**
+   * Populates the modal content with the population tags data
+   */
+  private _populateModalContent(customContent: HTMLElement, currentPopulation?: string): void {
+    // If no population tags are available after loading, show a message
+    if (this._populationTags.length === 0) {
+      const tagsContainer = customContent.querySelector('#links-container');
+      if (tagsContainer) {
+        tagsContainer.innerHTML = `
+        <div class="cka-center-modal-message">
+          <p>No population tags available.</p>
+        </div>
+      `;
+      }
+      return;
+    }
+
+    // Create the ContentManager with the current population name and population tags data
+    this._populationManager = new ContentManager(currentPopulation || '', this._populationTags);
+
+    // Add an event listener for population selection
+    this._populationManager.onLinkSelected = (population) => {
+      this._updateContinueButtonState(!!population);
+    };
+
+    // Initialize the ContentManager with the content element
+    this._populationManager.renderContent(customContent);
+
+    // Set initial button state based on whether we have a current population
+    const initialPopulation = this._populationTags.find(tag => tag.populationTagName === currentPopulation);
+    this._updateContinueButtonState(!!initialPopulation);
   }
 
   /**
