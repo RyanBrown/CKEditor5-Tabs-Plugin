@@ -3,16 +3,22 @@ import { ILinkManager } from './popmodal-ILinkManager';
 import { PopulationTagData } from './popmodal-modal-types';
 import { SearchManager } from './popmodal-SearchManager';
 import { PaginationManager } from './popmodal-PaginationManager';
+import { TabsView, TabViewConfig } from '../../ui-components/alight-tabs-component/alight-tabs-component';
 import '../../ui-components/alight-radio-component/alight-radio-component';
 
 export class ContentManager implements ILinkManager {
   private selectedPopulation: PopulationTagData | null = null;
   private populationTagData: PopulationTagData[] = [];
-  private filteredPopulationData: PopulationTagData[] = [];
+  private systemPopulations: PopulationTagData[] = [];
+  private createdPopulations: PopulationTagData[] = [];
+  private filteredSystemPopulations: PopulationTagData[] = [];
+  private filteredCreatedPopulations: PopulationTagData[] = [];
   private searchManager: SearchManager;
   private paginationManager: PaginationManager;
   private container: HTMLElement | null = null;
   private initialPopulationName: string = '';
+  private tabsView: TabsView | null = null;
+  private activeTabId: string = 'system-populations';
 
   // Add callback for population selection events
   public onLinkSelected: ((population: PopulationTagData | null) => void) | null = null;
@@ -20,13 +26,30 @@ export class ContentManager implements ILinkManager {
   constructor(initialPopulationName: string = '', populationTagData: PopulationTagData[] = []) {
     this.initialPopulationName = initialPopulationName;
     this.populationTagData = populationTagData;
-    this.filteredPopulationData = [...this.populationTagData];
+
+    // Split populations into system and created categories
+    // For demonstration, we'll consider populations with baseOrClientSpecific "Base" as system
+    // and others as created populations
+    this.systemPopulations = populationTagData.filter(p => p.baseOrClientSpecific === 'Base');
+    this.createdPopulations = populationTagData.filter(p => p.baseOrClientSpecific !== 'Base');
+
+    this.filteredSystemPopulations = [...this.systemPopulations];
+    this.filteredCreatedPopulations = [...this.createdPopulations];
 
     // If we have an initial population name, try to find and preselect the matching population
     if (initialPopulationName) {
       this.selectedPopulation = this.populationTagData.find(
         population => population.populationTagName === initialPopulationName
       ) || null;
+
+      // Set active tab based on where the selection is
+      if (this.selectedPopulation) {
+        if (this.systemPopulations.some(p => p.populationTagName === initialPopulationName)) {
+          this.activeTabId = 'system-populations';
+        } else if (this.createdPopulations.some(p => p.populationTagName === initialPopulationName)) {
+          this.activeTabId = 'created-populations';
+        }
+      }
     }
 
     this.paginationManager = new PaginationManager(this.handlePageChange.bind(this));
@@ -48,11 +71,18 @@ export class ContentManager implements ILinkManager {
   private handleSearchResults = (filteredData: PopulationTagData[]): void => {
     console.log('Search results updated:', filteredData.length, 'items');
 
-    this.filteredPopulationData = filteredData;
+    // Filter for both tabs
+    this.filteredSystemPopulations = filteredData.filter(p => p.baseOrClientSpecific === 'Base');
+    this.filteredCreatedPopulations = filteredData.filter(p => p.baseOrClientSpecific !== 'Base');
 
     // Maintain selected population if still in filtered results, otherwise clear selection
     if (this.selectedPopulation && !filteredData.some(tag => tag.populationTagName === this.selectedPopulation?.populationTagName)) {
       this.selectedPopulation = null;
+
+      // Notify of population deselection
+      if (this.onLinkSelected) {
+        this.onLinkSelected(null);
+      }
     }
 
     // Re-render the UI
@@ -71,7 +101,8 @@ export class ContentManager implements ILinkManager {
   public resetSearch(): void {
     this.searchManager.reset();
     this.selectedPopulation = null;
-    this.filteredPopulationData = [...this.populationTagData];
+    this.filteredSystemPopulations = [...this.systemPopulations];
+    this.filteredCreatedPopulations = [...this.createdPopulations];
 
     // Notify of population deselection
     if (this.onLinkSelected) {
@@ -85,18 +116,128 @@ export class ContentManager implements ILinkManager {
 
   public renderContent(container: HTMLElement): void {
     this.container = container;
-    container.innerHTML = this.buildContentForPage();
 
-    // Initialize components in correct order
+    // Create tab configuration
+    const tabsConfig = [
+      {
+        id: 'system-populations',
+        label: 'System Populations',
+        content: this.buildTabContentString(this.filteredSystemPopulations),
+        isActive: this.activeTabId === 'system-populations'
+      },
+      {
+        id: 'created-populations',
+        label: 'Created Populations',
+        content: this.buildTabContentString(this.filteredCreatedPopulations),
+        isActive: this.activeTabId === 'created-populations'
+      }
+    ];
+
+    // Clear container first
+    container.innerHTML = '';
+
+    // Add search container
+    const searchContainerRoot = document.createElement('div');
+    searchContainerRoot.id = 'search-container-root';
+    searchContainerRoot.className = 'cka-search-container';
+    container.appendChild(searchContainerRoot);
+
+    // Add current population info if applicable
+    if (this.initialPopulationName) {
+      const currentPopulationInfo = document.createElement('div');
+      currentPopulationInfo.innerHTML = this.buildCurrentPopulationInfoMarkup();
+      container.appendChild(currentPopulationInfo);
+    }
+
+    // Create and initialize tabs
+    this.initializeTabs(container, tabsConfig);
+
+    // Add pagination container at the bottom
+    const paginationContainer = document.createElement('div');
+    paginationContainer.id = 'pagination-container';
+    paginationContainer.className = 'cka-pagination';
+    container.appendChild(paginationContainer);
+
+    // Initialize components
     this.initializeComponents(container);
+  }
+
+  private initializeTabs(container: HTMLElement, tabsConfig: TabViewConfig[]): void {
+    // Create a div for tabs
+    const tabsContainer = document.createElement('div');
+    tabsContainer.id = 'tabs-container';
+    container.appendChild(tabsContainer);
+
+    // Create links container for tab content
+    const linksContainer = document.createElement('div');
+    linksContainer.id = 'links-container';
+    container.appendChild(linksContainer);
+
+    // Set up tabs using the TabsView component
+    const locale = { t: (str: string) => str }; // Simple locale mock
+    this.tabsView = new TabsView(locale as any, { tabs: tabsConfig });
+
+    // Handle tab selection
+    this.tabsView.on('select', (event, tabView) => {
+      this.activeTabId = tabView.id;
+
+      // Update content in links container based on active tab
+      if (tabView.id === 'system-populations') {
+        linksContainer.innerHTML = this.buildPopulationList(this.filteredSystemPopulations);
+      } else {
+        linksContainer.innerHTML = this.buildPopulationList(this.filteredCreatedPopulations);
+      }
+
+      // Re-attach event listeners for population selection
+      this.attachPopulationSelectionListeners(container);
+
+      // Update pagination for the current tab
+      const currentItems = tabView.id === 'system-populations'
+        ? this.filteredSystemPopulations
+        : this.filteredCreatedPopulations;
+      this.paginationManager.setPage(1, currentItems.length);
+    });
+
+    // Render the tabs
+    this.tabsView.render();
+    tabsContainer.appendChild(this.tabsView.element as Node);
+
+    // Set the initial tab content
+    const activeTabData = this.activeTabId === 'system-populations'
+      ? this.filteredSystemPopulations
+      : this.filteredCreatedPopulations;
+    linksContainer.innerHTML = this.buildPopulationList(activeTabData);
+  }
+
+  private buildTabContentString(populations: PopulationTagData[]): string {
+    return this.buildPopulationList(populations);
+  }
+
+  private buildPopulationList(populations: PopulationTagData[]): string {
+    const currentPage = this.paginationManager.getCurrentPage();
+    const pageSize = this.paginationManager.getPageSize();
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = Math.min(startIndex + pageSize, populations.length);
+    const currentPageData = populations.slice(startIndex, endIndex);
+
+    if (currentPageData.length === 0) {
+      return '<div class="cka-center-modal-message">No results found.</div>';
+    }
+
+    return currentPageData
+      .map(tag => this.buildPopulationItemMarkup(tag))
+      .join('');
   }
 
   private initializeComponents(container: HTMLElement): void {
     // Initialize search first as it sets up the search container
     this.searchManager.initialize(container);
 
-    // Then initialize pagination
-    this.paginationManager.initialize(container, this.filteredPopulationData.length);
+    // Then initialize pagination for the active tab
+    const activeTabData = this.activeTabId === 'system-populations'
+      ? this.filteredSystemPopulations
+      : this.filteredCreatedPopulations;
+    this.paginationManager.initialize(container, activeTabData.length);
 
     // Finally attach population selection listeners
     this.attachPopulationSelectionListeners(container);
@@ -108,48 +249,6 @@ export class ContentManager implements ILinkManager {
         selectedRadio.checked = true;
       }
     }
-  }
-
-  private buildContentForPage(): string {
-    // Check if we have data yet
-    if (this.populationTagData.length === 0) {
-      return `
-      <div class="cka-loading-container">
-        <div class="cka-loading-spinner"></div>
-      </div>
-    `;
-    }
-
-    const currentPage = this.paginationManager.getCurrentPage();
-    const pageSize = this.paginationManager.getPageSize();
-    const startIndex = (currentPage - 1) * pageSize;
-    const endIndex = Math.min(startIndex + pageSize, this.filteredPopulationData.length);
-    const currentPageData = this.filteredPopulationData.slice(startIndex, endIndex);
-
-    // Search container
-    const searchContainerMarkup = `<div id="search-container-root" class="cka-search-container"></div>`;
-
-    // Current population info if we have an initial population name
-    const currentPopulationInfo = this.initialPopulationName ? this.buildCurrentPopulationInfoMarkup() : '';
-
-    // Population tags list
-    const populationTagsMarkup = currentPageData.length > 0
-      ? currentPageData
-        .map(tag => this.buildPopulationItemMarkup(tag))
-        .join('')
-      : '<div class="cka-center-modal-message">No results found.</div>';
-
-    // Pagination container
-    const paginationMarkup = `<div id="pagination-container" class="cka-pagination"></div>`;
-
-    return `
-    ${searchContainerMarkup}
-    ${currentPopulationInfo}
-    <div id="links-container">
-      ${populationTagsMarkup}
-    </div>
-    ${paginationMarkup}
-  `;
   }
 
   private buildCurrentPopulationInfoMarkup(): string {
@@ -244,7 +343,7 @@ export class ContentManager implements ILinkManager {
     ) || null;
 
     // Update selected state visually
-    const container = populationItem.closest('.cka-population-content');
+    const container = populationItem.closest('.cka-dialog');
     if (container) {
       container.querySelectorAll('.cka-population-item').forEach(item => {
         item.classList.remove('selected');

@@ -296,88 +296,77 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
       );
     }
 
-    // Use custom content first for faster loading
-    const customContent = this._createCustomContent();
-    this._populationModal.setContent(customContent);
+    // Set the modal content container
+    const modalContainer = document.createElement('div');
+    modalContainer.className = 'cka-population-tabs-container';
+    this._populationModal.setContent(modalContainer);
 
     // Show the modal right away
     this._populationModal.show();
 
-    // Then fetch data and initialize the content manager in the background
+    // Create the content manager with tabs if we have data
     try {
       if (this._populationTags.length === 0) {
         // Show loading message if no population tags found yet
-        const tagsContainer = customContent.querySelector('#links-container');
-        if (tagsContainer) {
-          tagsContainer.innerHTML = `
+        modalContainer.innerHTML = `
           <div class="cka-loading-container">
             <div class="cka-loading-spinner"></div>
           </div>
         `;
 
-          // Try to load the data if it's not ready yet
-          if (!this.isReady) {
-            this.loadService.loadPopulationTags().then(
-              (data) => {
-                this._populationTags = data;
-                this.isReady = true;
-                this._enablePluginButton();
+        // Try to load the data if it's not ready yet
+        if (!this.isReady) {
+          this.loadService.loadPopulationTags().then(
+            (data) => {
+              this._populationTags = data;
+              this.isReady = true;
+              this._enablePluginButton();
 
-                // Once data is loaded, refresh the modal content
-                this._populateModalContent(customContent, currentPopulation);
-              },
-              (error) => {
-                console.error('Error loading population tags:', error);
-                const tagsContainer = customContent.querySelector('#links-container');
-                if (tagsContainer) {
-                  tagsContainer.innerHTML = `
+              // Once data is loaded, create the tabbed content manager
+              this._createContentManager(modalContainer, currentPopulation);
+            },
+            (error) => {
+              console.error('Error loading population tags:', error);
+              modalContainer.innerHTML = `
                 <div class="cka-center-modal-message">
                   <p>Error loading population tags: ${error.message || 'Unknown error'}</p>
                 </div>
               `;
-                }
-              }
-            );
-          }
+            }
+          );
           return;
         }
       }
 
-      // If we already have data, populate the modal content
-      this._populateModalContent(customContent, currentPopulation);
+      // If we already have data, create the content manager with tabs
+      this._createContentManager(modalContainer, currentPopulation);
     } catch (error) {
       console.error('Error setting up population tags:', error);
 
       // Show error message
-      const tagsContainer = customContent.querySelector('#links-container');
-      if (tagsContainer) {
-        tagsContainer.innerHTML = `
+      modalContainer.innerHTML = `
         <div class="cka-center-modal-message">
           <p>${error.message || 'Unknown error'}</p>
         </div>
       `;
-      }
     }
   }
 
   /**
-   * Populates the modal content with the population tags data
+   * Creates the ContentManager with tabs and initializes it
    */
-  private _populateModalContent(customContent: HTMLElement, currentPopulation?: string): void {
+  private _createContentManager(container: HTMLElement, currentPopulation?: string): void {
     // If no population tags are available after loading, show a message
     if (this._populationTags.length === 0) {
-      const tagsContainer = customContent.querySelector('#links-container');
-      if (tagsContainer) {
-        tagsContainer.innerHTML = `
+      container.innerHTML = `
         <div class="cka-center-modal-message">
           <p>No population tags available.</p>
         </div>
       `;
-      }
       return;
     }
 
-    // Create the ContentManager with the current population name and population tags data
+    // Create the ContentManager with tabs
     this._populationManager = new ContentManager(currentPopulation || '', this._populationTags);
 
     // Add an event listener for population selection
@@ -385,36 +374,12 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
       this._updateContinueButtonState(!!population);
     };
 
-    // Initialize the ContentManager with the content element
-    this._populationManager.renderContent(customContent);
+    // Initialize the ContentManager with tabs
+    this._populationManager.renderContent(container);
 
     // Set initial button state based on whether we have a current population
     const initialPopulation = this._populationTags.find(tag => tag.populationTagName === currentPopulation);
     this._updateContinueButtonState(!!initialPopulation);
-  }
-
-  /**
-   * Custom HTML content for the population tags
-   */
-  private _createCustomContent(): HTMLElement {
-    const container = document.createElement('div');
-
-    const tagsContainer = document.createElement('div');
-    tagsContainer.id = 'links-container';
-    tagsContainer.innerHTML = `
-      <div class="cka-loading-container">
-        <div class="cka-loading-spinner"></div>
-      </div>
-    `;
-
-    const paginationContainer = document.createElement('div');
-    paginationContainer.id = 'pagination-container';
-    paginationContainer.className = 'cka-pagination';
-
-    container.appendChild(tagsContainer);
-    container.appendChild(paginationContainer);
-
-    return container;
   }
 
   /**
