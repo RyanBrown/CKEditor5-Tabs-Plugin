@@ -184,7 +184,7 @@ export class ContentManager implements ILinkManager {
     const isSelected = forceSelected || this.selectedPopulation?.populationTagName === population.populationTagName;
 
     return `
-      <div class="cka-link-item ${isSelected ? 'selected' : ''}" data-population-name="${population.populationTagName}">
+      <div class="cka-population-item ${isSelected ? 'selected' : ''}" data-population-name="${population.populationTagName}">
         <div class="radio-container">
           <cka-radio-button 
             name="${radioGroupName}" 

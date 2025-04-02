@@ -305,7 +305,8 @@ $spacing-values: (
 }
 
 // Predefined and Existing Docs styles
-.cka-link-item {
+.cka-link-item,
+.cka-population-item {
   align-items: center;
   border-bottom: 1px solid var(--gray-400);
   display: flex;

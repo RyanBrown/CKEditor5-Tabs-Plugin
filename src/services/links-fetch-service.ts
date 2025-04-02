@@ -47,13 +47,13 @@ export default class LinksFetchService extends HttpService {
         }
 
         const data = await response.json();
-        console.log('Received predefined links data from Mockaroo:', data);
+        // console.log('Received predefined links data from Mockaroo:', data);
 
         // Transform the data to match PredefinedLink[] format if needed
         const links = Array.isArray(data) ? data : (data.predefinedLinksDetails || []);
         return links as PredefinedLink[];
       } catch (error) {
-        console.error('Error fetching predefined links from Mockaroo:', error);
+        // console.error('Error fetching predefined links from Mockaroo:', error);
         // Fall back to sample data
         console.log('Falling back to predefined links sample data');
         return predefinedLinkSampleData.predefinedLinksDetails as PredefinedLink[];
@@ -82,14 +82,14 @@ export default class LinksFetchService extends HttpService {
 
     // Check if using Mockaroo API
     if (SessionService.getInstance().isMockarooApi) {
-      console.log("Fetching document links from Mockaroo");
+      // console.log("Fetching document links from Mockaroo");
       try {
         // Extract the API key from the existing URL if possible
         const apiKey = this.extractMockarooApiKey();
 
         // Use a direct, clean URL to the Mockaroo endpoint
         const mockarooUrl = `https://my.api.mockaroo.com/${this.MOCKAROO_DOCUMENT_LINKS_ENDPOINT}?key=${apiKey}`;
-        console.log('Fetching document links from Mockaroo URL:', mockarooUrl);
+        // console.log('Fetching document links from Mockaroo URL:', mockarooUrl);
 
         const response = await fetch(mockarooUrl);
 
@@ -99,13 +99,13 @@ export default class LinksFetchService extends HttpService {
         }
 
         const data = await response.json();
-        console.log('Received document links data from Mockaroo:', data);
+        // console.log('Received document links data from Mockaroo:', data);
 
         // Transform the data to match DocumentLink[] format if needed
         const links = Array.isArray(data) ? data : (data.documentList || []);
         return links as DocumentLink[];
       } catch (error) {
-        console.error('Error fetching document links from Mockaroo:', error);
+        // console.error('Error fetching document links from Mockaroo:', error);
         // Fall back to sample data
         console.log('Falling back to document links sample data');
         return existingDocSampleData.documentList as DocumentLink[];
