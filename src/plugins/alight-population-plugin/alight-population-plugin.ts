@@ -10,7 +10,7 @@ import '../ui-components/alight-checkbox-component/alight-checkbox-component';
 import '../ui-components/alight-radio-component/alight-radio-component';
 import '../ui-components/alight-select-menu-component/alight-select-menu-component';
 import '../ui-components/alight-overlay-panel-component/alight-overlay-panel';
-// import './ui/popmodal-styles.scss';
+import './styles/alight-population-plugin.scss';
 
 /**
  * The main AlightPopulationsPlugin class that ties all plugin components together.
