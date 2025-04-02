@@ -122,13 +122,13 @@ export class ContentManager implements ILinkManager {
       {
         id: 'system-populations',
         label: 'System Populations',
-        content: this.buildTabContentString(this.filteredSystemPopulations),
+        content: this.buildTabContentString(this.filteredSystemPopulations, 'System Populations'),
         isActive: this.activeTabId === 'system-populations'
       },
       {
         id: 'created-populations',
         label: 'Created Populations',
-        content: this.buildTabContentString(this.filteredCreatedPopulations),
+        content: this.buildTabContentString(this.filteredCreatedPopulations, 'Created Populations'),
         isActive: this.activeTabId === 'created-populations'
       }
     ];
@@ -183,9 +183,9 @@ export class ContentManager implements ILinkManager {
 
       // Update content in links container based on active tab
       if (tabView.id === 'system-populations') {
-        linksContainer.innerHTML = this.buildPopulationList(this.filteredSystemPopulations);
+        linksContainer.innerHTML = this.buildPopulationList(this.filteredSystemPopulations, 'System Populations');
       } else {
-        linksContainer.innerHTML = this.buildPopulationList(this.filteredCreatedPopulations);
+        linksContainer.innerHTML = this.buildPopulationList(this.filteredCreatedPopulations, 'Created Populations');
       }
 
       // Re-attach event listeners for population selection
@@ -206,27 +206,43 @@ export class ContentManager implements ILinkManager {
     const activeTabData = this.activeTabId === 'system-populations'
       ? this.filteredSystemPopulations
       : this.filteredCreatedPopulations;
-    linksContainer.innerHTML = this.buildPopulationList(activeTabData);
+    const activeTabTitle = this.activeTabId === 'system-populations'
+      ? 'System Populations'
+      : 'Created Populations';
+    linksContainer.innerHTML = this.buildPopulationList(activeTabData, activeTabTitle);
   }
 
-  private buildTabContentString(populations: PopulationTagData[]): string {
-    return this.buildPopulationList(populations);
+  private buildTabContentString(populations: PopulationTagData[], title: string): string {
+    return this.buildPopulationList(populations, title);
   }
 
-  private buildPopulationList(populations: PopulationTagData[]): string {
+  private buildPopulationList(populations: PopulationTagData[], title: string): string {
     const currentPage = this.paginationManager.getCurrentPage();
     const pageSize = this.paginationManager.getPageSize();
     const startIndex = (currentPage - 1) * pageSize;
     const endIndex = Math.min(startIndex + pageSize, populations.length);
     const currentPageData = populations.slice(startIndex, endIndex);
 
+    // Start with the title
+    let content = `<h2 class="tab-content-title">${title}</h2>`;
+
     if (currentPageData.length === 0) {
-      return '<div class="cka-center-modal-message">No results found.</div>';
+      return content + '<div class="cka-center-modal-message">No results found.</div>';
     }
 
-    return currentPageData
+    // Add description based on tab type
+    if (title === 'System Populations') {
+      content += `<p class="tab-content-description">These are standard system population tags that can be used across all documents.</p>`;
+    } else if (title === 'Created Populations') {
+      content += `<p class="tab-content-description">These are custom population tags that have been created specifically for your content.</p>`;
+    }
+
+    // Add the population items
+    content += currentPageData
       .map(tag => this.buildPopulationItemMarkup(tag))
       .join('');
+
+    return content;
   }
 
   private initializeComponents(container: HTMLElement): void {
