@@ -295,7 +295,6 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
           tagsContainer.innerHTML = `
           <div class="cka-loading-container">
             <div class="cka-loading-spinner"></div>
-            <p>Loading population tags...</p>
           </div>
         `;
 
