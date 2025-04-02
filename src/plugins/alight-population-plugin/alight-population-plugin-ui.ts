@@ -243,12 +243,37 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
           // Get the selected population from the content manager
           const selectedPopulation = this._populationManager?.getSelectedLink();
 
-          if (selectedPopulation && selectedPopulation.destination) {
-            // Execute the add population command with the selected population name
-            editor.execute('alightPopulationPlugin', { populationName: selectedPopulation.title });
+          if (selectedPopulation && selectedPopulation.title) {
+            console.log('Applying population:', selectedPopulation.title);
 
-            // Hide the modal after creating the population tag
-            this._populationModal?.hide();
+            // Execute the add population command with the selected population name
+            try {
+              editor.execute('alightPopulationPlugin', {
+                populationName: selectedPopulation.title
+              });
+
+              // Hide the modal after creating the population tag
+              this._populationModal?.hide();
+            } catch (error) {
+              console.error('Error applying population tag:', error);
+
+              // Show an error message to the user
+              const alertDiv = document.createElement('div');
+              alertDiv.className = 'cka-alert cka-alert-error';
+              alertDiv.innerHTML = `<div class="cka-alert-warning">Error applying population: ${error.message || 'Unknown error'}</div>`;
+
+              // Find the container for the alert and show it
+              const modalContent = this._populationModal?.getElement();
+              if (modalContent) {
+                // Insert at the top
+                modalContent.insertBefore(alertDiv, modalContent.firstChild);
+
+                // Remove after a delay
+                setTimeout(() => {
+                  alertDiv.remove();
+                }, 10000);
+              }
+            }
           } else {
             // Show some feedback that no population was selected
             console.warn('No population selected');

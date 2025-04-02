@@ -29,6 +29,11 @@ export class AddPopulationCommand extends Command {
    * @param {string} options.populationName The name of the population to add.
    */
   override execute({ populationName }: { populationName: string }) {
+    if (!populationName) {
+      console.error('Population name is required');
+      return;
+    }
+
     const editor = this.editor;
     const model = editor.model;
     const selection = model.document.selection;
@@ -36,7 +41,12 @@ export class AddPopulationCommand extends Command {
     model.change(writer => {
       // If there's no selection, insert empty population tags at the cursor position
       if (selection.isCollapsed) {
-        const position = selection.getFirstPosition()!;
+        const position = selection.getFirstPosition();
+        if (!position) {
+          console.error('No valid position found');
+          return;
+        }
+
         const emptyPopulationRange = this._insertEmptyPopulation(writer, position, populationName);
 
         // Set selection between the tags
