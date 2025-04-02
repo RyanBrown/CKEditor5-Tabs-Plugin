@@ -1,15 +1,12 @@
 // src/plugins/alight-population-plugin/alight-population-plugin-editing.ts
 import { Plugin } from '@ckeditor/ckeditor5-core';
-import type { Editor } from '@ckeditor/ckeditor5-core';
 import {
   toWidget,
-  toWidgetEditable,
   Widget
 } from '@ckeditor/ckeditor5-widget';
 import type {
   DowncastWriter,
-  ViewElement,
-  UpcastElementEvent
+  ViewElement
 } from '@ckeditor/ckeditor5-engine';
 
 /**

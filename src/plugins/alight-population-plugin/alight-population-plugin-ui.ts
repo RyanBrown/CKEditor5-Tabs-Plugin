@@ -1,9 +1,7 @@
 // src/plugins/alight-population-plugin/alight-population-plugin-ui.ts
-import { Plugin } from '@ckeditor/ckeditor5-core';
 import { ButtonView } from '@ckeditor/ckeditor5-ui';
 import { Command } from '@ckeditor/ckeditor5-core';
 import ToolBarIcon from './../../../theme/icons/icon-population.svg';
-import { isSelectionInPopulation } from './alight-population-plugin-utils';
 import { CkAlightModalDialog } from './../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import { ContentManager } from './ui/popmodal-ContentManager';
 import { PopulationTagData } from './ui/popmodal-modal-types';
@@ -108,7 +106,7 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
 
       buttonView.set({
         label: 'Remove Population',
-        icon: ToolBarIcon, // You might want to use a different icon
+        icon: ToolBarIcon,
         tooltip: true
       });
 
@@ -141,8 +139,6 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
       },
       (error) => {
         console.error('Error loading population tags:', error);
-        // Even if there's an error, we might still want to enable the button
-        // with empty data array so the user can see the UI
         this.isReady = true;
         this._enablePluginButton();
       }
@@ -155,8 +151,6 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
    */
   protected override _enablePluginButton = () => {
     if (this.buttonView) {
-      // The button's isEnabled is already bound to the command's isEnabled
-      // Refresh the command to update its isEnabled state
       this.editor.commands.get('alightPopulationPlugin').refresh();
     }
   }
@@ -166,7 +160,7 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
    * But keeping it for backwards compatibility - it does nothing now
    */
   protected override setModalContents(): void {
-    // This is now a no-op, as we load data in the init method
+    // load data in the init method
   }
 
   /**
@@ -183,7 +177,6 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
         uiPlugin._showPopulationModal(options.populationName);
       }
     }
-
     // Register the command
     editor.commands.add('openPopulationModal', new OpenPopulationModalCommand(editor));
   }
@@ -196,7 +189,6 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
 
     // Update the command states on selection change
     editor.model.document.selection.on('change:range', () => {
-      // Refresh the commands
       editor.commands.get('alightPopulationPlugin').refresh();
       editor.commands.get('removePopulation').refresh();
     });
@@ -454,7 +446,6 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
   override destroy() {
     super.destroy();
 
-    // Clean up the modal dialog
     if (this._populationModal) {
       this._populationModal.destroy();
       this._populationModal = null;

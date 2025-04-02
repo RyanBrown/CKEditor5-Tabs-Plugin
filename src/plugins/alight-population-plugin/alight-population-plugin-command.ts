@@ -1,7 +1,7 @@
 // src/plugins/alight-population-plugin/alight-population-plugin-command.ts
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { Command } from '@ckeditor/ckeditor5-core';
-import type { Writer, Model } from '@ckeditor/ckeditor5-engine';
+import type { Writer } from '@ckeditor/ckeditor5-engine';
 import type { Element, Range, Selection, DocumentSelection, Position } from '@ckeditor/ckeditor5-engine';
 
 /**
@@ -95,7 +95,6 @@ export class AddPopulationCommand extends Command {
         }
       }
     }
-
     return true;
   }
 
@@ -125,7 +124,6 @@ export class AddPopulationCommand extends Command {
         return true;
       }
     }
-
     return false;
   }
 
@@ -242,7 +240,6 @@ export class RemovePopulationCommand extends Command {
         } else if (item.name === 'populationEnd') {
           const name = item.getAttribute('name') as string;
 
-          // Add this end tag to the array for its name
           if (!populationEndTags.has(name)) {
             populationEndTags.set(name, []);
           }
@@ -272,7 +269,6 @@ export class RemovePopulationCommand extends Command {
         }
       }
     }
-
     return null;
   }
 }

@@ -1,16 +1,10 @@
 // src/plugins/alight-population-plugin/alight-population-plugin-utils.ts
 import type {
-  Writer,
   Model,
-  Range,
-  Node,
   DocumentSelection,
   Selection,
   Position,
-  Text,
-  TextProxy,
-  Element as ModelElement,
-  DocumentFragment
+  Element as ModelElement
 } from '@ckeditor/ckeditor5-engine';
 
 /**
@@ -54,7 +48,6 @@ export function isSelectionInPopulation(selection: Selection | DocumentSelection
       return true;
     }
   }
-
   return false;
 }
 
@@ -83,7 +76,6 @@ export function getPopulationAtPosition(position: Position): { name: string } | 
       name: String(nodeBefore.getAttribute('name') || '')
     };
   }
-
   return null;
 }
 
@@ -166,6 +158,5 @@ export function findPopulationTagsInRange(
       }
     }
   }
-
   return null;
 }
