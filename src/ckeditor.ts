@@ -388,7 +388,26 @@ class AlightEditor extends ClassicEditor {
         }
       ]
     },
-    language: 'en',
+    language: {
+      ui: 'en',
+      content: 'en', // Ensures English is the default content language
+      textPartLanguage: [
+        { title: 'English (American)', languageCode: 'en' },
+        { title: 'Arabic', languageCode: 'ar', textDirection: 'rtl' },
+        { title: 'Chinese (China)', languageCode: 'zh-cn' },
+        { title: 'Chinese (Taiwan)', languageCode: 'zh-tw' },
+        { title: 'Dutch', languageCode: 'nl' },
+        { title: 'French', languageCode: 'fr' },
+        { title: 'French (Canada)', languageCode: 'fr-ca' },
+        { title: 'German', languageCode: 'de' },
+        { title: 'Italian', languageCode: 'it' },
+        { title: 'Japanese', languageCode: 'ja' },
+        { title: 'Portuguese (Brazilian)', languageCode: 'pt-br' },
+        { title: 'Portuguese', languageCode: 'pt' },
+        { title: 'Russian', languageCode: 'ru' },
+        { title: 'Spanish', languageCode: 'es' },
+      ],
+    },
     image: {
       toolbar: [
         'imageTextAlternative',

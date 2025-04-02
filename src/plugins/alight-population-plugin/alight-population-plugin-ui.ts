@@ -211,12 +211,8 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
     // Create modal dialog if it doesn't exist
     if (!this._populationModal) {
       this._populationModal = new CkAlightModalDialog({
-        title: t('Choose a Population'),
-        draggable: true,
-        resizable: true,
+        title: t('Choose a population'),
         width: '80vw',
-        height: 'auto',
-        modal: true,
         contentClass: 'cka-population-content',
         buttons: [
           { label: t('Cancel') },

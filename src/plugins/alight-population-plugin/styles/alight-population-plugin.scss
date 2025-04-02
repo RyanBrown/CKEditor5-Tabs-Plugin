@@ -1,6 +1,14 @@
 // src/plugins/alight-population-plugin/styles/alight-population-plugin.scss
 @use './../../../styles/mixins' as mixins;
 
+
+.cka-population-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+  position: relative;
+}
+
 // Style for population tags in the editor
 .ck-content {
 
