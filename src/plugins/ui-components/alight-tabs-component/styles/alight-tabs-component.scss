@@ -58,11 +58,15 @@
     &::after {
       animation: slideIn 0.2s ease-out;
       background-color: var(--primary);
-      bottom: -2px;
-      content: '';
-      height: 2px;
+      border-radius: .3125rem;
+      bottom: -3px;
+      content: "";
+      display: block;
+      height: .3125rem;
       left: 0;
+      outline: none;
       position: absolute;
+      transition: all .3s;
       width: 100%;
     }
   }
@@ -79,6 +83,9 @@
   border: 1px solid var(--gray-300);
   display: none;
   padding: 1.5rem;
+
+
+
 
   &.active {
     display: block;
