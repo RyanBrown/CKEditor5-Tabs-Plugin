@@ -23,15 +23,17 @@ export class ContentManager implements ILinkManager {
   // Add callback for population selection events
   public onLinkSelected: ((population: PopulationTagData | null) => void) | null = null;
 
-  constructor(initialPopulationName: string = '', populationTagData: PopulationTagData[] = []) {
+  constructor(
+    initialPopulationName: string = '',
+    systemPopulations: PopulationTagData[] = [],
+    createdPopulations: PopulationTagData[] = []
+  ) {
     this.initialPopulationName = initialPopulationName;
-    this.populationTagData = populationTagData;
+    this.systemPopulations = systemPopulations;
+    this.createdPopulations = createdPopulations;
 
-    // Split populations into system and created categories
-    // For demonstration, we'll consider populations with baseOrClientSpecific "Base" as system
-    // and others as created populations
-    this.systemPopulations = populationTagData.filter(p => p.baseOrClientSpecific === 'Base');
-    this.createdPopulations = populationTagData.filter(p => p.baseOrClientSpecific !== 'Base');
+    // Combine all populations for searching
+    this.populationTagData = [...systemPopulations, ...createdPopulations];
 
     this.filteredSystemPopulations = [...this.systemPopulations];
     this.filteredCreatedPopulations = [...this.createdPopulations];
@@ -72,8 +74,13 @@ export class ContentManager implements ILinkManager {
     console.log('Search results updated:', filteredData.length, 'items');
 
     // Filter for both tabs
-    this.filteredSystemPopulations = filteredData.filter(p => p.baseOrClientSpecific === 'Base');
-    this.filteredCreatedPopulations = filteredData.filter(p => p.baseOrClientSpecific !== 'Base');
+    this.filteredSystemPopulations = filteredData.filter(p =>
+      this.systemPopulations.some(sp => sp.populationTagName === p.populationTagName)
+    );
+
+    this.filteredCreatedPopulations = filteredData.filter(p =>
+      this.createdPopulations.some(cp => cp.populationTagName === p.populationTagName)
+    );
 
     // Maintain selected population if still in filtered results, otherwise clear selection
     if (this.selectedPopulation && !filteredData.some(tag => tag.populationTagName === this.selectedPopulation?.populationTagName)) {
@@ -232,10 +239,13 @@ export class ContentManager implements ILinkManager {
 
     // Add description based on tab type
     if (title === 'System Populations') {
-      content += `<p class="tab-content-description">These are standard system population tags that can be used across all documents.</p>`;
+      content += `<p class="tab-content-description">These are standard system population tags and authentication expressions that can be used across all documents.</p>`;
     } else if (title === 'Created Populations') {
-      content += `<p class="tab-content-description">These are custom population tags that have been created specifically for your content.</p>`;
+      content += `<p class="tab-content-description">These are custom population tags and authentication expressions that have been created specifically for your content.</p>`;
     }
+
+    // Display count
+    content += `<p class="tab-content-count">Showing ${startIndex + 1}-${startIndex + currentPageData.length} of ${populations.length} items</p>`;
 
     // Add the population items
     content += currentPageData
@@ -297,9 +307,11 @@ export class ContentManager implements ILinkManager {
     radioGroupName: string = 'population-selection'
   ): string {
     const isSelected = forceSelected || this.selectedPopulation?.populationTagName === population.populationTagName;
+    const isAuthentication = population.baseOrClientSpecific === 'Authentication';
+    const tagClass = isAuthentication ? 'auth-population' : '';
 
     return `
-      <div class="cka-population-item ${isSelected ? 'selected' : ''}" data-population-name="${population.populationTagName}">
+      <div class="cka-population-item ${isSelected ? 'selected' : ''} ${tagClass}" data-population-name="${population.populationTagName}">
         <div class="radio-container">
           <cka-radio-button 
             name="${radioGroupName}" 
@@ -311,11 +323,11 @@ export class ContentManager implements ILinkManager {
         <ul>
           <li><strong>${population.populationTagName}</strong></li>
           <li><strong>Description:</strong> ${population.populationTagDescription}</li>
-          <li><strong>Base/Client Specific:</strong> ${population.baseOrClientSpecific}</li>
+          <li><strong>Type:</strong> ${population.baseOrClientSpecific}</li>
           <li><strong>Page Type:</strong> ${population.pageType}</li>
           ${population.domain ? `<li><strong>Domain:</strong> ${population.domain}</li>` : ''}
           ${population.pageCode ? `<li><strong>Page Code:</strong> ${population.pageCode}</li>` : ''}
-          <li><strong>Attribute:</strong> ${population.attributeName}="${population.attributeValue}"</li>
+          <li><strong>${population.attributeName}:</strong> ${population.attributeValue}</li>
         </ul>
       </div>
     `;

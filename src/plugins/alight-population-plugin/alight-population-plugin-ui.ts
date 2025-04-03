@@ -31,9 +31,19 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
   private _populationManager: ContentManager | null = null;
 
   /**
-   * The available population tags
+   * The available system population tags
    */
-  private _populationTags: PopulationTagData[] = [];
+  private _systemPopulationTags: PopulationTagData[] = [];
+
+  /**
+   * The available created population tags
+   */
+  private _createdPopulationTags: PopulationTagData[] = [];
+
+  /**
+   * All combined population tags
+   */
+  private _allPopulationTags: PopulationTagData[] = [];
 
   /**
    * The load service for population tags
@@ -125,24 +135,34 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
   /**
    * Loads the population tags data
    */
-  private loadPopulationData(): void {
+  private async loadPopulationData(): Promise<void> {
     if (this.verboseMode) console.log(`Loading population tags...`);
 
-    this.loadService.loadPopulationTags().then(
-      (data) => {
-        this._populationTags = data;
-        if (this.verboseMode) console.log(data);
-        this.isReady = true;
+    try {
+      // Load system and created population data in parallel
+      const [systemData, createdData, allData] = await Promise.all([
+        this.loadService.loadSystemPopulationTags(),
+        this.loadService.loadCreatedPopulationTags(),
+        this.loadService.loadPopulationTags()
+      ]);
 
-        // Enable the button as soon as we have data
-        this._enablePluginButton();
-      },
-      (error) => {
-        console.error('Error loading population tags:', error);
-        this.isReady = true;
-        this._enablePluginButton();
+      this._systemPopulationTags = systemData;
+      this._createdPopulationTags = createdData;
+      this._allPopulationTags = allData;
+
+      if (this.verboseMode) {
+        console.log(`Loaded ${this._systemPopulationTags.length} system populations`);
+        console.log(`Loaded ${this._createdPopulationTags.length} created populations`);
+        console.log(`Loaded ${this._allPopulationTags.length} total populations`);
       }
-    );
+
+      this.isReady = true;
+      this._enablePluginButton();
+    } catch (error) {
+      console.error('Error loading population data:', error);
+      this.isReady = true;
+      this._enablePluginButton();
+    }
   }
 
   /**
@@ -204,7 +224,11 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
     const t = editor.t;
 
     // If data isn't ready yet, start loading it
-    if (this._populationTags.length === 0 && !this.isReady) {
+    if (
+      this._systemPopulationTags.length === 0 &&
+      this._createdPopulationTags.length === 0 &&
+      !this.isReady
+    ) {
       this.loadPopulationData();
     }
 
@@ -222,6 +246,7 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
 
       // Handle modal button clicks
       this._populationModal.on('buttonClick', (data: { button: string; }) => {
+        // Continued from previous artifact
         if (data.button === t('Cancel')) {
           this._populationModal?.hide();
           return;
@@ -302,7 +327,7 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
 
     // Create the content manager with tabs if we have data
     try {
-      if (this._populationTags.length === 0) {
+      if (this._systemPopulationTags.length === 0 && this._createdPopulationTags.length === 0) {
         // Show loading message if no population tags found yet
         modalContainer.innerHTML = `
           <div class="cka-loading-container">
@@ -312,24 +337,24 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
 
         // Try to load the data if it's not ready yet
         if (!this.isReady) {
-          this.loadService.loadPopulationTags().then(
-            (data) => {
-              this._populationTags = data;
-              this.isReady = true;
-              this._enablePluginButton();
-
-              // Once data is loaded, create the tabbed content manager
+          this.loadPopulationData().then(() => {
+            if (this._systemPopulationTags.length > 0 || this._createdPopulationTags.length > 0) {
               this._createContentManager(modalContainer, currentPopulation);
-            },
-            (error) => {
-              console.error('Error loading population tags:', error);
+            } else {
               modalContainer.innerHTML = `
                 <div class="cka-center-modal-message">
-                  <p>Error loading population tags: ${error.message || 'Unknown error'}</p>
+                  <p>No population tags available.</p>
                 </div>
               `;
             }
-          );
+          }).catch(error => {
+            console.error('Error loading population tags:', error);
+            modalContainer.innerHTML = `
+              <div class="cka-center-modal-message">
+                <p>Error loading population tags: ${error.message || 'Unknown error'}</p>
+              </div>
+            `;
+          });
           return;
         }
       }
@@ -353,7 +378,7 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
    */
   private _createContentManager(container: HTMLElement, currentPopulation?: string): void {
     // If no population tags are available after loading, show a message
-    if (this._populationTags.length === 0) {
+    if (this._systemPopulationTags.length === 0 && this._createdPopulationTags.length === 0) {
       container.innerHTML = `
         <div class="cka-center-modal-message">
           <p>No population tags available.</p>
@@ -362,8 +387,12 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
       return;
     }
 
-    // Create the ContentManager with tabs
-    this._populationManager = new ContentManager(currentPopulation || '', this._populationTags);
+    // Create the ContentManager with system and created population tabs
+    this._populationManager = new ContentManager(
+      currentPopulation || '',
+      this._systemPopulationTags,
+      this._createdPopulationTags
+    );
 
     // Add an event listener for population selection
     this._populationManager.onLinkSelected = (population) => {
@@ -374,7 +403,7 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
     this._populationManager.renderContent(container);
 
     // Set initial button state based on whether we have a current population
-    const initialPopulation = this._populationTags.find(tag => tag.populationTagName === currentPopulation);
+    const initialPopulation = this._allPopulationTags.find(tag => tag.populationTagName === currentPopulation);
     this._updateContinueButtonState(!!initialPopulation);
   }
 

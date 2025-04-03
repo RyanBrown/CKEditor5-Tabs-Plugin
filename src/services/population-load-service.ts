@@ -9,13 +9,13 @@ import systemData from '../data/system-population-sample-data.json';
  */
 export default class PopulationLoadService {
   /**
-   * Loads population tags from imported JSON files
+   * Loads all population tags from imported JSON files
    * 
    * @returns {Promise<PopulationTagData[]>} The loaded population tags
    */
   public async loadPopulationTags(): Promise<PopulationTagData[]> {
     try {
-      console.log('Loading population tags from static JSON files...');
+      console.log('Loading all population tags from static JSON files...');
 
       const combinedData: PopulationTagData[] = [
         ...this.transformCreatedPopulationData(createdData),
@@ -27,6 +27,50 @@ export default class PopulationLoadService {
       return combinedData;
     } catch (error) {
       console.warn('Failed to process population data:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Loads system population tags (combines both all-authenticated and system data)
+   * 
+   * @returns {Promise<PopulationTagData[]>} The loaded system population tags
+   */
+  public async loadSystemPopulationTags(): Promise<PopulationTagData[]> {
+    try {
+      console.log('Loading system population tags...');
+
+      const systemTagsData: PopulationTagData[] = [
+        ...this.transformAuthenticatedData(allAuthData),
+        ...this.transformSystemPopulationData(systemData)
+      ];
+
+      console.log(`Loaded ${systemTagsData.length} system population tags`);
+      return systemTagsData;
+    } catch (error) {
+      console.warn('Failed to process system population data:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Loads created population tags (combines created population data and all-authenticated data)
+   * 
+   * @returns {Promise<PopulationTagData[]>} The loaded created population tags
+   */
+  public async loadCreatedPopulationTags(): Promise<PopulationTagData[]> {
+    try {
+      console.log('Loading created population tags...');
+
+      const createdTagsData: PopulationTagData[] = [
+        ...this.transformCreatedPopulationData(createdData),
+        ...this.transformAuthenticatedData(allAuthData)
+      ];
+
+      console.log(`Loaded ${createdTagsData.length} created population tags`);
+      return createdTagsData;
+    } catch (error) {
+      console.warn('Failed to process created population data:', error);
       return [];
     }
   }
@@ -60,7 +104,7 @@ export default class PopulationLoadService {
       populationTagDetails: true,
       populationTagName: item.expressionName || 'Unknown',
       populationTagDescription: item.expressionDescription || '',
-      baseOrClientSpecific: 'System',
+      baseOrClientSpecific: 'Authentication',
       pageType: 'Authentication',
       destination: item.expressionName || '',
       pageCode: '',
