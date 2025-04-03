@@ -1,4 +1,3 @@
-// src/plugins/alight-population-plugin/alight-population-plugin-editing.ts
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import {
   toWidget,
@@ -6,18 +5,15 @@ import {
 } from '@ckeditor/ckeditor5-widget';
 import type {
   DowncastWriter,
-  ViewElement,
-  ViewDocumentFragment,
-  ViewContainerElement,
-  UpcastElementEvent
+  ViewElement
 } from '@ckeditor/ckeditor5-engine';
 
 /**
  * The editing part of the AlightPopulationsPlugin.
- * This plugin handles the schema definition, conversion and editing logic.
+ * This plugin handles the schema definition, conversion, and editing logic.
  * 
- * This implementation uses elements for population tags and properly handles
- * ah:expr tags in the HTML output.
+ * This implementation ensures ah:expr tags are visible in both editing and data views,
+ * while maintaining proper population markers in the HTML output and editor view.
  */
 export default class AlightPopulationPluginEditing extends Plugin {
   /**
@@ -43,7 +39,7 @@ export default class AlightPopulationPluginEditing extends Plugin {
   }
 
   /**
-   * Defines the model schema for population tags.
+   * Defines the model schema for population tags and ah:expr container.
    */
   private _defineSchema() {
     const schema = this.editor.model.schema;
@@ -60,10 +56,26 @@ export default class AlightPopulationPluginEditing extends Plugin {
       allowWhere: '$text',
       allowAttributes: ['name']
     });
+
+    // Register ah:expr as a container element
+    schema.register('ahExpr', {
+      isObject: true, // Treat as a structural element
+      allowIn: '$block', // Allow in block-level elements
+      allowAttributes: ['name', 'class', 'title', 'assettype'],
+      allowContentOf: '$block' // Allow text and inline elements inside
+    });
+
+    // Allow populationBegin and populationEnd inside ahExpr
+    schema.addChildCheck((context, childDefinition) => {
+      if (context.endsWith('ahExpr') &&
+        (childDefinition.name === 'populationBegin' || childDefinition.name === 'populationEnd')) {
+        return true;
+      }
+    });
   }
 
   /**
-   * Defines converters for upcast and downcast of population tags.
+   * Defines converters for upcast and downcast of population tags and ah:expr.
    */
   private _defineConverters() {
     const editor = this.editor;
@@ -71,159 +83,169 @@ export default class AlightPopulationPluginEditing extends Plugin {
 
     // ========== UPCAST CONVERTERS (HTML → MODEL) ==========
 
-    // Custom upcast handler for ah:expr elements
-    conversion.for('upcast').add(dispatcher => {
-      // Handle upcast of ah:expr elements
-      dispatcher.on('element:ah:expr', (evt, data, conversionApi) => {
-        const viewItem = data.viewItem;
-
-        // Check if this is a population ah:expr tag
-        if (viewItem.getAttribute('assettype') !== 'population') {
-          return;
+    // Upcast for ah:expr element
+    conversion.for('upcast').elementToElement({
+      view: {
+        name: 'ah:expr',
+        attributes: {
+          assettype: 'population'
         }
-
-        // Don't convert if this was already consumed
-        if (!conversionApi.consumable.test(viewItem, { name: true })) {
-          return;
+      },
+      model: (viewElement, { writer }) => {
+        const name = viewElement.getAttribute('name');
+        if (!name) {
+          console.warn('Upcast: ah:expr element missing required "name" attribute');
+          return null; // Skip if no name
         }
-
-        // We don't need to create any special model element for the ah:expr tag itself
-        // The content and the begin/end span tags will be converted separately
-        // We just need to consume the ah:expr tag so it doesn't cause errors
-        conversionApi.consumable.consume(viewItem, { name: true });
-
-        // Process children. The begin and end spans will be converted by their own converters
-        conversionApi.convertChildren(viewItem, data.modelCursor);
-      });
+        return writer.createElement('ahExpr', {
+          name: String(name),
+          class: viewElement.getAttribute('class') || 'expeSelector',
+          title: viewElement.getAttribute('title') || name,
+          assettype: 'population'
+        });
+      },
+      converterPriority: 'high' // Ensure this runs before child conversions
     });
 
-    // Upcast converter for population begin tag (HTML → Model)
+    // Upcast for population begin tag (inside ah:expr)
     conversion.for('upcast').elementToElement({
       view: {
         name: 'span',
         classes: ['cka-population-tag', 'cka-population-begin']
       },
       model: (viewElement, { writer }) => {
-        const name = viewElement.getAttribute('data-population-name') || '';
-        return writer.createElement('populationBegin', { name });
+        const name = viewElement.getAttribute('data-population-name');
+        if (!name) {
+          console.warn('Upcast: population begin span missing "data-population-name" attribute');
+          return null;
+        }
+        return writer.createElement('populationBegin', { name: String(name) });
       }
     });
 
-    // Upcast converter for population end tag (HTML → Model)
+    // Upcast for population end tag (inside ah:expr)
     conversion.for('upcast').elementToElement({
       view: {
         name: 'span',
         classes: ['cka-population-tag', 'cka-population-end']
       },
       model: (viewElement, { writer }) => {
-        const name = viewElement.getAttribute('data-population-name') || '';
-        return writer.createElement('populationEnd', { name });
+        const name = viewElement.getAttribute('data-population-name');
+        if (!name) {
+          console.warn('Upcast: population end span missing "data-population-name" attribute');
+          return null;
+        }
+        return writer.createElement('populationEnd', { name: String(name) });
       }
     });
 
     // ========== DATA DOWNCAST CONVERTERS (MODEL → HTML) ==========
 
-    // Custom downcast handler for population structure in HTML output
-    conversion.for('dataDowncast').add(dispatcher => {
-      // Create proper mapping for begin tags with ah:expr wrappers
-      dispatcher.on('insert:populationBegin', (evt, data, conversionApi) => {
-        const { item } = data;
-        const name = item.getAttribute('name') || '';
-
-        if (!conversionApi.consumable.consume(item, 'insert')) {
-          return;
+    // Convert ahExpr to ah:expr in the HTML output
+    conversion.for('dataDowncast').elementToElement({
+      model: 'ahExpr',
+      view: (modelElement, { writer }) => {
+        const name = modelElement.getAttribute('name');
+        if (!name) {
+          console.warn('Data downcast: ahExpr missing required "name" attribute');
+          return null;
         }
-
-        // Create the ah:expr container
-        const ahExpr = conversionApi.writer.createContainerElement('ah:expr', {
-          name,
-          class: 'expeSelector',
-          title: name,
+        return writer.createContainerElement('ah:expr', {
+          name: String(name),
+          class: modelElement.getAttribute('class') || 'expeSelector',
+          title: modelElement.getAttribute('title') || name,
           assettype: 'population'
         });
+      }
+    });
 
-        // Create the begin tag span
-        const beginSpan = conversionApi.writer.createContainerElement('span', {
+    // Convert populationBegin to span in HTML
+    conversion.for('dataDowncast').elementToElement({
+      model: 'populationBegin',
+      view: (modelElement, { writer }) => {
+        const name = modelElement.getAttribute('name');
+        if (!name) {
+          console.warn('Data downcast: populationBegin missing required "name" attribute');
+          return null;
+        }
+        const beginSpan = writer.createContainerElement('span', {
           class: 'cka-population-tag cka-population-begin',
           'data-population-name': name
         });
-
-        // Add text content to the span
-        conversionApi.writer.insert(
-          conversionApi.writer.createPositionAt(beginSpan, 0),
-          conversionApi.writer.createText(`[BEGIN *${name}*]`)
+        writer.insert(
+          writer.createPositionAt(beginSpan, 0),
+          writer.createText(`[BEGIN *${name}*]`)
         );
+        return beginSpan;
+      }
+    });
 
-        // Add the span to the ah:expr element
-        conversionApi.writer.insert(
-          conversionApi.writer.createPositionAt(ahExpr, 0),
-          beginSpan
-        );
-
-        // Insert into document
-        const viewPosition = conversionApi.mapper.toViewPosition(
-          conversionApi.writer.createPositionBefore(item)
-        );
-
-        conversionApi.mapper.bindElements(item, beginSpan);
-        conversionApi.writer.insert(viewPosition, ahExpr);
-      });
-
-      // Handle end tags
-      dispatcher.on('insert:populationEnd', (evt, data, conversionApi) => {
-        const { item } = data;
-        const name = item.getAttribute('name') || '';
-
-        if (!conversionApi.consumable.consume(item, 'insert')) {
-          return;
+    // Convert populationEnd to span in HTML
+    conversion.for('dataDowncast').elementToElement({
+      model: 'populationEnd',
+      view: (modelElement, { writer }) => {
+        const name = modelElement.getAttribute('name');
+        if (!name) {
+          console.warn('Data downcast: populationEnd missing required "name" attribute');
+          return null;
         }
-
-        // Create the end tag span
-        const endSpan = conversionApi.writer.createContainerElement('span', {
+        const endSpan = writer.createContainerElement('span', {
           class: 'cka-population-tag cka-population-end',
           'data-population-name': name
         });
-
-        // Add text content to the span
-        conversionApi.writer.insert(
-          conversionApi.writer.createPositionAt(endSpan, 0),
-          conversionApi.writer.createText(`[*${name}* END]`)
+        writer.insert(
+          writer.createPositionAt(endSpan, 0),
+          writer.createText(`[*${name}* END]`)
         );
-
-        // Insert into document
-        const viewPosition = conversionApi.mapper.toViewPosition(
-          conversionApi.writer.createPositionBefore(item)
-        );
-
-        conversionApi.mapper.bindElements(item, endSpan);
-        conversionApi.writer.insert(viewPosition, endSpan);
-
-        // Close the ah:expr tag - we rely on the HTML serializer to properly nest these elements
-      });
-
-      return { priority: 'high' };
+        return endSpan;
+      }
     });
 
     // ========== EDITING DOWNCAST CONVERTERS (MODEL → EDITING VIEW) ==========
 
-    // Editing downcast converter for populationBegin (for editor display)
+    // Convert ahExpr to ah:expr in the editing view
+    conversion.for('editingDowncast').elementToElement({
+      model: 'ahExpr',
+      view: (modelElement, { writer }) => {
+        const name = modelElement.getAttribute('name');
+        if (!name) {
+          console.warn('Editing downcast: ahExpr missing required "name" attribute');
+          return null;
+        }
+        const ahExprElement = writer.createContainerElement('ah:expr', {
+          name: String(name),
+          class: modelElement.getAttribute('class') || 'expeSelector',
+          title: modelElement.getAttribute('title') || name,
+          assettype: 'population'
+        });
+        return toWidget(ahExprElement, writer, { label: `Population container: ${name}` });
+      }
+    });
+
+    // Convert populationBegin in the editing view
     conversion.for('editingDowncast').elementToElement({
       model: 'populationBegin',
       view: (modelElement, { writer }) => {
         const name = modelElement.getAttribute('name');
-        const nameStr = name ? String(name) : '';
-        const tagElement = this._createPopulationView(writer, 'begin', nameStr);
+        if (!name) {
+          console.warn('Editing downcast: populationBegin missing required "name" attribute');
+          return null;
+        }
+        const tagElement = this._createPopulationView(writer, 'begin', String(name));
         return toWidget(tagElement, writer, { label: 'Population begin tag' });
       }
     });
 
-    // Editing downcast converter for populationEnd (for editor display)
+    // Convert populationEnd in the editing view
     conversion.for('editingDowncast').elementToElement({
       model: 'populationEnd',
       view: (modelElement, { writer }) => {
         const name = modelElement.getAttribute('name');
-        const nameStr = name ? String(name) : '';
-        const tagElement = this._createPopulationView(writer, 'end', nameStr);
+        if (!name) {
+          console.warn('Editing downcast: populationEnd missing required "name" attribute');
+          return null;
+        }
+        const tagElement = this._createPopulationView(writer, 'end', String(name));
         return toWidget(tagElement, writer, { label: 'Population end tag' });
       }
     });
@@ -269,19 +291,24 @@ export default class AlightPopulationPluginEditing extends Plugin {
 
     // Add observer for handling double-click on population tags
     view.document.on('dblclick', (evt, data) => {
-      // Find the nearest population tag element
-      const viewElement = data.target;
+      // Find the nearest population tag element or ah:expr
+      let viewElement = data.target;
       if (!viewElement) return;
 
-      // Check if the clicked element is a population tag
-      const isPopulationTag = viewElement.hasClass &&
-        (viewElement.hasClass('cka-population-tag') ||
-          viewElement.hasClass('population-tag'));
+      // Check if the clicked element is an ah:expr or population tag
+      let populationName: string | null = null;
+      if (viewElement.name === 'ah:expr' && viewElement.getAttribute('assettype') === 'population') {
+        populationName = viewElement.getAttribute('name');
+      } else if (viewElement.hasClass && viewElement.hasClass('cka-population-tag')) {
+        populationName = viewElement.getAttribute('data-population-name');
+      } else {
+        // Check parent elements
+        viewElement = viewElement.getAncestor('ah:expr');
+        if (viewElement && viewElement.getAttribute('assettype') === 'population') {
+          populationName = viewElement.getAttribute('name');
+        }
+      }
 
-      if (!isPopulationTag) return;
-
-      // Get the population name
-      const populationName = viewElement.getAttribute && viewElement.getAttribute('data-population-name');
       if (!populationName) return;
 
       // Prevent default behavior

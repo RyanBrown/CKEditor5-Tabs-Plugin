@@ -370,8 +370,8 @@ class AlightEditor extends ClassicEditor {
     htmlSupport: {
       allow: [
         {
-          name: "ah:expr",
-          attributes: true,
+          name: 'ah:expr',
+          attributes: ['name', 'class', 'title', 'assettype'],
           classes: true,
           styles: true
         },
@@ -391,10 +391,13 @@ class AlightEditor extends ClassicEditor {
           styles: true
         },
         {
-          name: 'span',
-          attributes: true,
-          classes: true,
-          styles: true
+          name: 'span', // Ensure spans inside ah:expr are allowed
+          classes: [
+            'cka-population-tag',
+            'cka-population-begin',
+            'cka-population-end'
+          ],
+          attributes: ['data-population-name']
         },
         {
           name: /^(h[1-6])$/,
@@ -402,7 +405,8 @@ class AlightEditor extends ClassicEditor {
           styles: true,
           classes: true
         }
-      ]
+      ],
+      disallow: [] // Optionally disallow conflicting elements
     },
     language: {
       ui: 'en',

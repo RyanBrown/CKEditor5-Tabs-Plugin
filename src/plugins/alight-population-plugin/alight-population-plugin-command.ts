@@ -135,23 +135,43 @@ export class AddPopulationCommand extends Command {
    * @param {string} populationName The name of the population.
    * @returns {Range} The range between the inserted tags.
    */
-  private _insertEmptyPopulation(writer: Writer, position: Position, populationName: string) {
+  private _insertEmptyPopulation(writer: Writer, position: Position, populationName: string): Range {
+    let currentPosition = position;
+
+    // Create ahExpr element
+    const ahExprElement = writer.createElement('ahExpr', {
+      name: populationName,
+      class: 'expeSelector',
+      title: populationName,
+      assettype: 'population'
+    });
+
     // Insert begin marker
     const beginElement = writer.createElement('populationBegin', { name: populationName });
-    writer.insert(beginElement, position);
+    writer.insert(beginElement, currentPosition);
+    currentPosition = writer.createPositionAfter(beginElement);
 
-    // Insert a space between markers
+    // Insert a space
     const spacer = writer.createText(' ');
-    writer.insert(spacer, position);
+    writer.insert(spacer, currentPosition);
+    currentPosition = writer.createPositionAfter(spacer);
+
+    const beforeEndPosition = currentPosition;
 
     // Insert end marker
     const endElement = writer.createElement('populationEnd', { name: populationName });
-    writer.insert(endElement, position);
+    writer.insert(endElement, currentPosition);
 
-    // Return the range between the markers
+    // Wrap all elements in ahExpr
+    const wrapRange = writer.createRange(
+      writer.createPositionBefore(beginElement),
+      writer.createPositionAfter(endElement)
+    );
+    writer.wrap(wrapRange, ahExprElement);
+
     return writer.createRange(
       writer.createPositionAfter(beginElement),
-      writer.createPositionBefore(endElement)
+      beforeEndPosition
     );
   }
 
@@ -167,13 +187,28 @@ export class AddPopulationCommand extends Command {
     const start = range.start;
     const end = range.end;
 
-    // Insert begin marker at the start
+    // Create ahExpr element
+    const ahExprElement = writer.createElement('ahExpr', {
+      name: populationName,
+      class: 'expeSelector',
+      title: populationName,
+      assettype: 'population'
+    });
+
+    // Insert begin marker
     const beginElement = writer.createElement('populationBegin', { name: populationName });
     writer.insert(beginElement, start);
 
-    // Insert end marker at the end
+    // Insert end marker
     const endElement = writer.createElement('populationEnd', { name: populationName });
     writer.insert(endElement, end);
+
+    // Wrap the range (including markers) in ahExpr
+    const wrapRange = writer.createRange(
+      writer.createPositionBefore(beginElement),
+      writer.createPositionAfter(endElement)
+    );
+    writer.wrap(wrapRange, ahExprElement);
   }
 }
 
