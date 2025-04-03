@@ -1,3 +1,4 @@
+import { IDataSource } from './data-sources/base-source/data-source';
 /**
  * @license Copyright (c) 2014-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
@@ -368,6 +369,21 @@ class AlightEditor extends ClassicEditor {
     },
     htmlSupport: {
       allow: [
+        {
+          name: "ah:expr",
+          attributes: true,
+          classes: true,
+          styles: true
+        },
+        {
+          name: "a",
+          attributes: {
+            class: true,
+            style: true,
+            id: true,
+            orgnameattr: true,
+          }
+        },
         {
           name: 'svg',
           attributes: true,
