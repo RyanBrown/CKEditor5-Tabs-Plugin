@@ -246,7 +246,6 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
 
       // Handle modal button clicks
       this._populationModal.on('buttonClick', (data: { button: string; }) => {
-        // Continued from previous artifact
         if (data.button === t('Cancel')) {
           this._populationModal?.hide();
           return;
