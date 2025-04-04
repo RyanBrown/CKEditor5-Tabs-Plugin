@@ -1,7 +1,7 @@
 // src/plugins/alight-tabs-plugin/alight-tabs-plugin-ui.js
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { ButtonView } from '@ckeditor/ckeditor5-ui';
-import TabToolbarIcon from './assets/icon-tab.svg';
+import TabToolBarIcon from './assets/icon-tab.svg';
 import './styles/alight-tabs-plugin.scss';
 
 export default class AlightTabsPluginUI extends Plugin {
@@ -27,7 +27,7 @@ export default class AlightTabsPluginUI extends Plugin {
       const buttonView = new ButtonView(locale);
 
       buttonView.set({
-        icon: TabToolbarIcon,
+        icon: TabToolBarIcon,
         label: 'Insert Tabs',
         tooltip: true,
       });
