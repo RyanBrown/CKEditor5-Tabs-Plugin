@@ -4,6 +4,10 @@ import { Range } from '@ckeditor/ckeditor5-engine';
 import AlightExternalLinkPluginEditing from './linkediting';
 import { isValidUrl, ensureUrlProtocol } from './utils';
 
+interface CustomLinkOptions {
+  [key: string]: string | boolean;
+}
+
 /**
  * External Link Handler plugin to ensure all external links are processed
  * through the Alight External Link UI.
@@ -58,7 +62,6 @@ export default class ExternalLinkHandler extends Plugin {
   private _interceptLinkCommands(): void {
     const editor = this.editor;
 
-    // Get the original commands
     const originalLinkCommand = editor.commands.get('link');
     const alightExternalLinkCommand = editor.commands.get('alight-external-link');
 
@@ -68,20 +71,21 @@ export default class ExternalLinkHandler extends Plugin {
 
     // Monkey patch the execute method of the link command
     const originalExecute = originalLinkCommand.execute;
-    originalLinkCommand.execute = function (href: string, options = {}) {
-      // If the link is a web URL, use our custom external link command
-      if (href && typeof href === 'string' &&
-        (href.startsWith('http://') || href.startsWith('https://') || isValidUrl(href))) {
-
-        // Ensure URL has protocol
-        const secureHref = ensureUrlProtocol(href);
-
+    originalLinkCommand.execute = function (
+      href: string,
+      options: CustomLinkOptions = {}
+    ) {
+      if (
+        href &&
+        typeof href === 'string' &&
+        (href.startsWith('http://') || href.startsWith('https://') || isValidUrl(href))
+      ) {
         // Execute our custom command instead
-        editor.execute('alight-external-link', secureHref, options);
+        editor.execute('alight-external-link', href, options);
       } else {
+        originalExecute.call(this, href, options);
         // For non-web links, we'll now block the action since we only support http/https
         console.warn('AlightExternalLinkPlugin only supports HTTP and HTTPS URLs.');
-        // Don't execute the original command for non-http/https URLs
       }
     };
   }
