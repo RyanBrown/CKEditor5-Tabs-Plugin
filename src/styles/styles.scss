@@ -258,10 +258,16 @@ $spacing-values: (
   display: flex;
 }
 
-
 // Text helper classes
 .cka-text-center {
   text-align: center;
+
+  li {
+    &.hide-overflow {
+      box-sizing: border-box;
+      display: block;
+    }
+  }
 }
 
 // Width helper classes
@@ -358,4 +364,13 @@ $spacing-values: (
       }
     }
   }
+}
+
+// Center info text modals
+.cka-center-modal-message {
+  align-items: center;
+  display: flex;
+  font-size: 1.25rem;
+  justify-content: center;
+  padding: 1rem var(--spacing-xl);
 }
