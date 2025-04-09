@@ -1,0 +1,1 @@
+// src/alight-common/ILinkManager.ts

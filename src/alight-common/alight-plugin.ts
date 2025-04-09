@@ -1,0 +1,1 @@
+// src/alight-common/alight-plugin.ts

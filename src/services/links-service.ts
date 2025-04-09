@@ -1,5 +1,5 @@
 // src/services/links-service.ts
-import predefinedLinkSampleData from './../data/predefined-test-data.json';
+import predefinedLinkSampleData from './../data/predefined-link-sample-data.json';
 import { DataSourceLinks } from '../data-sources/custom-source/data-source-links';
 import { PredefinedLink } from './../plugins/alight-predefined-link-plugin/ui/linkmodal-modal-types';
 import { HttpService } from './http-service';
