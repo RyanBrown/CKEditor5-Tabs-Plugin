@@ -10,7 +10,7 @@ import AlightExternalLinkPluginEditing from './linkediting';
 
 const MIN_LINK_LENGTH_WITH_SPACE_AT_END = 4; // Ie: "t.co " (length 5).
 
-// Modified the URL_REG_EXP to only detect HTTP and HTTPS URLs
+// URL_REG_EXP to only detect HTTP and HTTPS URLs
 const URL_REG_EXP = new RegExp(
   // Group 1: Line start or after a space.
   '(^|\\s)' +

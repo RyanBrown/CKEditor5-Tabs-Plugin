@@ -520,7 +520,7 @@ export class ContentManager implements ILinkManager {
       documentTitle: '',
       searchTags: [],
       description: '',
-      categories: [], // Reset to empty array
+      categories: [],
       contentLibraryAccess: false,
       worklifeLink: false,
       showInSearch: true
@@ -619,7 +619,7 @@ export class ContentManager implements ILinkManager {
       documentTitle: this.formData.documentTitle.trim(),
       searchTags: [...this.formData.searchTags],
       description: this.formData.description.trim(),
-      categories: [...this.formData.categories], // Create a copy of the categories array
+      categories: [...this.formData.categories],
       contentLibraryAccess: this.formData.contentLibraryAccess,
       worklifeLink: this.formData.worklifeLink,
       showInSearch: this.formData.showInSearch
