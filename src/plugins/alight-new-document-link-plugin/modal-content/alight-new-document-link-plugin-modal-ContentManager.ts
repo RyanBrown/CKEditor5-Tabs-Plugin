@@ -1,5 +1,5 @@
 // src/plugins/alight-new-document-link-plugin/modal-content/alight-new-document-link-plugin-modal-ContentManager.ts
-import { ILinkManager } from '../../../plugins-alight-common/ILinkManager';
+import { ILinkManager } from '../../../alight-common/ILinkManager';
 import { FormValidator, ValidationResult } from './validation/alight-new-document-link-plugin-modal-form-validation';
 import { FormSubmissionHandler } from './submission/alight-new-document-link-plugin-modal-form-submission';
 import { CkAlightSelectMenu } from '../../ui-components/alight-select-menu-component/alight-select-menu-component';

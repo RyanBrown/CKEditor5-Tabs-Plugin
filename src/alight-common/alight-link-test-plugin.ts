@@ -1,4 +1,4 @@
-// src/plugins-alight-common/alight-link-test-plugin.ts
+// src/alight-common/alight-link-test-plugin.ts
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 import AlightEditor from '../ckeditor';
 export abstract class AlightPlugin extends Plugin {
