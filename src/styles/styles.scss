@@ -261,6 +261,13 @@ $spacing-values: (
 // Text helper classes
 .cka-text-center {
   text-align: center;
+
+  li {
+    &.hide-overflow {
+      box-sizing: border-box;
+      display: block;
+    }
+  }
 }
 
 // Width helper classes
