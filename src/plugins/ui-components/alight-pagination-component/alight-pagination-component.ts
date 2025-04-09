@@ -1,5 +1,6 @@
 // src/plugins/ui-components/alight-pagination-component/alight-pagination-component.ts
 import { AlightUIBaseComponent } from '../alight-ui-base-component/alight-ui-base-component';
+import { CkAlightSelectMenu } from '../alight-select-menu-component/alight-select-menu-component'; // Adjusted import path
 import type { Locale } from '@ckeditor/ckeditor5-utils';
 import './styles/alight-pagination-component.scss';
 
@@ -53,6 +54,7 @@ export class AlightPaginationComponent extends AlightUIBaseComponent {
 
   private readonly uniqueId: string;
   private paginationContainer: HTMLElement | null = null;
+  private pageSelectMenu: CkAlightSelectMenu<{ label: string; value: number }> | null = null; // Instance of select menu
 
   constructor(
     locale: Locale,
@@ -79,9 +81,7 @@ export class AlightPaginationComponent extends AlightUIBaseComponent {
 
     this.setTemplate({
       tag: 'div',
-      children: [
-        container
-      ]
+      children: [container]
     });
   }
 
@@ -92,6 +92,11 @@ export class AlightPaginationComponent extends AlightUIBaseComponent {
   private renderPagination(): void {
     // Find the container element
     if (!this.paginationContainer) {
+      // Only attempt to find the container if the element exists
+      if (!this.element) {
+        return;
+      }
+
       this.paginationContainer = this.element.querySelector('.alight-pagination-container');
 
       if (!this.paginationContainer) {
@@ -110,6 +115,7 @@ export class AlightPaginationComponent extends AlightUIBaseComponent {
 
     this.paginationContainer.innerHTML = this.getPaginationMarkup(totalPages);
     this.attachPaginationListeners();
+    this.initializePageSelect(totalPages); // Initialize the select menu
     this.updateButtonStates(totalPages);
   }
 
@@ -120,54 +126,48 @@ export class AlightPaginationComponent extends AlightUIBaseComponent {
     const labels = this.config.controlLabels || {};
 
     return `
-      <div id="${this.uniqueId}-pagination" class="alight-pagination-controls">
+      <article id="${this.uniqueId}-pagination" class="cka-pagination">
         ${showFirstLastButtons ? `
-          <button 
-            id="${this.uniqueId}-first-page" 
-            class="ck ck-button ck-button-icon-only ck-button-text first"
-            data-page="1" 
+          <button
+            id="${this.uniqueId}-first-page"
+            class="cka-button cka-button-icon-only cka-button-text first"
+            data-page="1"
             ${currentPage === 1 ? 'disabled' : ''}
             aria-label="${labels.first || 'First page'}"
           >
             <i class="fa-solid fa-chevrons-left"></i>
           </button>
-        ` : ''}
-        <button 
-          id="${this.uniqueId}-prev-page" 
-          class="ck ck-button ck-button-icon-only ck-button-text previous"
-          data-page="${currentPage - 1}" 
-          ${currentPage === 1 ? 'disabled' : ''}
-          aria-label="${labels.previous || 'Previous page'}"
-        >
-          <i class="fa-solid fa-chevron-left"></i>
-        </button>
-        ${showPageSelect ? `
-          <div id="${this.uniqueId}-page-select-container" class="alight-page-select">
-            <span class="alight-page-text">${labels.page || 'Page'}</span>
-            <select id="${this.uniqueId}-page-select" class="alight-page-select-input" aria-label="Select page">
-              ${Array.from({ length: totalPages }, (_, i) => i + 1).map(page => `
-                <option value="${page}" ${page === currentPage ? 'selected' : ''}>
-                  ${page} of ${totalPages}
-                </option>
-              `).join('')}
-            </select>
-          </div>
-        ` : `
-          <span class="alight-page-info">${labels.page || 'Page'} ${currentPage} of ${totalPages}</span>
-        `}
-        <button 
-          id="${this.uniqueId}-next-page" 
-          class="ck ck-button ck-button-icon-only ck-button-text next"
-          data-page="${currentPage + 1}" 
-          ${currentPage === totalPages ? 'disabled' : ''}
-          aria-label="${labels.next || 'Next page'}"
-        >
-          <i class="fa-solid fa-chevron-right"></i>
-        </button>
-        ${showFirstLastButtons ? `
+          ` : ''}
           <button 
-            id="${this.uniqueId}-last-page" 
-            class="ck ck-button ck-button-icon-only ck-button-text last"
+            id="${this.uniqueId}-prev-page" 
+            class="cka-button cka-button-icon-only cka-button-text previous"
+            data-page="${currentPage - 1}" 
+            ${currentPage === 1 ? 'disabled' : ''}
+            aria-label="${labels.previous || 'Previous page'}"
+          >
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          ${showPageSelect ? `
+            <div id="${this.uniqueId}-page-select-container" class="cka-select-menu-wrap" role="navigation">
+              <span class="alight-page-text">${labels.page || 'Page'}</span>
+              <div id="${this.uniqueId}-page-select-mount" class="alight-page-select-mount"></div>
+            </div>
+          ` : `
+            <span class="alight-page-info">${labels.page || 'Page'} ${currentPage} of ${totalPages}</span>
+          `}
+          <button 
+            id="${this.uniqueId}-next-page"
+            class="cka-button cka-button-icon-only cka-button-text next"
+            data-page="${currentPage + 1}" 
+            ${currentPage === totalPages ? 'disabled' : ''}
+            aria-label="${labels.next || 'Next page'}"
+          >
+            <i class="fa-solid fa-chevron-right"></i>
+          </button>
+          ${showFirstLastButtons ? `
+          <button 
+            id="${this.uniqueId}-last-page"
+            class="cka-button cka-button-icon-only cka-button-text last"
             data-page="${totalPages}" 
             ${currentPage === totalPages ? 'disabled' : ''}
             aria-label="${labels.last || 'Last page'}"
@@ -175,8 +175,42 @@ export class AlightPaginationComponent extends AlightUIBaseComponent {
             <i class="fa-solid fa-chevrons-right"></i>
           </button>
         ` : ''}
-      </div>
+      </article> 
     `;
+  }
+
+  private initializePageSelect(totalPages: number): void {
+    if (!this.config.showPageSelect || !this.paginationContainer) return;
+
+    const mountPoint = this.paginationContainer.querySelector(`#${this.uniqueId}-page-select-mount`) as HTMLElement;
+    if (!mountPoint) {
+      console.error('Page select mount point not found');
+      return;
+    }
+
+    // Generate options for the select menu
+    const options = Array.from({ length: totalPages }, (_, i) => ({
+      label: `${i + 1} of ${totalPages}`,
+      value: i + 1
+    }));
+
+    // Initialize or update the select menu
+    if (!this.pageSelectMenu) {
+      this.pageSelectMenu = new CkAlightSelectMenu({
+        options,
+        value: this.paginationState.currentPage,
+        placeholder: 'Select page',
+        onChange: (value) => {
+          if (typeof value === 'number' && value !== this.paginationState.currentPage) {
+            this.setPage(value);
+          }
+        }
+      });
+      this.pageSelectMenu.mount(mountPoint);
+    } else {
+      this.pageSelectMenu.setOptions(options);
+      this.pageSelectMenu.setValue(this.paginationState.currentPage);
+    }
   }
 
   private attachPaginationListeners(): void {
@@ -200,17 +234,6 @@ export class AlightPaginationComponent extends AlightUIBaseComponent {
         this.setPage(newPage);
       }
     });
-
-    // Page select handler
-    const pageSelect = paginationDiv.querySelector(`#${this.uniqueId}-page-select`) as HTMLSelectElement;
-    if (pageSelect) {
-      pageSelect.addEventListener('change', () => {
-        const newPage = parseInt(pageSelect.value, 10);
-        if (!isNaN(newPage) && newPage !== this.paginationState.currentPage) {
-          this.setPage(newPage);
-        }
-      });
-    }
   }
 
   private updateButtonStates(totalPages: number): void {
@@ -250,7 +273,7 @@ export class AlightPaginationComponent extends AlightUIBaseComponent {
 
     if (newPage !== this.paginationState.currentPage) {
       this.paginationState.currentPage = newPage;
-      this.renderPagination();
+      this.renderPagination(); // Re-renders everything, including select menu
 
       if (this.onPageChange) {
         this.onPageChange({
@@ -286,7 +309,8 @@ export class AlightPaginationComponent extends AlightUIBaseComponent {
       }
     }
 
-    if (shouldUpdate) {
+    // Only call renderPagination if the component is already rendered
+    if (shouldUpdate && this.element) {
       this.renderPagination();
     }
   }
@@ -308,7 +332,25 @@ export class AlightPaginationComponent extends AlightUIBaseComponent {
   }
 
   override render(): void {
+    console.log('Rendering AlightPaginationComponent');
     super.render();
+    if (!this.element) {
+      console.error('Element not created in render');
+      return;
+    }
+    this.paginationContainer = this.element.querySelector('.alight-pagination-container');
+    if (!this.paginationContainer) {
+      console.error('Pagination container not found');
+      return;
+    }
     this.renderPagination();
+  }
+
+  // Clean up the select menu when destroying the component
+  override destroy(): void {
+    if (this.pageSelectMenu) {
+      this.pageSelectMenu.destroy();
+    }
+    super.destroy();
   }
 }

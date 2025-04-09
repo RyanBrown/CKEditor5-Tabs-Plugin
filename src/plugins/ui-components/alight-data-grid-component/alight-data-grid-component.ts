@@ -3,7 +3,6 @@ import { AlightUIBaseComponent } from '../alight-ui-base-component/alight-ui-bas
 import { AlightSearchComponent, SearchEvent, FilterSection } from '../alight-search-component/alight-search-component';
 import { AlightPaginationComponent, PageChangeEvent } from '../alight-pagination-component/alight-pagination-component';
 import type { Locale } from '@ckeditor/ckeditor5-utils';
-import './styles/alight-data-grid-component.scss';
 
 export interface DataGridColumn<T = any> {
   field: keyof T;

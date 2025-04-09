@@ -1,6 +1,11 @@
 // src/plugins/alight-link-plugin/styles/search.scss
 @use './../../../../styles/mixins' as mixins;
 
+.cka-pagination-controls {
+  align-items: center;
+  display: flex;
+}
+
 .cka-pagination {
   align-items: center;
   background-color: var(--neutral-white);

@@ -86,7 +86,7 @@ export class AlightSearchComponent extends AlightUIBaseComponent {
    */
   private _createTemplate(): void {
     const container = document.createElement('div');
-    container.className = 'alight-search-container';
+    container.className = 'cka-search-container';
     container.innerHTML = this.createSearchUI();
 
     this.setTemplate({
@@ -101,45 +101,46 @@ export class AlightSearchComponent extends AlightUIBaseComponent {
     const hasAdvancedSearch = this.config.advancedSearch && this.config.filterSections && this.config.filterSections.length > 0;
 
     return `
-      <div class="alight-search-input-container">
-        <input 
-          type="text" 
+      <div class="cka-search-input-container">
+        <input
+        type="text"
           id="${this.uniqueId}-search-input" 
-          class="alight-search-input" 
+          class="cka-search-input"
           placeholder="${this.config.placeholder}" 
           value="${this.searchState.searchQuery}"
+          tabindex="0"
         />
-        <button id="${this.uniqueId}-reset-search-btn" class="ck ck-button ck-button-icon-only ck-button-text" style="display: none;">
+        <button id="${this.uniqueId}-reset-search-btn" class="cka-button cka-button-rounded cka-button-secondary cka-button-icon-only cka-button-text" style="display: none;">
           <i class="fa-regular fa-xmark"></i>
         </button>
         ${hasAdvancedSearch ? `
           <button id="${this.uniqueId}-${this.advancedSearchTriggerId}" 
-                  class="ck ck-button ck-button-text ck-text-no-wrap"
-                  data-panel-id="${this.uniqueId}-advanced-search-panel">
-            ${this.config.advancedSearchButtonText}
-          </button>
-        ` : ''}
+                class="cka-button cka-button-rounded cka-button-text cka-text-no-wrap"
+                data-panel-id="${this.uniqueId}-advanced-search-panel">
+          ${this.config.advancedSearchButtonText}
+        </button>
+      ` : ''}
       </div>
-      <button id="${this.uniqueId}-search-btn" class="ck ck-button ck-button-outlined">${this.config.searchButtonText}</button>
+      <button id="${this.uniqueId}-search-btn" class="cka-button cka-button-rounded cka-button-outlined">${this.config.searchButtonText}</button>
       ${hasAdvancedSearch ? this.createAdvancedSearchPanel() : ''}
     `;
   }
 
   private createAdvancedSearchPanel(): string {
     return `
-      <div class="ck-overlay-panel" data-id="${this.uniqueId}-advanced-search-panel">
+      <div class="cka-overlay-panel" data-id="${this.uniqueId}-advanced-search-panel">
         <header>
           <h3>Advanced Search</h3>
-          <button class="ck-close-btn"><i class="fa-regular fa-xmark"></i></button>
+          <button class="cka-close-btn"><i class="fa-regular fa-xmark"></i></button>
         </header>
         <main class="advanced-search-content">
           ${this.createAdvancedSearchFilters()}
         </main>
         <footer>
-          <button id="${this.uniqueId}-clear-filters" class="ck ck-button ck-button-outlined ck-button-sm">
+          <button id="${this.uniqueId}-clear-filters" class="cka-button cka-button-rounded cka-button-outlined cka-button-sm">
             Clear Filters
           </button>
-          <button id="${this.uniqueId}-apply-filters" class="ck ck-button ck-button-sm">
+          <button id="${this.uniqueId}-apply-filters" class="cka-button cka-button-rounded cka-button-sm">
             Apply Filters
           </button>
         </footer>
@@ -190,5 +191,16 @@ export class AlightSearchComponent extends AlightUIBaseComponent {
         </ul>
       </div>
     `;
+  }
+
+  override render(): void {
+    super.render();
+    if (this.element) {
+      this.searchInput = this.element.querySelector(`#${this.uniqueId}-search-input`) as HTMLInputElement;
+      if (this.searchInput) {
+        this.searchInput.focus();
+        console.log('Search input initialized');
+      }
+    }
   }
 }
