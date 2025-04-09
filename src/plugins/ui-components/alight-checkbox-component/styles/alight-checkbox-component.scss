@@ -1,0 +1,96 @@
+// src/plugins/ui-components/alight-checkbox-component/styles/alight-checkbox-component.scss
+@use './../../../../styles/mixins' as mixins;
+
+cka-checkbox {
+  cursor: pointer;
+  display: inline-flex;
+  user-select: none;
+
+  &[disabled] {
+    cursor: default;
+    opacity: 0.6;
+    pointer-events: none;
+  }
+}
+
+.cka-checkbox {
+  align-items: self-start;
+  cursor: pointer;
+  display: inline-flex;
+  font-family: var(--font-family-body);
+  position: relative;
+  user-select: none;
+  vertical-align: bottom;
+
+  &:not(.cka-disabled) {
+    .cka-checkbox-box {
+      &:not(.cka-highlight):hover {
+        border-color: var(--primary-color, var(--primary));
+      }
+
+      &.cka-highlight {
+        background: var(--primary-color, var(--primary));
+        border-color: var(--primary-color, var(--primary));
+
+        &:hover {
+          background: var(--primary-600, var(--primary-active));
+          border-color: var(--primary-600, var(--primary-active));
+        }
+
+        .cka-checkbox-icon {
+          opacity: 1;
+          transform: scale(1.5);
+        }
+      }
+
+      &.cka-focus {
+        border-color: var(--primary-color, var(--primary));
+        box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+      }
+    }
+  }
+
+  &.cka-checkbox-focused {
+    .cka-checkbox-box {
+      border-color: var(--primary-color, var(--primary));
+      box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+      outline: 0 none;
+    }
+  }
+
+  &.cka-disabled {
+    cursor: default;
+    opacity: 0.6;
+    pointer-events: none;
+  }
+}
+
+.cka-checkbox-box {
+  align-items: center;
+  background: var(--neutral-white);
+  border: 2px solid var(--gray-400);
+  border-radius: 0;
+  color: var(--gray-700);
+  display: flex;
+  height: 1rem;
+  justify-content: center;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
+  width: 1rem;
+}
+
+.cka-checkbox-icon {
+  color: var(--neutral-white);
+  display: block;
+  fill: currentColor;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0);
+  transition: transform 0.12s cubic-bezier(0, 0, 0.2, 1), opacity 0.12s cubic-bezier(0, 0, 0.2, 1);
+}
+
+.cka-checkbox-label {
+  font-size: var(--font-size-sm);
+  line-height: 1.2;
+  margin-left: 0.5rem;
+  user-select: none;
+}

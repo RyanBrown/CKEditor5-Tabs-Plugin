@@ -1,0 +1,28 @@
+{
+  "requestType": "UCETooling",
+  "clientId": "1234567890",
+  "contentType": "uceDocument",
+  "dnmDtoList": [
+    {
+      "folderPath": "Test Folder",
+      "fileId": "1234567890",
+      "attachmentMimeType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "attachmentFileName": "SampleDoc{randomNumber}.xlsx",
+      "attachmentFileExtension": "xlsx",
+      "attachmentFileStream": "1234567890",
+      "documentTitle": "SampleDoc{randomNumber}",
+      "documentLanguage": "en_US",
+      "lastUpdated": "2021-01-01",
+      "updatedBy": "1234567890",
+      "documentDescription": "SampleDoc{randomNumber}",
+      "searchTags": "",
+      "categories": "",
+      "aonExpression": "",
+      "includeInContentLibrary": false,
+      "upointLnk": "1234567890",
+      "topSearchResult": false,
+      "searchable": true,
+      "usage": "test"
+    }
+  ]
+}

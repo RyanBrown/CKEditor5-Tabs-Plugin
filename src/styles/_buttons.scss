@@ -1,0 +1,352 @@
+@use './_mixins' as mixins;
+
+// Alight button styles
+.cka-button {
+  align-items: center;
+  border-radius: var(--border-radius-base);
+  cursor: pointer;
+  display: inline-flex;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  justify-content: center;
+  line-height: mixins.toRem(21);
+  padding: mixins.toRem(10) mixins.toRem(16);
+  text-decoration: none;
+  transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s, color 0.15s;
+
+  // Default (Primary) Button
+  background: var(--primary);
+  border: 1px solid var(--primary);
+  color: var(--neutral-white);
+
+  &:not(:disabled):hover {
+    background: var(--primary-hover);
+    border-color: var(--primary-hover);
+    color: var(--neutral-white);
+  }
+
+  &:not(:disabled):active {
+    background: var(--primary-active);
+    border-color: var(--primary-active);
+    color: var(--neutral-white);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &.cka-button-outlined {
+    background: transparent;
+    border: var(--button-outlined-border);
+    border-color: var(--primary);
+    color: var(--primary);
+
+    &:not(:disabled):hover {
+      background: var(--primary-outline-hover);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    &:not(:disabled):active {
+      background: var(--primary-outline-active);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+
+    &.cka-button-secondary {
+      border-color: var(--secondary);
+      color: var(--secondary);
+
+      &:not(:disabled):hover {
+        background: var(--secondary-outline-hover);
+        border-color: var(--secondary);
+        color: var(--secondary);
+      }
+
+      &:not(:disabled):active {
+        background: var(--secondary-outline-active);
+        border-color: var(--secondary);
+        color: var(--secondary);
+      }
+    }
+
+    &.cka-button-success {
+      border-color: var(--success);
+      color: var(--success);
+
+      &:not(:disabled):hover {
+        background: var(--success-outline-hover);
+        border-color: var(--success);
+        color: var(--success);
+      }
+
+      &:not(:disabled):active {
+        background: var(--success-outline-active);
+        border-color: var(--success);
+        color: var(--success);
+      }
+    }
+
+    &.cka-button-info {
+      border-color: var(--info);
+      color: var(--info);
+
+      &:not(:disabled):hover {
+        background: var(--info-outline-hover);
+        border-color: var(--info);
+        color: var(--info);
+      }
+
+      &:not(:disabled):active {
+        background: var(--info-outline-active);
+        border-color: var(--info);
+        color: var(--info);
+      }
+    }
+
+    &.cka-button-warning {
+      border-color: var(--warning);
+      color: var(--warning);
+
+      &:not(:disabled):hover {
+        background: var(--warning-outline-hover);
+        border-color: var(--warning);
+        color: var(--warning);
+      }
+
+      &:not(:disabled):active {
+        background: var(--warning-outline-active);
+        border-color: var(--warning);
+        color: var(--warning);
+      }
+    }
+
+    &.cka-button-help {
+      border-color: var(--help);
+      color: var(--help);
+
+      &:not(:disabled):hover {
+        background: var(--help-outline-hover);
+        border-color: var(--help);
+        color: var(--help);
+      }
+
+      &:not(:disabled):active {
+        background: var(--help-outline-active);
+        border-color: var(--help);
+        color: var(--help);
+      }
+    }
+
+    &.cka-button-danger {
+      border-color: var(--error);
+      color: var(--error);
+
+      &:not(:disabled):hover {
+        background: var(--error-outline-hover);
+        border-color: var(--error);
+        color: var(--error);
+      }
+
+      &:not(:disabled):active {
+        background: var(--error-outline-active);
+        border-color: var(--error);
+        color: var(--error);
+      }
+    }
+
+    &.cka-button-contrast {
+      border-color: var(--neutral-black);
+      color: var(--neutral-black);
+
+      &:not(:disabled):hover {
+        background: rgba(0, 0, 0, 0.1);
+        border-color: var(--neutral-black);
+        color: var(--neutral-black);
+      }
+
+      &:not(:disabled):active {
+        background: rgba(0, 0, 0, 0.2);
+        border-color: var(--neutral-black);
+        color: var(--neutral-black);
+      }
+    }
+  }
+
+  &.cka-button-text {
+    background: transparent;
+    border-color: transparent;
+    color: var(--primary);
+
+    &:not(:disabled):hover {
+      background: var(--primary-outline-hover);
+      border-color: transparent;
+      color: var(--primary-hover);
+    }
+
+    &:not(:disabled):active {
+      background: var(--primary-outline-active);
+      border-color: transparent;
+      color: var(--primary-active);
+    }
+
+    &.cka-button-secondary {
+      color: var(--secondary);
+
+      &:not(:disabled):hover {
+        background: var(--secondary-outline-hover);
+        color: var(--secondary-hover);
+      }
+
+      &:not(:disabled):active {
+        background: var(--secondary-outline-active);
+        color: var(--secondary-active);
+      }
+    }
+
+    &.cka-button-success {
+      color: var(--success);
+
+      &:not(:disabled):hover {
+        background: var(--success-outline-hover);
+        color: var(--success-hover);
+      }
+
+      &:not(:disabled):active {
+        background: var(--success-outline-active);
+        color: var(--success-active);
+      }
+    }
+
+    &.cka-button-info {
+      color: var(--info);
+
+      &:not(:disabled):hover {
+        background: var(--info-outline-hover);
+        color: var(--info-hover);
+      }
+
+      &:not(:disabled):active {
+        background: var(--info-outline-active);
+        color: var(--info-active);
+      }
+    }
+
+    &.cka-button-warning {
+      color: var(--warning);
+
+      &:not(:disabled):hover {
+        background: var(--warning-outline-hover);
+        color: var(--warning-hover);
+      }
+
+      &:not(:disabled):active {
+        background: var(--warning-outline-active);
+        color: var(--warning-active);
+      }
+    }
+
+    &.cka-button-help {
+      color: var(--help);
+
+      &:not(:disabled):hover {
+        background: var(--help-outline-hover);
+        color: var(--help-hover);
+      }
+
+      &:not(:disabled):active {
+        background: var(--help-outline-active);
+        color: var(--help-active);
+      }
+    }
+
+    &.cka-button-danger {
+      color: var(--error);
+
+      &:not(:disabled):hover {
+        background: var(--error-outline-hover);
+        color: var(--error-hover);
+      }
+
+      &:not(:disabled):active {
+        background: var(--error-outline-active);
+        color: var(--error-active);
+      }
+    }
+
+    &.cka-button-contrast {
+      color: var(--neutral-black);
+
+      &:not(:disabled):hover {
+        background: rgba(0, 0, 0, 0.1);
+        color: var(--plain-hover);
+      }
+
+      &:not(:disabled):active {
+        background: rgba(0, 0, 0, 0.2);
+        color: var(--plain-active);
+      }
+    }
+  }
+
+  &.cka-button-raised {
+    box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
+  }
+
+  &.cka-button-rounded {
+    border-radius: mixins.toRem(30);
+  }
+
+  &.cka-button-icon-only {
+    padding: var(--spacing-m) 0;
+    width: 2.357rem;
+
+    .cka-button-icon {
+      margin: 0;
+    }
+
+    &.cka-button-rounded {
+      border-radius: 50%;
+      height: 2.357rem;
+    }
+  }
+
+  &.cka-button-sm {
+    font-size: var(--font-size-sm);
+    padding: 0.5rem mixins.toRem(16);
+    line-height: mixins.toRem(18);
+  }
+
+  &.cka-button-lg {
+    font-size: var(--font-size-lg);
+    padding: mixins.toRem(12) mixins.toRem(18);
+    line-height: mixins.toRem(24);
+  }
+
+  &:focus {
+    box-shadow: var(--focus-state);
+    outline: 0 none;
+    outline-offset: 0;
+  }
+
+  .cka-button-icon {
+    &.cka-button-icon-left {
+      margin-right: var(--spacing-m);
+    }
+
+    &.cka-button-icon-right {
+      margin-left: var(--spacing-m);
+    }
+
+    &.cka-button-icon-top {
+      margin-bottom: var(--spacing-m);
+    }
+
+    &.cka-button-icon-bottom {
+      margin-top: var(--spacing-m);
+    }
+  }
+}

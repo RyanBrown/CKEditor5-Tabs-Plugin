@@ -1,0 +1,50 @@
+@use './mixins' as mixins;
+
+$card-background: var(--neutral-white);
+$card-border-color: var(--gray-300);
+$card-border-radius: 6px;
+$card-header-padding: 1.5rem;
+$card-content-padding: 1.5rem;
+$card-footer-padding: 1.5rem;
+$card-title-font-size: 1.5rem;
+$card-title-font-weight: 700;
+$card-title-margin: 0;
+
+cka-card {
+  display: block;
+  margin: 0.5rem 0;
+}
+
+.cka-card {
+  @include mixins.component-box-shadow;
+  background: var(--neutral-white);
+  border-radius: .625rem;
+  color: inherit;
+  // margin-bottom: 2rem;
+  position: relative;
+
+  padding: 2rem;
+
+  .cka-card-header {
+    align-items: center;
+    border-bottom: 1px solid $card-border-color;
+    display: flex;
+    justify-content: space-between;
+    padding: $card-header-padding;
+
+    .cka-card-title {
+      font-size: $card-title-font-size;
+      font-weight: $card-title-font-weight;
+      margin: $card-title-margin;
+    }
+  }
+
+  .cka-card-content {
+    padding: $card-content-padding;
+  }
+
+  .cka-card-footer {
+    border-top: 1px solid $card-border-color;
+    padding: $card-footer-padding;
+  }
+}

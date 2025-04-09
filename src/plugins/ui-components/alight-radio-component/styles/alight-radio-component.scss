@@ -1,0 +1,119 @@
+// src/plugins/ui-components/alight-radio-component/styles/alight-radio-component.scss
+@use './../../../../styles/mixins' as mixins;
+
+// Reset default styles for the custom element
+cka-radio-button {
+  display: inline-block;
+  margin: 0.5rem 0;
+}
+
+// Main radio button container
+.cka-radio-button {
+  align-items: center;
+  color: var(--neutral-black);
+  cursor: pointer;
+  display: flex;
+  font-size: 1rem;
+  padding-left: 2rem;
+  position: relative;
+  transition: color 0.3s;
+  user-select: none;
+
+  // Hide native radio input
+  .cka-radio-input {
+    cursor: pointer;
+    height: 0;
+    opacity: 0;
+    position: absolute;
+    width: 0;
+  }
+
+  // Custom radio icon
+  .cka-radio-icon {
+    background-color: var(--neutral-white);
+    border-radius: 50%;
+    border: 2px solid var(--gray-400);
+    box-sizing: border-box;
+    height: mixins.toRem(20);
+    left: 0;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: border-color 0.3s, background-color 0.3s;
+    width: mixins.toRem(20);
+
+    // Inner circle for checked state
+    &::after {
+      background-color: var(--primary);
+      border-radius: 50%;
+      content: "";
+      height: mixins.toRem(12);
+      left: 50%;
+      opacity: 0;
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+      width: mixins.toRem(12);
+    }
+  }
+
+  // Checked state
+  .cka-radio-input:checked {
+    +.cka-radio-icon {
+      background-color: var(--primary);
+      border-color: var(--primary);
+
+      &::after {
+        background-color: var(--neutral-white);
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+    }
+  }
+
+  // Hover effects
+  &:hover {
+    .cka-radio-icon {
+      border-color: var(--primary);
+    }
+
+    .label-text {
+      color: var(--primary);
+
+      &:empty {
+        display: none;
+      }
+    }
+  }
+
+  // Focus styles for accessibility
+  .cka-radio-input:focus+.cka-radio-icon {
+    box-shadow: 0 0 0 3px rgba(0, 122, 217, 0.3);
+  }
+
+  // Disabled state
+  &.disabled {
+    color: var(--gray-500);
+    cursor: not-allowed;
+
+    .cka-radio-icon {
+      background-color: var(--neutral-athens-gray);
+      border-color: var(--gray-500);
+    }
+
+    .cka-radio-input:checked+.cka-radio-icon::after {
+      background-color: var(--gray-500);
+    }
+  }
+
+  // Label text transitions
+  .label-text {
+    font-size: var(--font-size-sm);
+    transition: color 0.3s;
+
+    &:empty {
+      display: none;
+    }
+  }
+}

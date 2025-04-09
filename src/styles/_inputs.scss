@@ -1,0 +1,117 @@
+@use './_mixins.scss' as mixins;
+
+// Alight input label styles
+.cka-input-label {
+  display: block;
+  font-weight: var(--font-weight-bold);
+}
+
+// Alight text input styles
+.cka-input-text,
+.cka-textarea {
+  appearance: none;
+  background: var(--neutral-white);
+  border-radius: 0;
+  border: 1px solid var(--neutral-dove-gray);
+  color: var(--gray-700);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  padding: mixins.toRem(9) mixins.toRem(16);
+  transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
+
+  &:enabled {
+    &:hover {
+      border-color: var(--neutral-black);
+    }
+
+    &:focus {
+      border-color: var(--primary);
+      box-shadow: var(--focus-state);
+      outline-offset: 0;
+      outline: none;
+    }
+
+    &.invalid,
+    &.invalid:hover,
+    &.invalid:focus {
+      border-color: var(--error);
+    }
+  }
+
+  &.ng-dirty.ng-invalid {
+    border-color: var(--error);
+  }
+
+  &.cka-input-label-sm {
+    font-size: var(--font-size-sm);
+    padding: mixins.toRem(12) mixins.toRem(12) !important;
+  }
+
+  &.cka-input-label-lg {
+    font-size: var(--font-size-xl);
+    padding: mixins.toRem(20) mixins.toRem(20);
+  }
+}
+
+// Validation classes
+.cka-error-message {
+  color: var(--error);
+  display: none;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+
+  &.visible {
+    display: block;
+  }
+}
+
+.cka-note-text {
+  font-size: mixins.toRem(14);
+  margin: 2rem 0 0;
+}
+
+::placeholder {
+  color: var(--gray-500);
+  font-weight: var(--font-weight-normal);
+}
+
+// Radio Button List
+ul.cka-radio-group {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+
+  li {
+    display: flex;
+    list-style: none;
+  }
+}
+
+// Checkbox List
+ul.cka-checkbox-list {
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  li {
+    box-sizing: border-box;
+    flex: 0 0 50%;
+    padding: 0 5px;
+  }
+}
+
+.cka-radio-list-inline,
+.cka-checkbox-list-inline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  li {
+    align-items: center;
+    display: inline-flex;
+    padding: 0 1rem 0 0;
+  }
+}

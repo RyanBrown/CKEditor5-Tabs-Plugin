@@ -1,0 +1,357 @@
+@use './mixins';
+@use './search';
+@use './pagination';
+@use './inputs';
+@use './buttons';
+@use './card';
+@use './ckeditor-variables';
+
+// Set the minimum height of the ckeditor
+.ck-editor__editable_inline {
+  min-height: 250px;
+}
+
+.ck-editor {
+  pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    -moz-tab-size: 4;
+    -o-tab-size: 4;
+    tab-size: 4;
+  }
+}
+
+// Set default text properties
+.ck-content {
+  h2.italic-title {
+    font-style: italic;
+  }
+
+  .subtitle {
+    color: #aaa;
+    font-style: italic;
+  }
+
+  p.special-container {
+    background: #eee;
+    border: 1px solid #ccc;
+    padding: 5px 10px;
+  }
+
+  big.big {
+    font-size: larger;
+  }
+
+  small.small {
+    font-size: smaller;
+  }
+
+  tt.typewriter {
+    font-family: monospace;
+  }
+
+  code.computer-code {
+    background-color: #f7f7f9;
+    border: 1px solid #e1e1e8;
+    color: #d14;
+    padding: 2px 4px;
+    white-space: nowrap;
+  }
+
+  kbd.keyboard-phrase {
+    font-family: monospace;
+  }
+
+  samp.sample-text {
+    font-family: monospace;
+  }
+
+  var.variable {
+    font-style: italic;
+  }
+
+  del.deleted-text {
+    text-decoration: line-through;
+  }
+
+  ins.inserted-text {
+    text-decoration: underline;
+  }
+
+  cite.cited-work {
+    font-style: italic;
+  }
+
+  q.inline-quotation::before {
+    content: open-quote;
+  }
+
+  q.inline-quotation::after {
+    content: close-quote;
+  }
+
+  span.language-rtl {
+    direction: rtl;
+    unicode-bidi: isolate;
+  }
+
+  span.language-ltr {
+    direction: ltr;
+    unicode-bidi: isolate;
+  }
+}
+
+// End default text properties
+
+// Set table defaults
+// These must be identical to the classes
+// set in ckeditor.ts table properties
+.ck-content {
+  .table {
+    height: 100%;
+    width: 100%;
+
+    table {
+      border-color: rgb(0, 0, 0);
+      border-style: solid;
+      border-width: 2px;
+
+      td {
+        border-color: rgb(0, 0, 0);
+        border-style: solid;
+        border-width: 1px;
+        padding: 10px;
+      }
+    }
+  }
+}
+
+// Hide toolbar when readonly - comment or remove if toolbar is needed in readonly
+ckeditor .readonly .ck.ck-toolbar,
+.readonly .ck.ck-toolbar .readonly .ck.ck-editor__top.ck-reset_all {
+  display: none !important;
+}
+
+// Hide toolbar pointer events when readonly - comment or remove if toolbar is needed in readonly
+.readonly .ck.ck-reset.ck-editor.ck-rounded-corners .ck.ck-editor__main,
+.readonly .ck.ck-editor__main {
+  pointer-events: none !important;
+}
+
+// Update the bullet list indent to match UCE
+.ck-content ul {
+  padding-left: 1.25rem;
+}
+
+// // Hide population on awl site
+// .hide-in-awl.p-hidden {
+//   display: inherit !important;
+// }
+
+// END ============================================================================================
+
+// Alight anchor styles
+a {
+  color: var(--primary);
+
+  &:hover {
+    color: var(--primary-hover);
+  }
+}
+
+a,
+a:hover {
+  cursor: pointer;
+  text-decoration: none;
+}
+
+// Margin and padding helper classes
+@mixin generate-spacing-classes($property, $values, $type) {
+  @each $key, $value in $values {
+    @if $type =='m' {
+      @if $property =='r' {
+        .#{$type}#{$property}-#{$key} {
+          margin-right: $value !important;
+        }
+      }
+
+      @else if $property =='l' {
+        .#{$type}#{$property}-#{$key} {
+          margin-left: $value !important;
+        }
+      }
+
+      @else if $property =='t' {
+        .#{$type}#{$property}-#{$key} {
+          margin-top: $value !important;
+        }
+      }
+
+      @else if $property =='b' {
+        .#{$type}#{$property}-#{$key} {
+          margin-bottom: $value !important;
+        }
+      }
+    }
+
+    @else if $type =='p' {
+      @if $property =='r' {
+        .#{$type}#{$property}-#{$key} {
+          padding-right: $value !important;
+        }
+      }
+
+      @else if $property =='l' {
+        .#{$type}#{$property}-#{$key} {
+          padding-left: $value !important;
+        }
+      }
+
+      @else if $property =='t' {
+        .#{$type}#{$property}-#{$key} {
+          padding-top: $value !important;
+        }
+      }
+
+      @else if $property =='b' {
+        .#{$type}#{$property}-#{$key} {
+          padding-bottom: $value !important;
+        }
+      }
+    }
+  }
+}
+
+$spacing-values: (
+  0: 0,
+  1: 0.25rem,
+  2: 0.5rem,
+  3: 1rem,
+  4: 1.5rem,
+  5: 2rem,
+);
+
+@include generate-spacing-classes('t', $spacing-values, 'm');
+@include generate-spacing-classes('b', $spacing-values, 'm');
+@include generate-spacing-classes('l', $spacing-values, 'm');
+@include generate-spacing-classes('r', $spacing-values, 'm');
+
+@include generate-spacing-classes('t', $spacing-values, 'p');
+@include generate-spacing-classes('b', $spacing-values, 'p');
+@include generate-spacing-classes('l', $spacing-values, 'p');
+@include generate-spacing-classes('r', $spacing-values, 'p');
+
+// Display helper classes
+.cka-block {
+  display: block;
+}
+
+.cka-inline {
+  display: inline;
+}
+
+.cka-inline-block {
+  display: inline-block;
+}
+
+.cka-flex {
+  display: flex;
+}
+
+
+// Text helper classes
+.cka-text-center {
+  text-align: center;
+}
+
+// Width helper classes
+.cka-width-100 {
+  width: 100%;
+}
+
+.cka-width-50 {
+  width: 50%;
+}
+
+// Loading styles
+.cka-loading-container {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+
+  .cka-loading-spinner {
+    animation: spin 2s linear infinite;
+    border-radius: 50%;
+    border: mixins.toRem(4) solid rgba(#666666, 0.2);
+    border-top: mixins.toRem(4) solid var(--neutral-steel);
+    display: flex;
+    height: mixins.toRem(32);
+    width: mixins.toRem(32);
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+}
+
+// Predefined and Existing Docs styles
+.cka-link-item {
+  align-items: center;
+  border-bottom: 1px solid var(--gray-400);
+  display: flex;
+  padding: 0;
+  transition: background-color 0.15s;
+
+  &:hover {
+    background-color: var(--neutral-gallery);
+    cursor: pointer;
+  }
+
+  &:last-of-type {
+    border-bottom: none;
+    padding-bottom: 1.75rem;
+  }
+
+  >.radio-container {
+    margin-left: 2rem;
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 1.5rem var(--spacing-xl) 1.5rem .5rem;
+    width: 100%;
+
+    li {
+      font-size: var(--font-size-sm);
+
+      &:first-child {
+        font-size: var(--font-size-lg);
+        font-weight: var(--font-weight-bold);
+      }
+
+      &.wrap-text {
+        max-width: 80%;
+        white-space: break-spaces;
+        word-wrap: break-word;
+      }
+
+      &.hide-overflow {
+        box-sizing: border-box;
+        display: block;
+        max-width: 90%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        width: 100%;
+      }
+    }
+  }
+}

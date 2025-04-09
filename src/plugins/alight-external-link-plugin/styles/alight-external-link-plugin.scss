@@ -1,0 +1,63 @@
+// src/plugins/alight-external-link-plugin/styles/alight-external-link-plugin.scss
+@use './../../../styles/mixins' as mixins;
+
+.cka-external-link-content {
+  padding: var(--spacing-xl) var(--spacing-xl) 0;
+}
+
+// HTTPS:// and HTTP:// Toggle Input
+.cka-prefix-input {
+  align-items: center;
+  border-radius: 0;
+  border: 1px solid var(--neutral-dove-gray);
+  display: flex;
+  width: 100%;
+  transition: border-color 0.15s;
+
+  &:hover {
+    border-color: var(--neutral-black);
+  }
+
+  &:focus-within {
+    border-color: var(--primary);
+  }
+
+  &.invalid,
+  &.invalid:hover,
+  &.invalid:focus {
+    border-color: var(--error);
+  }
+
+  .cka-url-prefix-text {
+    background-color: var(--gray-100);
+    border-right: 1px solid var(--neutral-dove-gray);
+    color: var(--neutral-steel);
+    font-family: monospace;
+    font-size: 1rem;
+    line-height: 1.7;
+    min-width: mixins.toRem(100);
+    padding: mixins.toRem(6) mixins.toRem(16);
+    text-align: right;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+    user-select: none;
+
+    &.unsecure {
+      color: #856404;
+      background-color: var(--warning-background);
+    }
+  }
+
+  .cka-prefix-input-text {
+    appearance: none;
+    background: var(--neutral-white);
+    border: none;
+    color: var(--gray-700);
+    flex-grow: 1;
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-base);
+    outline: none;
+    padding: mixins.toRem(9) mixins.toRem(16);
+    transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
+    width: 100%;
+  }
+}
