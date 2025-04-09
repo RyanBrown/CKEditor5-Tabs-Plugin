@@ -3,6 +3,7 @@ import { DataSource } from './data-source';
 import { HttpRequestMethod } from './http-request-method';
 
 export interface IDataSourceRequest {
+
   get requestMethod(): HttpRequestMethod; // GET, POST, PUT, etc.
   get queryParams(): string;
   set queryParams(value: string);
@@ -10,6 +11,7 @@ export interface IDataSourceRequest {
 }
 
 export abstract class DataSourceRequest extends DataSource implements IDataSourceRequest {
+
   public abstract get requestMethod(): HttpRequestMethod;
 
   private _queryParams: string;
