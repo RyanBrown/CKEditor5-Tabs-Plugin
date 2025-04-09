@@ -1,5 +1,5 @@
 {
-  "baseOrClientSpecific": [
+  "baseClientSpecific": [
     "Base",
     "Client"
   ],
@@ -12,13 +12,32 @@
     "UPoint",
     "Video"
   ],
-  "pageCode": "001",
   "domain": [
     "Advocacy",
     "BPO",
     "BPS",
     "Ben-CM",
-    "Ben-DB"
+    "Ben-DB",
+    "Ben-DC",
+    "Ben-HM",
+    "Client Dashboard",
+    "Compensation",
+    "Consumer Experience",
+    "DBP",
+    "Equity",
+    "Gateway",
+    "Global",
+    "Job & Career",
+    "Other Benefits",
+    "PORTAL-DOMAINS",
+    "Payroll",
+    "SCA",
+    "Time & Attendance",
+    "Wellbeing",
+    "Wellness",
+    "YSA",
+    "YTR",
+    "NA"
   ],
   "predefinedLinksDetails": [
     {

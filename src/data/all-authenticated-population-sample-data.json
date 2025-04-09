@@ -2,11 +2,11 @@
   "expressionDetails": [
     {
       "expressionName": "All_Authenticated_Users",
-      "expressionDescription": "Include all authenticated users",
+      "expressionDescription": "Includes all authenticated users",
       "expressionType": "PORTAL",
       "expressionRevisions": [
         {
-          "description": "Include all authenticated users",
+          "description": "Includes all authenticated users",
           "expressionValue": "${databean:postauth_booleanValue()} Equals ${literal:true:boolean}"
         }
       ],
