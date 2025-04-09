@@ -171,8 +171,6 @@ class AlightEditor extends ClassicEditor {
   }
 
   public static override builtinPlugins = [
-
-    // Custom Plugins
     AccessibilityHelp,
     Alignment,
     Autoformat,
