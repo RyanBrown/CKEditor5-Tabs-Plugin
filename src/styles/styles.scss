@@ -34,7 +34,7 @@
 
   p.special-container {
     background: #eee;
-    border: 1px solid #ccc;
+    border: 1px solid var(--neutral-athens-gray);
     padding: 5px 10px;
   }
 
@@ -267,6 +267,10 @@ $spacing-values: (
 // Width helper classes
 .cka-width-100 {
   width: 100%;
+}
+
+.cka-width-75 {
+  width: 75%;
 }
 
 .cka-width-50 {

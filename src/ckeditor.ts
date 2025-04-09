@@ -79,7 +79,6 @@ import AlightPredefinedLinkPlugin from './plugins/alight-predefined-link-plugin/
 import AlightNewDocumentLinkPlugin from './plugins/alight-new-document-link-plugin/alight-new-document-link-plugin';
 // import AlightExistingDocumentLinkPlugin from './plugins/alight-existing-document-link-plugin/alight-existing-document-link-plugin';
 import AlightExistingDocumentLinkPlugin from './plugins/alight-existing-document-link-plugin/link';
-import AlightLink from './plugins/alight-link/src/link';
 import AlightExternalLinkPlugin from './plugins/alight-external-link-plugin/link';
 import AlightEmailLinkPlugin from './plugins/alight-email-link-plugin/link';
 
@@ -211,7 +210,6 @@ class AlightEditor extends ClassicEditor {
     AlightPredefinedLinkPlugin,
     AlightNewDocumentLinkPlugin,
     AlightExistingDocumentLinkPlugin,
-    AlightLink,
     AlightExternalLinkPlugin,
     AlightEmailLinkPlugin,
   ];
@@ -272,7 +270,6 @@ class AlightEditor extends ClassicEditor {
         // 'alightPredefinedLinkPlugin',
         'alightExistingDocumentLinkPlugin',
         // 'alightNewDocumentLinkPlugin',
-        // 'alightLink',
         // 'alightExternalLinkPlugin',
         'alightEmailLinkPlugin',
       ],

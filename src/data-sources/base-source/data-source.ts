@@ -1,3 +1,4 @@
+// src/data-sources/base-source/data-source.ts
 export interface IDataSource {
   get host(): string;
   set host(value: string);
