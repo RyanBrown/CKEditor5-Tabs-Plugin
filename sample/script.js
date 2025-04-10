@@ -38,7 +38,9 @@ async function initializeEditor() {
 		// Initialize the editor with the configuration
 		const editor = await AlightEditor.create(document.querySelector('.editor'), {
 			// Editor config
-			predefinedLinks: predefinedLinks,
+			alightPredefinedLinkPlugin: {
+				links: predefinedLinks
+			},
 			// Add any other config options you need
 		});
 

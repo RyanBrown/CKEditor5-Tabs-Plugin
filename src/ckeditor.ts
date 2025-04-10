@@ -371,23 +371,23 @@ class AlightEditor extends ClassicEditor {
         {
           name: 'ah:expr',
           attributes: ['name', 'class', 'title', 'assettype'],
-          classes: true,
-          styles: true
+          classes: ['*'],
+          styles: ['*']
         },
         {
           name: "a",
           attributes: {
-            style: true,
             id: true,
             orgnameattr: true,
           },
-          classes: ['*']
+          classes: ['*'],
+          styles: ['*']
         },
         {
           name: 'svg',
           attributes: true,
           classes: ['*'],
-          styles: true
+          styles: ['*']
         },
         {
           name: 'span', // Ensure spans inside ah:expr are allowed
@@ -402,7 +402,7 @@ class AlightEditor extends ClassicEditor {
         {
           name: /^(h[1-6])$/,
           attributes: true, // Allows all attributes, including href from links
-          styles: true,
+          styles: ['*'],
           classes: ['*']
         }
       ],
