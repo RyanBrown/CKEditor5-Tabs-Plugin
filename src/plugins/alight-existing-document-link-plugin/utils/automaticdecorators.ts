@@ -63,7 +63,7 @@ export default class AutomaticDecorators {
           // Add data-id to the attributes
           const attributes = {
             ...item.attributes,
-            'data-id': 'predefined-editor'
+            'data-id': 'existing-document-editor'
           };
 
           const viewElement = viewWriter.createAttributeElement('a', item.attributes, {

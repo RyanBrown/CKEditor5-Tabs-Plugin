@@ -63,7 +63,7 @@ export function createLinkElement(href: string, { writer }: DowncastConversionAp
   // Priority 5 - https://github.com/ckeditor/ckeditor5-link/issues/121.
   const linkElement = writer.createAttributeElement('a', {
     href,
-    'data-id': 'predefined-editor'
+    'data-id': 'existing-document-editor'
   }, { priority: 5 });
 
   writer.setCustomProperty('alight-existing-document-link', true, linkElement);

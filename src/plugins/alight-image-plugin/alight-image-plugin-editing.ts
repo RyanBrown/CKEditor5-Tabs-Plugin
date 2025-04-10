@@ -27,7 +27,7 @@ export default class AlightImagePluginEditing extends Plugin {
             label: 'Continue',
             className: 'cka-button cka-button-rounded cka-button-sm',
             onClick: () => this.handleImageSelection(),
-          }
+          },
         ],
         loadContent: async () => getExistingImageContent(),
       })
@@ -47,7 +47,7 @@ export default class AlightImagePluginEditing extends Plugin {
             label: 'Upload',
             className: 'cka-button cka-button-rounded cka-button-sm',
             onClick: () => this.handleUpload(),
-          }
+          },
         ],
         loadContent: async () => getUploadImageContent(),
       })
