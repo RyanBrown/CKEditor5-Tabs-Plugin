@@ -377,16 +377,16 @@ class AlightEditor extends ClassicEditor {
         {
           name: "a",
           attributes: {
-            class: true,
             style: true,
             id: true,
             orgnameattr: true,
-          }
+          },
+          classes: ['*']
         },
         {
           name: 'svg',
           attributes: true,
-          classes: true,
+          classes: ['*'],
           styles: true
         },
         {
@@ -394,7 +394,8 @@ class AlightEditor extends ClassicEditor {
           classes: [
             'cka-population-tag',
             'cka-population-begin',
-            'cka-population-end'
+            'cka-population-end',
+            '*' // Added wildcard to allow all classes
           ],
           attributes: ['data-population-name']
         },
@@ -402,7 +403,7 @@ class AlightEditor extends ClassicEditor {
           name: /^(h[1-6])$/,
           attributes: true, // Allows all attributes, including href from links
           styles: true,
-          classes: true
+          classes: ['*']
         }
       ],
       disallow: [] // Optionally disallow conflicting elements

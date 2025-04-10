@@ -181,7 +181,8 @@ export default class LinkActionsView extends View {
 
     button.set({
       withText: true,
-      tooltip: t('Open predefined link')
+      tooltip: t('Open predefined link'),
+      isEnabled: false // Set the button to always be disabled
     });
 
     button.extendTemplate({
@@ -189,10 +190,8 @@ export default class LinkActionsView extends View {
         class: [
           'ck',
           'ck-link-actions__preview'
-        ],
-        href: bind.to('href', href => href && ensureSafeUrl(href)),
-        target: '_blank',
-        rel: 'noopener noreferrer'
+        ]
+        // Removed href, target, and rel attributes as they don't apply to div elements
       },
     });
 
@@ -204,9 +203,10 @@ export default class LinkActionsView extends View {
       return href || t('This link has no URL');
     });
 
-    button.bind('isEnabled').to(this, 'href', href => !!href);
+    // Remove or comment out this line to keep the button always disabled
+    // button.bind('isEnabled').to(this, 'href', href => !!href);
 
-    button.template!.tag = 'a';
+    button.template!.tag = 'div';
 
     return button;
   }
