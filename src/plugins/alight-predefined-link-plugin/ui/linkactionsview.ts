@@ -181,7 +181,7 @@ export default class LinkActionsView extends View {
 
     button.set({
       withText: true,
-      tooltip: t('Open predefinded link')
+      tooltip: t('Open predefined link')
     });
 
     button.extendTemplate({

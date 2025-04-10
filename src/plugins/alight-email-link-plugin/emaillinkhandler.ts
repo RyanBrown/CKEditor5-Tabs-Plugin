@@ -75,17 +75,13 @@ export default class EmailLinkHandler extends Plugin {
 
     // Monkey patch the execute method of the link command
     const originalExecute = originalLinkCommand.execute;
-    originalLinkCommand.execute = function (
-      href: string,
+    originalLinkCommand.execute = function (href: string,
       options: CustomLinkOptions = {}
     ) {
       // If the link is a mailto link, use our custom email link command
-      if (
-        href &&
-        typeof href === 'string' &&
-        (href.startsWith('mailto:') ||
-          (href.includes('@') && !href.includes('://') && !href.startsWith('/')))
-      ) {
+      if (href && typeof href === 'string' && (href.startsWith('mailto:') ||
+        (href.includes('@') && !href.includes('://') && !href.startsWith('/')))) {
+
         // If it's an email address without the mailto: prefix, add it
         if (!href.startsWith('mailto:') && href.includes('@')) {
           href = 'mailto:' + href;

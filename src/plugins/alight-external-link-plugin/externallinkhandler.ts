@@ -71,15 +71,12 @@ export default class ExternalLinkHandler extends Plugin {
 
     // Monkey patch the execute method of the link command
     const originalExecute = originalLinkCommand.execute;
-    originalLinkCommand.execute = function (
-      href: string,
+    originalLinkCommand.execute = function (href: string,
       options: CustomLinkOptions = {}
     ) {
-      if (
-        href &&
-        typeof href === 'string' &&
-        (href.startsWith('http://') || href.startsWith('https://') || isValidUrl(href))
-      ) {
+      if (href && typeof href === 'string' &&
+        (href.startsWith('http://') || href.startsWith('https://') || isValidUrl(href))) {
+
         // Execute our custom command instead
         editor.execute('alight-external-link', href, options);
       } else {

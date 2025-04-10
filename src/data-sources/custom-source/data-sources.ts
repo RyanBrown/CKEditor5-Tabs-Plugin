@@ -1,7 +1,7 @@
 // src/data-sources/custom-source/data-sources.ts
-import { DataSourceGet } from '../base-source/data-source-get';
-import { DataSourcePost } from '../base-source/data-source-post';
-import { IReadSource, IWriteSource } from '../base-source/data-source';
+import { DataSourceGet } from "../base-source/data-source-get";
+import { DataSourcePost } from "../base-source/data-source-post";
+import { IReadSource, IWriteSource } from "../base-source/data-source";
 
 export abstract class DataSources implements IReadSource, IWriteSource {
   protected _get: DataSourceGet;

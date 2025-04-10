@@ -14,7 +14,7 @@ export default class AlightNewDocumentLinkPluginUI extends AlightDataLoadPlugin 
 
   public static override get pluginName(): string { return 'AlightNewDocumentLinkPluginUI' as const; }
   public override get pluginName(): string { return AlightNewDocumentLinkPluginUI.pluginName; }
-  public override get pluginId(): string { return 'AlightNewDocumentLinkPlugin'; }
+  public override get pluginId(): string { return "AlightNewDocumentLinkPlugin"; }
 
   public static get requires() {
     return [Notification] as const;
