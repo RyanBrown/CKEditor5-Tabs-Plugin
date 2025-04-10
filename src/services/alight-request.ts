@@ -1,5 +1,4 @@
 // src/services/alight-request.ts
-
 export default class AlightRequest {
   public _apiUrl: string;
   public _requestHeader: string;
