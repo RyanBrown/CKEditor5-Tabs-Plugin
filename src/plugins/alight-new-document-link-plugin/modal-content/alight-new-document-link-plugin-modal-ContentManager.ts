@@ -1,7 +1,7 @@
 // src/plugins/alight-new-document-link-plugin/modal-content/alight-new-document-link-plugin-modal-ContentManager.ts
 import { ILinkManager } from '../../../alight-common/ILinkManager';
-import { FormValidator, ValidationResult } from './validation/alight-new-document-link-plugin-modal-form-validation';
-import { FormSubmissionHandler } from './submission/alight-new-document-link-plugin-modal-form-submission';
+import { FormValidator, ValidationResult } from './alight-new-document-link-plugin-modal-form-validation';
+import { FormSubmissionHandler } from './alight-new-document-link-plugin-modal-form-submission';
 import { CkAlightSelectMenu } from '../../ui-components/alight-select-menu-component/alight-select-menu-component';
 import { CkAlightCheckbox } from '../../ui-components/alight-checkbox-component/alight-checkbox-component';
 import { CkAlightChipsMenu } from '../../ui-components/alight-chips-menu-component/alight-chips-menu-component';
