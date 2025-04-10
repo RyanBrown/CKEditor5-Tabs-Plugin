@@ -22,7 +22,7 @@ import { CkAlightModalDialog } from './../ui-components/alight-modal-dialog-comp
 import type { CkAlightCheckbox } from './../ui-components/alight-checkbox-component/alight-checkbox-component';
 import './../ui-components/alight-checkbox-component/alight-checkbox-component';
 
-import linkIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
+import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 
 // Use a unique marker name to avoid conflicts with standard link plugin
 const VISUAL_SELECTION_MARKER_NAME = 'alight-external-link-ui';
@@ -198,7 +198,7 @@ export default class AlightExternalLinkPluginUI extends Plugin {
 
     view.set({
       label: t('External Link'),
-      icon: linkIcon,
+      icon: ToolBarIcon,
       isToggleable: true,
       withText: true,
       // Add a custom class to differentiate from standard link button

@@ -23,10 +23,9 @@ import './../ui-components/alight-checkbox-component/alight-checkbox-component';
 // Import the ContentManager and types from the updated location
 import { ContentManager } from './ui/linkmodal-ContentManager';
 import { DocumentLink } from './ui/linkmodal-modal-types';
-
-import linkIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 import AlightDataLoadPlugin from '../../alight-common/alight-data-load-plugin';
 import LinksLoadService from '../../services/links-load-service';
+import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 
 const VISUAL_SELECTION_MARKER_NAME = 'alight-existing-document-link-ui';
 
@@ -195,7 +194,7 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
     this.buttonView.set({
       isEnabled: this.isReady,
       label: t('Existing document link'),
-      icon: linkIcon,
+      icon: ToolBarIcon,
       isToggleable: true,
       withText: true
     });

@@ -25,8 +25,8 @@ import { ContentManager } from './ui/linkmodal-ContentManager';
 import { PredefinedLink } from './ui/linkmodal-modal-types';
 import AlightDataLoadPlugin from '../../alight-common/alight-data-load-plugin';
 
-import linkIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 import LinksLoadService from '../../services/links-load-service';
+import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 
 const VISUAL_SELECTION_MARKER_NAME = 'alight-predefined-link-ui';
 
@@ -236,7 +236,7 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
     this.buttonView.set({
       isEnabled: this.isReady,
       label: t('Predefined link'),
-      icon: linkIcon,
+      icon: ToolBarIcon,
       isToggleable: true,
       withText: true
     });

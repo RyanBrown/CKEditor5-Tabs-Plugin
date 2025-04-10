@@ -8,7 +8,6 @@ import { CkAlightChipsMenu } from '../../ui-components/alight-chips-menu-compone
 import '../../ui-components/alight-checkbox-component/alight-checkbox-component';
 import LinksLoadService from '../../../services/links-load-service';
 
-// Define a consistent interface for category items
 interface CategoryItem {
   id: string;
   label: string;
@@ -31,7 +30,7 @@ export class ContentManager implements ILinkManager {
     documentTitle: '',
     searchTags: [] as string[],
     description: '',
-    categories: [] as string[], // Change to array of selected category IDs
+    categories: [] as string[],
     contentLibraryAccess: false,
     worklifeLink: false,
     showInSearch: true
