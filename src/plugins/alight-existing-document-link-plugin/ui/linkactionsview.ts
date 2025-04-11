@@ -181,7 +181,7 @@ export default class LinkActionsView extends View {
 
     button.set({
       withText: true,
-      tooltip: t('Open email link')
+      tooltip: t('Open existing document link')
     });
 
     button.extendTemplate({
