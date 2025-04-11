@@ -408,16 +408,6 @@ class AlightEditor extends ClassicEditor {
       ],
       disallow: [] // Optionally disallow conflicting elements
     },
-    image: {
-      toolbar: [
-        'imageTextAlternative',
-        'toggleImageCaption',
-        'imageStyle:inline',
-        'imageStyle:block',
-        'imageStyle:side',
-        'linkImage',
-      ],
-    },
     fontBackgroundColor: {
       colors: awldsColorPalette,
       colorPicker: false,
@@ -443,6 +433,16 @@ class AlightEditor extends ClassicEditor {
         { model: "headingFormatted", view: "pre", title: "Formatted", class: "ck-heading_headingFormatted" },
         { model: "headingAddress", view: "address", title: "Address", class: "ck-heading_headingAddress" },
         { model: "headingNormalDiv", view: "div", title: "Normal (Div)", class: "ck-heading_headingNormalDiv" },
+      ],
+    },
+    image: {
+      toolbar: [
+        'imageTextAlternative',
+        'toggleImageCaption',
+        'imageStyle:inline',
+        'imageStyle:block',
+        'imageStyle:side',
+        'linkImage',
       ],
     },
     indentBlock: {
