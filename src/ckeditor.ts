@@ -108,12 +108,11 @@ import SessionService from "./services/session-service";
 
 // import fontawesome
 const script = document.createElement("script");
-script.src = "https://kit.fontawesome.com/019f6c532e.js";
+script.src = 'https://kit.fontawesome.com/019f6c532e.js';
 script.crossOrigin = "anonymous";
 document.head.appendChild(script);
 
-export const LICENSE_KEY =
-  "eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3NDcxODA3OTksImp0aSI6IjAwN2YzMTI1LTkyYTgtNDc0MS05NDNiLWViM2M3NjhjN2RhNiIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsic2giLCJkcnVwYWwiXSwid2hpdGVMYWJlbCI6dHJ1ZSwiZmVhdHVyZXMiOlsiRFJVUCIsIkRPIiwiRlAiLCJTQyIsIlRPQyIsIlRQTCIsIlBPRSIsIkNDIiwiTUYiXSwidmMiOiJjYjM3ZmEyOCJ9.pfNUO8YBnKbw1V6HXgFb9PZRMzfErUsssTFcQ83EftEDV-tFn_pPPmFpkaRb9Fjzj02osXclT6aKGsmyihJazg";
+export const LICENSE_KEY = "eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3NDcxODA3OTksImp0aSI6IjAwN2YzMTI1LTkyYTgtNDc0MS05NDNiLWViM2M3NjhjN2RhNiIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsic2giLCJkcnVwYWwiXSwid2hpdGVMYWJlbCI6dHJ1ZSwiZmVhdHVyZXMiOlsiRFJVUCIsIkRPIiwiRlAiLCJTQyIsIlRPQyIsIlRQTCIsIlBPRSIsIkNDIiwiTUYiXSwidmMiOiJjYjM3ZmEyOCJ9.pfNUO8YBnKbw1V6HXgFb9PZRMzfErUsssTFcQ83EftEDV-tFn_pPPmFpkaRb9Fjzj02osXclT6aKGsmyihJazg";
 
 // Use default colors from the AWLDS
 const awldsColorPalette = [
@@ -133,35 +132,35 @@ const awldsColorPalette = [
   { label: "Accent Zircon", color: "#f4f8ff" },
 
   // tertiary colors
-  { label: "Tertiary Cornflower Blue", color: "#639dfe" },
-  { label: "Tertiary Viking", color: "#64d9d2" },
-  { label: "Tertiary Rich Lilac", color: "#bb6bd9" },
-  { label: "Tertiary Orchid", color: "#d382e0" },
+  { label: "Tertiary Viking", color: "#64d8d0" },
+  { label: "Tertiary Cornflower Blue", color: "#629efe" },
+  { label: "Tertiary Rich Lilac", color: "#bb69d8" },
+  { label: "Tertiary Orchid", color: "#d584e1" },
 
   // neutral colors
   { label: "Neutral Black", color: "#292929" },
-  { label: "Neutral Dove Gray", color: "#757575" },
   { label: "Neutral Steel", color: "#666666" },
+  { label: "Neutral Dove Gray", color: "#757575" },
   { label: "Neutral Mountain Mist", color: "#949494" },
   { label: "Neutral Athens Gray", color: "#dedede" },
   { label: "Neutral Gallery", color: "#f0f0f0" },
   { label: "Neutral White", color: "#ffffff" },
 
   // semantic colors
-  { label: "Error Background", color: "#fdebec" },
-  { label: "Error Shadow", color: "#ed3f3f" },
-  { label: "Error", color: "#c61a1a" },
-  { label: "Warning Background", color: "#ffefd2" },
-  { label: "Warning", color: "#fbcf35" },
-  { label: "Success Background", color: "#e6f6e1" },
-  { label: "Success Shadow", color: "#0fab01" },
-  { label: "Success", color: "#107400" },
+  { label: "Error Background", color: "#fdeded" },
+  { label: "Error Shadow", color: "#ed4040" },
+  { label: "Error", color: "#c71a1a" },
+  { label: "Warning Background", color: "#ffefd1" },
+  { label: "Warning", color: "#fbd037" },
+  { label: "Success Background", color: "#e5f5e0" },
+  { label: "Success Shadow", color: "#0fad01" },
+  { label: "Success", color: "#107500" },
   { label: "Info", color: "#165dd0" },
   { label: "Info Background", color: "#dbe8ff" },
 ];
 
 class AlightEditor extends ClassicEditor {
-  public get textContent() { return this.getData().replace(/<[^>]*>/g, ""); }
+  public get textContent() { return this.getData().replace(/<[^>]*>/g, ''); }
 
   constructor(sourceElementOrData: HTMLElement | string, config?: any) {
     super(sourceElementOrData, config);
@@ -248,6 +247,7 @@ class AlightEditor extends ClassicEditor {
     AlightExternalLinkPlugin,
     AlightImagePlugin,
     AlightNewDocumentLinkPlugin,
+    // Alight Link Plugins
     AlightParentLinkPlugin,
     AlightPastePlugin,
     AlightPopulationPlugin,
@@ -474,8 +474,8 @@ class AlightEditor extends ClassicEditor {
         reversed: false,
         styles: {
           listStyleTypes: {
-            numbered: ["decimal"],
-            bulleted: ["disc"]
+            numbered: ['decimal'],
+            bulleted: ['disc']
           }
         }
       }
@@ -501,9 +501,11 @@ class AlightEditor extends ClassicEditor {
         { name: "Inline Quotation", element: "q", classes: ["inline-quotation"] },
         { name: "Language: RTL", element: "span", classes: ["language-rtl"] },
         { name: "Language: LTR", element: "span", classes: ["language-ltr"] },
-      ]
+      ],
     },
     table: {
+      // The default styles for tables in the editor.
+      // They should be synchronized with the content styles.
       contentToolbar: [
         "tableColumn",
         "tableRow",
@@ -520,10 +522,13 @@ class AlightEditor extends ClassicEditor {
           height: "100%",
           width: "100%",
         },
+        // Keep the colors defined by AWLDS - removed color picker
         borderColors: awldsColorPalette,
         backgroundColors: awldsColorPalette,
         colorPicker: false,
       },
+      // The default styles for table cells in the editor.
+      // They should be synchronized with the content styles.
       tableCellProperties: {
         defaultProperties: {
           borderColor: "black",
@@ -534,12 +539,11 @@ class AlightEditor extends ClassicEditor {
         // Keep the colors defined by AWLDS - removed color picker
         borderColors: awldsColorPalette,
         backgroundColors: awldsColorPalette,
-        colorPicker: false
+        colorPicker: false,
       },
     },
-    title: { placeholder: "" },
+    // title: { placeholder: "" },
     placeholder: "",
-    // Add the license key here:
     licenseKey: LICENSE_KEY,
   };
 }
