@@ -3,12 +3,12 @@
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
-import { ClassicEditor } from '@ckeditor/ckeditor5-editor-classic';
-import { AccessibilityHelp } from '@ckeditor/ckeditor5-ui';
-import { Alignment } from '@ckeditor/ckeditor5-alignment';
-import { Autoformat } from '@ckeditor/ckeditor5-autoformat';
-import { Autosave } from '@ckeditor/ckeditor5-autosave';
-import { BlockQuote } from '@ckeditor/ckeditor5-block-quote';
+import { ClassicEditor } from "@ckeditor/ckeditor5-editor-classic";
+import { AccessibilityHelp } from "@ckeditor/ckeditor5-ui";
+import { Alignment } from "@ckeditor/ckeditor5-alignment";
+import { Autoformat } from "@ckeditor/ckeditor5-autoformat";
+import { Autosave } from "@ckeditor/ckeditor5-autosave";
+import { BlockQuote } from "@ckeditor/ckeditor5-block-quote";
 import {
   Bold,
   Italic,
@@ -16,27 +16,27 @@ import {
   Subscript,
   Superscript,
   Underline
-} from '@ckeditor/ckeditor5-basic-styles';
-import { Clipboard, PastePlainText } from '@ckeditor/ckeditor5-clipboard';
-import type { EditorConfig } from '@ckeditor/ckeditor5-core';
-import { Essentials } from '@ckeditor/ckeditor5-essentials';
-import { FindAndReplace } from '@ckeditor/ckeditor5-find-and-replace';
+} from "@ckeditor/ckeditor5-basic-styles";
+import { Clipboard, PastePlainText } from "@ckeditor/ckeditor5-clipboard";
+import type { EditorConfig } from "@ckeditor/ckeditor5-core";
+import { Essentials } from "@ckeditor/ckeditor5-essentials";
+import { FindAndReplace } from "@ckeditor/ckeditor5-find-and-replace";
 import {
   FontBackgroundColor,
   FontColor,
   FontFamily,
   FontSize,
-} from '@ckeditor/ckeditor5-font';
-import { Heading } from '@ckeditor/ckeditor5-heading';
-import { Highlight } from '@ckeditor/ckeditor5-highlight';
-import { HorizontalLine } from '@ckeditor/ckeditor5-horizontal-line';
-import { HtmlEmbed } from '@ckeditor/ckeditor5-html-embed';
+} from "@ckeditor/ckeditor5-font";
+import { Heading } from "@ckeditor/ckeditor5-heading";
+import { Highlight } from "@ckeditor/ckeditor5-highlight";
+import { HorizontalLine } from "@ckeditor/ckeditor5-horizontal-line";
+import { HtmlEmbed } from "@ckeditor/ckeditor5-html-embed";
 import {
   DataSchema,
   FullPage,
   GeneralHtmlSupport,
   HtmlComment,
-} from '@ckeditor/ckeditor5-html-support';
+} from "@ckeditor/ckeditor5-html-support";
 import {
   AutoImage,
   Image,
@@ -46,22 +46,22 @@ import {
   ImageStyle,
   ImageToolbar,
   ImageUpload,
-} from '@ckeditor/ckeditor5-image';
-import { Indent, IndentBlock } from '@ckeditor/ckeditor5-indent';
-import { TextPartLanguage } from '@ckeditor/ckeditor5-language';
-// import { Link, LinkImage } from '@ckeditor/ckeditor5-link';
-import { List, ListProperties, TodoList } from '@ckeditor/ckeditor5-list';
-import { Markdown } from '@ckeditor/ckeditor5-markdown-gfm';
-import { MediaEmbed, MediaEmbedToolbar } from '@ckeditor/ckeditor5-media-embed';
-import { Mention } from '@ckeditor/ckeditor5-mention';
-import { PageBreak } from '@ckeditor/ckeditor5-page-break';
-import { Paragraph } from '@ckeditor/ckeditor5-paragraph';
-import { PasteFromOffice } from '@ckeditor/ckeditor5-paste-from-office';
-import { RemoveFormat } from '@ckeditor/ckeditor5-remove-format';
-import { StandardEditingMode } from '@ckeditor/ckeditor5-restricted-editing';
-import { SelectAll } from '@ckeditor/ckeditor5-select-all';
-import { ShowBlocks } from '@ckeditor/ckeditor5-show-blocks';
-import { SourceEditing } from '@ckeditor/ckeditor5-source-editing';
+} from "@ckeditor/ckeditor5-image";
+import { Indent, IndentBlock } from "@ckeditor/ckeditor5-indent";
+import { TextPartLanguage } from "@ckeditor/ckeditor5-language";
+// import { Link, LinkImage } from "@ckeditor/ckeditor5-link";
+import { List, ListProperties, TodoList } from "@ckeditor/ckeditor5-list";
+import { Markdown } from "@ckeditor/ckeditor5-markdown-gfm";
+import { MediaEmbed, MediaEmbedToolbar } from "@ckeditor/ckeditor5-media-embed";
+import { Mention } from "@ckeditor/ckeditor5-mention";
+import { PageBreak } from "@ckeditor/ckeditor5-page-break";
+import { Paragraph } from "@ckeditor/ckeditor5-paragraph";
+import { PasteFromOffice } from "@ckeditor/ckeditor5-paste-from-office";
+import { RemoveFormat } from "@ckeditor/ckeditor5-remove-format";
+import { StandardEditingMode } from "@ckeditor/ckeditor5-restricted-editing";
+import { SelectAll } from "@ckeditor/ckeditor5-select-all";
+import { ShowBlocks } from "@ckeditor/ckeditor5-show-blocks";
+import { SourceEditing } from "@ckeditor/ckeditor5-source-editing";
 import {
   SpecialCharacters,
   SpecialCharactersArrows,
@@ -70,8 +70,8 @@ import {
   SpecialCharactersLatin,
   SpecialCharactersMathematical,
   SpecialCharactersText,
-} from '@ckeditor/ckeditor5-special-characters';
-import { Style } from '@ckeditor/ckeditor5-style';
+} from "@ckeditor/ckeditor5-special-characters";
+import { Style } from "@ckeditor/ckeditor5-style";
 import {
   Table,
   TableCaption,
@@ -79,90 +79,89 @@ import {
   TableColumnResize,
   TableProperties,
   TableToolbar,
-} from '@ckeditor/ckeditor5-table';
-import { TextTransformation } from '@ckeditor/ckeditor5-typing';
-import { Undo } from '@ckeditor/ckeditor5-undo';
-import { WordCount } from '@ckeditor/ckeditor5-word-count';
+} from "@ckeditor/ckeditor5-table";
+import { TextTransformation } from "@ckeditor/ckeditor5-typing";
+import { Undo } from "@ckeditor/ckeditor5-undo";
+import { WordCount } from "@ckeditor/ckeditor5-word-count";
 
 // Custom Plugins
-import AlightCopyPlugin from './plugins/alight-copy-plugin/alight-copy-plugin';
-import AlightImagePlugin from './plugins/alight-image-plugin/alight-image-plugin';
-import AlightPastePlugin from './plugins/alight-paste-plugin/alight-paste-plugin';
-import AlightPopulationPlugin from './plugins/alight-population-plugin/alight-population-plugin';
-import AlightTabsPlugin from './plugins/alight-tabs-plugin/alight-tabs-plugin';
+import AlightCopyPlugin from "./plugins/alight-copy-plugin/alight-copy-plugin";
+import AlightImagePlugin from "./plugins/alight-image-plugin/alight-image-plugin";
+import AlightPastePlugin from "./plugins/alight-paste-plugin/alight-paste-plugin";
+import AlightPopulationPlugin from "./plugins/alight-population-plugin/alight-population-plugin";
+import AlightTabsPlugin from "./plugins/alight-tabs-plugin/alight-tabs-plugin";
 
 // Link Specific plugins
-import AlightParentLinkPlugin from './plugins/alight-parent-link-plugin'; // Use the index file
-import type { LinkPluginConfig } from './plugins/alight-parent-link-plugin'; // Import type
-import AlightPredefinedLinkPlugin from './plugins/alight-predefined-link-plugin/link';
-import AlightNewDocumentLinkPlugin from './plugins/alight-new-document-link-plugin/alight-new-document-link-plugin';
-// import AlightExistingDocumentLinkPlugin from './plugins/alight-existing-document-link-plugin/alight-existing-document-link-plugin';
-import AlightExistingDocumentLinkPlugin from './plugins/alight-existing-document-link-plugin/link';
-import AlightExternalLinkPlugin from './plugins/alight-external-link-plugin/link';
-import AlightEmailLinkPlugin from './plugins/alight-email-link-plugin/link';
+import AlightParentLinkPlugin from "./plugins/alight-parent-link-plugin"; // Use the index file
+import type { LinkPluginConfig } from "./plugins/alight-parent-link-plugin"; // Import type
+import AlightPredefinedLinkPlugin from "./plugins/alight-predefined-link-plugin/link";
+import AlightNewDocumentLinkPlugin from "./plugins/alight-new-document-link-plugin/alight-new-document-link-plugin";
+// import AlightExistingDocumentLinkPlugin from "./plugins/alight-existing-document-link-plugin/alight-existing-document-link-plugin";
+import AlightExistingDocumentLinkPlugin from "./plugins/alight-existing-document-link-plugin/link";
+import AlightExternalLinkPlugin from "./plugins/alight-external-link-plugin/link";
+import AlightEmailLinkPlugin from "./plugins/alight-email-link-plugin/link";
 
 
 // Import custom styles for headings, style definitions and custom plugins
-import './styles/styles.scss';
-import SessionService from './services/session-service';
+import "./styles/styles.scss";
+import SessionService from "./services/session-service";
 
 // import fontawesome
-const script = document.createElement('script');
-script.src = 'https://kit.fontawesome.com/019f6c532e.js';
-script.crossOrigin = 'anonymous';
+const script = document.createElement("script");
+script.src = "https://kit.fontawesome.com/019f6c532e.js";
+script.crossOrigin = "anonymous";
 document.head.appendChild(script);
 
 export const LICENSE_KEY =
-  'eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3NDcxODA3OTksImp0aSI6IjAwN2YzMTI1LTkyYTgtNDc0MS05NDNiLWViM2M3NjhjN2RhNiIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsic2giLCJkcnVwYWwiXSwid2hpdGVMYWJlbCI6dHJ1ZSwiZmVhdHVyZXMiOlsiRFJVUCIsIkRPIiwiRlAiLCJTQyIsIlRPQyIsIlRQTCIsIlBPRSIsIkNDIiwiTUYiXSwidmMiOiJjYjM3ZmEyOCJ9.pfNUO8YBnKbw1V6HXgFb9PZRMzfErUsssTFcQ83EftEDV-tFn_pPPmFpkaRb9Fjzj02osXclT6aKGsmyihJazg';
+  "eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3NDcxODA3OTksImp0aSI6IjAwN2YzMTI1LTkyYTgtNDc0MS05NDNiLWViM2M3NjhjN2RhNiIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsic2giLCJkcnVwYWwiXSwid2hpdGVMYWJlbCI6dHJ1ZSwiZmVhdHVyZXMiOlsiRFJVUCIsIkRPIiwiRlAiLCJTQyIsIlRPQyIsIlRQTCIsIlBPRSIsIkNDIiwiTUYiXSwidmMiOiJjYjM3ZmEyOCJ9.pfNUO8YBnKbw1V6HXgFb9PZRMzfErUsssTFcQ83EftEDV-tFn_pPPmFpkaRb9Fjzj02osXclT6aKGsmyihJazg";
 
 // Use default colors from the AWLDS
 const awldsColorPalette = [
   // primary colors
-  { label: 'Core Water Leaf', color: '#96e8e2' },
-  { label: 'Core Tropical Blue', color: '#c2d9fe' },
-  { label: 'Core Pale Lavender', color: '#e5cdfd' },
+  { label: "Core Water Leaf", color: "#96e8e2" },
+  { label: "Core Tropical Blue", color: "#c2d9fe" },
+  { label: "Core Pale Lavender", color: "#e5cdfd" },
 
   // secondary colors
-  { label: 'Accent Apricot', color: '#ffcbb1' },
-  { label: 'Accent Canary Yellow', color: '#fff200' },
-  { label: 'Accent Denim', color: '#165bcf' },
-  { label: 'Accent Grenadier', color: '#cd4400' },
-  { label: 'Accent Hawks Blue', color: '#dce9ff' },
-  { label: 'Accent Jordy Blue', color: '#7da7ed' },
-  { label: 'Accent Navy Blue', color: '#266de2' },
-  { label: 'Accent Pink Orange', color: '#ff9966' },
-  { label: 'Accent Zircon', color: '#f4f8ff' },
+  { label: "Accent Canary Yellow", color: "#fff200" },
+  { label: "Accent Grenadier", color: "#cd4400" },
+  { label: "Accent Pink Orange", color: "#ff9966" },
+  { label: "Accent Denim", color: "#165bcf" },
+  { label: "Accent Navy Blue", color: "#266de2" },
+  { label: "Accent Jordy Blue", color: "#7da7ed" },
+  { label: "Accent Hawkes Blue", color: "#dce9ff" },
+  { label: "Accent Zircon", color: "#f4f8ff" },
 
   // tertiary colors
-  { label: 'Tertiary Cornflower Blue', color: '#639dfe' },
-  { label: 'Tertiary Orchid', color: '#d382e0' },
-  { label: 'Tertiary Rich Lilac', color: '#bb6bd9' },
-  { label: 'Tertiary Viking', color: '#64d9d2' },
+  { label: "Tertiary Cornflower Blue", color: "#639dfe" },
+  { label: "Tertiary Viking", color: "#64d9d2" },
+  { label: "Tertiary Rich Lilac", color: "#bb6bd9" },
+  { label: "Tertiary Orchid", color: "#d382e0" },
 
   // neutral colors
-  { label: 'Neutral Black', color: '#282828' },
-  { label: 'Neutral Dove Gray', color: '#767676' },
-  { label: 'Neutral Steel', color: '#666666' },
-  { label: 'Neutral Mountain Mist', color: '#959595' },
-  { label: 'Neutral Athens Gray', color: '#dedede' },
-  { label: 'Neutral Gallery', color: '#efefef' },
-  { label: 'Neutral White', color: '#ffffff' },
+  { label: "Neutral Black", color: "#292929" },
+  { label: "Neutral Dove Gray", color: "#757575" },
+  { label: "Neutral Steel", color: "#666666" },
+  { label: "Neutral Mountain Mist", color: "#949494" },
+  { label: "Neutral Athens Gray", color: "#dedede" },
+  { label: "Neutral Gallery", color: "#f0f0f0" },
+  { label: "Neutral White", color: "#ffffff" },
 
   // semantic colors
-  { label: 'Error Background', color: '#fdebec' },
-  { label: 'Error Shadow', color: '#ed3f3f' },
-  { label: 'Error', color: '#c61a1a' },
-  { label: 'Warning Background', color: '#ffefd2' },
-  { label: 'Warning', color: '#fbcf35' },
-  { label: 'Success Background', color: '#e6f6e1' },
-  { label: 'Success Shadow', color: '#0fab01' },
-  { label: 'Success', color: '#107400' },
-  { label: 'Info', color: '#165dd0' },
-  { label: 'Info Background', color: '#dbe8ff' },
+  { label: "Error Background", color: "#fdebec" },
+  { label: "Error Shadow", color: "#ed3f3f" },
+  { label: "Error", color: "#c61a1a" },
+  { label: "Warning Background", color: "#ffefd2" },
+  { label: "Warning", color: "#fbcf35" },
+  { label: "Success Background", color: "#e6f6e1" },
+  { label: "Success Shadow", color: "#0fab01" },
+  { label: "Success", color: "#107400" },
+  { label: "Info", color: "#165dd0" },
+  { label: "Info Background", color: "#dbe8ff" },
 ];
 
 class AlightEditor extends ClassicEditor {
-  public get textContent() { return this.getData().replace(/<[^>]*>/g, ''); }
+  public get textContent() { return this.getData().replace(/<[^>]*>/g, ""); }
 
   constructor(sourceElementOrData: HTMLElement | string, config?: any) {
     super(sourceElementOrData, config);
@@ -275,8 +274,8 @@ class AlightEditor extends ClassicEditor {
         'indent',
         'alignment',
         '|',
-        // "link",
-        "imageInsert",
+        // 'link',
+        'imageInsert',
         // 'imageUpload',
         'mediaEmbed',
         '|',
@@ -369,10 +368,10 @@ class AlightEditor extends ClassicEditor {
     htmlSupport: {
       allow: [
         {
-          name: 'ah:expr',
-          attributes: ['name', 'class', 'title', 'assettype'],
-          classes: ['*'],
-          styles: ['*']
+          name: "ah:expr",
+          attributes: ["name", "class", "title", "assettype"],
+          classes: ["*"],
+          styles: ["*"]
         },
         {
           name: "a",
@@ -380,30 +379,30 @@ class AlightEditor extends ClassicEditor {
             id: true,
             orgnameattr: true,
           },
-          classes: ['*'],
-          styles: ['*']
+          classes: ["*"],
+          styles: ["*"]
         },
         {
-          name: 'svg',
+          name: "svg",
           attributes: true,
-          classes: ['*'],
-          styles: ['*']
+          classes: ["*"],
+          styles: ["*"]
         },
         {
-          name: 'span', // Ensure spans inside ah:expr are allowed
+          name: "span", // Ensure spans inside ah:expr are allowed
           classes: [
-            'cka-population-tag',
-            'cka-population-begin',
-            'cka-population-end',
-            '*' // Added wildcard to allow all classes
+            "cka-population-tag",
+            "cka-population-begin",
+            "cka-population-end",
+            "*" // Added wildcard to allow all classes
           ],
-          attributes: ['data-population-name']
+          attributes: ["data-population-name"]
         },
         {
           name: /^(h[1-6])$/,
           attributes: true, // Allows all attributes, including href from links
-          styles: ['*'],
-          classes: ['*']
+          styles: ["*"],
+          classes: ["*"]
         }
       ],
       disallow: [] // Optionally disallow conflicting elements
@@ -437,36 +436,36 @@ class AlightEditor extends ClassicEditor {
     },
     image: {
       toolbar: [
-        'imageTextAlternative',
-        'toggleImageCaption',
-        'imageStyle:inline',
-        'imageStyle:block',
-        'imageStyle:side',
-        'linkImage',
+        "imageTextAlternative",
+        "toggleImageCaption",
+        "imageStyle:inline",
+        "imageStyle:block",
+        "imageStyle:side",
+        "linkImage",
       ],
     },
     indentBlock: {
       offset: 1,
-      unit: 'em',
+      unit: "em",
     },
     language: {
-      ui: 'en',
-      content: 'en', // Ensures English is the default content language
+      ui: "en",
+      content: "en", // Ensures English is the default content language
       textPartLanguage: [
-        { title: 'English (American)', languageCode: 'en' },
-        { title: 'Arabic', languageCode: 'ar', textDirection: 'rtl' },
-        { title: 'Chinese (China)', languageCode: 'zh-cn' },
-        { title: 'Chinese (Taiwan)', languageCode: 'zh-tw' },
-        { title: 'Dutch', languageCode: 'nl' },
-        { title: 'French', languageCode: 'fr' },
-        { title: 'French (Canada)', languageCode: 'fr-ca' },
-        { title: 'German', languageCode: 'de' },
-        { title: 'Italian', languageCode: 'it' },
-        { title: 'Japanese', languageCode: 'ja' },
-        { title: 'Portuguese (Brazilian)', languageCode: 'pt-br' },
-        { title: 'Portuguese', languageCode: 'pt' },
-        { title: 'Russian', languageCode: 'ru' },
-        { title: 'Spanish', languageCode: 'es' },
+        { title: "English (American)", languageCode: "en" },
+        { title: "Arabic", languageCode: "ar", textDirection: "rtl" },
+        { title: "Chinese (China)", languageCode: "zh-cn" },
+        { title: "Chinese (Taiwan)", languageCode: "zh-tw" },
+        { title: "Dutch", languageCode: "nl" },
+        { title: "French", languageCode: "fr" },
+        { title: "French (Canada)", languageCode: "fr-ca" },
+        { title: "German", languageCode: "de" },
+        { title: "Italian", languageCode: "it" },
+        { title: "Japanese", languageCode: "ja" },
+        { title: "Portuguese (Brazilian)", languageCode: "pt-br" },
+        { title: "Portuguese", languageCode: "pt" },
+        { title: "Russian", languageCode: "ru" },
+        { title: "Spanish", languageCode: "es" },
       ],
     },
     list: {
@@ -475,14 +474,14 @@ class AlightEditor extends ClassicEditor {
         reversed: false,
         styles: {
           listStyleTypes: {
-            numbered: ['decimal'],
-            bulleted: ['disc']
+            numbered: ["decimal"],
+            bulleted: ["disc"]
           }
         }
       }
     },
     mediaEmbed: {
-      toolbar: ['mediaEmbed'],
+      toolbar: ["mediaEmbed"],
     },
     style: {
       definitions: [
@@ -506,20 +505,20 @@ class AlightEditor extends ClassicEditor {
     },
     table: {
       contentToolbar: [
-        'tableColumn',
-        'tableRow',
-        'mergeTableCells',
-        '|',
-        'tableProperties',
-        'tableCellProperties',
+        "tableColumn",
+        "tableRow",
+        "mergeTableCells",
+        "|",
+        "tableProperties",
+        "tableCellProperties",
       ],
       tableProperties: {
         defaultProperties: {
-          borderColor: 'black',
-          borderStyle: 'solid',
-          borderWidth: '2px',
-          height: '100%',
-          width: '100%',
+          borderColor: "black",
+          borderStyle: "solid",
+          borderWidth: "2px",
+          height: "100%",
+          width: "100%",
         },
         borderColors: awldsColorPalette,
         backgroundColors: awldsColorPalette,
@@ -527,10 +526,10 @@ class AlightEditor extends ClassicEditor {
       },
       tableCellProperties: {
         defaultProperties: {
-          borderColor: 'black',
-          borderStyle: 'solid',
-          borderWidth: '1px',
-          padding: '10px',
+          borderColor: "black",
+          borderStyle: "solid",
+          borderWidth: "1px",
+          padding: "10px",
         },
         // Keep the colors defined by AWLDS - removed color picker
         borderColors: awldsColorPalette,
@@ -538,8 +537,8 @@ class AlightEditor extends ClassicEditor {
         colorPicker: false
       },
     },
-    title: { placeholder: '' },
-    placeholder: '',
+    title: { placeholder: "" },
+    placeholder: "",
     // Add the license key here:
     licenseKey: LICENSE_KEY,
   };
