@@ -111,7 +111,7 @@ describe('AlightPastePlugin', () => {
 
       it('should create a button with correct properties', () => {
         expect(button instanceof ButtonView).toBe(true);
-        expect(button.label).toBe('Paste with Styles');
+        expect(button.label).toBe('Paste with formatting');
         expect(button.tooltip).toBe(true);
         expect(button.icon).toBeDefined();
       });

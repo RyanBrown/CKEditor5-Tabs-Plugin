@@ -4,7 +4,7 @@ AlightEditor
   })
   .then(editor => {
     window.editor = editor;
-    CKEDitorInspector.attach(editor);
+    CKEditorInspector.attach(editor);
 
     sessionStorage.setItem('apiUrl', 'https://test.com');
     sessionStorage.setItem('dummyColleagueSessionToken', '1234');

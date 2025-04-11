@@ -51,7 +51,7 @@ describe('AlightCopyPlugin', () => {
     });
 
     it('should have the correct label', () => {
-      expect(buttonView.label).toBe('Copy with Styles');
+      expect(buttonView.label).toBe('Copy with formatting');
     });
 
     it('should have tooltip enabled', () => {
