@@ -116,12 +116,12 @@ export const LICENSE_KEY = "eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3NDcxODA3OTksImp0aSI
 
 // Use default colors from the AWLDS
 const awldsColorPalette = [
-  // primary colors
+  // core colors
   { label: "Core Water Leaf", color: "#96e8e3" },
   { label: "Core Tropical Blue", color: "#c2d9fe" },
   { label: "Core Pale Lavender", color: "#e5cefd" },
 
-  // secondary colors
+  // accent colors
   { label: "Accent Canary Yellow", color: "#fff305" },
   { label: "Accent Grenadier", color: "#cc4400" },
   { label: "Accent Pink Orange", color: "#ff9966" },
@@ -512,9 +512,9 @@ class AlightEditor extends ClassicEditor {
         "tableProperties",
         "tableCellProperties",
       ],
-      // The default styles for tables in the editor.
-      // They should be synchronized with the content styles.
       tableProperties: {
+        // The default styles for tables in the editor.
+        // They should be synchronized with the content styles.
         defaultProperties: {
           borderColor: "black",
           borderStyle: "solid",
