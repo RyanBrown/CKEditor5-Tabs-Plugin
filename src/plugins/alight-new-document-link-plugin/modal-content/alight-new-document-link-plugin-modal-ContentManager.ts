@@ -42,10 +42,10 @@ export class ContentManager implements ILinkManager {
     this.formSubmissionHandler = new FormSubmissionHandler();
   }
 
-  public setModalContents = async (): Promise<any> => {
+  public setModalContents = async (): Promise<any[]> => {
     await this.loadService.loadCategories().then(
       (data) => this.categories = data.map((category) => ({ id: `id-${category}`, label: category })),
-      (error) => console.log(error);
+      (error) => console.log(error)
     );
     return this.categories;
   }

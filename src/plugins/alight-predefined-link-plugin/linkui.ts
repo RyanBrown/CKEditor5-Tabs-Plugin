@@ -1,5 +1,4 @@
 // src/plugins/alight-predefined-link-plugin/linkui.ts
-import { Plugin } from '@ckeditor/ckeditor5-core';
 import {
   ClickObserver,
   type ViewAttributeElement,
@@ -52,7 +51,7 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
     return [AlightPredefinedLinkPluginEditing, ContextualBalloon] as const;
   }
 
-  public static override get pluginName(): string { return 'AlightPredefinedLinkPluginUI' as const };
+  public static override get pluginName(): string { return 'AlightPredefinedLinkPluginUI' as const; }
   public override get pluginName(): string { return AlightPredefinedLinkPluginUI.pluginName; }
   public override get pluginId(): string { return 'AlightPredefinedLinkPlugin'; }
 
@@ -119,7 +118,7 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
 
     // Register the UI component
     editor.ui.componentFactory.add('alightPredefinedLinkPlugin', locale => {
-      return this._createButton(ButtonView);
+      this._createButton(ButtonView);
       this.setModalContents();
       return this.buttonView;
     });
@@ -148,76 +147,47 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
   }
 
   // Fetch predefined links from the service
-  private async _fetchPredefinedLinks(): Promise<PredefinedLink[]> {
-    if (!this._linksService) {
-      console.warn('Links service not initialized');
-      return [];
-    }
+  private processLinks = (rawLinks: PredefinedLink[]) => {
+    // Check if we have the nested predefinedLinksDetails structure
+    // and extract the actual links from it
+    let processedLinks: any[] = [];
 
-    try {
-      // Get links from the service
-      const rawLinks = await this._linksService.getPredefinedLinks();
+    for (const rawLink of rawLinks as PredefinedLink[]) {
+      if (rawLink.predefinedLinksDetails && Array.isArray(rawLink.predefinedLinksDetails)) {
+        // The API response has nested predefinedLinksDetails - extract and process those
+        console.log(`Found ${rawLink.predefinedLinksDetails.length} nested links for ${rawLink.pageCode}`);
 
-      // If we got empty links, return empty array
-      if (!rawLinks || rawLinks.length === 0) {
-        console.warn('No predefined links returned from service');
-        return [];
-      }
+        // Process each nested link and add parent data
+        rawLink.predefinedLinksDetails.forEach((nestedLink) => {
+          processedLinks.push({
+            // Base properties from parent link
+            baseOrClientSpecific: rawLink.baseOrClientSpecific || 'base',
+            pageType: rawLink.pageType || 'Unknown',
+            pageCode: rawLink.pageCode || '',
+            domain: rawLink.domain || '',
 
-      // Check if we have the nested predefinedLinksDetails structure
-      // and extract the actual links from it
-      let processedLinks: any[] = [];
-
-      for (const rawLink of rawLinks as PredefinedLink[]) {
-        if (rawLink.predefinedLinksDetails && Array.isArray(rawLink.predefinedLinksDetails)) {
-          // The API response has nested predefinedLinksDetails - extract and process those
-          console.log(`Found ${rawLink.predefinedLinksDetails.length} nested links for ${rawLink.pageCode}`);
-
-          // Process each nested link and add parent data
-          rawLink.predefinedLinksDetails.forEach((nestedLink) => {
-            processedLinks.push({
-              // Base properties from parent link
-              baseOrClientSpecific: rawLink.baseOrClientSpecific || 'base',
-              pageType: rawLink.pageType || 'Unknown',
-              pageCode: rawLink.pageCode || '',
-              domain: rawLink.domain || '',
-
-              // Properties from nested link
-              predefinedLinkName: nestedLink.linkName || nestedLink.name || 'Unnamed Link',
-              predefinedLinkDescription: nestedLink.description || '',
-              destination: nestedLink.url || nestedLink.destination || '',
-              uniqueId: nestedLink.id || nestedLink.uniqueId || '',
-              attributeName: nestedLink.attributeName || '',
-              attributeValue: nestedLink.attributeValue || ''
-            });
+            // Properties from nested link
+            predefinedLinkName: nestedLink.linkName || nestedLink.name || 'Unnamed Link',
+            predefinedLinkDescription: nestedLink.description || '',
+            destination: nestedLink.url || nestedLink.destination || '',
+            uniqueId: nestedLink.id || nestedLink.uniqueId || '',
+            attributeName: nestedLink.attributeName || '',
+            attributeValue: nestedLink.attributeValue || ''
           });
-        } else {
-          // Standard link without nesting
-          processedLinks.push(rawLink);
-        }
+        });
+      } else {
+        // Standard link without nesting
+        processedLinks.push(rawLink);
       }
-
-      // Process links directly without transformation
-      const links = processedLinks.filter(link =>
-        link.destination && link.destination.trim() !== '' &&
-        (link.predefinedLinkName || link.name) &&
-        (link.predefinedLinkName || link.name).trim() !== ''
-      );
-
-      console.log(`Final links: ${links.length}`);
-
-      // Return empty array if no valid links
-      if (links.length === 0) {
-        console.warn('No valid links found');
-        return [];
-      }
-
-      return links;
-    } catch (error) {
-      console.error('Error fetching predefined links:', error);
-      return [];
     }
-  }
+
+    // Process links directly without transformation
+    return processedLinks.filter(link =>
+      link.destination && link.destination.trim() !== '' &&
+      (link.predefinedLinkName || link.name) &&
+      (link.predefinedLinkName || link.name).trim() !== ''
+    );
+  };
 
   // Checks if the current selection is in a link and shows the balloon if needed
   private _checkAndShowBalloon(): void {
@@ -249,6 +219,7 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
       const button = this._createButton(MenuBarMenuListItemButtonView);
 
       button.set({
+        isEnabled: this.isReady,
         role: 'menuitemcheckbox'
       });
 
@@ -261,23 +232,24 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
     const editor = this.editor;
     const locale = editor.locale;
     const command = editor.commands.get('alight-predefined-link')!;
-    const view = new ButtonClass(editor.locale) as InstanceType<T>;
+    this.buttonView = new ButtonClass(editor.locale) as InstanceType<T>;
     const t = locale.t;
 
-    view.set({
+    this.buttonView.set({
+      isEnabled: this.isReady,
       label: t('Predefined link'),
       icon: ToolBarIcon,
       isToggleable: true,
       withText: true
     });
 
-    view.bind('isEnabled').to(command, 'isEnabled');
-    view.bind('isOn').to(command, 'value', value => !!value);
+    this.buttonView.bind('isEnabled').to(command, 'isEnabled', (command) => command && this.isReady);
+    this.buttonView.bind('isOn').to(command, 'value', value => !!value);
 
     // Show the modal dialog on button click for creating new links
-    this.listenTo(view, 'execute', () => this._showUI());
+    this.listenTo(this.buttonView, 'execute', () => this._showUI());
 
-    return view;
+    return this.buttonView;
   }
 
   // Creates the {@link module:link/ui/linkactionsview~LinkActionsView} instance.
@@ -337,17 +309,9 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
 
   // Find predefined link by URL using the links service
   private async _findPredefinedLinkByUrl(url: string): Promise<PredefinedLink | null> {
-    if (!this._linksService) {
-      console.warn('Links service not initialized');
-      return null;
-    }
-
     try {
-      // Fetch all predefined links
-      const links = await this._linksService.getPredefinedLinks();
-
       // Find the matching link by URL - compare regardless of trailing slash or protocol differences
-      return links.find((link: any) => {
+      return this._predefinedLinks.find(link => {
         const normalizedDestination = this._normalizeUrl(link.destination as string);
         const normalizedUrl = this._normalizeUrl(url);
         return normalizedDestination === normalizedUrl;
@@ -597,11 +561,7 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
 
     // Then fetch data and initialize the content manager in the background
     try {
-      // Fetch predefined links from the service
-      const predefinedLinks = await this._fetchPredefinedLinks();
-      console.log('Fetched predefined links:', predefinedLinks);
-
-      if (predefinedLinks.length === 0) {
+      if (this._predefinedLinks.length === 0) {
         // Show message if no links found
         const linksContainer = customContent.querySelector('#links-container');
         if (linksContainer) {
@@ -615,7 +575,7 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
       }
 
       // Create the ContentManager with the initialUrl and predefined links data
-      this._linkManager = new ContentManager(initialUrl, predefinedLinks);
+      this._linkManager = new ContentManager(initialUrl, this._predefinedLinks);
 
       // Pass the modal dialog reference to enable/disable the Continue button
       // Add an event listener for link selection
@@ -635,8 +595,8 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
       const linksContainer = customContent.querySelector('#links-container');
       if (linksContainer) {
         linksContainer.innerHTML = `
-      <div class="cka-error-state">
-        <p class="cka-error-details">${error.message || 'Unknown error'}</p>
+      <div class="cka-center-modal-message">
+        <p>${error.message || 'Unknown error'}</p>
       </div>
     `;
       }

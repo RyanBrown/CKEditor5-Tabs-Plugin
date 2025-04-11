@@ -52,7 +52,7 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
 
   public static override get pluginName(): string { return 'AlightExistingDocumentLinkPluginUI' as const; }
   public override get pluginName(): string { return AlightExistingDocumentLinkPluginUI.pluginName; }
-  public override get pluginId(): string { return 'AlightExistingDocumentLinkPlugin'; }
+  public override get pluginId(): string { return "AlightExistingDocumentLinkPlugin"; }
 
   public static override get isOfficialPlugin(): true {
     return true;
@@ -117,7 +117,7 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
 
     // Register the UI component
     editor.ui.componentFactory.add('AlightExistingDocumentLinkPlugin', locale => {
-      return this._createButton(ButtonView);
+      this._createButton(ButtonView);
       this.setModalContents();
       return this.buttonView;
     });

@@ -16,9 +16,7 @@ export default class LinksFetchService extends HttpService {
   private readonly _predefinedLinksSampleMode: boolean = false;
 
   public fetchPredefinedLinks = async (): Promise<PredefinedLink[]> => {
-
     if (this._predefinedLinksSampleMode) {
-      console.log("Using predefined links sample data");
       return Promise.resolve(predefinedLinkSampleData.predefinedLinksDetails as PredefinedLink[]);
     }
 
@@ -122,44 +120,27 @@ export default class LinksFetchService extends HttpService {
   public fetchCategories = async (): Promise<string[]> => {
     // If sample mode is enabled, return sample data
     if (this._categorySampleMode) {
-      console.log("Using categories sample data");
       return Promise.resolve(categorySampleData.categoryList as string[]);
     }
 
     // Check if using Mockaroo API
     if (SessionService.getInstance().isMockarooApi) {
-      console.log("Would fetch categories from Mockaroo, but using sample data for now");
       return Promise.resolve(categorySampleData.categoryList as string[]);
     } else {
       // Regular API call
-      console.log("Fetching categories from regular API");
       let dataSource: IReadSourceDocs = new DataSourceDocs(this.alightRequest._apiUrl, this.alightRequest._clientId);
       try {
         const response = await this.get(dataSource.dataSourceCategory);
         const parsedResponse = JSON.parse(response);
         return parsedResponse.categoryList as string[];
       } catch (error) {
-        console.error('Error fetching categories from API:', error);
         return [];
       }
     }
   }
 
-  public saveDocument = async (document: Record<string, any>): Promise<string> => {
-    console.log("Saving document:", document);
+  public saveDocument = (document: Record<string, any>): Promise<string> => {
     let dataSource: IWriteSource = new DataSourceDocs(this.alightRequest._apiUrl, this.alightRequest._clientId);
-    try {
-      return await this.post(dataSource, document);
-    } catch (error) {
-      console.error('Error saving document:', error);
-      return JSON.stringify({ success: false, error: error.message });
-    }
-  }
-
-  // Helper method to extract API key from URL
-  private extractMockarooApiKey = (): string => {
-    const apiUrl = this.alightRequest._apiUrl;
-    const apiKeyMatch = apiUrl.match(/key=([^&]+)/);
-    return apiKeyMatch ? apiKeyMatch[1] : this.MOCKAROO_FALLBACK_KEY;
+    return this.post(dataSource, document);
   }
 }
