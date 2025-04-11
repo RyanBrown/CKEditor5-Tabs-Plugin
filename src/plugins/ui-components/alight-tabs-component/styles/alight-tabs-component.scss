@@ -2,16 +2,32 @@
 @use './../../../../styles/mixins' as mixins;
 
 .cka-tabs {
+  display: flex;
+  flex-direction: column;
   font-family: var(--font-family-base);
-  margin: 20px auto;
-  max-width: 800px;
+  margin: 0 auto;
   width: 100%;
 }
 
 .cka-tabs-header {
+  -ms-overflow-style: none;
   border-bottom: 2px solid var(--gray-300);
   display: flex;
+  overflow-x: auto;
   position: relative;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.cka-tabs-list {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
 }
 
 .cka-tab-button {
@@ -21,8 +37,10 @@
   color: var(--secondary);
   cursor: pointer;
   display: flex;
+  font-family: inherit;
   font-size: 1rem;
   gap: 0.5rem;
+  outline: none;
   padding: 1rem 1.5rem;
   position: relative;
   transition: all 0.2s;
@@ -35,28 +53,45 @@
 
   &.active {
     color: var(--primary);
+    font-weight: 500;
 
     &::after {
       animation: slideIn 0.2s ease-out;
       background-color: var(--primary);
-      bottom: -2px;
-      content: '';
-      height: 2px;
+      border-radius: .3125rem;
+      bottom: -3px;
+      content: "";
+      display: block;
+      height: .3125rem;
       left: 0;
+      outline: none;
       position: absolute;
+      transition: all .3s;
       width: 100%;
     }
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
   }
 }
 
 .cka-tab-content {
   animation: fadeIn 0.3s ease-out;
+  background-color: var(--neutral-white);
+  border-top: none;
+  border: 1px solid var(--gray-300);
   display: none;
   padding: 1.5rem;
 
   &.active {
     display: block;
   }
+}
+
+.tab-content-editable {
+  min-height: 100px;
+  width: 100%;
 }
 
 .cka-close-button {
@@ -118,5 +153,25 @@
     .cka-scroll-button {
       display: flex;
     }
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
   }
 }
