@@ -24,12 +24,10 @@ import './../ui-components/alight-checkbox-component/alight-checkbox-component';
 // Import the ContentManager and types from the updated location
 import { ContentManager } from './ui/linkmodal-ContentManager';
 import { PredefinedLink } from './ui/linkmodal-modal-types';
+import AlightDataLoadPlugin from '../../alight-common/alight-data-load-plugin';
 
-// Import the services
-import { LinksService } from './../../services/links-service';
-import { SessionService } from './../../services/session-service';
-
-import linkIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
+import LinksLoadService from '../../services/links-load-service';
+import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 
 const VISUAL_SELECTION_MARKER_NAME = 'alight-predefined-link-ui';
 
@@ -38,23 +36,25 @@ const VISUAL_SELECTION_MARKER_NAME = 'alight-predefined-link-ui';
  * 
  * Uses a balloon for unlink actions, and a modal dialog for create/edit functions.
  */
-export default class AlightPredefinedLinkPluginUI extends Plugin {
+export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
   private _modalDialog: CkAlightModalDialog | null = null;
   private _linkManager: ContentManager | null = null;
 
-  private _linksService: LinksService | null = null;
   public actionsView: LinkActionsView | null = null;
 
   private _balloon!: ContextualBalloon;
   private _isUpdatingUI: boolean = false;
 
+  private _predefinedLinks: PredefinedLink[];
+  private readonly loadService: LinksLoadService = new LinksLoadService();
+
   public static get requires() {
     return [AlightPredefinedLinkPluginEditing, ContextualBalloon] as const;
   }
 
-  public static get pluginName() {
-    return 'AlightPredefinedLinkPluginUI' as const;
-  }
+  public static override get pluginName(): string { return 'AlightPredefinedLinkPluginUI' as const };
+  public static get pluginName(): string { return AlightPredefinedLinkPluginUI.pluginName; }
+  public static get pluginId(): string { return 'AlightPredefinedLinkPluginUI'; }
 
   public static override get isOfficialPlugin(): true {
     return true;
@@ -63,9 +63,6 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
   public init(): void {
     const editor = this.editor;
     const t = this.editor.t;
-
-    // Initialize the services
-    this._initServices();
 
     editor.editing.view.addObserver(ClickObserver);
     this._balloon = editor.plugins.get(ContextualBalloon);
@@ -288,7 +285,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
 
     view.set({
       label: t('Predefined link'),
-      icon: linkIcon,
+      icon: ToolBarIcon,
       isToggleable: true,
       withText: true
     });

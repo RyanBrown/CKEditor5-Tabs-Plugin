@@ -8,7 +8,6 @@ import { DataSourceLinks } from "../data-sources/custom-source/data-source-links
 import { DocumentLink } from "../plugins/alight-existing-document-link-plugin/ui/linkmodal-modal-types";
 import { IReadSource, IWriteSource } from "../data-sources/base-source/data-source";
 import { DataSourceDocs, IReadSourceDocs } from "../data-sources/custom-source/data-source-docs";
-import SessionService from "./session-service";
 
 export default class LinksFetchService extends HttpService {
 
@@ -16,13 +15,8 @@ export default class LinksFetchService extends HttpService {
   private readonly _documentLinksSampleMode: boolean = false;
   private readonly _predefinedLinksSampleMode: boolean = false;
 
-  // Mockaroo API endpoints
-  private readonly MOCKAROO_PREDEFINED_LINKS_ENDPOINT = "predefined_link.json";
-  private readonly MOCKAROO_DOCUMENT_LINKS_ENDPOINT = "existing_document.json";
-  private readonly MOCKAROO_FALLBACK_KEY = "b3c0df80"; // Default fallback key
-
   public fetchPredefinedLinks = async (): Promise<PredefinedLink[]> => {
-    // If sample mode is enabled, return sample data
+
     if (this._predefinedLinksSampleMode) {
       console.log("Using predefined links sample data");
       return Promise.resolve(predefinedLinkSampleData.predefinedLinksDetails as PredefinedLink[]);

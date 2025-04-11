@@ -12,9 +12,9 @@ export default class SessionService {
 
   private constructor(sessionStg?: Storage) {
     this.sessionMap = new Map<string, string>([
-      [this.apiUrlKey, sessionStorage.getItem(this.apiUrlKey) || ''],
-      [this.dummyColleagueSessionTokenKey, sessionStorage.getItem(this.dummyColleagueSessionTokenKey) || ''],
-      [this.dummyRequestHeaderKey, sessionStorage.getItem(this.dummyRequestHeaderKey) || ''],
+      [this.apiUrlKey, sessionStorage.getItem(this.apiUrlKey)!],
+      [this.dummyColleagueSessionTokenKey, sessionStorage.getItem(this.dummyColleagueSessionTokenKey)!],
+      [this.dummyRequestHeaderKey, sessionStorage.getItem(this.dummyRequestHeaderKey)!],
     ]);
   }
 
@@ -22,7 +22,7 @@ export default class SessionService {
     if (SessionService.instance === null) {
       SessionService.instance = new SessionService(sessionStorage);
     } else {
-      throw new Error("Instance already created");
+      throw new Error("Instance already created.");
     }
   }
 
@@ -52,24 +52,6 @@ export default class SessionService {
   }
 
   public get clientId(): string {
-    return this.sessionMap.get(this.dummyRequestHeaderKey) || 'default-client-id';
-  }
-
-  // Set clientId method
-  public setClientId(value: string): void {
-    this.sessionMap.set(this.dummyRequestHeaderKey, value);
-  }
-
-  // Check if this is a Mockaroo API
-  public get isMockarooApi(): boolean {
-    return this.apiUrl.includes('mockaroo.com');
-  }
-
-  // Get Mockaroo API key if available
-  public get mockarooApiKey(): string {
-    if (!this.isMockarooApi) return null;
-
-    const apiKeyMatch = this.apiUrl.match(/key=([^&]+)/);
-    return apiKeyMatch ? apiKeyMatch[1] : null;
+    return this.sessionMap.get(this.dummyRequestHeaderKey)?.clientId;
   }
 }

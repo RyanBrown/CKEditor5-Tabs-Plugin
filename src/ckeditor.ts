@@ -35,7 +35,7 @@ import {
   DataSchema,
   FullPage,
   GeneralHtmlSupport,
-  HtmlComment
+  HtmlComment,
 } from '@ckeditor/ckeditor5-html-support';
 import {
   AutoImage,
