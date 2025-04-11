@@ -2,7 +2,6 @@
 import AlightRequest from "./alight-request";
 
 export default class SessionService {
-
   private readonly apiUrlKey: string = "apiUrl";
   private readonly dummyColleagueSessionTokenKey: string = "dummyColleagueSessionToken";
   private readonly dummyRequestHeaderKey: string = "dummyRequestHeader";
