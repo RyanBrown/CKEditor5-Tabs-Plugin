@@ -7,7 +7,6 @@ import { CkAlightCheckbox } from '../../ui-components/alight-checkbox-component/
 import { CkAlightChipsMenu } from '../../ui-components/alight-chips-menu-component/alight-chips-menu-component';
 import '../../ui-components/alight-checkbox-component/alight-checkbox-component';
 import LinksLoadService from '../../../services/links-load-service';
-import { error } from 'console';
 
 interface CategoryItem {
   id: string;
