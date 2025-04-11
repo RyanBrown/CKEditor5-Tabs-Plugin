@@ -1,28 +1,36 @@
 // src/plugins/alight-new-document-link-plugin/alight-new-document-link-plugin-ui.ts
-import { Plugin } from '@ckeditor/ckeditor5-core';
 import { ButtonView } from '@ckeditor/ckeditor5-ui';
 import { CkAlightModalDialog, DialogButton } from '../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import { ContentManager } from './modal-content/alight-new-document-link-plugin-modal-ContentManager';
 import { Notification } from '@ckeditor/ckeditor5-ui';
 import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 import './styles/alight-new-document-link-plugin.scss';
+import AlightDataLoadPlugin from '../../alight-common/alight-data-load-plugin';
 
-export default class AlightNewDocumentLinkPluginUI extends Plugin {
+export default class AlightNewDocumentLinkPluginUI extends AlightDataLoadPlugin {
   private _modalDialog?: CkAlightModalDialog;
   private _formManager?: ContentManager;
   private _isSubmitting: boolean = false;
 
-  public static get pluginName() {
-    return 'AlightNewDocumentLinkPluginUI' as const;
-  }
+  public static override get pluginName(): string { return 'AlightNewDocumentLinkPluginUI' as const; }
+  public override get pluginName(): string { return AlightNewDocumentLinkPluginUI.pluginName; }
+  public override get pluginId(): string { return "AlightNewDocumentLinkPlugin"; }
 
   public static get requires() {
     return [Notification] as const;
   }
 
   public init(): void {
-    this._setupToolbarButton();
     this._initializeFormManager();
+    this._setupToolbarButton();
+  }
+
+  protected override setModalContents = async (): Promise<void> => {
+    if (this.verboseMode) console.log(`Loading Categories...`);
+    let categories = await this._formManager.setModalContents();
+    if (this.verboseMode) console.log(categories);
+    this.isReady = true;
+    this._enablePluginButton();
   }
 
   private _setupToolbarButton(): void {
@@ -30,10 +38,13 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
     const t = editor.t;
 
     editor.ui.componentFactory.add('alightNewDocumentLinkPlugin', locale => {
-      const button = new ButtonView(locale);
+      this.buttonView = new ButtonView(locale);
+      this.setModalContents();
+
       const command = editor.commands.get('alightNewDocumentLinkPlugin');
 
-      button.set({
+      this.buttonView.set({
+        isEnabled: this.isReady,
         label: t('New Document'),
         icon: ToolBarIcon,
         tooltip: true,
@@ -41,17 +52,13 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
       });
 
       // Bind button state to command if available
-      if (command) {
-        button.bind('isEnabled').to(command);
-      } else {
-        button.isEnabled = true;
-      }
+      if (command) this.buttonView.bind('isEnabled').to(command) => command && this.isReady;
 
-      button.on('execute', async () => {
+      this.buttonView.on('execute', async () => {
         await this._showModal();
       });
 
-      return button;
+      return this.buttonView;
     });
   }
 

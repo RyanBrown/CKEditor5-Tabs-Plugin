@@ -21,10 +21,10 @@ declare module '@ckeditor/ckeditor5-core' {
   }
 
   interface PluginsMap {
-    'AlightExistingDocumentLinkPluginAutoLink.pluginName': AlightExistingDocumentLinkPluginAutoLink;
-    'AlightExistingDocumentLinkPlugin.pluginName': AlightExistingDocumentLinkPlugin;
-    'AlightExistingDocumentLinkPluginEditing.pluginName': AlightExistingDocumentLinkPluginEditing;
-    'AlightExistingDocumentLinkPluginUI.pluginName': AlightExistingDocumentLinkPluginUI;
+    'AlightExistingDocumentLinkPluginAutoLink': AlightExistingDocumentLinkPluginAutoLink;
+    'AlightExistingDocumentLinkPlugin': AlightExistingDocumentLinkPlugin;
+    'AlightExistingDocumentLinkPluginEditing': AlightExistingDocumentLinkPluginEditing;
+    'AlightExistingDocumentLinkPluginUI': AlightExistingDocumentLinkPluginUI;
   }
 
   interface CommandsMap {
