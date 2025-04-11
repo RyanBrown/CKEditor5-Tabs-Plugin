@@ -625,7 +625,7 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
         const linksContainer = customContent.querySelector('#links-container');
         if (linksContainer) {
           linksContainer.innerHTML = `
-          <div class="cka-no-results">
+          <div class="cka-center-modal-message">
             <p>No predefined links available.</p>
           </div>
         `;
