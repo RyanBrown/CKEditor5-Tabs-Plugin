@@ -21,8 +21,9 @@ export default class LinksFetchService extends HttpService {
 
     let dataSource: IReadSource = new DataSourceLinks(this.alightRequest._apiUrl);
     return await this.get(dataSource)
-      .then(response => JSON.parse(response).predefinedLinksDetails as PredefinedLink[]);
-    // error => console.error(error) // TODO switch this to return new Promise
+      .then(response => JSON.parse(response).predefinedLinksDetails as PredefinedLink[]
+        // error => console.error(error) // TODO switch this to return new Promise
+      );
   }
 
   public fetchDocumentLinks = (): Promise<DocumentLink[]> => {
