@@ -8,7 +8,7 @@ AlightEditor
 
     sessionStorage.setItem('apiUrl', 'https://test.com');
     sessionStorage.setItem('dummyColleagueSessionToken', '1234');
-    sessionStorage.setItem('dummyRequestHeader', '');
+    sessionStorage.setItem('dummyRequestHeader', '{}');
   }).catch(handleSampleError);
 
 
