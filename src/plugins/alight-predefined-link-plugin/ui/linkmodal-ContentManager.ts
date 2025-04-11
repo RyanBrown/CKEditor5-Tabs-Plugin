@@ -159,7 +159,7 @@ export class ContentManager implements ILinkManager {
     return `
     ${searchContainerMarkup}
     ${currentUrlInfo}
-    <div id="links-container">
+    <div id="links-container" class="cka-links-container">
       ${linksMarkup}
     </div>
     ${paginationMarkup}
@@ -208,16 +208,13 @@ export class ContentManager implements ILinkManager {
           </cka-radio-button>
         </div>
         <ul>
-          <li>${link.predefinedLinkName}</li>
-          <li><strong>Description:</strong> ${link.predefinedLinkDescription}</li>
-          <li><strong>Base/Client Specific:</strong> ${link.baseOrClientSpecific}</li>
-          <li><strong>Page Type:</strong> ${link.pageType}</li>
-          <li class="wrap-text"><strong>Destination:</strong> ${link.destination}</li>
+          <li><strong>${link.predefinedLinkName}</strong></li>
+          <li><strong>Description:</strong> ${link.predefinedLinkDescription || 'No description available'}</li>
+          <li><strong>Base/Client Specific:</strong> ${link.baseOrClientSpecific || 'Unknown'}</li>
+          <li><strong>Page Type:</strong> ${link.pageType || 'Unknown'}</li>
+          <li class="wrap-text"><strong>Destination:</strong> ${link.destination || 'No URL'}</li>
           ${link.pageCode ? `<li><strong>Page Code:</strong> ${link.pageCode}</li>` : ''}
           <li><strong>Domain:</strong> ${link.domain}</li>
-          <!--<li><strong>Unique ID:</strong> ${link.uniqueId}</li>
-          <li><strong>Attribute Name:</strong> ${link.attributeName}</li>
-          <li><strong>Attribute Value:</strong> ${link.attributeValue}</li>-->
         </ul>
       </div>
     `;
