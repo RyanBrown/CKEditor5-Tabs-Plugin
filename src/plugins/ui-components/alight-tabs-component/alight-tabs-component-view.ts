@@ -1,4 +1,4 @@
-// src/plugins/ui-components/views/tabs/tab-view.ts
+// src/plugins/ui-components/alight-tabs-component/alight-tabs-component-view.ts
 import { View, ViewCollection } from '@ckeditor/ckeditor5-ui';
 import type { Locale } from '@ckeditor/ckeditor5-utils';
 import type { TemplateDefinition } from '@ckeditor/ckeditor5-ui/src/template';
@@ -49,13 +49,11 @@ export class TabView extends View implements TabViewProperties {
       attributes: {
         class: [
           'ck',
-          'cka-tab',
-          bind.to('isActive', value => value ? 'cka-tab--active' : ''),
-          bind.to('isEnabled', value => value ? 'ck-enabled' : 'ck-disabled')
+          bind.to('isEnabled', value => value ? '' : 'ck-disabled')
         ],
         role: 'tab',
         'aria-selected': bind.to('isActive', String),
-        'aria-controls': `cka-tab-panel-${this.id}`,
+        'aria-controls': `cka-tab-content-${this.id}`,
         id: `tab-${this.id}`,
         tabindex: bind.to('isActive', isActive => isActive ? '0' : '-1')
       },
@@ -63,7 +61,10 @@ export class TabView extends View implements TabViewProperties {
         {
           tag: 'button',
           attributes: {
-            class: ['cka-tab__button']
+            class: [
+              'cka-tab-button',
+              bind.to('isActive', value => value ? 'active' : '')
+            ]
           },
           children: [
             {
@@ -94,7 +95,11 @@ export class TabView extends View implements TabViewProperties {
   }
 
   focus(): void {
-    this.element?.focus();
+    // Fix for TS2339: Property 'focus' does not exist on type 'Element'
+    const buttonElement = this.element?.querySelector('.cka-tab-button') as HTMLButtonElement | null;
+    if (buttonElement) {
+      buttonElement.focus();
+    }
   }
 }
 
@@ -114,12 +119,11 @@ export class TabPanelView extends View {
       tag: 'div',
       attributes: {
         class: [
-          'ck',
-          'cka-tab-panel',
-          bind.to('isActive', value => value ? 'cka-tab-panel--active' : '')
+          'cka-tab-content',
+          bind.to('isActive', value => value ? 'active' : '')
         ],
         role: 'tabpanel',
-        id: `cka-tab-panel-${this.id}`,
+        id: `cka-tab-content-${this.id}`,
         'aria-labelledby': `tab-${this.id}`,
         tabindex: '0'
       },
@@ -136,38 +140,75 @@ export class TabsView extends View {
   public readonly focusTracker: FocusTracker;
   public readonly keystrokes: KeystrokeHandler;
   private _focusableTab: TabView | null = null;
+  private _scrollableHeader: boolean = false;
 
-  constructor(locale: Locale, config: { tabs: TabViewConfig[] }) {
+  constructor(locale: Locale, config: { tabs: TabViewConfig[]; scrollable?: boolean }) {
     super(locale);
 
     this.tabsCollection = new ViewCollection();
     this.panelsCollection = new ViewCollection();
     this.focusTracker = new FocusTracker();
     this.keystrokes = new KeystrokeHandler();
+    this._scrollableHeader = config.scrollable || false;
 
     const template: TemplateDefinition = {
       tag: 'div',
       attributes: {
         class: [
-          'ck',
           'cka-tabs'
         ]
       },
       children: [
         {
-          tag: 'ul',
-          attributes: {
-            class: ['cka-tabs__list'],
-            role: 'tablist'
-          },
-          children: this.tabsCollection
-        },
-        {
           tag: 'div',
           attributes: {
-            class: ['cka-tabs__panels']
-          }
-        }
+            class: [
+              'cka-tabs-header',
+              this._scrollableHeader ? 'scrollable' : ''
+            ],
+            role: 'tablist'
+          },
+          children: [
+            ...(this._scrollableHeader ? [
+              {
+                tag: 'button',
+                attributes: {
+                  class: ['cka-scroll-button', 'left'],
+                  'aria-label': 'Scroll left'
+                },
+                children: [{
+                  text: '‹'
+                }],
+                on: {
+                  click: this._handleScrollLeft.bind(this)
+                }
+              }
+            ] : []),
+            {
+              tag: 'ul',
+              attributes: {
+                class: ['cka-tabs-list']
+              },
+              children: this.tabsCollection
+            },
+            ...(this._scrollableHeader ? [
+              {
+                tag: 'button',
+                attributes: {
+                  class: ['cka-scroll-button', 'right'],
+                  'aria-label': 'Scroll right'
+                },
+                children: [{
+                  text: '›'
+                }],
+                on: {
+                  click: this._handleScrollRight.bind(this)
+                }
+              }
+            ] : [])
+          ]
+        },
+        ...this.panelsCollection
       ]
     };
 
@@ -175,6 +216,20 @@ export class TabsView extends View {
 
     this._createTabs(config.tabs);
     this._setUpKeyboardNavigation();
+  }
+
+  private _handleScrollLeft(): void {
+    const tabsList = this.element?.querySelector('.cka-tabs-list') as HTMLElement;
+    if (tabsList) {
+      tabsList.scrollLeft -= 100;
+    }
+  }
+
+  private _handleScrollRight(): void {
+    const tabsList = this.element?.querySelector('.cka-tabs-list') as HTMLElement;
+    if (tabsList) {
+      tabsList.scrollLeft += 100;
+    }
   }
 
   // Creates tabs from configuration
@@ -221,7 +276,7 @@ export class TabsView extends View {
     }
 
     this._focusableTab = tabView;
-    const event: BaseEvent = { name: 'select', args: [] };
+    const event: BaseEvent = { name: 'select' as const, args: [] };
     this.fire('select', event, tabView);
   }
 
@@ -273,7 +328,10 @@ export class TabsView extends View {
 
     // Set up focus tracking
     for (const tab of this.tabsCollection) {
-      this.focusTracker.add(tab.element!);
+      const buttonElement = tab.element?.querySelector('.cka-tab-button');
+      if (buttonElement) {
+        this.focusTracker.add(buttonElement);
+      }
     }
     for (const panel of this.panelsCollection) {
       this.focusTracker.add(panel.element!);
