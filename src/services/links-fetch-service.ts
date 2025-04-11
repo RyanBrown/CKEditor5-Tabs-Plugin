@@ -1,4 +1,3 @@
-import { DataSourceDocs } from './../data-sources/custom-source/data-source-docs';
 // src/services/links-fetch-service.ts
 import categorySampleData from "./../data/category-sample-data.json";
 import existingDocSampleData from "./../data/existing-document-link-sample-data.json";
@@ -17,12 +16,16 @@ export default class LinksFetchService extends HttpService {
 
   public fetchPredefinedLinks = async (): Promise<PredefinedLink[]> => {
 
-    if (this._predefinedLinksSampleMode) {
+    if (this._predefinedLinksSampleMode)
       return Promise.resolve(predefinedLinkSampleData.predefinedLinksDetails as PredefinedLink[]);
-    }
+
+    let dataSource: IReadSource = new DataSourceLinks(this.alightRequest._apiUrl);
+    return await this.get(dataSource)
+      .then(response => JSON.parse(response).predefinedLinksDetails as PredefinedLink[]);
+    // error => console.error(error) // TODO switch this to return new Promise
   }
 
-  public fetchDocumentLinks = async (): Promise<DocumentLink[]> => {
+  public fetchDocumentLinks = (): Promise<DocumentLink[]> => {
     if (this._documentLinksSampleMode)
       return Promise.resolve(existingDocSampleData.documentList as DocumentLink[]);
 
@@ -31,7 +34,7 @@ export default class LinksFetchService extends HttpService {
       .then(response => JSON.parse(response).documentList as DocumentLink[]);
   }
 
-  public fetchCategories = async (): Promise<string[]> => {
+  public fetchCategories = (): Promise<string[]> => {
     if (this._categorySampleMode)
       return Promise.resolve(categorySampleData.categoryList as string[]);
 
