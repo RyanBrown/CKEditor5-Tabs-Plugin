@@ -53,8 +53,8 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
   }
 
   public static override get pluginName(): string { return 'AlightPredefinedLinkPluginUI' as const };
-  public static get pluginName(): string { return AlightPredefinedLinkPluginUI.pluginName; }
-  public static get pluginId(): string { return 'AlightPredefinedLinkPluginUI'; }
+  public override get pluginName(): string { return AlightPredefinedLinkPluginUI.pluginName; }
+  public override get pluginId(): string { return 'AlightPredefinedLinkPlugin'; }
 
   public static override get isOfficialPlugin(): true {
     return true;
@@ -120,6 +120,8 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
     // Register the UI component
     editor.ui.componentFactory.add('alightPredefinedLinkPlugin', locale => {
       return this._createButton(ButtonView);
+      this.setModalContents();
+      return this.buttonView;
     });
 
     // Listen for command execution to show balloon
@@ -132,38 +134,17 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
     });
   }
 
-  // Initialize the services with config from editor.
-  private _initServices(): void {
-    try {
-      // Store the session service as a class property so it doesn't get garbage collected
-      const sessionService = new SessionService();
-
-      // Check if apiUrl exists in sessionStorage
-      if (!sessionStorage.getItem('apiUrl')) {
-        // Set a default API URL if none exists
-        sessionStorage.setItem('apiUrl', 'https://example.com/api');
-
-        // Also set dummy values for other required session items
-        if (!sessionStorage.getItem('dummyColleagueSessionToken')) {
-          sessionStorage.setItem('dummyColleagueSessionToken', 'dummy-token');
-        }
-        if (!sessionStorage.getItem('dummyRequestHeader')) {
-          sessionStorage.setItem('dummyRequestHeader', '{"clientId":"dummy-client"}');
-        }
-      }
-
-      // Initialize links service with the session service
-      this._linksService = new LinksService(sessionService);
-    } catch (error) {
-      console.error('Error initializing services:', error);
-
-      // Fallback to create a basic links service with a dummy implementation
-      this._linksService = {
-        getPredefinedLinks: async () => {
-          return [];
-        }
-      } as LinksService;
-    }
+  protected override setModalContents = (): void => {
+    if (this.verboseMode) console.log(`Loading predefined links...`);
+    this.loadService.loadPredefinedLinks().then(
+      (data) => {
+        this._predefinedLinks = data;
+        if (this.verboseMode) console.log(data);
+        this.isReady = true;
+        this._enablePluginButton();
+      },
+      (error) => console.log(error)
+    );
   }
 
   // Fetch predefined links from the service

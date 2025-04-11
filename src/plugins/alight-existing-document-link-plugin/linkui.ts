@@ -23,12 +23,9 @@ import './../ui-components/alight-checkbox-component/alight-checkbox-component';
 // Import the ContentManager and types from the updated location
 import { ContentManager } from './ui/linkmodal-ContentManager';
 import { DocumentLink } from './ui/linkmodal-modal-types';
-
 import AlightDataLoadPlugin from '../../alight-common/alight-data-load-plugin';
 import LinksLoadService from '../../services/links-load-service';
-
 import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
-import { error } from 'console';
 
 const VISUAL_SELECTION_MARKER_NAME = 'alight-existing-document-link-ui';
 
@@ -41,7 +38,6 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
   private _modalDialog: CkAlightModalDialog | null = null;
   private _linkManager: ContentManager | null = null;
 
-  private _docsService: DocsService | null = null;
   public actionsView: LinkActionsView | null = null;
 
   private _balloon!: ContextualBalloon;
@@ -136,7 +132,7 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
     });
   }
 
-  protected override setModalContents = async (): Promise<void> => {
+  protected override setModalContents = (): void => {
     if (this.verboseMode) console.log(`Loading existing document links...`);
     this.loadService.loadDocumentLinks().then(
       (data) => {
@@ -546,8 +542,8 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
       const linksContainer = customContent.querySelector('#links-container');
       if (linksContainer) {
         linksContainer.innerHTML = `
-        <div class="cka-error-state">
-          <p class="cka-error-details">${error.message || 'Unknown error'}</p>
+        <div class="cka-center-modal-message">
+          <p>${error.message || 'Unknown error'}</p>
         </div>
       `;
       }

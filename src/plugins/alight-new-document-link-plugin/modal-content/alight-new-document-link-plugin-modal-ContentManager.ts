@@ -6,9 +6,9 @@ import { CkAlightSelectMenu } from '../../ui-components/alight-select-menu-compo
 import { CkAlightCheckbox } from '../../ui-components/alight-checkbox-component/alight-checkbox-component';
 import { CkAlightChipsMenu } from '../../ui-components/alight-chips-menu-component/alight-chips-menu-component';
 import '../../ui-components/alight-checkbox-component/alight-checkbox-component';
-import { DocsService } from '../../../services/docs-service';
+import LinksLoadService from '../../../services/links-load-service';
+import { error } from 'console';
 
-// Define a consistent interface for category items
 interface CategoryItem {
   id: string;
   label: string;
@@ -22,10 +22,8 @@ export class ContentManager implements ILinkManager {
   private formValidator: FormValidator;
   private formSubmissionHandler: FormSubmissionHandler;
   private hasUserInteracted = false;
-  private _docsService: DocsService = new DocsService();
-
-  // Update categoryMap to use a consistent structure
   private categories: CategoryItem[] = [];
+  private readonly loadService = new LinksLoadService();
 
   private formData = {
     language: 'en',
@@ -33,7 +31,7 @@ export class ContentManager implements ILinkManager {
     documentTitle: '',
     searchTags: [] as string[],
     description: '',
-    categories: [] as string[], // Change to array of selected category IDs
+    categories: [] as string[],
     contentLibraryAccess: false,
     worklifeLink: false,
     showInSearch: true
@@ -44,21 +42,12 @@ export class ContentManager implements ILinkManager {
     this.formSubmissionHandler = new FormSubmissionHandler();
   }
 
-  public setModalContents = async (sourceDataType: string, postProcess: () => void = () => { }): Promise<void> => {
-    const start = Date.now();
-    try {
-      const categoryList = await this._docsService.getCategories();
-      // Transform categories into the consistent format
-      this.categories = categoryList.map((value: string) => ({
-        id: `id-${value.replace(/\s+/g, "")}`, // Ensure consistent ID format
-        label: value
-      }));
-    } catch (error) {
-      console.log(`(NewDocContentManager.setModalContents -> error: ${error}`);
-    } finally {
-      postProcess();
-      console.log(`(NewDocContentManager.setModalContents -> ${sourceDataType} loaded (${Date.now() - start} ms.)`);
-    }
+  public setModalContents = async (): Promise<any> => {
+    await this.loadService.loadCategories().then(
+      (data) => this.categories = data.map((category) => ({ id: `id-${category}`, label: category })),
+      (error) => console.log(error);
+    );
+    return this.categories;
   }
 
   private createCardHTML(content: string): string {
