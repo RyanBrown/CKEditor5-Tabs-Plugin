@@ -20,7 +20,7 @@ import type AlightEmailUnlinkCommand from './unlinkcommand';
 import { isLinkElement } from './utils';
 import { CkAlightModalDialog } from './../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 
-import linkIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
+import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 
 // Use a unique marker name to avoid conflicts with standard link plugin
 const VISUAL_SELECTION_MARKER_NAME = 'alight-email-link-ui';
@@ -197,7 +197,7 @@ export default class AlightEmailLinkPluginUI extends Plugin {
 
     view.set({
       label: t('Email link'),
-      icon: linkIcon,
+      icon: ToolBarIcon,
       isToggleable: true,
       withText: true,
       // Add a custom class to differentiate from standard link button

@@ -29,7 +29,7 @@ import { DocumentLink } from './ui/linkmodal-modal-types';
 import { DocsService } from './../../services/docs-service';
 import { SessionService } from './../../services/session-service';
 
-import linkIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
+import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 
 const VISUAL_SELECTION_MARKER_NAME = 'alight-existing-document-link-ui';
 
@@ -257,7 +257,7 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
 
     view.set({
       label: t('Existing document link'),
-      icon: linkIcon,
+      icon: ToolBarIcon,
       isToggleable: true,
       withText: true
     });
