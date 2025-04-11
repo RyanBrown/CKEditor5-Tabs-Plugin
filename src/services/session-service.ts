@@ -3,9 +3,9 @@ import AlightRequest from "./alight-request";
 
 export default class SessionService {
 
-  private readonly apiUrlKey: string = 'apiUrl';
-  private readonly dummyColleagueSessionTokenKey: string = 'dummyColleagueSessionToken';
-  private readonly dummyRequestHeaderKey: string = 'dummyRequestHeader';
+  private readonly apiUrlKey: string = "apiUrl";
+  private readonly dummyColleagueSessionTokenKey: string = "dummyColleagueSessionToken";
+  private readonly dummyRequestHeaderKey: string = "dummyRequestHeader";
   private readonly clientIdKey: string = 'clientId'; // Added clientId key
 
   private static instance: SessionService = null;
@@ -36,18 +36,23 @@ export default class SessionService {
   }
 
   public static getAlightRequest = (): AlightRequest => SessionService.getInstance().alightRequest;
+
   public get alightRequest(): AlightRequest {
     return new AlightRequest(this.apiUrl, this.requestHeader, this.sessionToken, this.clientId);
   }
+
   public get apiUrl(): string {
     return this.sessionMap.get(this.apiUrlKey) || '';
   }
+
   public get sessionToken(): string {
     return this.sessionMap.get(this.dummyColleagueSessionTokenKey) || '';
   }
+
   public get requestHeader(): string {
     return this.sessionMap.get(this.dummyRequestHeaderKey) || '';
   }
+
   public get clientId(): string {
     return this.sessionMap.get(this.clientIdKey) || 'default-client-id';
   }
