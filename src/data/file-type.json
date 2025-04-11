@@ -1,0 +1,14 @@
+{
+  "FileType": [
+    {
+      "docx": "docx",
+      "pdf": "pdf",
+      "xlsx": "xlsx",
+      "pptx": "pptx",
+      "doc": "doc",
+      "xlsm": "xlsm",
+      "xls": "xls",
+      "ppt": "ppt"
+    }
+  ]
+}
