@@ -36,4 +36,6 @@
         "virtualtesteditor",
         "worklife"
     ],
+    "editor.trimAutoWhitespace": true,
+    "files.insertFinalNewline": true,
 }
