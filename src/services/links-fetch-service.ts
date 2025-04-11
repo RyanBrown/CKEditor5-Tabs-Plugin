@@ -27,6 +27,43 @@ export default class LinksFetchService extends HttpService {
       const data = await response.json();
       console.log('Received data from Mockaroo:', data);
 
+      // Handle nested predefinedLinksDetails structure (like in the large dataset)
+      if (data && Array.isArray(data) && data.length > 0 && data[0].predefinedLinksDetails) {
+        console.log(`Found nested predefinedLinksDetails in data array`);
+
+        // Process the nested structure
+        let processedLinks: PredefinedLink[] = [];
+
+        for (const item of data) {
+          if (item.predefinedLinksDetails && Array.isArray(item.predefinedLinksDetails)) {
+            console.log(`Processing ${item.predefinedLinksDetails.length} nested links for ${item.pageCode || 'unknown'}`);
+
+            // Process each nested link and add parent data
+            item.predefinedLinksDetails.forEach((nestedLink: any) => {
+              processedLinks.push({
+                // Base properties from parent item
+                baseOrClientSpecific: nestedLink.baseOrClientSpecific || item.baseOrClientSpecific || 'base',
+                pageType: nestedLink.pageType || item.pageType || 'Unknown',
+                pageCode: nestedLink.pageCode || item.pageCode || '',
+                domain: nestedLink.domain || item.domain || '',
+
+                // Properties from nested link
+                predefinedLinkName: nestedLink.predefinedLinkName || nestedLink.name || 'Unnamed Link',
+                predefinedLinkDescription: nestedLink.description || nestedLink.predefinedLinkDescription || '',
+                destination: nestedLink.url || nestedLink.destination || '',
+                uniqueId: nestedLink.id || nestedLink.uniqueId || '',
+                attributeName: nestedLink.attributeName || '',
+                attributeValue: nestedLink.attributeValue || '',
+                predefinedLinksDetails: false
+              });
+            });
+          }
+        }
+
+        console.log(`Processed ${processedLinks.length} total links`);
+        return processedLinks;
+      }
+
       // If the data is already in the format we expect
       if (Array.isArray(data) && data.length > 0) {
         console.log('Data is an array, returning directly');
@@ -58,6 +95,12 @@ export default class LinksFetchService extends HttpService {
       }
 
       console.warn('No valid predefined links structure found in Mockaroo response');
+
+      // Process the sample data if it has the nested structure
+      if (predefinedLinksSampleData && predefinedLinksSampleData.predefinedLinksDetails) {
+        return this.processLinks(predefinedLinksSampleData.predefinedLinksDetails as PredefinedLink[]);
+      }
+
       return predefinedLinksSampleData.predefinedLinksDetails as PredefinedLink[];
     } catch (error) {
       console.error("Error fetching predefined links from Mockaroo:", error);
@@ -65,17 +108,25 @@ export default class LinksFetchService extends HttpService {
       // If using sample data as fallback is enabled, return sample data
       if (this._useSampleDataAsFallback) {
         console.log("Using sample data as fallback for predefined links");
+        // Process the sample data if it has the nested structure
+        if (predefinedLinksSampleData && predefinedLinksSampleData.predefinedLinksDetails) {
+          return this.processLinks(predefinedLinksSampleData.predefinedLinksDetails as PredefinedLink[]);
+        }
         return predefinedLinksSampleData.predefinedLinksDetails as PredefinedLink[];
       }
 
       // Otherwise try the regular API
       console.log("Attempting to fetch predefined links from regular API...");
       let dataSource: IReadSource = new DataSourceLinks(this.alightRequest._apiUrl);
-      return await this.get(dataSource)
+      return this.get(dataSource)
         .then(
           (response: string): PredefinedLink[] => {
             try {
-              return JSON.parse(response).predefinedLinksDetails as PredefinedLink[];
+              const parsedData = JSON.parse(response);
+              if (parsedData && parsedData.predefinedLinksDetails) {
+                return this.processLinks(parsedData.predefinedLinksDetails as PredefinedLink[]);
+              }
+              return parsedData.predefinedLinksDetails as PredefinedLink[];
             } catch (parseError) {
               console.error("Error parsing predefined links API response:", parseError);
               return [];
@@ -88,6 +139,52 @@ export default class LinksFetchService extends HttpService {
         });
     }
   }
+
+  private processLinks = (rawLinks: PredefinedLink[]) => {
+    // Check if we have the nested predefinedLinksDetails structure
+    // and extract the actual links from it
+    let processedLinks: any[] = [];
+
+    // If the first item has a predefinedLinksDetails array, we have a nested structure
+    if (rawLinks.length > 0 && 'predefinedLinksDetails' in rawLinks[0] && Array.isArray(rawLinks[0].predefinedLinksDetails)) {
+      console.log("Processing nested predefined links structure");
+
+      for (const rawLink of rawLinks as PredefinedLink[]) {
+        if (rawLink.predefinedLinksDetails && Array.isArray(rawLink.predefinedLinksDetails)) {
+          console.log(`Found ${rawLink.predefinedLinksDetails.length} nested links for ${rawLink.pageCode || 'unknown'}`);
+
+          // Process each nested link and add parent data
+          rawLink.predefinedLinksDetails.forEach((nestedLink) => {
+            processedLinks.push({
+              // Base properties from parent link
+              baseOrClientSpecific: nestedLink.baseOrClientSpecific || rawLink.baseOrClientSpecific || 'base',
+              pageType: nestedLink.pageType || rawLink.pageType || 'Unknown',
+              pageCode: nestedLink.pageCode || rawLink.pageCode || '',
+              domain: nestedLink.domain || rawLink.domain || '',
+
+              // Properties from nested link
+              predefinedLinkName: nestedLink.linkName || nestedLink.name || nestedLink.predefinedLinkName || 'Unnamed Link',
+              predefinedLinkDescription: nestedLink.description || nestedLink.predefinedLinkDescription || '',
+              destination: nestedLink.url || nestedLink.destination || '',
+              uniqueId: nestedLink.id || nestedLink.uniqueId || '',
+              attributeName: nestedLink.attributeName || '',
+              attributeValue: nestedLink.attributeValue || ''
+            });
+          });
+        }
+      }
+    } else {
+      // Standard links without nesting
+      processedLinks = rawLinks;
+    }
+
+    // Filter out any invalid links
+    return processedLinks.filter(link =>
+      link.destination && link.destination.trim() !== '' &&
+      (link.predefinedLinkName || link.name) &&
+      (link.predefinedLinkName || link.name).trim() !== ''
+    );
+  };
 
   public fetchDocumentLinks = async (): Promise<DocumentLink[]> => {
     try {
