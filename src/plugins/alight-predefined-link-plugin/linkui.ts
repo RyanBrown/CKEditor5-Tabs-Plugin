@@ -369,7 +369,7 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
       const links = await this._linksService.getPredefinedLinks();
 
       // Find the matching link by URL - compare regardless of trailing slash or protocol differences
-      return links.find(link => {
+      return links.find((link: any) => {
         const normalizedDestination = this._normalizeUrl(link.destination as string);
         const normalizedUrl = this._normalizeUrl(url);
         return normalizedDestination === normalizedUrl;

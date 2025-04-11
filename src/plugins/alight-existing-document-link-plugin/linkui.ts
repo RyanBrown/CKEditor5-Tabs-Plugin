@@ -187,7 +187,7 @@ export default class AlightExistingDocumentLinkPluginUI extends Plugin {
       }
 
       // Process each link directly
-      const processedLinks = rawLinks.map(link => ({
+      const processedLinks = rawLinks.map((link: any) => ({
         serverFilePath: link.serverFilePath || '',
         title: link.title || '',
         fileId: link.fileId || '',

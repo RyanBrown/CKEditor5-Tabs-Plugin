@@ -17,6 +17,7 @@ import { Locale } from '@ckeditor/ckeditor5-utils';
  * Interface for a link plugin configuration
  */
 export interface LinkPluginConfig {
+  id: string,
   name: string;
   command: string;
   label: string;
@@ -29,6 +30,7 @@ export default class AlightParentLinkPlugin extends Plugin {
   // Define the default link plugins configuration
   private static readonly DEFAULT_LINK_PLUGINS: LinkPluginConfig[] = [
     {
+      id: 'alightExternalLinkPlugin',
       name: 'AlightExternalLinkPlugin',
       uiName: 'AlightExternalLinkPluginUI',
       command: 'alightExternalLinkPlugin',
@@ -37,6 +39,7 @@ export default class AlightParentLinkPlugin extends Plugin {
       enabled: true
     },
     {
+      id: 'alightPredefinedLinkPlugin',
       name: 'AlightPredefinedLinkPlugin',
       uiName: 'AlightPredefinedLinkPluginUI',
       command: 'alightPredefinedLinkPlugin',
@@ -45,6 +48,7 @@ export default class AlightParentLinkPlugin extends Plugin {
       enabled: true
     },
     {
+      id: 'alightEmailLinkPlugin',
       name: 'AlightEmailLinkPlugin',
       uiName: 'AlightEmailLinkPluginUI',
       command: 'alightEmailLinkPlugin',
@@ -53,6 +57,7 @@ export default class AlightParentLinkPlugin extends Plugin {
       enabled: true
     },
     {
+      id: 'alightExistingDocumentLinkPlugin',
       name: 'AlightExistingDocumentLinkPlugin',
       uiName: 'AlightExistingDocumentLinkPluginUI',
       command: 'alightExistingDocumentLinkPlugin',
@@ -61,6 +66,7 @@ export default class AlightParentLinkPlugin extends Plugin {
       enabled: true
     },
     {
+      id: 'alightNewDocumentLinkPlugin',
       name: 'AlightNewDocumentLinkPlugin',
       uiName: 'AlightNewDocumentLinkPluginUI',
       command: 'alightNewDocumentLinkPlugin',
@@ -84,7 +90,7 @@ export default class AlightParentLinkPlugin extends Plugin {
     return userConfig.map(userPlugin => {
       // Find the corresponding default plugin (if any)
       const defaultPlugin = AlightParentLinkPlugin.DEFAULT_LINK_PLUGINS.find(
-        defaultPlugin => defaultPlugin.name === userPlugin.name
+        defaultPlugin => defaultPlugin.id === userPlugin.id
       );
 
       // Return merged plugin config with user settings taking precedence
