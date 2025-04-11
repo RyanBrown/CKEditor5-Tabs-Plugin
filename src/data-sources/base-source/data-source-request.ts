@@ -3,7 +3,6 @@ import { DataSource } from "./data-source";
 import { HttpRequestMethod } from "./http-request-method";
 
 export interface IDataSourceRequest {
-
   get requestMethod(): HttpRequestMethod; // GET, POST, PUT, etc.
   get queryParams(): string;
   set queryParams(value: string);
@@ -27,7 +26,6 @@ export abstract class DataSourceRequest extends DataSource implements IDataSourc
     try {
       if (sessionToken == null || requestHeader == null)
         throw new Error("Must provide both a dummyColleagueSessionToken and dummyRequestHeader.");
-
       let url = `${this.host}/${this.path}${this.queryParams?.length > 0 ? `?${this.queryParams}` : ''}`;
       const options: RequestInit = {
         method: this.requestMethod,
@@ -35,9 +33,8 @@ export abstract class DataSourceRequest extends DataSource implements IDataSourc
           'Content-Type': contentType || 'application/json',
           'dummyColleagueSessionToken': sessionToken,
           'alightRequestHeader': requestHeader
-        },
+        }
       };
-
       if (this.requestMethod == HttpRequestMethod.POST && requestBody) options.body = JSON.stringify(requestBody);
       return await fetch(url, options);
     } catch (error) {
