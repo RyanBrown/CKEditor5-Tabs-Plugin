@@ -593,10 +593,10 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
       const linksContainer = customContent.querySelector('#links-container');
       if (linksContainer) {
         linksContainer.innerHTML = `
-      <div class="cka-center-modal-message">
-        <p>${error.message || 'Unknown error'}</p>
-      </div>
-    `;
+        <div class="cka-center-modal-message">
+          <p>${error.message || 'Unknown error'}</p>
+        </div>
+      `;
       }
     }
   }
