@@ -41,7 +41,7 @@ export class AlightImagePluginCommand extends Command {
       resizable: false,
       width: '38rem',
       position: 'center',
-      ...data.modalOptions
+      ...data.modalOptions,
     });
 
     this.setupDialogButtons();
@@ -65,7 +65,7 @@ export class AlightImagePluginCommand extends Command {
     const footer = document.createElement('div');
     footer.className = 'cka-dialog-footer-buttons';
 
-    this.data.buttons.forEach(button => {
+    this.data.buttons.forEach((button) => {
       const btnElement = document.createElement('button');
       btnElement.className = button.className;
       btnElement.textContent = button.label;
@@ -81,7 +81,7 @@ export class AlightImagePluginCommand extends Command {
 
   public override execute(): void {
     this.dialog.setTitle(this.data.title);
-    this.data.loadContent().then(content => {
+    this.data.loadContent().then((content) => {
       this.dialog.setContent(content);
 
       if (this.data.modalType === 'existingImage') {

@@ -21,15 +21,15 @@ export default class AlightImagePluginEditing extends Plugin {
           {
             label: 'Cancel',
             className: 'cka-button cka-button-rounded cka-button-outlined cka-button-sm',
-            onClick: () => this.handleCancel()
+            onClick: () => this.handleCancel(),
           },
           {
             label: 'Continue',
             className: 'cka-button cka-button-rounded cka-button-sm',
-            onClick: () => this.handleImageSelection()
-          }
+            onClick: () => this.handleImageSelection(),
+          },
         ],
-        loadContent: async () => getExistingImageContent()
+        loadContent: async () => getExistingImageContent(),
       })
     );
 
@@ -41,15 +41,15 @@ export default class AlightImagePluginEditing extends Plugin {
         buttons: [
           {
             label: 'Cancel',
-            className: 'cka-button cka-button-rounded cka-button-outlined cka-button-sm'
+            className: 'cka-button cka-button-rounded cka-button-outlined cka-button-sm',
           },
           {
             label: 'Upload',
             className: 'cka-button cka-button-rounded cka-button-sm',
-            onClick: () => this.handleUpload()
-          }
+            onClick: () => this.handleUpload(),
+          },
         ],
-        loadContent: async () => getUploadImageContent()
+        loadContent: async () => getUploadImageContent(),
       })
     );
   }

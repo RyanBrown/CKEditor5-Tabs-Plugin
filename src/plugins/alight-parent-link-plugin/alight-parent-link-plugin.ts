@@ -17,7 +17,7 @@ import { Locale } from '@ckeditor/ckeditor5-utils';
  * Interface for a link plugin configuration
  */
 export interface LinkPluginConfig {
-  id: string,
+  id: string;
   name: string;
   command: string;
   label: string;

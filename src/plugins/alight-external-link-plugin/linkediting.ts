@@ -142,7 +142,6 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
           if (linkCommand && linkCommand.organization) {
             attrs.orgnameattr = linkCommand.organization;
           }
-
           return createLinkElement(ensureSafeUrl(href, allowedProtocols), { ...conversionApi, attrs });
         },
         converterPriority: 'high'
