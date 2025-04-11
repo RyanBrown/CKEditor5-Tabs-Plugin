@@ -107,9 +107,9 @@ import "./styles/styles.scss";
 import SessionService from "./services/session-service";
 
 // import fontawesome
-const script = document.createElement("script");
+const script = document.createElement('script');
 script.src = 'https://kit.fontawesome.com/019f6c532e.js';
-script.crossOrigin = "anonymous";
+script.crossOrigin = 'anonymous';
 document.head.appendChild(script);
 
 export const LICENSE_KEY = "eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3NDcxODA3OTksImp0aSI6IjAwN2YzMTI1LTkyYTgtNDc0MS05NDNiLWViM2M3NjhjN2RhNiIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsic2giLCJkcnVwYWwiXSwid2hpdGVMYWJlbCI6dHJ1ZSwiZmVhdHVyZXMiOlsiRFJVUCIsIkRPIiwiRlAiLCJTQyIsIlRPQyIsIlRQTCIsIlBPRSIsIkNDIiwiTUYiXSwidmMiOiJjYjM3ZmEyOCJ9.pfNUO8YBnKbw1V6HXgFb9PZRMzfErUsssTFcQ83EftEDV-tFn_pPPmFpkaRb9Fjzj02osXclT6aKGsmyihJazg";
@@ -117,19 +117,19 @@ export const LICENSE_KEY = "eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3NDcxODA3OTksImp0aSI
 // Use default colors from the AWLDS
 const awldsColorPalette = [
   // primary colors
-  { label: "Core Water Leaf", color: "#96e8e2" },
+  { label: "Core Water Leaf", color: "#96e8e3" },
   { label: "Core Tropical Blue", color: "#c2d9fe" },
-  { label: "Core Pale Lavender", color: "#e5cdfd" },
+  { label: "Core Pale Lavender", color: "#e5cefd" },
 
   // secondary colors
-  { label: "Accent Canary Yellow", color: "#fff200" },
-  { label: "Accent Grenadier", color: "#cd4400" },
+  { label: "Accent Canary Yellow", color: "#fff305" },
+  { label: "Accent Grenadier", color: "#cc4400" },
   { label: "Accent Pink Orange", color: "#ff9966" },
-  { label: "Accent Denim", color: "#165bcf" },
-  { label: "Accent Navy Blue", color: "#266de2" },
-  { label: "Accent Jordy Blue", color: "#7da7ed" },
-  { label: "Accent Hawkes Blue", color: "#dce9ff" },
-  { label: "Accent Zircon", color: "#f4f8ff" },
+  { label: "Accent Denim", color: "#165dd0" },
+  { label: "Accent Navy Blue", color: "#266be3" },
+  { label: "Accent Jordy Blue", color: "#7da6ed" },
+  { label: "Accent Hawkes Blue", color: "#dbe8ff" },
+  { label: "Accent Zircon", color: "#f5f8ff" },
 
   // tertiary colors
   { label: "Tertiary Viking", color: "#64d8d0" },
@@ -146,7 +146,7 @@ const awldsColorPalette = [
   { label: "Neutral Gallery", color: "#f0f0f0" },
   { label: "Neutral White", color: "#ffffff" },
 
-  // semantic colors
+  // message colors
   { label: "Error Background", color: "#fdeded" },
   { label: "Error Shadow", color: "#ed4040" },
   { label: "Error", color: "#c71a1a" },
@@ -294,8 +294,8 @@ class AlightEditor extends ClassicEditor {
         "|",
         "fontColor",
         "fontBackgroundColor",
-        "findAndReplace",
         "highlight",
+        "findAndReplace",
         "|",
         "undo",
         "redo",
@@ -504,8 +504,6 @@ class AlightEditor extends ClassicEditor {
       ],
     },
     table: {
-      // The default styles for tables in the editor.
-      // They should be synchronized with the content styles.
       contentToolbar: [
         "tableColumn",
         "tableRow",
@@ -514,6 +512,8 @@ class AlightEditor extends ClassicEditor {
         "tableProperties",
         "tableCellProperties",
       ],
+      // The default styles for tables in the editor.
+      // They should be synchronized with the content styles.
       tableProperties: {
         defaultProperties: {
           borderColor: "black",
