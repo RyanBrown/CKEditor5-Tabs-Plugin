@@ -1,7 +1,7 @@
 // src/data-sources/custom-source/data-source-links.ts
-import { DataSourceGet } from '../base-source/data-source-get';
-import { DataSources } from './data-sources';
-import { IReadSource } from '../base-source/data-source';
+import { DataSourceGet } from "../base-source/data-source-get";
+import { DataSources } from "./data-sources";
+import { IReadSource } from "../base-source/data-source";
 
 export class DataSourceLinks extends DataSources implements IReadSource {
 
