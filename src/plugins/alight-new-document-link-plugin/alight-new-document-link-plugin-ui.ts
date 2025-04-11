@@ -52,7 +52,8 @@ export default class AlightNewDocumentLinkPluginUI extends AlightDataLoadPlugin 
       });
 
       // Bind button state to command if available
-      if (command) this.buttonView.bind('isEnabled').to(command) => command && this.isReady;
+      if (command)
+        this.buttonView.bind('isEnabled').to(command, (command) => command && this.isReady);
 
       this.buttonView.on('execute', async () => {
         await this._showModal();
