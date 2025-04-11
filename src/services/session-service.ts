@@ -52,6 +52,6 @@ export default class SessionService {
   }
 
   public get clientId(): string {
-    return this.sessionMap.get(this.dummyRequestHeaderKey)?.clientId;
+    return JSON.parse(this.sessionMap.get(this.dummyRequestHeaderKey))?.clientId;
   }
 }
