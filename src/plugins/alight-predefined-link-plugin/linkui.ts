@@ -146,7 +146,6 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
     );
   }
 
-  // Fetch predefined links from the service
   private processLinks = (rawLinks: PredefinedLink[]) => {
     // Check if we have the nested predefinedLinksDetails structure
     // and extract the actual links from it
@@ -180,7 +179,6 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
         processedLinks.push(rawLink);
       }
     }
-
     // Process links directly without transformation
     return processedLinks.filter(link =>
       link.destination && link.destination.trim() !== '' &&
@@ -249,7 +247,7 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
     // Show the modal dialog on button click for creating new links
     this.listenTo(this.buttonView, 'execute', () => this._showUI());
 
-    return this.buttonView;
+    return this.buttonView as InstanceType<T>;
   }
 
   // Creates the {@link module:link/ui/linkactionsview~LinkActionsView} instance.
