@@ -9,14 +9,14 @@ export default class HttpService {
     this.alightRequest = alightRequest;
   }
 
-  public get = async (dataSource: IReadSource, sessionToken: string, requestHeader: string): Promise<string> =>
+  public get = async (dataSource: IReadSource): Promise<string> =>
     dataSource.load(this.alightRequest._sessionToken, this.alightRequest._requestHeader)
       .then(
         async response => await response.text(),
         error => this.handleError(error, true)
       );
 
-  public post = async (dataSource: IWriteSource, sessionToken: string, requestHeader: string, requestBody: Record<string, any>): Promise<string> =>
+  public post = async (dataSource: IWriteSource, requestBody: Record<string, any>): Promise<string> =>
     dataSource.save(this.alightRequest._sessionToken, this.alightRequest._requestHeader, null, requestBody)
       .then(
         async response => await response.text(),

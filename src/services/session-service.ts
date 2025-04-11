@@ -6,17 +6,15 @@ export default class SessionService {
   private readonly apiUrlKey: string = "apiUrl";
   private readonly dummyColleagueSessionTokenKey: string = "dummyColleagueSessionToken";
   private readonly dummyRequestHeaderKey: string = "dummyRequestHeader";
-  private readonly clientIdKey: string = 'clientId'; // Added clientId key
 
   private static instance: SessionService = null;
   private sessionMap: Map<string, string>;
 
-  private constructor(sessionStorage?: Storage) {
+  private constructor(sessionStg?: Storage) {
     this.sessionMap = new Map<string, string>([
       [this.apiUrlKey, sessionStorage.getItem(this.apiUrlKey) || ''],
       [this.dummyColleagueSessionTokenKey, sessionStorage.getItem(this.dummyColleagueSessionTokenKey) || ''],
       [this.dummyRequestHeaderKey, sessionStorage.getItem(this.dummyRequestHeaderKey) || ''],
-      [this.clientIdKey, sessionStorage.getItem(this.clientIdKey) || 'default-client-id'],
     ]);
   }
 
@@ -24,13 +22,13 @@ export default class SessionService {
     if (SessionService.instance === null) {
       SessionService.instance = new SessionService(sessionStorage);
     } else {
-      throw new Error('Instance already created');
+      throw new Error("Instance already created");
     }
   }
 
   public static getInstance(): SessionService {
     if (SessionService.instance === null) {
-      throw new Error('Instance not yet created. Call create(Storage storage) first.');
+      throw new Error("Instance not yet created. Call create(Storage storage) first.");
     }
     return SessionService.instance;
   }
@@ -42,24 +40,24 @@ export default class SessionService {
   }
 
   public get apiUrl(): string {
-    return this.sessionMap.get(this.apiUrlKey) || '';
+    return this.sessionMap.get(this.apiUrlKey)!;
   }
 
   public get sessionToken(): string {
-    return this.sessionMap.get(this.dummyColleagueSessionTokenKey) || '';
+    return this.sessionMap.get(this.dummyColleagueSessionTokenKey)!;
   }
 
   public get requestHeader(): string {
-    return this.sessionMap.get(this.dummyRequestHeaderKey) || '';
+    return this.sessionMap.get(this.dummyRequestHeaderKey)!;
   }
 
   public get clientId(): string {
-    return this.sessionMap.get(this.clientIdKey) || 'default-client-id';
+    return this.sessionMap.get(this.dummyRequestHeaderKey) || 'default-client-id';
   }
 
   // Set clientId method
   public setClientId(value: string): void {
-    this.sessionMap.set(this.clientIdKey, value);
+    this.sessionMap.set(this.dummyRequestHeaderKey, value);
   }
 
   // Check if this is a Mockaroo API
