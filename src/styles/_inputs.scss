@@ -116,3 +116,31 @@ ul.cka-checkbox-list {
     padding: 0 1rem 0 0;
   }
 }
+
+// Modal Alert Classes
+.cka-alert-error,
+.cka-alert-info,
+.cka-alert-success,
+.cka-alert-warning {
+  align-items: center;
+  display: flex;
+  font-weight: var(--font-weight-bold);
+  justify-content: space-between;
+  padding: 1rem var(--spacing-xl);
+}
+
+.cka-alert-error {
+  background-color: rgba(199, 26, 26, 0.3);
+}
+
+.cka-alert-info {
+  background-color: rgba(22, 93, 208, .3);
+}
+
+.cka-alert-success {
+  background-color: rgba(16, 117, 0, .3);
+}
+
+.cka-alert-warning {
+  background-color: rgba(251, 208, 55, 0.3);
+}

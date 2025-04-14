@@ -170,14 +170,7 @@ export class ContentManager implements ILinkManager {
     const searchContainerMarkup = `<div id="search-container-root" class="cka-search-container"></div>`;
 
     // Current URL info if we have an initial URL
-    const currentUrlInfo = this.initialUrl ? this.buildCurrentUrlInfoMarkup() : '';
-
-    // Add a count of displayed items
-    const itemCountMarkup = `
-      <div class="cka-links-count">
-        Showing ${linksToDisplay.length} of ${this.existingDocumentLinksData.length} documents
-      </div>
-    `;
+    const selectedUrlInfo = this.initialUrl ? this.buildSelectedUrlInfoMarkup() : '';
 
     // Links list
     const linksMarkup = linksToDisplay.length > 0
@@ -190,17 +183,16 @@ export class ContentManager implements ILinkManager {
     const paginationMarkup = `<div id="pagination-container" class="cka-pagination" style="display:none;"></div>`;
 
     return `
-    ${searchContainerMarkup}
-    ${currentUrlInfo}
-    ${itemCountMarkup}
-    <div id="links-container" class="cka-links-container" style="max-height: 60vh; overflow-y: auto;">
-      ${linksMarkup}
-    </div>
-    ${paginationMarkup}
-  `;
+      ${searchContainerMarkup}
+      <div id="links-container" class="cka-links-container">
+        ${selectedUrlInfo}
+        ${linksMarkup}
+      </div>
+      ${paginationMarkup}
+    `;
   }
 
-  private buildCurrentUrlInfoMarkup(): string {
+  private buildSelectedUrlInfoMarkup(): string {
     // Find the matching link for this URL
     const matchingLink = this.existingDocumentLinksData.find(link =>
       link.serverFilePath === this.initialUrl

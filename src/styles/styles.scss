@@ -318,11 +318,6 @@ $spacing-values: (
     cursor: pointer;
   }
 
-  &:last-of-type {
-    border-bottom: none;
-    padding-bottom: 1.75rem;
-  }
-
   >.radio-container {
     margin-left: 2rem;
   }

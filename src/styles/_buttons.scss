@@ -109,18 +109,18 @@
 
     &.cka-button-warning {
       border-color: var(--warning);
-      color: var(--warning);
+      color: var(--neutral-black);
 
       &:not(:disabled):hover {
         background: var(--warning-outline-hover);
         border-color: var(--warning);
-        color: var(--warning);
+        color: var(--neutral-black);
       }
 
       &:not(:disabled):active {
         background: var(--warning-outline-active);
         border-color: var(--warning);
-        color: var(--warning);
+        color: var(--neutral-black);
       }
     }
 

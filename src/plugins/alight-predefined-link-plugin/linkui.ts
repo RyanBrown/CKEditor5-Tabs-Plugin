@@ -439,14 +439,15 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
   // Custom HTML content for the predefined links
   private _createCustomContent(): HTMLElement {
     const container = document.createElement('div');
+    container.className = 'cka-flex-links-wrap';
 
     const linksContainer = document.createElement('div');
     linksContainer.id = 'links-container';
     linksContainer.innerHTML = `
-      <div class="cka-loading-container">
-        <div class="cka-loading-spinner"></div>
-      </div>
-    `;
+    <div class="cka-loading-container">
+      <div class="cka-loading-spinner"></div>
+    </div>
+  `;
 
     const paginationContainer = document.createElement('div');
     paginationContainer.id = 'pagination-container';
@@ -458,7 +459,10 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
     return container;
   }
 
-  // Shows the modal dialog for link editing.
+  /**
+   * Shows the modal dialog for link editing.
+   * @param isEditing Whether we're editing an existing link
+   */
   private async _showUI(isEditing: boolean = false): Promise<void> {
     const editor = this.editor;
     const t = editor.t;
@@ -526,21 +530,12 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
             // Show some feedback that no link was selected
             console.warn('No link selected or missing destination');
 
-            // Show an alert to the user
-            const alertDiv = document.createElement('div');
-            alertDiv.className = 'cka-alert cka-alert-error';
-            alertDiv.innerHTML = `<div class="cka-alert-warning">Please select a link</div>`;
-
-            // Find the container for the alert and show it
-            const modalContent = this._modalDialog?.getElement();
-            if (modalContent) {
-              // Insert at the top
-              modalContent.insertBefore(alertDiv, modalContent.firstChild);
-
-              // Remove after a delay
-              setTimeout(() => {
-                alertDiv.remove();
-              }, 10000);
+            // Show an alert to the user through our ContentManager
+            if (this._linkManager) {
+              this._linkManager.showAlert('Error alert banner', 'error');
+              this._linkManager.showAlert('Info alert banner', 'info');
+              this._linkManager.showAlert('Success alert banner', 'success');
+              this._linkManager.showAlert('Warning alert banner', 'warning');
             }
           }
         }
@@ -564,10 +559,10 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
         const linksContainer = customContent.querySelector('#links-container');
         if (linksContainer) {
           linksContainer.innerHTML = `
-          <div class="cka-center-modal-message">
-            <p>No predefined links available.</p>
-          </div>
-        `;
+            <div class="cka-center-modal-message">
+              <p>No predefined links available.</p>
+            </div>
+          `;
         }
         return;
       }
@@ -581,6 +576,9 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
         this._updateContinueButtonState(!!link);
       };
 
+      // Add this line to test the alert functionality
+      this._linkManager.showAlert('This is a test alert message', 'info', 5000);
+
       // Initialize the ContentManager with the content element
       this._linkManager.renderContent(customContent);
 
@@ -593,10 +591,10 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
       const linksContainer = customContent.querySelector('#links-container');
       if (linksContainer) {
         linksContainer.innerHTML = `
-        <div class="cka-center-modal-message">
-          <p>${error.message || 'Unknown error'}</p>
-        </div>
-      `;
+          <div class="cka-center-modal-message">
+            <p>${error.message || 'Unknown error'}</p>
+          </div>
+        `;
       }
     }
   }

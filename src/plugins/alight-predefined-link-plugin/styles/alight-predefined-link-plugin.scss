@@ -2,10 +2,22 @@
 @use './../../../styles/mixins' as mixins;
 
 .cka-predefined-link-content {
-  flex: 1;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
   padding: 0;
-  position: relative;
+}
+
+.cka-flex-links-wrap {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+
+  .cka-links-container {
+    flex-grow: 1;
+    overflow: auto;
+    padding: 0;
+  }
 }
 
 .current-url-info {
@@ -40,10 +52,4 @@
   cursor: default;
   font-weight: bold;
   pointer-events: none;
-}
-
-.cka-alert-warning {
-  background-color: var(--warning);
-  font-weight: var(--font-weight-bold);
-  padding: 1rem var(--spacing-xl);
 }
