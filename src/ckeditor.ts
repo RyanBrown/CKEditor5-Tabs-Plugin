@@ -386,7 +386,6 @@ class AlightEditor extends ClassicEditor {
             orgnameattr: true,
             href: true,
             "data-cke-saved-href": true,
-            class: true,
             target: true
           },
           classes: ["AHCustomeLink", "document_tag", "*"],
@@ -483,16 +482,16 @@ class AlightEditor extends ClassicEditor {
         documentLink: {
           mode: 'manual',
           label: 'Document Link',
-          attributes: {
-            class: 'document_tag'
-          }
+          // attributes: {
+          //   class: 'document_tag'
+          // }
         },
         predefinedLink: {
           mode: 'manual',
           label: 'Predefined Link',
-          attributes: {
-            class: 'AHCustomeLink'
-          }
+          // attributes: {
+          //   class: 'AHCustomeLink'
+          // }
         }
       }
     },
