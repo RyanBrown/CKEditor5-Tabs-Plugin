@@ -5,7 +5,7 @@ import { Collection, first, toMap } from '@ckeditor/ckeditor5-utils';
 import type { Range, DocumentSelection, Model, Writer } from '@ckeditor/ckeditor5-engine';
 
 import AutomaticDecorators from './utils/automaticdecorators';
-import { isLinkableElement } from './utils';
+import { isLinkableElement, isPredefinedLink, extractPredefinedLinkId } from './utils';
 import type ManualDecorator from './utils/manualdecorator';
 
 /**
@@ -101,19 +101,30 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
    * @param options Options including manual decorator attributes.
    */
   public override execute(href: string, options: LinkOptions = {}): void {
-    // Check if the current link has a predefined editor suffix we need to preserve
-    let predefinedSuffix = '';
-    if (this.value && typeof this.value === 'string' && this.value.includes('~predefined_editor_id')) {
-      predefinedSuffix = '~predefined_editor_id';
-    }
+    // Determine if href is a predefined link ID
+    const isPredefined = isPredefinedLink(href);
 
-    // Add the predefined suffix if needed and not already present
-    if (predefinedSuffix && !href.includes(predefinedSuffix)) {
-      href = href + predefinedSuffix;
-    }
+    // Get the format attribute from the current selection if it exists
+    let linkFormat = '';
+    let linkName = '';
 
     const model = this.editor.model;
     const selection = model.document.selection;
+
+    // Check if the current link has a predefined format we need to preserve
+    if (selection.hasAttribute('alightPredefinedLinkPluginFormat')) {
+      linkFormat = selection.getAttribute('alightPredefinedLinkPluginFormat') as string;
+    }
+
+    // Check if the current link has a link name attribute we need to preserve
+    if (selection.hasAttribute('alightPredefinedLinkPluginLinkName')) {
+      linkName = selection.getAttribute('alightPredefinedLinkPluginLinkName') as string;
+    }
+
+    // Make sure predefined links have the suffix
+    if (isPredefined && !href.includes('~predefined_editor_id')) {
+      href = href + '~predefined_editor_id';
+    }
 
     // Extract decorator options
     const truthyManualDecorators: Array<string> = [];
@@ -145,6 +156,23 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
           // Update the existing link with the new href
           writer.setAttribute('alightPredefinedLinkPluginHref', href, linkRange);
 
+          // If it's a predefined link and we have format and name, set these attributes
+          if (isPredefined) {
+            if (linkFormat) {
+              writer.setAttribute('alightPredefinedLinkPluginFormat', linkFormat, linkRange);
+            } else {
+              writer.setAttribute('alightPredefinedLinkPluginFormat', 'standard', linkRange);
+            }
+
+            // Extract and set link name for predefined links
+            const extractedLinkId = extractPredefinedLinkId(href);
+            if (extractedLinkId) {
+              writer.setAttribute('alightPredefinedLinkPluginLinkName', extractedLinkId, linkRange);
+            } else if (linkName) {
+              writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, linkRange);
+            }
+          }
+
           // Set truthyManualDecorators attributes
           truthyManualDecorators.forEach(item => {
             writer.setAttribute(item, true, linkRange);
@@ -164,6 +192,17 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
 
           attributes.set('alightPredefinedLinkPluginHref', href);
 
+          // If it's a predefined link, set format attribute
+          if (isPredefined) {
+            attributes.set('alightPredefinedLinkPluginFormat', 'standard');
+
+            // Extract and set link name for predefined links
+            const extractedLinkId = extractPredefinedLinkId(href);
+            if (extractedLinkId) {
+              attributes.set('alightPredefinedLinkPluginLinkName', extractedLinkId);
+            }
+          }
+
           truthyManualDecorators.forEach(item => {
             attributes.set(item, true);
           });
@@ -179,9 +218,10 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
 
         // Remove the `alightPredefinedLinkPluginHref` attribute and all link decorators from the selection.
         // It stops adding a new content into the link element.
-        ['alightPredefinedLinkPluginHref', ...truthyManualDecorators, ...falsyManualDecorators].forEach(item => {
-          writer.removeSelectionAttribute(item);
-        });
+        ['alightPredefinedLinkPluginHref', 'alightPredefinedLinkPluginFormat', 'alightPredefinedLinkPluginLinkName',
+          ...truthyManualDecorators, ...falsyManualDecorators].forEach(item => {
+            writer.removeSelectionAttribute(item);
+          });
       } else {
         // If selection has non-collapsed ranges, we change attribute on nodes inside those ranges
         // WITHOUT REMOVING THEM - just applying the href attribute
@@ -191,6 +231,17 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
         for (const range of ranges) {
           // Set the alightPredefinedLinkPluginHref attribute on the selected text
           writer.setAttribute('alightPredefinedLinkPluginHref', href, range);
+
+          // If it's a predefined link, set format attribute
+          if (isPredefined) {
+            writer.setAttribute('alightPredefinedLinkPluginFormat', 'standard', range);
+
+            // Extract and set link name for predefined links
+            const extractedLinkId = extractPredefinedLinkId(href);
+            if (extractedLinkId) {
+              writer.setAttribute('alightPredefinedLinkPluginLinkName', extractedLinkId, range);
+            }
+          }
 
           // Set truthyManualDecorators attributes
           truthyManualDecorators.forEach(item => {

@@ -16,7 +16,7 @@ import AlightPredefinedLinkPluginEditing from './linkediting';
 import LinkActionsView from './ui/linkactionsview';
 import type AlightPredefinedLinkPluginCommand from './linkcommand';
 import type AlightPredefinedLinkPluginUnlinkCommand from './unlinkcommand';
-import { isLinkElement } from './utils';
+import { isLinkElement, isPredefinedLink, extractPredefinedLinkId } from './utils';
 import { CkAlightModalDialog } from './../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import './../ui-components/alight-checkbox-component/alight-checkbox-component';
 
@@ -190,8 +190,15 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
   // Checks if the current selection is in a link and shows the balloon if needed
   private _checkAndShowBalloon(): void {
     const selectedLink = this._getSelectedLinkElement();
+
+    // Check if the selected link is a predefined link
     if (selectedLink) {
-      this._showBalloon();
+      const href = selectedLink.getAttribute('href');
+
+      // Only show the balloon for predefined links
+      if (href && isPredefinedLink(href as string)) {
+        this._showBalloon();
+      }
     }
   }
 
@@ -296,6 +303,12 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
   private _normalizeUrl(url: string): string {
     if (!url) return '';
 
+    // For predefined links, extract the ID for comparison
+    const predefinedId = extractPredefinedLinkId(url);
+    if (predefinedId) {
+      return predefinedId.toLowerCase();
+    }
+
     // Remove trailing slash
     let normalized = url.endsWith('/') ? url.slice(0, -1) : url;
 
@@ -308,7 +321,33 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
   // Find predefined link by URL using the links service
   private async _findPredefinedLinkByUrl(url: string): Promise<PredefinedLink | null> {
     try {
-      // Find the matching link by URL - compare regardless of trailing slash or protocol differences
+      // Extract predefined link ID if present
+      const predefinedId = extractPredefinedLinkId(url);
+
+      if (predefinedId) {
+        // For predefined links, try to find by exact ID match first
+        const exactMatch = this._predefinedLinks.find(link => {
+          // Check if the link has a uniqueId that matches
+          if (link.uniqueId && link.uniqueId.toString() === predefinedId) {
+            return true;
+          }
+
+          // If the destination matches the predefined ID
+          if (link.destination &&
+            (link.destination === predefinedId ||
+              link.destination.includes(predefinedId))) {
+            return true;
+          }
+
+          return false;
+        });
+
+        if (exactMatch) {
+          return exactMatch;
+        }
+      }
+
+      // Fallback to normalized URL comparison
       return this._predefinedLinks.find(link => {
         const normalizedDestination = this._normalizeUrl(link.destination as string);
         const normalizedUrl = this._normalizeUrl(url);
@@ -330,8 +369,12 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
       const selectedLink = this._getSelectedLinkElement();
 
       if (selectedLink) {
-        // Show balloon with actions (edit/unlink) when clicking on a link
-        this._showBalloon();
+        // Check if it's a predefined link before showing the balloon
+        const href = selectedLink.getAttribute('href');
+        if (href && isPredefinedLink(href as string)) {
+          // Show balloon with actions (edit/unlink) when clicking on a predefined link
+          this._showBalloon();
+        }
       }
     });
   }
@@ -358,6 +401,12 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
       // Make sure the link is still selected before showing balloon
       const selectedLink = this._getSelectedLinkElement();
       if (!selectedLink) {
+        return;
+      }
+
+      // Verify it's a predefined link
+      const href = selectedLink.getAttribute('href');
+      if (!href || !isPredefinedLink(href as string)) {
         return;
       }
 
@@ -480,15 +529,15 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
     if (isEditing && linkCommand.value) {
       initialUrl = linkCommand.value as string;
 
-      // Remove the predefined suffix for display
-      if (initialUrl.includes('~predefined_editor_id')) {
-        const displayUrl = initialUrl.replace('~predefined_editor_id', '');
-        console.log('Editing predefined link:', displayUrl);
-      }
-
       // Try to find the link data from the API
       try {
         initialLink = await this._findPredefinedLinkByUrl(initialUrl);
+
+        // If we couldn't find a link by URL but it's a predefined link format, 
+        // set a flag to force the UI to open in edit mode
+        if (!initialLink && isPredefinedLink(initialUrl)) {
+          console.log('Predefined link format detected but not found in available links:', initialUrl);
+        }
       } catch (error) {
         console.error('Error fetching link data:', error);
       }
@@ -522,7 +571,13 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
 
           if (selectedLink && selectedLink.destination) {
             // Create the link in the editor using the built-in link command
-            linkCommand.execute(selectedLink.destination);
+            // Add the predefined_editor_id suffix if not already present
+            let href = selectedLink.destination;
+            if (!href.includes('~predefined_editor_id')) {
+              href = href + '~predefined_editor_id';
+            }
+
+            linkCommand.execute(href);
 
             // Hide the modal after creating the link
             this._modalDialog?.hide();
@@ -532,10 +587,7 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
 
             // Show an alert to the user through our ContentManager
             if (this._linkManager) {
-              this._linkManager.showAlert('Error alert banner', 'error');
-              this._linkManager.showAlert('Info alert banner', 'info');
-              this._linkManager.showAlert('Success alert banner', 'success');
-              this._linkManager.showAlert('Warning alert banner', 'warning');
+              this._linkManager.showAlert('Please select a predefined link', 'error');
             }
           }
         }
@@ -576,14 +628,20 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
         this._updateContinueButtonState(!!link);
       };
 
-      // Add this line to test the alert functionality
-      this._linkManager.showAlert('This is a test alert message', 'info', 5000);
-
       // Initialize the ContentManager with the content element
       this._linkManager.renderContent(customContent);
 
       // Set initial button state based on whether we have an initial link
       this._updateContinueButtonState(!!initialLink);
+
+      // If the URL is a predefined link format but not in our list, show a message
+      if (initialUrl && isPredefinedLink(initialUrl) && !initialLink) {
+        this._linkManager.showAlert(
+          'This predefined link is not in the current list of available links. You can select a new link or cancel.',
+          'warning',
+          0 // Don't auto-dismiss
+        );
+      }
     } catch (error) {
       console.error('Error setting up predefined links:', error);
 

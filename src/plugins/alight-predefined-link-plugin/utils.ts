@@ -5,7 +5,8 @@ import type {
   Schema,
   ViewAttributeElement,
   ViewNode,
-  ViewDocumentFragment
+  ViewDocumentFragment,
+  ViewElement as ViewElementType
 } from '@ckeditor/ckeditor5-engine';
 
 import type { Editor } from '@ckeditor/ckeditor5-core';
@@ -39,6 +40,10 @@ const DEFAULT_LINK_PROTOCOLS = [
   'mailto'
 ];
 
+// Predefined link patterns
+const PREDEFINED_LINK_SUFFIX = /~predefined_editor_id$/;
+const DOC_LINK_PATTERN = /^DOC_\d+_LINK/;
+
 /**
  * A keystroke used by the {@link module:link/linkui~AlightPredefinedLinkPluginUI link UI feature}.
  */
@@ -52,21 +57,33 @@ export function isLinkElement(node: ViewNode | ViewDocumentFragment): boolean {
 }
 
 /**
- * Creates a link {@link module:engine/view/attributeelement~AttributeElement} with the provided `href` attribute.
+ * Helper function to detect predefined links
  */
-// Helper function to detect predefined links
-export function isPredefinedEditorLink(url: string): boolean {
-  return url.includes('~predefined_editor_id');
+export function isPredefinedLink(url: string): boolean {
+  return (
+    // Standard format: url ends with ~predefined_editor_id
+    PREDEFINED_LINK_SUFFIX.test(url) ||
+    // DOC format: url matches DOC_xxxxx_LINK pattern
+    DOC_LINK_PATTERN.test(url)
+  );
 }
 
-// Update the createLinkElement function to add the data-id attribute
+/**
+ * Creates a link {@link module:engine/view/attributeelement~AttributeElement} with the provided `href` attribute.
+ */
 export function createLinkElement(href: string, { writer }: DowncastConversionApi): ViewAttributeElement {
-  // Priority 5 - https://github.com/ckeditor/ckeditor5-link/issues/121.
-  const linkElement = writer.createAttributeElement('a', {
-    href,
-    'data-id': 'predefined-editor'
-  }, { priority: 5 });
+  // Check if this is a predefined link
+  const isPredefined = isPredefinedLink(href);
+  const attributes: Record<string, string> = { href };
 
+  // Add data-id for predefined links
+  if (isPredefined) {
+    attributes['data-id'] = 'predefined-editor';
+  }
+
+  // Create the base link element
+  // Priority 5 - https://github.com/ckeditor/ckeditor5-link/issues/121.
+  const linkElement = writer.createAttributeElement('a', attributes, { priority: 5 });
   writer.setCustomProperty('alight-predefined-link', true, linkElement);
 
   return linkElement;
@@ -84,6 +101,11 @@ export function createLinkElement(href: string, { writer }: DowncastConversionAp
 export function ensureSafeUrl(url: unknown, allowedProtocols: Array<string> = DEFAULT_LINK_PROTOCOLS): string {
   const urlString = String(url);
 
+  // Special handling for predefined links
+  if (isPredefinedLink(urlString)) {
+    return urlString; // Keep predefined links as-is
+  }
+
   const protocolsList = allowedProtocols.join('|');
   const customSafeRegex = new RegExp(`${SAFE_URL_TEMPLATE.replace('<protocols>', protocolsList)}`, 'i');
 
@@ -94,6 +116,11 @@ export function ensureSafeUrl(url: unknown, allowedProtocols: Array<string> = DE
  * Checks whether the given URL is safe for the user (does not contain any malicious code).
  */
 function isSafeUrl(url: string, customRegexp: RegExp): boolean {
+  // Consider predefined links safe
+  if (isPredefinedLink(url)) {
+    return true;
+  }
+
   const normalizedUrl = url.replace(ATTRIBUTE_WHITESPACES, '');
 
   return !!normalizedUrl.match(customRegexp);
@@ -178,6 +205,11 @@ export function isEmail(value: string): boolean {
  * * or the link is an email address.
  */
 export function addLinkProtocolIfApplicable(link: string, defaultProtocol?: string): string {
+  // Don't modify predefined links
+  if (isPredefinedLink(link)) {
+    return link;
+  }
+
   const protocol = isEmail(link) ? 'mailto:' : defaultProtocol;
   const isProtocolNeeded = !!protocol && !linkHasProtocol(link);
 
@@ -237,6 +269,27 @@ export function createBookmarkCallbacks(editor: Editor): LinkActionsViewOptions 
     isScrollableToTarget,
     scrollToTarget
   };
+}
+
+/**
+ * Extracts the predefined link ID from various link formats.
+ * @param href The href attribute value
+ * @returns The link ID or null if not a predefined link
+ */
+export function extractPredefinedLinkId(href: string): string | null {
+  if (!href) return null;
+
+  // Format: DOC_1760181_LINK~predefined_editor_id
+  if (PREDEFINED_LINK_SUFFIX.test(href)) {
+    return href.replace(PREDEFINED_LINK_SUFFIX, '');
+  }
+
+  // Format: DOC_1760181_LINK
+  if (DOC_LINK_PATTERN.test(href)) {
+    return href;
+  }
+
+  return null;
 }
 
 export type NormalizedLinkDecoratorAutomaticDefinition = LinkDecoratorAutomaticDefinition & { id: string };
