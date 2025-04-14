@@ -20,17 +20,40 @@ export class ContentManager implements ILinkManager {
 
   constructor(initialUrl: string = '', existingDocumentLinksData: DocumentLink[] = []) {
     this.initialUrl = initialUrl;
-    this.existingDocumentLinksData = existingDocumentLinksData;
+    ` `
+    // Log the received data for debugging
+    console.log('ContentManager constructor - received document links count:', existingDocumentLinksData?.length || 0);
+    if (existingDocumentLinksData && existingDocumentLinksData.length > 0) {
+      console.log('Sample of first document link:', existingDocumentLinksData[0]);
+    }
+
+    // Ensure we store all document links - add extra safety to handle potential null/undefined
+    this.existingDocumentLinksData = existingDocumentLinksData?.length ? [...existingDocumentLinksData] : [];
     this.filteredLinksData = [...this.existingDocumentLinksData];
+
+    console.log('ContentManager initialized with links:', {
+      received: existingDocumentLinksData?.length || 0,
+      stored: this.existingDocumentLinksData.length,
+      filtered: this.filteredLinksData.length,
+      sample: this.existingDocumentLinksData.slice(0, 2)
+    });
 
     // If we have an initial URL, try to find and preselect the matching link
     if (initialUrl) {
       this.selectedLink = this.existingDocumentLinksData.find(
         link => link.serverFilePath === initialUrl
       ) || null;
+
+      if (this.selectedLink) {
+        console.log('Found matching link for initial URL:', this.selectedLink);
+      } else {
+        console.log('No matching link found for initial URL:', initialUrl);
+      }
     }
 
-    this.paginationManager = new PaginationManager(this.handlePageChange.bind(this));
+    // We want to show all documents without pagination
+    const largePageSize = Number.MAX_SAFE_INTEGER;
+    this.paginationManager = new PaginationManager(this.handlePageChange.bind(this), largePageSize);
     this.searchManager = new SearchManager(
       this.existingDocumentLinksData,
       this.handleSearchResults.bind(this),
@@ -67,11 +90,16 @@ export class ContentManager implements ILinkManager {
     // Maintain selected link if still in filtered results, otherwise clear selection
     if (this.selectedLink && !filteredData.some(link => link.serverFilePath === this.selectedLink?.serverFilePath)) {
       this.selectedLink = null;
+
+      // Notify of link deselection
+      if (this.onLinkSelected) {
+        this.onLinkSelected(null);
+      }
     }
 
     // Re-render the UI
     if (this.container) {
-      console.log('Re-rendering content');
+      console.log('Re-rendering content after search');
       this.renderContent(this.container);
     }
   };
@@ -98,6 +126,7 @@ export class ContentManager implements ILinkManager {
   }
 
   public renderContent(container: HTMLElement): void {
+    console.log('Rendering content with filtered links:', this.filteredLinksData.length);
     this.container = container;
     container.innerHTML = this.buildContentForPage();
 
@@ -109,8 +138,7 @@ export class ContentManager implements ILinkManager {
     // Initialize search first as it sets up the search container
     this.searchManager.initialize(container);
 
-    // Then initialize pagination
-    this.paginationManager.initialize(container, this.filteredLinksData.length);
+    // Pagination is hidden since we're showing all items
 
     // Finally attach link selection listeners
     this.attachLinkSelectionListeners(container);
@@ -134,11 +162,9 @@ export class ContentManager implements ILinkManager {
     `;
     }
 
-    const currentPage = this.paginationManager.getCurrentPage();
-    const pageSize = this.paginationManager.getPageSize();
-    const startIndex = (currentPage - 1) * pageSize;
-    const endIndex = Math.min(startIndex + pageSize, this.filteredLinksData.length);
-    const currentPageData = this.filteredLinksData.slice(startIndex, endIndex);
+    // Show all filtered links at once instead of paginating
+    const linksToDisplay = this.filteredLinksData;
+    console.log('Building page content with links to display:', linksToDisplay.length);
 
     // Search container
     const searchContainerMarkup = `<div id="search-container-root" class="cka-search-container"></div>`;
@@ -146,20 +172,28 @@ export class ContentManager implements ILinkManager {
     // Current URL info if we have an initial URL
     const currentUrlInfo = this.initialUrl ? this.buildCurrentUrlInfoMarkup() : '';
 
+    // Add a count of displayed items
+    const itemCountMarkup = `
+      <div class="cka-links-count">
+        Showing ${linksToDisplay.length} of ${this.existingDocumentLinksData.length} documents
+      </div>
+    `;
+
     // Links list
-    const linksMarkup = currentPageData.length > 0
-      ? currentPageData
+    const linksMarkup = linksToDisplay.length > 0
+      ? linksToDisplay
         .map(link => this.buildLinkItemMarkup(link))
         .join('')
       : '<div class="cka-center-modal-message">No results found.</div>';
 
-    // Pagination container
-    const paginationMarkup = `<div id="pagination-container" class="cka-pagination"></div>`;
+    // Pagination container - hidden but kept for compatibility
+    const paginationMarkup = `<div id="pagination-container" class="cka-pagination" style="display:none;"></div>`;
 
     return `
     ${searchContainerMarkup}
     ${currentUrlInfo}
-    <div id="links-container" class="cka-links-container">
+    ${itemCountMarkup}
+    <div id="links-container" class="cka-links-container" style="max-height: 60vh; overflow-y: auto;">
       ${linksMarkup}
     </div>
     ${paginationMarkup}
@@ -195,6 +229,9 @@ export class ContentManager implements ILinkManager {
     forceSelected: boolean = false,
     radioGroupName: string = 'link-selection'
   ): string {
+    // Safety check for link properties
+    if (!link) return '';
+
     const isSelected = forceSelected || this.selectedLink?.serverFilePath === link.serverFilePath;
 
     return `
@@ -208,10 +245,12 @@ export class ContentManager implements ILinkManager {
           </cka-radio-button>
         </div>
         <ul>
-          <li><strong>${link.title}</strong></li>
-          <li><strong>Population:</strong> ${link.population}</li>
-          <li><strong>Language:</strong> ${link.locale}</li>
-          <li><strong>File Type:</strong> ${link.fileType}</li>
+          <li><strong>${link.title || 'No Title'}</strong></li>
+          <li><strong>Population:</strong> ${link.population || 'Unknown'}</li>
+          <li><strong>Language:</strong> ${link.locale || 'Unknown'}</li>
+          <li><strong>File Type:</strong> ${link.fileType || 'Unknown'}</li>
+          ${link.documentDescription ? `<li><strong>Description:</strong> ${link.documentDescription}</li>` : ''}
+          <li class="wrap-text"><strong>Path:</strong> ${link.serverFilePath || 'No URL'}</li>
         </ul>
       </div>
     `;
@@ -253,6 +292,8 @@ export class ContentManager implements ILinkManager {
     this.selectedLink = this.existingDocumentLinksData.find(
       link => link.serverFilePath === linkName
     ) || null;
+
+    console.log('Link selected:', this.selectedLink);
 
     // Update selected state visually
     const container = linkItem.closest('.cka-existing-document-link-content');

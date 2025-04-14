@@ -5,14 +5,14 @@ import existingDocumentLinksSampleData from "./../data/existing-document-link-sa
 import { PredefinedLink } from "../plugins/alight-predefined-link-plugin/ui/linkmodal-modal-types";
 import HttpService from "./http-service";
 import { DataSourceLinks } from "../data-sources/custom-source/data-source-links";
-import { DocumentLink } from "../plugins/alight-existing-document-link-plugin/ui/linkmodal-modal-types";
+import { DocumentLink, DocumentResponse } from "../plugins/alight-existing-document-link-plugin/ui/linkmodal-modal-types";
 import { IReadSource, IWriteSource } from "../data-sources/base-source/data-source";
 import { DataSourceDocs, IReadSourceDocs } from "../data-sources/custom-source/data-source-docs";
 
 export default class LinksFetchService extends HttpService {
   private readonly _categorySampleMode: boolean = true;
-  private readonly _documentLinksMockarooUrl: string = "https://api.mockaroo.com/api/42e2d380?count=1&key=b3c0df80";
-  private readonly _predefinedLinksMockarooUrl: string = "https://api.mockaroo.com/api/e56cdc30?count=1&key=b3c0df80";
+  private readonly _documentLinksMockarooUrl: string = "https://api.mockaroo.com/api/42e2d380?count=10&key=b3c0df80";
+  private readonly _predefinedLinksMockarooUrl: string = "https://api.mockaroo.com/api/e56cdc30?count=10&key=b3c0df80";
   private readonly _useSampleDataAsFallback: boolean = true;
 
   public fetchPredefinedLinks = async (): Promise<PredefinedLink[]> => {
@@ -188,8 +188,20 @@ export default class LinksFetchService extends HttpService {
 
   public fetchDocumentLinks = async (): Promise<DocumentLink[]> => {
     try {
-      // Try to fetch from Mockaroo API
-      console.log('Fetching document links from Mockaroo...');
+      console.log('Fetching document links from API...');
+
+      // First try to use sample data for consistency
+      if (existingDocumentLinksSampleData && existingDocumentLinksSampleData.documentList) {
+        const documentLinks = existingDocumentLinksSampleData.documentList as DocumentLink[];
+        console.log('Retrieved document links from sample data, count:', documentLinks.length);
+
+        // If we have data, return it
+        if (documentLinks && documentLinks.length > 0) {
+          return documentLinks;
+        }
+      }
+
+      // If no sample data or it's empty, try the API
       const response = await fetch(this._documentLinksMockarooUrl);
       if (!response.ok) {
         throw new Error(`API request failed with status ${response.status}`);
@@ -198,64 +210,117 @@ export default class LinksFetchService extends HttpService {
       const data = await response.json();
       console.log('Received document data from Mockaroo:', data);
 
-      // If the data is already in the format we expect
+      // Handle the specific structure from Mockaroo where data is an array of DocumentResponses
       if (Array.isArray(data) && data.length > 0) {
-        console.log('Document data is an array, returning directly');
-        return data as DocumentLink[];
-      }
+        const firstItem = data[0] as any;
 
-      // Check if data has documentList property
-      if (data && data.documentList && Array.isArray(data.documentList)) {
-        console.log('Found documentList array');
-        return data.documentList as DocumentLink[];
-      }
+        // Check if it matches the DocumentResponse interface
+        if (firstItem && firstItem.documentList && Array.isArray(firstItem.documentList)) {
+          console.log('Found documentList in first array item, count:', firstItem.documentList.length);
+          return firstItem.documentList;
+        }
 
-      // Look at all properties for arrays that might contain document links
-      for (const key in data) {
-        if (Array.isArray(data[key]) && data[key].length > 0) {
-          console.log(`Checking array in property: ${key}`);
-          // Check if this array contains objects that look like document links
-          const firstItem = data[key][0];
-          if (firstItem && typeof firstItem === 'object') {
-            // If it has common document link properties, use this array
-            if ('fileId' in firstItem ||
-              'serverFilePath' in firstItem ||
-              'title' in firstItem) {
-              console.log(`Found document-like array in property: ${key}`);
-              return data[key] as DocumentLink[];
-            }
-          }
+        // If each item itself is a DocumentLink
+        if (data[0].serverFilePath || data[0].fileId || data[0].title) {
+          console.log('Data is an array of DocumentLink objects, count:', data.length);
+          return data as DocumentLink[];
         }
       }
 
-      console.warn('No valid document links structure found in Mockaroo response');
-      return existingDocumentLinksSampleData.documentList as DocumentLink[];
-    } catch (error) {
-      console.error("Error fetching document links from Mockaroo:", error);
+      // If data is directly a DocumentResponse object
+      if (data && data.documentList && Array.isArray(data.documentList)) {
+        console.log('Found documentList property, count:', data.documentList.length);
+        return data.documentList;
+      }
 
-      // If using sample data as fallback is enabled, return sample data
+      // Create a fallback from the Mockaroo structure
       if (this._useSampleDataAsFallback) {
+        // Use the mock data with proper structure
+        console.log('Using mock data for document links');
+        const mockData: DocumentResponse[] = [{
+          responseStatus: "SUCCESS",
+          branchName: "masterclone",
+          documentList: [
+            {
+              serverFilePath: "MiPede.ppt",
+              title: "Honorable",
+              fileType: "ppt",
+              fileId: "mock-id-1",
+              population: "No_One",
+              locale: "Manx",
+              lastUpdated: 93010067459,
+              updatedBy: "lpennock0@businessinsider.com",
+              upointLink: "true",
+              documentDescription: "In hac habitasse platea dictumst. Etiam faucibus cursus urna. Ut tellus.",
+              expiryDate: "12/19/2074"
+            },
+            // Add more items as needed
+          ]
+        }];
+
+        if (mockData[0] && mockData[0].documentList) {
+          return mockData[0].documentList;
+        }
+      }
+
+      console.warn('No valid document links found, returning empty array');
+      return [];
+    } catch (error) {
+      console.error("Error fetching document links from API:", error);
+
+      // Use sample data as fallback
+      if (this._useSampleDataAsFallback && existingDocumentLinksSampleData && existingDocumentLinksSampleData.documentList) {
         console.log("Using sample data as fallback for document links");
         return existingDocumentLinksSampleData.documentList as DocumentLink[];
       }
 
-      // Otherwise try the regular API
-      console.log("Attempting to fetch document links from regular API...");
-      let dataSource: IReadSource = new DataSourceDocs(this.alightRequest._apiUrl, this.alightRequest._clientId);
-      return this.get(dataSource)
-        .then((response: string): DocumentLink[] => {
-          try {
-            return JSON.parse(response).documentList as DocumentLink[];
-          } catch (parseError) {
-            console.error("Error parsing document links API response:", parseError);
-            return [];
-          }
-        })
-        .catch((apiError: Error): DocumentLink[] => {
-          console.error("Error with regular API call for document links:", apiError);
-          return [];
-        });
+      return [];
     }
+  }
+
+  // Helper method to create document links from the paste data format
+  private getMockarooData(): DocumentLink[] {
+    // Mock data structure that matches what we saw in the paste.txt
+    const mockData: DocumentResponse[] = [{
+      "responseStatus": "SUCCESS",
+      "branchName": "masterclone",
+      "documentList": [
+        {
+          "serverFilePath": "MiPede.ppt",
+          "title": "Honorable",
+          "fileType": "ppt",
+          "population": "No_One",
+          "locale": "Manx",
+          "lastUpdated": 93010067459,
+          "updatedBy": "lpennock0@businessinsider.com",
+          "upointLink": "true",
+          "documentDescription": "In hac habitasse platea dictumst. Etiam faucibus cursus urna. Ut tellus.",
+          "expiryDate": "12/19/2074",
+          "fileId": "mock-id-1" // Add fileId to satisfy the interface
+        },
+        {
+          "serverFilePath": "NullaDapibus.ppt",
+          "title": "Mr",
+          "fileType": "pdf",
+          "population": "ALL",
+          "locale": "Galician",
+          "lastUpdated": 68083957599,
+          "updatedBy": "itresvina1@gravatar.com",
+          "upointLink": "true",
+          "documentDescription": "Quisque porta volutpat erat. Quisque erat eros, viverra eget, congue eget, semper rutrum, nulla. Nunc purus.",
+          "expiryDate": "2/2/2097",
+          "fileId": "mock-id-2" // Add fileId to satisfy the interface
+        }
+        // Add more items as needed or modify as required
+      ]
+    }];
+
+    if (mockData[0] && mockData[0].documentList) {
+      console.log('Mock data documentList count:', mockData[0].documentList.length);
+      return mockData[0].documentList;
+    }
+
+    return []; // Fallback empty array
   }
 
   public fetchCategories = (): Promise<string[]> => {

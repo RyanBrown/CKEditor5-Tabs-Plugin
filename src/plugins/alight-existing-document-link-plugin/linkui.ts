@@ -22,7 +22,7 @@ import './../ui-components/alight-checkbox-component/alight-checkbox-component';
 
 // Import the ContentManager and types from the updated location
 import { ContentManager } from './ui/linkmodal-ContentManager';
-import { DocumentLink } from './ui/linkmodal-modal-types';
+import { DocumentLink, DocumentResponse } from './ui/linkmodal-modal-types';
 import AlightDataLoadPlugin from '../../alight-common/alight-data-load-plugin';
 import LinksLoadService from '../../services/links-load-service';
 import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
@@ -136,12 +136,41 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
     if (this.verboseMode) console.log(`Loading existing document links...`);
     this.loadService.loadDocumentLinks().then(
       (data) => {
-        this._documentLinks = data;
-        if (this.verboseMode) console.log(data);
+        try {
+          // Check if data is a DocumentResponse array
+          if (Array.isArray(data) && data.length > 0) {
+            console.log('Loaded data items count:', data.length);
+
+            // Check if the first element looks like a DocumentResponse
+            const firstItem = data[0] as any;
+            if (firstItem && firstItem.documentList && Array.isArray(firstItem.documentList)) {
+              console.log('Found documentList array with count:', firstItem.documentList.length);
+              this._documentLinks = firstItem.documentList;
+            } else {
+              // It's just a direct array of DocumentLink objects
+              this._documentLinks = data as DocumentLink[];
+            }
+          } else {
+            console.log('No document links loaded or invalid format');
+            this._documentLinks = [];
+          }
+
+          console.log('Final document links count:', this._documentLinks?.length || 0);
+        } catch (error) {
+          console.error('Error processing document links:', error);
+          this._documentLinks = [];
+        }
+
         this.isReady = true;
         this._enablePluginButton();
       },
-      (error) => console.log(error)
+      (error) => {
+        console.error('Error loading document links:', error);
+        // Initialize with empty array so the UI can still function
+        this._documentLinks = [];
+        this.isReady = true;
+        this._enablePluginButton();
+      }
     );
   }
 
@@ -432,13 +461,13 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
     let initialLink: DocumentLink | null = null;
 
     // Remove the existing document suffix for display
-    if (initialUrl.includes('~existing_document_editor_id')) {
-      const displayUrl = initialUrl.replace('~existing_document_editor_id', '');
-      console.log('Editing existing document link:', displayUrl);
-    }
-
     if (isEditing && linkCommand.value) {
       initialUrl = linkCommand.value as string;
+
+      if (initialUrl.includes('~existing_document_editor_id')) {
+        const displayUrl = initialUrl.replace('~existing_document_editor_id', '');
+        console.log('Editing existing document link:', displayUrl);
+      }
 
       // Try to find the link data from the API
       try {
@@ -458,7 +487,7 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
         contentClass: 'cka-existing-document-link-content',
         buttons: [
           { label: t('Cancel') },
-          { label: t('Continue'), isPrimary: true, closeOnClick: false }
+          { label: t('Continue'), isPrimary: true, closeOnClick: false, disabled: !initialLink }
         ]
       });
 
@@ -498,7 +527,7 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
               // Remove after a delay
               setTimeout(() => {
                 alertDiv.remove();
-              }, 10000);
+              }, 3000);
             }
           }
         }
@@ -517,7 +546,34 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
 
     // Then fetch data and initialize the content manager in the background
     try {
-      if (this._documentLinks?.length === 0) {
+      // Make sure we have document links
+      if (!this._documentLinks || this._documentLinks.length === 0) {
+        console.log('No document links available, reloading from service...');
+        try {
+          let fetchedLinks = await this.loadService.loadDocumentLinks();
+
+          // Handle DocumentResponse structure
+          if (Array.isArray(fetchedLinks) && fetchedLinks.length > 0) {
+            const firstItem = fetchedLinks[0] as any;
+            if (firstItem && firstItem.documentList && Array.isArray(firstItem.documentList)) {
+              console.log('Extracting documentList from fetched data:', firstItem.documentList.length);
+              this._documentLinks = firstItem.documentList;
+            } else {
+              this._documentLinks = fetchedLinks as DocumentLink[];
+            }
+          } else {
+            this._documentLinks = [];
+          }
+
+          console.log('Reloaded document links count:', this._documentLinks.length);
+        } catch (error) {
+          console.error('Error loading document links:', error);
+        }
+      }
+
+      console.log('Document links count to display:', this._documentLinks ? this._documentLinks.length : 0);
+
+      if (!this._documentLinks || this._documentLinks.length === 0) {
         // Show message if no links found
         const linksContainer = customContent.querySelector('#links-container');
         if (linksContainer) {
@@ -533,8 +589,16 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
       // Create the ContentManager with the initialUrl and document links data
       this._linkManager = new ContentManager(initialUrl, this._documentLinks);
 
+      // Add link selection callback to update Continue button state
+      this._linkManager.onLinkSelected = (link) => {
+        this._updateContinueButtonState(!!link);
+      };
+
       // Initialize the ContentManager with the content element
       this._linkManager.renderContent(customContent);
+
+      // Set initial button state based on whether we have an initial link
+      this._updateContinueButtonState(!!initialLink);
     } catch (error) {
       console.error('Error setting up existing document links:', error);
 
@@ -546,6 +610,29 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
           <p>${error.message || 'Unknown error'}</p>
         </div>
       `;
+      }
+    }
+  }
+
+  /**
+   * Updates the state of the Continue button based on whether a link is selected
+   * 
+   * @param hasSelection True if a link is selected, false otherwise
+   */
+  private _updateContinueButtonState(hasSelection: boolean): void {
+    if (!this._modalDialog) return;
+
+    const continueButton = this._modalDialog.getElement()?.querySelector('.cka-dialog-footer-buttons button:last-child') as HTMLButtonElement;
+
+    if (continueButton) {
+      // Update the disabled property
+      continueButton.disabled = !hasSelection;
+
+      // Update classes for visual indication
+      if (hasSelection) {
+        continueButton.classList.remove('ck-disabled');
+      } else {
+        continueButton.classList.add('ck-disabled');
       }
     }
   }
