@@ -374,12 +374,22 @@ class AlightEditor extends ClassicEditor {
           styles: ["*"]
         },
         {
+          name: "ah:link",
+          attributes: ["name", "class", "title", "assettype", "data-*"],
+          classes: ["*"],
+          styles: ["*"]
+        },
+        {
           name: "a",
           attributes: {
             id: true,
             orgnameattr: true,
+            href: true,
+            "data-cke-saved-href": true,
+            class: true,
+            target: true
           },
-          classes: ["*"],
+          classes: ["AHCustomeLink", "document_tag", "*"],
           styles: ["*"]
         },
         {
@@ -396,7 +406,7 @@ class AlightEditor extends ClassicEditor {
             "cka-population-end",
             "*" // Added wildcard to allow all classes
           ],
-          attributes: ["data-population-name"]
+          attributes: ["data-population-name", "data-*"]
         },
         {
           name: /^(h[1-6])$/,
@@ -467,6 +477,24 @@ class AlightEditor extends ClassicEditor {
         { title: "Russian", languageCode: "ru" },
         { title: "Spanish", languageCode: "es" },
       ],
+    },
+    link: {
+      decorators: {
+        documentLink: {
+          mode: 'manual',
+          label: 'Document Link',
+          attributes: {
+            class: 'document_tag'
+          }
+        },
+        predefinedLink: {
+          mode: 'manual',
+          label: 'Predefined Link',
+          attributes: {
+            class: 'AHCustomeLink'
+          }
+        }
+      }
     },
     list: {
       properties: {
