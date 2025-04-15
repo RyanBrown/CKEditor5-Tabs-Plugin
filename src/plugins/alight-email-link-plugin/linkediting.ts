@@ -157,7 +157,7 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
           name: 'a',
           attributes: {
             href: /^mailto:/,
-            'data-id': 'email_editor'
+            'data-id': 'email_link'
           }
         },
         model: {

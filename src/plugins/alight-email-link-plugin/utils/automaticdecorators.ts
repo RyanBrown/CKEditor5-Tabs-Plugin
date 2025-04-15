@@ -63,7 +63,7 @@ export default class AutomaticDecorators {
           // Build attributes with data-id
           const attributes: Record<string, string> = {
             ...item.attributes,
-            'data-id': 'email_editor'
+            'data-id': 'email_link'
           };
 
           // Check if the model item has organization name attribute and add it to view

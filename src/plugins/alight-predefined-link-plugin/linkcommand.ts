@@ -156,6 +156,9 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
           // Update the existing link with the new href
           writer.setAttribute('alightPredefinedLinkPluginHref', href, linkRange);
 
+          // Find and remove orgnameattr attribute if it exists
+          this._removeOrgnameAttr(writer, linkRange);
+
           // If it's a predefined link and we have format and name, set these attributes
           if (isPredefined) {
             if (linkFormat) {
@@ -229,6 +232,9 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
 
         // Process each range
         for (const range of ranges) {
+          // Find and remove orgnameattr attribute if it exists
+          this._removeOrgnameAttr(writer, range);
+
           // Set the alightPredefinedLinkPluginHref attribute on the selected text
           writer.setAttribute('alightPredefinedLinkPluginHref', href, range);
 
@@ -258,6 +264,19 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
 
     // Fire an event after command execution to notify UI
     this._fireEvent('executed', { href, options });
+  }
+
+  /**
+   * Removes the orgnameattr attribute from a given range if it exists.
+   * This handles both orgnameattr="" and orgnameattr attribute formats.
+   * 
+   * @param writer The model writer
+   * @param range The range to process
+   */
+  private _removeOrgnameAttr(writer: Writer, range: Range): void {
+    // Remove the orgnameattr attribute from the range
+    // The schema check isn't needed here because removeAttribute is safe to call even if the attribute doesn't exist
+    writer.removeAttribute('orgnameattr', range);
   }
 
   /**

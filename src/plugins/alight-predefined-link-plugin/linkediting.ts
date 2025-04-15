@@ -101,6 +101,9 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
     editor.model.schema.extend('$text', { allowAttributes: 'alightPredefinedLinkPluginLinkName' });
     editor.model.schema.extend('$text', { allowAttributes: 'alightPredefinedLinkPluginFormat' });
 
+    // Allow orgnameattr attribute to be present, so we can remove it later
+    editor.model.schema.extend('$text', { allowAttributes: 'orgnameattr' });
+
     // Setup data downcast conversion
     editor.conversion.for('dataDowncast')
       .attributeToElement({
@@ -137,6 +140,23 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           key: 'alightPredefinedLinkPluginHref',
           value: (viewElement: ViewElement) => {
             const href = viewElement.getAttribute('href');
+
+            // Handle orgnameattr attribute in standard links, if present
+            const orgnameattr = viewElement.getAttribute('orgnameattr');
+            if (orgnameattr !== undefined) {
+              // We need a separate model.change() call here
+              // since we can't modify attributes during conversion
+              this.editor.model.once('_afterConversion', () => {
+                this.editor.model.change(writer => {
+                  const selection = this.editor.model.document.selection;
+                  const range = selection.getFirstRange();
+
+                  if (range) {
+                    writer.setAttribute('orgnameattr', orgnameattr, range);
+                  }
+                });
+              });
+            }
 
             // Store the format information if it's a predefined link
             if (isPredefinedLink(href as string)) {
@@ -175,6 +195,22 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
             const ahLink = viewElement.getChild(0);
             if (ahLink && ahLink.is('element', 'ah:link')) {
               const linkName = ahLink.getAttribute('name');
+
+              // Check for orgnameattr attribute on the ah:link element
+              const orgnameattr = ahLink.getAttribute('orgnameattr');
+              if (orgnameattr !== undefined) {
+                // We need to use the after conversion hook, not direct model.change
+                this.editor.model.once('_afterConversion', () => {
+                  this.editor.model.change(writer => {
+                    const selection = this.editor.model.document.selection;
+                    const range = selection.getFirstRange();
+
+                    if (range) {
+                      writer.setAttribute('orgnameattr', orgnameattr, range);
+                    }
+                  });
+                });
+              }
 
               // Store additional information for AHCustomeLink format
               // We need to use the after conversion hook, not direct model.change

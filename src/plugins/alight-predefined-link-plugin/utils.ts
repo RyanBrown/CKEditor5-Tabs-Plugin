@@ -78,7 +78,7 @@ export function createLinkElement(href: string, { writer }: DowncastConversionAp
 
   // Add data-id for predefined links
   if (isPredefined) {
-    attributes['data-id'] = 'predefined-editor';
+    attributes['data-id'] = 'predefined_link';
   }
 
   // Create the base link element

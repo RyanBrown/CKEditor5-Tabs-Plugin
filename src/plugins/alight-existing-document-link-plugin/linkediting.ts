@@ -95,9 +95,20 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
     // Allow link attribute on all inline nodes.
     editor.model.schema.extend('$text', { allowAttributes: 'AlightExistingDocumentLinkPluginHref' });
 
+    // Modified dataDowncast to add target="_blank" attribute
     editor.conversion.for('dataDowncast')
-      .attributeToElement({ model: 'AlightExistingDocumentLinkPluginHref', view: createLinkElement });
+      .attributeToElement({
+        model: 'AlightExistingDocumentLinkPluginHref',
+        view: (href, conversionApi) => {
+          const linkElement = createLinkElement(href, conversionApi);
+          // Add target="_blank" for data output
+          conversionApi.writer.setAttribute('target', '_blank', linkElement);
+          conversionApi.writer.setAttribute('rel', 'noopener noreferrer', linkElement);
+          return linkElement;
+        }
+      });
 
+    // Keep editingDowncast without target="_blank"
     editor.conversion.for('editingDowncast')
       .attributeToElement({
         model: 'AlightExistingDocumentLinkPluginHref', view: (href, conversionApi) => {
@@ -111,7 +122,7 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
           name: 'a',
           attributes: {
             href: true,
-            'data-id': 'existing-document-editor'
+            'data-id': 'existing-document_link'
           }
         },
         model: {

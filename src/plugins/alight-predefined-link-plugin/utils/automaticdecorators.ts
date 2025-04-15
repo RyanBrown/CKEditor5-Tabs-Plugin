@@ -60,10 +60,10 @@ export default class AutomaticDecorators {
         const viewSelection = viewWriter.document.selection;
 
         for (const item of this._definitions) {
-          // Add data-id to the attributes
+          // Build attributes with data-id
           const attributes = {
             ...item.attributes,
-            'data-id': 'predefined-editor'
+            'data-id': 'predefined_link'
           };
 
           const viewElement = viewWriter.createAttributeElement('a', attributes, {

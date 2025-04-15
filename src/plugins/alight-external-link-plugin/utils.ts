@@ -59,7 +59,7 @@ export function createLinkElement(href: string, { writer, attrs = {}, item }: Do
   // Start with default attributes
   const attributes: Record<string, string> = {
     href,
-    'data-id': 'external_editor',
+    'data-id': 'external_link',
     ...attrs
   };
 

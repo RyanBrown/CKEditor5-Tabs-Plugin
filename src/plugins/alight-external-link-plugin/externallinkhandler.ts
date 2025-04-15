@@ -243,7 +243,7 @@ export default class ExternalLinkHandler extends Plugin {
 
       // Find all links that don't have orgnameattr but have text with (org name) pattern
       for (const item of viewRange.getItems()) {
-        if (item.is('element', 'a') && item.getAttribute('data-id') === 'external_editor') {
+        if (item.is('element', 'a') && item.getAttribute('data-id') === 'external_link') {
           // Extract the text content from the link - Handle non-breaking spaces
           let linkText = '';
           for (const child of item.getChildren()) {
@@ -295,7 +295,7 @@ export default class ExternalLinkHandler extends Plugin {
       // Direct DOM manipulation to ensure orgnameattr is set for existing links
       const editorElement = editor.editing.view.getDomRoot();
       if (editorElement) {
-        const links = editorElement.querySelectorAll('a[data-id="external_editor"]:not([orgnameattr])');
+        const links = editorElement.querySelectorAll('a[data-id="external_link"]:not([orgnameattr])');
         links.forEach(link => {
           // Get text content and normalize to handle possible non-breaking spaces
           const linkText = link.textContent?.replace(/\u00A0/g, ' ') || '';
@@ -318,7 +318,7 @@ export default class ExternalLinkHandler extends Plugin {
               // Find the matching link by comparing DOM elements
               for (const viewItem of newViewRange.getItems()) {
                 if (viewItem.is('element', 'a') &&
-                  viewItem.getAttribute('data-id') === 'external_editor' &&
+                  viewItem.getAttribute('data-id') === 'external_link' &&
                   !viewItem.hasAttribute('orgnameattr')) {
 
                   // Check if this is the same DOM element

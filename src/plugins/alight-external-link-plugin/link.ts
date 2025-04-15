@@ -152,7 +152,7 @@ export default class AlightExternalLinkPlugin extends Plugin {
         // Create a mutation observer to watch for changes to the DOM
         const observer = new MutationObserver(mutations => {
           // Process new or changed links
-          const links = editorElement.querySelectorAll('a[data-id="external_editor"]:not([orgnameattr])');
+          const links = editorElement.querySelectorAll('a[data-id="external_link"]:not([orgnameattr])');
 
           if (links.length > 0) {
             links.forEach(link => {
@@ -177,7 +177,7 @@ export default class AlightExternalLinkPlugin extends Plugin {
 
                     for (const item of range.getItems()) {
                       if (item.is('element', 'a') &&
-                        item.getAttribute('data-id') === 'external_editor' &&
+                        item.getAttribute('data-id') === 'external_link' &&
                         !item.hasAttribute('orgnameattr')) {
 
                         // Check if this is the same DOM element
@@ -257,7 +257,7 @@ export default class AlightExternalLinkPlugin extends Plugin {
       // Find all links that don't have orgnameattr but have text with (org name) pattern
       for (const item of viewRange.getItems()) {
         if (item.is('element', 'a') &&
-          item.getAttribute('data-id') === 'external_editor' &&
+          item.getAttribute('data-id') === 'external_link' &&
           !item.hasAttribute('orgnameattr')) {
 
           // Extract the text content from the link
