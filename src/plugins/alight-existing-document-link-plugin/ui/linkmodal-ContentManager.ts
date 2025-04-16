@@ -14,46 +14,24 @@ export class ContentManager implements ILinkManager {
   private container: HTMLElement | null = null;
   private initialUrl: string = '';
   private loadingIndicator: HTMLElement | null = null;
+  private alerts: Array<{ message: string, type: 'error' | 'info' | 'success' | 'warning', id: string }> = [];
 
   // Add callback for link selection events
   public onLinkSelected: ((link: DocumentLink | null) => void) | null = null;
 
   constructor(initialUrl: string = '', existingDocumentLinksData: DocumentLink[] = []) {
     this.initialUrl = initialUrl;
-    ` `
-    // Log the received data for debugging
-    console.log('ContentManager constructor - received document links count:', existingDocumentLinksData?.length || 0);
-    if (existingDocumentLinksData && existingDocumentLinksData.length > 0) {
-      console.log('Sample of first document link:', existingDocumentLinksData[0]);
-    }
-
-    // Ensure we store all document links - add extra safety to handle potential null/undefined
-    this.existingDocumentLinksData = existingDocumentLinksData?.length ? [...existingDocumentLinksData] : [];
+    this.existingDocumentLinksData = existingDocumentLinksData;
     this.filteredLinksData = [...this.existingDocumentLinksData];
-
-    console.log('ContentManager initialized with links:', {
-      received: existingDocumentLinksData?.length || 0,
-      stored: this.existingDocumentLinksData.length,
-      filtered: this.filteredLinksData.length,
-      sample: this.existingDocumentLinksData.slice(0, 2)
-    });
 
     // If we have an initial URL, try to find and preselect the matching link
     if (initialUrl) {
       this.selectedLink = this.existingDocumentLinksData.find(
         link => link.serverFilePath === initialUrl
       ) || null;
-
-      if (this.selectedLink) {
-        console.log('Found matching link for initial URL:', this.selectedLink);
-      } else {
-        console.log('No matching link found for initial URL:', initialUrl);
-      }
     }
 
-    // We want to show all documents without pagination
-    const largePageSize = Number.MAX_SAFE_INTEGER;
-    this.paginationManager = new PaginationManager(this.handlePageChange.bind(this), largePageSize);
+    this.paginationManager = new PaginationManager(this.handlePageChange.bind(this));
     this.searchManager = new SearchManager(
       this.existingDocumentLinksData,
       this.handleSearchResults.bind(this),
@@ -82,6 +60,44 @@ export class ContentManager implements ILinkManager {
     return normalized.toLowerCase();
   }
 
+  // Add method to show alerts
+  public showAlert(message: string, type: 'error' | 'info' | 'success' | 'warning', timeout: number = 10000): void {
+    const alertId = `alert-${Date.now()}`;
+    this.alerts.push({ message, type, id: alertId });
+
+    // Re-render to show the alert
+    if (this.container) {
+      this.renderContent(this.container);
+    }
+
+    // Auto-remove the alert after the timeout
+    if (timeout > 0) {
+      setTimeout(() => {
+        this.removeAlert(alertId);
+      }, timeout);
+    }
+  }
+
+  // Method to remove a specific alert
+  public removeAlert(alertId: string): void {
+    this.alerts = this.alerts.filter(alert => alert.id !== alertId);
+
+    // Re-render to update the alerts
+    if (this.container) {
+      this.renderContent(this.container);
+    }
+  }
+
+  // Method to clear all alerts
+  public clearAlerts(): void {
+    this.alerts = [];
+
+    // Re-render to update the alerts
+    if (this.container) {
+      this.renderContent(this.container);
+    }
+  }
+
   private handleSearchResults = (filteredData: DocumentLink[]): void => {
     console.log('Search results updated:', filteredData.length, 'items');
 
@@ -90,16 +106,11 @@ export class ContentManager implements ILinkManager {
     // Maintain selected link if still in filtered results, otherwise clear selection
     if (this.selectedLink && !filteredData.some(link => link.serverFilePath === this.selectedLink?.serverFilePath)) {
       this.selectedLink = null;
-
-      // Notify of link deselection
-      if (this.onLinkSelected) {
-        this.onLinkSelected(null);
-      }
     }
 
     // Re-render the UI
     if (this.container) {
-      console.log('Re-rendering content after search');
+      console.log('Re-rendering content');
       this.renderContent(this.container);
     }
   };
@@ -126,7 +137,6 @@ export class ContentManager implements ILinkManager {
   }
 
   public renderContent(container: HTMLElement): void {
-    console.log('Rendering content with filtered links:', this.filteredLinksData.length);
     this.container = container;
     container.innerHTML = this.buildContentForPage();
 
@@ -138,10 +148,14 @@ export class ContentManager implements ILinkManager {
     // Initialize search first as it sets up the search container
     this.searchManager.initialize(container);
 
-    // Pagination is hidden since we're showing all items
+    // Then initialize pagination
+    this.paginationManager.initialize(container, this.filteredLinksData.length);
 
     // Finally attach link selection listeners
     this.attachLinkSelectionListeners(container);
+
+    // Add alert dismissal listeners
+    this.attachAlertListeners(container);
 
     // Ensure radio buttons reflect current selection
     if (this.selectedLink) {
@@ -150,6 +164,41 @@ export class ContentManager implements ILinkManager {
         selectedRadio.checked = true;
       }
     }
+  }
+
+  // Add method to attach alert dismissal listeners
+  private attachAlertListeners(container: HTMLElement): void {
+    container.querySelectorAll('.cka-alert-dismiss').forEach(button => {
+      button.addEventListener('click', (event) => {
+        const alertElement = (event.target as HTMLElement).closest('.cka-alert');
+        if (alertElement) {
+          const alertId = alertElement.getAttribute('data-alert-id');
+          if (alertId) {
+            this.removeAlert(alertId);
+          }
+        }
+      });
+    });
+  }
+
+  // Build alerts HTML
+  private buildAlertsMarkup(): string {
+    if (this.alerts.length === 0) {
+      return '';
+    }
+
+    return `
+      <div class="cka-alerts-container">
+        ${this.alerts.map(alert => `
+          <div class="cka-alert cka-alert-${alert.type}" data-alert-id="${alert.id}">
+            ${alert.message}
+            <button class="cka-button cka-button-rounded cka-button-${alert.type} cka-button-icon-only cka-button-text" aria-label="Dismiss alert">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        `).join('')}
+      </div>
+    `;
   }
 
   private buildContentForPage(): string {
@@ -162,9 +211,11 @@ export class ContentManager implements ILinkManager {
     `;
     }
 
-    // Show all filtered links at once instead of paginating
-    const linksToDisplay = this.filteredLinksData;
-    console.log('Building page content with links to display:', linksToDisplay.length);
+    const currentPage = this.paginationManager.getCurrentPage();
+    const pageSize = this.paginationManager.getPageSize();
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = Math.min(startIndex + pageSize, this.filteredLinksData.length);
+    const currentPageData = this.filteredLinksData.slice(startIndex, endIndex);
 
     // Search container
     const searchContainerMarkup = `<div id="search-container-root" class="cka-search-container"></div>`;
@@ -172,18 +223,22 @@ export class ContentManager implements ILinkManager {
     // Current URL info if we have an initial URL
     const selectedUrlInfo = this.initialUrl ? this.buildSelectedUrlInfoMarkup() : '';
 
+    // Alerts markup
+    const alertsMarkup = this.buildAlertsMarkup();
+
     // Links list
-    const linksMarkup = linksToDisplay.length > 0
-      ? linksToDisplay
+    const linksMarkup = currentPageData.length > 0
+      ? currentPageData
         .map(link => this.buildLinkItemMarkup(link))
         .join('')
       : '<div class="cka-center-modal-message">No results found.</div>';
 
-    // Pagination container - hidden but kept for compatibility
-    const paginationMarkup = `<div id="pagination-container" class="cka-pagination" style="display:none;"></div>`;
+    // Pagination container
+    const paginationMarkup = `<div id="pagination-container" class="cka-pagination"></div>`;
 
     return `
       ${searchContainerMarkup}
+      ${alertsMarkup}
       <div id="links-container" class="cka-links-container">
         ${selectedUrlInfo}
         ${linksMarkup}
@@ -221,9 +276,6 @@ export class ContentManager implements ILinkManager {
     forceSelected: boolean = false,
     radioGroupName: string = 'link-selection'
   ): string {
-    // Safety check for link properties
-    if (!link) return '';
-
     const isSelected = forceSelected || this.selectedLink?.serverFilePath === link.serverFilePath;
 
     return `
@@ -284,8 +336,6 @@ export class ContentManager implements ILinkManager {
     this.selectedLink = this.existingDocumentLinksData.find(
       link => link.serverFilePath === linkName
     ) || null;
-
-    console.log('Link selected:', this.selectedLink);
 
     // Update selected state visually
     const container = linkItem.closest('.cka-existing-document-link-content');
