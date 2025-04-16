@@ -295,7 +295,51 @@ export function extractPredefinedLinkId(href: string): string | null {
     return href;
   }
 
+  // Handle links with ah:link nested element - extract from the name attribute
+  const ahLinkMatch = href.match(/name="([^"]+)"/);
+  if (ahLinkMatch && ahLinkMatch[1]) {
+    return ahLinkMatch[1];
+  }
+
   return null;
+}
+
+// Add a function to check if an element has AHCustomeLink class
+export function hasAHCustomeLinkClass(element: ViewAttributeElement): boolean {
+  return element.hasClass('AHCustomeLink');
+}
+
+/**
+ * Filters link attributes to remove unwanted attributes like data-cke-saved-href
+ * @param attributes Original attributes object
+ * @returns Filtered attributes object
+ */
+export function filterLinkAttributes(attributes: Record<string, string>): Record<string, string> {
+  const result: Record<string, string> = {};
+
+  // Copy only the attributes we want to keep
+  for (const key in attributes) {
+    // Skip data-cke-saved-href attribute
+    if (key === 'data-cke-saved-href') {
+      continue;
+    }
+
+    // Skip empty href or "#" href for non-predefined links
+    if (key === 'href' && (attributes[key] === '' || attributes[key] === '#')) {
+      // Keep empty href only for predefined links
+      if (attributes['data-id'] === 'predefined_link') {
+        result[key] = '#predefined-link';
+      } else {
+        result[key] = '#';
+      }
+      continue;
+    }
+
+    // Keep all other attributes
+    result[key] = attributes[key];
+  }
+
+  return result;
 }
 
 export type NormalizedLinkDecoratorAutomaticDefinition = LinkDecoratorAutomaticDefinition & { id: string };

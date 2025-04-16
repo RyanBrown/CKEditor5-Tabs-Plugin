@@ -101,6 +101,11 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
    * @param options Options including manual decorator attributes.
    */
   public override execute(href: string, options: LinkOptions = {}): void {
+    // Clean up empty href for non-predefined links
+    if ((href === '' || href === '#') && !isPredefinedLink(href)) {
+      href = '#'; // Use a minimum valid href
+    }
+
     // Determine if href is a predefined link ID
     const isPredefined = isPredefinedLink(href);
 
