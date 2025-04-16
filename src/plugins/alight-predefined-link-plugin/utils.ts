@@ -53,7 +53,13 @@ export const LINK_KEYSTROKE = 'Ctrl+K';
  * Returns `true` if a given view node is the link element.
  */
 export function isLinkElement(node: ViewNode | ViewDocumentFragment): boolean {
-  return node.is('attributeElement') && !!node.getCustomProperty('alight-predefined-link');
+  return (
+    node.is('attributeElement') && (
+      !!node.getCustomProperty('alight-predefined-link') ||
+      node.hasClass('AHCustomeLink') ||
+      node.getAttribute('data-id') === 'predefined_link'
+    )
+  );
 }
 
 /**
