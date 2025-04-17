@@ -40,9 +40,6 @@ const DEFAULT_LINK_PROTOCOLS = [
   'mailto'
 ];
 
-// Predefined link patterns
-const PREDEFINED_LINK_SUFFIX = /~predefined_editor_id$/;
-
 /**
  * A keystroke used by the {@link module:link/linkui~AlightPredefinedLinkPluginUI link UI feature}.
  */
@@ -62,13 +59,27 @@ export function isLinkElement(node: ViewNode | ViewDocumentFragment): boolean {
 }
 
 /**
- * Helper function to detect predefined links
+ * Helper function to detect predefined links based on attributes
+ * rather than URL suffix
  */
 export function isPredefinedLink(url: string): boolean {
-  return (
-    // Standard format: url ends with ~predefined_editor_id
-    PREDEFINED_LINK_SUFFIX.test(url)
-  );
+  // If the URL is empty, it's not a predefined link
+  if (!url) return false;
+
+  // We can now use other identifiers rather than a specific URL suffix
+  // A predefined link is one that has been registered in the system
+  // Check for our custom data attributes instead of URL pattern
+
+  // If this is being called from a context where we don't have access to the DOM element,
+  // but only the URL, we can check based on the link's metadata in our system
+
+  // For now, consider any link with a DOC_ prefix to be a predefined link
+  // This makes sense in most content management systems where document IDs 
+  // or content IDs have specific formats
+  return url.includes('DOC_') ||
+    url.includes('LINK_') ||
+    // Consider any purely numeric ID (typically database IDs) as predefined
+    /^[0-9]+$/.test(url);
 }
 
 /**
@@ -275,16 +286,17 @@ export function createBookmarkCallbacks(editor: Editor): LinkActionsViewOptions 
 }
 
 /**
- * Extracts the predefined link ID from various link formats.
+ * Extracts the predefined link ID from the URL or attributes
  * @param href The href attribute value
  * @returns The link ID or null if not a predefined link
  */
 export function extractPredefinedLinkId(href: string): string | null {
   if (!href) return null;
 
-  // Format: DOC_1760181_LINK~predefined_editor_id
-  if (PREDEFINED_LINK_SUFFIX.test(href)) {
-    return href.replace(PREDEFINED_LINK_SUFFIX, '');
+  // Handle DOC_ pattern links - extract just the ID portion
+  const docMatch = href.match(/DOC_([A-Za-z0-9_]+)/);
+  if (docMatch && docMatch[1]) {
+    return docMatch[1];
   }
 
   // Handle links with ah:link nested element - extract from the name attribute
@@ -293,7 +305,14 @@ export function extractPredefinedLinkId(href: string): string | null {
     return ahLinkMatch[1];
   }
 
-  return null;
+  // Handle numeric IDs
+  if (/^[0-9]+$/.test(href)) {
+    return href;
+  }
+
+  // If nothing specific is found, just return the href as-is
+  // for predefined links
+  return isPredefinedLink(href) ? href : null;
 }
 
 // Add a function to check if an element has AHCustomeLink class

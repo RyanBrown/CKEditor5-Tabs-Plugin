@@ -110,7 +110,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
       .attributeToElement({
         model: 'alightPredefinedLinkPluginHref',
         view: (href, conversionApi) => {
-          // Check if this is a predefined link
+          // Check if this is a predefined link using the imported function
           const isPredefined = isPredefinedLink(href);
 
           // Base attributes for the link
@@ -203,7 +203,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         }
       });
 
-    // Standard predefined link format: href="DOC_1760181_LINK~predefined_editor_id"
+    // Handle predefined links and standard links
     editor.conversion.for('upcast')
       .elementToAttribute({
         view: {
@@ -222,11 +222,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
 
             if (dataId === 'predefined_link' && dataLinkName) {
               // If it has predefined link attributes, use the link name as href
-              const linkId = dataLinkName;
-              if (!linkId.toString().includes('~predefined_editor_id')) {
-                return linkId + '~predefined_editor_id';
-              }
-              return linkId;
+              return dataLinkName;
             }
 
             // Otherwise get the actual href (prefer data-cke-saved-href if available)
@@ -291,8 +287,8 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
                 });
               });
 
-              // Return the link name as the href (will be properly formatted on downcast)
-              return linkName + '~predefined_editor_id';
+              // Return the link name as the href without adding any suffix
+              return linkName;
             }
 
             // Fallback to standard href

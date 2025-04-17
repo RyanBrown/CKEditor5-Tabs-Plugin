@@ -126,11 +126,6 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
       linkName = selection.getAttribute('alightPredefinedLinkPluginLinkName') as string;
     }
 
-    // Make sure predefined links have the suffix
-    if (isPredefined && !href.includes('~predefined_editor_id')) {
-      href = href + '~predefined_editor_id';
-    }
-
     // Extract decorator options
     const truthyManualDecorators: Array<string> = [];
     const falsyManualDecorators: Array<string> = [];

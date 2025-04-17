@@ -200,7 +200,7 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
       // Show the balloon for predefined links identified by:
       // 1. data-id="predefined_link" attribute
       // 2. AHCustomeLink class
-      // 3. URL format with ~predefined_editor_id
+      // 3. URL format matching predefined link pattern
       if ((dataId === 'predefined_link') ||
         hasAHCustomeClass ||
         (href && isPredefinedLink(href as string))) {
@@ -540,7 +540,7 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
       try {
         initialLink = await this._findPredefinedLinkByUrl(initialUrl);
 
-        // If we couldn't find a link by URL but it's a predefined link format, 
+        // If we couldn't find a link by URL but it's a predefined link format,
         // set a flag to force the UI to open in edit mode
         if (!initialLink && isPredefinedLink(initialUrl)) {
           console.log('Predefined link format detected but not found in available links:', initialUrl);
@@ -578,11 +578,8 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
 
           if (selectedLink && selectedLink.destination) {
             // Create the link in the editor using the built-in link command
-            // Add the predefined_editor_id suffix if not already present
+            // We no longer need to add the suffix
             let href = selectedLink.destination;
-            if (!href.includes('~predefined_editor_id')) {
-              href = href + '~predefined_editor_id';
-            }
 
             linkCommand.execute(href);
 
