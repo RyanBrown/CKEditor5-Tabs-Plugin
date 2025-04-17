@@ -42,7 +42,6 @@ const DEFAULT_LINK_PROTOCOLS = [
 
 // Predefined link patterns
 const PREDEFINED_LINK_SUFFIX = /~predefined_editor_id$/;
-const DOC_LINK_PATTERN = /^DOC_\d+_LINK/;
 
 /**
  * A keystroke used by the {@link module:link/linkui~AlightPredefinedLinkPluginUI link UI feature}.
@@ -68,9 +67,7 @@ export function isLinkElement(node: ViewNode | ViewDocumentFragment): boolean {
 export function isPredefinedLink(url: string): boolean {
   return (
     // Standard format: url ends with ~predefined_editor_id
-    PREDEFINED_LINK_SUFFIX.test(url) ||
-    // DOC format: url matches DOC_xxxxx_LINK pattern
-    DOC_LINK_PATTERN.test(url)
+    PREDEFINED_LINK_SUFFIX.test(url)
   );
 }
 
@@ -288,11 +285,6 @@ export function extractPredefinedLinkId(href: string): string | null {
   // Format: DOC_1760181_LINK~predefined_editor_id
   if (PREDEFINED_LINK_SUFFIX.test(href)) {
     return href.replace(PREDEFINED_LINK_SUFFIX, '');
-  }
-
-  // Format: DOC_1760181_LINK
-  if (DOC_LINK_PATTERN.test(href)) {
-    return href;
   }
 
   // Handle links with ah:link nested element - extract from the name attribute
