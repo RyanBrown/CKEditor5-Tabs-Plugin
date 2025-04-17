@@ -62,24 +62,12 @@ export function isLinkElement(node: ViewNode | ViewDocumentFragment): boolean {
  * Helper function to detect predefined links based on attributes
  * rather than URL suffix
  */
-export function isPredefinedLink(url: string): boolean {
-  // If the URL is empty, it's not a predefined link
+// Update the isPredefinedLink function in utils.ts
+export function isPredefinedLink(url: string | null | undefined): boolean {
+  // If the URL is empty, null, or undefined, it's not a predefined link
   if (!url) return false;
 
-  // We can now use other identifiers rather than a specific URL suffix
-  // A predefined link is one that has been registered in the system
-  // Check for our custom data attributes instead of URL pattern
-
-  // If this is being called from a context where we don't have access to the DOM element,
-  // but only the URL, we can check based on the link's metadata in our system
-
-  // For now, consider any link with a DOC_ prefix to be a predefined link
-  // This makes sense in most content management systems where document IDs 
-  // or content IDs have specific formats
-  return url.includes('DOC_') ||
-    url.includes('LINK_') ||
-    // Consider any purely numeric ID (typically database IDs) as predefined
-    /^[0-9]+$/.test(url);
+  return true;
 }
 
 /**
@@ -117,9 +105,10 @@ export function ensureSafeUrl(url: unknown, allowedProtocols: Array<string> = DE
 
   // Special handling for predefined links
   if (isPredefinedLink(urlString)) {
-    return urlString; // Keep predefined links as-is
+    return urlString; // Return unmodified
   }
 
+  // Normal URL safety handling for non-predefined links
   const protocolsList = allowedProtocols.join('|');
   const customSafeRegex = new RegExp(`${SAFE_URL_TEMPLATE.replace('<protocols>', protocolsList)}`, 'i');
 
@@ -290,7 +279,7 @@ export function createBookmarkCallbacks(editor: Editor): LinkActionsViewOptions 
  * @param href The href attribute value
  * @returns The link ID or null if not a predefined link
  */
-export function extractPredefinedLinkId(href: string): string | null {
+export function extractPredefinedLinkId(href: string | null | undefined): string | null {
   if (!href) return null;
 
   // Handle DOC_ pattern links - extract just the ID portion

@@ -106,47 +106,34 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
     editor.model.schema.extend('$text', { allowAttributes: 'orgnameattr' });
 
     // Setup data downcast conversion
+    // Update the data downcast converter
     editor.conversion.for('dataDowncast')
       .attributeToElement({
         model: 'alightPredefinedLinkPluginHref',
         view: (href, conversionApi) => {
-          // Check if this is a predefined link using the imported function
-          const isPredefined = isPredefinedLink(href);
+          // Safely handle null or undefined href
+          const hrefValue = href || '';
 
-          // Base attributes for the link
-          const attributes: Record<string, string> = {};
+          // Extract the link ID or generate one if needed
+          const linkId = extractPredefinedLinkId(hrefValue) || '1760181_LINK'; // Default ID if none found
 
-          // Only add href if it's not empty or "#"
-          if (href && href !== '#') {
-            attributes.href = href;
-          } else if (isPredefined) {
-            // For predefined links with empty hrefs, use a valid placeholder
-            attributes.href = '#predefined-link';
-          } else {
-            attributes.href = '#';
-          }
+          // Create a properly formatted href with DOC_ prefix
+          // Check if href exists and already has the DOC_ prefix
+          const formattedHref = hrefValue && hrefValue.startsWith('DOC_') ? hrefValue : `DOC_${linkId}`;
 
-          // Always set data-id for predefined links
-          if (isPredefined) {
-            attributes['data-id'] = 'predefined_link';
-
-            // Get the link name and add data attributes
-            const linkName = extractPredefinedLinkId(href);
-            if (linkName) {
-              attributes['data-format'] = 'ahcustom';
-              attributes['data-link-name'] = linkName;
-            }
-          }
-
-          // Don't add data-cke-saved-href attribute
+          // Define all required attributes
+          const attributes = {
+            'href': formattedHref,
+            'data-id': 'predefined_link',
+            'data-format': 'ahcustom',
+            'data-link-name': linkId
+          };
 
           // Create the link element
           const linkElement = conversionApi.writer.createAttributeElement('a', attributes, { priority: 5 });
 
-          // Always add AHCustomeLink class for predefined links
-          if (isPredefined) {
-            conversionApi.writer.addClass('AHCustomeLink', linkElement);
-          }
+          // Add the required class
+          conversionApi.writer.addClass('AHCustomeLink', linkElement);
 
           // Set custom property for link identification
           conversionApi.writer.setCustomProperty('alight-predefined-link', true, linkElement);
@@ -155,48 +142,35 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         }
       });
 
-    // Setup editing downcast conversion
+    // Update the editing downcast converter similarly
     editor.conversion.for('editingDowncast')
       .attributeToElement({
         model: 'alightPredefinedLinkPluginHref',
         view: (href, conversionApi) => {
-          // For editing view, ensure URLs are safe
-          const safeUrl = ensureSafeUrl(href, allowedProtocols);
-          const isPredefined = isPredefinedLink(href);
+          // Safely handle null or undefined href
+          const hrefValue = href || '';
 
-          // Create base attributes with desired format
-          const attributes: Record<string, string> = {};
+          // Extract the link ID or generate one if needed
+          const linkId = extractPredefinedLinkId(hrefValue) || '1760181_LINK'; // Default ID if none found
 
-          // Only add href if it's not empty or "#"
-          if (safeUrl && safeUrl !== '#') {
-            attributes.href = safeUrl;
-          } else if (isPredefined) {
-            // For predefined links with empty hrefs, use a valid placeholder
-            attributes.href = '#predefined-link';
-          } else {
-            attributes.href = '#';
-          }
+          // Create a properly formatted href with DOC_ prefix
+          const formattedHref = hrefValue && hrefValue.startsWith('DOC_') ? hrefValue : `DOC_${linkId}`;
 
-          // Add data-id for predefined links
-          if (isPredefined) {
-            attributes['data-id'] = 'predefined_link';
+          // Define all required attributes
+          const attributes = {
+            'href': formattedHref,
+            'data-id': 'predefined_link',
+            'data-format': 'ahcustom',
+            'data-link-name': linkId
+          };
 
-            const linkName = extractPredefinedLinkId(href);
-            if (linkName) {
-              attributes['data-format'] = 'ahcustom';
-              attributes['data-link-name'] = linkName;
-            }
-          }
-
-          // Create the link element with proper attributes
+          // Create the link element
           const linkElement = conversionApi.writer.createAttributeElement('a', attributes, { priority: 5 });
 
-          // Add required classes
-          if (isPredefined) {
-            conversionApi.writer.addClass('AHCustomeLink', linkElement);
-          }
+          // Add the required class
+          conversionApi.writer.addClass('AHCustomeLink', linkElement);
 
-          // Add custom property for link identification
+          // Set custom property for link identification
           conversionApi.writer.setCustomProperty('alight-predefined-link', true, linkElement);
 
           return linkElement;
