@@ -192,7 +192,7 @@ export class ContentManager implements ILinkManager {
         ${this.alerts.map(alert => `
           <div class="cka-alert cka-alert-${alert.type}" data-alert-id="${alert.id}">
             ${alert.message}
-            <button class="cka-button cka-button-rounded cka-button-${alert.type} cka-button-icon-only cka-button-text" aria-label="Dismiss alert">
+            <button class="cka-button cka-button-rounded cka-button-${alert.type} cka-button-icon-only cka-button-text cka-alert-dismiss" aria-label="Dismiss alert">
               <i class="fa-solid fa-xmark"></i>
             </button>
           </div>
