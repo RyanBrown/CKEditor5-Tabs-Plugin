@@ -1,6 +1,5 @@
 // src/plugins/alight-predefined-link-plugin/linkpluginintegration.ts
 import { Plugin } from '@ckeditor/ckeditor5-core';
-import type { Editor } from '@ckeditor/ckeditor5-core';
 import { isPredefinedLink } from './utils';
 
 export default class AlightPredefinedLinkPluginIntegration extends Plugin {

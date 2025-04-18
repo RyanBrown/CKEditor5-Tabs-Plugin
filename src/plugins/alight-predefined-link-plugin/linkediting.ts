@@ -9,8 +9,7 @@ import type {
   ViewElement,
   ViewDocumentKeyDownEvent,
   ViewDocumentClickEvent,
-  DocumentSelectionChangeAttributeEvent,
-  DowncastConversionApi
+  DocumentSelectionChangeAttributeEvent
 } from '@ckeditor/ckeditor5-engine';
 import {
   Input,
