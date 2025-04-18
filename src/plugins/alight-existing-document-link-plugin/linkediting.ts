@@ -33,6 +33,7 @@ import {
   addLinkProtocolIfApplicable,
   createBookmarkCallbacks,
   openLink,
+  extractExternalDocumentLinkId,
   type NormalizedLinkDecoratorAutomaticDefinition,
   type NormalizedLinkDecoratorManualDefinition
 } from './utils';
@@ -95,41 +96,178 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
     // Allow link attribute on all inline nodes.
     editor.model.schema.extend('$text', { allowAttributes: 'AlightExistingDocumentLinkPluginHref' });
 
-    // Modified dataDowncast to add target="_blank" attribute
+    // For storing additional link data
+    editor.model.schema.extend('$text', { allowAttributes: 'AlightExistingDocumentPluginLinkName' });
+    editor.model.schema.extend('$text', { allowAttributes: 'AlightExistingDocumentLinkPluginFormat' });
+
+    // Allow orgnameattr attribute to be present, so we can remove it later
+    editor.model.schema.extend('$text', { allowAttributes: 'orgnameattr' });
+
+    // Setup data downcast conversion
+    // Update the data downcast converter
     editor.conversion.for('dataDowncast')
       .attributeToElement({
         model: 'AlightExistingDocumentLinkPluginHref',
         view: (href, conversionApi) => {
-          const linkElement = createLinkElement(href, conversionApi);
-          // Add target="_blank" for data output
-          conversionApi.writer.setAttribute('target', '_blank', linkElement);
-          conversionApi.writer.setAttribute('rel', 'noopener noreferrer', linkElement);
+          // Safely handle null or undefined href
+          const hrefValue = href || '';
+
+          // Extract the link ID or generate one if needed
+          const linkId = extractExternalDocumentLinkId(hrefValue) || '1760181_LINK'; // Default ID if none found
+
+          // Create a properly formatted href with DOC_ prefix
+          // Check if href exists and already has the DOC_ prefix
+          const formattedHref = hrefValue && hrefValue.startsWith('DOC_') ? hrefValue : `DOC_${linkId}`;
+
+          // Define all required attributes
+          const attributes = {
+            'href': formattedHref,
+            'data-id': 'existing-document_link',
+            'data-format': 'existingDocumentTag',
+            'data-link-name': linkId
+          };
+
+          // Create the link element
+          const linkElement = conversionApi.writer.createAttributeElement('a', attributes, { priority: 5 });
+
+          // Add the required class
+          conversionApi.writer.addClass('document_tag', linkElement);
+
+          // Set custom property for link identification
+          conversionApi.writer.setCustomProperty('alight-existing-document-link', true, linkElement);
+
           return linkElement;
         }
       });
 
-    // Keep editingDowncast without target="_blank"
+    // Update the editing downcast converter similarly
     editor.conversion.for('editingDowncast')
       .attributeToElement({
-        model: 'AlightExistingDocumentLinkPluginHref', view: (href, conversionApi) => {
-          return createLinkElement(ensureSafeUrl(href, allowedProtocols), conversionApi);
+        model: 'AlightExistingDocumentLinkPluginHref',
+        view: (href, conversionApi) => {
+          // Safely handle null or undefined href
+          const hrefValue = href || '';
+
+          // Extract the link ID or generate one if needed
+          const linkId = extractExternalDocumentLinkId(hrefValue) || '1760181_LINK'; // Default ID if none found
+
+          // Create a properly formatted href with DOC_ prefix
+          const formattedHref = hrefValue && hrefValue.startsWith('DOC_') ? hrefValue : `DOC_${linkId}`;
+
+          // Define all required attributes
+          const attributes = {
+            'href': formattedHref,
+            'data-id': 'existing-document_link',
+            'data-format': 'existingDocumentTag',
+            'data-link-name': linkId
+          };
+
+          // Create the link element
+          const linkElement = conversionApi.writer.createAttributeElement('a', attributes, { priority: 5 });
+
+          // Add the required class
+          conversionApi.writer.addClass('document_tag', linkElement);
+
+          // Set custom property for link identification
+          conversionApi.writer.setCustomProperty('alight-existing-document-link', true, linkElement);
+
+          return linkElement;
         }
       });
 
+    // Handle existing document links and standard links
     editor.conversion.for('upcast')
       .elementToAttribute({
         view: {
           name: 'a',
           attributes: {
-            href: true,
-            'data-id': 'existing-document_link'
+            'href': true,
+            'data-cke-saved-href': true
           }
         },
         model: {
           key: 'AlightExistingDocumentLinkPluginHref',
-          value: (viewElement: ViewElement) => viewElement.getAttribute('href')
+          value: (viewElement: ViewElement) => {
+            // First check if it's a existing document link with data-id attribute
+            const dataId = viewElement.getAttribute('data-id');
+            const dataLinkName = viewElement.getAttribute('data-link-name');
+
+            if (dataId === 'existing document_link' && dataLinkName) {
+              // If it has existing document link attributes, use the link name as href
+              return dataLinkName;
+            }
+
+            // Otherwise get the actual href (prefer data-cke-saved-href if available)
+            const savedHref = viewElement.getAttribute('data-cke-saved-href');
+            const href = savedHref || viewElement.getAttribute('href');
+
+            // If it's empty or just #, and not a existing document link, don't create a link
+            if ((href === '' || href === '#') && !viewElement.hasClass('document_tag')) {
+              return false; // This will prevent the attribute from being set
+            }
+
+            return href;
+          }
         },
         converterPriority: 'high'
+      });
+
+    // Custom document_tag format with ah:link element inside
+    editor.conversion.for('upcast')
+      .elementToAttribute({
+        view: {
+          name: 'a',
+          classes: 'document_tag'
+        },
+        model: {
+          key: 'AlightExistingDocumentLinkPluginHref',
+          value: (viewElement: ViewElement) => {
+            // Try to find ah:link element inside
+            const ahLink = viewElement.getChild(0);
+            if (ahLink && ahLink.is('element', 'ah:link')) {
+              const linkName = ahLink.getAttribute('name');
+
+              // Check for orgnameattr attribute on the ah:link element
+              const orgnameattr = ahLink.getAttribute('orgnameattr');
+              if (orgnameattr !== undefined) {
+                // We need to use the after conversion hook, not direct model.change
+                this.editor.model.once('_afterConversion', () => {
+                  this.editor.model.change(writer => {
+                    const selection = this.editor.model.document.selection;
+                    const range = selection.getFirstRange();
+
+                    if (range) {
+                      writer.setAttribute('orgnameattr', orgnameattr, range);
+                    }
+                  });
+                });
+              }
+
+              // Store additional information for document_tag format
+              // We need to use the after conversion hook, not direct model.change
+              const format = 'existingDocumentTag';
+              const name = linkName;
+              this.editor.model.once('_afterConversion', () => {
+                this.editor.model.change(writer => {
+                  const selection = this.editor.model.document.selection;
+                  const range = selection.getFirstRange();
+
+                  if (range) {
+                    writer.setAttribute('AlightExistingDocumentLinkPluginFormat', format, range);
+                    writer.setAttribute('AlightExistingDocumentPluginLinkName', name, range);
+                  }
+                });
+              });
+
+              // Return the link name as the href without adding any suffix
+              return linkName;
+            }
+
+            // Fallback to standard href
+            return viewElement.getAttribute('href');
+          }
+        },
+        converterPriority: 'highest' // Higher priority than standard link converter
       });
 
     // Create linking commands.
@@ -172,7 +310,7 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
   private _enableAutomaticDecorators(automaticDecoratorDefinitions: Array<NormalizedLinkDecoratorAutomaticDefinition>): void {
     const editor = this.editor;
     // Store automatic decorators in the command instance as we do the same with manual decorators.
-    // Thanks to that, `AlightExistingDocumentLinkPluginImageEditing` plugin can re-use the same definitions.
+    // Thanks to that, `AlightExistingDocumentPluginImageEditing` plugin can re-use the same definitions.
     const command = editor.commands.get('alight-existing-document-link') as AlightExistingDocumentLinkPluginCommand;
     const automaticDecorators = command.automaticDecorators;
 
@@ -181,7 +319,7 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
       automaticDecorators.add({
         id: 'linkIsEmail',
         mode: DECORATOR_AUTOMATIC,
-        callback: url => !!url && EXTERNAL_LINKS_REGEXP.test(url),
+        callback: (url: string) => !!url && EXTERNAL_LINKS_REGEXP.test(url),
         attributes: {
           target: '_blank',
           rel: 'noopener noreferrer'
@@ -199,7 +337,7 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
   /**
    * Processes an array of configured {@link module:link/linkconfig~LinkDecoratorManualDefinition manual decorators},
    * transforms them into {@link module:link/utils/manualdecorator~ManualDecorator} instances and stores them in the
-   * {@link module:link/AlightExistingDocumentLinkPluginCommand~AlightExistingDocumentLinkPluginCommand#manualDecorators} collection (a model for manual decorators state).
+   * {@link module:link/AlightExistingDocumentPluginCommand~AlightExistingDocumentPluginCommand#manualDecorators} collection (a model for manual decorators state).
    *
    * Also registers an {@link module:engine/conversion/downcasthelpers~DowncastHelpers#attributeToElement attribute-to-element}
    * converter for each manual decorator and extends the {@link module:engine/model/schema~Schema model's schema}
@@ -225,7 +363,7 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
       editor.conversion.for('downcast').attributeToElement({
         model: decorator.id,
         view: (manualDecoratorValue, { writer, schema }, { item }) => {
-          // Manual decorators for block links are handled e.g. in AlightExistingDocumentLinkPluginImageEditing.
+          // Manual decorators for block links are handled e.g. in AlightExistingDocumentPluginImageEditing.
           if (!(item.is('selection') || schema.isInline(item))) {
             return;
           }
@@ -379,6 +517,8 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
  */
 function removeLinkAttributesFromSelection(writer: Writer, linkAttributes: Array<string>): void {
   writer.removeSelectionAttribute('AlightExistingDocumentLinkPluginHref');
+  writer.removeSelectionAttribute('AlightExistingDocumentPluginLinkName');
+  writer.removeSelectionAttribute('AlightExistingDocumentLinkPluginFormat');
 
   for (const attribute of linkAttributes) {
     writer.removeSelectionAttribute(attribute);

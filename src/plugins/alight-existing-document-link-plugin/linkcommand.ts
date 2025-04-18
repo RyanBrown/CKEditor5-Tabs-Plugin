@@ -2,10 +2,10 @@
 import { Command } from '@ckeditor/ckeditor5-core';
 import { findAttributeRange } from '@ckeditor/ckeditor5-typing';
 import { Collection, first, toMap } from '@ckeditor/ckeditor5-utils';
-import type { Range, DocumentSelection, Model, Writer } from '@ckeditor/ckeditor5-engine';
+import type { Range, Writer } from '@ckeditor/ckeditor5-engine';
 
 import AutomaticDecorators from './utils/automaticdecorators';
-import { isLinkableElement } from './utils';
+import { isLinkableElement, isExistingDocumentLink, extractExternalDocumentLinkId } from './utils';
 import type ManualDecorator from './utils/manualdecorator';
 
 /**
@@ -84,36 +84,47 @@ export default class AlightExistingDocumentLinkPluginCommand extends Command {
   }
 
   /**
- * Executes the command.
- *
- * When the selection is non-collapsed, the `AlightExistingDocumentLinkPluginHref` attribute will be applied to nodes inside the selection, but only to
- * those nodes where the `AlightExistingDocumentLinkPluginHref` attribute is allowed (disallowed nodes will be omitted).
- *
- * When the selection is collapsed and is not inside the text with the `AlightExistingDocumentLinkPluginHref` attribute, a
- * new {@link module:engine/model/text~Text text node} with the `AlightExistingDocumentLinkPluginHref` attribute will be inserted in place of the caret, but
- * only if such element is allowed in this place. The `_data` of the inserted text will equal the `href` parameter.
- * The selection will be updated to wrap the just inserted text node.
- *
- * When the selection is collapsed and inside the text with the `AlightExistingDocumentLinkPluginHref` attribute, the attribute value will be updated.
- *
- * @fires execute
- * @param href AlightExistingDocumentLinkPlugin destination.
- * @param options Options including manual decorator attributes.
- */
+   * Executes the command.
+   *
+   * When the selection is non-collapsed, the `AlightExistingDocumentLinkPluginHref` attribute will be applied to nodes inside the selection, but only to
+   * those nodes where the `AlightExistingDocumentLinkPluginHref` attribute is allowed (disallowed nodes will be omitted).
+   *
+   * When the selection is collapsed and is not inside the text with the `AlightExistingDocumentLinkPluginHref` attribute, a
+   * new {@link module:engine/model/text~Text text node} with the `AlightExistingDocumentLinkPluginHref` attribute will be inserted in place of the caret, but
+   * only if such element is allowed in this place. The `_data` of the inserted text will equal the `href` parameter.
+   * The selection will be updated to wrap the just inserted text node.
+   *
+   * When the selection is collapsed and inside the text with the `AlightExistingDocumentLinkPluginHref` attribute, the attribute value will be updated.
+   *
+   * @fires execute
+   * @param href AlightExistingDocumentLinkPlugin destination.
+   * @param options Options including manual decorator attributes.
+   */
   public override execute(href: string, options: LinkOptions = {}): void {
-    // Check if the current link has a predefined editor suffix we need to preserve
-    let existingDocumentSuffix = '';
-    if (this.value && typeof this.value === 'string' && this.value.includes('~existing_document_editor_id')) {
-      existingDocumentSuffix = '~existing_document_editor_id';
+    // Clean up empty href for non-existing document links
+    if ((href === '' || href === '#') && !isExistingDocumentLink(href)) {
+      href = '#'; // Use a minimum valid href
     }
 
-    // Add the predefined suffix if needed and not already present
-    if (existingDocumentSuffix && !href.includes(existingDocumentSuffix)) {
-      href = href + existingDocumentSuffix;
-    }
+    // Determine if href is a existing document link ID
+    const isExistingDocument = isExistingDocumentLink(href);
+
+    // Get the format attribute from the current selection if it exists
+    let linkFormat = '';
+    let linkName = '';
 
     const model = this.editor.model;
     const selection = model.document.selection;
+
+    // Check if the current link has a existing document format we need to preserve
+    if (selection.hasAttribute('AlightExistingDocumentLinkPluginFormat')) {
+      linkFormat = selection.getAttribute('AlightExistingDocumentLinkPluginFormat') as string;
+    }
+
+    // Check if the current link has a link name attribute we need to preserve
+    if (selection.hasAttribute('AlightExistingDocumentLinkPluginLinkName')) {
+      linkName = selection.getAttribute('AlightExistingDocumentLinkPluginLinkName') as string;
+    }
 
     // Extract decorator options
     const truthyManualDecorators: Array<string> = [];
@@ -145,6 +156,26 @@ export default class AlightExistingDocumentLinkPluginCommand extends Command {
           // Update the existing link with the new href
           writer.setAttribute('AlightExistingDocumentLinkPluginHref', href, linkRange);
 
+          // Find and remove orgnameattr attribute if it exists
+          this._removeOrgnameAttr(writer, linkRange);
+
+          // If it's a existing document link and we have format and name, set these attributes
+          if (isExistingDocument) {
+            if (linkFormat) {
+              writer.setAttribute('AlightExistingDocumentLinkPluginFormat', linkFormat, linkRange);
+            } else {
+              writer.setAttribute('AlightExistingDocumentLinkPluginFormat', 'standard', linkRange);
+            }
+
+            // Extract and set link name for existing document links
+            const extractedLinkId = extractExternalDocumentLinkId(href);
+            if (extractedLinkId) {
+              writer.setAttribute('AlightExistingDocumentLinkPluginLinkName', extractedLinkId, linkRange);
+            } else if (linkName) {
+              writer.setAttribute('AlightExistingDocumentLinkPluginLinkName', linkName, linkRange);
+            }
+          }
+
           // Set truthyManualDecorators attributes
           truthyManualDecorators.forEach(item => {
             writer.setAttribute(item, true, linkRange);
@@ -164,6 +195,17 @@ export default class AlightExistingDocumentLinkPluginCommand extends Command {
 
           attributes.set('AlightExistingDocumentLinkPluginHref', href);
 
+          // If it's a existing document link, set format attribute
+          if (isExistingDocument) {
+            attributes.set('AlightExistingDocumentLinkPluginFormat', 'standard');
+
+            // Extract and set link name for existing document links
+            const extractedLinkId = extractExternalDocumentLinkId(href);
+            if (extractedLinkId) {
+              attributes.set('AlightExistingDocumentLinkPluginLinkName', extractedLinkId);
+            }
+          }
+
           truthyManualDecorators.forEach(item => {
             attributes.set(item, true);
           });
@@ -179,9 +221,10 @@ export default class AlightExistingDocumentLinkPluginCommand extends Command {
 
         // Remove the `AlightExistingDocumentLinkPluginHref` attribute and all link decorators from the selection.
         // It stops adding a new content into the link element.
-        ['AlightExistingDocumentLinkPluginHref', ...truthyManualDecorators, ...falsyManualDecorators].forEach(item => {
-          writer.removeSelectionAttribute(item);
-        });
+        ['AlightExistingDocumentLinkPluginHref', 'AlightExistingDocumentLinkPluginFormat', 'AlightExistingDocumentLinkPluginLinkName',
+          ...truthyManualDecorators, ...falsyManualDecorators].forEach(item => {
+            writer.removeSelectionAttribute(item);
+          });
       } else {
         // If selection has non-collapsed ranges, we change attribute on nodes inside those ranges
         // WITHOUT REMOVING THEM - just applying the href attribute
@@ -189,8 +232,22 @@ export default class AlightExistingDocumentLinkPluginCommand extends Command {
 
         // Process each range
         for (const range of ranges) {
+          // Find and remove orgnameattr attribute if it exists
+          this._removeOrgnameAttr(writer, range);
+
           // Set the AlightExistingDocumentLinkPluginHref attribute on the selected text
           writer.setAttribute('AlightExistingDocumentLinkPluginHref', href, range);
+
+          // If it's a existing document link, set format attribute
+          if (isExistingDocument) {
+            writer.setAttribute('AlightExistingDocumentLinkPluginFormat', 'standard', range);
+
+            // Extract and set link name for existing document links
+            const extractedLinkId = extractExternalDocumentLinkId(href);
+            if (extractedLinkId) {
+              writer.setAttribute('AlightExistingDocumentLinkPluginLinkName', extractedLinkId, range);
+            }
+          }
 
           // Set truthyManualDecorators attributes
           truthyManualDecorators.forEach(item => {
@@ -207,6 +264,19 @@ export default class AlightExistingDocumentLinkPluginCommand extends Command {
 
     // Fire an event after command execution to notify UI
     this._fireEvent('executed', { href, options });
+  }
+
+  /**
+   * Removes the orgnameattr attribute from a given range if it exists.
+   * This handles both orgnameattr="" and orgnameattr attribute formats.
+   * 
+   * @param writer The model writer
+   * @param range The range to process
+   */
+  private _removeOrgnameAttr(writer: Writer, range: Range): void {
+    // Remove the orgnameattr attribute from the range
+    // The schema check isn't needed here because removeAttribute is safe to call even if the attribute doesn't exist
+    writer.removeAttribute('orgnameattr', range);
   }
 
   /**

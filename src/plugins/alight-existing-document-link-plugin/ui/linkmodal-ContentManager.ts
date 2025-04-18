@@ -80,11 +80,31 @@ export class ContentManager implements ILinkManager {
 
   // Method to remove a specific alert
   public removeAlert(alertId: string): void {
-    this.alerts = this.alerts.filter(alert => alert.id !== alertId);
+    // Find the alert element in the DOM
+    const alertElement = document.querySelector(`.cka-alert[data-alert-id="${alertId}"]`);
 
-    // Re-render to update the alerts
-    if (this.container) {
-      this.renderContent(this.container);
+    if (alertElement) {
+      // Add the removing class to trigger the CSS transition
+      alertElement.classList.add('cka-alert-removing');
+
+      // Wait for the animation to complete before actually removing from the data structure
+      setTimeout(() => {
+        // Remove the alert from the data array
+        this.alerts = this.alerts.filter(alert => alert.id !== alertId);
+
+        // Re-render if necessary (you might not need this if the DOM element is already gone)
+        if (this.container) {
+          this.renderContent(this.container);
+        }
+      }, 500); // This timing should match your CSS transition duration
+    } else {
+      // If element isn't found in DOM, just remove it from the data structure
+      this.alerts = this.alerts.filter(alert => alert.id !== alertId);
+
+      // Re-render if necessary
+      if (this.container) {
+        this.renderContent(this.container);
+      }
     }
   }
 
@@ -192,7 +212,7 @@ export class ContentManager implements ILinkManager {
         ${this.alerts.map(alert => `
           <div class="cka-alert cka-alert-${alert.type}" data-alert-id="${alert.id}">
             ${alert.message}
-            <button class="cka-button cka-button-rounded cka-button-${alert.type} cka-button-icon-only cka-button-text" aria-label="Dismiss alert">
+            <button class="cka-button cka-button-rounded cka-button-${alert.type} cka-button-icon-only cka-button-text cka-alert-dismiss" aria-label="Dismiss alert">
               <i class="fa-solid fa-xmark"></i>
             </button>
           </div>

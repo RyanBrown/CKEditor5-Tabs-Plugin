@@ -16,13 +16,13 @@ import AlightExistingDocumentLinkPluginEditing from './linkediting';
 import LinkActionsView from './ui/linkactionsview';
 import type AlightExistingDocumentLinkPluginCommand from './linkcommand';
 import type AlightExistingDocumentLinkPluginUnlinkCommand from './unlinkcommand';
-import { isLinkElement } from './utils';
+import { isLinkElement, isExistingDocumentLink, extractExternalDocumentLinkId } from './utils';
 import { CkAlightModalDialog } from './../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import './../ui-components/alight-checkbox-component/alight-checkbox-component';
 
 // Import the ContentManager and types from the updated location
 import { ContentManager } from './ui/linkmodal-ContentManager';
-import { DocumentLink, DocumentResponse } from './ui/linkmodal-modal-types';
+import { DocumentLink } from './ui/linkmodal-modal-types';
 import AlightDataLoadPlugin from '../../alight-common/alight-data-load-plugin';
 import LinksLoadService from '../../services/links-load-service';
 import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
@@ -43,7 +43,8 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
   private _balloon!: ContextualBalloon;
   private _isUpdatingUI: boolean = false;
 
-  private _documentLinks: DocumentLink[];
+  // Initialize the array to prevent undefined errors
+  private _documentLinks: DocumentLink[] = [];
   private readonly loadService: LinksLoadService = new LinksLoadService();
 
   public static get requires() {
@@ -136,49 +137,80 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
     if (this.verboseMode) console.log(`Loading existing document links...`);
     this.loadService.loadDocumentLinks().then(
       (data) => {
-        try {
-          // Check if data is a DocumentResponse array
-          if (Array.isArray(data) && data.length > 0) {
-            console.log('Loaded data items count:', data.length);
-
-            // Check if the first element looks like a DocumentResponse
-            const firstItem = data[0] as any;
-            if (firstItem && firstItem.documentList && Array.isArray(firstItem.documentList)) {
-              console.log('Found documentList array with count:', firstItem.documentList.length);
-              this._documentLinks = firstItem.documentList;
-            } else {
-              // It's just a direct array of DocumentLink objects
-              this._documentLinks = data as DocumentLink[];
-            }
-          } else {
-            console.log('No document links loaded or invalid format');
-            this._documentLinks = [];
-          }
-
-          console.log('Final document links count:', this._documentLinks?.length || 0);
-        } catch (error) {
-          console.error('Error processing document links:', error);
-          this._documentLinks = [];
-        }
-
+        this._documentLinks = data || []; // Add null check
+        if (this.verboseMode) console.log(data);
         this.isReady = true;
         this._enablePluginButton();
       },
-      (error) => {
-        console.error('Error loading document links:', error);
-        // Initialize with empty array so the UI can still function
-        this._documentLinks = [];
-        this.isReady = true;
-        this._enablePluginButton();
+      (error) => console.log(error)
+    );
+  }
+
+  /**
+ * Processes raw document links to ensure they have consistent structure
+ * @param rawLinks The raw links to process
+ * @returns A filtered list of processed links
+ */
+  private processLinks = (rawLinks: DocumentLink[]) => {
+    // Initialize array to hold processed links
+    let processedLinks: any[] = [];
+
+    // Process each raw link
+    for (const rawLink of rawLinks) {
+      // Check if we have a valid link
+      if (rawLink && typeof rawLink === 'object') {
+        // Create a processed link with required DocumentLink properties
+        const processedLink = {
+          serverFilePath: rawLink.serverFilePath || '',
+          title: rawLink.title || '',
+          fileId: rawLink.fileId || '',
+          fileType: rawLink.fileType || '',
+          population: rawLink.population || '',
+          locale: rawLink.locale || '',
+          lastUpdated: rawLink.lastUpdated || 0,
+          updatedBy: rawLink.updatedBy || '',
+          upointLink: rawLink.upointLink || '',
+          documentDescription: rawLink.documentDescription || '',
+          expiryDate: rawLink.expiryDate || '',
+
+          // Add destination property needed for link creation
+          destination: rawLink.serverFilePath || ''
+        };
+
+        processedLinks.push(processedLink);
       }
+    }
+
+    // Filter links to ensure they have required properties
+    return processedLinks.filter(link =>
+      link.serverFilePath &&
+      typeof link.serverFilePath === 'string' &&
+      link.serverFilePath.trim() !== '' &&
+      link.title &&
+      typeof link.title === 'string' &&
+      link.title.trim() !== ''
     );
   }
 
   // Checks if the current selection is in a link and shows the balloon if needed
   private _checkAndShowBalloon(): void {
     const selectedLink = this._getSelectedLinkElement();
+
+    // Check if the selected link is a existing document link
     if (selectedLink) {
-      this._showBalloon();
+      const href = selectedLink.getAttribute('href');
+      const dataId = selectedLink.getAttribute('data-id');
+      const hasDocumentTagClass = selectedLink.hasClass('document_tag');
+
+      // Show the balloon for existing document links identified by:
+      // 1. data-id="existing-document_link" attribute
+      // 2. document_tag class
+      // 3. URL format matching existing document link pattern
+      if ((dataId === 'existing-document_link') ||
+        hasDocumentTagClass ||
+        (href && isExistingDocumentLink(href as string))) {
+        this._showBalloon();
+      }
     }
   }
 
@@ -196,7 +228,7 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
     }
   }
 
-  // Creates a toolbar AlightExistingDocumentLinkPlugin button. Clicking this button will show the modal dialog.
+  // Creates a toolbar AlightExistingDocumentPlugin button. Clicking this button will show the modal dialog.
   private _createToolbarLinkButton(): void {
     const editor = this.editor;
 
@@ -283,6 +315,12 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
   private _normalizeUrl(url: string): string {
     if (!url) return '';
 
+    // For existing document links, extract the ID for comparison
+    const existingDocumentId = extractExternalDocumentLinkId(url);
+    if (existingDocumentId) {
+      return existingDocumentId.toLowerCase();
+    }
+
     // Remove trailing slash
     let normalized = url.endsWith('/') ? url.slice(0, -1) : url;
 
@@ -293,11 +331,37 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
   }
 
   // Find document link by URL using the links service
-  private async _findDocumentLinkByUrl(url: string): Promise<DocumentLink | null> {
+  /**
+ * Find document link by URL using the links service
+ * @param url The URL to find a matching document link for
+ * @returns The matching document link or null if not found
+ */
+  private async _findExistingDocumentByUrl(url: string): Promise<DocumentLink | null> {
     try {
-      // Find the matching link by URL - compare regardless of trailing slash or protocol differences
-      return this._documentLinks?.find(link => {
-        const normalizedDestination = this._normalizeUrl(link.serverFilePath as string);
+      // Extract existing document link ID if present
+      const existingDocumentId = extractExternalDocumentLinkId(url);
+
+      if (existingDocumentId) {
+        // For existing document links, try to find by matching serverFilePath
+        const exactMatch = this._documentLinks.find(link => {
+          // If the serverFilePath matches the existing document ID
+          if (link.serverFilePath &&
+            (link.serverFilePath === existingDocumentId ||
+              link.serverFilePath.includes(existingDocumentId))) {
+            return true;
+          }
+
+          return false;
+        });
+
+        if (exactMatch) {
+          return exactMatch;
+        }
+      }
+
+      // Fallback to normalized URL comparison
+      return this._documentLinks.find(link => {
+        const normalizedDestination = this._normalizeUrl(link.serverFilePath);
         const normalizedUrl = this._normalizeUrl(url);
         return normalizedDestination === normalizedUrl;
       }) || null;
@@ -317,8 +381,12 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
       const selectedLink = this._getSelectedLinkElement();
 
       if (selectedLink) {
-        // Show balloon with actions (edit/unlink) when clicking on a link
-        this._showBalloon();
+        // Check if it's a existing document link before showing the balloon
+        const href = selectedLink.getAttribute('href');
+        if (href && isExistingDocumentLink(href as string)) {
+          // Show balloon with actions (edit/unlink) when clicking on a existing document link
+          this._showBalloon();
+        }
       }
     });
   }
@@ -345,6 +413,12 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
       // Make sure the link is still selected before showing balloon
       const selectedLink = this._getSelectedLinkElement();
       if (!selectedLink) {
+        return;
+      }
+
+      // Verify it's a existing document link
+      const href = selectedLink.getAttribute('href');
+      if (!href || !isExistingDocumentLink(href as string)) {
         return;
       }
 
@@ -426,14 +500,15 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
   // Custom HTML content for the existing document links
   private _createCustomContent(): HTMLElement {
     const container = document.createElement('div');
+    container.className = 'cka-flex-links-wrap';
 
     const linksContainer = document.createElement('div');
     linksContainer.id = 'links-container';
     linksContainer.innerHTML = `
-      <div class="cka-loading-container">
-        <div class="cka-loading-spinner"></div>
-      </div>
-    `;
+    <div class="cka-loading-container">
+      <div class="cka-loading-spinner"></div>
+    </div>
+  `;
 
     const paginationContainer = document.createElement('div');
     paginationContainer.id = 'pagination-container';
@@ -445,11 +520,19 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
     return container;
   }
 
-  // Shows the modal dialog for link editing.
+  /**
+   * Shows the modal dialog for link editing.
+   * @param isEditing Whether we're editing an existing link
+   */
   private async _showUI(isEditing: boolean = false): Promise<void> {
     const editor = this.editor;
     const t = editor.t;
     const linkCommand = editor.commands.get('alight-existing-document-link') as AlightExistingDocumentLinkPluginCommand;
+
+    // Ensure _documentLinks is initialized
+    if (!this._documentLinks) {
+      this._documentLinks = [];
+    }
 
     // Store the current selection to restore it later
     const originalSelection = editor.model.document.selection;
@@ -460,18 +543,18 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
     let initialUrl = '';
     let initialLink: DocumentLink | null = null;
 
-    // Remove the existing document suffix for display
     if (isEditing && linkCommand.value) {
       initialUrl = linkCommand.value as string;
 
-      if (initialUrl.includes('~existing_document_editor_id')) {
-        const displayUrl = initialUrl.replace('~existing_document_editor_id', '');
-        console.log('Editing existing document link:', displayUrl);
-      }
-
       // Try to find the link data from the API
       try {
-        initialLink = await this._findDocumentLinkByUrl(initialUrl);
+        initialLink = await this._findExistingDocumentByUrl(initialUrl);
+
+        // If we couldn't find a link by URL but it's a existing document link format,
+        // set a flag to force the UI to open in edit mode
+        if (!initialLink && isExistingDocumentLink(initialUrl)) {
+          console.log('Existing document link format detected but not found in available links:', initialUrl);
+        }
       } catch (error) {
         console.error('Error fetching link data:', error);
       }
@@ -487,7 +570,7 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
         contentClass: 'cka-existing-document-link-content',
         buttons: [
           { label: t('Cancel') },
-          { label: t('Continue'), isPrimary: true, closeOnClick: false, disabled: !initialLink }
+          { label: t('Continue'), isPrimary: true, closeOnClick: false, disabled: true }
         ]
       });
 
@@ -505,7 +588,10 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
 
           if (selectedLink && selectedLink.destination) {
             // Create the link in the editor using the built-in link command
-            linkCommand.execute(selectedLink.destination);
+            // We no longer need to add the suffix
+            let href = selectedLink.destination;
+
+            linkCommand.execute(href);
 
             // Hide the modal after creating the link
             this._modalDialog?.hide();
@@ -513,21 +599,9 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
             // Show some feedback that no link was selected
             console.warn('No link selected or missing destination');
 
-            // Show an alert to the user
-            const alertDiv = document.createElement('div');
-            alertDiv.className = 'cka-alert cka-alert-error';
-            alertDiv.innerHTML = `<div class="cka-alert-warning">Please select a link</div>`;
-
-            // Find the container for the alert and show it
-            const modalContent = this._modalDialog?.getElement();
-            if (modalContent) {
-              // Insert at the top
-              modalContent.insertBefore(alertDiv, modalContent.firstChild);
-
-              // Remove after a delay
-              setTimeout(() => {
-                alertDiv.remove();
-              }, 3000);
+            // Show an alert to the user through our ContentManager
+            if (this._linkManager) {
+              this._linkManager.showAlert('Please select a existing document link', 'error');
             }
           }
         }
@@ -546,42 +620,15 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
 
     // Then fetch data and initialize the content manager in the background
     try {
-      // Make sure we have document links
-      if (!this._documentLinks || this._documentLinks.length === 0) {
-        console.log('No document links available, reloading from service...');
-        try {
-          let fetchedLinks = await this.loadService.loadDocumentLinks();
-
-          // Handle DocumentResponse structure
-          if (Array.isArray(fetchedLinks) && fetchedLinks.length > 0) {
-            const firstItem = fetchedLinks[0] as any;
-            if (firstItem && firstItem.documentList && Array.isArray(firstItem.documentList)) {
-              console.log('Extracting documentList from fetched data:', firstItem.documentList.length);
-              this._documentLinks = firstItem.documentList;
-            } else {
-              this._documentLinks = fetchedLinks as DocumentLink[];
-            }
-          } else {
-            this._documentLinks = [];
-          }
-
-          console.log('Reloaded document links count:', this._documentLinks.length);
-        } catch (error) {
-          console.error('Error loading document links:', error);
-        }
-      }
-
-      console.log('Document links count to display:', this._documentLinks ? this._documentLinks.length : 0);
-
       if (!this._documentLinks || this._documentLinks.length === 0) {
         // Show message if no links found
         const linksContainer = customContent.querySelector('#links-container');
         if (linksContainer) {
           linksContainer.innerHTML = `
-          <div class="cka-center-modal-message">
-            <p>No existing document links available.</p>
-          </div>
-        `;
+            <div class="cka-center-modal-message">
+              <p>No existing document links available.</p>
+            </div>
+          `;
         }
         return;
       }
@@ -589,7 +636,8 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
       // Create the ContentManager with the initialUrl and document links data
       this._linkManager = new ContentManager(initialUrl, this._documentLinks);
 
-      // Add link selection callback to update Continue button state
+      // Pass the modal dialog reference to enable/disable the Continue button
+      // Add an event listener for link selection
       this._linkManager.onLinkSelected = (link) => {
         this._updateContinueButtonState(!!link);
       };
@@ -599,6 +647,15 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
 
       // Set initial button state based on whether we have an initial link
       this._updateContinueButtonState(!!initialLink);
+
+      // If the URL is a existing document link format but not in our list, show a message
+      if (initialUrl && isExistingDocumentLink(initialUrl) && !initialLink) {
+        this._linkManager.showAlert(
+          'This existing document link is not in the current list of available links. You can select a new link or cancel.',
+          'warning',
+          0 // Don't auto-dismiss
+        );
+      }
     } catch (error) {
       console.error('Error setting up existing document links:', error);
 
@@ -606,10 +663,10 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
       const linksContainer = customContent.querySelector('#links-container');
       if (linksContainer) {
         linksContainer.innerHTML = `
-        <div class="cka-center-modal-message">
-          <p>${error.message || 'Unknown error'}</p>
-        </div>
-      `;
+          <div class="cka-center-modal-message">
+            <p>${error?.message || 'Unknown error'}</p>
+          </div>
+        `;
       }
     }
   }
