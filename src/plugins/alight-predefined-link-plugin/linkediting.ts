@@ -318,7 +318,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
     // Adds a default decorator for external links.
     if (editor.config.get('link.addTargetToExternalLinks')) {
       automaticDecorators.add({
-        id: 'linkIsEmail',
+        id: 'linkIsPredefined',
         mode: DECORATOR_AUTOMATIC,
         callback: url => !!url && EXTERNAL_LINKS_REGEXP.test(url),
         attributes: {

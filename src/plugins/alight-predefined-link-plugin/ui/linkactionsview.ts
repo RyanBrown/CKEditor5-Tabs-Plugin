@@ -197,10 +197,6 @@ export default class LinkActionsView extends View {
     });
 
     button.bind('label').to(this, 'href', href => {
-      // Hide mailto: from display in the UI
-      if (href && href.startsWith('mailto:')) {
-        return href.substring(7); // Remove mailto: prefix for display
-      }
       return href || t('This link has no URL');
     });
 
