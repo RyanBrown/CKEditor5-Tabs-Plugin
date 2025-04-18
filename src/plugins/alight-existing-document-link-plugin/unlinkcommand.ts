@@ -1,7 +1,6 @@
 // src/plugins/alight-existing-document-link/unlinkcommand.ts
 import { Command } from '@ckeditor/ckeditor5-core';
 import { findAttributeRange } from '@ckeditor/ckeditor5-typing';
-
 import type AlightExistingDocumentLinkPluginCommand from './linkcommand';
 import { isLinkableElement } from './utils';
 

@@ -320,7 +320,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
       automaticDecorators.add({
         id: 'linkIsPredefined',
         mode: DECORATOR_AUTOMATIC,
-        callback: url => !!url && EXTERNAL_LINKS_REGEXP.test(url),
+        callback: (url: string) => !!url && EXTERNAL_LINKS_REGEXP.test(url),
         attributes: {
           target: '_blank',
           rel: 'noopener noreferrer'
