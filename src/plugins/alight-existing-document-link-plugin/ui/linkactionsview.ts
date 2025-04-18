@@ -90,11 +90,7 @@ export default class LinkActionsView extends View {
     this.setTemplate({
       tag: 'div',
       attributes: {
-        class: [
-          'ck',
-          'ck-link-actions',
-          'ck-responsive-form'
-        ],
+        class: ['ck', 'ck-link-actions', 'ck-responsive-form'],
         // https://github.com/ckeditor/ckeditor5-link/issues/90
         tabindex: '-1'
       },
@@ -186,10 +182,7 @@ export default class LinkActionsView extends View {
 
     button.extendTemplate({
       attributes: {
-        class: [
-          'ck',
-          'ck-link-actions__preview'
-        ],
+        class: ['ck', 'ck-link-actions__preview'],
         href: bind.to('href', href => href && ensureSafeUrl(href)),
         target: '_blank',
         rel: 'noopener noreferrer'

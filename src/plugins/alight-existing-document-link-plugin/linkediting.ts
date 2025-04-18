@@ -103,77 +103,44 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
     // Allow orgnameattr attribute to be present, so we can remove it later
     editor.model.schema.extend('$text', { allowAttributes: 'orgnameattr' });
 
-    // Setup data downcast conversion
-    // Update the data downcast converter
-    editor.conversion.for('dataDowncast')
-      .attributeToElement({
-        model: 'AlightExistingDocumentLinkPluginHref',
-        view: (href, conversionApi) => {
-          // Safely handle null or undefined href
-          const hrefValue = href || '';
+    // Create a reusable link creation function for both data and editing downcast converters
+    const createLinkElementForDowncast = (href: string, conversionApi: any) => {
+      // Safely handle null or undefined href
+      const hrefValue = href || '';
 
-          // Extract the link ID or generate one if needed
-          const linkId = extractExternalDocumentLinkId(hrefValue) || '1760181_LINK'; // Default ID if none found
+      // Extract the link ID or generate one if needed
+      const linkId = extractExternalDocumentLinkId(hrefValue) || ''; // Default is empty if none found
 
-          // Create a properly formatted href with DOC_ prefix
-          // Check if href exists and already has the DOC_ prefix
-          const formattedHref = hrefValue && hrefValue.startsWith('DOC_') ? hrefValue : `DOC_${linkId}`;
+      // Define all required attributes
+      const attributes = {
+        'href': linkId,
+        'data-id': 'existing-document_link',
+        'data-format': 'existingDocumentTag',
+        'data-link-name': linkId
+      };
 
-          // Define all required attributes
-          const attributes = {
-            'href': formattedHref,
-            'data-id': 'existing-document_link',
-            'data-format': 'existingDocumentTag',
-            'data-link-name': linkId
-          };
+      // Create the link element
+      const linkElement = conversionApi.writer.createAttributeElement('a', attributes, { priority: 5 });
 
-          // Create the link element
-          const linkElement = conversionApi.writer.createAttributeElement('a', attributes, { priority: 5 });
+      // Add the required class
+      conversionApi.writer.addClass('document_tag', linkElement);
 
-          // Add the required class
-          conversionApi.writer.addClass('document_tag', linkElement);
+      // Set custom property for link identification
+      conversionApi.writer.setCustomProperty('alight-existing-document-link', true, linkElement);
 
-          // Set custom property for link identification
-          conversionApi.writer.setCustomProperty('alight-existing-document-link', true, linkElement);
+      return linkElement;
+    };
 
-          return linkElement;
-        }
-      });
+    // Setup both data and editing downcast converters using the common function
+    editor.conversion.for('dataDowncast').attributeToElement({
+      model: 'AlightExistingDocumentLinkPluginHref',
+      view: createLinkElementForDowncast
+    });
 
-    // Update the editing downcast converter similarly
-    editor.conversion.for('editingDowncast')
-      .attributeToElement({
-        model: 'AlightExistingDocumentLinkPluginHref',
-        view: (href, conversionApi) => {
-          // Safely handle null or undefined href
-          const hrefValue = href || '';
-
-          // Extract the link ID or generate one if needed
-          const linkId = extractExternalDocumentLinkId(hrefValue) || '1760181_LINK'; // Default ID if none found
-
-          // Create a properly formatted href with DOC_ prefix
-          const formattedHref = hrefValue && hrefValue.startsWith('DOC_') ? hrefValue : `DOC_${linkId}`;
-
-          // Define all required attributes
-          const attributes = {
-            'href': formattedHref,
-            'data-id': 'existing-document_link',
-            'data-format': 'existingDocumentTag',
-            'data-link-name': linkId
-          };
-
-          // Create the link element
-          const linkElement = conversionApi.writer.createAttributeElement('a', attributes, { priority: 5 });
-
-          // Add the required class
-          conversionApi.writer.addClass('document_tag', linkElement);
-
-          // Set custom property for link identification
-          conversionApi.writer.setCustomProperty('alight-existing-document-link', true, linkElement);
-
-          return linkElement;
-        }
-      });
+    editor.conversion.for('editingDowncast').attributeToElement({
+      model: 'AlightExistingDocumentLinkPluginHref',
+      view: createLinkElementForDowncast
+    });
 
     // Handle existing document links and standard links
     editor.conversion.for('upcast')

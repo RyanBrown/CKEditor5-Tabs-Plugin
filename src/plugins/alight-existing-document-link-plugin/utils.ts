@@ -282,16 +282,10 @@ export function createBookmarkCallbacks(editor: Editor): LinkActionsViewOptions 
 export function extractExternalDocumentLinkId(href: string | null | undefined): string | null {
   if (!href) return null;
 
-  // Handle DOC_ pattern links - extract just the ID portion
-  const docMatch = href.match(/DOC_([A-Za-z0-9_]+)/);
-  if (docMatch && docMatch[1]) {
-    return docMatch[1];
-  }
-
   // Handle links with ah:link nested element - extract from the name attribute
-  const ahLinkMatch = href.match(/name="([^"]+)"/);
-  if (ahLinkMatch && ahLinkMatch[1]) {
-    return ahLinkMatch[1];
+  const documentTag = href.match(/name="([^"]+)"/);
+  if (documentTag && documentTag[1]) {
+    return documentTag[1];
   }
 
   // Handle numeric IDs
