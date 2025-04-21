@@ -416,71 +416,82 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
         return;
       }
 
-      // Verify it's a existing document link
+      // Verify it's an existing document link
       const href = selectedLink.getAttribute('href');
       if (!href || !isExistingDocumentLink(href as string)) {
         return;
       }
 
-      // Get attributes that might contain title information
-      const linkName = selectedLink.getAttribute('data-link-name');
-      const title = selectedLink.getAttribute('title');
-
-      // Extract document link ID for possible lookup
-      const linkId = linkName || extractExternalDocumentLinkId(href as string);
-
-      // Try to find matching document in our loaded data
-      let displayTitle = '';
-      let displayDescription = '';
-
-      // Look for document data if we have document links loaded
-      if (linkId && this._documentLinks && this._documentLinks.length > 0) {
-        const matchingDoc = this._documentLinks.find(link =>
-          link.serverFilePath === linkId ||
-          (link.serverFilePath && link.serverFilePath.includes(linkId)) ||
-          link.fileId === linkId
-        );
-
-        if (matchingDoc) {
-          displayTitle = matchingDoc.title || '';
-          displayDescription = matchingDoc.documentDescription || '';
-        }
-      }
-
-      // Fallbacks if we couldn't find matching document data
-      if (!displayTitle) {
-        if (title) {
-          displayTitle = title;
-        } else if (linkName) {
-          displayTitle = linkName;
-        } else if (href) {
-          // Extract the filename from the path as a more user-friendly display
-          const pathParts = href.split('/');
-          const fileName = pathParts[pathParts.length - 1];
-          displayTitle = fileName || href;
-        }
-      }
-
-      // Set link properties on the actionsView
+      // Set just the href on the actionsView (needed for core functionality)
       this.actionsView.set('href', href as string);
 
-      // Set the previewButtonView's content directly
-      if (this.actionsView.previewButtonView && this.actionsView.previewButtonView.element) {
-        const labelElement = this.actionsView.previewButtonView.element.querySelector('.cka-button-title-text');
-        if (labelElement) {
-          // Set the text content directly on the DOM element
-          labelElement.textContent = displayTitle || this.editor.t('This link has no title');
-        }
-      }
-
+      // First add the view to the balloon (this renders it in the DOM)
       this._balloon.add({
         view: this.actionsView,
         position: this._getBalloonPositionData()
       });
 
+      // AFTER the balloon is in the DOM, update the title text
+      setTimeout(() => {
+        this._updateBalloonTitle(selectedLink);
+      }, 0);
+
       // Begin responding to UI updates
       this._startUpdatingUI();
     }
+  }
+
+  // Add this new helper method for updating the title
+  private _updateBalloonTitle(selectedLink: ViewAttributeElement): void {
+    // Make sure everything exists
+    if (!this.actionsView || !this.actionsView.element) {
+      return;
+    }
+
+    // Get link attributes
+    const href = selectedLink.getAttribute('href') as string;
+    const linkName = selectedLink.getAttribute('data-link-name') as string;
+
+    // Find the title element in the balloon
+    const titleElement = this.actionsView.element.querySelector('.cka-button-title-text');
+    if (!titleElement) {
+      return;
+    }
+
+    // Find matching document data
+    let displayTitle = '';
+    const linkId = linkName || extractExternalDocumentLinkId(href);
+    if (linkId && this._documentLinks && this._documentLinks.length > 0) {
+      const matchingDoc = this._documentLinks.find(link =>
+        link.serverFilePath === linkId ||
+        (link.serverFilePath && link.serverFilePath.includes(linkId)) ||
+        link.fileId === linkId
+      );
+
+      if (matchingDoc) {
+        displayTitle = matchingDoc.title || '';
+
+        // If no title but has description, use that
+        if (!displayTitle && matchingDoc.documentDescription) {
+          displayTitle = matchingDoc.documentDescription;
+        }
+      }
+    }
+
+    // If we still don't have a title, extract from linkName or href
+    if (!displayTitle) {
+      if (linkName) {
+        displayTitle = linkName;
+      } else {
+        // Extract filename from path
+        const pathParts = href.split('/');
+        const fileName = pathParts[pathParts.length - 1];
+        displayTitle = fileName || href;
+      }
+    }
+
+    // Update the DOM element directly
+    titleElement.textContent = displayTitle || this.editor.t('This link has no title');
   }
 
   // Returns positioning options for the balloon.
@@ -529,9 +540,12 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
         // Hide the panel if the selection moved out of the link element
         if (prevSelectedLink && !selectedLink) {
           this._hideUI();
-        } else if (this._areActionsInPanel) {
-          // Update the balloon position as the selection changes
+        } else if (this._areActionsInPanel && selectedLink) {
+          // Update the balloon position and title as the selection changes
           this._balloon.updatePosition(this._getBalloonPositionData());
+
+          // Also update the title text when selection changes
+          this._updateBalloonTitle(selectedLink);
         }
 
         prevSelectedLink = selectedLink;
