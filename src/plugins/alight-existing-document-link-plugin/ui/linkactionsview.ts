@@ -165,10 +165,10 @@ export default class LinkActionsView extends View {
   }
 
   /**
-   * Creates a custom view for the link title display.
-   *
-   * @returns The custom view instance.
-   */
+ * Creates a custom view for the link title display.
+ *
+ * @returns The custom view instance.
+ */
   private _createPreviewButton(): View {
     // Create a custom view instead of using ButtonView
     const customView = new View(this.locale);
@@ -187,7 +187,10 @@ export default class LinkActionsView extends View {
           class: ['ck', 'ck-button__label', 'cka-button-title-text']
         },
         children: [{
-          text: bind.to('href', href => href || t('This link has no title'))
+          text: bind.to('href', href => {
+            // Default text when href is empty or undefined
+            return href || t('This link has no title');
+          })
         }]
       }]
     });

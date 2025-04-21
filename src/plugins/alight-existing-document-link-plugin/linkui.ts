@@ -422,6 +422,57 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
         return;
       }
 
+      // Get attributes that might contain title information
+      const linkName = selectedLink.getAttribute('data-link-name');
+      const title = selectedLink.getAttribute('title');
+
+      // Extract document link ID for possible lookup
+      const linkId = linkName || extractExternalDocumentLinkId(href as string);
+
+      // Try to find matching document in our loaded data
+      let displayTitle = '';
+      let displayDescription = '';
+
+      // Look for document data if we have document links loaded
+      if (linkId && this._documentLinks && this._documentLinks.length > 0) {
+        const matchingDoc = this._documentLinks.find(link =>
+          link.serverFilePath === linkId ||
+          (link.serverFilePath && link.serverFilePath.includes(linkId)) ||
+          link.fileId === linkId
+        );
+
+        if (matchingDoc) {
+          displayTitle = matchingDoc.title || '';
+          displayDescription = matchingDoc.documentDescription || '';
+        }
+      }
+
+      // Fallbacks if we couldn't find matching document data
+      if (!displayTitle) {
+        if (title) {
+          displayTitle = title;
+        } else if (linkName) {
+          displayTitle = linkName;
+        } else if (href) {
+          // Extract the filename from the path as a more user-friendly display
+          const pathParts = href.split('/');
+          const fileName = pathParts[pathParts.length - 1];
+          displayTitle = fileName || href;
+        }
+      }
+
+      // Set link properties on the actionsView
+      this.actionsView.set('href', href as string);
+
+      // Set the previewButtonView's content directly
+      if (this.actionsView.previewButtonView && this.actionsView.previewButtonView.element) {
+        const labelElement = this.actionsView.previewButtonView.element.querySelector('.cka-button-title-text');
+        if (labelElement) {
+          // Set the text content directly on the DOM element
+          labelElement.textContent = displayTitle || this.editor.t('This link has no title');
+        }
+      }
+
       this._balloon.add({
         view: this.actionsView,
         position: this._getBalloonPositionData()
