@@ -40,9 +40,9 @@ export default class AlightExternalLinkPluginIntegration extends Plugin {
           const href = args[0] as string;
           const selection = editor.model.document.selection;
 
-          // If selection has alightPredefinedLinkPluginHref attribute, it's a existing document link
-          if (selection.hasAttribute('alightPredefinedLinkPluginHref')) {
-            const currentHref = selection.getAttribute('alightPredefinedLinkPluginHref');
+          // If selection has alightExistingDocumentLinkPlugin attribute, it's a existing document link
+          if (selection.hasAttribute('alightExistingDocumentLinkPluginHref')) {
+            const currentHref = selection.getAttribute('alightExistingDocumentLinkPluginHref');
             if (isExistingDocumentLink(currentHref as string)) {
               // Stop execution of the standard link command for existing document links
               evt.stop();
