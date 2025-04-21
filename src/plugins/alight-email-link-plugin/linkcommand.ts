@@ -3,7 +3,6 @@ import { Command } from '@ckeditor/ckeditor5-core';
 import { findAttributeRange } from '@ckeditor/ckeditor5-typing';
 import { Collection, first, toMap } from '@ckeditor/ckeditor5-utils';
 import type { Range, Writer } from '@ckeditor/ckeditor5-engine';
-
 import AutomaticDecorators from './utils/automaticdecorators';
 import { isLinkableElement, isEmail, ensureMailtoLink } from './utils';
 import type ManualDecorator from './utils/manualdecorator';

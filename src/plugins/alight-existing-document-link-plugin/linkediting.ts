@@ -209,7 +209,7 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
         model: {
           key: 'AlightExistingDocumentLinkPluginHref',
           value: (viewElement: ViewElement) => {
-            // Always add target="_blank" for AHCustomeLink class links during upcast
+            // Always add target="_blank" to links during upcast
             viewElement._setAttribute('target', '_blank');
 
             // Try to find ah:link element inside
