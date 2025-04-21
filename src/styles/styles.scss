@@ -342,6 +342,34 @@ $spacing-values: (
   }
 }
 
+// Balloon title classes
+.cka-button-title {
+  display: inline-block;
+  font-size: inherit;
+  line-height: 1;
+  min-height: 2.3rem;
+  min-width: 2.3rem;
+  text-align: center;
+  user-select: none;
+  vertical-align: middle;
+  white-space: nowrap;
+
+  .cka-button-title-text {
+    color: var(--neutral-black);
+    display: inline-block;
+    font-weight: var(--font-weight-bold);
+    line-height: 2.3rem;
+    max-width: 14.625rem;
+    min-height: 2.3rem;
+    overflow: hidden;
+    padding: calc(0.6rem * 0.3) 0.3rem;
+    text-overflow: ellipsis;
+    user-select: none;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+}
+
 // Center info text modals
 .cka-center-modal-message {
   align-items: center;
