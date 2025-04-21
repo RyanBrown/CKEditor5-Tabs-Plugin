@@ -139,6 +139,12 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
       (data) => {
         this._predefinedLinks = data;
         if (this.verboseMode) console.log(data);
+
+        // Update the actions view with the loaded predefined links if it's already created
+        if (this.actionsView) {
+          this.actionsView.setPredefinedLinks(this._predefinedLinks);
+        }
+
         this.isReady = true;
         this._enablePluginButton();
       },
@@ -273,6 +279,11 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
 
     actionsView.bind('href').to(linkCommand, 'value');
 
+    // Pass the predefined links data to the actions view if available
+    if (this._predefinedLinks && this._predefinedLinks.length > 0) {
+      actionsView.setPredefinedLinks(this._predefinedLinks);
+    }
+
     actionsView.editButtonView.bind('isEnabled').to(linkCommand);
     actionsView.unlinkButtonView.bind('isEnabled').to(unlinkCommand);
 
@@ -403,6 +414,7 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
   }
 
   // Shows balloon with link actions.
+  // Shows balloon with link actions.
   private _showBalloon(): void {
     if (this.actionsView && this._balloon && !this._balloon.hasView(this.actionsView)) {
       // Make sure the link is still selected before showing balloon
@@ -415,6 +427,11 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
       const href = selectedLink.getAttribute('href');
       if (!href || !isPredefinedLink(href as string)) {
         return;
+      }
+
+      // Pass the predefined links data to the actions view for lookup
+      if (this._predefinedLinks && this._predefinedLinks.length > 0) {
+        this.actionsView.setPredefinedLinks(this._predefinedLinks);
       }
 
       this._balloon.add({

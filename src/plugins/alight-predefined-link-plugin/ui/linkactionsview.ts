@@ -3,7 +3,8 @@ import { ButtonView, View, ViewCollection, FocusCycler, type FocusableView } fro
 import { FocusTracker, KeystrokeHandler, type LocaleTranslate, type Locale } from 'ckeditor5/src/utils';
 import { icons } from 'ckeditor5/src/core';
 
-import { ensureSafeUrl } from '../utils';
+import { ensureSafeUrl, isPredefinedLink, extractPredefinedLinkId } from '../utils';
+import type { PredefinedLink } from './linkmodal-modal-types';
 
 // See: #8833.
 // eslint-disable-next-line ckeditor5-rules/ckeditor-imports
@@ -48,6 +49,12 @@ export default class LinkActionsView extends View {
    * @observable
    */
   declare public href: string | undefined;
+
+  /**
+   * Available predefined links for lookup.
+   * This can be set from outside to enable lookup of link details.
+   */
+  private _predefinedLinks: PredefinedLink[] = [];
 
   /**
    * A collection of views that can be focused in the view.
@@ -100,6 +107,53 @@ export default class LinkActionsView extends View {
         this.unlinkButtonView
       ]
     });
+  }
+
+  /**
+   * Sets the available predefined links for lookup.
+   * 
+   * @param links The predefined links array
+   */
+  public setPredefinedLinks(links: PredefinedLink[]): void {
+    this._predefinedLinks = links;
+  }
+
+  /**
+   * Finds predefined link data based on the href
+   * 
+   * @param href The link href/URL
+   * @returns The predefined link or null if not found
+   */
+  private _findPredefinedLink(href: string | undefined): PredefinedLink | null {
+    if (!href || !this._predefinedLinks || this._predefinedLinks.length === 0) {
+      return null;
+    }
+
+    // Extract the link ID if this is a predefined link
+    const linkId = extractPredefinedLinkId(href);
+    if (!linkId) {
+      return null;
+    }
+
+    // Try to find the link by ID or by destination
+    return this._predefinedLinks.find(link => {
+      // Match by uniqueId if it exists
+      if (link.uniqueId && link.uniqueId.toString() === linkId) {
+        return true;
+      }
+
+      // Match by predefinedLinkName
+      if (link.predefinedLinkName === linkId) {
+        return true;
+      }
+
+      // Match by destination that contains the ID
+      if (link.destination && link.destination.includes(linkId)) {
+        return true;
+      }
+
+      return false;
+    }) || null;
   }
 
   /**
@@ -187,7 +241,39 @@ export default class LinkActionsView extends View {
           class: ['ck', 'ck-button__label', 'cka-button-title-text']
         },
         children: [{
-          text: bind.to('href', href => href || t('This link has no title'))
+          text: bind.to('href', href => {
+            // If this is a predefined link, try to lookup its info
+            if (href && isPredefinedLink(href)) {
+              const linkInfo = this._findPredefinedLink(href);
+
+              if (linkInfo) {
+                // Priority 1: Use predefinedLinkName if available
+                if (linkInfo.predefinedLinkName) {
+                  return linkInfo.predefinedLinkName;
+                }
+
+                // Priority 2: Use predefinedLinkDescription if available
+                if (linkInfo.predefinedLinkDescription) {
+                  return linkInfo.predefinedLinkDescription;
+                }
+
+                // Priority 3: Use destination if available
+                if (linkInfo.destination) {
+                  return linkInfo.destination;
+                }
+              }
+
+              // If it's a predefined link but we couldn't find details,
+              // use the extracted ID as a fallback
+              const linkId = extractPredefinedLinkId(href);
+              if (linkId) {
+                return linkId;
+              }
+            }
+
+            // Final fallback: just use the href or a placeholder message
+            return href || t('This link has no title');
+          })
         }]
       }]
     });
