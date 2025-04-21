@@ -104,6 +104,11 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
 
     // Create a reusable link creation function for both data and editing downcast converters
     const createLinkElementForDowncast = (href: string, conversionApi: any) => {
+      // If there's no href, don't create a link element
+      if (!href || href === '') {
+        return null;
+      }
+
       // Safely handle null or undefined href
       const hrefValue = href || '';
 
@@ -115,7 +120,8 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
         'href': linkId,
         'data-id': 'existing-document_link',
         'data-format': 'existingDocumentTag',
-        'data-link-name': linkId
+        'data-link-name': linkId,
+        'target': '_blank' // Only add target attribute when we have href
       };
 
       // Create the link element
@@ -133,12 +139,24 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
     // Setup both data and editing downcast converters using the common function
     editor.conversion.for('dataDowncast').attributeToElement({
       model: 'AlightExistingDocumentLinkPluginHref',
-      view: createLinkElementForDowncast
+      view: (href, conversionApi) => {
+        // Skip conversion if no href is provided
+        if (!href) {
+          return null;
+        }
+        return createLinkElementForDowncast(href, conversionApi);
+      }
     });
 
     editor.conversion.for('editingDowncast').attributeToElement({
       model: 'AlightExistingDocumentLinkPluginHref',
-      view: createLinkElementForDowncast
+      view: (href, conversionApi) => {
+        // Skip conversion if no href is provided
+        if (!href) {
+          return null;
+        }
+        return createLinkElementForDowncast(href, conversionApi);
+      }
     });
 
     // Handle existing document links and standard links

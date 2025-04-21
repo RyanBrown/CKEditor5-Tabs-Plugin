@@ -47,9 +47,17 @@ export default class AlightExistingDocumentLinkPluginUnlinkCommand extends Comma
         )] :
         model.schema.getValidRanges(selection.getRanges(), 'AlightExistingDocumentLinkPluginHref');
 
-      // Remove `AlightExistingDocumentLinkPluginHref` attribute from specified ranges.
+      // Remove all link-related attributes from specified ranges
       for (const range of rangesToUnlink) {
+        // Remove the primary href attribute
         writer.removeAttribute('AlightExistingDocumentLinkPluginHref', range);
+
+        // Also remove format and link name attributes
+        writer.removeAttribute('AlightExistingDocumentLinkPluginFormat', range);
+        writer.removeAttribute('AlightExistingDocumentPluginLinkName', range);
+
+        // Remove any orgnameattr attribute if it exists
+        writer.removeAttribute('orgnameattr', range);
 
         // If there are registered custom attributes, then remove them during unlink.
         if (linkCommand) {
