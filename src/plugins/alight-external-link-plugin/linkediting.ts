@@ -41,7 +41,7 @@ import type { LinkDecoratorDefinition } from './linkconfig';
 
 import '@ckeditor/ckeditor5-link/theme/link.css';
 
-const HIGHLIGHT_CLASS = 'ck-alight-external-link_selected';
+const HIGHLIGHT_CLASS = 'ck-link_selected';
 const DECORATOR_AUTOMATIC = 'automatic';
 const DECORATOR_MANUAL = 'manual';
 const EXTERNAL_LINKS_REGEXP = /^(https?:)?\/\//;
