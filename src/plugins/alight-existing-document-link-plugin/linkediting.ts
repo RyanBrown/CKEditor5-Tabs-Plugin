@@ -32,10 +32,9 @@ import {
   normalizeDecorators,
   addLinkProtocolIfApplicable,
   createBookmarkCallbacks,
-  openLink,
   extractExternalDocumentLinkId,
   type NormalizedLinkDecoratorAutomaticDefinition,
-  type NormalizedLinkDecoratorManualDefinition
+  type NormalizedLinkDecoratorManualDefinition,
 } from './utils';
 
 import '@ckeditor/ckeditor5-link/theme/link.css';
@@ -159,6 +158,9 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
             const dataId = viewElement.getAttribute('data-id');
             const dataLinkName = viewElement.getAttribute('data-link-name');
 
+            // Always add target="_blank" for links during upcast
+            viewElement._setAttribute('target', '_blank');
+
             if (dataId === 'existing document_link' && dataLinkName) {
               // If it has existing document link attributes, use the link name as href
               return dataLinkName;
@@ -189,6 +191,9 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
         model: {
           key: 'AlightExistingDocumentLinkPluginHref',
           value: (viewElement: ViewElement) => {
+            // Always add target="_blank" for AHCustomeLink class links during upcast
+            viewElement._setAttribute('target', '_blank');
+
             // Try to find ah:link element inside
             const ahLink = viewElement.getChild(0);
             if (ahLink && ahLink.is('element', 'ah:link')) {
@@ -281,19 +286,6 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
     const command = editor.commands.get('alight-existing-document-link') as AlightExistingDocumentLinkPluginCommand;
     const automaticDecorators = command.automaticDecorators;
 
-    // Adds a default decorator for external links.
-    if (editor.config.get('link.addTargetToExternalLinks')) {
-      automaticDecorators.add({
-        id: 'linkIsExistingDocument',
-        mode: DECORATOR_AUTOMATIC,
-        callback: (url: string) => !!url && EXTERNAL_LINKS_REGEXP.test(url),
-        attributes: {
-          target: '_blank',
-          rel: 'noopener noreferrer'
-        }
-      });
-    }
-
     automaticDecorators.add(automaticDecoratorDefinitions);
 
     if (automaticDecorators.length) {
@@ -378,8 +370,6 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
     function handleLinkOpening(url: string): void {
       if (bookmarkCallbacks.isScrollableToTarget(url)) {
         bookmarkCallbacks.scrollToTarget(url);
-      } else {
-        openLink(url);
       }
     }
 

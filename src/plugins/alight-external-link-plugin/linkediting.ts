@@ -32,7 +32,6 @@ import {
   normalizeDecorators,
   addLinkProtocolIfApplicable,
   createBookmarkCallbacks,
-  openLink,
   ensureUrlProtocol,
   type NormalizedLinkDecoratorAutomaticDefinition,
   type NormalizedLinkDecoratorManualDefinition
@@ -520,8 +519,6 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
     function handleLinkOpening(url: string): void {
       if (bookmarkCallbacks.isScrollableToTarget(url)) {
         bookmarkCallbacks.scrollToTarget(url);
-      } else {
-        openLink(url);
       }
     }
 

@@ -32,7 +32,6 @@ import {
   normalizeDecorators,
   addLinkProtocolIfApplicable,
   createBookmarkCallbacks,
-  openLink,
   extractPredefinedLinkId,
   type NormalizedLinkDecoratorAutomaticDefinition,
   type NormalizedLinkDecoratorManualDefinition
@@ -111,7 +110,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
       // Extract the link ID or generate one if needed
       const linkId = extractPredefinedLinkId(hrefValue) || ''; // Default is empty if none found
 
-      // Define all required attributes
+      // Define all required attributes - no target="_blank" here
       const attributes = {
         'href': linkId,
         'data-id': 'predefined_link',
@@ -159,6 +158,9 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
             const dataId = viewElement.getAttribute('data-id');
             const dataLinkName = viewElement.getAttribute('data-link-name');
 
+            // Always add target="_blank" for links during upcast
+            viewElement._setAttribute('target', '_blank');
+
             if (dataId === 'predefined_link' && dataLinkName) {
               // If it has predefined link attributes, use the link name as href
               return dataLinkName;
@@ -189,6 +191,9 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         model: {
           key: 'alightPredefinedLinkPluginHref',
           value: (viewElement: ViewElement) => {
+            // Always add target="_blank" for AHCustomeLink class links during upcast
+            viewElement._setAttribute('target', '_blank');
+
             // Try to find ah:link element inside
             const ahLink = viewElement.getChild(0);
             if (ahLink && ahLink.is('element', 'ah:link')) {
@@ -281,19 +286,6 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
     const command = editor.commands.get('alight-predefined-link') as AlightPredefinedLinkPluginCommand;
     const automaticDecorators = command.automaticDecorators;
 
-    // Adds a default decorator for external links.
-    if (editor.config.get('link.addTargetToExternalLinks')) {
-      automaticDecorators.add({
-        id: 'linkIsPredefined',
-        mode: DECORATOR_AUTOMATIC,
-        callback: (url: string) => !!url && EXTERNAL_LINKS_REGEXP.test(url),
-        attributes: {
-          target: '_blank',
-          rel: 'noopener noreferrer'
-        }
-      });
-    }
-
     automaticDecorators.add(automaticDecoratorDefinitions);
 
     if (automaticDecorators.length) {
@@ -378,8 +370,6 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
     function handleLinkOpening(url: string): void {
       if (bookmarkCallbacks.isScrollableToTarget(url)) {
         bookmarkCallbacks.scrollToTarget(url);
-      } else {
-        openLink(url);
       }
     }
 

@@ -235,13 +235,6 @@ export function linkHasProtocol(link: string): boolean {
 }
 
 /**
- * Opens the link in a new browser tab.
- */
-export function openLink(link: string): void {
-  window.open(link, '_blank', 'noopener');
-}
-
-/**
  * Creates the bookmark callbacks for handling link opening experience.
  */
 export function createBookmarkCallbacks(editor: Editor): LinkActionsViewOptions {
