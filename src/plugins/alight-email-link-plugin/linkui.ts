@@ -196,12 +196,11 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     const t = locale.t;
 
     view.set({
-      label: t('Email link'),
+      class: 'ck-alight-email-link-button',
       icon: ToolBarIcon,
       isToggleable: true,
+      label: t('Email link'),
       withText: true,
-      // Add a custom class to differentiate from standard link button
-      class: 'ck-alight-email-link-button'
     });
 
     view.bind('isEnabled').to(command, 'isEnabled');

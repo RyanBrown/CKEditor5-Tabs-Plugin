@@ -197,12 +197,11 @@ export default class AlightExternalLinkPluginUI extends Plugin {
     const t = locale.t;
 
     view.set({
-      label: t('External Link'),
+      class: 'ck-alight-external-link-button',
       icon: ToolBarIcon,
       isToggleable: true,
+      label: t('External link'),
       withText: true,
-      // Add a custom class to differentiate from standard link button
-      class: 'ck-alight-external-link-button'
     });
 
     view.bind('isEnabled').to(command, 'isEnabled');
