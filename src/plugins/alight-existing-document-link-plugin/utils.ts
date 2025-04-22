@@ -183,14 +183,14 @@ export function normalizeDecorators(decorators?: Record<string, LinkDecoratorDef
 }
 
 /**
- * Returns `true` if the specified `element` can be linked (the element allows the `AlightExistingDocumentLinkPluginHref` attribute).
+ * Returns `true` if the specified `element` can be linked (the element allows the `alightExistingDocumentLinkPluginHref` attribute).
  */
 export function isLinkableElement(element: Element | null, schema: Schema): element is Element {
   if (!element) {
     return false;
   }
 
-  return schema.checkAttribute(element.name, 'AlightExistingDocumentLinkPluginHref');
+  return schema.checkAttribute(element.name, 'alightExistingDocumentLinkPluginHref');
 }
 
 /**

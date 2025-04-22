@@ -42,12 +42,12 @@ export default class AutomaticDecorators {
    */
   public getDispatcher(): (dispatcher: DowncastDispatcher) => void {
     return dispatcher => {
-      dispatcher.on<DowncastAttributeEvent>('attribute:AlightExistingDocumentLinkPluginHref', (evt, data, conversionApi) => {
+      dispatcher.on<DowncastAttributeEvent>('attribute:alightExistingDocumentLinkPluginHref', (evt, data, conversionApi) => {
         // There is only test as this behavior decorates links and
         // it is run before dispatcher which actually consumes this node.
         // This allows on writing own dispatcher with highest priority,
         // which blocks both native converter and this additional decoration.
-        if (!conversionApi.consumable.test(data.item, 'attribute:AlightExistingDocumentLinkPluginHref')) {
+        if (!conversionApi.consumable.test(data.item, 'attribute:alightExistingDocumentLinkPluginHref')) {
           return;
         }
 

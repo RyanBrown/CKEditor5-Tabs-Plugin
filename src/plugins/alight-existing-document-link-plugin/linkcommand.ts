@@ -19,7 +19,7 @@ interface LinkOptions {
  */
 export default class AlightExistingDocumentLinkPluginCommand extends Command {
   /**
-   * The value of the `'AlightExistingDocumentLinkPluginHref'` attribute if the start of the selection is located in a node with this attribute.
+   * The value of the `'alightExistingDocumentLinkPluginHref'` attribute if the start of the selection is located in a node with this attribute.
    *
    * @observable
    * @readonly
@@ -70,16 +70,16 @@ export default class AlightExistingDocumentLinkPluginCommand extends Command {
     // A check for any integration that allows linking elements (e.g. `AlightExistingDocumentLinkPluginImage`).
     // Currently the selection reads attributes from text nodes only. See #7429 and #7465.
     if (isLinkableElement(selectedElement, model.schema)) {
-      this.value = selectedElement.getAttribute('AlightExistingDocumentLinkPluginHref') as string | undefined;
-      this.isEnabled = model.schema.checkAttribute(selectedElement, 'AlightExistingDocumentLinkPluginHref');
+      this.value = selectedElement.getAttribute('alightExistingDocumentLinkPluginHref') as string | undefined;
+      this.isEnabled = model.schema.checkAttribute(selectedElement, 'alightExistingDocumentLinkPluginHref');
     } else {
-      this.value = selection.getAttribute('AlightExistingDocumentLinkPluginHref') as string | undefined;
+      this.value = selection.getAttribute('alightExistingDocumentLinkPluginHref') as string | undefined;
 
       // Only enable if there's a non-collapsed selection OR the cursor is inside an existing link
       const hasNonCollapsedSelection = !selection.isCollapsed;
       const isInsideLink = this.value !== undefined;
 
-      this.isEnabled = model.schema.checkAttributeInSelection(selection, 'AlightExistingDocumentLinkPluginHref') &&
+      this.isEnabled = model.schema.checkAttributeInSelection(selection, 'alightExistingDocumentLinkPluginHref') &&
         (hasNonCollapsedSelection || isInsideLink);
     }
 
@@ -91,15 +91,15 @@ export default class AlightExistingDocumentLinkPluginCommand extends Command {
   /**
    * Executes the command.
    *
-   * When the selection is non-collapsed, the `AlightExistingDocumentLinkPluginHref` attribute will be applied to nodes inside the selection, but only to
-   * those nodes where the `AlightExistingDocumentLinkPluginHref` attribute is allowed (disallowed nodes will be omitted).
+   * When the selection is non-collapsed, the `alightExistingDocumentLinkPluginHref` attribute will be applied to nodes inside the selection, but only to
+   * those nodes where the `alightExistingDocumentLinkPluginHref` attribute is allowed (disallowed nodes will be omitted).
    *
-   * When the selection is collapsed and is not inside the text with the `AlightExistingDocumentLinkPluginHref` attribute, a
-   * new {@link module:engine/model/text~Text text node} with the `AlightExistingDocumentLinkPluginHref` attribute will be inserted in place of the caret, but
+   * When the selection is collapsed and is not inside the text with the `alightExistingDocumentLinkPluginHref` attribute, a
+   * new {@link module:engine/model/text~Text text node} with the `alightExistingDocumentLinkPluginHref` attribute will be inserted in place of the caret, but
    * only if such element is allowed in this place. The `_data` of the inserted text will equal the `href` parameter.
    * The selection will be updated to wrap the just inserted text node.
    *
-   * When the selection is collapsed and inside the text with the `AlightExistingDocumentLinkPluginHref` attribute, the attribute value will be updated.
+   * When the selection is collapsed and inside the text with the `alightExistingDocumentLinkPluginHref` attribute, the attribute value will be updated.
    *
    * @fires execute
    * @param href AlightExistingDocumentLinkPlugin destination.
@@ -148,18 +148,18 @@ export default class AlightExistingDocumentLinkPluginCommand extends Command {
       if (selection.isCollapsed) {
         const position = selection.getFirstPosition()!;
 
-        // When selection is inside text with `AlightExistingDocumentLinkPluginHref` attribute.
-        if (selection.hasAttribute('AlightExistingDocumentLinkPluginHref')) {
+        // When selection is inside text with `alightExistingDocumentLinkPluginHref` attribute.
+        if (selection.hasAttribute('alightExistingDocumentLinkPluginHref')) {
           // Get the link range
           const linkRange = findAttributeRange(
             position,
-            'AlightExistingDocumentLinkPluginHref',
-            selection.getAttribute('AlightExistingDocumentLinkPluginHref'),
+            'alightExistingDocumentLinkPluginHref',
+            selection.getAttribute('alightExistingDocumentLinkPluginHref'),
             model
           );
 
           // Update the existing link with the new href
-          writer.setAttribute('AlightExistingDocumentLinkPluginHref', href, linkRange);
+          writer.setAttribute('alightExistingDocumentLinkPluginHref', href, linkRange);
 
           // Find and remove orgnameattr attribute if it exists
           this._removeOrgnameAttr(writer, linkRange);
@@ -167,17 +167,17 @@ export default class AlightExistingDocumentLinkPluginCommand extends Command {
           // If it's a existing document link and we have format and name, set these attributes
           if (isExistingDocument) {
             if (linkFormat) {
-              writer.setAttribute('AlightExistingDocumentLinkPluginFormat', linkFormat, linkRange);
+              writer.setAttribute('alightExistingDocumentLinkPluginFormat', linkFormat, linkRange);
             } else {
-              writer.setAttribute('AlightExistingDocumentLinkPluginFormat', 'standard', linkRange);
+              writer.setAttribute('alightExistingDocumentLinkPluginFormat', 'standard', linkRange);
             }
 
             // Extract and set link name for existing document links
             const extractedLinkId = extractExternalDocumentLinkId(href);
             if (extractedLinkId) {
-              writer.setAttribute('AlightExistingDocumentLinkPluginLinkName', extractedLinkId, linkRange);
+              writer.setAttribute('alightExistingDocumentLinkPluginLinkName', extractedLinkId, linkRange);
             } else if (linkName) {
-              writer.setAttribute('AlightExistingDocumentLinkPluginLinkName', linkName, linkRange);
+              writer.setAttribute('alightExistingDocumentLinkPluginLinkName', linkName, linkRange);
             }
           }
 
@@ -194,20 +194,20 @@ export default class AlightExistingDocumentLinkPluginCommand extends Command {
           // Put the selection back where it was
           writer.setSelection(position);
         }
-        // If not then insert text node with `AlightExistingDocumentLinkPluginHref` attribute in place of caret.
+        // If not then insert text node with `alightExistingDocumentLinkPluginHref` attribute in place of caret.
         else if (href !== '') {
           const attributes = toMap(selection.getAttributes());
 
-          attributes.set('AlightExistingDocumentLinkPluginHref', href);
+          attributes.set('alightExistingDocumentLinkPluginHref', href);
 
           // If it's a existing document link, set format attribute
           if (isExistingDocument) {
-            attributes.set('AlightExistingDocumentLinkPluginFormat', 'standard');
+            attributes.set('alightExistingDocumentLinkPluginFormat', 'standard');
 
             // Extract and set link name for existing document links
             const extractedLinkId = extractExternalDocumentLinkId(href);
             if (extractedLinkId) {
-              attributes.set('AlightExistingDocumentLinkPluginLinkName', extractedLinkId);
+              attributes.set('alightExistingDocumentLinkPluginLinkName', extractedLinkId);
             }
           }
 
@@ -224,33 +224,33 @@ export default class AlightExistingDocumentLinkPluginCommand extends Command {
           writer.setSelection(positionAfter);
         }
 
-        // Remove the `AlightExistingDocumentLinkPluginHref` attribute and all link decorators from the selection.
+        // Remove the `alightExistingDocumentLinkPluginHref` attribute and all link decorators from the selection.
         // It stops adding a new content into the link element.
-        ['AlightExistingDocumentLinkPluginHref', 'AlightExistingDocumentLinkPluginFormat', 'AlightExistingDocumentLinkPluginLinkName',
+        ['alightExistingDocumentLinkPluginHref', 'alightExistingDocumentLinkPluginFormat', 'alightExistingDocumentLinkPluginLinkName',
           ...truthyManualDecorators, ...falsyManualDecorators].forEach(item => {
             writer.removeSelectionAttribute(item);
           });
       } else {
         // If selection has non-collapsed ranges, we change attribute on nodes inside those ranges
         // WITHOUT REMOVING THEM - just applying the href attribute
-        const ranges = model.schema.getValidRanges(selection.getRanges(), 'AlightExistingDocumentLinkPluginHref');
+        const ranges = model.schema.getValidRanges(selection.getRanges(), 'alightExistingDocumentLinkPluginHref');
 
         // Process each range
         for (const range of ranges) {
           // Find and remove orgnameattr attribute if it exists
           this._removeOrgnameAttr(writer, range);
 
-          // Set the AlightExistingDocumentLinkPluginHref attribute on the selected text
-          writer.setAttribute('AlightExistingDocumentLinkPluginHref', href, range);
+          // Set the alightExistingDocumentLinkPluginHref attribute on the selected text
+          writer.setAttribute('alightExistingDocumentLinkPluginHref', href, range);
 
           // If it's a existing document link, set format attribute
           if (isExistingDocument) {
-            writer.setAttribute('AlightExistingDocumentLinkPluginFormat', 'standard', range);
+            writer.setAttribute('alightExistingDocumentLinkPluginFormat', 'standard', range);
 
             // Extract and set link name for existing document links
             const extractedLinkId = extractExternalDocumentLinkId(href);
             if (extractedLinkId) {
-              writer.setAttribute('AlightExistingDocumentLinkPluginLinkName', extractedLinkId, range);
+              writer.setAttribute('alightExistingDocumentLinkPluginLinkName', extractedLinkId, range);
             }
           }
 

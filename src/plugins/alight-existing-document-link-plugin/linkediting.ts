@@ -47,7 +47,7 @@ const EXTERNAL_LINKS_REGEXP = /^(https?:)?\/\//;
 /**
  * The link engine feature.
  *
- * It introduces the `AlightExistingDocumentLinkPluginHref="url"` attribute in the model which renders to the view as a `<a href="url">` element
+ * It introduces the `alightExistingDocumentLinkPluginHref="url"` attribute in the model which renders to the view as a `<a href="url">` element
  * as well as `'link'` and `'unlink'` commands.
  */
 export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
@@ -93,7 +93,7 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
     const allowedProtocols = this.editor.config.get('link.allowedProtocols');
 
     // Allow link attribute on all inline nodes.
-    editor.model.schema.extend('$text', { allowAttributes: 'AlightExistingDocumentLinkPluginHref' });
+    editor.model.schema.extend('$text', { allowAttributes: 'alightExistingDocumentLinkPluginHref' });
 
     // For storing additional link data
     editor.model.schema.extend('$text', { allowAttributes: 'AlightExistingDocumentPluginLinkName' });
@@ -138,7 +138,7 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
 
     // Setup both data and editing downcast converters using the common function
     editor.conversion.for('dataDowncast').attributeToElement({
-      model: 'AlightExistingDocumentLinkPluginHref',
+      model: 'alightExistingDocumentLinkPluginHref',
       view: (href, conversionApi) => {
         // Skip conversion if no href is provided
         if (!href) {
@@ -149,7 +149,7 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
     });
 
     editor.conversion.for('editingDowncast').attributeToElement({
-      model: 'AlightExistingDocumentLinkPluginHref',
+      model: 'alightExistingDocumentLinkPluginHref',
       view: (href, conversionApi) => {
         // Skip conversion if no href is provided
         if (!href) {
@@ -170,7 +170,7 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
           }
         },
         model: {
-          key: 'AlightExistingDocumentLinkPluginHref',
+          key: 'alightExistingDocumentLinkPluginHref',
           value: (viewElement: ViewElement) => {
             // First check if it's a existing document link with data-id attribute
             const dataId = viewElement.getAttribute('data-id');
@@ -207,7 +207,7 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
           classes: 'document_tag'
         },
         model: {
-          key: 'AlightExistingDocumentLinkPluginHref',
+          key: 'alightExistingDocumentLinkPluginHref',
           value: (viewElement: ViewElement) => {
             // Always add target="_blank" to links during upcast
             viewElement._setAttribute('target', '_blank');
@@ -271,12 +271,12 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
     this._enableManualDecorators(linkDecorators
       .filter((item): item is NormalizedLinkDecoratorManualDefinition => item.mode === DECORATOR_MANUAL));
 
-    // Enable two-step caret movement for `AlightExistingDocumentLinkPluginHref` attribute.
+    // Enable two-step caret movement for `alightExistingDocumentLinkPluginHref` attribute.
     const twoStepCaretMovementPlugin = editor.plugins.get(TwoStepCaretMovement);
-    twoStepCaretMovementPlugin.registerAttribute('AlightExistingDocumentLinkPluginHref');
+    twoStepCaretMovementPlugin.registerAttribute('alightExistingDocumentLinkPluginHref');
 
     // Setup highlight over selected link.
-    inlineHighlight(editor, 'AlightExistingDocumentLinkPluginHref', 'a', HIGHLIGHT_CLASS);
+    inlineHighlight(editor, 'alightExistingDocumentLinkPluginHref', 'a', HIGHLIGHT_CLASS);
 
     // Handle link following by CTRL+click or ALT+ENTER
     this._enableLinkOpen();
@@ -437,7 +437,7 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
   }
 
   /**
-   * Watches the DocumentSelection attribute changes and removes link decorator attributes when the AlightExistingDocumentLinkPluginHref attribute is removed.
+   * Watches the DocumentSelection attribute changes and removes link decorator attributes when the alightExistingDocumentLinkPluginHref attribute is removed.
    *
    * This is to ensure that there is no left-over link decorator attributes on the document selection that is no longer in a link.
    */
@@ -447,7 +447,7 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
     const selection = model.document.selection;
 
     this.listenTo<DocumentSelectionChangeAttributeEvent>(selection, 'change:attribute', (evt, { attributeKeys }) => {
-      if (!attributeKeys.includes('AlightExistingDocumentLinkPluginHref') || selection.hasAttribute('AlightExistingDocumentLinkPluginHref')) {
+      if (!attributeKeys.includes('alightExistingDocumentLinkPluginHref') || selection.hasAttribute('alightExistingDocumentLinkPluginHref')) {
         return;
       }
 
@@ -474,10 +474,10 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
         const range = writer.createRangeIn(data.content);
 
         for (const item of range.getItems()) {
-          if (item.hasAttribute('AlightExistingDocumentLinkPluginHref')) {
-            const newLink = addLinkProtocolIfApplicable(item.getAttribute('AlightExistingDocumentLinkPluginHref') as string, defaultProtocol);
+          if (item.hasAttribute('alightExistingDocumentLinkPluginHref')) {
+            const newLink = addLinkProtocolIfApplicable(item.getAttribute('alightExistingDocumentLinkPluginHref') as string, defaultProtocol);
 
-            writer.setAttribute('AlightExistingDocumentLinkPluginHref', newLink, item);
+            writer.setAttribute('alightExistingDocumentLinkPluginHref', newLink, item);
           }
         }
       });
@@ -487,11 +487,11 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
 
 /**
  * Make the selection free of link-related model attributes.
- * All link-related model attributes start with "link". That includes not only "AlightExistingDocumentLinkPluginHref"
+ * All link-related model attributes start with "link". That includes not only "alightExistingDocumentLinkPluginHref"
  * but also all decorator attributes (they have dynamic names), or even custom plugins.
  */
 function removeLinkAttributesFromSelection(writer: Writer, linkAttributes: Array<string>): void {
-  writer.removeSelectionAttribute('AlightExistingDocumentLinkPluginHref');
+  writer.removeSelectionAttribute('alightExistingDocumentLinkPluginHref');
   writer.removeSelectionAttribute('AlightExistingDocumentPluginLinkName');
   writer.removeSelectionAttribute('AlightExistingDocumentLinkPluginFormat');
 
