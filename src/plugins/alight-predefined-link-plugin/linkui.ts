@@ -126,6 +126,11 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
     // Listen for command execution to show balloon
     const linkCommand = editor.commands.get('alight-predefined-link') as AlightPredefinedLinkPluginCommand;
 
+    editor.model.document.on('change:selection', () => {
+      // This will call the refresh() method which checks for selection
+      linkCommand.refresh();
+    });
+
     // Also listen to selection changes to detect when user enters a link or clicks on it
     this.listenTo(editor.editing.view.document, 'selectionChange', () => {
       // Use a small delay to ensure the selection is fully updated
@@ -146,7 +151,8 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
         }
 
         this.isReady = true;
-        this._enablePluginButton();
+        // Remove or comment out this line:
+        // this._enablePluginButton();
       },
       (error) => console.log(error)
     );
@@ -237,7 +243,8 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
       const button = this._createButton(MenuBarMenuListItemButtonView);
 
       button.set({
-        isEnabled: this.isReady,
+        // Remove isReady dependency:
+        // isEnabled: this.isReady,
         role: 'menuitemcheckbox'
       });
 
@@ -254,14 +261,17 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
     const t = locale.t;
 
     this.buttonView.set({
-      isEnabled: this.isReady,
+      isEnabled: false, // Start disabled
       label: t('Predefined link'),
       icon: ToolBarIcon,
       isToggleable: true,
       withText: true
     });
 
-    this.buttonView.bind('isEnabled').to(command, 'isEnabled', (command) => command && this.isReady);
+    // Only bind to the command's isEnabled state
+    this.buttonView.bind('isEnabled').to(command, 'isEnabled');
+
+    // Keep the binding for isOn state
     this.buttonView.bind('isOn').to(command, 'value', value => !!value);
 
     // Show the modal dialog on button click for creating new links

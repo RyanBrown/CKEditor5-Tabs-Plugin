@@ -75,7 +75,16 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
       this.isEnabled = model.schema.checkAttribute(selectedElement, 'alightPredefinedLinkPluginHref');
     } else {
       this.value = selection.getAttribute('alightPredefinedLinkPluginHref') as string | undefined;
-      this.isEnabled = model.schema.checkAttributeInSelection(selection, 'alightPredefinedLinkPluginHref');
+
+      // The key change: Only enable if there's a non-collapsed selection OR
+      // if the cursor is inside an existing link (to allow editing it)
+      const hasNonCollapsedSelection = !selection.isCollapsed;
+      const isInsideLink = this.value !== undefined;
+
+      // Only enable the command if schema allows AND we have a text selection
+      // or we're inside an existing link
+      this.isEnabled = model.schema.checkAttributeInSelection(selection, 'alightPredefinedLinkPluginHref') &&
+        (hasNonCollapsedSelection || isInsideLink);
     }
 
     for (const manualDecorator of this.manualDecorators) {
