@@ -140,7 +140,8 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
         this._documentLinks = data || []; // Add null check
         if (this.verboseMode) console.log(data);
         this.isReady = true;
-        this._enablePluginButton();
+        // Remove this line:
+        // this._enablePluginButton();
       },
       (error) => console.log(error)
     );
@@ -231,12 +232,13 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
   // Creates a toolbar AlightExistingDocumentPlugin button. Clicking this button will show the modal dialog.
   private _createToolbarLinkButton(): void {
     const editor = this.editor;
+    const command = editor.commands.get('alight-existing-document-link')!;
 
     editor.ui.componentFactory.add('menuBar:AlightExistingDocumentLinkPlugin', () => {
       const button = this._createButton(MenuBarMenuListItemButtonView);
 
       button.set({
-        isEnabled: this.isReady,
+        // Remove isReady dependency
         role: 'menuitemcheckbox'
       });
 
@@ -253,14 +255,15 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
     const t = locale.t;
 
     this.buttonView.set({
-      isEnabled: this.isReady,
+      isEnabled: false, // Start disabled
       label: t('Existing document link'),
       icon: ToolBarIcon,
       isToggleable: true,
       withText: true
     });
 
-    this.buttonView.bind('isEnabled').to(command, 'isEnabled', (command) => command && this.isReady);
+    // Only bind to the command's isEnabled state
+    this.buttonView.bind('isEnabled').to(command, 'isEnabled');
     this.buttonView.bind('isOn').to(command, 'value', value => !!value);
 
     // Show the modal dialog on button click for creating new links

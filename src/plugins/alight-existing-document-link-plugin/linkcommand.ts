@@ -74,7 +74,13 @@ export default class AlightExistingDocumentLinkPluginCommand extends Command {
       this.isEnabled = model.schema.checkAttribute(selectedElement, 'AlightExistingDocumentLinkPluginHref');
     } else {
       this.value = selection.getAttribute('AlightExistingDocumentLinkPluginHref') as string | undefined;
-      this.isEnabled = model.schema.checkAttributeInSelection(selection, 'AlightExistingDocumentLinkPluginHref');
+
+      // Only enable if there's a non-collapsed selection OR the cursor is inside an existing link
+      const hasNonCollapsedSelection = !selection.isCollapsed;
+      const isInsideLink = this.value !== undefined;
+
+      this.isEnabled = model.schema.checkAttributeInSelection(selection, 'AlightExistingDocumentLinkPluginHref') &&
+        (hasNonCollapsedSelection || isInsideLink);
     }
 
     for (const manualDecorator of this.manualDecorators) {
