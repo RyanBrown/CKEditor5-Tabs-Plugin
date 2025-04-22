@@ -313,7 +313,7 @@ export class ContentManager implements ILinkManager {
           <li><strong>Description:</strong> ${link.predefinedLinkDescription || 'No description available'}</li>
           <li><strong>Base/Client Specific:</strong> ${link.baseOrClientSpecific || 'Unknown'}</li>
           <li><strong>Page Type:</strong> ${link.pageType || 'Unknown'}</li>
-          <li class="wrap-text"><strong>Destination:</strong> ${link.destination || 'No URL'}</li>
+          <li><strong>Destination:</strong> ${link.destination || 'No URL'}</li>
           ${link.pageCode ? `<li><strong>Page Code:</strong> ${link.pageCode}</li>` : ''}
           <li><strong>Domain:</strong> ${link.domain}</li>
         </ul>

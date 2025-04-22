@@ -314,7 +314,7 @@ export class ContentManager implements ILinkManager {
           <li><strong>Language:</strong> ${link.locale || 'Unknown'}</li>
           <li><strong>File Type:</strong> ${link.fileType || 'Unknown'}</li>
           ${link.documentDescription ? `<li><strong>Description:</strong> ${link.documentDescription}</li>` : ''}
-          <li class="wrap-text"><strong>Path:</strong> ${link.serverFilePath || 'No URL'}</li>
+          <li><strong>Path:</strong> ${link.serverFilePath || 'No URL'}</li>
         </ul>
       </div>
     `;

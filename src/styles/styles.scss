@@ -330,18 +330,10 @@ $spacing-values: (
     width: 100%;
 
     li {
+      word-break: break-all;
+
       &:first-child {
         font-size: var(--font-size-base);
-      }
-
-      &.hide-overflow {
-        box-sizing: border-box;
-        display: block;
-        max-width: 90%;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        width: 100%;
       }
     }
   }
