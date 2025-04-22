@@ -123,6 +123,15 @@ export default class AlightExternalLinkPluginUI extends Plugin {
       }
     });
 
+    // Listen to selection changes to ensure UI state is updated
+    this.listenTo(editor.model.document, 'change:data', () => {
+      // Force refresh the command on selection changes
+      const linkCommand = editor.commands.get('alight-external-link');
+      if (linkCommand) {
+        linkCommand.refresh();
+      }
+    });
+
     // Enable balloon-modal interactions
     this._enableBalloonInteractions();
 
@@ -207,10 +216,36 @@ export default class AlightExternalLinkPluginUI extends Plugin {
     view.bind('isEnabled').to(command, 'isEnabled');
     view.bind('isOn').to(command, 'value', value => !!value);
 
+    // Listen to selection changes to update button state
+    this.listenTo(editor.model.document, 'change:data', () => {
+      view.set('isEnabled', this._shouldEnableButton());
+    });
+
     // Show the modal dialog on button click for creating new links
     this.listenTo(view, 'execute', () => this._showUI());
 
     return view;
+  }
+
+  /**
+   * Determines whether the button should be enabled based on selection state
+   * @returns True if the button should be enabled, false otherwise
+   */
+  private _shouldEnableButton(): boolean {
+    const editor = this.editor;
+    const command = editor.commands.get('alight-external-link')!;
+    const selection = editor.model.document.selection;
+
+    // If the command itself is disabled, button should be disabled too
+    if (!command.isEnabled) {
+      return false;
+    }
+
+    // Enable if text is selected (not collapsed) or cursor is in an existing link
+    const hasSelection = !selection.isCollapsed;
+    const isInLink = selection.hasAttribute('alightExternalLinkPluginHref');
+
+    return hasSelection || isInLink;
   }
 
   /**
