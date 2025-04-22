@@ -73,7 +73,16 @@ export default class AlightEmailLinkPluginCommand extends Command {
       this.isEnabled = model.schema.checkAttribute(selectedElement, 'alightEmailLinkPluginHref');
     } else {
       this.value = selection.getAttribute('alightEmailLinkPluginHref') as string | undefined;
-      this.isEnabled = model.schema.checkAttributeInSelection(selection, 'alightEmailLinkPluginHref');
+
+      // Determine if the command should be enabled based on selection state and schema
+      const schemaAllowsAttribute = model.schema.checkAttributeInSelection(selection, 'alightEmailLinkPluginHref');
+      const hasSelection = !selection.isCollapsed;
+      const isInLink = selection.hasAttribute('alightEmailLinkPluginHref');
+
+      // The command should be enabled only if:
+      // 1. The schema allows the attribute AND
+      // 2. Either there is a text selection OR the cursor is inside an existing link
+      this.isEnabled = schemaAllowsAttribute && (hasSelection || isInLink);
     }
 
     for (const manualDecorator of this.manualDecorators) {
