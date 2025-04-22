@@ -310,6 +310,7 @@ $spacing-values: (
   align-items: center;
   border-bottom: 1px solid var(--gray-400);
   display: flex;
+  font-size: var(--font-size-sm);
   padding: 0;
   transition: background-color 0.15s;
 
@@ -329,6 +330,10 @@ $spacing-values: (
     width: 100%;
 
     li {
+      &:first-child {
+        font-size: var(--font-size-base);
+      }
+
       &.hide-overflow {
         box-sizing: border-box;
         display: block;
@@ -368,6 +373,41 @@ $spacing-values: (
     vertical-align: middle;
     white-space: nowrap;
   }
+}
+
+// Current selected link
+.current-url-info {
+  background-color: #eef5ff;
+  border-bottom: 1px solid var(--gray-400);
+  padding-top: .5rem;
+
+  .cka-link-item {
+    &:hover {
+      background-color: transparent;
+      cursor: default;
+    }
+  }
+
+  h3 {
+    background-color: var(--info-background);
+    border-radius: .5rem;
+    border: 1px solid var(--core-tropical-blue);
+    box-shadow: rgba(38, 107, 227, .2) 0 1px 2px;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-normal);
+    margin: 0 .5rem;
+    padding: .5rem 1rem;
+  }
+
+  .cka-note-message {
+    padding: 1rem var(--spacing-xl);
+  }
+}
+
+// Pagination
+.pagination-controls {
+  align-items: center;
+  display: flex;
 }
 
 // Center info text modals

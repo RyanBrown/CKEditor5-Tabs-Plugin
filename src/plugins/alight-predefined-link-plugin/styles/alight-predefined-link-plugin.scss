@@ -20,31 +20,16 @@
   }
 }
 
-.current-url-info {
-  background-color: #eef5ff;
-  border-bottom: 1px solid var(--gray-400);
-
-  h3 {
-    border-bottom: 2px solid var(--gray-400);
-    font-weight: var(--font-weight-normal);
-    margin: 0;
-    padding: 1rem var(--spacing-xl);
-  }
-
-  .cka-note-message {
-    padding: 1rem var(--spacing-xl);
-  }
-}
-
 .filter-section {
-  h4:first-of-type {
-    margin-top: 0;
+  h4 {
+    margin: 1rem 0 .5rem;
   }
-}
 
-.pagination-controls {
-  align-items: center;
-  display: flex;
+  &:first-of-type {
+    h4 {
+      margin: .5rem 0;
+    }
+  }
 }
 
 .ck.ck-link-actions .ck-button.ck-link-actions__preview.cka-disabled-link-preview .ck-button__label {
