@@ -134,6 +134,14 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
       linkName = selection.getAttribute('alightPredefinedLinkPluginLinkName') as string;
     }
 
+    // For predefined links, always use the link name from the href or the current linkName
+    if (isPredefined) {
+      // If we don't have a link name yet, extract it from the href
+      if (!linkName) {
+        linkName = extractPredefinedLinkId(href) || href;
+      }
+    }
+
     // Extract decorator options
     const truthyManualDecorators: Array<string> = [];
     const falsyManualDecorators: Array<string> = [];
@@ -172,16 +180,11 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
             if (linkFormat) {
               writer.setAttribute('alightPredefinedLinkPluginFormat', linkFormat, linkRange);
             } else {
-              writer.setAttribute('alightPredefinedLinkPluginFormat', 'standard', linkRange);
+              writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', linkRange);
             }
 
-            // Extract and set link name for predefined links
-            const extractedLinkId = extractPredefinedLinkId(href);
-            if (extractedLinkId) {
-              writer.setAttribute('alightPredefinedLinkPluginLinkName', extractedLinkId, linkRange);
-            } else if (linkName) {
-              writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, linkRange);
-            }
+            // Use the extracted link name or the provided one
+            writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, linkRange);
           }
 
           // Set truthyManualDecorators attributes
@@ -205,13 +208,8 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
 
           // If it's a predefined link, set format attribute
           if (isPredefined) {
-            attributes.set('alightPredefinedLinkPluginFormat', 'standard');
-
-            // Extract and set link name for predefined links
-            const extractedLinkId = extractPredefinedLinkId(href);
-            if (extractedLinkId) {
-              attributes.set('alightPredefinedLinkPluginLinkName', extractedLinkId);
-            }
+            attributes.set('alightPredefinedLinkPluginFormat', 'ahcustom');
+            attributes.set('alightPredefinedLinkPluginLinkName', linkName);
           }
 
           truthyManualDecorators.forEach(item => {
@@ -248,13 +246,8 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
 
           // If it's a predefined link, set format attribute
           if (isPredefined) {
-            writer.setAttribute('alightPredefinedLinkPluginFormat', 'standard', range);
-
-            // Extract and set link name for predefined links
-            const extractedLinkId = extractPredefinedLinkId(href);
-            if (extractedLinkId) {
-              writer.setAttribute('alightPredefinedLinkPluginLinkName', extractedLinkId, range);
-            }
+            writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', range);
+            writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, range);
           }
 
           // Set truthyManualDecorators attributes

@@ -399,9 +399,10 @@ class AlightEditor extends ClassicEditor {
             id: true,
             onclick: true,
             orgnameattr: true,
-            target: true
+            target: true,
+            class: true
           },
-          classes: ["AHCustomeLink", "document_tag", "*"],
+          classes: ["AHCustomLink", "AHCustomeLink", "document_tag", "*"],
           styles: ["*"]
         }, {
           name: "figure",
@@ -508,16 +509,10 @@ class AlightEditor extends ClassicEditor {
         documentLink: {
           mode: 'manual',
           label: 'Document Link',
-          // attributes: {
-          //   class: 'document_tag'
-          // }
         },
         predefinedLink: {
           mode: 'manual',
           label: 'Predefined Link',
-          // attributes: {
-          //   class: 'AHCustomeLink'
-          // }
         }
       }
     },
@@ -595,7 +590,6 @@ class AlightEditor extends ClassicEditor {
         colorPicker: false,
       },
     },
-    // title: { placeholder: "" },
     placeholder: "",
     licenseKey: LICENSE_KEY,
   };

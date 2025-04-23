@@ -56,7 +56,7 @@ export function isLinkElement(node: ViewNode | ViewDocumentFragment): boolean {
   return (
     node.is('attributeElement') && (
       !!node.getCustomProperty('alight-predefined-link') ||
-      node.hasClass('AHCustomeLink') ||
+      node.hasClass('AHCustomLink') ||
       node.getAttribute('data-id') === 'predefined_link'
     )
   );
@@ -80,16 +80,28 @@ export function isPredefinedLink(url: string | null | undefined): boolean {
 export function createLinkElement(href: string, { writer }: DowncastConversionApi): ViewAttributeElement {
   // Check if this is a predefined link
   const isPredefined = isPredefinedLink(href);
-  const attributes: Record<string, string> = { href };
 
-  // Add data-id for predefined links
-  if (isPredefined) {
-    attributes['data-id'] = 'predefined_link';
-  }
+  // Extract link name if it's a predefined link
+  const linkName = extractPredefinedLinkId(href) || href;
 
-  // Create the base link element
-  // Priority 5 - https://github.com/ckeditor/ckeditor5-link/issues/121.
-  const linkElement = writer.createAttributeElement('a', attributes, { priority: 5 });
+  // Create the attribute element with necessary attributes
+  const linkElement = writer.createAttributeElement('a', {
+    'href': '#',
+    'class': 'AHCustomLink',
+    'data-id': 'predefined_link'
+  }, {
+    priority: 5
+  });
+
+  // Create the ah:link element as a child element
+  const ahLinkElement = writer.createAttributeElement('ah:link', {
+    'name': linkName
+  });
+
+  // We need to wrap content with this structure manually during conversion
+  // rather than trying to set it up here
+
+  // Set custom property for link identification
   writer.setCustomProperty('alight-predefined-link', true, linkElement);
 
   return linkElement;
@@ -304,7 +316,7 @@ export function extractPredefinedLinkId(href: string | null | undefined): string
 
 // Add a function to check if an element has AHCustomeLink class
 export function hasAHCustomeLinkClass(element: ViewAttributeElement): boolean {
-  return element.hasClass('AHCustomeLink');
+  return element.hasClass('AHCustomLink');
 }
 
 /**
@@ -326,7 +338,7 @@ export function filterLinkAttributes(attributes: Record<string, string>): Record
     if (key === 'href' && (attributes[key] === '' || attributes[key] === '#')) {
       // Keep empty href only for predefined links
       if (attributes['data-id'] === 'predefined_link') {
-        result[key] = '#predefined-link';
+        result[key] = '#';
       } else {
         result[key] = '#';
       }
