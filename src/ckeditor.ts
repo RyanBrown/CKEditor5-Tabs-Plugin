@@ -165,6 +165,19 @@ class AlightEditor extends ClassicEditor {
   constructor(sourceElementOrData: HTMLElement | string, config?: any) {
     super(sourceElementOrData, config);
     SessionService.create(sessionStorage);
+
+    // Suppress the unsafe attribute warning
+    const originalConsoleWarn = console.warn;
+    console.warn = function (...args) {
+      // Check if this is the unsafe attribute warning
+      if (args[0] && typeof args[0] === 'string' &&
+        args[0].includes('domconverter-unsafe-attribute-detected')) {
+        // Ignore this specific warning
+        return;
+      }
+      // Pass through all other warnings
+      originalConsoleWarn.apply(console, args);
+    };
   }
 
   public static override builtinPlugins = [

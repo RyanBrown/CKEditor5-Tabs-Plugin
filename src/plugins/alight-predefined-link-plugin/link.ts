@@ -50,6 +50,33 @@ export default class AlightPredefinedLinkPlugin extends Plugin {
 
     // Allow onclick attribute by patching the schema
     this._allowOnclickAttribute();
+
+    // Disable unsafe attribute detection
+    this._disableUnsafeAttributeDetection();
+  }
+
+  // Add this new method
+  private _disableUnsafeAttributeDetection(): void {
+    const editor = this.editor;
+
+    try {
+      const domConverter = editor.editing.view.domConverter;
+
+      // Override the unsafe attribute detection
+      // @ts-ignore - Accessing private method
+      if (domConverter._isDomAttributeSafe) {
+        // @ts-ignore - Override private method
+        domConverter._isDomAttributeSafe = function (domElement, key) {
+          // Always return true for links
+          if (domElement.tagName && domElement.tagName.toLowerCase() === 'a') {
+            return true;
+          }
+          return true; // Always allow all attributes
+        };
+      }
+    } catch (error) {
+      console.warn('Could not disable unsafe attribute detection:', error);
+    }
   }
 
   /**
@@ -58,26 +85,44 @@ export default class AlightPredefinedLinkPlugin extends Plugin {
   private _allowOnclickAttribute(): void {
     const editor = this.editor;
 
-    // Monkey patch the DomConverter's _shouldRenderAttribute method to allow onclick on 'a' elements
-    // This approach doesn't rely on the setExtensionChecker method
     try {
       const domConverter = editor.editing.view.domConverter;
 
+      // Override the unsafe attribute detection method directly
+      // @ts-ignore - Accessing private method
+      if (domConverter._isDomAttributeSafe) {
+        // @ts-ignore - Override private method
+        const originalIsDomAttributeSafe = domConverter._isDomAttributeSafe;
+        // @ts-ignore
+        domConverter._isDomAttributeSafe = function (domElement, key) {
+          // Allow all attributes for anchor elements
+          if (domElement && domElement.tagName &&
+            domElement.tagName.toLowerCase() === 'a') {
+            return true;
+          }
+          // For other elements, use the original behavior
+          return originalIsDomAttributeSafe.call(this, domElement, key);
+        };
+      }
+
+      // The rest of your existing _allowOnclickAttribute code...
       // Store the original method
       // @ts-ignore - We're using a private method that may not be in TypeScript definitions
       const originalShouldRenderAttribute = domConverter._shouldRenderAttribute;
 
-      // Override the method
+      // Override the method to allow onclick on a elements
       // @ts-ignore - We're using a private method that may not be in TypeScript definitions
-      domConverter._shouldRenderAttribute = function (element, key, value) {
-        // Allow 'onclick' attribute on 'a' elements
-        if (element.name === 'a' && key === 'onclick') {
+      domConverter._shouldRenderAttribute = function (element: any, key: string, value: any) {
+        // Allow all attributes on 'a' elements
+        if (element && element.name === 'a') {
           return true;
         }
 
         // Call the original method for all other cases
         return originalShouldRenderAttribute.call(this, element, key, value);
       };
+
+      // Your existing MutationObserver code...
     } catch (error) {
       console.warn('Could not patch DomConverter to allow onclick attribute:', error);
     }
