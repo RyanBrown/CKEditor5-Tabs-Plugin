@@ -92,6 +92,9 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
     const editor = this.editor;
     const allowedProtocols = this.editor.config.get('link.allowedProtocols');
 
+    // Patch the DomConverter to allow the onclick attribute
+    this._allowOnclickAttribute();
+
     // Allow link attribute on all inline nodes.
     editor.model.schema.extend('$text', { allowAttributes: 'alightPredefinedLinkPluginHref' });
 
@@ -113,12 +116,15 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
       // Define all required attributes for the link - using data-* attributes which are safe
       const attributes = {
         'href': linkId,
-        'onclick': linkId, // Add onclick with the same value as href
         'data-id': 'predefined_link'
       };
 
       // Create the link element
       const linkElement = conversionApi.writer.createAttributeElement('a', attributes, { priority: 5 });
+
+      // Add onclick attribute separately - simply use the href value for now
+      // We can't safely access custom properties here, so just use the href value
+      conversionApi.writer.setAttribute('onclick', linkId, linkElement);
 
       // Add the required class
       conversionApi.writer.addClass('AHCustomeLink', linkElement);
@@ -155,10 +161,19 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           value: (viewElement: ViewElement) => {
             // First check if it's a predefined link with data-id attribute
             const dataId = viewElement.getAttribute('data-id');
-            const dataLinkName = viewElement.getAttribute('data-link-name');
 
             // Always add target="_blank" for links during upcast
             viewElement._setAttribute('target', '_blank');
+
+            // We can check for the unsafe attribute, but we don't need to store it
+            // as a custom property - we'll just use the href value during downcast
+            const hasOnclick = viewElement.hasAttribute('onclick') ||
+              viewElement.hasAttribute('data-ck-unsafe-attribute-onclick');
+
+            // Remove the unsafe attribute if it exists to prevent it from being preserved
+            if (viewElement.hasAttribute('data-ck-unsafe-attribute-onclick')) {
+              viewElement._removeAttribute('data-ck-unsafe-attribute-onclick');
+            }
 
             // If it has predefined link attributes, use the link name as href
             if (dataId === 'predefined_link') {
@@ -275,6 +290,92 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
   }
 
   /**
+ * Patch the DOM converter to allow onclick attributes on anchor elements
+ * and handle prefixed unsafe attributes
+ */
+  private _allowOnclickAttribute(): void {
+    const editor = this.editor;
+
+    try {
+      const domConverter = editor.editing.view.domConverter;
+
+      // Store the original method
+      // @ts-ignore - We're using a private method that may not be in TypeScript definitions
+      const originalShouldRenderAttribute = domConverter._shouldRenderAttribute;
+
+      // Override the method to allow onclick on a elements
+      // @ts-ignore - We're using a private method that may not be in TypeScript definitions
+      domConverter._shouldRenderAttribute = function (element: any, key: string, value: any) {
+        // Allow 'onclick' attribute on 'a' elements
+        if (element && element.name === 'a' && key === 'onclick') {
+          return true;
+        }
+
+        // Call the original method for all other cases
+        return originalShouldRenderAttribute.call(this, element, key, value);
+      };
+
+      // ---------------------------------------------------------------
+      // Additional fix to convert unsafe attributes during DOM rendering
+      // ---------------------------------------------------------------
+
+      // Create a MutationObserver to detect and fix unsafe attributes in the DOM
+      try {
+        const editorElement = editor.editing.view.getDomRoot();
+
+        if (!editorElement) {
+          return; // Editor element not available yet
+        }
+
+        // Create a mutation observer to monitor the editor's DOM
+        const observer = new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            if (mutation.type === 'attributes' &&
+              mutation.attributeName &&
+              mutation.attributeName.startsWith('data-ck-unsafe-attribute-')) {
+
+              const element = mutation.target as HTMLElement;
+
+              // Only process anchor elements
+              if (element.tagName.toLowerCase() === 'a') {
+                // Extract the real attribute name
+                const realAttrName = mutation.attributeName.replace('data-ck-unsafe-attribute-', '');
+
+                // Get the value from the unsafe attribute
+                const attrValue = element.getAttribute(mutation.attributeName);
+
+                if (attrValue !== null) {
+                  // Set the real attribute
+                  element.setAttribute(realAttrName, attrValue);
+
+                  // Remove the unsafe attribute
+                  element.removeAttribute(mutation.attributeName);
+                }
+              }
+            }
+          });
+        });
+
+        // Start observing the editor element
+        observer.observe(editorElement, {
+          attributes: true,
+          childList: true,
+          subtree: true,
+          attributeFilter: ['data-ck-unsafe-attribute-onclick']
+        });
+
+        // Store the observer on the editor instance so it can be cleaned up later if needed
+        // @ts-ignore - Adding custom property to editor
+        editor._onclickAttributeObserver = observer;
+      } catch (observerError) {
+        console.warn('Could not create mutation observer for unsafe attributes:', observerError);
+      }
+    } catch (error) {
+      console.warn('Could not patch DomConverter to allow onclick attribute:', error);
+    }
+  }
+
+  /**
    * Helper function to check if the URL is a predefined link 
    * This is added here to avoid circular dependency
    */
@@ -343,13 +444,14 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           }
 
           if (manualDecoratorValue) {
-            // Add the onclick attribute to manual decorators
-            const attributes = {
-              ...decorator.attributes,
-              'onclick': item.getAttribute('alightPredefinedLinkPluginHref') // Add onclick matching href
-            };
+            // Create element with base attributes without onclick
+            const element = writer.createAttributeElement('a', decorator.attributes, { priority: 5 });
 
-            const element = writer.createAttributeElement('a', attributes, { priority: 5 });
+            // Add onclick attribute separately using the href value
+            const href = item.getAttribute('alightPredefinedLinkPluginHref');
+            if (href) {
+              writer.setAttribute('onclick', href, element);
+            }
 
             if (decorator.classes) {
               writer.addClass(decorator.classes, element);

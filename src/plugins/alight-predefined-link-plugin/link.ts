@@ -47,6 +47,40 @@ export default class AlightPredefinedLinkPlugin extends Plugin {
 
     // Register additional plugin-specific behaviors
     this._handleLinkInterception();
+
+    // Allow onclick attribute by patching the schema
+    this._allowOnclickAttribute();
+  }
+
+  /**
+   * Allows onclick attribute on anchor elements
+   */
+  private _allowOnclickAttribute(): void {
+    const editor = this.editor;
+
+    // Monkey patch the DomConverter's _shouldRenderAttribute method to allow onclick on 'a' elements
+    // This approach doesn't rely on the setExtensionChecker method
+    try {
+      const domConverter = editor.editing.view.domConverter;
+
+      // Store the original method
+      // @ts-ignore - We're using a private method that may not be in TypeScript definitions
+      const originalShouldRenderAttribute = domConverter._shouldRenderAttribute;
+
+      // Override the method
+      // @ts-ignore - We're using a private method that may not be in TypeScript definitions
+      domConverter._shouldRenderAttribute = function (element, key, value) {
+        // Allow 'onclick' attribute on 'a' elements
+        if (element.name === 'a' && key === 'onclick') {
+          return true;
+        }
+
+        // Call the original method for all other cases
+        return originalShouldRenderAttribute.call(this, element, key, value);
+      };
+    } catch (error) {
+      console.warn('Could not patch DomConverter to allow onclick attribute:', error);
+    }
   }
 
   /**
