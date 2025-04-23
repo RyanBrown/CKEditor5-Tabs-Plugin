@@ -2,8 +2,7 @@
 import { ButtonView, View, ViewCollection, FocusCycler, type FocusableView } from 'ckeditor5/src/ui';
 import { FocusTracker, KeystrokeHandler, type LocaleTranslate, type Locale } from 'ckeditor5/src/utils';
 import { icons } from 'ckeditor5/src/core';
-
-import { ensureSafeUrl, isPredefinedLink, extractPredefinedLinkId } from '../utils';
+import { isPredefinedLink, extractPredefinedLinkId } from '../utils';
 import type { PredefinedLink } from './linkmodal-modal-types';
 
 // See: #8833.
