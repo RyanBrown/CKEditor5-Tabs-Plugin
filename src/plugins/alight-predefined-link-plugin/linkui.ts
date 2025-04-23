@@ -424,7 +424,6 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
   }
 
   // Shows balloon with link actions.
-  // Shows balloon with link actions.
   private _showBalloon(): void {
     if (this.actionsView && this._balloon && !this._balloon.hasView(this.actionsView)) {
       // Make sure the link is still selected before showing balloon
