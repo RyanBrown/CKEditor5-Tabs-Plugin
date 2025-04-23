@@ -380,10 +380,11 @@ class AlightEditor extends ClassicEditor {
         }, {
           name: "a",
           attributes: {
-            id: true,
-            orgnameattr: true,
-            href: true,
             "data-cke-saved-href": true,
+            href: true,
+            id: true,
+            onclick: true,
+            orgnameattr: true,
             target: true
           },
           classes: ["AHCustomeLink", "document_tag", "*"],
