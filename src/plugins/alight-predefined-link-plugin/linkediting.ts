@@ -113,6 +113,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
       // Define all required attributes for the link - using data-* attributes which are safe
       const attributes = {
         'href': linkId,
+        'onclick': linkId, // Add onclick with the same value as href
         'data-id': 'predefined_link'
       };
 
@@ -342,7 +343,13 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           }
 
           if (manualDecoratorValue) {
-            const element = writer.createAttributeElement('a', decorator.attributes, { priority: 5 });
+            // Add the onclick attribute to manual decorators
+            const attributes = {
+              ...decorator.attributes,
+              'onclick': item.getAttribute('alightPredefinedLinkPluginHref') // Add onclick matching href
+            };
+
+            const element = writer.createAttributeElement('a', attributes, { priority: 5 });
 
             if (decorator.classes) {
               writer.addClass(decorator.classes, element);

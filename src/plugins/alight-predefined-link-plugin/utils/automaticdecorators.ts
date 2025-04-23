@@ -40,6 +40,8 @@ export default class AutomaticDecorators {
    *
    * @returns A dispatcher function used as conversion helper in {@link module:engine/conversion/downcasthelpers~DowncastHelpers#add}.
    */
+  // In the AutomaticDecorators class in automaticdecorators.ts
+
   public getDispatcher(): (dispatcher: DowncastDispatcher) => void {
     return dispatcher => {
       dispatcher.on<DowncastAttributeEvent>('attribute:alightPredefinedLinkPluginHref', (evt, data, conversionApi) => {
@@ -60,10 +62,14 @@ export default class AutomaticDecorators {
         const viewSelection = viewWriter.document.selection;
 
         for (const item of this._definitions) {
-          // Build attributes with data-id
+          // Get the href value
+          const href = data.attributeNewValue as string | null;
+
+          // Build attributes including onclick with the same value as href
           const attributes = {
             ...item.attributes,
-            'data-id': 'predefined_link'
+            'data-id': 'predefined_link',
+            'onclick': href // Add onclick with the same value as href
           };
 
           const viewElement = viewWriter.createAttributeElement('a', attributes, {
