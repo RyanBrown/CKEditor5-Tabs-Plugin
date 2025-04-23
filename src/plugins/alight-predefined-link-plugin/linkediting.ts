@@ -116,19 +116,24 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         linkName = extractPredefinedLinkId(href) || href;
       }
 
-      // Create link element - using AttributeElement instead of ContainerElement
-      const linkElement = conversionApi.writer.createAttributeElement('a', {
+      // Create link element - using ContainerElement instead of AttributeElement
+      const linkElement = conversionApi.writer.createContainerElement('a', {
         'href': '#',
         'class': 'AHCustomLink',
         'data-id': 'predefined_link'
-      }, {
-        priority: 5
       });
+
+      // Create the ah:link element
+      const ahLinkElement = conversionApi.writer.createContainerElement('ah:link', {
+        'name': linkName
+      });
+
+      // Add the ah:link element inside the a element
+      conversionApi.writer.append(ahLinkElement, linkElement);
 
       // Set custom property for identification
       conversionApi.writer.setCustomProperty('alight-predefined-link', true, linkElement);
 
-      // Make sure ah:link is handled separately during wrapping
       return linkElement;
     };
 
@@ -157,7 +162,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           data.item.getAttribute('alightPredefinedLinkPluginLinkName') : '';
         const href = data.attributeNewValue || '';
 
-        // 1. Create the 'a' element
+        // Implementation using attribute elements with nesting
         const linkElement = conversionApi.writer.createAttributeElement('a', {
           'href': '#',
           'class': 'AHCustomLink',
@@ -166,41 +171,47 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           priority: 5
         });
 
-        // 2. Create the 'ah:link' element
         const ahLinkElement = conversionApi.writer.createAttributeElement('ah:link', {
           'name': linkName || extractPredefinedLinkId(href) || href
         }, {
-          priority: 4
+          priority: 4,
+          id: 'ah-link-wrapper'
         });
 
         // Set custom property on the link element
         conversionApi.writer.setCustomProperty('alight-predefined-link', true, linkElement);
 
-        // 3. Apply the wrapping - handle selection and text differently
         if (data.item.is('selection')) {
           // For selection, get range
-          const viewSelection = conversionApi.writer.document.selection;
-          const range = viewSelection.getFirstRange();
+          const range = conversionApi.writer.document.selection.getFirstRange();
 
           if (range) {
-            // First, wrap with the link element
-            const wrapped = conversionApi.writer.wrap(range, linkElement);
+            // First wrap with the ah:link element
+            const wrappedWithAhLink = conversionApi.writer.wrap(range, ahLinkElement);
 
-            if (wrapped.length > 0) {
-              // Then wrap the text content with the ah:link element
-              conversionApi.writer.wrap(range, ahLinkElement);
+            if (wrappedWithAhLink.length > 0) {
+              // Then create a range around the ah:link element and wrap with the a element
+              const rangeForOuterWrap = conversionApi.writer.createRange(
+                wrappedWithAhLink[0].start,
+                wrappedWithAhLink[wrappedWithAhLink.length - 1].end
+              );
+              conversionApi.writer.wrap(rangeForOuterWrap, linkElement);
             }
           }
         } else {
           // For model element, get corresponding view range
           const viewRange = conversionApi.mapper.toViewRange(data.range);
 
-          // First, wrap with the link element
-          const wrapped = conversionApi.writer.wrap(viewRange, linkElement);
+          // First wrap with the ah:link element
+          const wrappedWithAhLink = conversionApi.writer.wrap(viewRange, ahLinkElement);
 
-          if (wrapped.length > 0) {
-            // Then wrap with the ah:link element
-            conversionApi.writer.wrap(viewRange, ahLinkElement);
+          if (wrappedWithAhLink.length > 0) {
+            // Then create a range around the ah:link element and wrap with the a element
+            const rangeForOuterWrap = conversionApi.writer.createRange(
+              wrappedWithAhLink[0].start,
+              wrappedWithAhLink[wrappedWithAhLink.length - 1].end
+            );
+            conversionApi.writer.wrap(rangeForOuterWrap, linkElement);
           }
         }
       }, { priority: 'high' });
