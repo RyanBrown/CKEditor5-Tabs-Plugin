@@ -307,7 +307,11 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
       // @ts-ignore - We're using a private method that may not be in TypeScript definitions
       domConverter._shouldRenderAttribute = function (element: any, key: string, value: any) {
         // Allow 'onclick' attribute on 'a' elements
-        if (element && element.name === 'a' && key === 'onclick') {
+        if (element && element.name === 'a' && (
+          key === 'onclick' ||
+          key === 'href' ||
+          key.startsWith('data-ck-unsafe-attribute-')
+        )) {
           return true;
         }
 
@@ -361,7 +365,11 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           attributes: true,
           childList: true,
           subtree: true,
-          attributeFilter: ['data-ck-unsafe-attribute-onclick']
+          attributeFilter: [
+            'data-ck-unsafe-attribute-onclick',
+            'data-ck-unsafe-attribute-href',
+            'data-ck-unsafe-attribute-javascript'
+          ]
         });
 
         // Store the observer on the editor instance so it can be cleaned up later if needed

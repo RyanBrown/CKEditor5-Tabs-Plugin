@@ -380,6 +380,7 @@ class AlightEditor extends ClassicEditor {
         }, {
           name: "a",
           attributes: {
+            "data-*": true,
             "data-cke-saved-href": true,
             href: true,
             id: true,

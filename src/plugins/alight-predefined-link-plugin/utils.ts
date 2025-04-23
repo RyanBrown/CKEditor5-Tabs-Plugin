@@ -37,7 +37,11 @@ const PROTOCOL_REG_EXP = /^((\w+:(\/{2,})?)|(\W))/i;
 const DEFAULT_LINK_PROTOCOLS = [
   'https?',
   'ftps?',
-  'mailto'
+  'mailto',
+  'javascript',  // Allow javascript: protocol
+  'data',        // Allow data: protocol
+  'vbscript',    // Allow vbscript: protocol
+  'file'         // Allow file: protocol
 ];
 
 /**
@@ -106,6 +110,13 @@ export function ensureSafeUrl(url: unknown, allowedProtocols: Array<string> = DE
   // Special handling for predefined links
   if (isPredefinedLink(urlString)) {
     return urlString; // Return unmodified
+  }
+
+  // For javascript: and other protocols, check if they're in allowed protocols
+  for (const protocol of allowedProtocols) {
+    if (urlString.toLowerCase().startsWith(`${protocol}:`)) {
+      return urlString; // Allow if it's in the allowed protocols list
+    }
   }
 
   // Normal URL safety handling for non-predefined links
