@@ -169,7 +169,11 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
 
         // Create the inner ah:link element with HIGHER priority (will be applied as inner)
         const ahLinkElement = conversionApi.writer.createAttributeElement('ah:link', {
-          'name': linkName || extractPredefinedLinkId(href) || href
+          'name': linkName || extractPredefinedLinkId(href) || href,
+          'href': href, // Using href as formattedHref
+          'data-id': 'predefined_link',
+          'data-format': 'ahcustom',
+          'data-link-id': linkName || extractPredefinedLinkId(href) || href
         }, {
           priority: 6
         });
