@@ -372,14 +372,12 @@ class AlightEditor extends ClassicEditor {
           attributes: ["name", "class", "title", "assettype"],
           classes: ["*"],
           styles: ["*"]
-        },
-        {
+        }, {
           name: "ah:link",
           attributes: ["name", "class", "title", "assettype", "data-*"],
           classes: ["*"],
           styles: ["*"]
-        },
-        {
+        }, {
           name: "a",
           attributes: {
             id: true,
@@ -390,14 +388,28 @@ class AlightEditor extends ClassicEditor {
           },
           classes: ["AHCustomeLink", "document_tag", "*"],
           styles: ["*"]
-        },
-        {
+        }, {
+          name: "figure",
+          attributes: true,
+          classes: ["*"],
+          styles: ["*"]
+        }, {
+          name: "img",
+          attributes: {
+            alt: true,
+            src: true,
+            srcset: true,
+            title: true,
+            width: true,
+          },
+          classes: ["*"],
+          styles: ["*"]
+        }, {
           name: "svg",
           attributes: true,
           classes: ["*"],
           styles: ["*"]
-        },
-        {
+        }, {
           name: "span", // Ensure spans inside ah:expr are allowed
           classes: [
             "cka-population-tag",
@@ -406,8 +418,7 @@ class AlightEditor extends ClassicEditor {
             "*" // Added wildcard to allow all classes
           ],
           attributes: ["data-population-name", "data-*"]
-        },
-        {
+        }, {
           name: /^(h[1-6])$/,
           attributes: true, // Allows all attributes, including href from links
           styles: ["*"],

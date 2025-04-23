@@ -108,14 +108,13 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
       const hrefValue = href || '';
 
       // Extract the link ID or generate one if needed
-      const linkId = extractPredefinedLinkId(hrefValue) || ''; // Default is empty if none found
+      const linkId = extractPredefinedLinkId(hrefValue) || hrefValue; // Default to href if not a predefined link
 
-      // Define all required attributes - no target="_blank" here
+      // Define all required attributes for the link - using data-* attributes which are safe
       const attributes = {
         'href': linkId,
         'data-id': 'predefined_link',
-        'data-format': 'ahcustom',
-        'data-link-name': linkId
+        'data-link-action': linkId // Use this attribute for click handling instead of onclick
       };
 
       // Create the link element
@@ -161,14 +160,29 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
             // Always add target="_blank" for links during upcast
             viewElement._setAttribute('target', '_blank');
 
-            if (dataId === 'predefined_link' && dataLinkName) {
+            // Add data-link-action for safe click handling instead of onclick
+            if (dataId === 'predefined_link') {
+              // Get link data from attributes
+              const dataLinkName = viewElement.getAttribute('data-link-name');
+              const href = viewElement.getAttribute('href');
+              const linkData = dataLinkName || href;
+
+              if (linkData) {
+                viewElement._setAttribute('data-link-action', linkData);
+              }
+
               // If it has predefined link attributes, use the link name as href
-              return dataLinkName;
+              return dataLinkName || href;
             }
 
             // Otherwise get the actual href (prefer data-cke-saved-href if available)
             const savedHref = viewElement.getAttribute('data-cke-saved-href');
             const href = savedHref || viewElement.getAttribute('href');
+
+            // Add data-link-action for safe click handling instead of onclick
+            if (href) {
+              viewElement._setAttribute('data-link-action', href);
+            }
 
             // If it's empty or just #, and not a predefined link, don't create a link
             if ((href === '' || href === '#') && !viewElement.hasClass('AHCustomeLink')) {
@@ -198,6 +212,17 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
             const ahLink = viewElement.getChild(0);
             if (ahLink && ahLink.is('element', 'ah:link')) {
               const linkName = ahLink.getAttribute('name');
+
+              // Add data-link-action for safe click handling instead of onclick
+              if (linkName) {
+                viewElement._setAttribute('data-link-action', linkName);
+              } else {
+                // If no linkName is found, use href as fallback
+                const href = viewElement.getAttribute('href');
+                if (href) {
+                  viewElement._setAttribute('data-link-action', href);
+                }
+              }
 
               // Check for orgnameattr attribute on the ah:link element
               const orgnameattr = ahLink.getAttribute('orgnameattr');
@@ -268,6 +293,17 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
 
     // Handle adding default protocol to pasted links.
     this._enableClipboardIntegration();
+  }
+
+  /**
+   * Helper function to check if the URL is a predefined link 
+   * This is added here to avoid circular dependency
+   */
+  private isPredefinedLink(url: string | null | undefined): boolean {
+    // If the URL is empty, null, or undefined, it's not a predefined link
+    if (!url) return false;
+
+    return true;
   }
 
   /**
@@ -489,4 +525,14 @@ function getLinkAttributesAllowedOnText(schema: Schema): Array<string> {
   const textAttributes = schema.getDefinition('$text')!.allowAttributes;
 
   return textAttributes.filter(attribute => attribute.startsWith('link'));
+}
+
+/**
+ * Helper function to check if a URL is a predefined link
+ */
+function isPredefinedLink(url: string | null | undefined): boolean {
+  // If the URL is empty, null, or undefined, it's not a predefined link
+  if (!url) return false;
+
+  return true;
 }
