@@ -60,7 +60,7 @@ export default class AutomaticDecorators {
         const viewSelection = viewWriter.document.selection;
 
         for (const item of this._definitions) {
-          // Build attributes without onclick
+          // Build attributes
           const attributes = {
             ...item.attributes,
             'data-id': 'predefined_link'
@@ -69,14 +69,6 @@ export default class AutomaticDecorators {
           const viewElement = viewWriter.createAttributeElement('a', attributes, {
             priority: 5
           });
-
-          // Add onclick separately - just use the href value directly
-          // We can't access custom properties safely here because of type limitations
-          const href = data.attributeNewValue as string | null;
-
-          if (href) {
-            viewWriter.setAttribute('onclick', href, viewElement);
-          }
 
           if (item.classes) {
             viewWriter.addClass(item.classes, viewElement);

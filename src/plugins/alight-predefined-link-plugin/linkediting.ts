@@ -92,9 +92,6 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
     const editor = this.editor;
     const allowedProtocols = this.editor.config.get('link.allowedProtocols');
 
-    // Patch the DomConverter to allow the onclick attribute
-    this._allowOnclickAttribute();
-
     // Allow link attribute on all inline nodes.
     editor.model.schema.extend('$text', { allowAttributes: 'alightPredefinedLinkPluginHref' });
 
@@ -121,10 +118,6 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
 
       // Create the link element
       const linkElement = conversionApi.writer.createAttributeElement('a', attributes, { priority: 5 });
-
-      // Add onclick attribute separately - simply use the href value for now
-      // We can't safely access custom properties here, so just use the href value
-      conversionApi.writer.setAttribute('onclick', linkId, linkElement);
 
       // Add the required class
       conversionApi.writer.addClass('AHCustomeLink', linkElement);
@@ -164,16 +157,6 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
 
             // Always add target="_blank" for links during upcast
             viewElement._setAttribute('target', '_blank');
-
-            // We can check for the unsafe attribute, but we don't need to store it
-            // as a custom property - we'll just use the href value during downcast
-            const hasOnclick = viewElement.hasAttribute('onclick') ||
-              viewElement.hasAttribute('data-ck-unsafe-attribute-onclick');
-
-            // Remove the unsafe attribute if it exists to prevent it from being preserved
-            if (viewElement.hasAttribute('data-ck-unsafe-attribute-onclick')) {
-              viewElement._removeAttribute('data-ck-unsafe-attribute-onclick');
-            }
 
             // If it has predefined link attributes, use the link name as href
             if (dataId === 'predefined_link') {
@@ -290,56 +273,6 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
   }
 
   /**
- * Patch the DOM converter to allow onclick attributes on anchor elements
- * and handle prefixed unsafe attributes
- */
-  private _allowOnclickAttribute(): void {
-    const editor = this.editor;
-
-    try {
-      const domConverter = editor.editing.view.domConverter;
-
-      // Override the unsafe attribute detection method directly
-      // @ts-ignore - Accessing private method
-      if (domConverter._isDomAttributeSafe) {
-        // @ts-ignore - Override private method
-        const originalIsDomAttributeSafe = domConverter._isDomAttributeSafe;
-        // @ts-ignore
-        domConverter._isDomAttributeSafe = function (domElement, key) {
-          // Allow all attributes for anchor elements
-          if (domElement && domElement.tagName &&
-            domElement.tagName.toLowerCase() === 'a') {
-            return true;
-          }
-          // For other elements, use the original behavior
-          return originalIsDomAttributeSafe.call(this, domElement, key);
-        };
-      }
-
-      // The rest of your existing _allowOnclickAttribute code...
-      // Store the original method
-      // @ts-ignore - We're using a private method that may not be in TypeScript definitions
-      const originalShouldRenderAttribute = domConverter._shouldRenderAttribute;
-
-      // Override the method to allow onclick on a elements
-      // @ts-ignore - We're using a private method that may not be in TypeScript definitions
-      domConverter._shouldRenderAttribute = function (element: any, key: string, value: any) {
-        // Allow all attributes on 'a' elements
-        if (element && element.name === 'a') {
-          return true;
-        }
-
-        // Call the original method for all other cases
-        return originalShouldRenderAttribute.call(this, element, key, value);
-      };
-
-      // Your existing MutationObserver code...
-    } catch (error) {
-      console.warn('Could not patch DomConverter to allow onclick attribute:', error);
-    }
-  }
-
-  /**
    * Helper function to check if the URL is a predefined link 
    * This is added here to avoid circular dependency
    */
@@ -408,14 +341,8 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           }
 
           if (manualDecoratorValue) {
-            // Create element with base attributes without onclick
+            // Create element with decorator attributes
             const element = writer.createAttributeElement('a', decorator.attributes, { priority: 5 });
-
-            // Add onclick attribute separately using the href value
-            const href = item.getAttribute('alightPredefinedLinkPluginHref');
-            if (href) {
-              writer.setAttribute('onclick', href, element);
-            }
 
             if (decorator.classes) {
               writer.addClass(decorator.classes, element);
