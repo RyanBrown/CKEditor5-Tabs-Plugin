@@ -116,20 +116,14 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         linkName = extractPredefinedLinkId(href) || href;
       }
 
-      // Create link element - using ContainerElement instead of AttributeElement
-      const linkElement = conversionApi.writer.createContainerElement('a', {
+      // Create link element as attribute element - this is important for proper rendering
+      const linkElement = conversionApi.writer.createAttributeElement('a', {
         'href': '#',
         'class': 'AHCustomLink',
         'data-id': 'predefined_link'
+      }, {
+        priority: 5
       });
-
-      // Create the ah:link element
-      const ahLinkElement = conversionApi.writer.createContainerElement('ah:link', {
-        'name': linkName
-      });
-
-      // Add the ah:link element inside the a element
-      conversionApi.writer.append(ahLinkElement, linkElement);
 
       // Set custom property for identification
       conversionApi.writer.setCustomProperty('alight-predefined-link', true, linkElement);
@@ -162,20 +156,22 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           data.item.getAttribute('alightPredefinedLinkPluginLinkName') : '';
         const href = data.attributeNewValue || '';
 
-        // Implementation using attribute elements with nesting
+        // Create the outer anchor element with LOWER priority (will be applied as outer)
         const linkElement = conversionApi.writer.createAttributeElement('a', {
           'href': '#',
           'class': 'AHCustomLink',
           'data-id': 'predefined_link'
         }, {
-          priority: 5
+          priority: 5,
+          // This is important - it tells the engine this can contain other attribute elements
+          id: 'link-wrapper'
         });
 
+        // Create the inner ah:link element with HIGHER priority (will be applied as inner)
         const ahLinkElement = conversionApi.writer.createAttributeElement('ah:link', {
           'name': linkName || extractPredefinedLinkId(href) || href
         }, {
-          priority: 4,
-          id: 'ah-link-wrapper'
+          priority: 6
         });
 
         // Set custom property on the link element
@@ -183,36 +179,25 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
 
         if (data.item.is('selection')) {
           // For selection, get range
-          const range = conversionApi.writer.document.selection.getFirstRange();
+          const viewSelection = conversionApi.writer.document.selection;
+          const range = viewSelection.getFirstRange();
 
           if (range) {
-            // First wrap with the ah:link element
-            const wrappedWithAhLink = conversionApi.writer.wrap(range, ahLinkElement);
+            // Apply in reverse order - inner element first with higher priority (ah:link)
+            const ahLinkRange = conversionApi.writer.wrap(range, ahLinkElement);
 
-            if (wrappedWithAhLink.length > 0) {
-              // Then create a range around the ah:link element and wrap with the a element
-              const rangeForOuterWrap = conversionApi.writer.createRange(
-                wrappedWithAhLink[0].start,
-                wrappedWithAhLink[wrappedWithAhLink.length - 1].end
-              );
-              conversionApi.writer.wrap(rangeForOuterWrap, linkElement);
-            }
+            // Then the outer element with lower priority (a)
+            conversionApi.writer.wrap(range, linkElement);
           }
         } else {
           // For model element, get corresponding view range
           const viewRange = conversionApi.mapper.toViewRange(data.range);
 
-          // First wrap with the ah:link element
-          const wrappedWithAhLink = conversionApi.writer.wrap(viewRange, ahLinkElement);
+          // Apply in reverse order - inner element first with higher priority (ah:link)
+          const ahLinkRange = conversionApi.writer.wrap(viewRange, ahLinkElement);
 
-          if (wrappedWithAhLink.length > 0) {
-            // Then create a range around the ah:link element and wrap with the a element
-            const rangeForOuterWrap = conversionApi.writer.createRange(
-              wrappedWithAhLink[0].start,
-              wrappedWithAhLink[wrappedWithAhLink.length - 1].end
-            );
-            conversionApi.writer.wrap(rangeForOuterWrap, linkElement);
-          }
+          // Then the outer element with lower priority (a)
+          conversionApi.writer.wrap(viewRange, linkElement);
         }
       }, { priority: 'high' });
     });
