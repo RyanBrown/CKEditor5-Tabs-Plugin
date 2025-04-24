@@ -207,43 +207,36 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           name: 'a',
           classes: 'AHCustomeLink',
           attributes: {
-            'href': '#'
+            'href': '#',
+            'data-id': 'predefined_link'
           }
         },
         model: {
           key: 'alightPredefinedLinkPluginHref',
           value: (viewElement: ViewElement) => {
-            // Try to find an ah:link element as a sibling
-            let ahLinkElement = viewElement.nextSibling;
+            // Get the link name from the element attributes first
+            let linkName = viewElement.getAttribute('data-link-name') || '';
 
-            // Keep looking through siblings until we find an ah:link element or run out of siblings
-            while (ahLinkElement && !(ahLinkElement.is('element', 'ah:link'))) {
-              ahLinkElement = ahLinkElement.nextSibling;
+            // If no data-link-name attribute, look at the next sibling text node
+            if (!linkName && viewElement.nextSibling && viewElement.nextSibling.is('$text')) {
+              linkName = viewElement.nextSibling.data;
             }
 
-            // If we found an ah:link element
-            if (ahLinkElement && ahLinkElement.is('element', 'ah:link')) {
-              const linkName = ahLinkElement.getAttribute('name');
+            // Store additional information for the link format
+            this.editor.model.once('_afterConversion', () => {
+              this.editor.model.change(writer => {
+                const selection = this.editor.model.document.selection;
+                const range = selection.getFirstRange();
 
-              // Store additional information for the link format
-              this.editor.model.once('_afterConversion', () => {
-                this.editor.model.change(writer => {
-                  const selection = this.editor.model.document.selection;
-                  const range = selection.getFirstRange();
-
-                  if (range) {
-                    writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', range);
-                    writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName || '', range);
-                  }
-                });
+                if (range) {
+                  writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', range);
+                  writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, range);
+                }
               });
+            });
 
-              // Return the link name as the href
-              return linkName || '';
-            }
-
-            // Fallback to standard href if no ah:link was found
-            return viewElement.getAttribute('href') || '';
+            // Return the link name as the href or fallback to empty string
+            return linkName || '';
           }
         },
         converterPriority: 'highest' // Higher priority than standard link converter
