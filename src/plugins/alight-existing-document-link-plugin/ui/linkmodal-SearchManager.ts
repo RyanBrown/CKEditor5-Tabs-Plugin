@@ -205,6 +205,14 @@ export class SearchManager {
       // Add event listener for population input changes
       this.populationInput.addEventListener('input', () => {
         this.populationSearchQuery = this.populationInput.value;
+        console.log('Population search query updated:', this.populationSearchQuery);
+      });
+
+      // Also add keypress listener for Enter key
+      this.populationInput.addEventListener('keypress', (e: KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          this.applyFilters();
+        }
       });
     }
 
@@ -267,7 +275,7 @@ export class SearchManager {
     // Uncheck all checkboxes within the advanced search panel
     const advancedSearchPanel = container.querySelector('.cka-overlay-panel[data-id="advanced-search-panel"]');
     if (advancedSearchPanel) {
-      document.querySelectorAll('cka-checkbox').forEach(checkbox => {
+      advancedSearchPanel.querySelectorAll('cka-checkbox').forEach(checkbox => {
         (checkbox as any).checked = false;
       });
     }
@@ -277,9 +285,10 @@ export class SearchManager {
   }
 
   private applyFilters(): void {
-    // Update population search query from input field before applying filters
+    // Make sure we have the latest value from the population input
     if (this.populationInput) {
       this.populationSearchQuery = this.populationInput.value;
+      console.log('Applying population filter with value:', this.populationSearchQuery);
     }
 
     this.updateFilteredData();
@@ -287,6 +296,8 @@ export class SearchManager {
   }
 
   private updateFilteredData(): void {
+    console.log('Filtering data with population query:', this.populationSearchQuery);
+
     const filteredData = this.existingDocumentLinksData.filter(link => {
       // Main search (title, description, path)
       const matchesSearch = !this.currentSearchQuery ||
@@ -295,19 +306,30 @@ export class SearchManager {
         (link.serverFilePath && link.serverFilePath.toLowerCase().includes(this.currentSearchQuery.toLowerCase()));
 
       // Population filter (using text input)
-      const matchesPopulation = !this.populationSearchQuery ||
-        (link.population && link.population.toLowerCase().includes(this.populationSearchQuery.toLowerCase()));
+      const populationValue = link.population || '';
+      const populationQuery = this.populationSearchQuery.toLowerCase();
+      const matchesPopulation = !populationQuery ||
+        populationValue.toLowerCase().includes(populationQuery);
+
+      // Debug logging
+      if (populationQuery && !matchesPopulation) {
+        console.log(`Population filter rejected: "${populationValue}" does not include "${populationQuery}"`);
+      }
 
       // Other filters (using checkboxes)
-      const matchesOtherFilters =
-        (this.selectedFilters.fileType.length === 0 ||
-          this.selectedFilters.fileType.includes(link.fileType)) &&
-        (this.selectedFilters.locale.length === 0 ||
-          this.selectedFilters.locale.includes(link.locale));
+      const fileType = link.fileType || '';
+      const locale = link.locale || '';
 
-      return matchesSearch && matchesPopulation && matchesOtherFilters;
+      const matchesFileType = this.selectedFilters.fileType.length === 0 ||
+        this.selectedFilters.fileType.includes(fileType);
+
+      const matchesLocale = this.selectedFilters.locale.length === 0 ||
+        this.selectedFilters.locale.includes(locale);
+
+      return matchesSearch && matchesPopulation && matchesFileType && matchesLocale;
     });
 
+    console.log(`Filtered data: ${filteredData.length} of ${this.existingDocumentLinksData.length} items match`);
     this.onSearch(filteredData);
     this.paginationManager.setPage(1, filteredData.length);
   }
