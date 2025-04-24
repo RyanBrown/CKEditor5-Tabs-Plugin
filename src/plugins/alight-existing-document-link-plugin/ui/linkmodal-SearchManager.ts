@@ -208,7 +208,7 @@ export class SearchManager {
 
     this.populationInput = populationInputElement as HTMLInputElement;
 
-    // Make sure the value is set correctly
+    // Make sure the value is set correctly from the stored value
     this.populationInput.value = this.populationSearchQuery || '';
     console.log('Initial population filter value:', this.populationInput.value);
 
@@ -260,11 +260,34 @@ export class SearchManager {
     // Setup checkbox listeners for all checkboxes in the document
     document.querySelectorAll('cka-checkbox').forEach(checkbox => {
       this.setupSingleCheckboxListener(checkbox);
+
+      // Ensure checkboxes reflect the current state
+      this.updateCheckboxState(checkbox);
     });
   }
 
+  // New method to update checkbox state based on selectedFilters
+  private updateCheckboxState(checkbox: Element): void {
+    const filterType = checkbox.getAttribute('data-filter-type') as keyof SelectedFilters;
+    const value = checkbox.getAttribute('data-value');
+
+    if (filterType && value && this.selectedFilters[filterType]) {
+      // Set checked property to match selected filters state
+      const isSelected = this.selectedFilters[filterType].includes(value);
+      (checkbox as any).checked = isSelected;
+
+      console.log(`Updated checkbox: ${value} (${filterType}) is ${isSelected ? 'checked' : 'unchecked'}`);
+    }
+  }
+
   private setupSingleCheckboxListener(checkbox: Element): void {
-    checkbox.addEventListener('change', (event: Event) => {
+    // Remove existing listeners to prevent duplicates
+    const newCheckbox = checkbox.cloneNode(true);
+    if (checkbox.parentNode) {
+      checkbox.parentNode.replaceChild(newCheckbox, checkbox);
+    }
+
+    newCheckbox.addEventListener('change', (event: Event) => {
       const target = event.target as HTMLElement;
       const filterType = target.getAttribute('data-filter-type') as keyof SelectedFilters;
       const value = target.getAttribute('data-value');
@@ -273,9 +296,13 @@ export class SearchManager {
       if (filterType && value) {
         if (isChecked && !this.selectedFilters[filterType].includes(value)) {
           this.selectedFilters[filterType].push(value);
+          console.log(`Added ${value} to ${filterType} filters`);
         } else if (!isChecked) {
           this.selectedFilters[filterType] = this.selectedFilters[filterType].filter((v: string) => v !== value);
+          console.log(`Removed ${value} from ${filterType} filters`);
         }
+
+        console.log('Updated selected filters:', JSON.stringify(this.selectedFilters));
       }
     });
   }
@@ -285,8 +312,9 @@ export class SearchManager {
     this.updateFilteredData();
   }
 
-  // Modified to not rely on container parameter and directly use document API
   private clearFilters(): void {
+    console.log('Clearing all filters...');
+
     // First, reset all the internal filter state
     this.selectedFilters = {
       fileType: [],
@@ -297,14 +325,11 @@ export class SearchManager {
     // Clear population search query from both state and input element
     this.populationSearchQuery = '';
 
-    // Find and clear the population input element directly using the DOM
+    // Find and clear the population input element directly
     const populationInput = document.getElementById('population-filter-input') as HTMLInputElement;
     if (populationInput) {
       console.log('Clearing population input field, previous value:', populationInput.value);
-      populationInput.value = ''; // This should clear the visible field
-
-      // Also dispatch input event to ensure any listeners are triggered
-      populationInput.dispatchEvent(new Event('input'));
+      populationInput.value = '';
     } else {
       console.warn('Population input element not found during clearFilters');
     }
@@ -314,30 +339,22 @@ export class SearchManager {
     if (checkboxes && checkboxes.length > 0) {
       console.log('Found', checkboxes.length, 'checkboxes to reset');
 
-      // First try with the .checked property
       checkboxes.forEach((checkbox: any) => {
-        if (checkbox.checked) {
-          console.log('Unchecking checkbox:', checkbox.textContent);
-          checkbox.checked = false;
-
-          // Also dispatch change event to ensure filter state updates
-          checkbox.dispatchEvent(new Event('change', { bubbles: true }));
-        }
+        // Force uncheck state
+        checkbox.checked = false;
+        console.log('Unchecked checkbox:', checkbox.textContent.trim());
       });
     } else {
       console.warn('No checkboxes found to reset');
     }
 
-    console.log('Filters cleared, data state reset to:', {
+    console.log('Filters cleared, state reset to:', {
       populationQuery: this.populationSearchQuery,
       selectedFilters: this.selectedFilters
     });
 
     // Update filtered data with cleared filters
     this.updateFilteredData();
-
-    // No need to close panel, just show all data
-    console.log('Showing all documents after filter reset');
   }
 
   private applyFilters(): void {
@@ -349,6 +366,27 @@ export class SearchManager {
     } else {
       console.warn('Population input element not found during apply filters');
     }
+
+    // Get current checkbox states to ensure selectedFilters is accurate
+    document.querySelectorAll('cka-checkbox').forEach((checkbox: any) => {
+      const filterType = checkbox.getAttribute('data-filter-type') as keyof SelectedFilters;
+      const value = checkbox.getAttribute('data-value');
+      const isChecked = checkbox.checked;
+
+      if (filterType && value) {
+        // Update the filter array based on current checked state
+        const filterArray = this.selectedFilters[filterType];
+        const valueExists = filterArray.includes(value);
+
+        if (isChecked && !valueExists) {
+          filterArray.push(value);
+          console.log(`Added ${value} to ${filterType} filters during apply`);
+        } else if (!isChecked && valueExists) {
+          this.selectedFilters[filterType] = filterArray.filter(v => v !== value);
+          console.log(`Removed ${value} from ${filterType} filters during apply`);
+        }
+      }
+    });
 
     // Update filtered data with the current filters
     this.updateFilteredData();
