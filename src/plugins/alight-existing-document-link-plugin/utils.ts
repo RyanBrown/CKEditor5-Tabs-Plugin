@@ -51,7 +51,7 @@ export const LINK_KEYSTROKE = 'Ctrl+K';
 export function isLinkElement(node: ViewNode | ViewDocumentFragment): boolean {
   return (
     node.is('attributeElement') && (
-      !!node.getCustomProperty('alight-existing-document') ||
+      !!node.getCustomProperty('alight-existing-document-link') ||
       node.hasClass('document_tag') ||
       node.getAttribute('data-id') === 'existing-document_link'
     )
@@ -76,6 +76,8 @@ export function isExistingDocumentLink(url: string | null | undefined): boolean 
 export function createLinkElement(href: string, { writer }: DowncastConversionApi): ViewAttributeElement {
   // Check if this is a existing document link
   const isExistingDocument = isExistingDocumentLink(href);
+
+  // Build attributes without target="_blank" for downcast
   const attributes: Record<string, string> = { href };
 
   // Add data-id for existing document links
@@ -86,6 +88,12 @@ export function createLinkElement(href: string, { writer }: DowncastConversionAp
   // Create the base link element
   // Priority 5 - https://github.com/ckeditor/ckeditor5-link/issues/121.
   const linkElement = writer.createAttributeElement('a', attributes, { priority: 5 });
+
+  // Add document_tag class for existing document links
+  if (isExistingDocument) {
+    writer.addClass('document_tag', linkElement);
+  }
+
   writer.setCustomProperty('alight-existing-document-link', true, linkElement);
 
   return linkElement;
@@ -169,6 +177,7 @@ export function normalizeDecorators(decorators?: Record<string, LinkDecoratorDef
 
   if (decorators) {
     for (const [key, value] of Object.entries(decorators)) {
+      // Do NOT add target="_blank" automatically for decorators
       const decorator = Object.assign(
         {},
         value,
@@ -322,9 +331,16 @@ export function filterLinkAttributes(attributes: Record<string, string>): Record
       continue;
     }
 
-    // Keep all other attributes
-    result[key] = attributes[key];
+    // Preserve target="_blank" if it was in the original attributes
+    if (key === 'target' && attributes[key] === '_blank') {
+      result[key] = attributes[key];
+    } else {
+      // Keep all other attributes
+      result[key] = attributes[key];
+    }
   }
+
+  // Do NOT add target="_blank" automatically here
 
   return result;
 }

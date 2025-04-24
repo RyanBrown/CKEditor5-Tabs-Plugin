@@ -60,24 +60,31 @@ export default class AutomaticDecorators {
         const viewSelection = viewWriter.document.selection;
 
         for (const item of this._definitions) {
-          // Build attributes with data-id
+          // Build attributes with data-id but WITHOUT target="_blank" for downcast
           const attributes = {
             ...item.attributes,
             'data-id': 'existing-document_link'
+            // target="_blank" is deliberately NOT added here for downcast
           };
 
           const viewElement = viewWriter.createAttributeElement('a', attributes, {
             priority: 5
           });
 
+          // Add classes
           if (item.classes) {
             viewWriter.addClass(item.classes, viewElement);
           }
 
+          // Always add document_tag class for consistency
+          viewWriter.addClass('document_tag', viewElement);
+
+          // Add styles
           for (const key in item.styles) {
             viewWriter.setStyle(key, item.styles[key], viewElement);
           }
 
+          // Set custom property for link identification
           viewWriter.setCustomProperty('alight-existing-document-link', true, viewElement);
 
           if (item.callback(data.attributeNewValue as string | null)) {

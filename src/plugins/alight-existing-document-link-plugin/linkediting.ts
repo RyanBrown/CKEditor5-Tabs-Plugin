@@ -115,13 +115,13 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
       // Extract the link ID or generate one if needed
       const linkId = extractExternalDocumentLinkId(hrefValue) || ''; // Default is empty if none found
 
-      // Define all required attributes
+      // Define all required attributes - NO target="_blank" here for downcast
       const attributes = {
         'href': linkId,
         'data-id': 'existing-document_link',
         'data-format': 'existingDocumentTag',
-        'data-link-name': linkId,
-        'target': '_blank' // Only add target attribute when we have href
+        'data-link-name': linkId
+        // target="_blank" is deliberately NOT added here for downcast
       };
 
       // Create the link element
@@ -176,10 +176,10 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
             const dataId = viewElement.getAttribute('data-id');
             const dataLinkName = viewElement.getAttribute('data-link-name');
 
-            // Always add target="_blank" for links during upcast
+            // Always add target="_blank" for links during upcast - THIS IS KEPT FOR UPCAST
             viewElement._setAttribute('target', '_blank');
 
-            if (dataId === 'existing document_link' && dataLinkName) {
+            if (dataId === 'existing-document_link' && dataLinkName) {
               // If it has existing document link attributes, use the link name as href
               return dataLinkName;
             }
@@ -209,7 +209,7 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
         model: {
           key: 'alightExistingDocumentLinkPluginHref',
           value: (viewElement: ViewElement) => {
-            // Always add target="_blank" to links during upcast
+            // Always add target="_blank" to links during upcast - THIS IS KEPT FOR UPCAST
             viewElement._setAttribute('target', '_blank');
 
             // Try to find ah:link element inside
@@ -346,7 +346,13 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
           }
 
           if (manualDecoratorValue) {
-            const element = writer.createAttributeElement('a', decorator.attributes, { priority: 5 });
+            // Do NOT add target="_blank" here for downcast
+            const decoratorAttributes = {
+              ...decorator.attributes
+              // target="_blank" is deliberately NOT added here for downcast
+            };
+
+            const element = writer.createAttributeElement('a', decoratorAttributes, { priority: 5 });
 
             if (decorator.classes) {
               writer.addClass(decorator.classes, element);
