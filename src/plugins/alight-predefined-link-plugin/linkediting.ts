@@ -156,24 +156,18 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           data.item.getAttribute('alightPredefinedLinkPluginLinkName') : '';
         const href = data.attributeNewValue || '';
 
-        // Create the outer anchor element with LOWER priority (will be applied as outer)
+        // Create the outer anchor element with LOWER priority
         const linkElement = conversionApi.writer.createAttributeElement('a', {
           'href': '#',
-          'class': 'AHCustomLink',
-          'data-id': 'predefined_link'
+          'class': 'AHCustomeLink'
         }, {
           priority: 5,
-          // This is important - it tells the engine this can contain other attribute elements
           id: 'link-wrapper'
         });
 
-        // Create the inner ah:link element with HIGHER priority (will be applied as inner)
+        // Create the inner ah:link element with HIGHER priority
         const ahLinkElement = conversionApi.writer.createAttributeElement('ah:link', {
-          'name': linkName || extractPredefinedLinkId(href) || href,
-          'href': href, // Using href as formattedHref
-          'data-id': 'predefined_link',
-          'data-format': 'ahcustom',
-          'data-link-id': linkName || extractPredefinedLinkId(href) || href
+          'name': linkName || extractPredefinedLinkId(href) || href
         }, {
           priority: 6
         });
@@ -187,20 +181,20 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           const range = viewSelection.getFirstRange();
 
           if (range) {
-            // Apply in reverse order - inner element first with higher priority (ah:link)
+            // Apply in reverse order - inner element first with higher priority
             const ahLinkRange = conversionApi.writer.wrap(range, ahLinkElement);
 
-            // Then the outer element with lower priority (a)
+            // Then the outer element with lower priority
             conversionApi.writer.wrap(range, linkElement);
           }
         } else {
           // For model element, get corresponding view range
           const viewRange = conversionApi.mapper.toViewRange(data.range);
 
-          // Apply in reverse order - inner element first with higher priority (ah:link)
+          // Apply in reverse order - inner element first with higher priority
           const ahLinkRange = conversionApi.writer.wrap(viewRange, ahLinkElement);
 
-          // Then the outer element with lower priority (a)
+          // Then the outer element with lower priority
           conversionApi.writer.wrap(viewRange, linkElement);
         }
       }, { priority: 'high' });
@@ -211,22 +205,27 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
       .elementToAttribute({
         view: {
           name: 'a',
-          classes: 'AHCustomLink',
+          classes: 'AHCustomeLink',
           attributes: {
-            'data-id': 'predefined_link'
+            'href': '#'
           }
         },
         model: {
           key: 'alightPredefinedLinkPluginHref',
           value: (viewElement: ViewElement) => {
-            // Find ah:link element inside
-            const ahLinkElement = Array.from(viewElement.getChildren())
-              .find(child => child.is('element', 'ah:link')) as ViewElement | undefined;
+            // Try to find an ah:link element as a sibling
+            let ahLinkElement = viewElement.nextSibling;
 
-            if (ahLinkElement) {
+            // Keep looking through siblings until we find an ah:link element or run out of siblings
+            while (ahLinkElement && !(ahLinkElement.is('element', 'ah:link'))) {
+              ahLinkElement = ahLinkElement.nextSibling;
+            }
+
+            // If we found an ah:link element
+            if (ahLinkElement && ahLinkElement.is('element', 'ah:link')) {
               const linkName = ahLinkElement.getAttribute('name');
 
-              // Store additional information for AHCustomLink format
+              // Store additional information for the link format
               this.editor.model.once('_afterConversion', () => {
                 this.editor.model.change(writer => {
                   const selection = this.editor.model.document.selection;
@@ -243,7 +242,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
               return linkName || '';
             }
 
-            // Fallback to standard href
+            // Fallback to standard href if no ah:link was found
             return viewElement.getAttribute('href') || '';
           }
         },
