@@ -5,13 +5,15 @@ import { DocumentLink, SelectedFilters } from './linkmodal-modal-types';
 
 export class SearchManager {
   private currentSearchQuery = '';
+  private populationSearchQuery = ''; // New field for population text input
   private overlayPanel: AlightOverlayPanel | null = null;
   private readonly advancedSearchTriggerId = 'advanced-search-trigger';
   private searchInput: HTMLInputElement | null = null;
+  private populationInput: HTMLInputElement | null = null; // Reference to the population input
 
   private selectedFilters: SelectedFilters = {
     fileType: [],
-    population: [],
+    population: [], // We'll keep this for compatibility but use the text input value instead
     locale: []
   };
 
@@ -106,10 +108,6 @@ export class SearchManager {
       new Set(this.existingDocumentLinksData.map(item => item.fileType))
     ).filter(Boolean).sort();
 
-    const populationOptions = Array.from(
-      new Set(this.existingDocumentLinksData.map(item => item.population))
-    ).filter(Boolean).sort();
-
     const localeOptions = Array.from(
       new Set(this.existingDocumentLinksData.map(item => item.locale))
     ).filter(Boolean).sort();
@@ -117,8 +115,26 @@ export class SearchManager {
     return `
       <div class="search-filters">
         ${this.createFilterSection('File Type', 'fileType', fileTypeOptions)}
-        ${this.createFilterSection('Population', 'population', populationOptions)}
+        ${this.createPopulationFilterSection()}
         ${this.createFilterSection('Locale', 'locale', localeOptions)}
+      </div>
+    `;
+  }
+
+  // New method to create the Population filter with text input
+  private createPopulationFilterSection(): string {
+    return `
+      <div class="filter-section">
+        <h4>Population</h4>
+        <div class="population-input-container">
+          <input 
+            class="cka-input-text cka-width-75"
+            id="population-filter-input" 
+            placeholder="Filter by population..." 
+            type="text" 
+            value="${this.populationSearchQuery}"
+          />
+        </div>
       </div>
     `;
   }
@@ -161,7 +177,7 @@ export class SearchManager {
     }
 
     this.overlayPanel = new AlightOverlayPanel(triggerEl as HTMLElement, {
-      width: '38rem',
+      width: '24rem',
       height: 'auto',
       onShow: () => {
         this.setupAdvancedSearchListeners(container);
@@ -181,6 +197,17 @@ export class SearchManager {
   }
 
   private setupAdvancedSearchListeners(container: HTMLElement): void {
+    // Initialize the population input field
+    this.populationInput = document.querySelector('#population-filter-input') as HTMLInputElement;
+    if (this.populationInput) {
+      this.populationInput.value = this.populationSearchQuery;
+
+      // Add event listener for population input changes
+      this.populationInput.addEventListener('input', () => {
+        this.populationSearchQuery = this.populationInput.value;
+      });
+    }
+
     // Handle the apply filters button click
     document.querySelectorAll('#apply-filters').forEach(button => {
       button.addEventListener('click', () => {
@@ -231,6 +258,12 @@ export class SearchManager {
       locale: []
     };
 
+    // Clear population search query
+    this.populationSearchQuery = '';
+    if (this.populationInput) {
+      this.populationInput.value = '';
+    }
+
     // Uncheck all checkboxes within the advanced search panel
     const advancedSearchPanel = container.querySelector('.cka-overlay-panel[data-id="advanced-search-panel"]');
     if (advancedSearchPanel) {
@@ -244,26 +277,35 @@ export class SearchManager {
   }
 
   private applyFilters(): void {
+    // Update population search query from input field before applying filters
+    if (this.populationInput) {
+      this.populationSearchQuery = this.populationInput.value;
+    }
+
     this.updateFilteredData();
     this.overlayPanel?.hide();
   }
 
   private updateFilteredData(): void {
     const filteredData = this.existingDocumentLinksData.filter(link => {
+      // Main search (title, description, path)
       const matchesSearch = !this.currentSearchQuery ||
         link.title.toLowerCase().includes(this.currentSearchQuery.toLowerCase()) ||
         (link.documentDescription && link.documentDescription.toLowerCase().includes(this.currentSearchQuery.toLowerCase())) ||
         (link.serverFilePath && link.serverFilePath.toLowerCase().includes(this.currentSearchQuery.toLowerCase()));
 
-      const matchesFilters =
+      // Population filter (using text input)
+      const matchesPopulation = !this.populationSearchQuery ||
+        (link.population && link.population.toLowerCase().includes(this.populationSearchQuery.toLowerCase()));
+
+      // Other filters (using checkboxes)
+      const matchesOtherFilters =
         (this.selectedFilters.fileType.length === 0 ||
           this.selectedFilters.fileType.includes(link.fileType)) &&
-        (this.selectedFilters.population.length === 0 ||
-          this.selectedFilters.population.includes(link.population)) &&
         (this.selectedFilters.locale.length === 0 ||
           this.selectedFilters.locale.includes(link.locale));
 
-      return matchesSearch && matchesFilters;
+      return matchesSearch && matchesPopulation && matchesOtherFilters;
     });
 
     this.onSearch(filteredData);
@@ -275,6 +317,7 @@ export class SearchManager {
       this.searchInput.value = '';
     }
     this.currentSearchQuery = '';
+    this.populationSearchQuery = '';
     this.selectedFilters = {
       fileType: [],
       population: [],
