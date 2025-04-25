@@ -95,7 +95,7 @@ import AlightTabsPlugin from "./plugins/alight-tabs-plugin/alight-tabs-plugin";
 import AlightParentLinkPlugin from "./plugins/alight-parent-link-plugin"; // Use the index file
 import type { LinkPluginConfig } from "./plugins/alight-parent-link-plugin"; // Import type
 import AlightPredefinedLinkPlugin from "./plugins/alight-predefined-link-plugin/link";
-import AlightNewDocumentLinkPlugin from "./plugins/alight-new-document-link-plugin/alight-new-document-link-plugin";
+import AlightNewDocumentLinkPlugin from "./plugins/alight-new-document-link-plugin/link";
 // import AlightExistingDocumentLinkPlugin from "./plugins/alight-existing-document-link-plugin/alight-existing-document-link-plugin";
 import AlightExistingDocumentLinkPlugin from "./plugins/alight-existing-document-link-plugin/link";
 import AlightExternalLinkPlugin from "./plugins/alight-external-link-plugin/link";
