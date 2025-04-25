@@ -99,11 +99,6 @@ export default class AlightNewDocumentLinkPluginCommand extends Command {
    * @param options Options including manual decorator attributes.
    */
   public override execute(href: string, options: LinkOptions = {}): void {
-    // Ensure this is a document link (mailto:)
-    if (!href.startsWith('mailto:')) {
-      href = ensureMailtoLink(href);
-    }
-
     const model = this.editor.model;
     const selection = model.document.selection;
 
@@ -120,7 +115,7 @@ export default class AlightNewDocumentLinkPluginCommand extends Command {
     }
 
     model.change(writer => {
-      // If selection is collapsed then update selected link or insert new one at the place of caret.
+      // Handle collapsed or non-collapsed selection
       if (selection.isCollapsed) {
         const position = selection.getFirstPosition()!;
 
@@ -200,20 +195,13 @@ export default class AlightNewDocumentLinkPluginCommand extends Command {
   }
 
   /**
-   * Creates a display text for the new document link based on the href.
-   * For new document links, we extract a meaningful display text from the path.
-   */
+ * Creates a display text for the new document link based on the href.
+ * For document links, we extract a meaningful display text from the path.
+ */
   private _createDisplayText(href: string): string {
-    if (!href.startsWith('mailto:')) {
-      return href;
-    }
-
-    // Extract the path after mailto:
-    const path = href.substring(7);
-
     // If it's a folder path with a document ID, use a more user-friendly display
-    if (path.includes('/')) {
-      const parts = path.split('/');
+    if (href.includes('/')) {
+      const parts = href.split('/');
 
       // If there are at least two parts (folder and ID)
       if (parts.length >= 2) {
@@ -225,8 +213,8 @@ export default class AlightNewDocumentLinkPluginCommand extends Command {
       }
     }
 
-    // Default to just returning the path
-    return path;
+    // Default to just returning the href
+    return href;
   }
 
   /**

@@ -17,7 +17,13 @@ import AlightNewDocumentLinkPluginEditing from './linkediting';
 import LinkActionsView from './ui/linkactionsview';
 import type AlightNewDocumentLinkPluginCommand from './linkcommand';
 import type AlightNewDocumentUnlinkCommand from './unlinkcommand';
-import { isLinkElement } from './utils';
+import {
+  isLinkElement,
+  FormValidator,
+  FormSubmissionHandler,
+  handleFormSubmission,
+  type ValidationResult
+} from './utils';
 import { CkAlightModalDialog } from './../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import { CkAlightSelectMenu } from './../ui-components/alight-select-menu-component/alight-select-menu-component';
 import { CkAlightCheckbox } from './../ui-components/alight-checkbox-component/alight-checkbox-component';
@@ -29,207 +35,12 @@ import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 const VISUAL_SELECTION_MARKER_NAME = 'alight-new-document-link-ui';
 const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-// Add form validation interfaces and classes
-interface ValidationErrors {
-  [key: string]: string;
-}
-
-interface ValidationResult {
-  isValid: boolean;
-  errors?: ValidationErrors;
-}
-
-class FormValidator {
-  validateForm(formData: any): ValidationResult {
-    const errors: ValidationErrors = {};
-
-    // Language validation
-    if (!formData.language) {
-      errors['language'] = 'Please select a language';
-    }
-
-    // File validation
-    if (!formData.file) {
-      errors['file'] = 'Please choose a file';
-    } else if (formData.file.size > 5 * 1024 * 1024) {
-      errors['file'] = 'File size must be less than 5MB';
-    }
-
-    // Document title validation
-    if (!formData.documentTitle?.trim()) {
-      errors['documentTitle'] = 'Please enter a document title';
-    } else if (formData.documentTitle.length > 250) {
-      errors['documentTitle'] = 'Title must be less than 250 characters';
-    } else {
-      // Check for invalid characters and identify them in the error message
-      const invalidChars = formData.documentTitle.match(/[\\[\]:><\/\|\?"*,]/g);
-      if (invalidChars) {
-        const uniqueInvalidChars = [...new Set(invalidChars)].join(', ');
-        errors['documentTitle'] = `Title contains invalid characters: ${uniqueInvalidChars}`;
-      }
-    }
-
-    // Description validation
-    if (!formData.description?.trim()) {
-      errors['description'] = 'Please enter a description';
-    }
-
-    return {
-      isValid: Object.keys(errors).length === 0,
-      errors: Object.keys(errors).length > 0 ? errors : undefined
-    };
-  }
-
-  validateField(fieldName: string, value: any): ValidationResult {
-    const errors: ValidationErrors = {};
-
-    switch (fieldName) {
-      case 'language':
-        if (!value) {
-          errors[fieldName] = 'Please select a language';
-        }
-        break;
-
-      case 'file':
-        if (!value) {
-          errors[fieldName] = 'Please choose a file';
-        } else if (value.size > 5 * 1024 * 1024) {
-          errors[fieldName] = 'File size must be less than 5MB';
-        }
-        break;
-
-      case 'documentTitle':
-        if (!value?.trim()) {
-          errors[fieldName] = 'Please enter a document title';
-        } else if (value.length > 250) {
-          errors[fieldName] = 'Title must be less than 250 characters';
-        } else {
-          // Check for invalid characters and identify them in the error message
-          const invalidChars = value.match(/[\\[\]:><\/\|\?"*,]/g);
-          if (invalidChars) {
-            const uniqueInvalidChars = [...new Set(invalidChars)].join(', ');
-            errors[fieldName] = `Title contains invalid characters: ${uniqueInvalidChars}`;
-          }
-        }
-        break;
-
-      case 'description':
-        if (!value?.trim()) {
-          errors[fieldName] = 'Please enter a description';
-        }
-        break;
-    }
-
-    return {
-      isValid: Object.keys(errors).length === 0,
-      errors: Object.keys(errors).length > 0 ? errors : undefined
-    };
-  }
-}
-
-// Add submission handling interface and class
-interface SubmissionResult {
-  success: boolean;
-  data?: any;
-  error?: string;
-}
-
-class FormSubmissionHandler {
-  private isSubmitting = false;
-  private submitTimeout: number | null = null;
-
-  constructor(private readonly debounceTime: number = 1000) { }
-
-  private async mockApiCall(formData: FormData): Promise<SubmissionResult> {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    try {
-      // Convert FormData to a plain object for response
-      const responseData: { [key: string]: any } = {
-        id: `doc-${Date.now()}`,
-        url: `https://example.com/documents/doc-${Date.now()}`,
-        status: 'success',
-        dnmDtoList: [{
-          folderPath: "Test Folder",
-          fileId: `file-${Date.now()}`,
-          documentTitle: formData.get('documentTitle') || "SampleDoc",
-          documentLanguage: formData.get('language') || "en_US",
-          documentDescription: formData.get('description') || ""
-        }]
-      };
-
-      return {
-        success: true,
-        data: responseData
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to process form data'
-      };
-    }
-  }
-
-  private resetSubmitState(): void {
-    this.isSubmitting = false;
-    if (this.submitTimeout) {
-      window.clearTimeout(this.submitTimeout);
-      this.submitTimeout = null;
-    }
-  }
-
-  public async submitForm(formData: any): Promise<SubmissionResult> {
-    // Prevent duplicate submissions
-    if (this.isSubmitting) {
-      return {
-        success: false,
-        error: 'Form submission already in progress'
-      };
-    }
-
-    try {
-      this.isSubmitting = true;
-
-      // Create FormData instance for file upload
-      const submission = new FormData();
-
-      // Append all form fields to FormData
-      Object.entries(formData).forEach(([key, value]) => {
-        if (value instanceof File) {
-          submission.append(key, value);
-        } else if (Array.isArray(value)) {
-          submission.append(key, JSON.stringify(value));
-        } else if (value !== null && value !== undefined) {
-          submission.append(key, String(value));
-        }
-      });
-
-      // Submit the form data
-      const result = await this.mockApiCall(submission);
-
-      // Set a timeout to prevent rapid resubmission
-      this.submitTimeout = window.setTimeout(() => {
-        this.resetSubmitState();
-      }, this.debounceTime);
-
-      return result;
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'An unexpected error occurred'
-      };
-    } finally {
-      // Reset submission state after debounce time
-      setTimeout(() => {
-        this.resetSubmitState();
-      }, this.debounceTime);
-    }
-  }
-
-  public cancelSubmission(): void {
-    this.resetSubmitState();
-  }
+/**
+ * Returns a link element if there's one among the ancestors of the provided `Position`.
+ */
+function findLinkElementAncestor(position: any): ViewAttributeElement | null {
+  const linkElement = position.getAncestors().find((ancestor: any) => isLinkElement(ancestor));
+  return linkElement && linkElement.is('attributeElement') ? linkElement : null;
 }
 
 // Add category interface and ContentManager class
@@ -1077,6 +888,38 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
   }
 
   /**
+   * Returns the link element under the editing view's selection or `null`
+   * if there is none.
+   */
+  private _getSelectedLinkElement(): ViewAttributeElement | null {
+    const view = this.editor.editing.view;
+    const selection = view.document.selection;
+    const selectedElement = selection.getSelectedElement();
+
+    // The selection is collapsed or some widget is selected (especially inline widget).
+    if (selection.isCollapsed || (selectedElement && isWidget(selectedElement))) {
+      return findLinkElementAncestor(selection.getFirstPosition()!);
+    } else {
+      // The range for fully selected link is usually anchored in adjacent text nodes.
+      // Trim it to get closer to the actual link element.
+      const range = selection.getFirstRange()!.getTrimmed();
+      const startLink = findLinkElementAncestor(range.start);
+      const endLink = findLinkElementAncestor(range.end);
+
+      if (!startLink || startLink != endLink) {
+        return null;
+      }
+
+      // Check if the link element is fully selected.
+      if (view.createRangeIn(startLink).getTrimmed().isEqual(range)) {
+        return startLink;
+      } else {
+        return null;
+      }
+    }
+  }
+
+  /**
    * Determines whether the button should be enabled based on selection state
    * @returns True if the button should be enabled, false otherwise
    */
@@ -1153,13 +996,12 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
     this.listenTo<ViewDocumentClickEvent>(viewDocument, 'click', () => {
       const selectedLink = this._getSelectedLinkElement();
 
-      // Only handle our custom New document links, not standard links
-      if (selectedLink && selectedLink.hasAttribute('href')) {
-        const href = selectedLink.getAttribute('href');
-        if (typeof href === 'string' && href.startsWith('mailto:')) {
-          // Show balloon with actions (edit/unlink) when clicking on a link
-          this._showBalloon();
-        }
+      // Check if it's our document link by looking for the data-id attribute
+      if (selectedLink && selectedLink.hasAttribute('href') &&
+        selectedLink.hasAttribute('data-id') &&
+        selectedLink.getAttribute('data-id') === 'new-document_link') {
+        // Show balloon with actions (edit/unlink) when clicking on a link
+        this._showBalloon();
       }
     });
   }
@@ -1311,7 +1153,10 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
       // Handle button clicks via the buttonClick event
       this._modalDialog.on('buttonClick', (data: { button: string; }) => {
         if (data.button === t('Continue')) {
-          this._handleFormSubmission();
+          // Use the imported form submission handler
+          if (this._contentManager) {
+            handleFormSubmission(this._contentManager, this.editor, this._modalDialog);
+          }
         } else if (data.button === t('Cancel')) {
           if (this._modalDialog) {
             this._modalDialog.hide();
@@ -1337,60 +1182,6 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
 
       // Show the modal
       this._modalDialog.show();
-    }
-  }
-
-  /**
-   * Handles form submission and creates the link with the folder path
-   */
-  private async _handleFormSubmission(): Promise<void> {
-    if (!this._contentManager) {
-      return;
-    }
-
-    // Set hasUserInteracted to true when Continue is clicked
-    this._contentManager.hasUserInteracted = true; // Add this line
-
-    // Validate the form
-    const validation = this._contentManager.validateForm();
-    if (!validation.isValid) {
-      // Don't proceed if validation fails
-      return;
-    }
-
-    try {
-      // Submit the form and get the result
-      const result = await this._contentManager.submitForm();
-
-      if (result) {
-        // Get folder path from the result
-        const folderPath = result.dnmDtoList?.[0]?.folderPath || "Test Folder";
-        const documentId = result.id || `doc-${Date.now()}`;
-
-        // Create mailto link with folder path
-        const href = `mailto:${folderPath}/${documentId}`;
-
-        // Execute the link command
-        this.editor.execute('alight-new-document-link', href);
-
-        // Close the modal
-        if (this._modalDialog) {
-          this._modalDialog.hide();
-        }
-      }
-    } catch (error) {
-      console.error('Error submitting form:', error);
-
-      // Show error in the modal
-      if (this._modalDialog) {
-        const contentElement = this._modalDialog.getContentElement();
-        if (contentElement) {
-          const errorElement = document.createElement('div');
-          errorElement.className = 'cka-error-message global-error visible';
-          errorElement.textContent = error instanceof Error ? error.message : 'An unexpected error occurred';
-          contentElement.appendChild(errorElement);
-        }
-      }
     }
   }
 
@@ -1428,44 +1219,4 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
       this._isUpdatingUI = false;
     }
   }
-
-  /**
-   * Returns the link element under the editing view's selection or `null`
-   * if there is none.
-   */
-  private _getSelectedLinkElement(): ViewAttributeElement | null {
-    const view = this.editor.editing.view;
-    const selection = view.document.selection;
-    const selectedElement = selection.getSelectedElement();
-
-    // The selection is collapsed or some widget is selected (especially inline widget).
-    if (selection.isCollapsed || (selectedElement && isWidget(selectedElement))) {
-      return findLinkElementAncestor(selection.getFirstPosition()!);
-    } else {
-      // The range for fully selected link is usually anchored in adjacent text nodes.
-      // Trim it to get closer to the actual link element.
-      const range = selection.getFirstRange()!.getTrimmed();
-      const startLink = findLinkElementAncestor(range.start);
-      const endLink = findLinkElementAncestor(range.end);
-
-      if (!startLink || startLink != endLink) {
-        return null;
-      }
-
-      // Check if the link element is fully selected.
-      if (view.createRangeIn(startLink).getTrimmed().isEqual(range)) {
-        return startLink;
-      } else {
-        return null;
-      }
-    }
-  }
-}
-
-/**
- * Returns a link element if there's one among the ancestors of the provided `Position`.
- */
-function findLinkElementAncestor(position: any): ViewAttributeElement | null {
-  const linkElement = position.getAncestors().find((ancestor: any) => isLinkElement(ancestor));
-  return linkElement && linkElement.is('attributeElement') ? linkElement : null;
 }

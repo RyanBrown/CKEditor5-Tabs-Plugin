@@ -5,7 +5,7 @@ import { Collection, first, toMap } from '@ckeditor/ckeditor5-utils';
 import type { Range, Writer } from '@ckeditor/ckeditor5-engine';
 
 import AutomaticDecorators from './utils/automaticdecorators';
-import { isLinkableElement, isValidUrl, ensureUrlProtocol, isLegacyEditorLink } from './utils';
+import { isLinkableElement, isValidUrl, ensureUrlProtocol } from './utils';
 import type ManualDecorator from './utils/manualdecorator';
 
 /**
@@ -243,7 +243,7 @@ export default class AlightExternalLinkPluginCommand extends Command {
     }
 
     // If the URL is not HTTP/HTTPS and doesn't have a special suffix, don't proceed
-    if (!href.startsWith('http://') && !href.startsWith('https://') && !isLegacyEditorLink(href)) {
+    if (!href.startsWith('http://') && !href.startsWith('https://')) {
       console.warn('AlightExternalLinkPlugin only supports HTTP and HTTPS URLs or special editor links.');
       return;
     }

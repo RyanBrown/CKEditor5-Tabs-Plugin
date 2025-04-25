@@ -167,13 +167,19 @@ export default class LinkActionsView extends View {
     const t = this.t;
 
     if (href) {
-      // Display just the email address (without mailto: prefix)
-      const displayText = href.startsWith('mailto:') ? extractEmail(href) : href;
-      this.previewButtonView.label = displayText;
+      // Format the display text
+      if (href.includes('/')) {
+        const parts = href.split('/');
+        const folder = parts[0];
+        this.previewButtonView.label = `${folder}: Document`;
+      } else {
+        this.previewButtonView.label = href;
+      }
     } else {
       this.previewButtonView.label = t('This link has no URL');
     }
   }
+
 
   /**
    * Creates a button view.

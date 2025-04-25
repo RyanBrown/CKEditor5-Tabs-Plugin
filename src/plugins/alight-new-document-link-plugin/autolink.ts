@@ -234,24 +234,15 @@ export default class AlightNewDocumentAutoLink extends Plugin {
       if ('!.:,;?'.includes(mappedText[mappedText.length - 1])) {
         mappedText = mappedText.slice(0, -1);
       }
+      // Detect folder/document format
+      const match = text.match(/[A-Za-z0-9\s]+\/[A-Za-z0-9\-_]+$/);
 
       // 4. First check for email
-      if (EMAIL_REG_EXP.test(mappedText)) {
+      if (match) {
         return {
-          url: mappedText,
-          removedTrailingCharacters: text.length - mappedText.length,
-          isEmail: true
-        };
-      }
-
-      // 5. Otherwise check for URL
-      const url = getUrlAtTextEnd(mappedText);
-
-      if (url) {
-        return {
-          url,
-          removedTrailingCharacters: text.length - mappedText.length,
-          isEmail: false
+          url: match[0],
+          removedTrailingCharacters: text.length - match[0].length,
+          isDocumentLink: true
         };
       }
     });

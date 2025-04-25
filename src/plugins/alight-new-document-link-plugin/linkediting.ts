@@ -84,7 +84,7 @@ export default class AlightNewDocumentLinkPluginEditing extends Plugin {
     editor.config.define('alightNewDocumentLink', {
       allowCreatingEmptyLinks: false,
       addTargetToExternalLinks: false,
-      defaultProtocol: 'mailto:',
+      // Remove defaultProtocol setting
       toolbar: {
         shouldAppearInToolbar: true
       }
@@ -129,7 +129,7 @@ export default class AlightNewDocumentLinkPluginEditing extends Plugin {
         view: {
           name: 'a',
           attributes: {
-            href: /^mailto:/,
+            href: true,
             'data-id': 'new-document_link'
           }
         },
@@ -137,7 +137,7 @@ export default class AlightNewDocumentLinkPluginEditing extends Plugin {
           key: 'alightNewDocumentLinkPluginHref',
           value: (viewElement: ViewElement): string | null => {
             const href = viewElement.getAttribute('href');
-            return null;
+            return href;
           }
         },
         converterPriority: 'normal'

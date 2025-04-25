@@ -42,16 +42,12 @@ const DEFAULT_LINK_PROTOCOLS = [
  * Returns `true` if a given view node is the link element.
  */
 export function isLinkElement(node: ViewNode | ViewDocumentFragment): boolean {
-  return node.is('attributeElement') && !!node.getCustomProperty('alight-new-document-link');
-}
-
-// Helper function to detect legacy link types
-export function isLegacyEditorLink(url: string): boolean {
-  return url.includes('~public_editor_id') || url.includes('~intranet_editor_id');
+  return node.is('attributeElement') &&
+    !!node.getCustomProperty('alight-new-document-link');
 }
 
 /**
- * Creates a link {@link module:engine/view/attributeelement~AttributeElement} with the provided `href` attribute.
+ * Creates a link {@link module:engine/view/attributeelement~AttributeElement} with the provided href attribute.
  */
 export function createLinkElement(href: string, conversionApi: DowncastConversionApi): ViewAttributeElement {
   const { writer } = conversionApi;
@@ -80,10 +76,18 @@ export function createLinkElement(href: string, conversionApi: DowncastConversio
  *
  * @internal
  */
-export function ensureSafeUrl(url: unknown, allowedProtocols: Array<string> = DEFAULT_LINK_PROTOCOLS): string {
+export function ensureSafeUrl(url: unknown, allowedProtocols: Array<string> = []): string {
+  // For document links, we don't enforce protocol restrictions
+  // Just return the URL as-is if it doesn't have a protocol
   const urlString = String(url);
 
-  const protocolsList = allowedProtocols.join('|');
+  // Check if URL has a protocol
+  if (!urlString.includes('://')) {
+    return urlString;
+  }
+
+  // If it has a protocol, apply standard safety checks
+  const protocolsList = allowedProtocols.length ? allowedProtocols.join('|') : 'https|http';
   const customSafeRegex = new RegExp(`${SAFE_URL_TEMPLATE.replace('<protocols>', protocolsList)}`, 'i');
 
   return isSafeUrl(urlString, customSafeRegex) ? urlString : '#';
@@ -298,6 +302,302 @@ export function getDomainForDisplay(url: string): string {
   domain = domain.replace(/^www\./, '');
 
   return domain;
+}
+
+// ----- Form Validation and Submission Utilities -----
+
+/**
+ * Interface for validation errors
+ */
+export interface ValidationErrors {
+  [key: string]: string;
+}
+
+/**
+ * Interface for validation results
+ */
+export interface ValidationResult {
+  isValid: boolean;
+  errors?: ValidationErrors;
+}
+
+/**
+ * Form validation utility class
+ */
+export class FormValidator {
+  /**
+   * Validates the entire form
+   * @param formData The form data to validate
+   * @returns Validation result with errors if any
+   */
+  validateForm(formData: any): ValidationResult {
+    const errors: ValidationErrors = {};
+
+    // Language validation
+    if (!formData.language) {
+      errors['language'] = 'Please select a language';
+    }
+
+    // File validation
+    if (!formData.file) {
+      errors['file'] = 'Please choose a file';
+    } else if (formData.file.size > 5 * 1024 * 1024) {
+      errors['file'] = 'File size must be less than 5MB';
+    }
+
+    // Document title validation
+    if (!formData.documentTitle?.trim()) {
+      errors['documentTitle'] = 'Please enter a document title';
+    } else if (formData.documentTitle.length > 250) {
+      errors['documentTitle'] = 'Title must be less than 250 characters';
+    } else {
+      // Check for invalid characters and identify them in the error message
+      const invalidChars = formData.documentTitle.match(/[\\[\]:><\/\|\?"*,]/g);
+      if (invalidChars) {
+        const uniqueInvalidChars = [...new Set(invalidChars)].join(', ');
+        errors['documentTitle'] = `Title contains invalid characters: ${uniqueInvalidChars}`;
+      }
+    }
+
+    // Description validation
+    if (!formData.description?.trim()) {
+      errors['description'] = 'Please enter a description';
+    }
+
+    return {
+      isValid: Object.keys(errors).length === 0,
+      errors: Object.keys(errors).length > 0 ? errors : undefined
+    };
+  }
+
+  /**
+   * Validates a single field
+   * @param fieldName The name of the field to validate
+   * @param value The value to validate
+   * @returns Validation result with errors if any
+   */
+  validateField(fieldName: string, value: any): ValidationResult {
+    const errors: ValidationErrors = {};
+
+    switch (fieldName) {
+      case 'language':
+        if (!value) {
+          errors[fieldName] = 'Please select a language';
+        }
+        break;
+
+      case 'file':
+        if (!value) {
+          errors[fieldName] = 'Please choose a file';
+        } else if (value.size > 5 * 1024 * 1024) {
+          errors[fieldName] = 'File size must be less than 5MB';
+        }
+        break;
+
+      case 'documentTitle':
+        if (!value?.trim()) {
+          errors[fieldName] = 'Please enter a document title';
+        } else if (value.length > 250) {
+          errors[fieldName] = 'Title must be less than 250 characters';
+        } else {
+          // Check for invalid characters and identify them in the error message
+          const invalidChars = value.match(/[\\[\]:><\/\|\?"*,]/g);
+          if (invalidChars) {
+            const uniqueInvalidChars = [...new Set(invalidChars)].join(', ');
+            errors[fieldName] = `Title contains invalid characters: ${uniqueInvalidChars}`;
+          }
+        }
+        break;
+
+      case 'description':
+        if (!value?.trim()) {
+          errors[fieldName] = 'Please enter a description';
+        }
+        break;
+    }
+
+    return {
+      isValid: Object.keys(errors).length === 0,
+      errors: Object.keys(errors).length > 0 ? errors : undefined
+    };
+  }
+}
+
+/**
+ * Interface for form submission results
+ */
+export interface SubmissionResult {
+  success: boolean;
+  data?: any;
+  error?: string;
+}
+
+/**
+ * Form submission handler utility class
+ */
+export class FormSubmissionHandler {
+  private isSubmitting = false;
+  private submitTimeout: number | null = null;
+
+  /**
+   * Creates a new FormSubmissionHandler instance
+   * @param debounceTime Time in ms to prevent rapid resubmissions
+   */
+  constructor(private readonly debounceTime: number = 1000) { }
+
+  /**
+   * Simulates an API call for form submission
+   * @param formData The form data to submit
+   * @returns A promise that resolves to a submission result
+   */
+  private async mockApiCall(formData: FormData): Promise<SubmissionResult> {
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    try {
+      // Convert FormData to a plain object for response
+      const responseData: { [key: string]: any } = {
+        id: `doc-${Date.now()}`,
+        url: `https://example.com/documents/doc-${Date.now()}`,
+        status: 'success',
+        dnmDtoList: [{
+          folderPath: "",
+          fileId: `file-${Date.now()}`,
+          documentTitle: formData.get('documentTitle') || "SampleDoc",
+          documentLanguage: formData.get('language') || "en_US",
+          documentDescription: formData.get('description') || ""
+        }]
+      };
+
+      return {
+        success: true,
+        data: responseData
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to process form data'
+      };
+    }
+  }
+
+  /**
+   * Resets the submission state
+   */
+  private resetSubmitState(): void {
+    this.isSubmitting = false;
+    if (this.submitTimeout) {
+      window.clearTimeout(this.submitTimeout);
+      this.submitTimeout = null;
+    }
+  }
+
+  /**
+   * Submits the form data
+   * @param formData The form data to submit
+   * @returns A promise that resolves to a submission result
+   */
+  public async submitForm(formData: any): Promise<SubmissionResult> {
+    // Prevent duplicate submissions
+    if (this.isSubmitting) {
+      return {
+        success: false,
+        error: 'Form submission already in progress'
+      };
+    }
+
+    try {
+      this.isSubmitting = true;
+
+      // Create FormData instance for file upload
+      const submission = new FormData();
+
+      // Append all form fields to FormData
+      Object.entries(formData).forEach(([key, value]) => {
+        if (value instanceof File) {
+          submission.append(key, value);
+        } else if (Array.isArray(value)) {
+          submission.append(key, JSON.stringify(value));
+        } else if (value !== null && value !== undefined) {
+          submission.append(key, String(value));
+        }
+      });
+
+      // Submit the form data
+      const result = await this.mockApiCall(submission);
+
+      // Set a timeout to prevent rapid resubmission
+      this.submitTimeout = window.setTimeout(() => {
+        this.resetSubmitState();
+      }, this.debounceTime);
+
+      return result;
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'An unexpected error occurred'
+      };
+    } finally {
+      // Reset submission state after debounce time
+      setTimeout(() => {
+        this.resetSubmitState();
+      }, this.debounceTime);
+    }
+  }
+
+  /**
+   * Cancels an ongoing submission
+   */
+  public cancelSubmission(): void {
+    this.resetSubmitState();
+  }
+}
+
+/**
+ * Handles form submission and creates a link with the result
+ * @param contentManager The content manager instance
+ * @param editor The editor instance
+ * @param modalDialog The modal dialog instance
+ */
+export async function handleFormSubmission(contentManager: any, editor: any, modalDialog: any): Promise<void> {
+  if (!contentManager) {
+    return;
+  }
+
+  // Set hasUserInteracted to true when Continue is clicked
+  contentManager.hasUserInteracted = true;
+
+  // Validate the form
+  const validation = contentManager.validateForm();
+  if (!validation.isValid) {
+    // Don't proceed if validation fails
+    return;
+  }
+
+  try {
+    // Submit the form and get the result
+    const result = await contentManager.submitForm();
+
+    if (result) {
+      // Get folder path and document ID from the result
+      const folderPath = result.dnmDtoList?.[0]?.folderPath || "";
+      const documentId = result.id || `doc-${Date.now()}`;
+
+      // Create direct link with folder path (no protocol)
+      const href = `${folderPath}/${documentId}`;
+
+      // Execute the link command
+      editor.execute('alight-new-document-link', href);
+
+      // Close the modal
+      if (modalDialog) {
+        modalDialog.hide();
+      }
+    }
+  } catch (error) {
+    console.error('Error submitting form:', error);
+    // Show error in the modal
+  }
 }
 
 export type NormalizedLinkDecoratorAutomaticDefinition = LinkDecoratorAutomaticDefinition & { id: string };
