@@ -188,13 +188,9 @@ export default class LinkActionsView extends View {
         },
         children: [{
           text: bind.to('href', href => {
-            // Format the display text for document links
+            // We'll set this after rendering through the _updateBalloonTitle method
+            // This just provides an initial placeholder
             if (href) {
-              if (href.includes('/')) {
-                const parts = href.split('/');
-                const folder = parts[0];
-                return `${folder}: Document`;
-              }
               return href;
             }
             // Default text when href is empty or undefined

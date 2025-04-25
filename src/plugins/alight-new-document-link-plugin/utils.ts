@@ -47,9 +47,10 @@ export function isLinkElement(node: ViewNode | ViewDocumentFragment): boolean {
 }
 
 /**
- * Creates a link {@link module:engine/view/attributeelement~AttributeElement} with the provided href attribute.
+ * Creates a link {@link module:engine/view/attributeelement~AttributeElement} with the provided href attribute
+ * and optionally a document title.
  */
-export function createLinkElement(href: string, conversionApi: DowncastConversionApi): ViewAttributeElement {
+export function createLinkElement(href: string, conversionApi: DowncastConversionApi, documentTitle?: string): ViewAttributeElement {
   const { writer } = conversionApi;
 
   // Start with default attributes
@@ -57,6 +58,11 @@ export function createLinkElement(href: string, conversionApi: DowncastConversio
     href,
     'data-id': 'new-document_link'
   };
+
+  // Add document title attribute if provided
+  if (documentTitle) {
+    attributes['data-document-title'] = documentTitle;
+  }
 
   // Priority 5 - https://github.com/ckeditor/ckeditor5-link/issues/121.
   const linkElement = writer.createAttributeElement('a', attributes, { priority: 5 });
@@ -579,15 +585,21 @@ export async function handleFormSubmission(contentManager: any, editor: any, mod
     const result = await contentManager.submitForm();
 
     if (result) {
+      // Get form data
+      const formData = contentManager.getFormData();
+
       // Get folder path and document ID from the result
       const folderPath = result.dnmDtoList?.[0]?.folderPath || "";
       const documentId = result.id || `doc-${Date.now()}`;
 
+      // Get document title from the form
+      const documentTitle = formData.documentTitle || "";
+
       // Create direct link with folder path (no protocol)
       const href = `${folderPath}/${documentId}`;
 
-      // Execute the link command
-      editor.execute('alight-new-document-link', href);
+      // Execute the link command with document title
+      editor.execute('alight-new-document-link', href, { documentTitle });
 
       // Close the modal
       if (modalDialog) {

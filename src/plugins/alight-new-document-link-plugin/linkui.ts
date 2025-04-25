@@ -1072,6 +1072,9 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
     // Get link attributes
     const href = selectedLink.getAttribute('href') as string;
 
+    // Try to get document title attribute if available
+    const documentTitle = selectedLink.getAttribute('data-document-title');
+
     // Find the title element in the balloon
     const titleElement = this.actionsView.element.querySelector('.cka-button-title-text');
     if (!titleElement) {
@@ -1081,10 +1084,13 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
     // Format title text based on href pattern
     let displayTitle = '';
 
-    if (href.includes('/')) {
+    if (documentTitle) {
+      // Use the document title if available
+      displayTitle = documentTitle as string;
+    } else if (href.includes('/')) {
       const parts = href.split('/');
       const folder = parts[0];
-      const docId = parts[parts.length - 1];
+      // Fallback to folder-based format if no document title
       displayTitle = `${folder}: Document`;
     } else {
       // Use the href as fallback

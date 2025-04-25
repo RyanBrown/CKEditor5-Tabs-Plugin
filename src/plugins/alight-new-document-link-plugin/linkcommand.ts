@@ -98,19 +98,41 @@ export default class AlightNewDocumentLinkPluginCommand extends Command {
    * @param href Email link destination.
    * @param options Options including manual decorator attributes.
    */
+  /**
+ * Executes the command.
+ *
+ * When the selection is non-collapsed, the `alightNewDocumentLinkPluginHref` attribute will be applied to nodes inside the selection, but only to
+ * those nodes where the `alightNewDocumentLinkPluginHref` attribute is allowed (disallowed nodes will be omitted).
+ *
+ * When the selection is collapsed and is not inside the text with the `alightNewDocumentLinkPluginHref` attribute, a
+ * new {@link module:engine/model/text~Text text node} with the `alightNewDocumentLinkPluginHref` attribute will be inserted in place of the caret, but
+ * only if such element is allowed in this place. The `_data` of the inserted text will equal the `href` parameter.
+ * The selection will be updated to wrap the just inserted text node.
+ *
+ * When the selection is collapsed and inside the text with the `alightNewDocumentLinkPluginHref` attribute, the attribute value will be updated.
+ *
+ * @fires execute
+ * @param href Document link destination.
+ * @param options Options including manual decorator attributes and document title.
+ */
   public override execute(href: string, options: LinkOptions = {}): void {
     const model = this.editor.model;
     const selection = model.document.selection;
+
+    // Extract document title if provided
+    const documentTitle = options.documentTitle;
 
     // Extract decorator options
     const truthyManualDecorators: Array<string> = [];
     const falsyManualDecorators: Array<string> = [];
 
     for (const name in options) {
-      if (options[name] === true) {
-        truthyManualDecorators.push(name);
-      } else if (options[name] === false) {
-        falsyManualDecorators.push(name);
+      if (name !== 'documentTitle') {
+        if (options[name] === true) {
+          truthyManualDecorators.push(name);
+        } else if (options[name] === false) {
+          falsyManualDecorators.push(name);
+        }
       }
     }
 
@@ -132,6 +154,11 @@ export default class AlightNewDocumentLinkPluginCommand extends Command {
           // Update the attribute value.
           writer.setAttribute('alightNewDocumentLinkPluginHref', href, linkRange);
 
+          // Add document title if available
+          if (documentTitle) {
+            writer.setAttribute('documentTitle', documentTitle, linkRange);
+          }
+
           // Add decorators
           truthyManualDecorators.forEach(item => {
             writer.setAttribute(item, true, linkRange);
@@ -150,12 +177,17 @@ export default class AlightNewDocumentLinkPluginCommand extends Command {
 
           attributes.set('alightNewDocumentLinkPluginHref', href);
 
+          // Add document title if available
+          if (documentTitle) {
+            attributes.set('documentTitle', documentTitle);
+          }
+
           truthyManualDecorators.forEach(item => {
             attributes.set(item, true);
           });
 
           // Create display text for the new link
-          let displayText = this._createDisplayText(href);
+          let displayText = this._createDisplayText(href, documentTitle as string);
 
           const { end: positionAfter } = model.insertContent(
             writer.createText(displayText, attributes as any),
@@ -166,9 +198,8 @@ export default class AlightNewDocumentLinkPluginCommand extends Command {
           writer.setSelection(positionAfter);
         }
 
-        // Remove the `alightNewDocumentLinkPluginHref` attribute and all link decorators from the selection.
-        // It stops adding a new content into the link element.
-        ['alightNewDocumentLinkPluginHref', ...truthyManualDecorators, ...falsyManualDecorators].forEach(item => {
+        // Remove the attributes from the selection.
+        ['alightNewDocumentLinkPluginHref', 'documentTitle', ...truthyManualDecorators, ...falsyManualDecorators].forEach(item => {
           writer.removeSelectionAttribute(item);
         });
       } else {
@@ -177,8 +208,13 @@ export default class AlightNewDocumentLinkPluginCommand extends Command {
 
         // Process each range
         for (const range of ranges) {
-          // Apply link href and decorators
+          // Apply link href
           writer.setAttribute('alightNewDocumentLinkPluginHref', href, range);
+
+          // Add document title if available
+          if (documentTitle) {
+            writer.setAttribute('documentTitle', documentTitle, range);
+          }
 
           // Add decorators
           truthyManualDecorators.forEach(item => {
@@ -195,10 +231,15 @@ export default class AlightNewDocumentLinkPluginCommand extends Command {
   }
 
   /**
- * Creates a display text for the new document link based on the href.
- * For document links, we extract a meaningful display text from the path.
- */
-  private _createDisplayText(href: string): string {
+   * Creates a display text for the new document link based on the href.
+   * For document links, we use the provided document title or extract a meaningful display text from the path.
+   */
+  private _createDisplayText(href: string, documentTitle?: string): string {
+    // If a document title is provided, use it
+    if (documentTitle) {
+      return documentTitle;
+    }
+
     // If it's a folder path with a document ID, use a more user-friendly display
     if (href.includes('/')) {
       const parts = href.split('/');
@@ -209,7 +250,8 @@ export default class AlightNewDocumentLinkPluginCommand extends Command {
         const docId = parts[parts.length - 1].trim();
 
         // Create a display text like "Folder: Document"
-        return `${folder}: Document`;
+        // return `${folder}: Document`;
+        return `${documentTitle}`;
       }
     }
 
@@ -219,6 +261,9 @@ export default class AlightNewDocumentLinkPluginCommand extends Command {
 
   /**
    * Provides information whether a decorator with a given name is present in the currently processed selection.
+   * 
+   * @param decoratorName The name of the decorator to check
+   * @returns The state of the decorator (true if active, false if inactive, undefined if not applicable)
    */
   private _getDecoratorStateFromModel(decoratorName: string): boolean | undefined {
     const model = this.editor.model;
