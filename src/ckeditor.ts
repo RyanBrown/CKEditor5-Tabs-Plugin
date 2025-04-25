@@ -400,7 +400,6 @@ class AlightEditor extends ClassicEditor {
             onclick: true,
             orgnameattr: true,
             target: true,
-            class: true
           },
           classes: ["AHCustomLink", "AHCustomeLink", "document_tag", "*"],
           styles: ["*"]

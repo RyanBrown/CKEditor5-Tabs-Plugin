@@ -2,6 +2,7 @@
 import { Command } from '@ckeditor/ckeditor5-core';
 import { findAttributeRange } from '@ckeditor/ckeditor5-typing';
 import { Collection, first, toMap } from '@ckeditor/ckeditor5-utils';
+import type { Range } from '@ckeditor/ckeditor5-engine';
 import AutomaticDecorators from './utils/automaticdecorators';
 import { isLinkableElement } from './utils';
 import type ManualDecorator from './utils/manualdecorator';
@@ -239,11 +240,7 @@ export default class AlightNewDocumentLinkPluginCommand extends Command {
       // If there are at least two parts (folder and ID)
       if (parts.length >= 2) {
         const folder = parts[0].trim();
-        const docId = parts[parts.length - 1].trim();
-
-        // Create a display text like "Folder: Document"
-        // return `${folder}: Document`;
-        return `${documentTitle}`;
+        return `${folder}: Document`;
       }
     }
 

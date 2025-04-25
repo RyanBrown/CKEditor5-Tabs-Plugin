@@ -27,15 +27,13 @@ const ATTRIBUTE_WHITESPACES = /[\u0000-\u0020\u00A0\u1680\u180E\u2000-\u2029\u20
 // SAFE_URL_TEMPLATE to only allow http and https protocols
 const SAFE_URL_TEMPLATE = '^(?:(?:<protocols>):|[^a-z]|[a-z+.-]+(?:[^a-z+.:-]|$))';
 
-// Enhanced email detection regex
-const ENHANCED_EMAIL_REG_EXP = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/i;
-
 // The regex checks for the protocol syntax ('xxxx://' or 'xxxx:')
 // or non-word characters at the beginning of the link ('/', '#' etc.).
 const PROTOCOL_REG_EXP = /^((\w+:(\/{2,})?)|(\W))/i;
 
 const DEFAULT_LINK_PROTOCOLS = [
-  'mailto'
+  'http',
+  'https'
 ];
 
 /**
@@ -174,35 +172,14 @@ export function isLinkableElement(element: Element | null, schema: Schema): elem
 }
 
 /**
- * Returns `true` if the specified `value` is an email.
- */
-export function isEmail(value: string): boolean {
-  // First check if it's already a mailto: link
-  if (value.startsWith('mailto:')) {
-    // Validate the part after mailto:
-    return ENHANCED_EMAIL_REG_EXP.test(value.substring(7));
-  }
-
-  // Then check if it looks like an email address with the enhanced pattern
-  return ENHANCED_EMAIL_REG_EXP.test(value);
-}
-
-/**
  * Adds the protocol prefix to the specified `link` when:
  * 
  * it does not contain it already, and there is a {@link module:link/linkconfig~LinkConfig#defaultProtocol `defaultProtocol` }
- * configuration value provided, or the link is an email address.
+ * configuration value provided.
  */
 export function addLinkProtocolIfApplicable(link: string, defaultProtocol?: string): string {
-  // For emails, ensure mailto: is always added
-  if (isEmail(link) && !link.startsWith('mailto:')) {
-    return 'mailto:' + link;
-  }
-
-  const protocol = isEmail(link) ? 'mailto:' : defaultProtocol;
-  const isProtocolNeeded = !!protocol && !linkHasProtocol(link);
-
-  return link && isProtocolNeeded ? protocol + link : link;
+  const isProtocolNeeded = !!defaultProtocol && !linkHasProtocol(link);
+  return link && isProtocolNeeded ? defaultProtocol + link : link;
 }
 
 /**
@@ -251,41 +228,6 @@ export function createBookmarkCallbacks(editor: Editor): LinkActionsViewOptions 
     isScrollableToTarget,
     scrollToTarget
   };
-}
-
-/**
- * Converts a string to a valid mailto link if it's an email address
- */
-export function ensureMailtoLink(value: string): string {
-  // If it's already a mailto link, return as is
-  if (value.startsWith('mailto:')) {
-    return value;
-  }
-
-  // If it's an email address, add mailto:
-  if (isEmail(value)) {
-    return 'mailto:' + value;
-  }
-
-  // Otherwise return the original string
-  return value;
-}
-
-/**
- * Extracts email address from a mailto link
- */
-export function extractEmail(mailtoLink: string): string {
-  if (mailtoLink.startsWith('mailto:')) {
-    return mailtoLink.substring(7);
-  }
-  return mailtoLink;
-}
-
-/**
- * Checks if a URL is a mailto link
- */
-export function isMailtoLink(url: string): boolean {
-  return url.startsWith('mailto:');
 }
 
 /**

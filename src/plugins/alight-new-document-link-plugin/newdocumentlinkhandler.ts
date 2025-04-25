@@ -2,11 +2,10 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import { Range, ViewElement } from '@ckeditor/ckeditor5-engine';
 import AlightNewDocumentLinkPluginEditing from './linkediting';
-import { isEmail } from './utils';
 
 /**
- * Email Link Handler plugin to ensure all mailto: links are processed
- * through the Alight Email Link UI.
+ * Document Link Handler plugin to ensure document links are processed
+ * through the Alight Document Link UI.
  */
 export default class NewDocumentLinkHandler extends Plugin {
   /**
@@ -32,18 +31,12 @@ export default class NewDocumentLinkHandler extends Plugin {
     // Override the standard link command
     this._interceptLinkCommands();
 
-    // Prevent default link plugin from handling mailto links in upcast conversion
-    this._preventDefaultEmailLinkUpcast();
-
-    // Handle pasted mailto: links
-    this._enableMailtoLinkDetection();
-
     // Monitor for conflicting link attributes and resolve them
     this._handleConflictingLinks();
   }
 
   /**
-   * Intercepts the standard link commands to redirect mailto: links
+   * Intercepts the standard link commands to redirect document links
    * to the AlightNewDocumentLinkPlugin.
    */
   private _interceptLinkCommands(): void {
@@ -60,97 +53,18 @@ export default class NewDocumentLinkHandler extends Plugin {
     // Monkey patch the execute method of the link command
     const originalExecute = originalLinkCommand.execute;
     originalLinkCommand.execute = function (href: string, options = {}) {
-      // If the link is a mailto link, use our custom new document link command
-      if (href && typeof href === 'string' && (href.startsWith('mailto:') ||
-        href.includes('@') && !href.includes('://') && !href.startsWith('/'))) {
+      // Check if this is a document link format (folder/document pattern)
+      const isDocumentLink = href && typeof href === 'string' &&
+        (href.match(/[A-Za-z0-9\s]+\/[A-Za-z0-9\-_]+$/) !== null);
 
-        // If it's an email address without the mailto: prefix, add it
-        if (!href.startsWith('mailto:') && href.includes('@')) {
-          href = 'mailto:' + href;
-        }
-
+      if (isDocumentLink) {
         // Execute our custom command instead
         editor.execute('alight-new-document-link', href, options);
       } else {
-        // For non-mailto links, use the original behavior
+        // For non-document links, use the original behavior
         originalExecute.call(this, href, options);
       }
     };
-  }
-
-  /**
-  * Prevents the default link plugin from handling mailto: links in upcast conversion
-  */
-  private _preventDefaultEmailLinkUpcast(): void {
-    const editor = this.editor;
-
-    // Add a high-priority custom element-to-attribute converter for mailto links
-    editor.conversion.for('upcast').elementToAttribute({
-      view: {
-        name: 'a',
-        attributes: {
-          href: /^mailto:|.*@.*$/
-        }
-      },
-      model: {
-        key: 'alightNewDocumentLinkPluginHref',
-        value: (viewElement: ViewElement) => {
-          const href = viewElement.getAttribute('href');
-          if (typeof href !== 'string') {
-            return null;
-          }
-
-          // Ensure mailto: prefix
-          return href.startsWith('mailto:') ? href : 'mailto:' + href;
-        }
-      },
-      converterPriority: 'highest'
-    });
-  }
-
-  /**
-   * Detects when mailto: links are pasted or typed and ensures they're 
-   * handled by the AlightNewDocumentLinkPlugin
-   */
-  private _enableMailtoLinkDetection(): void {
-    const editor = this.editor;
-
-    // Get the clipboard pipeline plugin
-    const clipboardPipeline = editor.plugins.get('ClipboardPipeline');
-
-    // Listen for content insertion
-    clipboardPipeline.on('inputTransformation', (evt, data) => {
-      // Skip if not pasted content
-      if (data.method !== 'paste') {
-        return;
-      }
-
-      // Get the plain text
-      const text = data.dataTransfer.getData('text/plain');
-
-      // If it's an email address, handle it
-      if (text && this._isEmailAddress(text)) {
-        // Add the mailto: prefix if missing
-        const emailLink = text.startsWith('mailto:') ? text : 'mailto:' + text;
-
-        // Replace the pasted text with a link
-        setTimeout(() => {
-          editor.execute('alight-new-document-link', emailLink);
-        }, 0);
-
-        // Stop the default paste behavior
-        evt.stop();
-      }
-
-      // Check for mailto links in HTML content
-      const html = data.dataTransfer.getData('text/html');
-      if (html && html.includes('mailto:')) {
-        // Let the paste happen, but then find and convert any mailto links
-        setTimeout(() => {
-          this._convertStandardMailtoLinks();
-        }, 0);
-      }
-    }, { priority: 'high' });
   }
 
   /**
@@ -181,10 +95,12 @@ export default class NewDocumentLinkHandler extends Plugin {
             item.hasAttribute('alightNewDocumentLinkPluginHref')) {
 
             const linkHref = item.getAttribute('linkHref');
+            const documentLinkHref = item.getAttribute('alightNewDocumentLinkPluginHref');
 
-            // If it's an new document link, keep only our attribute
+            // If it's a document link, keep only our attribute
             if (linkHref && typeof linkHref === 'string' &&
-              (linkHref.startsWith('mailto:') || isEmail(linkHref))) {
+              documentLinkHref && typeof documentLinkHref === 'string' &&
+              documentLinkHref.includes('/')) {
               writer.removeAttribute('linkHref', item);
             } else {
               // Otherwise, keep the standard link attribute
@@ -193,53 +109,6 @@ export default class NewDocumentLinkHandler extends Plugin {
           }
         }
       });
-    });
-  }
-
-  /**
-   * Checks if a string is a valid email address
-   */
-  private _isEmailAddress(text: string): boolean {
-    // Remove mailto: prefix for validation
-    const email = text.startsWith('mailto:') ? text.substring(7) : text;
-
-    // Use the same email validation as in utils.ts
-    return isEmail(email);
-  }
-
-  /**
-   * Finds and converts standard mailto links in the editor content
-   * to use the AlightNewDocumentLinkPlugin
-   */
-  private _convertStandardMailtoLinks(): void {
-    const editor = this.editor;
-    const model = editor.model;
-
-    // Find all links with mailto: in the model
-    model.change(writer => {
-      const root = model.document.getRoot();
-      if (!root) return;
-
-      const range = model.createRangeIn(root);
-
-      for (const item of range.getItems()) {
-        if (item.is('$text') && item.hasAttribute('linkHref')) {
-          const href = item.getAttribute('linkHref');
-
-          if (typeof href === 'string' && href.startsWith('mailto:')) {
-            // Get the link range
-            const linkRange = this._getLinkRange(item, model);
-
-            if (linkRange) {
-              // Remove the standard link attribute
-              writer.removeAttribute('linkHref', linkRange);
-
-              // Apply our custom link attribute
-              writer.setAttribute('alightNewDocumentLinkPluginHref', href, linkRange);
-            }
-          }
-        }
-      }
     });
   }
 

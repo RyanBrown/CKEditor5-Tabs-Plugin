@@ -36,7 +36,7 @@ export default class LinksFetchService extends HttpService {
 
         for (const item of data) {
           if (item.predefinedLinksDetails && Array.isArray(item.predefinedLinksDetails)) {
-            console.log(`Processing ${item.predefinedLinksDetails.length} nested links for ${item.pageCode || 'unknown'}`);
+            // console.log(`Processing ${item.predefinedLinksDetails.length} nested links for ${item.pageCode || 'unknown'}`);
 
             // Process each nested link and add parent data
             item.predefinedLinksDetails.forEach((nestedLink: any) => {
@@ -147,7 +147,7 @@ export default class LinksFetchService extends HttpService {
 
     // If the first item has a predefinedLinksDetails array, we have a nested structure
     if (rawLinks.length > 0 && 'predefinedLinksDetails' in rawLinks[0] && Array.isArray(rawLinks[0].predefinedLinksDetails)) {
-      console.log("Processing nested predefined links structure");
+      // console.log("Processing nested predefined links structure");
 
       for (const rawLink of rawLinks as PredefinedLink[]) {
         if (rawLink.predefinedLinksDetails && Array.isArray(rawLink.predefinedLinksDetails)) {

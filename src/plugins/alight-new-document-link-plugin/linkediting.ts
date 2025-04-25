@@ -1,5 +1,4 @@
 // src/plugins/alight-new-document-link-plugin/linkediting.ts
-
 import {
   Plugin,
   type Editor
@@ -10,7 +9,8 @@ import type {
   ViewElement,
   ViewDocumentKeyDownEvent,
   ViewDocumentClickEvent,
-  DocumentSelectionChangeAttributeEvent
+  DocumentSelectionChangeAttributeEvent,
+  DowncastConversionApi
 } from '@ckeditor/ckeditor5-engine';
 import {
   Input,
@@ -98,8 +98,8 @@ export default class AlightNewDocumentLinkPluginEditing extends Plugin {
   public init(): void {
     const editor = this.editor;
     const config = editor.config.get('alightNewDocumentLink') as AlightNewDocumentLinkPluginConfig;
-    // Only allow http and https protocols
-    const allowedProtocols = ['mailto'];
+    // Define allowed protocols - only http and https allowed by default
+    const allowedProtocols = ['http', 'https'];
 
     // Allow link attribute on all inline nodes.
     editor.model.schema.extend('$text', { allowAttributes: 'alightNewDocumentLinkPluginHref' });
@@ -143,7 +143,7 @@ export default class AlightNewDocumentLinkPluginEditing extends Plugin {
         converterPriority: 'high'
       });
 
-    // Upcast converter for all links - we'll filter non-HTTP/HTTPS later
+    // Upcast converter for document links
     editor.conversion.for('upcast')
       .elementToAttribute({
         view: {
@@ -155,17 +155,17 @@ export default class AlightNewDocumentLinkPluginEditing extends Plugin {
         },
         model: {
           key: 'alightNewDocumentLinkPluginHref',
-          value: (viewElement: ViewElement, conversionApi: any): string | null => {
+          value: (viewElement: ViewElement, conversionApi: DowncastConversionApi): string | null => {
             const href = viewElement.getAttribute('href');
 
             // Upcast document title if available
             const documentTitle = viewElement.getAttribute('data-document-title');
-            if (documentTitle && viewElement.parent) {
-              // Add document title attribute to the model
+            if (documentTitle && viewElement.parent && viewElement.parent.is('element')) {
+              // Add document title attribute to the model element
+              // Only proceed if parent is an Element, not a DocumentFragment
               conversionApi.writer.setAttribute('documentTitle', documentTitle, viewElement.parent);
               console.log('Upcasting link with documentTitle:', documentTitle);
             }
-
             return href;
           }
         },
@@ -206,7 +206,7 @@ export default class AlightNewDocumentLinkPluginEditing extends Plugin {
     // Setup highlight over selected link with a unique class to avoid conflicts
     inlineHighlight(editor, 'alightNewDocumentLinkPluginHref', 'a', HIGHLIGHT_CLASS);
 
-    // Handle link following by CTRL+click or ALT+ENTER
+    // Handle link following by CTRL+click
     this._enableLinkOpen();
 
     // Clears the DocumentSelection decorator attributes if the selection is no longer in a link (for example while using 2-SCM).
@@ -332,6 +332,9 @@ export default class AlightNewDocumentLinkPluginEditing extends Plugin {
     function handleLinkOpening(url: string): void {
       if (bookmarkCallbacks.isScrollableToTarget(url)) {
         bookmarkCallbacks.scrollToTarget(url);
+      } else {
+        // For document links, you might want to implement custom handling here
+        console.log('Opening document link:', url);
       }
     }
 
@@ -363,15 +366,12 @@ export default class AlightNewDocumentLinkPluginEditing extends Plugin {
         return;
       }
 
-      // Only handle mailto links here
-      if (!url.startsWith('mailto:')) {
-        return;
+      // Handle document links
+      if (url.includes('/')) {
+        evt.stop();
+        data.preventDefault();
+        handleLinkOpening(url);
       }
-
-      evt.stop();
-      data.preventDefault();
-
-      handleLinkOpening(url);
     }, { context: '$capture' });
 
     // Open link on Alt+Enter.
@@ -445,7 +445,7 @@ export default class AlightNewDocumentLinkPluginEditing extends Plugin {
 
 /**
  * Make the selection free of link-related model attributes.
- * All link-related model attributes start with "link" or "alightEmail". That includes not only "alightNewDocumentLinkPluginHref"
+ * All link-related model attributes start with "link". That includes not only "alightNewDocumentLinkPluginHref"
  * but also all decorator attributes (they have dynamic names), or even custom plugins.
  */
 function removeLinkAttributesFromSelection(writer: Writer, linkAttributes: Array<string>): void {
@@ -463,7 +463,6 @@ function getLinkAttributesAllowedOnText(schema: Schema): Array<string> {
   const textAttributes = schema.getDefinition('$text')?.allowAttributes || [];
 
   return textAttributes.filter(attribute =>
-    typeof attribute === 'string' &&
-    (attribute.startsWith('link') || attribute.startsWith('alightEmail'))
+    typeof attribute === 'string' && attribute.startsWith('link')
   );
 }

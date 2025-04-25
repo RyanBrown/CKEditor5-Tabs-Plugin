@@ -10,11 +10,8 @@ import AlightNewDocumentLinkPluginEditing from './linkediting';
 
 const MIN_LINK_LENGTH_WITH_SPACE_AT_END = 4; // Ie: "t.co " (length 5).
 
-// Improved email detection regex
-const EMAIL_REG_EXP = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/i;
-
 /**
- * Enhanced autolink plugin with better email detection
+ * Enhanced autolink plugin for document links
  */
 export default class AlightNewDocumentAutoLink extends Plugin {
   /**
@@ -51,7 +48,6 @@ export default class AlightNewDocumentAutoLink extends Plugin {
     });
 
     this._enableTypingHandling();
-    this._enableEmailDetection();
   }
 
   /**
@@ -61,67 +57,6 @@ export default class AlightNewDocumentAutoLink extends Plugin {
     this._enableEnterHandling();
     this._enableShiftEnterHandling();
     this._enablePasteLinking();
-  }
-
-  /**
-   * Enables special handling for email addresses
-   */
-  private _enableEmailDetection(): void {
-    const editor = this.editor;
-    const clipboardPipeline = editor.plugins.get('ClipboardPipeline');
-
-    // Listen for paste events
-    clipboardPipeline.on('inputTransformation', (evt, data: ClipboardInputTransformationData) => {
-      if (!this.isEnabled || data.method !== 'paste') {
-        return;
-      }
-
-      const text = data.dataTransfer.getData('text/plain');
-
-      // Check if the pasted text is an email address
-      if (text && EMAIL_REG_EXP.test(text.trim())) {
-        // Don't create the new document link yet, just let the email be pasted
-        // We'll detect it in the document and auto-link it
-        setTimeout(() => {
-          this._detectAndLinkEmails();
-        }, 0);
-      }
-    });
-  }
-
-  /**
-   * Searches the document for unlinked email addresses and converts them to mailto: links
-   */
-  private _detectAndLinkEmails(): void {
-    const editor = this.editor;
-    const model = editor.model;
-
-    model.change(writer => {
-      const range = model.createRangeIn(model.document.getRoot()!);
-
-      for (const item of range.getItems()) {
-        if (item.is('$text') && !item.hasAttribute('alightNewDocumentLinkPluginHref')) {
-          const text = item.data;
-
-          // Look for email pattern in the text
-          const match = text.match(EMAIL_REG_EXP);
-
-          if (match) {
-            const email = match[0];
-            const startIndex = text.indexOf(email);
-            const endIndex = startIndex + email.length;
-
-            // Create range for the email part
-            const start = model.createPositionAt(item.parent!, item.startOffset! + startIndex);
-            const end = model.createPositionAt(item.parent!, item.startOffset! + endIndex);
-            const emailRange = model.createRange(start, end);
-
-            // Add mailto: prefix and set attribute
-            writer.setAttribute('alightNewDocumentLinkPluginHref', 'mailto:' + email, emailRange);
-          }
-        }
-      }
-    });
   }
 
   /**
@@ -187,18 +122,20 @@ export default class AlightNewDocumentAutoLink extends Plugin {
         return;
       }
 
-      // Check if it's an email address
-      if (EMAIL_REG_EXP.test(newLink.trim())) {
+      // Handle document links
+      // Detect folder/document format
+      const match = newLink.match(/[A-Za-z0-9\s]+\/[A-Za-z0-9\-_]+$/);
+      if (match) {
         model.change(writer => {
           this._selectEntireLinks(writer, selectedRange);
-          AlightNewDocumentLinkPluginCommand.execute('mailto:' + newLink.trim());
+          AlightNewDocumentLinkPluginCommand.execute(match[0]);
         });
 
         evt.stop();
         return;
       }
 
-      // Handle regular URLs (original logic)
+      // Handle regular URLs
       const matches = newLink.match(/^(https?:\/\/|www\.)\S+$/i);
 
       // If the text in the clipboard has a URL, and that URL is the whole clipboard.
@@ -234,10 +171,11 @@ export default class AlightNewDocumentAutoLink extends Plugin {
       if ('!.:,;?'.includes(mappedText[mappedText.length - 1])) {
         mappedText = mappedText.slice(0, -1);
       }
+
       // Detect folder/document format
       const match = text.match(/[A-Za-z0-9\s]+\/[A-Za-z0-9\-_]+$/);
 
-      // 4. First check for email
+      // Check for document link format
       if (match) {
         return {
           url: match[0],
@@ -247,8 +185,8 @@ export default class AlightNewDocumentAutoLink extends Plugin {
       }
     });
 
-    watcher.on<TextWatcherMatchedDataEvent<{ url: string; removedTrailingCharacters: number; isEmail?: boolean }>>('matched:data', (evt, data) => {
-      const { batch, range, url, removedTrailingCharacters, isEmail } = data;
+    watcher.on<TextWatcherMatchedDataEvent<{ url: string; removedTrailingCharacters: number; isDocumentLink?: boolean }>>('matched:data', (evt, data) => {
+      const { batch, range, url, removedTrailingCharacters } = data;
 
       if (!batch.isTyping) {
         return;
@@ -259,12 +197,7 @@ export default class AlightNewDocumentAutoLink extends Plugin {
 
       const linkRange = editor.model.createRange(linkStart, linkEnd);
 
-      // For emails, always add mailto: prefix
-      if (isEmail) {
-        this._applyAutoLink('mailto:' + url, linkRange);
-      } else {
-        this._applyAutoLink(url, linkRange);
-      }
+      this._applyAutoLink(url, linkRange);
     });
 
     watcher.bind('isEnabled').to(this);
@@ -327,14 +260,16 @@ export default class AlightNewDocumentAutoLink extends Plugin {
     const model = this.editor.model;
     const { text, range } = getLastTextLine(rangeToCheck, model);
 
-    // First check for email
-    if (EMAIL_REG_EXP.test(text)) {
+    // Check for document link format
+    const documentLinkMatch = text.match(/[A-Za-z0-9\s]+\/[A-Za-z0-9\-_]+$/);
+    if (documentLinkMatch) {
+      const documentLink = documentLinkMatch[0];
       const linkRange = model.createRange(
-        range.start,
+        range.end.getShiftedBy(-documentLink.length),
         range.end
       );
 
-      this._applyAutoLink('mailto:' + text, linkRange);
+      this._applyAutoLink(documentLink, linkRange);
       return;
     }
 
@@ -363,7 +298,7 @@ export default class AlightNewDocumentAutoLink extends Plugin {
     const defaultProtocol = this.editor.config.get('link.defaultProtocol');
     const fullUrl = addLinkProtocolIfApplicable(url, defaultProtocol);
 
-    if (!this.isEnabled || !isLinkAllowedOnRange(range, model) || (url.startsWith('mailto:') ? false : !linkHasProtocol(fullUrl)) || linkIsAlreadySet(range)) {
+    if (!this.isEnabled || !isLinkAllowedOnRange(range, model) || (!url.includes('/') && !linkHasProtocol(fullUrl)) || linkIsAlreadySet(range)) {
       return;
     }
 
