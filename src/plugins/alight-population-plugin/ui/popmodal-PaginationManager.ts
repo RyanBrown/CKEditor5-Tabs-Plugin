@@ -80,6 +80,7 @@ export class PaginationManager {
   }
 
   private getPaginationMarkup(totalPages: number): string {
+    // If only one page, don't show pagination
     if (totalPages <= 1) return '';
 
     return `

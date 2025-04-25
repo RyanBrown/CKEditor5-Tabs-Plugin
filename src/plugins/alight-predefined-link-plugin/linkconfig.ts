@@ -51,7 +51,7 @@ export interface LinkConfig {
    * ClassicEditor
    * 	.create( editorElement, {
    * 		link: {
-   * 			allowedProtocols: [ 'http', 'https', 'ftp', 'tel', 'mailto', 'javascript', 'data', 'vbscript', 'file' ]
+   * 			allowedProtocols: [ 'http', 'https', 'ftp', 'tel', 'mailto', 'ssh' ]
    * 		}
    * 	} )
    * 	.then( ... )

@@ -1,6 +1,6 @@
 // src/plugins/alight-existing-document-link/utils/automaticdecorators.ts
-import { toMap, type ArrayOrItem } from '@ckeditor/ckeditor5-utils';
-import type { DowncastAttributeEvent, DowncastDispatcher, Element, ViewElement } from '@ckeditor/ckeditor5-engine';
+import { type ArrayOrItem } from '@ckeditor/ckeditor5-utils';
+import type { DowncastAttributeEvent, DowncastDispatcher } from '@ckeditor/ckeditor5-engine';
 import type { NormalizedLinkDecoratorAutomaticDefinition } from '../utils';
 
 /**
@@ -60,11 +60,9 @@ export default class AutomaticDecorators {
         const viewSelection = viewWriter.document.selection;
 
         for (const item of this._definitions) {
-          // Build attributes with data-id but WITHOUT target="_blank" for downcast
           const attributes = {
             ...item.attributes,
             'data-id': 'existing-document_link'
-            // target="_blank" is deliberately NOT added here for downcast
           };
 
           const viewElement = viewWriter.createAttributeElement('a', attributes, {

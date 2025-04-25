@@ -1,11 +1,8 @@
 // src/plugins/alight-predefined-link-plugin/utils/automaticdecorators.ts
-import { toMap, type ArrayOrItem } from '@ckeditor/ckeditor5-utils';
+import { type ArrayOrItem } from '@ckeditor/ckeditor5-utils';
 import type {
   DowncastAttributeEvent,
   DowncastDispatcher,
-  Element,
-  ViewElement,
-  ViewContainerElement,
   ViewAttributeElement
 } from '@ckeditor/ckeditor5-engine';
 import type { NormalizedLinkDecoratorAutomaticDefinition } from '../utils';

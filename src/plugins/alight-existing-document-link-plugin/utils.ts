@@ -177,7 +177,6 @@ export function normalizeDecorators(decorators?: Record<string, LinkDecoratorDef
 
   if (decorators) {
     for (const [key, value] of Object.entries(decorators)) {
-      // Do NOT add target="_blank" automatically for decorators
       const decorator = Object.assign(
         {},
         value,
@@ -339,8 +338,6 @@ export function filterLinkAttributes(attributes: Record<string, string>): Record
       result[key] = attributes[key];
     }
   }
-
-  // Do NOT add target="_blank" automatically here
 
   return result;
 }

@@ -143,7 +143,7 @@ export default class AlightEmailLinkPlugin extends Plugin {
   private _setupDomMutationObserver(): void {
     const editor = this.editor;
 
-    // Wait for editor to be ready before setting up the observer 
+    // Wait for editor to be ready before setting up the observer
     editor.on('ready', () => {
       setTimeout(() => {
         const editorElement = editor.editing.view.getDomRoot();

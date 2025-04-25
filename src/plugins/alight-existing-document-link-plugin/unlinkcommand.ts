@@ -53,8 +53,8 @@ export default class AlightExistingDocumentLinkPluginUnlinkCommand extends Comma
         writer.removeAttribute('alightExistingDocumentLinkPluginHref', range);
 
         // Also remove format and link name attributes
-        writer.removeAttribute('AlightExistingDocumentLinkPluginFormat', range);
-        writer.removeAttribute('AlightExistingDocumentPluginLinkName', range);
+        writer.removeAttribute('alightExistingDocumentLinkPluginFormat', range);
+        writer.removeAttribute('alightExistingDocumentPluginLinkName', range);
 
         // Remove any orgnameattr attribute if it exists
         writer.removeAttribute('orgnameattr', range);

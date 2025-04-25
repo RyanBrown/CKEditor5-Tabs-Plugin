@@ -66,7 +66,6 @@ export default class ManualDecorator extends /* #__PURE__ */ ObservableMixin() {
     this.set('value', undefined);
     this.defaultValue = defaultValue;
     this.label = label;
-    // Don't automatically add target="_blank" to attributes for downcast
     this.attributes = attributes;
     this.classes = classes;
     this.styles = styles;

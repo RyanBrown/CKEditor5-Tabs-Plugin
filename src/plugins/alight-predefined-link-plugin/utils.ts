@@ -37,11 +37,7 @@ const PROTOCOL_REG_EXP = /^((\w+:(\/{2,})?)|(\W))/i;
 const DEFAULT_LINK_PROTOCOLS = [
   'https?',
   'ftps?',
-  'mailto',
-  'javascript',  // Allow javascript: protocol
-  'data',        // Allow data: protocol
-  'vbscript',    // Allow vbscript: protocol
-  'file'         // Allow file: protocol
+  'mailto'
 ];
 
 /**

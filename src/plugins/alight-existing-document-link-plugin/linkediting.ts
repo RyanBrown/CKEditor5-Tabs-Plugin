@@ -176,7 +176,7 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
             const dataId = viewElement.getAttribute('data-id');
             const dataLinkName = viewElement.getAttribute('data-link-name');
 
-            // Always add target="_blank" for links during upcast - THIS IS KEPT FOR UPCAST
+            // Always add target="_blank" for links during upcast
             viewElement._setAttribute('target', '_blank');
 
             if (dataId === 'existing-document_link' && dataLinkName) {
@@ -209,7 +209,7 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
         model: {
           key: 'alightExistingDocumentLinkPluginHref',
           value: (viewElement: ViewElement) => {
-            // Always add target="_blank" to links during upcast - THIS IS KEPT FOR UPCAST
+            // Always add target="_blank" to links during upcast
             viewElement._setAttribute('target', '_blank');
 
             // Try to find ah:link element inside
@@ -346,10 +346,8 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
           }
 
           if (manualDecoratorValue) {
-            // Do NOT add target="_blank" here for downcast
             const decoratorAttributes = {
               ...decorator.attributes
-              // target="_blank" is deliberately NOT added here for downcast
             };
 
             const element = writer.createAttributeElement('a', decoratorAttributes, { priority: 5 });
