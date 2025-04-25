@@ -6,7 +6,6 @@ import AlightNewDocumentLinkPluginUI from './linkui';
 import AlightNewDocumentAutoLink from './autolink';
 import NewDocumentLinkHandler from './newdocumentlinkhandler';
 import { createLinkElement, ensureSafeUrl } from './utils';
-import type AlightNewDocumentLinkPluginCommand from './linkcommand';
 import './styles/alight-new-document-link-plugin.scss';
 
 /**

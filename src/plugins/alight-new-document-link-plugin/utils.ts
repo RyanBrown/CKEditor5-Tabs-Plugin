@@ -62,6 +62,7 @@ export function createLinkElement(href: string, conversionApi: DowncastConversio
   // Add document title attribute if provided
   if (documentTitle) {
     attributes['data-document-title'] = documentTitle;
+    console.log('Creating link element with documentTitle:', documentTitle);
   }
 
   // Priority 5 - https://github.com/ckeditor/ckeditor5-link/issues/121.
@@ -457,6 +458,12 @@ export class FormSubmissionHandler {
    * @returns A promise that resolves to a submission result
    */
   private async mockApiCall(formData: FormData): Promise<SubmissionResult> {
+    // Log the complete FormData before submission
+    console.log('FormData being submitted:');
+    for (const [key, value] of formData.entries()) {
+      console.log(`${key}: ${value instanceof File ? value.name : value}`);
+    }
+
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 500));
 
@@ -467,34 +474,32 @@ export class FormSubmissionHandler {
         url: `https://example.com/documents/doc-${Date.now()}`,
         status: 'success',
         dnmDtoList: [{
-          folderPath: "",
+          folderPath: formData.get('categories') ? "Categorized" : "Uncategorized",
           fileId: `file-${Date.now()}`,
           documentTitle: formData.get('documentTitle') || "SampleDoc",
           documentLanguage: formData.get('language') || "en_US",
-          documentDescription: formData.get('description') || ""
+          documentDescription: formData.get('description') || "",
+          searchTags: formData.get('searchTags') || [],
+          categories: formData.get('categories') || [],
+          includeInContentLibrary: formData.get('contentLibraryAccess') === 'true',
+          upointLink: formData.get('worklifeLink') === 'true',
+          searchable: formData.get('showInSearch') === 'true'
         }]
       };
+
+      // Log the response data
+      console.log('API response data:', responseData);
 
       return {
         success: true,
         data: responseData
       };
     } catch (error) {
+      console.error('Error in mock API call:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to process form data'
       };
-    }
-  }
-
-  /**
-   * Resets the submission state
-   */
-  private resetSubmitState(): void {
-    this.isSubmitting = false;
-    if (this.submitTimeout) {
-      window.clearTimeout(this.submitTimeout);
-      this.submitTimeout = null;
     }
   }
 
@@ -514,6 +519,9 @@ export class FormSubmissionHandler {
 
     try {
       this.isSubmitting = true;
+
+      // Log the raw form data before creating FormData
+      console.log('Raw form data before submission:', formData);
 
       // Create FormData instance for file upload
       const submission = new FormData();
@@ -539,6 +547,7 @@ export class FormSubmissionHandler {
 
       return result;
     } catch (error) {
+      console.error('Error in submitForm:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'An unexpected error occurred'
@@ -548,6 +557,17 @@ export class FormSubmissionHandler {
       setTimeout(() => {
         this.resetSubmitState();
       }, this.debounceTime);
+    }
+  }
+
+  /**
+   * Resets the submission state
+   */
+  private resetSubmitState(): void {
+    this.isSubmitting = false;
+    if (this.submitTimeout) {
+      window.clearTimeout(this.submitTimeout);
+      this.submitTimeout = null;
     }
   }
 
@@ -581,13 +601,19 @@ export async function handleFormSubmission(contentManager: any, editor: any, mod
   }
 
   try {
+    // Get complete form data before submission
+    const formData = contentManager.getFormData();
+
+    // Log the complete form data to console
+    console.log('Submitting new document link data:', formData);
+
     // Submit the form and get the result
     const result = await contentManager.submitForm();
 
-    if (result) {
-      // Get form data
-      const formData = contentManager.getFormData();
+    // Log the submission result
+    console.log('New document link submission result:', result);
 
+    if (result) {
       // Get folder path and document ID from the result
       const folderPath = result.dnmDtoList?.[0]?.folderPath || "";
       const documentId = result.id || `doc-${Date.now()}`;
@@ -597,6 +623,9 @@ export async function handleFormSubmission(contentManager: any, editor: any, mod
 
       // Create direct link with folder path (no protocol)
       const href = `${folderPath}/${documentId}`;
+
+      // Log the link that will be created
+      console.log('Creating link with href:', href, 'and title:', documentTitle);
 
       // Execute the link command with document title
       editor.execute('alight-new-document-link', href, { documentTitle });

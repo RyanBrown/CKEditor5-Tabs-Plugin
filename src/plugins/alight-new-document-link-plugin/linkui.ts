@@ -514,6 +514,10 @@ class ContentManager {
     });
   }
 
+  /**
+   * Submits the form data
+   * @returns A promise that resolves to a submission result
+   */
   public async submitForm(): Promise<any> {
     const validation = this.validateForm();
 
@@ -521,11 +525,21 @@ class ContentManager {
       return;
     }
 
+    // Get a complete copy of the form data for logging
+    const formDataCopy = this.getFormData();
+
+    // Log all form data that will be posted
+    console.log('Submitting complete form data:', formDataCopy);
+
     const result = await this.formSubmissionHandler.submitForm(this.formData);
 
     if (!result.success) {
+      console.error('Form submission failed:', result.error);
       throw new Error(result.error || 'Failed to submit form');
     }
+
+    // Log the successful response
+    console.log('Form submission successful, received response:', result);
 
     return result.data;
   }
@@ -1061,7 +1075,7 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
   }
 
   /**
-   * Add this new helper method for updating the title
+   * Updates the title displayed in the balloon
    */
   private _updateBalloonTitle(selectedLink: ViewAttributeElement): void {
     // Make sure everything exists
@@ -1087,14 +1101,17 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
     if (documentTitle) {
       // Use the document title if available
       displayTitle = documentTitle as string;
+      console.log('Displaying document title in balloon:', displayTitle);
     } else if (href.includes('/')) {
       const parts = href.split('/');
       const folder = parts[0];
       // Fallback to folder-based format if no document title
       displayTitle = `${folder}: Document`;
+      console.log('No document title found, using folder format:', displayTitle);
     } else {
       // Use the href as fallback
       displayTitle = href;
+      console.log('Using href as fallback title:', displayTitle);
     }
 
     // Update the DOM element directly

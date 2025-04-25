@@ -5,7 +5,7 @@ import type { DocumentSelectionChangeEvent, Element, Model, Position, Range, Wri
 import { Delete, TextWatcher, getLastTextLine, findAttributeRange, type TextWatcherMatchedDataEvent } from '@ckeditor/ckeditor5-typing';
 import type { EnterCommand, ShiftEnterCommand } from '@ckeditor/ckeditor5-enter';
 
-import { addLinkProtocolIfApplicable, linkHasProtocol, isEmail } from './utils';
+import { addLinkProtocolIfApplicable, linkHasProtocol } from './utils';
 import AlightNewDocumentLinkPluginEditing from './linkediting';
 
 const MIN_LINK_LENGTH_WITH_SPACE_AT_END = 4; // Ie: "t.co " (length 5).

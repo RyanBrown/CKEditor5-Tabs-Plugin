@@ -1,4 +1,5 @@
 // src/plugins/alight-new-document-link-plugin/linkediting.ts
+
 import {
   Plugin,
   type Editor
@@ -103,12 +104,23 @@ export default class AlightNewDocumentLinkPluginEditing extends Plugin {
     // Allow link attribute on all inline nodes.
     editor.model.schema.extend('$text', { allowAttributes: 'alightNewDocumentLinkPluginHref' });
 
+    // Add documentTitle attribute support
+    editor.model.schema.extend('$text', { allowAttributes: 'documentTitle' });
+
     // Add a high-priority dataDowncast converter
     editor.conversion.for('dataDowncast')
       .attributeToElement({
         model: 'alightNewDocumentLinkPluginHref',
         view: (href, conversionApi) => {
-          return createLinkElement(href, conversionApi);
+          if (!href) return null;
+
+          // Check if documentTitle attribute exists on the selection
+          const documentTitle = editor.model.document.selection.getAttribute('documentTitle');
+
+          // Log the downcast operation
+          console.log('Downcasting link with href:', href, 'and documentTitle:', documentTitle);
+
+          return createLinkElement(href, conversionApi, documentTitle as string | undefined);
         },
         converterPriority: 'high'
       });
@@ -118,7 +130,15 @@ export default class AlightNewDocumentLinkPluginEditing extends Plugin {
       .attributeToElement({
         model: 'alightNewDocumentLinkPluginHref',
         view: (href, conversionApi) => {
-          return createLinkElement(ensureSafeUrl(href, allowedProtocols), conversionApi);
+          if (!href) return null;
+
+          // Check if documentTitle attribute exists on the selection
+          const documentTitle = editor.model.document.selection.getAttribute('documentTitle');
+
+          // Log the downcast operation
+          console.log('Editing downcast link with href:', href, 'and documentTitle:', documentTitle);
+
+          return createLinkElement(ensureSafeUrl(href, allowedProtocols), conversionApi, documentTitle as string | undefined);
         },
         converterPriority: 'high'
       });
@@ -135,12 +155,36 @@ export default class AlightNewDocumentLinkPluginEditing extends Plugin {
         },
         model: {
           key: 'alightNewDocumentLinkPluginHref',
-          value: (viewElement: ViewElement): string | null => {
+          value: (viewElement: ViewElement, conversionApi: any): string | null => {
             const href = viewElement.getAttribute('href');
+
+            // Upcast document title if available
+            const documentTitle = viewElement.getAttribute('data-document-title');
+            if (documentTitle && viewElement.parent) {
+              // Add document title attribute to the model
+              conversionApi.writer.setAttribute('documentTitle', documentTitle, viewElement.parent);
+              console.log('Upcasting link with documentTitle:', documentTitle);
+            }
+
             return href;
           }
         },
         converterPriority: 'normal'
+      });
+
+    // Additional upcast converter for document title attribute
+    editor.conversion.for('upcast')
+      .attributeToAttribute({
+        view: {
+          name: 'a',
+          key: 'data-document-title'
+        },
+        model: {
+          key: 'documentTitle',
+          value: (viewElement: ViewElement) => {
+            return viewElement.getAttribute('data-document-title');
+          }
+        }
       });
 
     // Create linking commands.

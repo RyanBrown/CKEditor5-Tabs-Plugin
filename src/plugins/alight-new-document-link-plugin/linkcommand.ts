@@ -2,9 +2,8 @@
 import { Command } from '@ckeditor/ckeditor5-core';
 import { findAttributeRange } from '@ckeditor/ckeditor5-typing';
 import { Collection, first, toMap } from '@ckeditor/ckeditor5-utils';
-import type { Range } from '@ckeditor/ckeditor5-engine';
 import AutomaticDecorators from './utils/automaticdecorators';
-import { isLinkableElement, isEmail, ensureMailtoLink } from './utils';
+import { isLinkableElement } from './utils';
 import type ManualDecorator from './utils/manualdecorator';
 
 /**
@@ -95,32 +94,22 @@ export default class AlightNewDocumentLinkPluginCommand extends Command {
    * When the selection is collapsed and inside the text with the `alightNewDocumentLinkPluginHref` attribute, the attribute value will be updated.
    *
    * @fires execute
-   * @param href Email link destination.
-   * @param options Options including manual decorator attributes.
+   * @param href Document link destination.
+   * @param options Options including manual decorator attributes and document title.
    */
-  /**
- * Executes the command.
- *
- * When the selection is non-collapsed, the `alightNewDocumentLinkPluginHref` attribute will be applied to nodes inside the selection, but only to
- * those nodes where the `alightNewDocumentLinkPluginHref` attribute is allowed (disallowed nodes will be omitted).
- *
- * When the selection is collapsed and is not inside the text with the `alightNewDocumentLinkPluginHref` attribute, a
- * new {@link module:engine/model/text~Text text node} with the `alightNewDocumentLinkPluginHref` attribute will be inserted in place of the caret, but
- * only if such element is allowed in this place. The `_data` of the inserted text will equal the `href` parameter.
- * The selection will be updated to wrap the just inserted text node.
- *
- * When the selection is collapsed and inside the text with the `alightNewDocumentLinkPluginHref` attribute, the attribute value will be updated.
- *
- * @fires execute
- * @param href Document link destination.
- * @param options Options including manual decorator attributes and document title.
- */
   public override execute(href: string, options: LinkOptions = {}): void {
     const model = this.editor.model;
     const selection = model.document.selection;
 
     // Extract document title if provided
     const documentTitle = options.documentTitle;
+
+    // Log the execution parameters
+    console.log('Executing AlightNewDocumentLinkPluginCommand with:', {
+      href,
+      documentTitle,
+      options
+    });
 
     // Extract decorator options
     const truthyManualDecorators: Array<string> = [];
@@ -157,6 +146,7 @@ export default class AlightNewDocumentLinkPluginCommand extends Command {
           // Add document title if available
           if (documentTitle) {
             writer.setAttribute('documentTitle', documentTitle, linkRange);
+            console.log('Added documentTitle attribute to existing link:', documentTitle);
           }
 
           // Add decorators
@@ -180,6 +170,7 @@ export default class AlightNewDocumentLinkPluginCommand extends Command {
           // Add document title if available
           if (documentTitle) {
             attributes.set('documentTitle', documentTitle);
+            console.log('Added documentTitle attribute to new link:', documentTitle);
           }
 
           truthyManualDecorators.forEach(item => {
@@ -214,6 +205,7 @@ export default class AlightNewDocumentLinkPluginCommand extends Command {
           // Add document title if available
           if (documentTitle) {
             writer.setAttribute('documentTitle', documentTitle, range);
+            console.log('Added documentTitle attribute to range:', documentTitle);
           }
 
           // Add decorators
