@@ -30,7 +30,7 @@ export default class LinkActionsView extends View {
   /**
    * The href preview view.
    */
-  public previewButtonView: ButtonView;
+  public previewButtonView: View;
 
   /**
    * The unlink button view.
@@ -69,23 +69,11 @@ export default class LinkActionsView extends View {
 
     const t = locale.t;
 
-    // Initialize observable properties
-    this.set({
-      href: undefined
-    });
-
-    // Create buttons
+    this.previewButtonView = this._createPreviewButton();
     this.unlinkButtonView = this._createButton(t('Unlink'), unlinkIcon, 'unlink');
     this.editButtonView = this._createButton(t('Edit link'), icons.pencil, 'edit');
-    this.previewButtonView = this._createPreviewButton();
 
-    // Listen for property changes to update button label
-    this.on('change:href', () => {
-      this._updateButtonLabel();
-    });
-
-    // Initialize the button label
-    this._updateButtonLabel();
+    this.set('href', undefined);
 
     this._focusCycler = new FocusCycler({
       focusables: this._focusables,
@@ -102,11 +90,7 @@ export default class LinkActionsView extends View {
     this.setTemplate({
       tag: 'div',
       attributes: {
-        class: [
-          'ck',
-          'ck-link-actions',
-          'ck-responsive-form'
-        ],
+        class: ['ck', 'ck-link-actions', 'ck-responsive-form'],
         // https://github.com/ckeditor/ckeditor5-link/issues/90
         tabindex: '-1'
       },
@@ -125,7 +109,6 @@ export default class LinkActionsView extends View {
     super.render();
 
     const childViews = [
-      this.previewButtonView,
       this.editButtonView,
       this.unlinkButtonView
     ];
@@ -160,28 +143,6 @@ export default class LinkActionsView extends View {
   }
 
   /**
-   * Updates the label of the preview button based on the current href
-   */
-  private _updateButtonLabel(): void {
-    const href = this.href;
-    const t = this.t;
-
-    if (href) {
-      // Format the display text
-      if (href.includes('/')) {
-        const parts = href.split('/');
-        const folder = parts[0];
-        this.previewButtonView.label = `${folder}: Document`;
-      } else {
-        this.previewButtonView.label = href;
-      }
-    } else {
-      this.previewButtonView.label = t('This link has no URL');
-    }
-  }
-
-
-  /**
    * Creates a button view.
    *
    * @param label The button label.
@@ -204,37 +165,46 @@ export default class LinkActionsView extends View {
   }
 
   /**
-   * Creates a link href preview button.
+   * Creates a custom view for the link title display.
    *
-   * @returns The button view instance.
+   * @returns The custom view instance.
    */
-  private _createPreviewButton(): ButtonView {
-    const button = new ButtonView(this.locale);
+  private _createPreviewButton(): View {
+    // Create a custom view instead of using ButtonView
+    const customView = new View(this.locale);
     const bind = this.bindTemplate;
     const t = this.t!;
 
-    button.set({
-      withText: true,
-      tooltip: t('Open New Document link')
-    });
-
-    button.extendTemplate({
+    // Set up the template for a simple div with your custom class
+    customView.setTemplate({
+      tag: 'div',
       attributes: {
-        class: [
-          'ck',
-          'ck-link-actions__preview'
-        ],
-        href: bind.to('href', href => href && ensureSafeUrl(href)),
-        target: '_blank',
-        rel: 'noopener noreferrer'
+        class: ['ck', 'cka-button-title']
       },
+      children: [{
+        tag: 'span',
+        attributes: {
+          class: ['ck', 'ck-button__label', 'cka-button-title-text']
+        },
+        children: [{
+          text: bind.to('href', href => {
+            // Format the display text for document links
+            if (href) {
+              if (href.includes('/')) {
+                const parts = href.split('/');
+                const folder = parts[0];
+                return `${folder}: Document`;
+              }
+              return href;
+            }
+            // Default text when href is empty or undefined
+            return t('This link has no title');
+          })
+        }]
+      }]
     });
 
-    button.bind('isEnabled').to(this, 'href', href => !!href);
-
-    button.template!.tag = 'a';
-
-    return button;
+    return customView;
   }
 }
 

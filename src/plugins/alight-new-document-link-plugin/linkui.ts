@@ -1029,14 +1029,70 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
    */
   private _showBalloon(): void {
     if (this.actionsView && this._balloon && !this._balloon.hasView(this.actionsView)) {
+      // Make sure the link is still selected before showing balloon
+      const selectedLink = this._getSelectedLinkElement();
+      if (!selectedLink) {
+        return;
+      }
+
+      // Verify it's a new document link
+      const href = selectedLink.getAttribute('href');
+      if (!href) {
+        return;
+      }
+
+      // First add the view to the balloon (this renders it in the DOM)
       this._balloon.add({
         view: this.actionsView,
         position: this._getBalloonPositionData()
       });
 
+      // Set the href on the actionsView (needed for core functionality)
+      this.actionsView.set('href', href as string);
+
+      // AFTER the balloon is in the DOM, update the title text
+      setTimeout(() => {
+        this._updateBalloonTitle(selectedLink);
+      }, 0);
+
       // Begin responding to UI updates
       this._startUpdatingUI();
     }
+  }
+
+  /**
+   * Add this new helper method for updating the title
+   */
+  private _updateBalloonTitle(selectedLink: ViewAttributeElement): void {
+    // Make sure everything exists
+    if (!this.actionsView || !this.actionsView.element) {
+      return;
+    }
+
+    // Get link attributes
+    const href = selectedLink.getAttribute('href') as string;
+
+    // Find the title element in the balloon
+    const titleElement = this.actionsView.element.querySelector('.cka-button-title-text');
+    if (!titleElement) {
+      return;
+    }
+
+    // Format title text based on href pattern
+    let displayTitle = '';
+
+    if (href.includes('/')) {
+      const parts = href.split('/');
+      const folder = parts[0];
+      const docId = parts[parts.length - 1];
+      displayTitle = `${folder}: Document`;
+    } else {
+      // Use the href as fallback
+      displayTitle = href;
+    }
+
+    // Update the DOM element directly
+    titleElement.textContent = displayTitle || this.editor.t('This link has no title');
   }
 
   /**
