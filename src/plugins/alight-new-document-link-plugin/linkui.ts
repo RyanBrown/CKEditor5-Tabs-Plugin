@@ -245,7 +245,7 @@ class ContentManager {
   private modalDialog: any = null;
   private formValidator: FormValidator;
   private formSubmissionHandler: FormSubmissionHandler;
-  private hasUserInteracted = false;
+  public hasUserInteracted = false;
   private categories: CategoryItem[] = [];
 
   private formData = {
@@ -339,7 +339,7 @@ class ContentManager {
           <div class="cka-control-footer">
             <strong>Note:</strong> Special characters such as (\\, ], :, >, /, <, [, |, ?, ", *, comma) are not allowed.
           </div>
-          <div class="cka-error-message title-error">Enter title to continue.</div>
+          <div class="cka-error-message documentTitle-error">Enter title to continue.</div>
         </div>
       `)}
     `;
@@ -364,6 +364,7 @@ class ContentManager {
           <textarea 
             class="cka-textarea cka-width-50"
             id="description"
+            name="description"
             cols="30"
             required
             rows="5" 
@@ -1317,6 +1318,17 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
           }
         }
       });
+
+      // Add event listener for when the modal is closed
+      this._modalDialog.on('close', () => {
+        // Reset edit mode when modal is closed
+        this._isEditing = false;
+
+        // Reset the form
+        if (this._contentManager) {
+          this._contentManager.resetForm();
+        }
+      });
     }
 
     // Update modal title based on whether we're editing or creating
@@ -1336,6 +1348,9 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
       return;
     }
 
+    // Set hasUserInteracted to true when Continue is clicked
+    this._contentManager.hasUserInteracted = true; // Add this line
+
     // Validate the form
     const validation = this._contentManager.validateForm();
     if (!validation.isValid) {
@@ -1349,7 +1364,7 @@ export default class AlightNewDocumentLinkPluginUI extends Plugin {
 
       if (result) {
         // Get folder path from the result
-        const folderPath = result.documentTitle || "Unnamed Document";
+        const folderPath = result.dnmDtoList?.[0]?.folderPath || "Test Folder";
         const documentId = result.id || `doc-${Date.now()}`;
 
         // Create mailto link with folder path
