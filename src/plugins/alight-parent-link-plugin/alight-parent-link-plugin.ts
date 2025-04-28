@@ -125,8 +125,49 @@ export default class AlightParentLinkPlugin extends Plugin {
       const dropdown = createDropdown(locale);
       dropdown.panelView.children.add(this._createListView(locale, dropdown));
       this._configureDropdown(dropdown);
+
+      // Listen for selection changes to update button states when dropdown opens
+      this.listenTo(editor.model.document.selection, 'change', () => {
+        if (dropdown.isOpen) {
+          this._updateButtonStates(dropdown);
+        }
+      });
+
       return dropdown;
     });
+  }
+
+  /**
+   * Updates the enabled state of all buttons in the dropdown based on text selection
+   * @param dropdown - The dropdown view containing the buttons
+   */
+  private _updateButtonStates(dropdown: DropdownView) {
+    const selection = this.editor.model.document.selection;
+    const isTextSelected = !selection.isCollapsed;
+
+    // Get all buttons in the dropdown that don't have command bindings
+    const listView = dropdown.panelView.children.first as ListView;
+    if (!listView || !listView.items) {
+      return;
+    }
+
+    // Skip the first two items (header and separator)
+    for (let i = 2; i < listView.items.length; i++) {
+      const listItem = listView.items.get(i) as ListItemView;
+      if (!listItem || !listItem.children || !listItem.children.first) {
+        continue;
+      }
+
+      const button = listItem.children.first as ButtonView;
+
+      // Store whether a button has a command binding in a custom property
+      const hasCommandBinding = (button as any)._hasCommandBinding;
+
+      // Only update buttons that aren't bound to commands
+      if (button && !hasCommandBinding) {
+        button.isEnabled = isTextSelected;
+      }
+    }
   }
 
   private _configureDropdown(dropdown: DropdownView) {
@@ -144,8 +185,8 @@ export default class AlightParentLinkPlugin extends Plugin {
     // Add custom CSS class for styling
     dropdown.set({ class: 'ck-dropdown ck-alight-link-dropdown' });
 
-    // By default, enable the dropdown
-    dropdown.isEnabled = true;
+    // The parent dropdown button should always be enabled in the toolbar
+    buttonView.isEnabled = true;
 
     // Return focus to editor when dropdown closes
     dropdown.on('change:isOpen', () => {
@@ -227,65 +268,88 @@ export default class AlightParentLinkPlugin extends Plugin {
   ): ListItemView {
     const listItem = new ListItemView(locale);
     const button = new ButtonView(locale);
+    const editor = this.editor;
 
     // Configure button appearance
-    button.set({ label: item.label, withText: true });
-
-    // Handle button click by showing the appropriate modal
-    button.on('execute', () => {
-      dropdown.isOpen = false;
-
-      try {
-        // First, try to get the UI plugin if available
-        if (item.uiName && this.editor.plugins.has(item.uiName)) {
-          const uiPlugin = this.editor.plugins.get(item.uiName);
-
-          // Check if the UI plugin has a showUI method
-          if (uiPlugin && typeof (uiPlugin as any).showUI === 'function') {
-            (uiPlugin as any).showUI();
-            return;
-          }
-        }
-
-        // If UI plugin doesn't exist or doesn't have showUI, try the main plugin
-        const plugin = this.editor.plugins.get(item.name);
-
-        // Check if the plugin has a showUI method
-        if (plugin && typeof (plugin as any).showUI === 'function') {
-          (plugin as any).showUI();
-          return;
-        }
-
-        // Check if the plugin has a _showModal method (for legacy plugins)
-        if (plugin && typeof (plugin as any)._showModal === 'function') {
-          (plugin as any)._showModal();
-          return;
-        }
-
-        // Fallback to using command if neither UI method is available
-        const command = this.editor.commands.get(item.command);
-        if (command) {
-          this.editor.execute(item.command);
-        } else {
-          console.warn(`Command ${item.command} not found for plugin ${item.name}`);
-        }
-      } catch (error) {
-        console.error(`Error showing modal for ${item.name}:`, error);
-      }
+    button.set({
+      label: item.label,
+      withText: true
     });
 
-    // All buttons in the dropdown are enabled by default
-    button.isEnabled = true;
+    // Get the command for this item
+    const command = editor.commands.get(item.command);
 
-    // Try to bind to command if it exists
-    try {
-      const command = this.editor.commands.get(item.command);
-      if (command && typeof command.isEnabled !== 'undefined') {
-        button.bind('isEnabled').to(command);
-      }
-    } catch (e) {
-      // If binding fails, keep the button enabled
-      console.warn(`Could not bind button state for ${item.name}`, e);
+    if (command) {
+      // Properly bind the button's enabled state to the command
+      button.bind('isEnabled').to(command, 'isEnabled');
+
+      // Mark this button as having a command binding
+      (button as any)._hasCommandBinding = true;
+
+      // Set the execute handler to run the command directly
+      button.on('execute', () => {
+        dropdown.isOpen = false;
+        editor.execute(item.command);
+      });
+    } else {
+      // If no command exists, create custom enabled/disabled behavior
+      // that depends on text selection
+
+      // Initially set to disabled (will be updated when dropdown opens)
+      button.isEnabled = false;
+
+      // Mark this button as NOT having a command binding
+      (button as any)._hasCommandBinding = false;
+
+      // Function to check if there's selected text
+      const updateButtonState = () => {
+        const selection = editor.model.document.selection;
+        const isTextSelected = !selection.isCollapsed;
+        button.isEnabled = isTextSelected;
+      };
+
+      // Update button state when the dropdown opens
+      dropdown.on('change:isOpen', () => {
+        if (dropdown.isOpen) {
+          updateButtonState();
+        }
+      });
+
+      button.on('execute', () => {
+        dropdown.isOpen = false;
+
+        try {
+          // First, try to get the UI plugin if available
+          if (item.uiName && editor.plugins.has(item.uiName)) {
+            const uiPlugin = editor.plugins.get(item.uiName);
+
+            // Check if the UI plugin has a showUI method
+            if (uiPlugin && typeof (uiPlugin as any).showUI === 'function') {
+              (uiPlugin as any).showUI();
+              return;
+            }
+          }
+
+          // If UI plugin doesn't exist or doesn't have showUI, try the main plugin
+          const plugin = editor.plugins.get(item.name);
+
+          // Check if the plugin has a showUI method
+          if (plugin && typeof (plugin as any).showUI === 'function') {
+            (plugin as any).showUI();
+            return;
+          }
+
+          // Check if the plugin has a _showModal method (for legacy plugins)
+          if (plugin && typeof (plugin as any)._showModal === 'function') {
+            (plugin as any)._showModal();
+            return;
+          }
+
+          console.warn(`No UI method or command found for plugin ${item.name}`);
+        } catch (error) {
+          console.error(`Error showing UI for ${item.name}:`, error);
+        }
+      });
     }
 
     listItem.children.add(button);
