@@ -44,8 +44,11 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
   private _balloon!: ContextualBalloon;
   private _isUpdatingUI: boolean = false;
 
-  private _predefinedLinks: PredefinedLink[];
+  private _predefinedLinks: PredefinedLink[] = [];
   private readonly loadService: LinksLoadService = new LinksLoadService();
+
+  // Add flag to track whether data is loaded
+  private _dataLoaded: boolean = false;
 
   public static get requires() {
     return [AlightPredefinedLinkPluginEditing, ContextualBalloon] as const;
@@ -126,20 +129,53 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
     // Listen for command execution to show balloon
     const linkCommand = editor.commands.get('alight-predefined-link') as AlightPredefinedLinkPluginCommand;
 
+    // Listen to selection changes to update button state
     editor.model.document.on('change:selection', () => {
-      // This will call the refresh() method which checks for selection
-      linkCommand.refresh();
+      this._updateButtonState();
     });
 
     // Also listen to selection changes to detect when user enters a link or clicks on it
     this.listenTo(editor.editing.view.document, 'selectionChange', () => {
       // Use a small delay to ensure the selection is fully updated
-      setTimeout(() => this._checkAndShowBalloon(), 10);
+      setTimeout(() => {
+        this._checkAndShowBalloon();
+        this._updateButtonState();
+      }, 10);
     });
+  }
+
+  /**
+   * Updates the button state based on data loading status and selection
+   */
+  private _updateButtonState(): void {
+    const editor = this.editor;
+    const linkCommand = editor.commands.get('alight-predefined-link') as AlightPredefinedLinkPluginCommand;
+
+    // This will call the refresh() method which checks for selection
+    linkCommand.refresh();
+
+    // Button should be enabled only if:
+    // 1. The data has been loaded successfully
+    // 2. AND the link command is enabled (there's valid selection)
+    if (this.buttonView) {
+      const shouldBeEnabled = this._dataLoaded && linkCommand.isEnabled;
+
+      // Only update if the state actually changed to avoid unnecessary renders
+      if (this.buttonView.isEnabled !== shouldBeEnabled) {
+        this.buttonView.set('isEnabled', shouldBeEnabled);
+      }
+    }
   }
 
   protected override setModalContents = (): void => {
     if (this.verboseMode) console.log(`Loading predefined links...`);
+
+    // Set data loaded flag to false while loading
+    this._dataLoaded = false;
+
+    // Update button state immediately to disable it during loading
+    this._updateButtonState();
+
     this.loadService.loadPredefinedLinks().then(
       (data) => {
         this._predefinedLinks = data;
@@ -150,11 +186,21 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
           this.actionsView.setPredefinedLinks(this._predefinedLinks);
         }
 
+        // Set data loaded flag to true when data is loaded
+        this._dataLoaded = true;
         this.isReady = true;
-        // Remove or comment out this line:
-        // this._enablePluginButton();
+
+        // Update button state after data is loaded
+        this._updateButtonState();
       },
-      (error) => console.log(error)
+      (error) => {
+        console.log(error);
+        // Keep data loaded flag as false if there was an error
+        this._dataLoaded = false;
+
+        // Update button state to reflect the error
+        this._updateButtonState();
+      }
     );
   }
 
@@ -243,8 +289,8 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
       const button = this._createButton(MenuBarMenuListItemButtonView);
 
       button.set({
-        // Remove isReady dependency:
-        // isEnabled: this.isReady,
+        // Start with button disabled, will be updated when data loads
+        isEnabled: false,
         role: 'menuitemcheckbox'
       });
 
@@ -268,11 +314,11 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
       withText: true
     });
 
-    // Only bind to the command's isEnabled state
-    this.buttonView.bind('isEnabled').to(command, 'isEnabled');
-
-    // Keep the binding for isOn state
+    // Bind to command's value for the isOn state
     this.buttonView.bind('isOn').to(command, 'value', value => !!value);
+
+    // We'll manually control isEnabled based on data loading AND command enablement
+    // Don't bind directly to command.isEnabled
 
     // Show the modal dialog on button click for creating new links
     this.listenTo(this.buttonView, 'execute', () => this._showUI());
@@ -546,9 +592,21 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
    * @param isEditing Whether we're editing an existing link
    */
   private async _showUI(isEditing: boolean = false): Promise<void> {
+    // Check if predefined links data is loaded
+    if (!this._dataLoaded || this._predefinedLinks.length === 0) {
+      console.warn('Cannot show UI - data not loaded yet');
+      return;
+    }
+
     const editor = this.editor;
     const t = editor.t;
     const linkCommand = editor.commands.get('alight-predefined-link') as AlightPredefinedLinkPluginCommand;
+
+    // Check if there's valid selection
+    if (!linkCommand.isEnabled && !isEditing) {
+      console.warn('Cannot show UI - no valid selection');
+      return;
+    }
 
     // Store the current selection to restore it later
     const originalSelection = editor.model.document.selection;
