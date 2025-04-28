@@ -47,6 +47,9 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
   private _documentLinks: DocumentLink[] = [];
   private readonly loadService: LinksLoadService = new LinksLoadService();
 
+  // Add flag to track whether data is loaded
+  private _dataLoaded: boolean = false;
+
   public static get requires() {
     return [AlightExistingDocumentLinkPluginEditing, ContextualBalloon] as const;
   }
@@ -126,24 +129,74 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
     // Listen for command execution to show balloon
     const linkCommand = editor.commands.get('alight-existing-document-link') as AlightExistingDocumentLinkPluginCommand;
 
+    // Listen to selection changes to update button state
+    editor.model.document.on('change:selection', () => {
+      this._updateButtonState();
+    });
+
     // Also listen to selection changes to detect when user enters a link or clicks on it
     this.listenTo(editor.editing.view.document, 'selectionChange', () => {
       // Use a small delay to ensure the selection is fully updated
-      setTimeout(() => this._checkAndShowBalloon(), 10);
+      setTimeout(() => {
+        this._checkAndShowBalloon();
+        this._updateButtonState();
+      }, 10);
     });
+  }
+
+  /**
+   * Updates the button state based on data loading status and selection
+   */
+  private _updateButtonState(): void {
+    const editor = this.editor;
+    const linkCommand = editor.commands.get('alight-existing-document-link') as AlightExistingDocumentLinkPluginCommand;
+
+    // This will call the refresh() method which checks for selection
+    linkCommand.refresh();
+
+    // Button should be enabled only if:
+    // 1. The data has been loaded successfully
+    // 2. AND the link command is enabled (there's valid selection)
+    if (this.buttonView) {
+      const shouldBeEnabled = this._dataLoaded && linkCommand.isEnabled;
+
+      // Only update if the state actually changed to avoid unnecessary renders
+      if (this.buttonView.isEnabled !== shouldBeEnabled) {
+        this.buttonView.set('isEnabled', shouldBeEnabled);
+      }
+    }
   }
 
   protected override setModalContents = (): void => {
     if (this.verboseMode) console.log(`Loading existing document links...`);
+
+    // Set data loaded flag to false while loading
+    this._dataLoaded = false;
+
+    // Update button state immediately to disable it during loading
+    this._updateButtonState();
+
     this.loadService.loadDocumentLinks().then(
       (data) => {
         this._documentLinks = data || []; // Add null check
         if (this.verboseMode) console.log(data);
+
+        // Set data loaded flag to true when data is loaded
+        this._dataLoaded = true;
         this.isReady = true;
-        // Remove this line:
-        // this._enablePluginButton();
+
+        // Update button state after data is loaded
+        this._updateButtonState();
       },
-      (error) => console.log(error)
+      (error) => {
+        console.log(error);
+
+        // Keep data loaded flag as false if there was an error
+        this._dataLoaded = false;
+
+        // Update button state to reflect the error
+        this._updateButtonState();
+      }
     );
   }
 
@@ -238,7 +291,8 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
       const button = this._createButton(MenuBarMenuListItemButtonView);
 
       button.set({
-        // Remove isReady dependency
+        // Start with button disabled, will be updated when data loads
+        isEnabled: false,
         role: 'menuitemcheckbox'
       });
 
@@ -262,8 +316,7 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
       withText: true
     });
 
-    // Only bind to the command's isEnabled state
-    this.buttonView.bind('isEnabled').to(command, 'isEnabled');
+    // Bind to command's value for the isOn state
     this.buttonView.bind('isOn').to(command, 'value', value => !!value);
 
     // Show the modal dialog on button click for creating new links
@@ -593,13 +646,20 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
    * @param isEditing Whether we're editing an existing link
    */
   private async _showUI(isEditing: boolean = false): Promise<void> {
+    // Check if document links data is loaded
+    if (!this._dataLoaded || this._documentLinks.length === 0) {
+      console.warn('Cannot show UI - data not loaded yet');
+      return;
+    }
+
     const editor = this.editor;
     const t = editor.t;
     const linkCommand = editor.commands.get('alight-existing-document-link') as AlightExistingDocumentLinkPluginCommand;
 
-    // Ensure _documentLinks is initialized
-    if (!this._documentLinks) {
-      this._documentLinks = [];
+    // Check if there's valid selection
+    if (!linkCommand.isEnabled && !isEditing) {
+      console.warn('Cannot show UI - no valid selection');
+      return;
     }
 
     // Store the current selection to restore it later
