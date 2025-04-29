@@ -200,46 +200,97 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
       }, { priority: 'high' });
     });
 
-    // Handle upcast from view to model for AHCustomLink with ah:link
+    // ======= UPDATED UPCAST CONVERTERS =======
+
+    // Handle upcast from view to model for AHCustomeLink format
     editor.conversion.for('upcast')
       .elementToAttribute({
         view: {
           name: 'a',
           classes: 'AHCustomeLink',
           attributes: {
-            'href': '#',
-            'data-id': 'predefined_link'
+            'href': '#'
           }
         },
         model: {
           key: 'alightPredefinedLinkPluginHref',
           value: (viewElement: ViewElement) => {
-            // Get the link name from the element attributes first
-            let linkName = viewElement.getAttribute('data-link-name') || '';
+            // Look for the next sibling which should be the detailed link element
+            const nextSibling = viewElement.parent?.getChild(viewElement.index + 1);
 
-            // If no data-link-name attribute, look at the next sibling text node
-            if (!linkName && viewElement.nextSibling && viewElement.nextSibling.is('$text')) {
-              linkName = viewElement.nextSibling.data;
+            if (nextSibling && nextSibling.is('element', 'a') && nextSibling.hasAttribute('onclick')) {
+              const onclick = nextSibling.getAttribute('onclick') as string;
+
+              // Extract link ID from onclick attribute using regex
+              const linkIdMatch = onclick.match(/LinkId:([A-Z_0-9]+)/i);
+              if (linkIdMatch && linkIdMatch[1]) {
+                return linkIdMatch[1];
+              }
+
+              // If no link ID found, try to extract from href
+              if (nextSibling.hasAttribute('href')) {
+                const href = nextSibling.getAttribute('href') as string;
+                const linkIdParam = href.match(/[?&]linkId=([^&]+)/i);
+                if (linkIdParam && linkIdParam[1]) {
+                  return linkIdParam[1];
+                }
+              }
             }
 
-            // Store additional information for the link format
-            this.editor.model.once('_afterConversion', () => {
-              this.editor.model.change(writer => {
-                const selection = this.editor.model.document.selection;
-                const range = selection.getFirstRange();
-
-                if (range) {
-                  writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', range);
-                  writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, range);
-                }
-              });
-            });
-
-            // Return the link name as the href or fallback to empty string
-            return linkName || '';
+            // Fallback to empty string
+            return '';
           }
         },
-        converterPriority: 'highest' // Higher priority than standard link converter
+        converterPriority: 'highest'
+      });
+
+    // Handle onclick link format directly
+    editor.conversion.for('upcast')
+      .elementToAttribute({
+        view: {
+          name: 'a',
+          attributes: {
+            'onclick': /LinkId:[A-Z_0-9]+/i
+          }
+        },
+        model: {
+          key: 'alightPredefinedLinkPluginHref',
+          value: (viewElement: ViewElement) => {
+            const onclick = viewElement.getAttribute('onclick') as string;
+
+            // Extract link ID from onclick attribute
+            const linkIdMatch = onclick.match(/LinkId:([A-Z_0-9]+)/i);
+            if (linkIdMatch && linkIdMatch[1]) {
+              // Store additional information for the link format
+              this.editor.model.once('_afterConversion', () => {
+                this.editor.model.change(writer => {
+                  const selection = this.editor.model.document.selection;
+                  const range = selection.getFirstRange();
+
+                  if (range) {
+                    writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', range);
+                    writer.setAttribute('alightPredefinedLinkPluginLinkName', linkIdMatch[1], range);
+                  }
+                });
+              });
+
+              return linkIdMatch[1];
+            }
+
+            // If no link ID found in onclick, try to extract from href as fallback
+            if (viewElement.hasAttribute('href')) {
+              const href = viewElement.getAttribute('href') as string;
+              const linkIdParam = href.match(/[?&]linkId=([^&]+)/i);
+              if (linkIdParam && linkIdParam[1]) {
+                return linkIdParam[1];
+              }
+            }
+
+            // Return the href if it exists, otherwise return an empty string
+            return viewElement.hasAttribute('href') ? viewElement.getAttribute('href') : '';
+          }
+        },
+        converterPriority: 'high'
       });
 
     // Handle legacy link formats as well
@@ -281,7 +332,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
             return href;
           }
         },
-        converterPriority: 'high'
+        converterPriority: 'low'
       });
 
     // Create linking commands.
