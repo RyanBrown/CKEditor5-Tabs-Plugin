@@ -387,7 +387,15 @@ class AlightEditor extends ClassicEditor {
           styles: ["*"]
         }, {
           name: "ah:link",
-          attributes: ["name", "class", "title", "assettype", "data-*"],
+          attributes: [
+            "assettype",
+            "class",
+            "data-*",
+            "href",
+            "name",
+            "onclick",
+            "title",
+          ],
           classes: ["*"],
           styles: ["*"]
         }, {
@@ -401,7 +409,7 @@ class AlightEditor extends ClassicEditor {
             orgnameattr: true,
             target: true,
           },
-          classes: ["AHCustomLink", "AHCustomeLink", "document_tag", "*"],
+          classes: ["*"],
           styles: ["*"]
         }, {
           name: "figure",
@@ -436,8 +444,8 @@ class AlightEditor extends ClassicEditor {
         }, {
           name: /^(h[1-6])$/,
           attributes: true, // Allows all attributes, including href from links
-          styles: ["*"],
-          classes: ["*"]
+          classes: ["*"],
+          styles: ["*"]
         }
       ],
       disallow: [] // Optionally disallow conflicting elements
