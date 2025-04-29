@@ -52,7 +52,7 @@ export function isLinkElement(node: ViewNode | ViewDocumentFragment): boolean {
   return (
     node.is('attributeElement') && (
       !!node.getCustomProperty('alight-predefined-link') ||
-      node.hasClass('AHCustomLink') ||
+      node.hasClass('AHCustomeLink') ||
       node.getAttribute('data-id') === 'predefined_link'
     )
   );
@@ -80,26 +80,26 @@ export function createLinkElement(href: string, { writer }: DowncastConversionAp
   // Extract link name if it's a predefined link
   const linkName = extractPredefinedLinkId(href) || href;
 
-  // Create the attribute element with necessary attributes
+  // Create link element as attribute element - this is important for proper rendering
   const linkElement = writer.createAttributeElement('a', {
     'href': '#',
-    'class': 'AHCustomLink',
+    'class': 'AHCustomeLink',
     'data-id': 'predefined_link'
   }, {
     priority: 5
   });
 
-  // Create the ah:link element as a child element
+  // Create the inner ah:link element with higher priority
   const ahLinkElement = writer.createAttributeElement('ah:link', {
     'name': linkName
+  }, {
+    priority: 6
   });
 
-  // We need to wrap content with this structure manually during conversion
-  // rather than trying to set it up here
-
-  // Set custom property for link identification
+  // Set custom property for identification
   writer.setCustomProperty('alight-predefined-link', true, linkElement);
 
+  // Return the link element - we'll use the wrap method to nest elements properly
   return linkElement;
 }
 
@@ -305,6 +305,12 @@ export function extractPredefinedLinkId(href: string | null | undefined): string
     return href;
   }
 
+  // Extract LinkId from the href (used in onclick format links)
+  const linkIdMatch = href.match(/LinkId:([A-Z_0-9]+)/i);
+  if (linkIdMatch && linkIdMatch[1]) {
+    return linkIdMatch[1];
+  }
+
   // If nothing specific is found, just return the href as-is
   // for predefined links
   return isPredefinedLink(href) ? href : null;
@@ -312,7 +318,7 @@ export function extractPredefinedLinkId(href: string | null | undefined): string
 
 // Add a function to check if an element has AHCustomeLink class
 export function hasAHCustomeLinkClass(element: ViewAttributeElement): boolean {
-  return element.hasClass('AHCustomLink');
+  return element.hasClass('AHCustomeLink');
 }
 
 /**

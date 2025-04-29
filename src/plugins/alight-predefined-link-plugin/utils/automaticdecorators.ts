@@ -81,12 +81,12 @@ export default class AutomaticDecorators {
             // Create outer link element with all attributes
             const linkAttrs = {
               'href': '#',
-              'class': 'AHCustomLink',
+              'class': 'AHCustomeLink',
               'data-id': 'predefined_link',
               ...item.attributes
             };
 
-            // Use attributeElement instead of containerElement
+            // Use attributeElement instead of containerElement to maintain proper nesting
             const linkElement = viewWriter.createAttributeElement('a', linkAttrs, { priority: 5 });
 
             // Add any classes from decorator
@@ -102,43 +102,31 @@ export default class AutomaticDecorators {
             // Create the inner ah:link element
             const ahLinkElement = viewWriter.createAttributeElement('ah:link', {
               'name': linkName
-            }, { priority: 4 });  // Lower priority than the link element
+            }, { priority: 6 });
 
             // Set custom property for link identification
             viewWriter.setCustomProperty('alight-predefined-link', true, linkElement);
 
             if (data.item.is('selection')) {
-              // When wrapping a selection, we need to:
-              // 1. Create a range to wrap
+              // When dealing with selection, apply the link elements
               const range = viewSelection.getFirstRange();
 
               if (range) {
-                // 2. Wrap the range with our link element
-                viewWriter.wrap(range, linkElement);
+                // First wrap with the inner ah:link element (higher priority)
+                const ahLinkRange = viewWriter.wrap(range, ahLinkElement);
 
-                // 3. Apply the ah:link element within the link element 
-                // We do this by finding all text nodes and wrapping them with the ah:link
-                const nodes = Array.from(range.getItems()).filter(node =>
-                  node.is('$text') || node.is('$textProxy'));
-
-                if (nodes.length) {
-                  const textRange = viewWriter.createRange(
-                    viewWriter.createPositionBefore(nodes[0]),
-                    viewWriter.createPositionAfter(nodes[nodes.length - 1])
-                  );
-                  viewWriter.wrap(textRange, ahLinkElement);
-                }
+                // Then wrap with the outer a element (lower priority)
+                viewWriter.wrap(ahLinkRange, linkElement);
               }
             } else {
-              // For model elements, we need to:
-              // 1. Convert model range to view range
+              // For model elements, handle the view range
               const viewRange = conversionApi.mapper.toViewRange(data.range);
 
-              // 2. Wrap the range with our link element
-              viewWriter.wrap(viewRange, linkElement);
+              // First wrap with the inner ah:link element (higher priority)
+              const ahLinkRange = viewWriter.wrap(viewRange, ahLinkElement);
 
-              // 3. Apply the ah:link element within the link element
-              viewWriter.wrap(viewRange, ahLinkElement);
+              // Then wrap with the outer a element (lower priority)
+              viewWriter.wrap(ahLinkRange, linkElement);
             }
           } else {
             // If callback returned false, we should remove the link attributes
@@ -153,8 +141,7 @@ export default class AutomaticDecorators {
                   .filter(item =>
                     item.is('attributeElement') &&
                     item.name === 'a' &&
-                    item.hasClass('AHCustomLink') &&
-                    item.getAttribute('data-id') === 'predefined_link'
+                    item.hasClass('AHCustomeLink')
                   ) as ViewAttributeElement[]; // Add proper type casting
 
                 // Remove link attributes from elements
@@ -162,7 +149,7 @@ export default class AutomaticDecorators {
                   // Remove by replacing attributes
                   viewWriter.removeAttribute('href', element);
                   viewWriter.removeAttribute('data-id', element);
-                  viewWriter.removeClass('AHCustomLink', element);
+                  viewWriter.removeClass('AHCustomeLink', element);
 
                   // Find and handle ah:link elements
                   const ahLinkElements = Array.from(element.getChildren())
@@ -182,8 +169,7 @@ export default class AutomaticDecorators {
                 .filter(item =>
                   item.is('attributeElement') &&
                   item.name === 'a' &&
-                  item.hasClass('AHCustomLink') &&
-                  item.getAttribute('data-id') === 'predefined_link'
+                  item.hasClass('AHCustomeLink')
                 ) as ViewAttributeElement[]; // Add proper type casting
 
               // Remove link attributes
@@ -191,7 +177,7 @@ export default class AutomaticDecorators {
                 // Remove attributes 
                 viewWriter.removeAttribute('href', element);
                 viewWriter.removeAttribute('data-id', element);
-                viewWriter.removeClass('AHCustomLink', element);
+                viewWriter.removeClass('AHCustomeLink', element);
 
                 // Find ah:link elements
                 const ahLinkElements = Array.from(element.getChildren())

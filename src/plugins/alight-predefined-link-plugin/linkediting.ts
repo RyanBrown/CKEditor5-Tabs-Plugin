@@ -119,28 +119,45 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
       // Create link element as attribute element - this is important for proper rendering
       const linkElement = conversionApi.writer.createAttributeElement('a', {
         'href': '#',
-        'class': 'AHCustomLink',
+        'class': 'AHCustomeLink',
         'data-id': 'predefined_link'
       }, {
         priority: 5
       });
 
+      // Create the inner ah:link element with higher priority
+      const ahLinkElement = conversionApi.writer.createAttributeElement('ah:link', {
+        'name': linkName
+      }, {
+        priority: 6
+      });
+
       // Set custom property for identification
       conversionApi.writer.setCustomProperty('alight-predefined-link', true, linkElement);
 
-      return linkElement;
+      // Return nested structure - we'll use the wrap method to apply this
+      return {
+        linkElement,
+        ahLinkElement
+      };
     };
 
-    // For data downcast to produce <a><ah:link>text</ah:link></a>
+    // For data downcast to produce <a class="AHCustomeLink" data-id="predefined_link"><ah:link>text</ah:link></a>
     editor.conversion.for('dataDowncast').attributeToElement({
       model: 'alightPredefinedLinkPluginHref',
-      view: createDowncastConverter
+      view: (attributeValue, conversionApi) => {
+        const { linkElement } = createDowncastConverter(attributeValue, conversionApi);
+        return linkElement;
+      }
     });
 
-    // For editing view to produce <a><ah:link>text</ah:link></a>
+    // For editing view to produce the same structure
     editor.conversion.for('editingDowncast').attributeToElement({
       model: 'alightPredefinedLinkPluginHref',
-      view: createDowncastConverter
+      view: (attributeValue, conversionApi) => {
+        const { linkElement } = createDowncastConverter(attributeValue, conversionApi);
+        return linkElement;
+      }
     });
 
     // Handle the wrapping of text content with the ah:link element
@@ -159,7 +176,8 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         // Create the outer anchor element with LOWER priority
         const linkElement = conversionApi.writer.createAttributeElement('a', {
           'href': '#',
-          'class': 'AHCustomeLink'
+          'class': 'AHCustomeLink',
+          'data-id': 'predefined_link'
         }, {
           priority: 5,
           id: 'link-wrapper'
@@ -185,7 +203,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
             const ahLinkRange = conversionApi.writer.wrap(range, ahLinkElement);
 
             // Then the outer element with lower priority
-            conversionApi.writer.wrap(range, linkElement);
+            conversionApi.writer.wrap(ahLinkRange, linkElement);
           }
         } else {
           // For model element, get corresponding view range
@@ -195,7 +213,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           const ahLinkRange = conversionApi.writer.wrap(viewRange, ahLinkElement);
 
           // Then the outer element with lower priority
-          conversionApi.writer.wrap(viewRange, linkElement);
+          conversionApi.writer.wrap(ahLinkRange, linkElement);
         }
       }, { priority: 'high' });
     });
@@ -216,7 +234,11 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           key: 'alightPredefinedLinkPluginHref',
           value: (viewElement: ViewElement) => {
             // Look for the next sibling which should be the detailed link element
-            const nextSibling = viewElement.parent?.getChild(viewElement.index + 1);
+            const parent = viewElement.parent;
+            if (!parent) return '';
+
+            const elementIndex = parent.getChildIndex(viewElement);
+            const nextSibling = parent.getChild(elementIndex + 1);
 
             if (nextSibling && nextSibling.is('element', 'a') && nextSibling.hasAttribute('onclick')) {
               const onclick = nextSibling.getAttribute('onclick') as string;
@@ -234,6 +256,13 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
                 if (linkIdParam && linkIdParam[1]) {
                   return linkIdParam[1];
                 }
+              }
+            }
+
+            // Check if there's an ah:link child element
+            for (const child of viewElement.getChildren()) {
+              if (child.is('element', 'ah:link') && child.hasAttribute('name')) {
+                return child.getAttribute('name');
               }
             }
 
@@ -325,7 +354,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
             const href = viewElement.getAttribute('href');
 
             // If it's empty or just #, and not a predefined link, don't create a link
-            if ((href === '' || href === '#') && !viewElement.hasClass('AHCustomLink')) {
+            if ((href === '' || href === '#') && !viewElement.hasClass('AHCustomeLink')) {
               return false; // This will prevent the attribute from being set
             }
 
