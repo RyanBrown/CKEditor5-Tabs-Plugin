@@ -72,6 +72,7 @@ export function isPredefinedLink(url: string | null | undefined): boolean {
 
 /**
  * Creates a link {@link module:engine/view/attributeelement~AttributeElement} with the provided `href` attribute.
+ * Now creates side-by-side elements instead of nesting them.
  */
 export function createLinkElement(href: string, { writer }: DowncastConversionApi): ViewAttributeElement {
   // Check if this is a predefined link
@@ -82,25 +83,41 @@ export function createLinkElement(href: string, { writer }: DowncastConversionAp
 
   // Create link element as attribute element - this is important for proper rendering
   const linkElement = writer.createAttributeElement('a', {
-    'href': '#',
     'class': 'AHCustomeLink',
     'data-id': 'predefined_link'
   }, {
     priority: 5
   });
 
-  // Create the inner ah:link element with higher priority
+  // Set custom property for identification
+  writer.setCustomProperty('alight-predefined-link', true, linkElement);
+
+  // NOTE: We don't create the ah:link element here because this function is only
+  // used for creating the <a> element. The ah:link element is created separately
+  // in the downcast converter.
+
+  // Return the link element - the ah:link element will be created separately
+  return linkElement;
+}
+
+/**
+ * Creates an ah:link element that should be placed after the <a> tag.
+ * This is a new helper function for the side-by-side links structure.
+ */
+export function createAhLinkElement(href: string, linkName: string, { writer }: DowncastConversionApi): ViewAttributeElement {
+  // Create the ah:link element
   const ahLinkElement = writer.createAttributeElement('ah:link', {
-    'name': linkName
+    'onclick': `LinkId:${linkName}`,
+    'href': href,
+    'data-id': 'predefined_link'
   }, {
     priority: 6
   });
 
   // Set custom property for identification
-  writer.setCustomProperty('alight-predefined-link', true, linkElement);
+  writer.setCustomProperty('alight-predefined-link-ah', true, ahLinkElement);
 
-  // Return the link element - we'll use the wrap method to nest elements properly
-  return linkElement;
+  return ahLinkElement;
 }
 
 /**

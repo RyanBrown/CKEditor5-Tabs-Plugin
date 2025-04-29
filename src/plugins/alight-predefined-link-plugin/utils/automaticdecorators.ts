@@ -80,7 +80,6 @@ export default class AutomaticDecorators {
 
             // Create outer link element with all attributes
             const linkAttrs = {
-              'href': '#',
               'class': 'AHCustomeLink',
               'data-id': 'predefined_link',
               ...item.attributes
@@ -99,38 +98,46 @@ export default class AutomaticDecorators {
               viewWriter.setStyle(key, item.styles[key], linkElement);
             }
 
-            // Create the inner ah:link element
-            const ahLinkElement = viewWriter.createAttributeElement('ah:link', {
-              'name': linkName
-            }, { priority: 6 });
+            // Create the ah:link element
+            const ahLinkAttrs = {
+              'onclick': `LinkId:${linkName}`,
+              'href': data.attributeNewValue as string,
+              'data-id': 'predefined_link'
+            };
+
+            const ahLinkElement = viewWriter.createAttributeElement('ah:link', ahLinkAttrs, { priority: 6 });
 
             // Set custom property for link identification
             viewWriter.setCustomProperty('alight-predefined-link', true, linkElement);
+            viewWriter.setCustomProperty('alight-predefined-link-ah', true, ahLinkElement);
 
             if (data.item.is('selection')) {
               // When dealing with selection, apply the link elements
               const range = viewSelection.getFirstRange();
 
               if (range) {
-                // First wrap with the inner ah:link element (higher priority)
-                const ahLinkRange = viewWriter.wrap(range, ahLinkElement);
+                // First apply the <a> element
+                const linkRange = viewWriter.wrap(range, linkElement);
 
-                // Then wrap with the outer a element (lower priority)
-                viewWriter.wrap(ahLinkRange, linkElement);
+                // Then apply the <ah:link> element to the same content
+                const ahLinkRange = viewSelection.getFirstRange();
+                if (ahLinkRange) {
+                  viewWriter.wrap(ahLinkRange, ahLinkElement);
+                }
               }
             } else {
               // For model elements, handle the view range
               const viewRange = conversionApi.mapper.toViewRange(data.range);
 
-              // First wrap with the inner ah:link element (higher priority)
-              const ahLinkRange = viewWriter.wrap(viewRange, ahLinkElement);
+              // Apply the <a> element
+              viewWriter.wrap(viewRange, linkElement);
 
-              // Then wrap with the outer a element (lower priority)
-              viewWriter.wrap(ahLinkRange, linkElement);
+              // Then apply the <ah:link> element to the same content
+              const ahLinkViewRange = conversionApi.mapper.toViewRange(data.range);
+              viewWriter.wrap(ahLinkViewRange, ahLinkElement);
             }
           } else {
             // If callback returned false, we should remove the link attributes
-            // instead of trying to unwrap them, which is causing TypeScript errors
 
             // For selections, remove attributes from elements in the selection
             if (data.item.is('selection')) {
@@ -147,17 +154,22 @@ export default class AutomaticDecorators {
                 // Remove link attributes from elements
                 for (const element of elementsInRange) {
                   // Remove by replacing attributes
-                  viewWriter.removeAttribute('href', element);
+                  viewWriter.removeAttribute('class', element);
                   viewWriter.removeAttribute('data-id', element);
-                  viewWriter.removeClass('AHCustomeLink', element);
 
                   // Find and handle ah:link elements
-                  const ahLinkElements = Array.from(element.getChildren())
-                    .filter(child => child.is('element', 'ah:link')) as ViewAttributeElement[]; // Add proper type casting
+                  const ahLinkElements = Array.from(range.getItems())
+                    .filter(item =>
+                      item.is('attributeElement') &&
+                      item.name === 'ah:link' &&
+                      item.hasAttribute('onclick')
+                    ) as ViewAttributeElement[];
 
                   for (const ahLink of ahLinkElements) {
-                    // Just remove the name attribute which should effectively disable the link
-                    viewWriter.removeAttribute('name', ahLink);
+                    // Remove the attributes from ah:link elements
+                    viewWriter.removeAttribute('onclick', ahLink);
+                    viewWriter.removeAttribute('href', ahLink);
+                    viewWriter.removeAttribute('data-id', ahLink);
                   }
                 }
               }
@@ -175,17 +187,22 @@ export default class AutomaticDecorators {
               // Remove link attributes
               for (const element of elementsInRange) {
                 // Remove attributes 
-                viewWriter.removeAttribute('href', element);
+                viewWriter.removeAttribute('class', element);
                 viewWriter.removeAttribute('data-id', element);
-                viewWriter.removeClass('AHCustomeLink', element);
 
-                // Find ah:link elements
-                const ahLinkElements = Array.from(element.getChildren())
-                  .filter(child => child.is('element', 'ah:link')) as ViewAttributeElement[]; // Add proper type casting
+                // Find ah:link elements in the same range
+                const ahLinkElements = Array.from(viewRange.getItems())
+                  .filter(item =>
+                    item.is('attributeElement') &&
+                    item.name === 'ah:link' &&
+                    item.hasAttribute('onclick')
+                  ) as ViewAttributeElement[];
 
                 for (const ahLink of ahLinkElements) {
-                  // Just remove the name attribute
-                  viewWriter.removeAttribute('name', ahLink);
+                  // Remove the attributes from ah:link elements
+                  viewWriter.removeAttribute('onclick', ahLink);
+                  viewWriter.removeAttribute('href', ahLink);
+                  viewWriter.removeAttribute('data-id', ahLink);
                 }
               }
             }
