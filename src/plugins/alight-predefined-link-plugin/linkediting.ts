@@ -118,6 +118,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
 
       // Create link element as attribute element - this is important for proper rendering
       const linkElement = conversionApi.writer.createAttributeElement('a', {
+        'href': '#',
         'class': 'AHCustomeLink',
         'data-id': 'predefined_link'
       }, {
@@ -127,6 +128,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
       // Set custom property for identification
       conversionApi.writer.setCustomProperty('alight-predefined-link', true, linkElement);
 
+      // Return nested structure - we'll use the wrap method to apply this
       return {
         linkElement,
         linkName
@@ -167,6 +169,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
 
         // Create the outer anchor element with LOWER priority
         const linkElement = conversionApi.writer.createAttributeElement('a', {
+          'href': '#',
           'class': 'AHCustomeLink',
           'data-id': 'predefined_link'
         }, {
@@ -176,7 +179,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
 
         // Create the ah:link element that will be placed AFTER the <a> element
         const ahLinkElement = conversionApi.writer.createAttributeElement('ah:link', {
-          'onclick': `LinkId:${linkId}`,
+          'name': linkId,
           'href': href,
           'data-id': 'predefined_link'
         }, {
@@ -226,6 +229,9 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         view: {
           name: 'a',
           classes: 'AHCustomeLink',
+          attributes: {
+            'href': '#'
+          }
         },
         model: {
           key: 'alightPredefinedLinkPluginHref',

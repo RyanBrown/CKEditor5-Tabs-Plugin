@@ -106,8 +106,9 @@ export function createLinkElement(href: string, { writer }: DowncastConversionAp
  */
 export function createAhLinkElement(href: string, linkName: string, { writer }: DowncastConversionApi): ViewAttributeElement {
   // Create the ah:link element
+  // Create the ah:link element
   const ahLinkElement = writer.createAttributeElement('ah:link', {
-    'onclick': `LinkId:${linkName}`,
+    'name': linkName,
     'href': href,
     'data-id': 'predefined_link'
   }, {

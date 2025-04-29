@@ -100,7 +100,7 @@ export default class AutomaticDecorators {
 
             // Create the ah:link element
             const ahLinkAttrs = {
-              'onclick': `LinkId:${linkName}`,
+              'name': linkName,
               'href': data.attributeNewValue as string,
               'data-id': 'predefined_link'
             };
