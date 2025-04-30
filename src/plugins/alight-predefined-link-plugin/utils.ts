@@ -102,15 +102,39 @@ export function createLinkElement(href: string, { writer }: DowncastConversionAp
 
 /**
  * Creates an ah:link element that should be placed after the <a> tag.
- * This is a new helper function for the side-by-side links structure.
+ * This is a helper function for the side-by-side links structure.
  */
-export function createAhLinkElement(href: string, linkName: string, { writer }: DowncastConversionApi): ViewAttributeElement {
-  // Create the ah:link element
-  // Create the ah:link element
+export function createAhLinkElement(
+  href: string,
+  linkName: string,
+  { writer }: DowncastConversionApi,
+  options: {
+    description?: string;
+    baseOrClientSpecific?: string;
+    pageType?: string;
+    destination?: string;
+    pageCode?: string;
+    domain?: string;
+    uniqueId?: string;
+    attributeName?: string;
+    attributeValue?: string;
+  } = {}
+): ViewAttributeElement {
+  // Create the ah:link element with all the available attributes
   const ahLinkElement = writer.createAttributeElement('ah:link', {
     'name': linkName,
     'href': href,
-    'data-id': 'predefined_link'
+    'data-id': 'predefined_link',
+    'data-predefinedLinkName': linkName || '',
+    'data-predefinedLinkDescription': options.description || '',
+    'data-baseOrClientSpecific': options.baseOrClientSpecific || '',
+    'data-pageType': options.pageType || '',
+    'data-destination': options.destination || href,
+    'data-pageCode': options.pageCode || '',
+    'data-domain': options.domain || '',
+    'data-uniqueId': options.uniqueId || '',
+    'data-attributeName': options.attributeName || '',
+    'data-attributeValue': options.attributeValue || ''
   }, {
     priority: 6
   });
@@ -324,7 +348,7 @@ export function extractPredefinedLinkId(href: string | null | undefined): string
   }
 
   // Extract LinkId from the href (used in onclick format links)
-  const linkIdMatch = href.match(/LinkId:([A-Z_0-9]+)/i);
+  const linkIdMatch = href.match(/([A-Z_0-9]+)/i);
   if (linkIdMatch && linkIdMatch[1]) {
     return linkIdMatch[1];
   }

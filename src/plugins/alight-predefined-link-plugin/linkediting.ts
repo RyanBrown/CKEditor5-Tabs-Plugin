@@ -99,6 +99,17 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
     editor.model.schema.extend('$text', { allowAttributes: 'alightPredefinedLinkPluginLinkName' });
     editor.model.schema.extend('$text', { allowAttributes: 'alightPredefinedLinkPluginFormat' });
 
+    // Additional attributes for storing predefined link data
+    editor.model.schema.extend('$text', { allowAttributes: 'alightPredefinedLinkPluginDescription' });
+    editor.model.schema.extend('$text', { allowAttributes: 'alightPredefinedLinkPluginBaseOrClientSpecific' });
+    editor.model.schema.extend('$text', { allowAttributes: 'alightPredefinedLinkPluginPageType' });
+    editor.model.schema.extend('$text', { allowAttributes: 'alightPredefinedLinkPluginDestination' });
+    editor.model.schema.extend('$text', { allowAttributes: 'alightPredefinedLinkPluginPageCode' });
+    editor.model.schema.extend('$text', { allowAttributes: 'alightPredefinedLinkPluginDomain' });
+    editor.model.schema.extend('$text', { allowAttributes: 'alightPredefinedLinkPluginUniqueId' });
+    editor.model.schema.extend('$text', { allowAttributes: 'alightPredefinedLinkPluginAttributeName' });
+    editor.model.schema.extend('$text', { allowAttributes: 'alightPredefinedLinkPluginAttributeValue' });
+
     // Allow orgnameattr attribute to be present, so we can remove it later
     editor.model.schema.extend('$text', { allowAttributes: 'orgnameattr' });
 
@@ -167,6 +178,26 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         const href = data.attributeNewValue || '';
         const linkId = linkName || extractPredefinedLinkId(href) || href;
 
+        // Collect additional link data attributes
+        const linkDescription = data.item.hasAttribute && data.item.hasAttribute('alightPredefinedLinkPluginDescription') ?
+          data.item.getAttribute('alightPredefinedLinkPluginDescription') : '';
+        const baseOrClientSpecific = data.item.hasAttribute && data.item.hasAttribute('alightPredefinedLinkPluginBaseOrClientSpecific') ?
+          data.item.getAttribute('alightPredefinedLinkPluginBaseOrClientSpecific') : '';
+        const pageType = data.item.hasAttribute && data.item.hasAttribute('alightPredefinedLinkPluginPageType') ?
+          data.item.getAttribute('alightPredefinedLinkPluginPageType') : '';
+        const destination = data.item.hasAttribute && data.item.hasAttribute('alightPredefinedLinkPluginDestination') ?
+          data.item.getAttribute('alightPredefinedLinkPluginDestination') : href;
+        const pageCode = data.item.hasAttribute && data.item.hasAttribute('alightPredefinedLinkPluginPageCode') ?
+          data.item.getAttribute('alightPredefinedLinkPluginPageCode') : '';
+        const domain = data.item.hasAttribute && data.item.hasAttribute('alightPredefinedLinkPluginDomain') ?
+          data.item.getAttribute('alightPredefinedLinkPluginDomain') : '';
+        const uniqueId = data.item.hasAttribute && data.item.hasAttribute('alightPredefinedLinkPluginUniqueId') ?
+          data.item.getAttribute('alightPredefinedLinkPluginUniqueId') : '';
+        const attributeName = data.item.hasAttribute && data.item.hasAttribute('alightPredefinedLinkPluginAttributeName') ?
+          data.item.getAttribute('alightPredefinedLinkPluginAttributeName') : '';
+        const attributeValue = data.item.hasAttribute && data.item.hasAttribute('alightPredefinedLinkPluginAttributeValue') ?
+          data.item.getAttribute('alightPredefinedLinkPluginAttributeValue') : '';
+
         // Create the outer anchor element with LOWER priority
         const linkElement = conversionApi.writer.createAttributeElement('a', {
           'href': '#',
@@ -178,10 +209,21 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         });
 
         // Create the ah:link element that will be placed AFTER the <a> element
+        // Add all required data attributes
         const ahLinkElement = conversionApi.writer.createAttributeElement('ah:link', {
           'name': linkId,
           'href': href,
-          'data-id': 'predefined_link'
+          'data-id': 'predefined_link',
+          'data-predefinedLinkName': linkName || '',
+          'data-predefinedLinkDescription': linkDescription || '',
+          'data-baseOrClientSpecific': baseOrClientSpecific || '',
+          'data-pageType': pageType || '',
+          'data-destination': destination || href,
+          'data-pageCode': pageCode || '',
+          'data-domain': domain || '',
+          'data-uniqueId': uniqueId || '',
+          'data-attributeName': attributeName || '',
+          'data-attributeValue': attributeValue || ''
         }, {
           priority: 6
         });
@@ -247,7 +289,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
               // Extract link ID from onclick attribute in ah:link
               if (nextSibling.hasAttribute('onclick')) {
                 const onclick = nextSibling.getAttribute('onclick') as string;
-                const linkIdMatch = onclick.match(/LinkId:([A-Z_0-9]+)/i);
+                const linkIdMatch = onclick.match(/([A-Z_0-9]+)/i);
                 if (linkIdMatch && linkIdMatch[1]) {
                   return linkIdMatch[1];
                 }
@@ -266,46 +308,122 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         converterPriority: 'highest'
       });
 
-    // Handle ah:link element directly
+    // Handle ah:link element directly - UPDATED to extract all data attributes
     editor.conversion.for('upcast')
       .elementToAttribute({
         view: {
-          name: 'ah:link',
-          attributes: {
-            'onclick': /LinkId:[A-Z_0-9]+/i
-          }
+          name: 'ah:link'
         },
         model: {
           key: 'alightPredefinedLinkPluginHref',
           value: (viewElement: ViewElement) => {
-            const onclick = viewElement.getAttribute('onclick') as string;
+            // Extract link ID from various possible sources
+            let linkId = '';
 
-            // Extract link ID from onclick attribute
-            const linkIdMatch = onclick.match(/LinkId:([A-Z_0-9]+)/i);
-            if (linkIdMatch && linkIdMatch[1]) {
-              // Store additional information for the link format
-              this.editor.model.once('_afterConversion', () => {
-                this.editor.model.change(writer => {
-                  const selection = this.editor.model.document.selection;
-                  const range = selection.getFirstRange();
+            // Try onclick attribute first
+            if (viewElement.hasAttribute('onclick')) {
+              const onclick = viewElement.getAttribute('onclick') as string;
+              const linkIdMatch = onclick.match(/([A-Z_0-9]+)/i);
+              if (linkIdMatch && linkIdMatch[1]) {
+                linkId = linkIdMatch[1];
+              }
+            }
 
-                  if (range) {
-                    writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', range);
-                    writer.setAttribute('alightPredefinedLinkPluginLinkName', linkIdMatch[1], range);
+            // If no onclick, try name attribute
+            if (!linkId && viewElement.hasAttribute('name')) {
+              linkId = viewElement.getAttribute('name') as string;
+            }
+
+            // If still no ID, try href
+            const href = viewElement.hasAttribute('href') ?
+              viewElement.getAttribute('href') as string : '';
+
+            if (!linkId && href) {
+              linkId = extractPredefinedLinkId(href) || href;
+            }
+
+            // Get all data attributes
+            const predefinedLinkName = viewElement.hasAttribute('data-predefinedLinkName') ?
+              viewElement.getAttribute('data-predefinedLinkName') as string : '';
+
+            const predefinedLinkDescription = viewElement.hasAttribute('data-predefinedLinkDescription') ?
+              viewElement.getAttribute('data-predefinedLinkDescription') as string : '';
+
+            const baseOrClientSpecific = viewElement.hasAttribute('data-baseOrClientSpecific') ?
+              viewElement.getAttribute('data-baseOrClientSpecific') as string : '';
+
+            const pageType = viewElement.hasAttribute('data-pageType') ?
+              viewElement.getAttribute('data-pageType') as string : '';
+
+            const destination = viewElement.hasAttribute('data-destination') ?
+              viewElement.getAttribute('data-destination') as string : href;
+
+            const pageCode = viewElement.hasAttribute('data-pageCode') ?
+              viewElement.getAttribute('data-pageCode') as string : '';
+
+            const domain = viewElement.hasAttribute('data-domain') ?
+              viewElement.getAttribute('data-domain') as string : '';
+
+            const uniqueId = viewElement.hasAttribute('data-uniqueId') ?
+              viewElement.getAttribute('data-uniqueId') as string : '';
+
+            const attributeName = viewElement.hasAttribute('data-attributeName') ?
+              viewElement.getAttribute('data-attributeName') as string : '';
+
+            const attributeValue = viewElement.hasAttribute('data-attributeValue') ?
+              viewElement.getAttribute('data-attributeValue') as string : '';
+
+            // Store additional information for the link format
+            this.editor.model.once('_afterConversion', () => {
+              this.editor.model.change(writer => {
+                const selection = this.editor.model.document.selection;
+                const range = selection.getFirstRange();
+
+                if (range) {
+                  writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', range);
+                  writer.setAttribute('alightPredefinedLinkPluginLinkName', predefinedLinkName || linkId, range);
+
+                  // Set additional attributes
+                  if (predefinedLinkDescription) {
+                    writer.setAttribute('alightPredefinedLinkPluginDescription', predefinedLinkDescription, range);
                   }
-                });
+
+                  if (baseOrClientSpecific) {
+                    writer.setAttribute('alightPredefinedLinkPluginBaseOrClientSpecific', baseOrClientSpecific, range);
+                  }
+
+                  if (pageType) {
+                    writer.setAttribute('alightPredefinedLinkPluginPageType', pageType, range);
+                  }
+
+                  if (destination) {
+                    writer.setAttribute('alightPredefinedLinkPluginDestination', destination, range);
+                  }
+
+                  if (pageCode) {
+                    writer.setAttribute('alightPredefinedLinkPluginPageCode', pageCode, range);
+                  }
+
+                  if (domain) {
+                    writer.setAttribute('alightPredefinedLinkPluginDomain', domain, range);
+                  }
+
+                  if (uniqueId) {
+                    writer.setAttribute('alightPredefinedLinkPluginUniqueId', uniqueId, range);
+                  }
+
+                  if (attributeName) {
+                    writer.setAttribute('alightPredefinedLinkPluginAttributeName', attributeName, range);
+                  }
+
+                  if (attributeValue) {
+                    writer.setAttribute('alightPredefinedLinkPluginAttributeValue', attributeValue, range);
+                  }
+                }
               });
+            });
 
-              return linkIdMatch[1];
-            }
-
-            // If no link ID found in onclick, try to extract from href as fallback
-            if (viewElement.hasAttribute('href')) {
-              return viewElement.getAttribute('href');
-            }
-
-            // If nothing specific is found, return empty string
-            return '';
+            return linkId || href;
           }
         },
         converterPriority: 'high'
@@ -599,6 +717,15 @@ function removeLinkAttributesFromSelection(writer: Writer, linkAttributes: Array
   writer.removeSelectionAttribute('alightPredefinedLinkPluginHref');
   writer.removeSelectionAttribute('alightPredefinedLinkPluginLinkName');
   writer.removeSelectionAttribute('alightPredefinedLinkPluginFormat');
+  writer.removeSelectionAttribute('alightPredefinedLinkPluginDescription');
+  writer.removeSelectionAttribute('alightPredefinedLinkPluginBaseOrClientSpecific');
+  writer.removeSelectionAttribute('alightPredefinedLinkPluginPageType');
+  writer.removeSelectionAttribute('alightPredefinedLinkPluginDestination');
+  writer.removeSelectionAttribute('alightPredefinedLinkPluginPageCode');
+  writer.removeSelectionAttribute('alightPredefinedLinkPluginDomain');
+  writer.removeSelectionAttribute('alightPredefinedLinkPluginUniqueId');
+  writer.removeSelectionAttribute('alightPredefinedLinkPluginAttributeName');
+  writer.removeSelectionAttribute('alightPredefinedLinkPluginAttributeValue');
 
   for (const attribute of linkAttributes) {
     writer.removeSelectionAttribute(attribute);
