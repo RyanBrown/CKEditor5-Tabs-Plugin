@@ -387,15 +387,7 @@ class AlightEditor extends ClassicEditor {
           styles: ["*"]
         }, {
           name: "ah:link",
-          attributes: [
-            "assettype",
-            "class",
-            "data-*",
-            "href",
-            "name",
-            "onclick",
-            "title",
-          ],
+          attributes: ["*"],
           classes: ["*"],
           styles: ["*"]
         }, {
