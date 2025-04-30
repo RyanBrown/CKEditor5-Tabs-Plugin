@@ -72,7 +72,6 @@ export function isPredefinedLink(url: string | null | undefined): boolean {
 
 /**
  * Creates a link {@link module:engine/view/attributeelement~AttributeElement} with the provided `href` attribute.
- * Now creates side-by-side elements instead of nesting them.
  */
 export function createLinkElement(href: string, { writer }: DowncastConversionApi): ViewAttributeElement {
   // Check if this is a predefined link
@@ -81,68 +80,19 @@ export function createLinkElement(href: string, { writer }: DowncastConversionAp
   // Extract link name if it's a predefined link
   const linkName = extractPredefinedLinkId(href) || href;
 
-  // Create link element as attribute element - this is important for proper rendering
+  // Create the attribute element with necessary attributes
   const linkElement = writer.createAttributeElement('a', {
+    'href': linkName || '#', // Use linkName for href
     'class': 'AHCustomeLink',
     'data-id': 'predefined_link'
   }, {
     priority: 5
   });
 
-  // Set custom property for identification
+  // Set custom property for link identification
   writer.setCustomProperty('alight-predefined-link', true, linkElement);
 
-  // NOTE: We don't create the ah:link element here because this function is only
-  // used for creating the <a> element. The ah:link element is created separately
-  // in the downcast converter.
-
-  // Return the link element - the ah:link element will be created separately
   return linkElement;
-}
-
-/**
- * Creates an ah:link element that should be placed after the <a> tag.
- * This is a helper function for the side-by-side links structure.
- */
-export function createAhLinkElement(
-  href: string,
-  linkName: string,
-  { writer }: DowncastConversionApi,
-  options: {
-    description?: string;
-    baseOrClientSpecific?: string;
-    pageType?: string;
-    destination?: string;
-    pageCode?: string;
-    domain?: string;
-    uniqueId?: string;
-    attributeName?: string;
-    attributeValue?: string;
-  } = {}
-): ViewAttributeElement {
-  // Create the ah:link element with all the available attributes
-  const ahLinkElement = writer.createAttributeElement('ah:link', {
-    'name': linkName,
-    'href': href,
-    'data-id': 'predefined_link',
-    'data-predefinedLinkName': linkName || '',
-    'data-predefinedLinkDescription': options.description || '',
-    'data-baseOrClientSpecific': options.baseOrClientSpecific || '',
-    'data-pageType': options.pageType || '',
-    'data-destination': options.destination || href,
-    'data-pageCode': options.pageCode || '',
-    'data-domain': options.domain || '',
-    'data-uniqueId': options.uniqueId || '',
-    'data-attributeName': options.attributeName || '',
-    'data-attributeValue': options.attributeValue || ''
-  }, {
-    priority: 6
-  });
-
-  // Set custom property for identification
-  writer.setCustomProperty('alight-predefined-link-ah', true, ahLinkElement);
-
-  return ahLinkElement;
 }
 
 /**
@@ -347,12 +297,6 @@ export function extractPredefinedLinkId(href: string | null | undefined): string
     return href;
   }
 
-  // Extract LinkId from the href (used in onclick format links)
-  const linkIdMatch = href.match(/([A-Z_0-9]+)/i);
-  if (linkIdMatch && linkIdMatch[1]) {
-    return linkIdMatch[1];
-  }
-
   // If nothing specific is found, just return the href as-is
   // for predefined links
   return isPredefinedLink(href) ? href : null;
@@ -371,6 +315,9 @@ export function hasAHCustomeLinkClass(element: ViewAttributeElement): boolean {
 export function filterLinkAttributes(attributes: Record<string, string>): Record<string, string> {
   const result: Record<string, string> = {};
 
+  // Check if this is a predefined link
+  const isPredefined = attributes['data-id'] === 'predefined_link';
+
   // Copy only the attributes we want to keep
   for (const key in attributes) {
     // Skip data-cke-saved-href attribute
@@ -378,19 +325,47 @@ export function filterLinkAttributes(attributes: Record<string, string>): Record
       continue;
     }
 
-    // Skip empty href or "#" href for non-predefined links
-    if (key === 'href' && (attributes[key] === '' || attributes[key] === '#')) {
-      // Keep empty href only for predefined links
-      if (attributes['data-id'] === 'predefined_link') {
-        result[key] = '#';
+    // Special handling for href attribute
+    if (key === 'href') {
+      if (isPredefined) {
+        // For predefined links, href should be the linkName
+        // Try to get name or data-link-name first
+        if (attributes['name']) {
+          result[key] = attributes['name'];
+        } else if (attributes['data-link-name']) {
+          result[key] = attributes['data-link-name'];
+        } else {
+          // Use the existing href value
+          result[key] = attributes[key] || '#';
+        }
+      } else if (attributes[key] && attributes[key] !== '#') {
+        // For regular links with non-empty href
+        result[key] = attributes[key];
       } else {
+        // For other links
         result[key] = '#';
       }
       continue;
     }
 
+    // Always preserve onclick attribute
+    if (key === 'onclick') {
+      result[key] = attributes[key];
+      continue;
+    }
+
     // Keep all other attributes
     result[key] = attributes[key];
+  }
+
+  // Ensure default values for predefined links if not set
+  if (isPredefined) {
+    if (!result['href']) {
+      result['href'] = '#';
+    }
+    if (!result['onclick'] && attributes['data-id'] === 'predefined_link') {
+      result['onclick'] = 'javascript:void(0);';
+    }
   }
 
   return result;

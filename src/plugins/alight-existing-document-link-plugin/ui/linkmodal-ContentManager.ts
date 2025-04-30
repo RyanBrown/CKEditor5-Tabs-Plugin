@@ -309,12 +309,10 @@ export class ContentManager implements ILinkManager {
           </cka-radio-button>
         </div>
         <ul>
-          <li><strong>${link.title || 'No Title'}</strong></li>
-          <li><strong>Population:</strong> ${link.population || 'Unknown'}</li>
-          <li><strong>Language:</strong> ${link.locale || 'Unknown'}</li>
-          <li><strong>File Type:</strong> ${link.fileType || 'Unknown'}</li>
-          ${link.documentDescription ? `<li><strong>Description:</strong> ${link.documentDescription}</li>` : ''}
-          <li><strong>Path:</strong> ${link.serverFilePath || 'No URL'}</li>
+          ${link.title ? `<li><strong>${link.title}</strong></li>` : ''}
+          ${link.population ? `<li><strong>Population:</strong> ${link.population}</li>` : ''}
+          ${link.locale ? `<li><strong>Language:</strong> ${link.locale}</li>` : ''}
+          ${link.fileType ? `<li><strong>File Type:</strong> ${link.fileType}</li>` : ''}
         </ul>
       </div>
     `;

@@ -305,17 +305,15 @@ export class ContentManager implements ILinkManager {
             name="${radioGroupName}" 
             value="${link.predefinedLinkName}" 
             ${isSelected ? 'checked' : ''}
-          >
-          </cka-radio-button>
+          ></cka-radio-button>
         </div>
         <ul>
-          <li><strong>${link.predefinedLinkName}</strong></li>
-          <li><strong>Description:</strong> ${link.predefinedLinkDescription || 'No description available'}</li>
-          <li><strong>Base/Client Specific:</strong> ${link.baseOrClientSpecific || 'Unknown'}</li>
-          <li><strong>Page Type:</strong> ${link.pageType || 'Unknown'}</li>
-          <li><strong>Destination:</strong> ${link.destination || 'No URL'}</li>
-          ${link.pageCode ? `<li><strong>Page Code:</strong> ${link.pageCode}</li>` : ''}
-          <li><strong>Domain:</strong> ${link.domain}</li>
+          ${link.predefinedLinkDescription ? `<li><strong>${link.predefinedLinkDescription}</strong></li>` : ''}
+          ${link.predefinedLinkName ? `<li><strong>Link Item Name:</strong> ${link.predefinedLinkName}</li>` : ''}
+          ${link.baseOrClientSpecific ? `<li><strong>Base / Client Specific:</strong> ${link.baseOrClientSpecific}</li>` : ''}
+          ${link.pageType ? `<li><strong>Page Type:</strong> ${link.pageType}</li>` : ''}
+          ${link.destination ? `<li><strong>Destination:</strong> ${link.destination}</ >` : ''}
+          ${link.domain ? `<li><strong>Domain:</strong> ${link.domain}</ >` : ''}
         </ul>
       </div>
     `;

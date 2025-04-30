@@ -81,6 +81,11 @@ export default class AlightPredefinedLinkPlugin extends Plugin {
                     const linkId = extractPredefinedLinkId(href as string);
                     if (linkId) {
                       writer.setAttribute('alightPredefinedLinkPluginLinkName', linkId, item);
+
+                      // Ensure destination is set
+                      if (!item.hasAttribute('alightPredefinedLinkPluginDestination')) {
+                        writer.setAttribute('alightPredefinedLinkPluginDestination', href, item);
+                      }
                     }
                   }
 
