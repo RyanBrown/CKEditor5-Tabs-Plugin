@@ -169,6 +169,9 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
             model
           );
 
+          // Store custom attributes from the old link before updating
+          const customAttributes = this._getCustomAttributes(selection);
+
           // Update the existing link with the new href
           writer.setAttribute('alightPredefinedLinkPluginHref', href, linkRange);
 
@@ -185,6 +188,9 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
 
             // Use the extracted link name or the provided one
             writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, linkRange);
+
+            // Preserve custom attributes from the old link
+            this._restoreCustomAttributes(writer, linkRange, customAttributes);
           }
 
           // Set truthyManualDecorators attributes
@@ -236,6 +242,9 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
         // WITHOUT REMOVING THEM - just applying the href attribute
         const ranges = model.schema.getValidRanges(selection.getRanges(), 'alightPredefinedLinkPluginHref');
 
+        // Store custom attributes before updating
+        const customAttributes = this._getCustomAttributes(selection);
+
         // Process each range
         for (const range of ranges) {
           // Find and remove orgnameattr attribute if it exists
@@ -248,6 +257,9 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
           if (isPredefined) {
             writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', range);
             writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, range);
+
+            // Restore custom attributes
+            this._restoreCustomAttributes(writer, range, customAttributes);
           }
 
           // Set truthyManualDecorators attributes
@@ -265,6 +277,40 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
 
     // Fire an event after command execution to notify UI
     this._fireEvent('executed', { href, options });
+  }
+
+  /**
+   * Helper method to get all custom attributes from the current selection or range
+   * 
+   * @param selection The current document selection
+   * @returns Object containing all custom attribute key-value pairs
+   */
+  private _getCustomAttributes(selection: any): Record<string, string> {
+    const customAttributes: Record<string, string> = {};
+
+    // Check all attributes on the selection
+    for (const [key, value] of selection.getAttributes()) {
+      // If it's one of our custom attributes, store it
+      if (key.startsWith('alightPredefinedLinkPluginCustom_')) {
+        customAttributes[key] = value as string;
+      }
+    }
+
+    return customAttributes;
+  }
+
+  /**
+   * Helper method to restore custom attributes to a range
+   * 
+   * @param writer The model writer
+   * @param range The range to apply attributes to
+   * @param customAttributes The custom attributes to restore
+   */
+  private _restoreCustomAttributes(writer: Writer, range: Range, customAttributes: Record<string, string>): void {
+    // Apply all custom attributes back to the range
+    for (const [key, value] of Object.entries(customAttributes)) {
+      writer.setAttribute(key, value, range);
+    }
   }
 
   /**

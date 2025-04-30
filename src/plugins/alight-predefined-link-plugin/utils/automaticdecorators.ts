@@ -147,8 +147,8 @@ export default class AutomaticDecorators {
               viewWriter.setStyle(key, item.styles[key], linkElement);
             }
 
-            // Create the ah:link element with all the data attributes
-            const ahLinkAttrs = {
+            // Create base attributes for ah:link element
+            const ahLinkAttrs: Record<string, string> = {
               'name': linkName,
               'href': data.attributeNewValue as string,
               'data-id': 'predefined_link',
@@ -163,6 +163,41 @@ export default class AutomaticDecorators {
               'data-attributeName': attributeName,
               'data-attributeValue': attributeValue
             };
+
+            // ENHANCED: Add custom attributes from model to the ah:link element
+            // Check for any attributes with the custom prefix and add them to ahLinkAttrs
+            if (data.item.is('$text') || data.item.is('element')) {
+              // Use explicitly typed variable
+              let attributes: Array<[string, unknown]> | Iterable<[string, unknown]> = [];
+
+              if (data.item.getAttributes) {
+                attributes = data.item.getAttributes();
+              }
+
+              for (const [key, value] of attributes) {
+                if (typeof key === 'string' && key.startsWith('alightPredefinedLinkPluginCustom_')) {
+                  // Extract the original attribute name by removing the prefix
+                  const originalAttrName = key.replace('alightPredefinedLinkPluginCustom_', '');
+                  ahLinkAttrs[originalAttrName] = value as string;
+                }
+              }
+            } else if (data.item.is('selection')) {
+              // For selection, we need to get attributes from the first position
+              // Use explicitly typed variable
+              let selectionAttributes: Array<[string, unknown]> | Iterable<[string, unknown]> = [];
+
+              if (data.item.getAttributes) {
+                selectionAttributes = data.item.getAttributes();
+              }
+
+              for (const [key, value] of selectionAttributes) {
+                if (typeof key === 'string' && key.startsWith('alightPredefinedLinkPluginCustom_')) {
+                  // Extract the original attribute name by removing the prefix
+                  const originalAttrName = key.replace('alightPredefinedLinkPluginCustom_', '');
+                  ahLinkAttrs[originalAttrName] = value as string;
+                }
+              }
+            }
 
             const ahLinkElement = viewWriter.createAttributeElement('ah:link', ahLinkAttrs, { priority: 6 });
 

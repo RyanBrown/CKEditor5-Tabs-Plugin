@@ -52,7 +52,7 @@ export default class AlightPredefinedLinkPluginUnlinkCommand extends Command {
         writer.removeAttribute('alightPredefinedLinkPluginHref', range);
 
         // If there are registered custom attributes, then remove them during unlink.
-        if (linkCommand) {
+        if (linkCommand && linkCommand.manualDecorators) {
           for (const manualDecorator of linkCommand.manualDecorators) {
             writer.removeAttribute(manualDecorator.id, range);
           }
