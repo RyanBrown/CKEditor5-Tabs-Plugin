@@ -70,6 +70,12 @@ export default class AutomaticDecorators {
             // For predefined links, we need to create a structure with ah:link
             // Get or extract link name and other data attributes
             let linkName = '';
+            let onclickValue = '';
+
+            // Extract onclick value
+            if (data.item.hasAttribute && data.item.hasAttribute('alightPredefinedLinkPluginAttributeValue')) {
+              onclickValue = data.item.getAttribute('alightPredefinedLinkPluginAttributeValue') as string;
+            }
 
             // Extract link name
             if (data.item.hasAttribute && data.item.hasAttribute('alightPredefinedLinkPluginLinkName')) {
@@ -80,11 +86,16 @@ export default class AutomaticDecorators {
             }
 
             // Create outer link element with all attributes
-            const linkAttrs = {
+            const linkAttrs: Record<string, string> = {
               'class': 'AHCustomeLink',
               'data-id': 'predefined_link',
               ...item.attributes
             };
+
+            // Add onclick attribute if available
+            if (onclickValue) {
+              linkAttrs['onclick'] = onclickValue;
+            }
 
             // Use attributeElement instead of containerElement to maintain proper nesting
             const linkElement = viewWriter.createAttributeElement('a', linkAttrs, { priority: 5 });
@@ -105,6 +116,11 @@ export default class AutomaticDecorators {
               'href': data.attributeNewValue as string,
               'data-id': 'predefined_link'
             };
+
+            // Add onclick attribute to ah:link element if available
+            if (onclickValue) {
+              ahLinkAttrs['onclick'] = onclickValue;
+            }
 
             // ENHANCED: Add custom attributes from model to the ah:link element
             // Check for any attributes with the custom prefix and add them to ahLinkAttrs

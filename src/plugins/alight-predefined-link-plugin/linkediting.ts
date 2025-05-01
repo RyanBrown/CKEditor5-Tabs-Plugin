@@ -114,18 +114,32 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
 
       // Get or determine link name
       let linkName = '';
+      let onclickValue = '';
+
       if (item && item.hasAttribute && item.hasAttribute('alightPredefinedLinkPluginLinkName')) {
         linkName = item.getAttribute('alightPredefinedLinkPluginLinkName');
       } else {
         linkName = extractPredefinedLinkId(href) || href;
       }
 
-      // Create link element as attribute element with href set to linkName
-      const linkElement = conversionApi.writer.createAttributeElement('a', {
+      // Get onclick value if available
+      if (item && item.hasAttribute && item.hasAttribute('alightPredefinedLinkPluginAttributeValue')) {
+        onclickValue = item.getAttribute('alightPredefinedLinkPluginAttributeValue');
+      }
+
+      // Create link element with onclick attribute if present
+      const linkAttributes: Record<string, string> = {
         'href': linkName || '#',
         'class': 'AHCustomeLink',
         'data-id': 'predefined_link'
-      }, {
+      };
+
+      // Add onclick attribute if available
+      if (onclickValue) {
+        linkAttributes['onclick'] = onclickValue;
+      }
+
+      const linkElement = conversionApi.writer.createAttributeElement('a', linkAttributes, {
         priority: 5
       });
 
@@ -170,11 +184,18 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
             data.attributeNewValue as string;
         }
 
-        // Create the ah:link element with name and data-id attributes
-        const ahLinkElement = conversionApi.writer.createAttributeElement('ah:link', {
+        // Create the ah:link element with name, data-id and onclick attributes
+        const ahLinkAttributes: Record<string, string> = {
           'name': linkName,
           'data-id': 'predefined_link'
-        }, {
+        };
+
+        // Add onclick attribute if available
+        if (onclickValue) {
+          ahLinkAttributes['onclick'] = onclickValue;
+        }
+
+        const ahLinkElement = conversionApi.writer.createAttributeElement('ah:link', ahLinkAttributes, {
           priority: 6  // Higher priority to nest correctly
         });
 
@@ -209,6 +230,9 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
             // Extract the linkName from the name attribute
             const linkName = viewElement.getAttribute('name') || '';
 
+            // Extract the onclick attribute if present
+            const onclickValue = viewElement.getAttribute('onclick') || '';
+
             // Store additional information for the link
             this.editor.model.once('_afterConversion', () => {
               this.editor.model.change(writer => {
@@ -218,7 +242,13 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
                 if (range) {
                   writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', range);
                   writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, range);
-                  writer.setAttribute('alightPredefinedLinkPluginAttributeValue', 'javascript:void(0);', range);
+
+                  // Preserve the onclick attribute value
+                  if (onclickValue) {
+                    writer.setAttribute('alightPredefinedLinkPluginAttributeValue', onclickValue, range);
+                  } else {
+                    writer.setAttribute('alightPredefinedLinkPluginAttributeValue', 'javascript:void(0);', range);
+                  }
                   writer.setAttribute('alightPredefinedLinkPluginDestination', linkName, range);
                 }
               });
@@ -243,20 +273,22 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
             // Extract the linkName from href
             const linkName = viewElement.getAttribute('href') || '';
 
-            // Look for adjacent anchor with onclick
-            const parent = viewElement.parent;
-            let onclickValue = '';
-            let destination = '';
+            // Extract onclick attribute directly from the element
+            const onclickValue = viewElement.getAttribute('onclick') || '';
 
-            if (parent) {
-              const index = parent.getChildIndex(viewElement);
-              // Try next sibling
-              if (index < parent.childCount - 1) {
-                const nextSibling = parent.getChild(index + 1);
-                if (nextSibling && nextSibling.is('element', 'a') &&
-                  nextSibling.hasAttribute('onclick')) {
-                  onclickValue = nextSibling.getAttribute('onclick') || '';
-                  destination = nextSibling.getAttribute('href') || '';
+            // Look for adjacent anchor with onclick if not already found
+            let destination = '';
+            if (!onclickValue) {
+              const parent = viewElement.parent;
+              if (parent) {
+                const index = parent.getChildIndex(viewElement);
+                // Try next sibling
+                if (index < parent.childCount - 1) {
+                  const nextSibling = parent.getChild(index + 1);
+                  if (nextSibling && nextSibling.is('element', 'a') &&
+                    nextSibling.hasAttribute('onclick')) {
+                    destination = nextSibling.getAttribute('href') || '';
+                  }
                 }
               }
             }
