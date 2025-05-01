@@ -43,8 +43,6 @@ export default class AlightPredefinedLinkPlugin extends Plugin {
    * @inheritDoc
    */
   public init(): void {
-    // The UI component is already registered by AlightPredefinedLinkPluginUI plugin
-
     // Register additional plugin-specific behaviors
     this._handleLinkInterception();
   }

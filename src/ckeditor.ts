@@ -368,6 +368,11 @@ class AlightEditor extends ClassicEditor {
     htmlSupport: {
       allow: [
         {
+          name: /.*/,  // Allow all elements
+          attributes: {
+            onclick: true  // Specifically allow onclick attribute on all elements
+          }
+        }, {
           name: "ah:expr",
           attributes: ["name", "class", "title", "assettype"],
           classes: ["*"],
