@@ -120,6 +120,8 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
     // Get the format attribute from the current selection if it exists
     let linkFormat = '';
     let linkName = '';
+    let onclickValue = '';
+    let destination = href;
 
     const model = this.editor.model;
     const selection = model.document.selection;
@@ -134,11 +136,26 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
       linkName = selection.getAttribute('alightPredefinedLinkPluginLinkName') as string;
     }
 
+    // Check if the current link has an onclick attribute we need to preserve
+    if (selection.hasAttribute('alightPredefinedLinkPluginAttributeValue')) {
+      onclickValue = selection.getAttribute('alightPredefinedLinkPluginAttributeValue') as string;
+    }
+
+    // Check if the current link has a destination attribute we need to preserve
+    if (selection.hasAttribute('alightPredefinedLinkPluginDestination')) {
+      destination = selection.getAttribute('alightPredefinedLinkPluginDestination') as string;
+    }
+
     // For predefined links, always use the link name from the href or the current linkName
     if (isPredefined) {
       // If we don't have a link name yet, extract it from the href
       if (!linkName) {
         linkName = extractPredefinedLinkId(href) || href;
+      }
+
+      // If we don't have a destination value, use the href
+      if (!destination) {
+        destination = href;
       }
     }
 
@@ -185,6 +202,12 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
 
             // Use the extracted link name or the provided one
             writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, linkRange);
+
+            // Store onclick and destination
+            if (onclickValue) {
+              writer.setAttribute('alightPredefinedLinkPluginAttributeValue', onclickValue, linkRange);
+            }
+            writer.setAttribute('alightPredefinedLinkPluginDestination', destination, linkRange);
           }
 
           // Set truthyManualDecorators attributes
@@ -206,10 +229,17 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
 
           attributes.set('alightPredefinedLinkPluginHref', href);
 
-          // If it's a predefined link, set format attribute
+          // If it's a predefined link, set all required attributes
           if (isPredefined) {
             attributes.set('alightPredefinedLinkPluginFormat', 'ahcustom');
             attributes.set('alightPredefinedLinkPluginLinkName', linkName);
+            attributes.set('alightPredefinedLinkPluginDestination', destination);
+            // Set default onclick if we don't have one
+            if (!onclickValue) {
+              attributes.set('alightPredefinedLinkPluginAttributeValue', 'javascript:void(0);');
+            } else {
+              attributes.set('alightPredefinedLinkPluginAttributeValue', onclickValue);
+            }
           }
 
           truthyManualDecorators.forEach(item => {
@@ -228,6 +258,7 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
         // Remove the `alightPredefinedLinkPluginHref` attribute and all link decorators from the selection.
         // It stops adding a new content into the link element.
         ['alightPredefinedLinkPluginHref', 'alightPredefinedLinkPluginFormat', 'alightPredefinedLinkPluginLinkName',
+          'alightPredefinedLinkPluginAttributeValue', 'alightPredefinedLinkPluginDestination',
           ...truthyManualDecorators, ...falsyManualDecorators].forEach(item => {
             writer.removeSelectionAttribute(item);
           });
@@ -244,10 +275,18 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
           // Set the alightPredefinedLinkPluginHref attribute on the selected text
           writer.setAttribute('alightPredefinedLinkPluginHref', href, range);
 
-          // If it's a predefined link, set format attribute
+          // If it's a predefined link, set all required attributes
           if (isPredefined) {
             writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', range);
             writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, range);
+            writer.setAttribute('alightPredefinedLinkPluginDestination', destination, range);
+
+            // Set onclick attribute value
+            if (onclickValue) {
+              writer.setAttribute('alightPredefinedLinkPluginAttributeValue', onclickValue, range);
+            } else {
+              writer.setAttribute('alightPredefinedLinkPluginAttributeValue', 'javascript:void(0);', range);
+            }
           }
 
           // Set truthyManualDecorators attributes
