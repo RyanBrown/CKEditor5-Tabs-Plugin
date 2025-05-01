@@ -5,8 +5,8 @@ import type {
   DowncastDispatcher,
   ViewAttributeElement
 } from '@ckeditor/ckeditor5-engine';
-import type { NormalizedLinkDecoratorAutomaticDefinition } from './../utils';
-import { extractPredefinedLinkId } from './../utils';
+import type { NormalizedLinkDecoratorAutomaticDefinition } from '../utils';
+import { extractPredefinedLinkId } from '../utils';
 
 /**
  * Helper class that ties together all {@link module:link/linkconfig~LinkDecoratorAutomaticDefinition} and provides
@@ -68,16 +68,9 @@ export default class AutomaticDecorators {
         for (const item of this._definitions) {
           if (item.callback(data.attributeNewValue as string | null)) {
             // For predefined links, we need to create a structure with ah:link
-            // Get or extract link name and other data attributes
+            // Get or extract link name
             let linkName = '';
-            let onclickValue = '';
 
-            // Extract onclick value
-            if (data.item.hasAttribute && data.item.hasAttribute('alightPredefinedLinkPluginAttributeValue')) {
-              onclickValue = data.item.getAttribute('alightPredefinedLinkPluginAttributeValue') as string;
-            }
-
-            // Extract link name
             if (data.item.hasAttribute && data.item.hasAttribute('alightPredefinedLinkPluginLinkName')) {
               linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName') as string;
             } else if (data.attributeNewValue) {
@@ -86,16 +79,12 @@ export default class AutomaticDecorators {
             }
 
             // Create outer link element with all attributes
-            const linkAttrs: Record<string, string> = {
+            const linkAttrs = {
+              'href': '#',
               'class': 'AHCustomeLink',
               'data-id': 'predefined_link',
               ...item.attributes
             };
-
-            // Add onclick attribute if available
-            if (onclickValue) {
-              linkAttrs['onclick'] = onclickValue;
-            }
 
             // Use attributeElement instead of containerElement to maintain proper nesting
             const linkElement = viewWriter.createAttributeElement('a', linkAttrs, { priority: 5 });
@@ -116,11 +105,6 @@ export default class AutomaticDecorators {
               'href': data.attributeNewValue as string,
               'data-id': 'predefined_link'
             };
-
-            // Add onclick attribute to ah:link element if available
-            if (onclickValue) {
-              ahLinkAttrs['onclick'] = onclickValue;
-            }
 
             // ENHANCED: Add custom attributes from model to the ah:link element
             // Check for any attributes with the custom prefix and add them to ahLinkAttrs

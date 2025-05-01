@@ -379,7 +379,13 @@ class AlightEditor extends ClassicEditor {
           styles: ["*"]
         }, {
           name: "ah:link",
-          attributes: ["*"],
+          attributes: {
+            name: true,
+            href: true,
+            onclick: true,
+            "data-id": true,
+            "*": true  // This allows any attribute on ah:link
+          },
           classes: ["*"],
           styles: ["*"]
         }, {

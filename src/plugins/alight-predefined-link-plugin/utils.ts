@@ -89,6 +89,11 @@ export function createLinkElement(href: string, { writer }: DowncastConversionAp
     priority: 5
   });
 
+  // Create the ah:link element as a child element
+  const ahLinkElement = writer.createAttributeElement('ah:link', {
+    'name': linkName
+  })
+
   // Set custom property for link identification
   writer.setCustomProperty('alight-predefined-link', true, linkElement);
 
@@ -315,9 +320,6 @@ export function hasAHCustomeLinkClass(element: ViewAttributeElement): boolean {
 export function filterLinkAttributes(attributes: Record<string, string>): Record<string, string> {
   const result: Record<string, string> = {};
 
-  // Check if this is a predefined link
-  const isPredefined = attributes['data-id'] === 'predefined_link';
-
   // Copy only the attributes we want to keep
   for (const key in attributes) {
     // Skip data-cke-saved-href attribute
@@ -326,46 +328,17 @@ export function filterLinkAttributes(attributes: Record<string, string>): Record
     }
 
     // Special handling for href attribute
-    if (key === 'href') {
-      if (isPredefined) {
-        // For predefined links, href should be the linkName
-        // Try to get name or data-link-name first
-        if (attributes['name']) {
-          result[key] = attributes['name'];
-        } else if (attributes['data-link-name']) {
-          result[key] = attributes['data-link-name'];
-        } else {
-          // Use the existing href value
-          result[key] = attributes[key] || '#';
-        }
-      } else if (attributes[key] && attributes[key] !== '#') {
-        // For regular links with non-empty href
-        result[key] = attributes[key];
+    if (key === 'href' && (attributes[key] === '' || attributes[key] === '#')) {
+      // Keep empty href or '#' for predefeined links
+      if (attributes['data-id'] === 'predefinded_link') {
+        result[key] = '#';
       } else {
-        // For other links
         result[key] = '#';
       }
       continue;
     }
-
-    // Always preserve onclick attribute
-    if (key === 'onclick') {
-      result[key] = attributes[key];
-      continue;
-    }
-
     // Keep all other attributes
     result[key] = attributes[key];
-  }
-
-  // Ensure default values for predefined links if not set
-  if (isPredefined) {
-    if (!result['href']) {
-      result['href'] = '#';
-    }
-    if (!result['onclick'] && attributes['data-id'] === 'predefined_link') {
-      result['onclick'] = 'javascript:void(0);';
-    }
   }
 
   return result;

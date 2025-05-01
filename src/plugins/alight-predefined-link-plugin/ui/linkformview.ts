@@ -289,10 +289,6 @@ export default class LinkFormView extends View {
   private _createManualDecoratorSwitches(AlightPredefinedLinkPluginCommand: AlightPredefinedLinkPluginCommand): ViewCollection<SwitchButtonView> {
     const switches = this.createCollection<SwitchButtonView>();
 
-    if (!AlightPredefinedLinkPluginCommand.manualDecorators) {
-      return switches;
-    }
-
     for (const manualDecorator of AlightPredefinedLinkPluginCommand.manualDecorators) {
       const switchButton: SwitchButtonView & { name?: string } = new SwitchButtonView(this.locale);
 
@@ -332,7 +328,7 @@ export default class LinkFormView extends View {
 
     children.add(this.urlInputView);
 
-    if (manualDecorators && manualDecorators.length) {
+    if (manualDecorators.length) {
       const additionalButtonsView = new View();
 
       additionalButtonsView.setTemplate({
