@@ -5,8 +5,8 @@ import type {
   DowncastDispatcher,
   ViewAttributeElement
 } from '@ckeditor/ckeditor5-engine';
-import type { NormalizedLinkDecoratorAutomaticDefinition } from '../utils';
-import { extractPredefinedLinkId } from '../utils';
+import type { NormalizedLinkDecoratorAutomaticDefinition } from './../utils';
+import { extractPredefinedLinkId } from './../utils';
 
 /**
  * Helper class that ties together all {@link module:link/linkconfig~LinkDecoratorAutomaticDefinition} and provides
@@ -70,15 +70,6 @@ export default class AutomaticDecorators {
             // For predefined links, we need to create a structure with ah:link
             // Get or extract link name and other data attributes
             let linkName = '';
-            let linkDescription = '';
-            let baseOrClientSpecific = '';
-            let pageType = '';
-            let destination = '';
-            let pageCode = '';
-            let domain = '';
-            let uniqueId = '';
-            let attributeName = '';
-            let attributeValue = '';
 
             // Extract link name
             if (data.item.hasAttribute && data.item.hasAttribute('alightPredefinedLinkPluginLinkName')) {
@@ -86,45 +77,6 @@ export default class AutomaticDecorators {
             } else if (data.attributeNewValue) {
               linkName = extractPredefinedLinkId(data.attributeNewValue as string) ||
                 data.attributeNewValue as string;
-            }
-
-            // Extract all other attributes if available
-            if (data.item.hasAttribute && data.item.hasAttribute('alightPredefinedLinkPluginDescription')) {
-              linkDescription = data.item.getAttribute('alightPredefinedLinkPluginDescription') as string;
-            }
-
-            if (data.item.hasAttribute && data.item.hasAttribute('alightPredefinedLinkPluginBaseOrClientSpecific')) {
-              baseOrClientSpecific = data.item.getAttribute('alightPredefinedLinkPluginBaseOrClientSpecific') as string;
-            }
-
-            if (data.item.hasAttribute && data.item.hasAttribute('alightPredefinedLinkPluginPageType')) {
-              pageType = data.item.getAttribute('alightPredefinedLinkPluginPageType') as string;
-            }
-
-            if (data.item.hasAttribute && data.item.hasAttribute('alightPredefinedLinkPluginDestination')) {
-              destination = data.item.getAttribute('alightPredefinedLinkPluginDestination') as string;
-            } else if (data.attributeNewValue) {
-              destination = data.attributeNewValue as string;
-            }
-
-            if (data.item.hasAttribute && data.item.hasAttribute('alightPredefinedLinkPluginPageCode')) {
-              pageCode = data.item.getAttribute('alightPredefinedLinkPluginPageCode') as string;
-            }
-
-            if (data.item.hasAttribute && data.item.hasAttribute('alightPredefinedLinkPluginDomain')) {
-              domain = data.item.getAttribute('alightPredefinedLinkPluginDomain') as string;
-            }
-
-            if (data.item.hasAttribute && data.item.hasAttribute('alightPredefinedLinkPluginUniqueId')) {
-              uniqueId = data.item.getAttribute('alightPredefinedLinkPluginUniqueId') as string;
-            }
-
-            if (data.item.hasAttribute && data.item.hasAttribute('alightPredefinedLinkPluginAttributeName')) {
-              attributeName = data.item.getAttribute('alightPredefinedLinkPluginAttributeName') as string;
-            }
-
-            if (data.item.hasAttribute && data.item.hasAttribute('alightPredefinedLinkPluginAttributeValue')) {
-              attributeValue = data.item.getAttribute('alightPredefinedLinkPluginAttributeValue') as string;
             }
 
             // Create outer link element with all attributes
@@ -151,17 +103,7 @@ export default class AutomaticDecorators {
             const ahLinkAttrs: Record<string, string> = {
               'name': linkName,
               'href': data.attributeNewValue as string,
-              'data-id': 'predefined_link',
-              'data-predefinedLinkName': linkName,
-              'data-predefinedLinkDescription': linkDescription,
-              'data-baseOrClientSpecific': baseOrClientSpecific,
-              'data-pageType': pageType,
-              'data-destination': destination,
-              'data-pageCode': pageCode,
-              'data-domain': domain,
-              'data-uniqueId': uniqueId,
-              'data-attributeName': attributeName,
-              'data-attributeValue': attributeValue
+              'data-id': 'predefined_link'
             };
 
             // ENHANCED: Add custom attributes from model to the ah:link element
@@ -264,17 +206,8 @@ export default class AutomaticDecorators {
                     viewWriter.removeAttribute('onclick', ahLink);
                     viewWriter.removeAttribute('href', ahLink);
                     viewWriter.removeAttribute('data-id', ahLink);
-                    // Also remove all data attributes
+                    // Only keep the predefinedLinkName data attribute
                     viewWriter.removeAttribute('data-predefinedLinkName', ahLink);
-                    viewWriter.removeAttribute('data-predefinedLinkDescription', ahLink);
-                    viewWriter.removeAttribute('data-baseOrClientSpecific', ahLink);
-                    viewWriter.removeAttribute('data-pageType', ahLink);
-                    viewWriter.removeAttribute('data-destination', ahLink);
-                    viewWriter.removeAttribute('data-pageCode', ahLink);
-                    viewWriter.removeAttribute('data-domain', ahLink);
-                    viewWriter.removeAttribute('data-uniqueId', ahLink);
-                    viewWriter.removeAttribute('data-attributeName', ahLink);
-                    viewWriter.removeAttribute('data-attributeValue', ahLink);
                   }
                 }
               }
@@ -308,17 +241,8 @@ export default class AutomaticDecorators {
                   viewWriter.removeAttribute('onclick', ahLink);
                   viewWriter.removeAttribute('href', ahLink);
                   viewWriter.removeAttribute('data-id', ahLink);
-                  // Also remove all data attributes
+                  // Only keep the predefinedLinkName data attribute
                   viewWriter.removeAttribute('data-predefinedLinkName', ahLink);
-                  viewWriter.removeAttribute('data-predefinedLinkDescription', ahLink);
-                  viewWriter.removeAttribute('data-baseOrClientSpecific', ahLink);
-                  viewWriter.removeAttribute('data-pageType', ahLink);
-                  viewWriter.removeAttribute('data-destination', ahLink);
-                  viewWriter.removeAttribute('data-pageCode', ahLink);
-                  viewWriter.removeAttribute('data-domain', ahLink);
-                  viewWriter.removeAttribute('data-uniqueId', ahLink);
-                  viewWriter.removeAttribute('data-attributeName', ahLink);
-                  viewWriter.removeAttribute('data-attributeValue', ahLink);
                 }
               }
             }

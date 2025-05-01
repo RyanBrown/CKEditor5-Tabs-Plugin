@@ -147,7 +147,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
       view: createDowncastConverter
     });
 
-    // Add a downcast handler to create the second <a> element with onclick for data downcast
+    // Add a downcast handler to create the <ah:link> element for data downcast
     editor.conversion.for('dataDowncast').add(dispatcher => {
       dispatcher.on('attribute:alightPredefinedLinkPluginHref', (evt, data, conversionApi) => {
         // Skip if the first converter has already consumed this
@@ -161,75 +161,55 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         const destination = data.item.hasAttribute && data.item.hasAttribute('alightPredefinedLinkPluginDestination') ?
           data.item.getAttribute('alightPredefinedLinkPluginDestination') : (data.attributeNewValue || '#');
 
-        // Create the second anchor element with onclick
-        const secondLinkElement = conversionApi.writer.createAttributeElement('a', {
-          'href': destination,
-          'onclick': onclickValue
+        // Get or determine link name
+        let linkName = '';
+        if (data.item.hasAttribute && data.item.hasAttribute('alightPredefinedLinkPluginLinkName')) {
+          linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName');
+        } else if (data.attributeNewValue) {
+          linkName = extractPredefinedLinkId(data.attributeNewValue as string) ||
+            data.attributeNewValue as string;
+        }
+
+        // Create the ah:link element with name and data-id attributes
+        const ahLinkElement = conversionApi.writer.createAttributeElement('ah:link', {
+          'name': linkName,
+          'data-id': 'predefined_link'
         }, {
-          priority: 6  // Higher priority to nest after the first link
+          priority: 6  // Higher priority to nest correctly
         });
+
+        // Set custom property for identification
+        conversionApi.writer.setCustomProperty('alight-predefined-link-ah', true, ahLinkElement);
 
         // Apply this element to the same range
         if (data.item.is('selection')) {
           const range = conversionApi.writer.document.selection.getFirstRange();
           if (range) {
-            conversionApi.writer.wrap(range, secondLinkElement);
+            conversionApi.writer.wrap(range, ahLinkElement);
           }
         } else {
           const range = conversionApi.mapper.toViewRange(data.range);
-          conversionApi.writer.wrap(range, secondLinkElement);
+          conversionApi.writer.wrap(range, ahLinkElement);
         }
       }, { priority: 'low' });  // Lower priority than the attribute-to-element converter
     });
 
-    // Handle upcast from <a href="#" class="AHCustomeLink"></a><a href="${link.destination}" onclick="${link.attributeValue}">predefined link</a>
+    // Handle upcast from <ah:link name="linkName">text</ah:link>
     editor.conversion.for('upcast')
       .elementToAttribute({
         view: {
-          name: 'a',
+          name: 'ah:link',
           attributes: {
-            'onclick': true
+            'name': true
           }
         },
         model: {
           key: 'alightPredefinedLinkPluginHref',
           value: (viewElement: ViewElement) => {
-            // Check if this is inside or adjacent to an AHCustomeLink element
-            const parent = viewElement.parent;
-            const onclickValue = viewElement.getAttribute('onclick') || '';
-            const destination = viewElement.getAttribute('href') || '';
-            let linkName = '';
+            // Extract the linkName from the name attribute
+            const linkName = viewElement.getAttribute('name') || '';
 
-            // Look for nearby AHCustomeLink element to extract the linkName
-            if (parent) {
-              const index = parent.getChildIndex(viewElement);
-              // Try previous sibling
-              if (index > 0) {
-                const prevSibling = parent.getChild(index - 1);
-                if (prevSibling && prevSibling.is('element', 'a') &&
-                  prevSibling.hasClass('AHCustomeLink')) {
-                  linkName = prevSibling.getAttribute('href') || '';
-                }
-              }
-              // Try children of this element
-              if (!linkName) {
-                const children = Array.from(viewElement.getChildren());
-                const textContent = children
-                  .filter(child => child.is('$text'))
-                  .map(child => child.data)
-                  .join('');
-                if (textContent.trim()) {
-                  linkName = textContent.trim();
-                }
-              }
-            }
-
-            // If we couldn't find a linkName, use the destination or onclick as a fallback
-            if (!linkName) {
-              linkName = extractPredefinedLinkId(destination) || extractPredefinedLinkId(onclickValue) || '';
-            }
-
-            // Store additional information for the link format
+            // Store additional information for the link
             this.editor.model.once('_afterConversion', () => {
               this.editor.model.change(writer => {
                 const selection = this.editor.model.document.selection;
@@ -238,16 +218,16 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
                 if (range) {
                   writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', range);
                   writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, range);
-                  writer.setAttribute('alightPredefinedLinkPluginAttributeValue', onclickValue, range);
-                  writer.setAttribute('alightPredefinedLinkPluginDestination', destination, range);
+                  writer.setAttribute('alightPredefinedLinkPluginAttributeValue', 'javascript:void(0);', range);
+                  writer.setAttribute('alightPredefinedLinkPluginDestination', linkName, range);
                 }
               });
             });
 
-            return linkName || '';
+            return linkName;
           }
         },
-        converterPriority: 'high'
+        converterPriority: 'highest'
       });
 
     // Also handle the AHCustomeLink element during upcast
