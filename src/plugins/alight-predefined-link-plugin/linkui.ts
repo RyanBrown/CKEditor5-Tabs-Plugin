@@ -317,9 +317,6 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
     // Bind to command's value for the isOn state
     this.buttonView.bind('isOn').to(command, 'value', value => !!value);
 
-    // We'll manually control isEnabled based on data loading AND command enablement
-    // Don't bind directly to command.isEnabled
-
     // Show the modal dialog on button click for creating new links
     this.listenTo(this.buttonView, 'execute', () => this._showUI());
 
