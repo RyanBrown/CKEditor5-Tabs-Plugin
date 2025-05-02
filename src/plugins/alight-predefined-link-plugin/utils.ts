@@ -75,13 +75,10 @@ export function isPredefinedLink(url: string | null | undefined): boolean {
  * Updated to create nested structure with ah:link element inside a element.
  */
 export function createLinkElement(href: string, { writer }: DowncastConversionApi): ViewAttributeElement {
-  // Check if this is a predefined link
-  const isPredefined = isPredefinedLink(href);
-
   // Extract link name if it's a predefined link
   const linkName = extractPredefinedLinkId(href) || href;
 
-  // Create the outer link element for the container structure
+  // Create the outer link element as an attribute element
   const linkElement = writer.createAttributeElement('a', {
     'href': '#',
     'class': 'AHCustomeLink',
@@ -93,7 +90,6 @@ export function createLinkElement(href: string, { writer }: DowncastConversionAp
   // Set custom property for link identification
   writer.setCustomProperty('alight-predefined-link', true, linkElement);
 
-  // Return the outer element. The actual nesting with ah:link is handled in the converter
   return linkElement;
 }
 

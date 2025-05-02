@@ -132,7 +132,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         if (data.attributeNewValue) {
           // Creating or updating a link
           try {
-            // For links we should use AttributeElement which is designed for inline formatting
+            // Create the outer <a> element with class="AHCustomeLink" and data-id="predefined_link"
             const linkElement = writer.createAttributeElement('a', {
               'href': '#',
               'class': 'AHCustomeLink',
@@ -145,11 +145,10 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
             // Set custom property to identify this as our link
             writer.setCustomProperty('alight-predefined-link', true, linkElement);
 
-            // Create the inner ah:link element as an attribute element too
+            // Create the inner <ah:link> element with the name attribute
             const ahLinkElement = writer.createAttributeElement('ah:link', {
               'name': linkName,
-              'href': href,
-              'data-id': 'predefined_link'
+              'href': href
             }, {
               // Higher priority than the parent to ensure proper nesting
               priority: 6
@@ -158,8 +157,9 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
             // Set custom property for the inner element
             writer.setCustomProperty('alight-predefined-link-ah', true, ahLinkElement);
 
-            // Apply elements to range - first inner element then outer
+            // First wrap with the inner ah:link element
             writer.wrap(viewRange, ahLinkElement);
+            // Then wrap with the outer a element
             writer.wrap(viewRange, linkElement);
           } catch (error) {
             console.error('Error creating link structure:', error);
@@ -669,13 +669,6 @@ function findFirstChildByName(element: ViewElement, name: string): ViewElement |
     }
   }
   return null;
-}
-
-/**
- * Find an ah:link child element in a parent element
- */
-function findAhLinkChild(element: ViewElement): ViewElement | null {
-  return findFirstChildByName(element, 'ah:link');
 }
 
 /**
