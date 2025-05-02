@@ -9,7 +9,6 @@ import type {
   ViewElement,
   ViewText,
   ViewNode,
-  Node,
   ViewDocumentKeyDownEvent,
   ViewDocumentClickEvent,
   DocumentSelectionChangeAttributeEvent
@@ -29,8 +28,6 @@ import AlightPredefinedLinkPluginCommand from './linkcommand';
 import AlightPredefinedLinkPluginUnlinkCommand from './unlinkcommand';
 import ManualDecorator from './utils/manualdecorator';
 import {
-  createLinkElement,
-  ensureSafeUrl,
   getLocalizedDecorators,
   normalizeDecorators,
   addLinkProtocolIfApplicable,
