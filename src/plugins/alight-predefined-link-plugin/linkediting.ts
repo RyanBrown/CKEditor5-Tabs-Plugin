@@ -7,6 +7,9 @@ import type {
   Schema,
   Writer,
   ViewElement,
+  ViewText,
+  ViewNode,
+  Node,
   ViewDocumentKeyDownEvent,
   ViewDocumentClickEvent,
   DocumentSelectionChangeAttributeEvent
@@ -102,205 +105,180 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
     // Allow orgnameattr attribute to be present, so we can remove it later
     editor.model.schema.extend('$text', { allowAttributes: 'orgnameattr' });
 
-    // Define downcast converter for data and editing
-    const createDowncastConverter = (attributeValue: string, conversionApi: any) => {
-      // Extract link details
-      const href = attributeValue || '';
-      const item = conversionApi.item;
-
-      // Get or determine link name
-      let linkName = '';
-      if (item && item.hasAttribute && item.hasAttribute('alightPredefinedLinkPluginLinkName')) {
-        linkName = item.getAttribute('alightPredefinedLinkPluginLinkName');
-      } else {
-        linkName = extractPredefinedLinkId(href) || href;
-      }
-
-      // Create link element with onclick attribute if present
-      const linkElement = conversionApi.writer.createAttributeElement('a', {
-        'href': linkName || '#',
-        'class': 'AHCustomeLink',
-        'data-id': 'predefined_link'
-      }, {
-        priority: 5
-      });
-
-      // Set custom property for identification
-      conversionApi.writer.setCustomProperty('alight-predefined-link', true, linkElement);
-
-      return linkElement;
-    };
-
-    // For data downcast to produce <a><ah:link>text</ah:link></a>
-    editor.conversion.for('dataDowncast').attributeToElement({
-      model: 'alightPredefinedLinkPluginHref',
-      view: createDowncastConverter
-    });
-
-    // For editing view to produce <a><ah:link>text</ah:link></a>
-    editor.conversion.for('editingDowncast').attributeToElement({
-      model: 'alightPredefinedLinkPluginHref',
-      view: createDowncastConverter
-    });
-
-    // Handle the wrapping of text content with the ah:link element
+    // Create a custom downcast converter for streamlined link structure
     editor.conversion.for('downcast').add(dispatcher => {
       dispatcher.on('attribute:alightPredefinedLinkPluginHref', (evt, data, conversionApi) => {
-        // Skip if already consumed
+        // Skip if not consumable
         if (!conversionApi.consumable.consume(data.item, evt.name)) {
           return;
         }
 
-        // Get the attributes we need
-        const linkName = data.item.hasAttribute && data.item.hasAttribute('alightPredefinedLinkPluginLinkName') ?
-          data.item.getAttribute('alightPredefinedLinkPluginLinkName') : '';
-        const href = data.attributeNewValue || '';
+        const { writer, mapper } = conversionApi;
+        const viewRange = mapper.toViewRange(data.range);
 
-        // Create the outer anchor element with LOWER priority
-        const linkElement = conversionApi.writer.createAttributeElement('a', {
-          'href': '#',
-          'class': 'AHCustomeLink',
-          'data-id': 'predefined_link'
-        }, {
-          priority: 5,
-          id: 'link-wrapper'
-        })
+        // Get href and linkName
+        const href = data.attributeNewValue as string || '';
+        let linkName = '';
 
-        // Create the ah:link element with name, data-id and onclick attributes
-        const ahLinkAttributes: Record<string, string> = {
-          'name': linkName,
-          'data-id': 'predefined_link'
-        };
-
-        // Create the inner ah:link element with HIGHER priority
-        const ahLinkElement = conversionApi.writer.createAttributeElement('ah:link', {
-          'name': linkName || extractPredefinedLinkId(href) || href,
-          'href': href,
-          'data-id': 'predefined_link',
-          'data-format': 'ahcustom',
-          'data-link-id': linkName || extractPredefinedLinkId(href) || href,
-        }, {
-          priority: 6
-        });
-
-        // Set custom property on the link element
-        conversionApi.writer.setCustomProperty('alight-predefined-link', true, linkElement);
-
-        // Apply this element to the same range
-        if (data.item.is('selection')) {
-          const range = conversionApi.writer.document.selection.getFirstRange();
-          if (range) {
-            conversionApi.writer.wrap(range, ahLinkElement);
-          }
+        // Try to get link name from attributes
+        if (data.item.is('$textProxy') && data.item.hasAttribute('alightPredefinedLinkPluginLinkName')) {
+          const attrValue = data.item.getAttribute('alightPredefinedLinkPluginLinkName');
+          linkName = typeof attrValue === 'string' ? attrValue : '';
+        } else if (data.item.is('selection') && data.item.hasAttribute('alightPredefinedLinkPluginLinkName')) {
+          const attrValue = data.item.getAttribute('alightPredefinedLinkPluginLinkName');
+          linkName = typeof attrValue === 'string' ? attrValue : '';
         } else {
-          const range = conversionApi.mapper.toViewRange(data.range);
-          conversionApi.writer.wrap(range, ahLinkElement);
+          const extracted = extractPredefinedLinkId(href);
+          linkName = extracted || href;
         }
-      }, { priority: 'low' });  // Lower priority than the attribute-to-element converter
-    });
 
-    // Handle upcast from <ah:link name="linkName">text</ah:link>
-    editor.conversion.for('upcast')
-      .elementToAttribute({
-        view: {
-          name: 'ah:link',
-          attributes: {
-            'name': true
-          }
-        },
-        model: {
-          key: 'alightPredefinedLinkPluginHref',
-          value: (viewElement: ViewElement) => {
-            // Extract the linkName from the name attribute
-            const linkName = viewElement.getAttribute('name') || '';
-
-            // Extract the onclick attribute if present
-            const onclickValue = viewElement.getAttribute('onclick') || '';
-
-            // Store additional information for the link
-            this.editor.model.once('_afterConversion', () => {
-              this.editor.model.change(writer => {
-                const selection = this.editor.model.document.selection;
-                const range = selection.getFirstRange();
-
-                if (range) {
-                  writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', range);
-                  writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, range);
-
-                  // Preserve the onclick attribute value
-                  if (onclickValue) {
-                    writer.setAttribute('alightPredefinedLinkPluginAttributeValue', onclickValue, range);
-                  } else {
-                    writer.setAttribute('alightPredefinedLinkPluginAttributeValue', 'javascript:void(0);', range);
-                  }
-                  writer.setAttribute('alightPredefinedLinkPluginDestination', linkName, range);
-                }
-              });
+        if (data.attributeNewValue) {
+          // Creating or updating a link
+          try {
+            // For links we should use AttributeElement which is designed for inline formatting
+            const linkElement = writer.createAttributeElement('a', {
+              'href': '#',
+              'class': 'AHCustomeLink',
+              'data-id': 'predefined_link'
+            }, {
+              // Higher priority to ensure proper nesting
+              priority: 5
             });
 
-            return linkName;
+            // Set custom property to identify this as our link
+            writer.setCustomProperty('alight-predefined-link', true, linkElement);
+
+            // Create the inner ah:link element as an attribute element too
+            const ahLinkElement = writer.createAttributeElement('ah:link', {
+              'name': linkName,
+              'href': href,
+              'data-id': 'predefined_link'
+            }, {
+              // Higher priority than the parent to ensure proper nesting
+              priority: 6
+            });
+
+            // Set custom property for the inner element
+            writer.setCustomProperty('alight-predefined-link-ah', true, ahLinkElement);
+
+            // Apply elements to range - first inner element then outer
+            writer.wrap(viewRange, ahLinkElement);
+            writer.wrap(viewRange, linkElement);
+          } catch (error) {
+            console.error('Error creating link structure:', error);
           }
-        },
-        converterPriority: 'highest'
-      });
+        } else {
+          // Removing a link
+          for (const node of viewRange.getItems()) {
+            // Only process text nodes
+            if (!node.is('$text')) {
+              continue;
+            }
 
-    // Also handle the AHCustomeLink element during upcast
-    editor.conversion.for('upcast')
-      .elementToAttribute({
-        view: {
-          name: 'a',
-          classes: 'AHCustomeLink'
-        },
-        model: {
-          key: 'alightPredefinedLinkPluginHref',
-          value: (viewElement: ViewElement) => {
-            // Extract the linkName from href
-            const linkName = viewElement.getAttribute('href') || '';
+            // Find the closest link ancestor
+            const linkElement = findLinkElementAncestor(node);
+            if (!linkElement) {
+              continue;
+            }
 
-            // Extract onclick attribute directly from the element
-            const onclickValue = viewElement.getAttribute('onclick') || '';
-
-            // Look for adjacent anchor with onclick if not already found
-            let destination = '';
-            if (!onclickValue) {
-              const parent = viewElement.parent;
-              if (parent) {
-                const index = parent.getChildIndex(viewElement);
-                // Try next sibling
-                if (index < parent.childCount - 1) {
-                  const nextSibling = parent.getChild(index + 1);
-                  if (nextSibling && nextSibling.is('element', 'a') &&
-                    nextSibling.hasAttribute('onclick')) {
-                    destination = nextSibling.getAttribute('href') || '';
-                  }
-                }
+            // Find an ah:link element inside the link
+            let ahLinkElement = null;
+            for (const ancestor of node.getAncestors()) {
+              if (ancestor.is('attributeElement', 'ah:link')) {
+                ahLinkElement = ancestor;
+                break;
               }
             }
 
-            // Store additional information
-            this.editor.model.once('_afterConversion', () => {
-              this.editor.model.change(writer => {
-                const selection = this.editor.model.document.selection;
-                const range = selection.getFirstRange();
+            // Unwrap in the correct order (inner first, then outer)
+            if (ahLinkElement) {
+              writer.unwrap(writer.createRangeOn(node), ahLinkElement);
+            }
 
-                if (range) {
-                  writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', range);
-                  writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, range);
-                  if (onclickValue) {
-                    writer.setAttribute('alightPredefinedLinkPluginAttributeValue', onclickValue, range);
-                  }
-                  if (destination) {
-                    writer.setAttribute('alightPredefinedLinkPluginDestination', destination, range);
-                  }
-                }
-              });
-            });
-
-            return linkName || '';
+            // Remove the outer link
+            writer.unwrap(writer.createRangeOn(node), linkElement);
           }
-        },
-        converterPriority: 'highest'
+        }
       });
+    });
+
+    // Handle upcast from <a> with nested <ah:link>
+    editor.conversion.for('upcast').elementToAttribute({
+      view: {
+        name: 'a',
+        classes: 'AHCustomeLink'
+      },
+      model: {
+        key: 'alightPredefinedLinkPluginHref',
+        value: (viewElement: ViewElement) => {
+          // Try to find nested ah:link element
+          let linkName = '';
+          let linkHref = '';
+
+          // Check if there's a nested ah:link element
+          const ahLinkElement = findFirstChildByName(viewElement, 'ah:link');
+
+          if (ahLinkElement) {
+            linkName = ahLinkElement.getAttribute('name') || '';
+            linkHref = ahLinkElement.getAttribute('href') || '';
+          } else {
+            // Fallback to attributes from the outer a element
+            linkName = viewElement.getAttribute('href') || '';
+            linkHref = viewElement.getAttribute('href') || '';
+          }
+
+          // Store additional information
+          this.editor.model.once('_afterConversion', () => {
+            this.editor.model.change(writer => {
+              const selection = this.editor.model.document.selection;
+              const range = selection.getFirstRange();
+
+              if (range) {
+                writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', range);
+                writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, range);
+              }
+            });
+          });
+
+          return linkHref || '';
+        }
+      },
+      converterPriority: 'highest'
+    });
+
+    // Also handle direct <ah:link> elements during upcast
+    editor.conversion.for('upcast').elementToAttribute({
+      view: {
+        name: 'ah:link',
+        attributes: {
+          'name': true
+        }
+      },
+      model: {
+        key: 'alightPredefinedLinkPluginHref',
+        value: (viewElement: ViewElement) => {
+          // Extract the linkName from the name attribute
+          const linkName = viewElement.getAttribute('name') || '';
+          const linkHref = viewElement.getAttribute('href') || linkName;
+
+          // Store additional information for the link
+          this.editor.model.once('_afterConversion', () => {
+            this.editor.model.change(writer => {
+              const selection = this.editor.model.document.selection;
+              const range = selection.getFirstRange();
+
+              if (range) {
+                writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', range);
+                writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, range);
+              }
+            });
+          });
+
+          return linkHref;
+        }
+      },
+      converterPriority: 'high'
+    });
 
     // Create linking commands.
     editor.commands.add('alight-predefined-link', new AlightPredefinedLinkPluginCommand(editor));
@@ -331,17 +309,6 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
   }
 
   /**
-   * Helper function to check if the URL is a predefined link 
-   * This is added here to avoid circular dependency
-   */
-  private isPredefinedLink(url: string | null | undefined): boolean {
-    // If the URL is empty, null, or undefined, it's not a predefined link
-    if (!url) return false;
-
-    return true;
-  }
-
-  /**
    * Processes an array of configured {@link module:link/linkconfig~LinkDecoratorAutomaticDefinition automatic decorators}
    * and registers a {@link module:engine/conversion/downcastdispatcher~DowncastDispatcher downcast dispatcher}
    * for each one of them. Downcast dispatchers are obtained using the
@@ -360,7 +327,55 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
     automaticDecorators.add(automaticDecoratorDefinitions);
 
     if (automaticDecorators.length) {
-      editor.conversion.for('downcast').add(automaticDecorators.getDispatcher());
+      // We'll handle automatic decorators manually to make them compatible with our nested structure
+      editor.conversion.for('downcast').add(dispatcher => {
+        dispatcher.on('attribute:alightPredefinedLinkPluginHref:$text', (evt, data, conversionApi) => {
+          // Skip if already consumed
+          if (!conversionApi.consumable.test(data.item, 'attribute:alightPredefinedLinkPluginHref')) {
+            return;
+          }
+
+          const href = data.attributeNewValue as string | null;
+
+          // Process each automatic decorator
+          for (const decorator of automaticDecoratorDefinitions) {
+            if (href && decorator.callback(href)) {
+              // Find all <a> elements in this range
+              const viewRange = conversionApi.mapper.toViewRange(data.range);
+              const viewWriter = conversionApi.writer;
+
+              for (const item of Array.from(viewRange.getItems())) {
+                if (!isViewNode(item) || !item.is('$text')) continue;
+
+                const linkElement = findLinkAncestor(item);
+                if (!linkElement) continue;
+
+                // Apply the decorator attributes to the <a> element
+                if (decorator.attributes) {
+                  for (const [key, value] of Object.entries(decorator.attributes)) {
+                    viewWriter.setAttribute(key, value, linkElement);
+                  }
+                }
+
+                // Apply classes
+                if (decorator.classes) {
+                  const classes = Array.isArray(decorator.classes) ? decorator.classes : [decorator.classes];
+                  for (const className of classes) {
+                    viewWriter.addClass(className, linkElement);
+                  }
+                }
+
+                // Apply styles
+                if (decorator.styles) {
+                  for (const [key, value] of Object.entries(decorator.styles)) {
+                    viewWriter.setStyle(key, value, linkElement);
+                  }
+                }
+              }
+            }
+          }
+        });
+      });
     }
   }
 
@@ -390,31 +405,80 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
 
       manualDecorators.add(decorator);
 
-      editor.conversion.for('downcast').attributeToElement({
-        model: decorator.id,
-        view: (manualDecoratorValue, { writer, schema }, { item }) => {
-          // Manual decorators for block links are handled e.g. in AlightPredefinedLinkPluginImageEditing.
-          if (!(item.is('selection') || schema.isInline(item))) {
+      // Handle manual decorators with custom downcast to make them compatible with our nested structure
+      editor.conversion.for('downcast').add(dispatcher => {
+        dispatcher.on(`attribute:${decorator.id}:$text`, (evt, data, conversionApi) => {
+          // Skip if already consumed
+          if (!conversionApi.consumable.consume(data.item, evt.name)) {
             return;
           }
 
-          if (manualDecoratorValue) {
-            // Create element with decorator attributes
-            const element = writer.createAttributeElement('a', decorator.attributes, { priority: 5 });
+          const viewRange = conversionApi.mapper.toViewRange(data.range);
+          const viewWriter = conversionApi.writer;
 
-            if (decorator.classes) {
-              writer.addClass(decorator.classes, element);
+          // Only apply if the value is true
+          if (data.attributeNewValue) {
+            // Find all <a> elements in this range
+            for (const item of Array.from(viewRange.getItems())) {
+              if (!isViewNode(item) || !item.is('$text')) continue;
+
+              const linkElement = findLinkAncestor(item);
+              if (!linkElement) continue;
+
+              // Apply the decorator attributes to the <a> element
+              if (decorator.attributes) {
+                for (const [key, value] of Object.entries(decorator.attributes)) {
+                  viewWriter.setAttribute(key, value, linkElement);
+                }
+              }
+
+              // Apply classes
+              if (decorator.classes) {
+                const classes = Array.isArray(decorator.classes) ? decorator.classes : [decorator.classes];
+                for (const className of classes) {
+                  viewWriter.addClass(className, linkElement);
+                }
+              }
+
+              // Apply styles
+              if (decorator.styles) {
+                for (const [key, value] of Object.entries(decorator.styles)) {
+                  viewWriter.setStyle(key, value, linkElement);
+                }
+              }
             }
+          } else {
+            // Remove the decorator attributes when the value is false
+            for (const item of Array.from(viewRange.getItems())) {
+              if (!isViewNode(item) || !item.is('$text')) continue;
 
-            for (const key in decorator.styles) {
-              writer.setStyle(key, decorator.styles[key], element);
+              const linkElement = findLinkAncestor(item);
+              if (!linkElement) continue;
+
+              // Remove the decorator attributes from the <a> element
+              if (decorator.attributes) {
+                for (const key of Object.keys(decorator.attributes)) {
+                  viewWriter.removeAttribute(key, linkElement);
+                }
+              }
+
+              // Remove classes
+              if (decorator.classes) {
+                const classes = Array.isArray(decorator.classes) ? decorator.classes : [decorator.classes];
+                for (const className of classes) {
+                  viewWriter.removeClass(className, linkElement);
+                }
+              }
+
+              // Remove styles
+              if (decorator.styles) {
+                for (const key of Object.keys(decorator.styles)) {
+                  viewWriter.removeStyle(key, linkElement);
+                }
+              }
             }
-
-            writer.setCustomProperty('alight-predefined-link', true, element);
-
-            return element;
           }
-        }
+        });
       });
 
       editor.conversion.for('upcast').elementToAttribute({
@@ -423,7 +487,8 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           ...decorator._createPattern()
         },
         model: {
-          key: decorator.id
+          key: decorator.id,
+          value: true
         }
       });
     });
@@ -548,8 +613,6 @@ function removeLinkAttributesFromSelection(writer: Writer, linkAttributes: Array
   writer.removeSelectionAttribute('alightPredefinedLinkPluginHref');
   writer.removeSelectionAttribute('alightPredefinedLinkPluginLinkName');
   writer.removeSelectionAttribute('alightPredefinedLinkPluginFormat');
-  writer.removeSelectionAttribute('alightPredefinedLinkPluginAttributeValue');
-  writer.removeSelectionAttribute('alightPredefinedLinkPluginDestination');
 
   for (const attribute of linkAttributes) {
     writer.removeSelectionAttribute(attribute);
@@ -566,11 +629,78 @@ function getLinkAttributesAllowedOnText(schema: Schema): Array<string> {
 }
 
 /**
- * Helper function to check if a URL is a predefined link
+ * Type guard to check if an unknown value is a ViewNode
  */
-function isPredefinedLink(url: string | null | undefined): boolean {
-  // If the URL is empty, null, or undefined, it's not a predefined link
-  if (!url) return false;
+function isViewNode(node: unknown): node is ViewNode {
+  return !!node && typeof node === 'object' && 'is' in node;
+}
 
-  return true;
+/**
+ * Type guard to check if a ViewNode is a ViewText node
+ */
+function isViewText(node: unknown): node is ViewText {
+  return isViewNode(node) && node.is('$text');
+}
+
+/**
+ * Find an element ancestor that is an <a> with AHCustomeLink class
+ */
+function findLinkAncestor(node: ViewNode): ViewElement | null {
+  if (!node.getAncestors) {
+    return null;
+  }
+
+  for (const ancestor of node.getAncestors()) {
+    if (ancestor.is('element', 'a') && hasClass(ancestor, 'AHCustomeLink')) {
+      return ancestor as ViewElement;
+    }
+  }
+  return null;
+}
+
+/**
+ * Find the first child element of a specific name
+ */
+function findFirstChildByName(element: ViewElement, name: string): ViewElement | null {
+  if (!element.getChildren) {
+    return null;
+  }
+
+  for (const child of element.getChildren()) {
+    if (child.is('element', name)) {
+      return child as ViewElement;
+    }
+  }
+  return null;
+}
+
+/**
+ * Find an ah:link child element in a parent element
+ */
+function findAhLinkChild(element: ViewElement): ViewElement | null {
+  return findFirstChildByName(element, 'ah:link');
+}
+
+/**
+ * Check if an element has a specific class
+ */
+function hasClass(element: ViewElement, className: string): boolean {
+  const classes = element.getAttribute('class');
+  if (!classes) return false;
+
+  if (typeof classes === 'string') {
+    return classes.split(' ').includes(className);
+  }
+
+  return false;
+}
+
+/**
+ * Find a link element ancestor from any element
+ */
+function findLinkElementAncestor(item: any): ViewElement | null {
+  return item.getAncestors().find((ancestor: ViewElement) =>
+    ancestor.is('element', 'a') &&
+    ancestor.hasClass('AHCustomeLink')
+  );
 }

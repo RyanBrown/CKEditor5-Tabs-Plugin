@@ -155,11 +155,8 @@ export default class AutomaticDecorators {
                 // First apply the <a> element
                 const linkRange = viewWriter.wrap(range, linkElement);
 
-                // Then apply the <ah:link> element to the same content
-                const ahLinkRange = viewSelection.getFirstRange();
-                if (ahLinkRange) {
-                  viewWriter.wrap(ahLinkRange, ahLinkElement);
-                }
+                // Then apply the <ah:link> element inside the <a> element
+                viewWriter.wrap(range, ahLinkElement);
               }
             } else {
               // For model elements, handle the view range
@@ -168,9 +165,8 @@ export default class AutomaticDecorators {
               // Apply the <a> element
               viewWriter.wrap(viewRange, linkElement);
 
-              // Then apply the <ah:link> element to the same content
-              const ahLinkViewRange = conversionApi.mapper.toViewRange(data.range);
-              viewWriter.wrap(ahLinkViewRange, ahLinkElement);
+              // Then apply the <ah:link> element inside the <a> element
+              viewWriter.wrap(viewRange, ahLinkElement);
             }
           } else {
             // If callback returned false, we should remove the link attributes
