@@ -132,7 +132,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         if (data.attributeNewValue) {
           // Creating or updating a link
           try {
-            // Create the outer <a> element with class="AHCustomeLink" and data-id="predefined_link"
+            // For links we should use AttributeElement which is designed for inline formatting
             const linkElement = writer.createAttributeElement('a', {
               'href': '#',
               'class': 'AHCustomeLink',
@@ -145,10 +145,12 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
             // Set custom property to identify this as our link
             writer.setCustomProperty('alight-predefined-link', true, linkElement);
 
-            // Create the inner <ah:link> element with the name attribute
+            // Create the inner ah:link element as an attribute element too
+            // For downcast, include the href attribute with the linkName value
             const ahLinkElement = writer.createAttributeElement('ah:link', {
               'name': linkName,
-              'href': href
+              'href': linkName, // Include href attribute in downcast output
+              'data-id': 'predefined_link'
             }, {
               // Higher priority than the parent to ensure proper nesting
               priority: 6
@@ -157,9 +159,8 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
             // Set custom property for the inner element
             writer.setCustomProperty('alight-predefined-link-ah', true, ahLinkElement);
 
-            // First wrap with the inner ah:link element
+            // Apply elements to range - first inner element then outer
             writer.wrap(viewRange, ahLinkElement);
-            // Then wrap with the outer a element
             writer.wrap(viewRange, linkElement);
           } catch (error) {
             console.error('Error creating link structure:', error);
@@ -216,8 +217,11 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           const ahLinkElement = findFirstChildByName(viewElement, 'ah:link');
 
           if (ahLinkElement) {
+            // For upcast, prioritize the name attribute and ignore href
             linkName = ahLinkElement.getAttribute('name') || '';
-            linkHref = ahLinkElement.getAttribute('href') || '';
+
+            // We'll use the name as the href/model value as well
+            linkHref = linkName;
           } else {
             // Fallback to attributes from the outer a element
             linkName = viewElement.getAttribute('href') || '';
@@ -256,7 +260,9 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         value: (viewElement: ViewElement) => {
           // Extract the linkName from the name attribute
           const linkName = viewElement.getAttribute('name') || '';
-          const linkHref = viewElement.getAttribute('href') || linkName;
+
+          // Use name as the model value, ignoring href if present
+          const linkHref = linkName;
 
           // Store additional information for the link
           this.editor.model.once('_afterConversion', () => {

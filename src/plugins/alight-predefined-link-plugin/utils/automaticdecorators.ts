@@ -1,4 +1,6 @@
 // src/plugins/alight-predefined-link-plugin/utils/automaticdecorators.ts
+// This updates the automatic decorator handling to respect the different downcast/upcast formats
+
 import { type ArrayOrItem } from '@ckeditor/ckeditor5-utils';
 import type {
   DowncastAttributeEvent,
@@ -48,79 +50,129 @@ export default class AutomaticDecorators {
   public getDispatcher(): (dispatcher: DowncastDispatcher) => void {
     return dispatcher => {
       dispatcher.on<DowncastAttributeEvent>('attribute:alightPredefinedLinkPluginHref', (evt, data, conversionApi) => {
-        // Only test as this behavior decorates links and is run before dispatcher which actually consumes this node
+        // There is only test as this behavior decorates links and
+        // it is run before dispatcher which actually consumes this node.
+        // This allows on writing own dispatcher with highest priority,
+        // which blocks both native converter and this additional decoration.
         if (!conversionApi.consumable.test(data.item, 'attribute:alightPredefinedLinkPluginHref')) {
           return;
         }
 
-        // Skip block elements - automatic decorators for block links are handled elsewhere
+        // Automatic decorators for block links are handled e.g. in AlightPredefinedLinkPluginImageEditing.
         if (!(data.item.is('selection') || conversionApi.schema.isInline(data.item))) {
           return;
         }
 
         const viewWriter = conversionApi.writer;
         const viewSelection = viewWriter.document.selection;
-        const href = data.attributeNewValue as string | null;
 
-        // Process each automatic decorator when href is available
-        for (const decorator of this._definitions) {
-          if (href && decorator.callback(href)) {
-            // Find all relevant elements in the view range
-            const viewRange = conversionApi.mapper.toViewRange(data.range);
+        // Process automatic decorators
+        for (const item of this._definitions) {
+          if (item.callback(data.attributeNewValue as string | null)) {
+            // For predefined links, we need to create a structure with ah:link
+            // Get or extract link name
+            let linkName = '';
 
-            // We need to find both <a> elements and <ah:link> elements
-            for (const item of Array.from(viewRange.getItems())) {
-              // Skip non-text items
-              if (!item.is || !item.is('$text')) {
-                continue;
+            if (data.item.hasAttribute && data.item.hasAttribute('alightPredefinedLinkPluginLinkName')) {
+              linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName') as string;
+            } else if (data.attributeNewValue) {
+              linkName = extractPredefinedLinkId(data.attributeNewValue as string) ||
+                data.attributeNewValue as string;
+            }
+
+            // Create outer link element with all attributes
+            const linkAttrs = {
+              'href': '#',
+              'class': 'AHCustomeLink',
+              'data-id': 'predefined_link',
+              ...item.attributes
+            };
+
+            // Use attributeElement instead of containerElement to maintain proper nesting
+            const linkElement = viewWriter.createAttributeElement('a', linkAttrs, { priority: 5 });
+
+            // Add any classes from decorator
+            if (item.classes) {
+              viewWriter.addClass(item.classes, linkElement);
+            }
+
+            // Add any styles from decorator
+            for (const key in item.styles) {
+              viewWriter.setStyle(key, item.styles[key], linkElement);
+            }
+
+            // Create base attributes for ah:link element
+            const ahLinkAttrs: Record<string, string> = {
+              'name': linkName,
+              'href': linkName, // Include href in downcast output
+              'data-id': 'predefined_link'
+            };
+
+            // ENHANCED: Add custom attributes from model to the ah:link element
+            // Check for any attributes with the custom prefix and add them to ahLinkAttrs
+            if (data.item.is('$text') || data.item.is('element')) {
+              // Use explicitly typed variable
+              let attributes: Array<[string, unknown]> | Iterable<[string, unknown]> = [];
+
+              if (data.item.getAttributes) {
+                attributes = data.item.getAttributes();
               }
 
-              // Find the <a> ancestor
-              const linkElement = findLinkElement(item);
-              if (!linkElement) {
-                continue;
-              }
-
-              // Apply decorator attributes to the <a> element
-              if (decorator.attributes) {
-                for (const [key, value] of Object.entries(decorator.attributes)) {
-                  viewWriter.setAttribute(key, value, linkElement);
+              for (const [key, value] of attributes) {
+                if (typeof key === 'string' && key.startsWith('alightPredefinedLinkPluginCustom_')) {
+                  // Extract the original attribute name by removing the prefix
+                  const originalAttrName = key.replace('alightPredefinedLinkPluginCustom_', '');
+                  ahLinkAttrs[originalAttrName] = value as string;
                 }
               }
+            } else if (data.item.is('selection')) {
+              // For selection, we need to get attributes from the first position
+              // Use explicitly typed variable
+              let selectionAttributes: Array<[string, unknown]> | Iterable<[string, unknown]> = [];
 
-              // Apply classes
-              if (decorator.classes) {
-                const classes = Array.isArray(decorator.classes) ? decorator.classes : [decorator.classes];
-                for (const className of classes) {
-                  viewWriter.addClass(className, linkElement);
-                }
+              if (data.item.getAttributes) {
+                selectionAttributes = data.item.getAttributes();
               }
 
-              // Apply styles
-              if (decorator.styles) {
-                for (const [key, value] of Object.entries(decorator.styles)) {
-                  viewWriter.setStyle(key, value, linkElement);
+              for (const [key, value] of selectionAttributes) {
+                if (typeof key === 'string' && key.startsWith('alightPredefinedLinkPluginCustom_')) {
+                  // Extract the original attribute name by removing the prefix
+                  const originalAttrName = key.replace('alightPredefinedLinkPluginCustom_', '');
+                  ahLinkAttrs[originalAttrName] = value as string;
                 }
               }
+            }
+
+            const ahLinkElement = viewWriter.createAttributeElement('ah:link', ahLinkAttrs, { priority: 6 });
+
+            // Set custom property for link identification
+            viewWriter.setCustomProperty('alight-predefined-link', true, linkElement);
+            viewWriter.setCustomProperty('alight-predefined-link-ah', true, ahLinkElement);
+
+            if (data.item.is('selection')) {
+              // When dealing with selection, apply the link elements
+              const range = viewSelection.getFirstRange();
+
+              if (range) {
+                // First apply the inner ah:link element
+                const ahLinkRange = viewWriter.wrap(range, ahLinkElement);
+
+                // Then apply the outer <a> element
+                viewWriter.wrap(ahLinkRange, linkElement);
+              }
+            } else {
+              // For model elements, handle the view range
+              const viewRange = conversionApi.mapper.toViewRange(data.range);
+
+              // First apply the inner ah:link element
+              const ahLinkRange = viewWriter.wrap(viewRange, ahLinkElement);
+
+              // Then apply the outer <a> element
+              viewWriter.wrap(ahLinkRange, linkElement);
             }
           }
         }
       }, { priority: 'high' });
     };
   }
-}
-
-/**
- * Helper function to find a link element ancestor
- */
-function findLinkElement(item: any): ViewAttributeElement | null {
-  if (!item.getAncestors) {
-    return null;
-  }
-
-  return item.getAncestors().find((ancestor: any) =>
-    ancestor.is('attributeElement', 'a') &&
-    ancestor.hasClass('AHCustomeLink') &&
-    ancestor.getAttribute('data-id') === 'predefined_link'
-  );
 }
