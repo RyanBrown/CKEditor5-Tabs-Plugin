@@ -118,7 +118,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           linkName = extractPredefinedLinkId(href) || href;
         }
 
-        // Create the outer link element
+        // Create the outer link element as a ContainerElement, not an AttributeElement
         const linkElement = writer.createContainerElement('a', {
           'href': '#',
           'class': 'AHCustomeLink',
@@ -142,12 +142,14 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
       model: 'alightPredefinedLinkPluginHref',
       view: (href, { writer }, { item }) => {
         // For editing view, use attributeElement for proper editing behavior
+        // But make sure to properly configure it
         const linkElement = writer.createAttributeElement('a', {
           'href': '#',
           'class': 'AHCustomeLink',
           'data-id': 'predefined_link'
         }, {
-          priority: 5
+          priority: 5,
+          id: 'predefined-link' // Add a unique ID to help with attribute element identification
         });
 
         // Set custom property for link identification
@@ -170,12 +172,11 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         model: {
           key: 'alightPredefinedLinkPluginHref',
           value: (viewElement: ViewElement) => {
-            // First check if it's a predefined link with data-id attribute
-            const dataId = viewElement.getAttribute('data-id');
-            const dataLinkName = viewElement.getAttribute('data-link-name');
+            // First check if it has AHCustomeLink class
+            const hasAHCustomeLink = viewElement.hasClass('AHCustomeLink');
 
-            // If it has predefined link attributes, use the link name as href
-            if (dataId === 'predefined_link') {
+            // If it has AHCustomeLink class, check for ah:link element
+            if (hasAHCustomeLink) {
               // Check for ah:link element inside
               const ahLinkElement = viewElement.getChild(0);
               if (ahLinkElement && ahLinkElement.is('element', 'ah:link')) {
@@ -196,7 +197,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
             const href = savedHref || viewElement.getAttribute('href');
 
             // If it's empty or just #, and not a predefined link, don't create a link
-            if ((href === '' || href === '#') && !viewElement.hasClass('AHCustomeLink')) {
+            if ((href === '' || href === '#') && !hasAHCustomeLink) {
               return false; // This will prevent the attribute from being set
             }
 
@@ -221,22 +222,6 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
             if (ahLink && ahLink.is('element', 'ah:link')) {
               // Only extract the name attribute from ah:link, ignore all other attributes
               const linkName = ahLink.getAttribute('name');
-
-              // Check for orgnameattr attribute on the ah:link element
-              const orgnameattr = ahLink.getAttribute('orgnameattr');
-              if (orgnameattr !== undefined) {
-                // We need to use the after conversion hook, not direct model.change
-                this.editor.model.once('_afterConversion', () => {
-                  this.editor.model.change(writer => {
-                    const selection = this.editor.model.document.selection;
-                    const range = selection.getFirstRange();
-
-                    if (range) {
-                      writer.setAttribute('orgnameattr', orgnameattr, range);
-                    }
-                  });
-                });
-              }
 
               // Store additional information for AHCustomeLink format
               // We need to use the after conversion hook, not direct model.change

@@ -29,6 +29,7 @@ const PROTOCOL_REG_EXP = /^((\w+:(\/{2,})?)|(\W))/i;
 const DEFAULT_LINK_PROTOCOLS = [
   'https?',
   'ftps?',
+  'mailto'
 ];
 
 /**
@@ -71,7 +72,8 @@ export function createLinkElement(href: string, { writer }: DowncastConversionAp
     'class': 'AHCustomeLink',
     'data-id': 'predefined_link'
   }, {
-    priority: 5
+    priority: 5,
+    id: 'predefined-link' // Add a unique ID to help with attribute element identification
   });
 
   // Set custom property for link identification
@@ -280,7 +282,7 @@ export function filterLinkAttributes(attributes: Record<string, string>): Record
 
     // Special handling for href attribute
     if (key === 'href' && (attributes[key] === '' || attributes[key] === '#')) {
-      // Keep empty href or '#' for predefined links
+      // Keep empty href or '#' for predefeined links
       if (attributes['data-id'] === 'predefined_link') {
         result[key] = '#';
       } else {
