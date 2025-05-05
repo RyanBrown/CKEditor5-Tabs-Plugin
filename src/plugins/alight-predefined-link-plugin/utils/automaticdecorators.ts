@@ -60,63 +60,93 @@ export default class AutomaticDecorators {
           return;
         }
 
-        const viewWriter = conversionApi.writer;
-        const viewSelection = viewWriter.document.selection;
-
         // Process automatic decorators
-        for (const item of this._definitions) {
+        let isDecorated = false;
+
+        for (const decorator of this._definitions) {
           // Only proceed if the callback returns true for this href value
-          if (item.callback(data.attributeNewValue as string | null)) {
-            try {
-              // Create attributes for the link element
-              const linkAttrs: Record<string, string> = {
-                'href': '#',
-                'class': 'AHCustomeLink',
-                'data-id': 'predefined_link'
-              };
+          if (!decorator.callback(data.attributeNewValue as string | null)) {
+            continue;
+          }
 
-              // Add any additional attributes from decorator
-              if (item.attributes) {
-                Object.assign(linkAttrs, item.attributes);
+          try {
+            const viewWriter = conversionApi.writer;
+
+            // For selection, we need to handle it differently than for text nodes
+            if (data.item.is('selection')) {
+              const viewSelection = viewWriter.document.selection;
+              const ranges = viewSelection.getRanges();
+
+              // Only proceed if there are ranges to process
+              for (const range of ranges) {
+                if (range.isCollapsed) {
+                  continue;
+                }
+
+                // Create the attribute element
+                const linkElement = viewWriter.createAttributeElement(
+                  'a',
+                  decorator.attributes || {},
+                  { priority: 5 }
+                );
+
+                // Add classes if defined
+                if (decorator.classes) {
+                  viewWriter.addClass(decorator.classes, linkElement);
+                }
+
+                // Add styles if defined
+                if (decorator.styles) {
+                  for (const key in decorator.styles) {
+                    viewWriter.setStyle(key, decorator.styles[key], linkElement);
+                  }
+                }
+
+                // Set custom property for link identification
+                viewWriter.setCustomProperty('alight-predefined-link', true, linkElement);
+
+                // Apply the wrapper to the range
+                viewWriter.wrap(range, linkElement);
+                isDecorated = true;
+              }
+            } else {
+              // Handle regular text nodes
+              const viewRange = conversionApi.mapper.toViewRange(data.range);
+
+              // Create the attribute element
+              const linkElement = viewWriter.createAttributeElement(
+                'a',
+                decorator.attributes || {},
+                { priority: 5 }
+              );
+
+              // Add classes if defined
+              if (decorator.classes) {
+                viewWriter.addClass(decorator.classes, linkElement);
               }
 
-              // Create the main attribute element for the link
-              const linkElement = viewWriter.createAttributeElement('a', linkAttrs, { priority: 5 });
-
-              // Add any classes from decorator
-              if (item.classes) {
-                viewWriter.addClass(item.classes, linkElement);
-              }
-
-              // Add any styles from decorator
-              if (item.styles) {
-                for (const key in item.styles) {
-                  viewWriter.setStyle(key, item.styles[key], linkElement);
+              // Add styles if defined
+              if (decorator.styles) {
+                for (const key in decorator.styles) {
+                  viewWriter.setStyle(key, decorator.styles[key], linkElement);
                 }
               }
 
               // Set custom property for link identification
               viewWriter.setCustomProperty('alight-predefined-link', true, linkElement);
 
-              // Now wrap the content with this link element
-              if (data.item.is('selection')) {
-                // Make sure the range is valid before wrapping
-                const range = viewSelection.getFirstRange();
-                if (range && !range.isCollapsed) {
-                  viewWriter.wrap(range, linkElement);
-                }
-              } else {
-                // For model items, map to view range and wrap
-                const viewRange = conversionApi.mapper.toViewRange(data.range);
-                if (viewRange) {
-                  viewWriter.wrap(viewRange, linkElement);
-                }
-              }
-            } catch (error) {
-              // Log error but don't break the editor
-              console.error('Error applying automatic decorator:', error);
+              // Apply the wrapper to the range
+              viewWriter.wrap(viewRange, linkElement);
+              isDecorated = true;
             }
+          } catch (error) {
+            console.error('Error applying automatic decorator:', error);
           }
+        }
+
+        // If any decorator was applied, consume the attribute
+        if (isDecorated) {
+          conversionApi.consumable.consume(data.item, 'attribute:alightPredefinedLinkPluginHref');
         }
       }, { priority: 'high' });
     };

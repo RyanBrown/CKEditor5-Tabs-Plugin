@@ -159,14 +159,57 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
       }
     });
 
-    // Handle predefined links and standard links - upcast conversion
+    // Handle specific format for predefined links with ah:link element
+    editor.conversion.for('upcast')
+      .elementToAttribute({
+        view: {
+          name: 'a',
+          classes: 'AHCustomeLink',
+          attributes: {
+            'data-id': 'predefined_link'
+          }
+        },
+        model: {
+          key: 'alightPredefinedLinkPluginHref',
+          value: (viewElement: ViewElement) => {
+            // Check for ah:link element inside
+            const ahLinkElement = viewElement.getChild(0);
+
+            if (ahLinkElement && ahLinkElement.is('element', 'ah:link')) {
+              // Extract the name attribute from ah:link
+              const linkName = ahLinkElement.getAttribute('name');
+
+              // Store additional information about the link format
+              this.editor.model.once('_afterConversion', () => {
+                this.editor.model.change(writer => {
+                  const selection = this.editor.model.document.selection;
+                  const range = selection.getFirstRange();
+
+                  if (range) {
+                    writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', range);
+                    writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, range);
+                  }
+                });
+              });
+
+              // Return the link name as the href value
+              return linkName || '';
+            }
+
+            // Fallback to the href attribute if no ah:link is found
+            return viewElement.getAttribute('href') || '#';
+          }
+        },
+        converterPriority: 'highest'
+      });
+
+    // Handle standard links - upcast conversion
     editor.conversion.for('upcast')
       .elementToAttribute({
         view: {
           name: 'a',
           attributes: {
-            'href': true,
-            'data-cke-saved-href': true
+            'href': true
           }
         },
         model: {
@@ -175,26 +218,23 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
             // First check if it has AHCustomeLink class
             const hasAHCustomeLink = viewElement.hasClass('AHCustomeLink');
 
-            // If it has AHCustomeLink class, check for ah:link element
+            // If it has AHCustomeLink class but wasn't handled by the previous converter
             if (hasAHCustomeLink) {
-              // Check for ah:link element inside
-              const ahLinkElement = viewElement.getChild(0);
-              if (ahLinkElement && ahLinkElement.is('element', 'ah:link')) {
-                const linkName = ahLinkElement.getAttribute('name');
-                return linkName || viewElement.getAttribute('href');
+              // Check for ah:link element inside as a fallback
+              for (const child of viewElement.getChildren()) {
+                if (child.is('element', 'ah:link')) {
+                  const linkName = child.getAttribute('name');
+                  return linkName || viewElement.getAttribute('href') || '#';
+                }
               }
 
-              // Get link data from attributes if no ah:link
+              // Get data-link-name attribute if no ah:link
               const dataLinkName = viewElement.getAttribute('data-link-name');
-              const href = viewElement.getAttribute('href');
-
-              // Use data-link-name or href
-              return dataLinkName || href;
+              return dataLinkName || viewElement.getAttribute('href') || '#';
             }
 
-            // Otherwise get the actual href (prefer data-cke-saved-href if available)
-            const savedHref = viewElement.getAttribute('data-cke-saved-href');
-            const href = savedHref || viewElement.getAttribute('href');
+            // For regular links, just get the href value
+            const href = viewElement.getAttribute('href');
 
             // If it's empty or just #, and not a predefined link, don't create a link
             if ((href === '' || href === '#') && !hasAHCustomeLink) {
@@ -205,49 +245,6 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           }
         },
         converterPriority: 'high'
-      });
-
-    // Custom AHCustomeLink format with ah:link element inside
-    editor.conversion.for('upcast')
-      .elementToAttribute({
-        view: {
-          name: 'a',
-          classes: 'AHCustomeLink'
-        },
-        model: {
-          key: 'alightPredefinedLinkPluginHref',
-          value: (viewElement: ViewElement) => {
-            // Try to find ah:link element inside
-            const ahLink = viewElement.getChild(0);
-            if (ahLink && ahLink.is('element', 'ah:link')) {
-              // Only extract the name attribute from ah:link, ignore all other attributes
-              const linkName = ahLink.getAttribute('name');
-
-              // Store additional information for AHCustomeLink format
-              // We need to use the after conversion hook, not direct model.change
-              const format = 'ahcustom';
-              const name = linkName;
-              this.editor.model.once('_afterConversion', () => {
-                this.editor.model.change(writer => {
-                  const selection = this.editor.model.document.selection;
-                  const range = selection.getFirstRange();
-
-                  if (range) {
-                    writer.setAttribute('alightPredefinedLinkPluginFormat', format, range);
-                    writer.setAttribute('alightPredefinedLinkPluginLinkName', name, range);
-                  }
-                });
-              });
-
-              // Return the link name as the href without adding any suffix
-              return linkName;
-            }
-
-            // Fallback to standard href
-            return viewElement.getAttribute('href');
-          }
-        },
-        converterPriority: 'highest' // Higher priority than standard link converter
       });
 
     // Create linking commands.
