@@ -313,8 +313,18 @@ export function ensurePredefinedLinkStructure(html: string): string {
     const links = tempDiv.querySelectorAll('a.AHCustomeLink');
 
     links.forEach(link => {
-      // Ensure the outer link has the correct attributes
-      link.setAttribute('href', '#');
+      // Ensure the outer link has ONLY the correct attributes
+      // First, save the attributes we want to keep
+      const href = '#';
+      const linkName = link.getAttribute('data-link-name') || extractPredefinedLinkId(link.textContent || '') || link.textContent || '';
+
+      // Remove all attributes
+      while (link.attributes.length > 0) {
+        link.removeAttribute(link.attributes[0].name);
+      }
+
+      // Add back only the required attributes
+      link.setAttribute('href', href);
       link.classList.add('AHCustomeLink');
       link.setAttribute('data-id', 'predefined_link');
 
@@ -325,10 +335,7 @@ export function ensurePredefinedLinkStructure(html: string): string {
         // Get the link text content
         const linkText = link.textContent || '';
 
-        // Get the link name from the model attributes or use text as fallback
-        const linkName = link.getAttribute('data-link-name') || extractPredefinedLinkId(linkText) || linkText;
-
-        // Create the ah:link element
+        // Create the ah:link element with ONLY the name attribute
         const ahLink = document.createElement('ah:link');
         ahLink.setAttribute('name', linkName);
 
@@ -340,24 +347,13 @@ export function ensurePredefinedLinkStructure(html: string): string {
         // Add ah:link to link
         link.appendChild(ahLink);
       } else {
-        // Make sure the existing ah:link has the name attribute
-        if (!existingAhLink.hasAttribute('name')) {
-          const linkName = link.getAttribute('data-link-name') || extractPredefinedLinkId(link.textContent || '') || link.textContent || '';
-          existingAhLink.setAttribute('name', linkName);
+        // Remove all attributes from the ah:link element
+        while (existingAhLink.attributes.length > 0) {
+          existingAhLink.removeAttribute(existingAhLink.attributes[0].name);
         }
 
-        // Remove any href or data-id attributes from the ah:link element that might have been added
-        if (existingAhLink.hasAttribute('href')) {
-          existingAhLink.removeAttribute('href');
-        }
-        if (existingAhLink.hasAttribute('data-id')) {
-          existingAhLink.removeAttribute('data-id');
-        }
-      }
-
-      // Clean up any additional attributes that might interfere
-      if (link.hasAttribute('target')) {
-        link.removeAttribute('target');
+        // Add back ONLY the name attribute
+        existingAhLink.setAttribute('name', linkName);
       }
     });
 

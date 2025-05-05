@@ -174,9 +174,6 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
             const dataId = viewElement.getAttribute('data-id');
             const dataLinkName = viewElement.getAttribute('data-link-name');
 
-            // Always add target="_blank" for links during upcast
-            viewElement._setAttribute('target', '_blank');
-
             // If it has predefined link attributes, use the link name as href
             if (dataId === 'predefined_link') {
               // Check for ah:link element inside
@@ -219,12 +216,10 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         model: {
           key: 'alightPredefinedLinkPluginHref',
           value: (viewElement: ViewElement) => {
-            // Always add target="_blank" to links during upcast
-            viewElement._setAttribute('target', '_blank');
-
             // Try to find ah:link element inside
             const ahLink = viewElement.getChild(0);
             if (ahLink && ahLink.is('element', 'ah:link')) {
+              // Only extract the name attribute from ah:link, ignore all other attributes
               const linkName = ahLink.getAttribute('name');
 
               // Check for orgnameattr attribute on the ah:link element

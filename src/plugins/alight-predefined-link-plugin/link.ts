@@ -123,7 +123,18 @@ export default class AlightPredefinedLinkPlugin extends Plugin {
         const links = tempDiv.querySelectorAll('a.AHCustomeLink');
 
         links.forEach(link => {
-          // Ensure the link has the correct attributes
+          // Store the text content before processing
+          const linkText = link.textContent || '';
+
+          // Get the link name from the data attribute or use the link text as fallback
+          const linkName = link.getAttribute('data-link-name') || link.textContent || '';
+
+          // Remove all attributes from the link
+          while (link.attributes.length > 0) {
+            link.removeAttribute(link.attributes[0].name);
+          }
+
+          // Add only the required attributes
           link.setAttribute('href', '#');
           link.classList.add('AHCustomeLink');
           link.setAttribute('data-id', 'predefined_link');
@@ -132,13 +143,7 @@ export default class AlightPredefinedLinkPlugin extends Plugin {
           const existingAhLink = link.querySelector('ah\\:link') || link.querySelector('ah:link');
 
           if (!existingAhLink) {
-            // Get the link text content
-            const linkText = link.textContent || '';
-
-            // Get the link name from the data attribute or use the link text as fallback
-            const linkName = link.getAttribute('data-link-name') || link.textContent || '';
-
-            // Create the ah:link element
+            // Create the ah:link element with ONLY the name attribute
             const ahLink = document.createElement('ah:link');
             ahLink.setAttribute('name', linkName);
 
@@ -150,18 +155,13 @@ export default class AlightPredefinedLinkPlugin extends Plugin {
             // Add ah:link to link
             link.appendChild(ahLink);
           } else {
-            // Ensure the ah:link has a name attribute
-            if (!existingAhLink.hasAttribute('name')) {
-              existingAhLink.setAttribute('name', link.getAttribute('data-link-name') || link.textContent || '');
+            // Remove all attributes from ah:link
+            while (existingAhLink.attributes.length > 0) {
+              existingAhLink.removeAttribute(existingAhLink.attributes[0].name);
             }
 
-            // Remove any href or data-id attributes from ah:link elements
-            if (existingAhLink.hasAttribute('href')) {
-              existingAhLink.removeAttribute('href');
-            }
-            if (existingAhLink.hasAttribute('data-id')) {
-              existingAhLink.removeAttribute('data-id');
-            }
+            // Add back only the name attribute
+            existingAhLink.setAttribute('name', linkName);
           }
         });
 
