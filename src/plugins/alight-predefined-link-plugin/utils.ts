@@ -5,8 +5,7 @@ import type {
   Schema,
   ViewAttributeElement,
   ViewNode,
-  ViewDocumentFragment,
-  ViewElement as ViewElementType
+  ViewDocumentFragment
 } from '@ckeditor/ckeditor5-engine';
 
 import type { Editor } from '@ckeditor/ckeditor5-core';
@@ -24,14 +23,8 @@ import type { LinkActionsViewOptions } from './ui/linkactionsview';
 import { upperFirst } from 'lodash-es';
 
 const ATTRIBUTE_WHITESPACES = /[\u0000-\u0020\u00A0\u1680\u180E\u2000-\u2029\u205f\u3000]/g; // eslint-disable-line no-control-regex
-
 const SAFE_URL_TEMPLATE = '^(?:(?:<protocols>):|[^a-z]|[a-z+.-]+(?:[^a-z+.:-]|$))';
-
-// Simplified email test - should be run over previously found URL.
 const EMAIL_REG_EXP = /^[\S]+@((?![-_])(?:[-\w\u00a1-\uffff]{0,63}[^-_]\.))+(?:[a-z\u00a1-\uffff]{2,})$/i;
-
-// The regex checks for the protocol syntax ('xxxx://' or 'xxxx:')
-// or non-word characters at the beginning of the link ('/', '#' etc.).
 const PROTOCOL_REG_EXP = /^((\w+:(\/{2,})?)|(\W))/i;
 
 const DEFAULT_LINK_PROTOCOLS = [
@@ -41,7 +34,7 @@ const DEFAULT_LINK_PROTOCOLS = [
 ];
 
 /**
- * A keystroke used by the {@link module:link/linkui~AlightPredefinedLinkPluginUI link UI feature}.
+ * A keystroke used by the link UI feature.
  */
 export const LINK_KEYSTROKE = 'Ctrl+K';
 
@@ -59,10 +52,8 @@ export function isLinkElement(node: ViewNode | ViewDocumentFragment): boolean {
 }
 
 /**
- * Helper function to detect predefined links based on attributes
- * rather than URL suffix
+ * Helper function to detect predefined links
  */
-// Update the isPredefinedLink function in utils.ts
 export function isPredefinedLink(url: string | null | undefined): boolean {
   // If the URL is empty, null, or undefined, it's not a predefined link
   if (!url) return false;
@@ -71,14 +62,10 @@ export function isPredefinedLink(url: string | null | undefined): boolean {
 }
 
 /**
- * Creates a link {@link module:engine/view/attributeelement~AttributeElement} with the provided `href` attribute.
- * Updated to create nested structure with ah:link element inside a element.
+ * Creates a link AttributeElement with the provided `href` attribute.
  */
 export function createLinkElement(href: string, { writer }: DowncastConversionApi): ViewAttributeElement {
-  // Extract link name if it's a predefined link
-  const linkName = extractPredefinedLinkId(href) || href;
-
-  // Create the outer link element as an attribute element with required attributes
+  // Create the link element as an attribute element with required attributes
   const linkElement = writer.createAttributeElement('a', {
     'href': '#',
     'class': 'AHCustomeLink',
@@ -94,47 +81,7 @@ export function createLinkElement(href: string, { writer }: DowncastConversionAp
 }
 
 /**
- * Creates the nested structure required for the predefined link with ah:link inside a element.
- * This is used by custom converters that need to create the full nested structure.
- */
-export function createNestedLinkElement(href: string, { writer }: DowncastConversionApi): {
-  linkElement: ViewAttributeElement;
-  ahLinkElement: ViewAttributeElement;
-} {
-  // Extract link name if it's a predefined link
-  const linkName = extractPredefinedLinkId(href) || href;
-
-  // Create the outer link element as an attribute element
-  const linkElement = writer.createAttributeElement('a', {
-    'href': '#',
-    'class': 'AHCustomeLink',
-    'data-id': 'predefined_link'
-  }, {
-    priority: 5
-  });
-
-  // Create the inner ah:link element
-  const ahLinkElement = writer.createAttributeElement('ah:link', {
-    'name': linkName
-  }, {
-    priority: 6
-  });
-
-  // Set custom properties for link identification
-  writer.setCustomProperty('alight-predefined-link', true, linkElement);
-  writer.setCustomProperty('alight-predefined-link-ah', true, ahLinkElement);
-
-  return { linkElement, ahLinkElement };
-}
-
-/**
  * Returns a safe URL based on a given value.
- *
- * A URL is considered safe if it is safe for the user (does not contain any malicious code).
- *
- * If a URL is considered unsafe, a simple `"#"` is returned.
- *
- * @internal
  */
 export function ensureSafeUrl(url: unknown, allowedProtocols: Array<string> = DEFAULT_LINK_PROTOCOLS): string {
   const urlString = String(url);
@@ -173,15 +120,7 @@ function isSafeUrl(url: string, customRegexp: RegExp): boolean {
 }
 
 /**
- * Returns the {@link module:link/linkconfig~LinkConfig#decorators `config.link.decorators`} configuration processed
- * to respect the locale of the editor, i.e. to display the {@link module:link/linkconfig~LinkDecoratorManualDefinition label}
- * in the correct language.
- *
- * **Note**: Only the few most commonly used labels are translated automatically. Other labels should be manually
- * translated in the {@link module:link/linkconfig~LinkConfig#decorators `config.link.decorators`} configuration.
- *
- * @param t Shorthand for {@link module:utils/locale~Locale#t Locale#t}.
- * @param decorators The decorator reference where the label values should be localized.
+ * Returns the configuration processed to respect the locale of the editor.
  */
 export function getLocalizedDecorators(
   t: LocaleTranslate,
@@ -204,8 +143,7 @@ export function getLocalizedDecorators(
 }
 
 /**
- * Converts an object with defined decorators to a normalized array of decorators. The `id` key is added for each decorator and
- * is used as the attribute's name in the model.
+ * Converts an object with defined decorators to a normalized array of decorators.
  */
 export function normalizeDecorators(decorators?: Record<string, LinkDecoratorDefinition>): Array<NormalizedLinkDecoratorDefinition> {
   const retArray: Array<NormalizedLinkDecoratorDefinition> = [];
@@ -226,7 +164,7 @@ export function normalizeDecorators(decorators?: Record<string, LinkDecoratorDef
 }
 
 /**
- * Returns `true` if the specified `element` can be linked (the element allows the `alightPredefinedLinkPluginHref` attribute).
+ * Returns `true` if the specified `element` can be linked.
  */
 export function isLinkableElement(element: Element | null, schema: Schema): element is Element {
   if (!element) {
@@ -244,11 +182,7 @@ export function isEmail(value: string): boolean {
 }
 
 /**
- * Adds the protocol prefix to the specified `link` when:
- *
- * * it does not contain it already, and there is a {@link module:link/linkconfig~LinkConfig#defaultProtocol `defaultProtocol` }
- * configuration value provided,
- * * or the link is an email address.
+ * Adds the protocol prefix to the specified `link` when needed.
  */
 export function addLinkProtocolIfApplicable(link: string, defaultProtocol?: string): string {
   // Don't modify predefined links
@@ -312,8 +246,6 @@ export function createBookmarkCallbacks(editor: Editor): LinkActionsViewOptions 
 
 /**
  * Extracts the predefined link ID from the URL or attributes
- * @param href The href attribute value
- * @returns The link ID or null if not a predefined link
  */
 export function extractPredefinedLinkId(href: string | null | undefined): string | null {
   if (!href) return null;
@@ -334,15 +266,15 @@ export function extractPredefinedLinkId(href: string | null | undefined): string
   return isPredefinedLink(href) ? href : null;
 }
 
-// Add a function to check if an element has AHCustomeLink class
+/**
+ * Returns true if element has AHCustomeLink class
+ */
 export function hasAHCustomeLinkClass(element: ViewAttributeElement): boolean {
   return element.hasClass('AHCustomeLink');
 }
 
 /**
- * Filters link attributes to remove unwanted attributes like data-cke-saved-href
- * @param attributes Original attributes object
- * @returns Filtered attributes object
+ * Filters link attributes to remove unwanted attributes
  */
 export function filterLinkAttributes(attributes: Record<string, string>): Record<string, string> {
   const result: Record<string, string> = {};
@@ -369,6 +301,51 @@ export function filterLinkAttributes(attributes: Record<string, string>): Record
   }
 
   return result;
+}
+
+/**
+ * Ensures links have the ah:link structure in the HTML
+ */
+export function ensurePredefinedLinkStructure(html: string): string {
+  try {
+    // Create a temporary container
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+
+    // Find all links with AHCustomeLink class
+    const links = tempDiv.querySelectorAll('a.AHCustomeLink');
+
+    links.forEach(link => {
+      // Check if this link already has an ah:link child
+      const existingAhLink = link.querySelector('ah\\:link') || link.querySelector('ah:link');
+
+      if (!existingAhLink) {
+        // Get the link text content
+        const linkText = link.textContent || '';
+
+        // Get the link name from the data attribute or use the link text as fallback
+        const linkName = link.getAttribute('data-link-name') || linkText;
+
+        // Create the ah:link element
+        const ahLink = document.createElement('ah:link');
+        ahLink.setAttribute('name', linkName);
+
+        // Move content to ah:link
+        while (link.firstChild) {
+          ahLink.appendChild(link.firstChild);
+        }
+
+        // Add ah:link to link
+        link.appendChild(ahLink);
+      }
+    });
+
+    // Return the fixed HTML
+    return tempDiv.innerHTML;
+  } catch (error) {
+    console.error('Error ensuring predefined link structure:', error);
+    return html;
+  }
 }
 
 export type NormalizedLinkDecoratorAutomaticDefinition = LinkDecoratorAutomaticDefinition & { id: string };

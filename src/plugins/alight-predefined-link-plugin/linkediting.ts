@@ -103,48 +103,54 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
     editor.model.schema.extend('$text', { allowAttributes: 'orgnameattr' });
 
     // Setup data downcast conversion for links with a nested ah:link element
+    // This is for the output HTML when saving the content
     editor.conversion.for('dataDowncast').attributeToElement({
       model: 'alightPredefinedLinkPluginHref',
-      view: (href, { writer }) => {
+      view: (href, { writer }, { item }) => {
         // Extract link name from href
-        let linkName = extractPredefinedLinkId(href) || href;
+        let linkName = '';
 
-        // Use the object structure for creating nested elements
-        return {
-          name: 'a',
-          attributes: {
-            'href': '#',
-            'class': 'AHCustomeLink',
-            'data-id': 'predefined_link'
-          },
-          children: [
-            {
-              name: 'ah:link',
-              attributes: {
-                'name': linkName
-              }
-            }
-          ]
-        };
+        // Try to get link name from the model attribute if available
+        if (item && typeof item.getAttribute === 'function' && item.getAttribute('alightPredefinedLinkPluginLinkName')) {
+          linkName = item.getAttribute('alightPredefinedLinkPluginLinkName') as string;
+        } else {
+          // Fall back to extracting from href
+          linkName = extractPredefinedLinkId(href) || href;
+        }
+
+        // For data output, we can use containerElement for proper nesting
+        const linkElement = writer.createContainerElement('a', {
+          'href': '#',
+          'class': 'AHCustomeLink',
+          'data-id': 'predefined_link'
+        });
+
+        // Create the inner ah:link element
+        const ahLinkElement = writer.createContainerElement('ah:link', {
+          'name': linkName
+        });
+
+        // Insert the ah:link element into the link
+        writer.insert(writer.createPositionAt(linkElement, 0), ahLinkElement);
+
+        return linkElement;
       }
     });
 
     // Setup editing downcast for interactive editing view
     editor.conversion.for('editingDowncast').attributeToElement({
       model: 'alightPredefinedLinkPluginHref',
-      view: (href, { writer }) => {
-        // Extract link name from href
-        let linkName = extractPredefinedLinkId(href) || href;
-
-        // For editing view, we create both elements but use the link structure
-        // Create outer link element with required attributes
+      view: (href, { writer }, { item }) => {
+        // For editing view, use attributeElement for proper editing behavior
         const linkElement = writer.createAttributeElement('a', {
           'href': '#',
           'class': 'AHCustomeLink',
           'data-id': 'predefined_link'
-        }, { priority: 5 });
+        }, {
+          priority: 5
+        });
 
-        // Set custom properties
+        // Set custom property for link identification
         writer.setCustomProperty('alight-predefined-link', true, linkElement);
 
         return linkElement;
@@ -361,6 +367,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           }
 
           if (manualDecoratorValue) {
+            // For editing view, use attributeElement
             const element = writer.createAttributeElement('a', decorator.attributes, { priority: 5 });
 
             if (decorator.classes) {
@@ -522,14 +529,4 @@ function getLinkAttributesAllowedOnText(schema: Schema): Array<string> {
   const textAttributes = schema.getDefinition('$text')!.allowAttributes;
 
   return textAttributes.filter(attribute => attribute.startsWith('link'));
-}
-
-/**
- * Helper function to check if a URL is a predefined link
- */
-function isPredefinedLink(url: string | null | undefined): boolean {
-  // If the URL is empty, null, or undefined, it's not a predefined link
-  if (!url) return false;
-
-  return true;
 }

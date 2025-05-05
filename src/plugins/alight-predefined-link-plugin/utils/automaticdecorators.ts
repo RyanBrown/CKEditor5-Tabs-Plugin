@@ -92,7 +92,7 @@ export default class AutomaticDecorators {
               ...item.attributes
             };
 
-            // Use attributeElement for the outer link
+            // Create the main attribute element for the link
             const linkElement = viewWriter.createAttributeElement('a', linkAttrs, { priority: 5 });
 
             // Add any classes from decorator
@@ -108,55 +108,15 @@ export default class AutomaticDecorators {
             // Set custom property for link identification
             viewWriter.setCustomProperty('alight-predefined-link', true, linkElement);
 
-            // Create ah:link element with name attribute
-            const ahLinkAttrs: Record<string, string> = {
-              'name': linkName
-            };
-
-            // Handle custom attributes for the ah:link element
-            // Safely check for custom attributes
-            if ('getAttributes' in data.item && typeof data.item.getAttributes === 'function') {
-              try {
-                // Try to get the attributes, but gracefully handle if it fails
-                const attributes = data.item.getAttributes();
-
-                for (const [key, value] of attributes) {
-                  if (typeof key === 'string' && key.startsWith('alightPredefinedLinkPluginCustom_')) {
-                    // Extract the original attribute name by removing the prefix
-                    const originalAttrName = key.replace('alightPredefinedLinkPluginCustom_', '');
-                    ahLinkAttrs[originalAttrName] = value as string;
-                  }
-                }
-              } catch (error) {
-                console.error('Failed to get attributes from item:', error);
-              }
-            }
-
-            const ahLinkElement = viewWriter.createAttributeElement('ah:link', ahLinkAttrs, { priority: 6 });
-
-            // Set custom property for link identification
-            viewWriter.setCustomProperty('alight-predefined-link-ah', true, ahLinkElement);
-
+            // Now wrap the content with this link element
             if (data.item.is('selection')) {
-              // When dealing with selection, apply the link elements
               const range = viewSelection.getFirstRange();
-
               if (range) {
-                // First wrap with the ah:link element
-                const ahLinkRange = viewWriter.wrap(range, ahLinkElement);
-
-                // Then wrap the ah:link element with the linkElement
-                viewWriter.wrap(ahLinkRange, linkElement);
+                viewWriter.wrap(range, linkElement);
               }
             } else {
-              // For model elements, handle the view range
               const viewRange = conversionApi.mapper.toViewRange(data.range);
-
-              // First wrap with the ah:link element
-              const ahLinkRange = viewWriter.wrap(viewRange, ahLinkElement);
-
-              // Then wrap the ah:link element with the linkElement
-              viewWriter.wrap(ahLinkRange, linkElement);
+              viewWriter.wrap(viewRange, linkElement);
             }
           }
         }

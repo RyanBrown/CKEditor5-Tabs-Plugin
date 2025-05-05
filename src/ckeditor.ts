@@ -393,6 +393,7 @@ class AlightEditor extends ClassicEditor {
           attributes: {
             "data-*": true,
             "data-cke-saved-href": true,
+            "data-id": true,
             href: true,
             id: true,
             onclick: true,

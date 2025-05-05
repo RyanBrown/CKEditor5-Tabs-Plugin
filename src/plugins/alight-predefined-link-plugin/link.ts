@@ -5,7 +5,11 @@ import AlightPredefinedLinkPluginUI from './linkui';
 import AlightPredefinedLinkPluginAutoLink from './autolink';
 import AlightPredefinedLinkPluginIntegration from './linkpluginintegration';
 import './styles/alight-predefined-link-plugin.scss';
-import { isPredefinedLink, extractPredefinedLinkId } from './utils';
+import {
+  isPredefinedLink,
+  extractPredefinedLinkId,
+  ensurePredefinedLinkStructure
+} from './utils';
 
 /**
  * The Alight Predefined link plugin.
@@ -45,6 +49,9 @@ export default class AlightPredefinedLinkPlugin extends Plugin {
   public init(): void {
     // Register additional plugin-specific behaviors
     this._handleLinkInterception();
+
+    // Register a data processor to ensure proper format in getData() output
+    this._registerDataProcessor();
   }
 
   /**
@@ -90,5 +97,31 @@ export default class AlightPredefinedLinkPlugin extends Plugin {
         }
       });
     });
+  }
+
+  /**
+   * Registers a data processor that ensures links have the proper structure in output data
+   */
+  private _registerDataProcessor(): void {
+    const editor = this.editor;
+    const dataProcessor = editor.data.processor;
+
+    // Get the original toData method
+    const originalToData = dataProcessor.toData;
+
+    // Override the toData method to ensure proper link structure in output
+    dataProcessor.toData = function (viewFragment) {
+      // Call the original method
+      const data = originalToData.call(this, viewFragment);
+
+      // Process the HTML string to ensure proper link structure
+      try {
+        return ensurePredefinedLinkStructure(data);
+      } catch (error) {
+        console.error('Error processing links in output:', error);
+        // Return original data if there was an error
+        return data;
+      }
+    };
   }
 }
