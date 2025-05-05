@@ -280,7 +280,7 @@ export function filterLinkAttributes(attributes: Record<string, string>): Record
 
     // Special handling for href attribute
     if (key === 'href' && (attributes[key] === '' || attributes[key] === '#')) {
-      // Keep empty href or '#' for predefeined links
+      // Keep empty href or '#' for predefined links
       if (attributes['data-id'] === 'predefined_link') {
         result[key] = '#';
       } else {

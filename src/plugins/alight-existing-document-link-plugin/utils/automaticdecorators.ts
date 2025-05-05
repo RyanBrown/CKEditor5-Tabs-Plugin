@@ -69,7 +69,6 @@ export default class AutomaticDecorators {
             priority: 5
           });
 
-          // Add classes
           if (item.classes) {
             viewWriter.addClass(item.classes, viewElement);
           }
@@ -77,12 +76,10 @@ export default class AutomaticDecorators {
           // Always add document_tag class for consistency
           viewWriter.addClass('document_tag', viewElement);
 
-          // Add styles
           for (const key in item.styles) {
             viewWriter.setStyle(key, item.styles[key], viewElement);
           }
 
-          // Set custom property for link identification
           viewWriter.setCustomProperty('alight-existing-document-link', true, viewElement);
 
           if (item.callback(data.attributeNewValue as string | null)) {
