@@ -317,7 +317,6 @@ export function ensurePredefinedLinkStructure(html: string): string {
     links.forEach(link => {
       // Ensure the outer link has ONLY the correct attributes
       // First, save the attributes we want to keep
-      const href = '#';
       const linkName = link.getAttribute('data-link-name') || extractPredefinedLinkId(link.textContent || '') || link.textContent || '';
 
       // Remove all attributes
@@ -326,7 +325,7 @@ export function ensurePredefinedLinkStructure(html: string): string {
       }
 
       // Add back only the required attributes
-      link.setAttribute('href', href);
+      link.setAttribute('href', '#');
       link.classList.add('AHCustomeLink');
       link.setAttribute('data-id', 'predefined_link');
 

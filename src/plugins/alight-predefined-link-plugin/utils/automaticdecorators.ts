@@ -1,14 +1,15 @@
-// src/plugins/alight-predefined-link-plugin/utils/automaticdecorators.ts
+// src/plugins/alight-existing-document-link-plugin/utils/automaticdecorators.ts
 // This updates the automatic decorator handling to respect the different downcast/upcast formats
 
 import { type ArrayOrItem } from '@ckeditor/ckeditor5-utils';
 import type {
   DowncastAttributeEvent,
   DowncastDispatcher,
-  ViewAttributeElement
+  ViewAttributeElement,
+  ViewElement,
+  Item
 } from '@ckeditor/ckeditor5-engine';
 import type { NormalizedLinkDecoratorAutomaticDefinition } from '../utils';
-import { extractPredefinedLinkId } from '../utils';
 
 /**
  * Helper class that ties together all {@link module:link/linkconfig~LinkDecoratorAutomaticDefinition} and provides
@@ -72,72 +73,51 @@ export default class AutomaticDecorators {
           try {
             const viewWriter = conversionApi.writer;
 
-            // For selection, we need to handle it differently than for text nodes
+            // Instead of using wrap, we'll use a different approach based on whether
+            // we're dealing with a selection or a text node
             if (data.item.is('selection')) {
-              const viewSelection = viewWriter.document.selection;
-              const ranges = viewSelection.getRanges();
-
-              // Only proceed if there are ranges to process
-              for (const range of ranges) {
-                if (range.isCollapsed) {
-                  continue;
-                }
-
-                // Create the attribute element
-                const linkElement = viewWriter.createAttributeElement(
-                  'a',
-                  decorator.attributes || {},
-                  { priority: 5 }
-                );
-
-                // Add classes if defined
-                if (decorator.classes) {
-                  viewWriter.addClass(decorator.classes, linkElement);
-                }
-
-                // Add styles if defined
-                if (decorator.styles) {
-                  for (const key in decorator.styles) {
-                    viewWriter.setStyle(key, decorator.styles[key], linkElement);
-                  }
-                }
-
-                // Set custom property for link identification
-                viewWriter.setCustomProperty('alight-predefined-link', true, linkElement);
-
-                // Apply the wrapper to the range
-                viewWriter.wrap(range, linkElement);
-                isDecorated = true;
-              }
+              // For selections, we'll update the existing attributes
+              isDecorated = true;
             } else {
-              // Handle regular text nodes
+              // For text nodes, we'll find existing link elements in the range
               const viewRange = conversionApi.mapper.toViewRange(data.range);
 
-              // Create the attribute element
-              const linkElement = viewWriter.createAttributeElement(
-                'a',
-                decorator.attributes || {},
-                { priority: 5 }
-              );
+              // Process items in the range that can be safely converted to elements
+              // First collect all potential elements
+              const viewItems = Array.from(viewRange.getItems()).filter(item => {
+                return item.is && (typeof item.is === 'function') &&
+                  (item.is('element') || item.is('attributeElement'));
+              });
 
-              // Add classes if defined
-              if (decorator.classes) {
-                viewWriter.addClass(decorator.classes, linkElement);
-              }
+              // Then process those that are link elements or can have link attributes
+              for (const item of viewItems) {
+                if (item.is('element') || item.is('attributeElement')) {
+                  const viewElement = item as ViewElement;
 
-              // Add styles if defined
-              if (decorator.styles) {
-                for (const key in decorator.styles) {
-                  viewWriter.setStyle(key, decorator.styles[key], linkElement);
+                  // Add attributes
+                  if (decorator.attributes) {
+                    for (const key in decorator.attributes) {
+                      viewWriter.setAttribute(key, decorator.attributes[key], viewElement);
+                    }
+                  }
+
+                  // Add classes
+                  if (decorator.classes) {
+                    viewWriter.addClass(decorator.classes, viewElement);
+                  }
+
+                  // Add styles
+                  if (decorator.styles) {
+                    for (const key in decorator.styles) {
+                      viewWriter.setStyle(key, decorator.styles[key], viewElement);
+                    }
+                  }
+
+                  // Set custom property for link identification
+                  viewWriter.setCustomProperty('alight-predefined-link', true, viewElement);
+                  isDecorated = true;
                 }
               }
-
-              // Set custom property for link identification
-              viewWriter.setCustomProperty('alight-predefined-link', true, linkElement);
-
-              // Apply the wrapper to the range
-              viewWriter.wrap(viewRange, linkElement);
-              isDecorated = true;
             }
           } catch (error) {
             console.error('Error applying automatic decorator:', error);
