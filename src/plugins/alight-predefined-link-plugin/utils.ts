@@ -337,7 +337,22 @@ export function ensurePredefinedLinkStructure(html: string): string {
 
         // Add ah:link to link
         link.appendChild(ahLink);
+      } else {
+        // Remove any href or data-id attributes from existing ah:link elements
+        if (existingAhLink.hasAttribute('href')) {
+          existingAhLink.removeAttribute('href');
+        }
+        if (existingAhLink.hasAttribute('data-id')) {
+          existingAhLink.removeAttribute('data-id');
+        }
       }
+
+      // Ensure the outer link has the correct format
+      if (link.hasAttribute('data-id')) {
+        link.removeAttribute('data-id');
+      }
+      // Always ensure href is # for AHCustomeLink
+      link.setAttribute('href', '#');
     });
 
     // Return the fixed HTML
