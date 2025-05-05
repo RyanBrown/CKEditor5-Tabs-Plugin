@@ -102,44 +102,56 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
     // Allow orgnameattr attribute to be present, so we can remove it later
     editor.model.schema.extend('$text', { allowAttributes: 'orgnameattr' });
 
-    // Create a reusable link creation function for both data and editing downcast converters
-    const createLinkElementForDowncast = (href: string, conversionApi: any) => {
-      // Safely handle null or undefined href
-      const hrefValue = href || '';
-
-      // Extract the link ID or generate one if needed
-      const linkId = extractPredefinedLinkId(hrefValue) || hrefValue; // Default to href if not a predefined link
-
-      // Define all required attributes for the link - using data-* attributes which are safe
-      const attributes = {
-        'href': linkId,
-        'data-id': 'predefined_link'
-      };
-
-      // Create the link element
-      const linkElement = conversionApi.writer.createAttributeElement('a', attributes, { priority: 5 });
-
-      // Add the required class
-      conversionApi.writer.addClass('AHCustomeLink', linkElement);
-
-      // Set custom property for link identification
-      conversionApi.writer.setCustomProperty('alight-predefined-link', true, linkElement);
-
-      return linkElement;
-    };
-
-    // Setup both data and editing downcast converters using the common function
+    // Setup data downcast conversion for links with a nested ah:link element
     editor.conversion.for('dataDowncast').attributeToElement({
       model: 'alightPredefinedLinkPluginHref',
-      view: createLinkElementForDowncast
+      view: (href, { writer }) => {
+        // Extract link name from href
+        let linkName = extractPredefinedLinkId(href) || href;
+
+        // Use the object structure for creating nested elements
+        return {
+          name: 'a',
+          attributes: {
+            'href': '#',
+            'class': 'AHCustomeLink',
+            'data-id': 'predefined_link'
+          },
+          children: [
+            {
+              name: 'ah:link',
+              attributes: {
+                'name': linkName
+              }
+            }
+          ]
+        };
+      }
     });
 
+    // Setup editing downcast for interactive editing view
     editor.conversion.for('editingDowncast').attributeToElement({
       model: 'alightPredefinedLinkPluginHref',
-      view: createLinkElementForDowncast
+      view: (href, { writer }) => {
+        // Extract link name from href
+        let linkName = extractPredefinedLinkId(href) || href;
+
+        // For editing view, we create both elements but use the link structure
+        // Create outer link element with required attributes
+        const linkElement = writer.createAttributeElement('a', {
+          'href': '#',
+          'class': 'AHCustomeLink',
+          'data-id': 'predefined_link'
+        }, { priority: 5 });
+
+        // Set custom properties
+        writer.setCustomProperty('alight-predefined-link', true, linkElement);
+
+        return linkElement;
+      }
     });
 
-    // Handle predefined links and standard links
+    // Handle predefined links and standard links - upcast conversion
     editor.conversion.for('upcast')
       .elementToAttribute({
         view: {
@@ -161,11 +173,18 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
 
             // If it has predefined link attributes, use the link name as href
             if (dataId === 'predefined_link') {
-              // Get link data from attributes
+              // Check for ah:link element inside
+              const ahLinkElement = viewElement.getChild(0);
+              if (ahLinkElement && ahLinkElement.is('element', 'ah:link')) {
+                const linkName = ahLinkElement.getAttribute('name');
+                return linkName || viewElement.getAttribute('href');
+              }
+
+              // Get link data from attributes if no ah:link
               const dataLinkName = viewElement.getAttribute('data-link-name');
               const href = viewElement.getAttribute('href');
 
-              // If it has predefined link attributes, use the link name as href
+              // Use data-link-name or href
               return dataLinkName || href;
             }
 

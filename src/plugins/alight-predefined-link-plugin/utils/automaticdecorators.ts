@@ -73,8 +73,12 @@ export default class AutomaticDecorators {
             // Get or extract link name
             let linkName = '';
 
-            if (data.item.hasAttribute && data.item.hasAttribute('alightPredefinedLinkPluginLinkName')) {
-              linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName') as string;
+            // In TypeScript, we need to properly check if the data.item has the hasAttribute method
+            // and then check if the attribute exists before getting it
+            if ('hasAttribute' in data.item && typeof data.item.hasAttribute === 'function') {
+              if (data.item.hasAttribute('alightPredefinedLinkPluginLinkName')) {
+                linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName') as string;
+              }
             } else if (data.attributeNewValue) {
               linkName = extractPredefinedLinkId(data.attributeNewValue as string) ||
                 data.attributeNewValue as string;
@@ -88,7 +92,7 @@ export default class AutomaticDecorators {
               ...item.attributes
             };
 
-            // Use attributeElement instead of containerElement to maintain proper nesting
+            // Use attributeElement for the outer link
             const linkElement = viewWriter.createAttributeElement('a', linkAttrs, { priority: 5 });
 
             // Add any classes from decorator
@@ -101,52 +105,36 @@ export default class AutomaticDecorators {
               viewWriter.setStyle(key, item.styles[key], linkElement);
             }
 
-            // Create base attributes for ah:link element
+            // Set custom property for link identification
+            viewWriter.setCustomProperty('alight-predefined-link', true, linkElement);
+
+            // Create ah:link element with name attribute
             const ahLinkAttrs: Record<string, string> = {
-              'name': linkName,
-              'href': linkName, // Include href in downcast output
-              'data-id': 'predefined_link'
+              'name': linkName
             };
 
-            // ENHANCED: Add custom attributes from model to the ah:link element
-            // Check for any attributes with the custom prefix and add them to ahLinkAttrs
-            if (data.item.is('$text') || data.item.is('element')) {
-              // Use explicitly typed variable
-              let attributes: Array<[string, unknown]> | Iterable<[string, unknown]> = [];
+            // Handle custom attributes for the ah:link element
+            // Safely check for custom attributes
+            if ('getAttributes' in data.item && typeof data.item.getAttributes === 'function') {
+              try {
+                // Try to get the attributes, but gracefully handle if it fails
+                const attributes = data.item.getAttributes();
 
-              if (data.item.getAttributes) {
-                attributes = data.item.getAttributes();
-              }
-
-              for (const [key, value] of attributes) {
-                if (typeof key === 'string' && key.startsWith('alightPredefinedLinkPluginCustom_')) {
-                  // Extract the original attribute name by removing the prefix
-                  const originalAttrName = key.replace('alightPredefinedLinkPluginCustom_', '');
-                  ahLinkAttrs[originalAttrName] = value as string;
+                for (const [key, value] of attributes) {
+                  if (typeof key === 'string' && key.startsWith('alightPredefinedLinkPluginCustom_')) {
+                    // Extract the original attribute name by removing the prefix
+                    const originalAttrName = key.replace('alightPredefinedLinkPluginCustom_', '');
+                    ahLinkAttrs[originalAttrName] = value as string;
+                  }
                 }
-              }
-            } else if (data.item.is('selection')) {
-              // For selection, we need to get attributes from the first position
-              // Use explicitly typed variable
-              let selectionAttributes: Array<[string, unknown]> | Iterable<[string, unknown]> = [];
-
-              if (data.item.getAttributes) {
-                selectionAttributes = data.item.getAttributes();
-              }
-
-              for (const [key, value] of selectionAttributes) {
-                if (typeof key === 'string' && key.startsWith('alightPredefinedLinkPluginCustom_')) {
-                  // Extract the original attribute name by removing the prefix
-                  const originalAttrName = key.replace('alightPredefinedLinkPluginCustom_', '');
-                  ahLinkAttrs[originalAttrName] = value as string;
-                }
+              } catch (error) {
+                console.error('Failed to get attributes from item:', error);
               }
             }
 
             const ahLinkElement = viewWriter.createAttributeElement('ah:link', ahLinkAttrs, { priority: 6 });
 
             // Set custom property for link identification
-            viewWriter.setCustomProperty('alight-predefined-link', true, linkElement);
             viewWriter.setCustomProperty('alight-predefined-link-ah', true, ahLinkElement);
 
             if (data.item.is('selection')) {
@@ -154,20 +142,20 @@ export default class AutomaticDecorators {
               const range = viewSelection.getFirstRange();
 
               if (range) {
-                // First apply the inner ah:link element
+                // First wrap with the ah:link element
                 const ahLinkRange = viewWriter.wrap(range, ahLinkElement);
 
-                // Then apply the outer <a> element
+                // Then wrap the ah:link element with the linkElement
                 viewWriter.wrap(ahLinkRange, linkElement);
               }
             } else {
               // For model elements, handle the view range
               const viewRange = conversionApi.mapper.toViewRange(data.range);
 
-              // First apply the inner ah:link element
+              // First wrap with the ah:link element
               const ahLinkRange = viewWriter.wrap(viewRange, ahLinkElement);
 
-              // Then apply the outer <a> element
+              // Then wrap the ah:link element with the linkElement
               viewWriter.wrap(ahLinkRange, linkElement);
             }
           }

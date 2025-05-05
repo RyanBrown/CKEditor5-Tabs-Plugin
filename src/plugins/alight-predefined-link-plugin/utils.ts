@@ -78,7 +78,7 @@ export function createLinkElement(href: string, { writer }: DowncastConversionAp
   // Extract link name if it's a predefined link
   const linkName = extractPredefinedLinkId(href) || href;
 
-  // Create the outer link element as an attribute element
+  // Create the outer link element as an attribute element with required attributes
   const linkElement = writer.createAttributeElement('a', {
     'href': '#',
     'class': 'AHCustomeLink',
@@ -91,6 +91,40 @@ export function createLinkElement(href: string, { writer }: DowncastConversionAp
   writer.setCustomProperty('alight-predefined-link', true, linkElement);
 
   return linkElement;
+}
+
+/**
+ * Creates the nested structure required for the predefined link with ah:link inside a element.
+ * This is used by custom converters that need to create the full nested structure.
+ */
+export function createNestedLinkElement(href: string, { writer }: DowncastConversionApi): {
+  linkElement: ViewAttributeElement;
+  ahLinkElement: ViewAttributeElement;
+} {
+  // Extract link name if it's a predefined link
+  const linkName = extractPredefinedLinkId(href) || href;
+
+  // Create the outer link element as an attribute element
+  const linkElement = writer.createAttributeElement('a', {
+    'href': '#',
+    'class': 'AHCustomeLink',
+    'data-id': 'predefined_link'
+  }, {
+    priority: 5
+  });
+
+  // Create the inner ah:link element
+  const ahLinkElement = writer.createAttributeElement('ah:link', {
+    'name': linkName
+  }, {
+    priority: 6
+  });
+
+  // Set custom properties for link identification
+  writer.setCustomProperty('alight-predefined-link', true, linkElement);
+  writer.setCustomProperty('alight-predefined-link-ah', true, ahLinkElement);
+
+  return { linkElement, ahLinkElement };
 }
 
 /**
