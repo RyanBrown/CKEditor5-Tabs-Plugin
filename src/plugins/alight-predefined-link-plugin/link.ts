@@ -116,7 +116,56 @@ export default class AlightPredefinedLinkPlugin extends Plugin {
 
       // Process the HTML string to ensure proper link structure
       try {
-        return ensurePredefinedLinkStructure(data);
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = data;
+
+        // Find all links with AHCustomeLink class
+        const links = tempDiv.querySelectorAll('a.AHCustomeLink');
+
+        links.forEach(link => {
+          // Ensure the link has the correct attributes
+          link.setAttribute('href', '#');
+          link.classList.add('AHCustomeLink');
+          link.setAttribute('data-id', 'predefined_link');
+
+          // Check if this link already has an ah:link child
+          const existingAhLink = link.querySelector('ah\\:link') || link.querySelector('ah:link');
+
+          if (!existingAhLink) {
+            // Get the link text content
+            const linkText = link.textContent || '';
+
+            // Get the link name from the data attribute or use the link text as fallback
+            const linkName = link.getAttribute('data-link-name') || link.textContent || '';
+
+            // Create the ah:link element
+            const ahLink = document.createElement('ah:link');
+            ahLink.setAttribute('name', linkName);
+
+            // Move content to ah:link
+            while (link.firstChild) {
+              ahLink.appendChild(link.firstChild);
+            }
+
+            // Add ah:link to link
+            link.appendChild(ahLink);
+          } else {
+            // Ensure the ah:link has a name attribute
+            if (!existingAhLink.hasAttribute('name')) {
+              existingAhLink.setAttribute('name', link.getAttribute('data-link-name') || link.textContent || '');
+            }
+
+            // Remove any href or data-id attributes from ah:link elements
+            if (existingAhLink.hasAttribute('href')) {
+              existingAhLink.removeAttribute('href');
+            }
+            if (existingAhLink.hasAttribute('data-id')) {
+              existingAhLink.removeAttribute('data-id');
+            }
+          }
+        });
+
+        return tempDiv.innerHTML;
       } catch (error) {
         console.error('Error processing links in output:', error);
         // Return original data if there was an error

@@ -24,13 +24,11 @@ import { upperFirst } from 'lodash-es';
 
 const ATTRIBUTE_WHITESPACES = /[\u0000-\u0020\u00A0\u1680\u180E\u2000-\u2029\u205f\u3000]/g; // eslint-disable-line no-control-regex
 const SAFE_URL_TEMPLATE = '^(?:(?:<protocols>):|[^a-z]|[a-z+.-]+(?:[^a-z+.:-]|$))';
-const EMAIL_REG_EXP = /^[\S]+@((?![-_])(?:[-\w\u00a1-\uffff]{0,63}[^-_]\.))+(?:[a-z\u00a1-\uffff]{2,})$/i;
 const PROTOCOL_REG_EXP = /^((\w+:(\/{2,})?)|(\W))/i;
 
 const DEFAULT_LINK_PROTOCOLS = [
   'https?',
   'ftps?',
-  'mailto'
 ];
 
 /**
@@ -63,6 +61,8 @@ export function isPredefinedLink(url: string | null | undefined): boolean {
 
 /**
  * Creates a link AttributeElement with the provided `href` attribute.
+ * For editing view, this creates only the outer link element.
+ * For data view, the complete structure with ah:link is created in the conversion.
  */
 export function createLinkElement(href: string, { writer }: DowncastConversionApi): ViewAttributeElement {
   // Create the link element as an attribute element with required attributes
@@ -175,13 +175,6 @@ export function isLinkableElement(element: Element | null, schema: Schema): elem
 }
 
 /**
- * Returns `true` if the specified `value` is an external email.
- */
-export function isEmail(value: string): boolean {
-  return EMAIL_REG_EXP.test(value);
-}
-
-/**
  * Adds the protocol prefix to the specified `link` when needed.
  */
 export function addLinkProtocolIfApplicable(link: string, defaultProtocol?: string): string {
@@ -190,10 +183,9 @@ export function addLinkProtocolIfApplicable(link: string, defaultProtocol?: stri
     return link;
   }
 
-  const protocol = isEmail(link) ? 'mailto:' : defaultProtocol;
-  const isProtocolNeeded = !!protocol && !linkHasProtocol(link);
+  const isProtocolNeeded = !!defaultProtocol && !linkHasProtocol(link);
 
-  return link && isProtocolNeeded ? protocol + link : link;
+  return link && isProtocolNeeded ? defaultProtocol + link : link;
 }
 
 /**
@@ -289,7 +281,7 @@ export function filterLinkAttributes(attributes: Record<string, string>): Record
     // Special handling for href attribute
     if (key === 'href' && (attributes[key] === '' || attributes[key] === '#')) {
       // Keep empty href or '#' for predefeined links
-      if (attributes['data-id'] === 'predefinded_link') {
+      if (attributes['data-id'] === 'predefined_link') {
         result[key] = '#';
       } else {
         result[key] = '#';
@@ -305,6 +297,11 @@ export function filterLinkAttributes(attributes: Record<string, string>): Record
 
 /**
  * Ensures links have the ah:link structure in the HTML
+ * 
+ * Ensures the following structure for predefined links:
+ * <a href="#" class="AHCustomeLink" data-id="predefined_link">
+ *   <ah:link name="predefinedLinkName">Selected Text</ah:link>
+ * </a>
  */
 export function ensurePredefinedLinkStructure(html: string): string {
   try {
@@ -316,6 +313,11 @@ export function ensurePredefinedLinkStructure(html: string): string {
     const links = tempDiv.querySelectorAll('a.AHCustomeLink');
 
     links.forEach(link => {
+      // Ensure the outer link has the correct attributes
+      link.setAttribute('href', '#');
+      link.classList.add('AHCustomeLink');
+      link.setAttribute('data-id', 'predefined_link');
+
       // Check if this link already has an ah:link child
       const existingAhLink = link.querySelector('ah\\:link') || link.querySelector('ah:link');
 
@@ -323,8 +325,8 @@ export function ensurePredefinedLinkStructure(html: string): string {
         // Get the link text content
         const linkText = link.textContent || '';
 
-        // Get the link name from the data attribute or use the link text as fallback
-        const linkName = link.getAttribute('data-link-name') || linkText;
+        // Get the link name from the model attributes or use text as fallback
+        const linkName = link.getAttribute('data-link-name') || extractPredefinedLinkId(linkText) || linkText;
 
         // Create the ah:link element
         const ahLink = document.createElement('ah:link');
@@ -338,7 +340,13 @@ export function ensurePredefinedLinkStructure(html: string): string {
         // Add ah:link to link
         link.appendChild(ahLink);
       } else {
-        // Remove any href or data-id attributes from existing ah:link elements
+        // Make sure the existing ah:link has the name attribute
+        if (!existingAhLink.hasAttribute('name')) {
+          const linkName = link.getAttribute('data-link-name') || extractPredefinedLinkId(link.textContent || '') || link.textContent || '';
+          existingAhLink.setAttribute('name', linkName);
+        }
+
+        // Remove any href or data-id attributes from the ah:link element that might have been added
         if (existingAhLink.hasAttribute('href')) {
           existingAhLink.removeAttribute('href');
         }
@@ -347,12 +355,10 @@ export function ensurePredefinedLinkStructure(html: string): string {
         }
       }
 
-      // Ensure the outer link has the correct format
-      if (link.hasAttribute('data-id')) {
-        link.removeAttribute('data-id');
+      // Clean up any additional attributes that might interfere
+      if (link.hasAttribute('target')) {
+        link.removeAttribute('target');
       }
-      // Always ensure href is # for AHCustomeLink
-      link.setAttribute('href', '#');
     });
 
     // Return the fixed HTML

@@ -107,7 +107,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
     editor.conversion.for('dataDowncast').attributeToElement({
       model: 'alightPredefinedLinkPluginHref',
       view: (href, { writer }, { item }) => {
-        // Extract link name from href
+        // Get link name from model attribute or extract from href
         let linkName = '';
 
         // Try to get link name from the model attribute if available
@@ -118,10 +118,11 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           linkName = extractPredefinedLinkId(href) || href;
         }
 
-        // For data output, we can use containerElement for proper nesting
+        // Create the outer link element
         const linkElement = writer.createContainerElement('a', {
           'href': '#',
-          'class': 'AHCustomeLink'
+          'class': 'AHCustomeLink',
+          'data-id': 'predefined_link'
         });
 
         // Create the inner ah:link element
