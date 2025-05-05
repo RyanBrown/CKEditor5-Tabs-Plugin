@@ -305,8 +305,7 @@ export class ContentManager implements ILinkManager {
             name="${radioGroupName}" 
             value="${link.serverFilePath}" 
             ${isSelected ? 'checked' : ''}
-          >
-          </cka-radio-button>
+          ></cka-radio-button>
         </div>
         <ul>
           ${link.title ? `<li><strong>${link.title}</strong></li>` : ''}

@@ -50,15 +50,12 @@ export default class AutomaticDecorators {
   public getDispatcher(): (dispatcher: DowncastDispatcher) => void {
     return dispatcher => {
       dispatcher.on<DowncastAttributeEvent>('attribute:alightPredefinedLinkPluginHref', (evt, data, conversionApi) => {
-        // There is only test as this behavior decorates links and
-        // it is run before dispatcher which actually consumes this node.
-        // This allows on writing own dispatcher with highest priority,
-        // which blocks both native converter and this additional decoration.
+        // Skip if the attribute is already consumed
         if (!conversionApi.consumable.test(data.item, 'attribute:alightPredefinedLinkPluginHref')) {
           return;
         }
 
-        // Automatic decorators for block links are handled e.g. in AlightPredefinedLinkPluginImageEditing.
+        // Automatic decorators for block links are handled elsewhere
         if (!(data.item.is('selection') || conversionApi.schema.isInline(data.item))) {
           return;
         }
@@ -68,55 +65,56 @@ export default class AutomaticDecorators {
 
         // Process automatic decorators
         for (const item of this._definitions) {
+          // Only proceed if the callback returns true for this href value
           if (item.callback(data.attributeNewValue as string | null)) {
-            // For predefined links, we need to create a structure with ah:link
-            // Get or extract link name
-            let linkName = '';
+            try {
+              // Create attributes for the link element
+              const linkAttrs: Record<string, string> = {
+                'href': '#',
+                'class': 'AHCustomeLink',
+                'data-id': 'predefined_link'
+              };
 
-            // In TypeScript, we need to properly check if the data.item has the hasAttribute method
-            // and then check if the attribute exists before getting it
-            if ('hasAttribute' in data.item && typeof data.item.hasAttribute === 'function') {
-              if (data.item.hasAttribute('alightPredefinedLinkPluginLinkName')) {
-                linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName') as string;
+              // Add any additional attributes from decorator
+              if (item.attributes) {
+                Object.assign(linkAttrs, item.attributes);
               }
-            } else if (data.attributeNewValue) {
-              linkName = extractPredefinedLinkId(data.attributeNewValue as string) ||
-                data.attributeNewValue as string;
-            }
 
-            // Create outer link element with all attributes
-            const linkAttrs = {
-              'href': '#',
-              'class': 'AHCustomeLink',
-              'data-id': 'predefined_link',
-              ...item.attributes
-            };
+              // Create the main attribute element for the link
+              const linkElement = viewWriter.createAttributeElement('a', linkAttrs, { priority: 5 });
 
-            // Create the main attribute element for the link
-            const linkElement = viewWriter.createAttributeElement('a', linkAttrs, { priority: 5 });
-
-            // Add any classes from decorator
-            if (item.classes) {
-              viewWriter.addClass(item.classes, linkElement);
-            }
-
-            // Add any styles from decorator
-            for (const key in item.styles) {
-              viewWriter.setStyle(key, item.styles[key], linkElement);
-            }
-
-            // Set custom property for link identification
-            viewWriter.setCustomProperty('alight-predefined-link', true, linkElement);
-
-            // Now wrap the content with this link element
-            if (data.item.is('selection')) {
-              const range = viewSelection.getFirstRange();
-              if (range) {
-                viewWriter.wrap(range, linkElement);
+              // Add any classes from decorator
+              if (item.classes) {
+                viewWriter.addClass(item.classes, linkElement);
               }
-            } else {
-              const viewRange = conversionApi.mapper.toViewRange(data.range);
-              viewWriter.wrap(viewRange, linkElement);
+
+              // Add any styles from decorator
+              if (item.styles) {
+                for (const key in item.styles) {
+                  viewWriter.setStyle(key, item.styles[key], linkElement);
+                }
+              }
+
+              // Set custom property for link identification
+              viewWriter.setCustomProperty('alight-predefined-link', true, linkElement);
+
+              // Now wrap the content with this link element
+              if (data.item.is('selection')) {
+                // Make sure the range is valid before wrapping
+                const range = viewSelection.getFirstRange();
+                if (range && !range.isCollapsed) {
+                  viewWriter.wrap(range, linkElement);
+                }
+              } else {
+                // For model items, map to view range and wrap
+                const viewRange = conversionApi.mapper.toViewRange(data.range);
+                if (viewRange) {
+                  viewWriter.wrap(viewRange, linkElement);
+                }
+              }
+            } catch (error) {
+              // Log error but don't break the editor
+              console.error('Error applying automatic decorator:', error);
             }
           }
         }
