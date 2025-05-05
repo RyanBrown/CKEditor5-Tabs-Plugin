@@ -115,13 +115,12 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
       // Extract the link ID or generate one if needed
       const linkId = extractExternalDocumentLinkId(hrefValue) || ''; // Default is empty if none found
 
-      // Define all required attributes - NO target="_blank" here for downcast
+      // Define all required attributes
       const attributes = {
         'href': linkId,
         'data-id': 'existing-document_link',
         'data-format': 'existingDocumentTag',
         'data-link-name': linkId
-        // target="_blank" is deliberately NOT added here for downcast
       };
 
       // Create the link element
