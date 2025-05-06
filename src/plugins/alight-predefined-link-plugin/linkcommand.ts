@@ -206,7 +206,7 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
 
           attributes.set('alightPredefinedLinkPluginHref', href);
 
-          // If it's a predefined link, set format attribute
+          // If it's a predefined link, set format attribute and linkName
           if (isPredefined) {
             attributes.set('alightPredefinedLinkPluginFormat', 'ahcustom');
             attributes.set('alightPredefinedLinkPluginLinkName', linkName);
@@ -216,20 +216,12 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
             attributes.set(item, true);
           });
 
-          // Use the selection's text if available, otherwise use the linkName or href
-          let textToInsert = '';
-          try {
-            // This is the fix: Never use the href as the text content
-            // Instead, use the proper link name for display
-            textToInsert = isPredefined ? linkName : href;
-          } catch (e) {
-            console.error('Error getting selection text:', e);
-            textToInsert = isPredefined ? linkName : href;
-          }
+          // Create text with the link text
+          // Instead of using the href as text, use a better display name for predefined links
+          const linkText = isPredefined ? linkName : href;
 
-          // Create a text node with the link attributes
           const { end: positionAfter } = model.insertContent(
-            writer.createText(textToInsert, attributes as any),
+            writer.createText(linkText, attributes as any),
             position
           );
 

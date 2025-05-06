@@ -52,13 +52,31 @@ const EXTERNAL_LINKS_REGEXP = /^(https?:)?\/\//;
  * Returns `true` if a given view node is the link element.
  */
 function isLinkElement(node: ViewNode | ViewDocumentFragment): boolean {
-  return (
-    node.is('attributeElement') && (
-      !!node.getCustomProperty('alight-predefined-link') ||
-      node.hasClass('AHCustomeLink') ||
-      node.getAttribute('data-id') === 'predefined_link'
-    )
-  );
+  if (!node) {
+    return false;
+  }
+
+  // First check if it's an attributeElement to avoid "is" errors
+  if (!node.is || typeof node.is !== 'function') {
+    return false;
+  }
+
+  try {
+    // Check if it's an attributeElement first
+    if (!node.is('attributeElement')) {
+      return false;
+    }
+
+    // Now it's safe to check other attributes and custom properties
+    const hasCustomProperty = !!node.getCustomProperty && !!node.getCustomProperty('alight-predefined-link');
+    const hasAHCustomeClass = typeof node.hasClass === 'function' && node.hasClass('AHCustomeLink');
+    const hasPredefinedLinkDataId = node.getAttribute && node.getAttribute('data-id') === 'predefined_link';
+
+    return hasCustomProperty || hasAHCustomeClass || hasPredefinedLinkDataId;
+  } catch (e) {
+    console.error('Error in isLinkElement check:', e);
+    return false;
+  }
 }
 
 /**
@@ -144,16 +162,25 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         // Get position range for conversion
         const viewRange = mapper.toViewRange(data.range);
 
-        // Get link name from model attribute - CRITICAL FIX HERE
+        // Get link name from model attribute - KEY FIX HERE
         let linkName = '';
 
-        // PRIORITY 1: Use the alightPredefinedLinkPluginLinkName attribute if available
-        if (data.item.hasAttribute && data.item.hasAttribute('alightPredefinedLinkPluginLinkName')) {
-          linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName');
-        }
-        // PRIORITY 2: Use the href value itself as a fallback
-        else {
-          linkName = href;
+        // Try to get link name from the model attribute if available
+        if (data.item && typeof data.item.getAttribute === 'function') {
+          // PRIORITY 1: Use alightPredefinedLinkPluginLinkName attribute if it exists
+          if (data.item.hasAttribute('alightPredefinedLinkPluginLinkName')) {
+            linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName') as string;
+            console.log('Using linkName from attribute:', linkName);
+          }
+          // PRIORITY 2: Extract from href if no linkName attribute
+          else {
+            linkName = extractPredefinedLinkId(href) || href;
+            console.log('Using linkName extracted from href:', linkName);
+          }
+        } else {
+          // Fall back to extracting from href
+          linkName = extractPredefinedLinkId(href) || href;
+          console.log('Fallback linkName:', linkName);
         }
 
         // Create the outer link element as a ContainerElement
@@ -162,7 +189,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           'class': 'AHCustomeLink'
         });
 
-        // Create the inner ah:link element with the linkName, NOT the text content
+        // Create the inner ah:link element
         const ahLinkElement = writer.createContainerElement('ah:link', {
           'name': linkName
         });
@@ -170,8 +197,8 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         // Get text content from the view range
         let textContent = '';
         for (const item of viewRange.getItems()) {
-          if ((item).is && ((item).is('$text') || (item).is('$textProxy'))) {
-            textContent += (item).data;
+          if ((item as ViewNode).is && ((item as ViewNode).is('$text') || (item as ViewNode).is('$textProxy'))) {
+            textContent += (item as ViewText).data;
           }
         }
 
@@ -286,51 +313,20 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           value: (viewElement: ViewElement) => {
             // First check if it has AHCustomeLink class
             const hasAHCustomeLink = viewElement.hasClass('AHCustomeLink');
-            let linkName = '';
-            let linkHref = '';
 
             // If it has AHCustomeLink class but wasn't handled by the previous converter
             if (hasAHCustomeLink) {
               // Check for ah:link element inside as a fallback
               for (const child of viewElement.getChildren()) {
                 if (child.is('element', 'ah:link')) {
-                  linkName = child.getAttribute('name') as string || '';
-
-                  // Store the name attribute as the linkName and href
-                  this.editor.model.once('_afterConversion', () => {
-                    this.editor.model.change(writer => {
-                      const selection = this.editor.model.document.selection;
-                      const range = selection.getFirstRange();
-
-                      if (range) {
-                        writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', range);
-                        writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, range);
-                      }
-                    });
-                  });
-
+                  const linkName = child.getAttribute('name');
                   return linkName || viewElement.getAttribute('href') || '#';
                 }
               }
 
               // Get data-link-name attribute if no ah:link
-              linkName = viewElement.getAttribute('data-link-name') as string || '';
-              if (linkName) {
-                // Store the data-link-name as the linkName
-                this.editor.model.once('_afterConversion', () => {
-                  this.editor.model.change(writer => {
-                    const selection = this.editor.model.document.selection;
-                    const range = selection.getFirstRange();
-
-                    if (range) {
-                      writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', range);
-                      writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, range);
-                    }
-                  });
-                });
-                return linkName;
-              }
-              return viewElement.getAttribute('href') || '#';
+              const dataLinkName = viewElement.getAttribute('data-link-name');
+              return dataLinkName || viewElement.getAttribute('href') || '#';
             }
 
             // For regular links, just get the href value

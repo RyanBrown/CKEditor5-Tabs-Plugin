@@ -29,13 +29,7 @@ const PROTOCOL_REG_EXP = /^((\w+:(\/{2,})?)|(\W))/i;
 const DEFAULT_LINK_PROTOCOLS = [
   'https?',
   'ftps?',
-  'mailto'
 ];
-
-/**
- * A keystroke used by the link UI feature.
- */
-export const LINK_KEYSTROKE = 'Ctrl+K';
 
 /**
  * Returns `true` if a given view node is the link element.
