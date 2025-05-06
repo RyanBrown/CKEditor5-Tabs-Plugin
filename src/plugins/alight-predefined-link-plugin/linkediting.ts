@@ -11,8 +11,6 @@ import type {
   ViewDocumentClickEvent,
   DocumentSelectionChangeAttributeEvent,
   ViewNode,
-  ViewDocumentFragment,
-  ViewRange,
   ViewText
 } from '@ckeditor/ckeditor5-engine';
 import {
@@ -30,13 +28,10 @@ import AlightPredefinedLinkPluginCommand from './linkcommand';
 import AlightPredefinedLinkPluginUnlinkCommand from './unlinkcommand';
 import ManualDecorator from './utils/manualdecorator';
 import {
-  createLinkElement,
-  ensureSafeUrl,
   getLocalizedDecorators,
   normalizeDecorators,
   addLinkProtocolIfApplicable,
   createBookmarkCallbacks,
-  extractPredefinedLinkId,
   type NormalizedLinkDecoratorAutomaticDefinition,
   type NormalizedLinkDecoratorManualDefinition
 } from './utils';
@@ -47,37 +42,6 @@ const HIGHLIGHT_CLASS = 'ck-link_selected';
 const DECORATOR_AUTOMATIC = 'automatic';
 const DECORATOR_MANUAL = 'manual';
 const EXTERNAL_LINKS_REGEXP = /^(https?:)?\/\//;
-
-/**
- * Returns `true` if a given view node is the link element.
- */
-function isLinkElement(node: ViewNode | ViewDocumentFragment): boolean {
-  if (!node) {
-    return false;
-  }
-
-  // First check if it's an attributeElement to avoid "is" errors
-  if (!node.is || typeof node.is !== 'function') {
-    return false;
-  }
-
-  try {
-    // Check if it's an attributeElement first
-    if (!node.is('attributeElement')) {
-      return false;
-    }
-
-    // Now it's safe to check other attributes and custom properties
-    const hasCustomProperty = !!node.getCustomProperty && !!node.getCustomProperty('alight-predefined-link');
-    const hasAHCustomeClass = typeof node.hasClass === 'function' && node.hasClass('AHCustomeLink');
-    const hasPredefinedLinkDataId = node.getAttribute && node.getAttribute('data-id') === 'predefined_link';
-
-    return hasCustomProperty || hasAHCustomeClass || hasPredefinedLinkDataId;
-  } catch (e) {
-    console.error('Error in isLinkElement check:', e);
-    return false;
-  }
-}
 
 /**
  * The link engine feature.
@@ -162,17 +126,18 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         // Get position range for conversion
         const viewRange = mapper.toViewRange(data.range);
 
-        // GUARANTEED SOLUTION: Only use predefined link name, NEVER use text content
+        // MODIFIED: Always use predefinedLinkName for the name attribute
+        // Get the predefinedLinkName from the model attribute
         let linkName = '';
 
-        // NEVER reference viewRange or text content when determining the linkName
-        // Only get it from the model attributes
+        // Get predefinedLinkName if it exists
         if (data.item.hasAttribute && data.item.hasAttribute('alightPredefinedLinkPluginLinkName')) {
           linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName');
         } else {
-          // If no specific link name attribute, use the href as a fallback
-          // This should still be the predefined link ID, not the text content
-          linkName = href;
+          // If there's no predefinedLinkName attribute, we won't use href as fallback
+          // This ensures we only use predefinedLinkName for the name attribute
+          console.warn('No predefinedLinkName found for link, using empty string');
+          // We could throw an error here instead if we want to enforce having a predefinedLinkName
         }
 
         // Log for debugging
@@ -185,7 +150,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         });
 
         // Create the inner ah:link element with the predefined link name
-        // This is now guaranteed to not be the text content
+        // Now only using predefinedLinkName, NEVER the href or text content
         const ahLinkElement = writer.createContainerElement('ah:link', {
           'name': linkName
         });
@@ -271,7 +236,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
                 this.editor.model.enqueueChange(writer => {
                   const selection = this.editor.model.document.selection;
 
-                  // Set both attributes to ensure consistency
+                  // Set attributes on the selection to be applied to text
                   writer.setSelectionAttribute('alightPredefinedLinkPluginFormat', 'ahcustom');
                   writer.setSelectionAttribute('alightPredefinedLinkPluginLinkName', linkName);
                 });
