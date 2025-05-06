@@ -111,18 +111,17 @@ export default class AlightPredefinedLinkPlugin extends Plugin {
     // Override the toData method to ensure proper link structure in output
     dataProcessor.toData = function (viewFragment) {
       // Call the original method
-      const data = originalToData.call(this, viewFragment);
+      let data = originalToData.call(this, viewFragment);
 
-      // Process the HTML string to ensure proper link structure
+      // First, process the DOM structure to ensure proper nesting
       try {
-        // Create a temporary container
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = data;
 
         // Find all links with AHCustomeLink class
-        const links = tempDiv.querySelectorAll('a.AHCustomeLink');
+        const linkElements = tempDiv.querySelectorAll('a.AHCustomeLink');
 
-        links.forEach(link => {
+        linkElements.forEach(link => {
           // Store the text content before processing
           const linkText = link.textContent || '';
 
@@ -164,15 +163,25 @@ export default class AlightPredefinedLinkPlugin extends Plugin {
           }
         });
 
-        // Convert the processed HTML back to a string with escaped quotes
-        const processedHtml = tempDiv.innerHTML
-          .replace(/"/g, '\\"')  // Escape double quotes
-          .replace(/<a href="#" class="AHCustomeLink" data-id="predefined_link">/g, '<a href=\\"#\\" class=\\"AHCustomeLink\\">');
-
-        return processedHtml;
+        // Get the updated HTML with proper structure
+        data = tempDiv.innerHTML;
       } catch (error) {
-        console.error('Error processing links in output:', error);
-        // Return original data if there was an error
+        console.error('Error processing link structure:', error);
+      }
+
+      // Then handle escaping with simple regex replacements for the entire output
+      try {
+        // Replace the opening a tag with escaped quotes
+        data = data.replace(/<a href="#" class="AHCustomeLink">/g,
+          '<a href=\\"#\\" class=\\"AHCustomeLink\\">');
+
+        // Replace the name attribute with escaped quotes
+        data = data.replace(/name="([^"]*)"/g,
+          'name=\\"$1\\"');
+
+        return data;
+      } catch (error) {
+        console.error('Error escaping quotes in output:', error);
         return data;
       }
     };
