@@ -159,8 +159,8 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         // Create the outer link element as a ContainerElement
         const linkElement = writer.createContainerElement('a', {
           'href': '#',
-          'class': 'AHCustomeLink',
-          'data-id': 'predefined_link'
+          'class': 'AHCustomeLink'
+          //'data-id': 'predefined_link'
         });
 
         // Create the inner ah:link element

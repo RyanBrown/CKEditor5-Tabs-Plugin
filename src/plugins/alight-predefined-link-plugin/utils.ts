@@ -282,15 +282,12 @@ export function filterLinkAttributes(attributes: Record<string, string>): Record
 
     // Special handling for href attribute
     if (key === 'href' && (attributes[key] === '' || attributes[key] === '#')) {
-      // Keep empty href or '#' for predefeined links
-      if (attributes['data-id'] === 'predefined_link') {
-        result[key] = '#';
-      } else {
-        result[key] = '#';
-      }
+      // Always keep the href
+      result[key] = '#';
       continue;
     }
-    // Keep all other attributes
+
+    // Keep all attributes
     result[key] = attributes[key];
   }
 
@@ -298,16 +295,17 @@ export function filterLinkAttributes(attributes: Record<string, string>): Record
 }
 
 /**
- * Ensures links have the ah:link structure in the HTML
+ * Ensures links have the ah:link structure in the HTML and properly escapes quotes
+ * for specific attributes.
  * 
  * Ensures the following structure for predefined links:
- * <a href="#" class="AHCustomeLink" data-id="predefined_link">
- *   <ah:link name="predefinedLinkName">Selected Text</ah:link>
+ * <a href=\"#\" class=\"AHCustomeLink\">
+ *   <ah:link name=\"predefinedLinkName\">Selected Text</ah:link>
  * </a>
  */
 export function ensurePredefinedLinkStructure(html: string): string {
   try {
-    // Create a temporary container
+    // First use DOM to find and standardize the structure
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = html;
 
@@ -315,28 +313,29 @@ export function ensurePredefinedLinkStructure(html: string): string {
     const links = tempDiv.querySelectorAll('a.AHCustomeLink');
 
     links.forEach(link => {
-      // Ensure the outer link has ONLY the correct attributes
-      // First, save the attributes we want to keep
+      // Get the link name
       const linkName = link.getAttribute('data-link-name') || extractPredefinedLinkId(link.textContent || '') || link.textContent || '';
+
+      // Keep only href and class, remove all other attributes
+      const href = link.getAttribute('href') || '#';
 
       // Remove all attributes
       while (link.attributes.length > 0) {
         link.removeAttribute(link.attributes[0].name);
       }
 
-      // Add back only the required attributes
+      // Add back only the desired attributes
       link.setAttribute('href', '#');
       link.classList.add('AHCustomeLink');
-      link.setAttribute('data-id', 'predefined_link');
+      // data-id is intentionally not re-added
 
-      // Check if this link already has an ah:link child
+      // Check for ah:link element
       const existingAhLink = link.querySelector('ah\\:link') || link.querySelector('ah:link');
 
-      if (!existingAhLink) {
-        // Get the link text content
-        const linkText = link.textContent || '';
-
-        // Create the ah:link element with ONLY the name attribute
+      if (existingAhLink) {
+        existingAhLink.setAttribute('name', linkName);
+      } else {
+        // Create ah:link if needed
         const ahLink = document.createElement('ah:link');
         ahLink.setAttribute('name', linkName);
 
@@ -345,21 +344,24 @@ export function ensurePredefinedLinkStructure(html: string): string {
           ahLink.appendChild(link.firstChild);
         }
 
-        // Add ah:link to link
         link.appendChild(ahLink);
-      } else {
-        // Remove all attributes from the ah:link element
-        while (existingAhLink.attributes.length > 0) {
-          existingAhLink.removeAttribute(existingAhLink.attributes[0].name);
-        }
-
-        // Add back ONLY the name attribute
-        existingAhLink.setAttribute('name', linkName);
       }
     });
 
-    // Return the fixed HTML
-    return tempDiv.innerHTML;
+    // Get the standardized HTML
+    let output = tempDiv.innerHTML;
+
+    // Now do string-based replacements for the specific format with backslash escapes
+
+    // For href and class attributes in the <a> tag - with escaped quotes
+    output = output.replace(/<a href="([^"]*)" class="([^"]*)">/g,
+      (match, href, className) => `<a href=\\"${href}\\" class=\\"${className}\\">`);
+
+    // For the name attribute in the <ah:link> tag - with escaped quotes
+    output = output.replace(/<ah:link name="([^"]*)">/g,
+      (match, name) => `<ah:link name=\\"${name}\\">`);
+
+    return output;
   } catch (error) {
     console.error('Error ensuring predefined link structure:', error);
     return html;
