@@ -139,6 +139,8 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
 
     // Setup data downcast conversion for links with a nested ah:link element
     // This is for the output HTML when saving the content
+    // Setup data downcast conversion for links with a nested ah:link element
+    // This is for the output HTML when saving the content - FOCUS ON THIS PART
     editor.conversion.for('dataDowncast').add(dispatcher => {
       dispatcher.on('attribute:alightPredefinedLinkPluginHref', (evt, data, conversionApi) => {
         // Skip if attribute already consumed
@@ -162,26 +164,12 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         // Get position range for conversion
         const viewRange = mapper.toViewRange(data.range);
 
-        // Get link name from model attribute - KEY FIX HERE
-        let linkName = '';
+        // DIRECT SOLUTION: Always use the stored predefinedLinkName 
+        // Get it directly from the item's attributes
+        const linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName') || href;
 
-        // Try to get link name from the model attribute if available
-        if (data.item && typeof data.item.getAttribute === 'function') {
-          // PRIORITY 1: Use alightPredefinedLinkPluginLinkName attribute if it exists
-          if (data.item.hasAttribute('alightPredefinedLinkPluginLinkName')) {
-            linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName') as string;
-            console.log('Using linkName from attribute:', linkName);
-          }
-          // PRIORITY 2: Extract from href if no linkName attribute
-          else {
-            linkName = extractPredefinedLinkId(href) || href;
-            console.log('Using linkName extracted from href:', linkName);
-          }
-        } else {
-          // Fall back to extracting from href
-          linkName = extractPredefinedLinkId(href) || href;
-          console.log('Fallback linkName:', linkName);
-        }
+        // Log for debugging
+        console.log('Using linkName for output:', linkName);
 
         // Create the outer link element as a ContainerElement
         const linkElement = writer.createContainerElement('a', {
@@ -189,7 +177,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           'class': 'AHCustomeLink'
         });
 
-        // Create the inner ah:link element
+        // Create the inner ah:link element with the predefined link name
         const ahLinkElement = writer.createContainerElement('ah:link', {
           'name': linkName
         });
