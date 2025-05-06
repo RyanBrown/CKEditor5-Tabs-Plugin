@@ -204,7 +204,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
       view: (href, { writer }) => {
         // For editing view, use attributeElement for proper behavior
         const linkElement = writer.createAttributeElement('a', {
-          'href': '#',
+          'href': href, // Use the actual href value (predefinedLinkName) instead of "#"
           'class': 'AHCustomeLink',
           'data-id': 'predefined_link'
         }, {
@@ -224,44 +224,55 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
       .elementToAttribute({
         view: {
           name: 'a',
-          classes: 'AHCustomeLink',
-          attributes: {
-            'data-id': 'predefined_link'
-          }
+          classes: 'AHCustomeLink'
         },
         model: {
           key: 'alightPredefinedLinkPluginHref',
           value: (viewElement: ViewElement) => {
             // Check for ah:link element inside
-            const ahLinkElement = viewElement.getChild(0);
-            let linkName = '';
-            let linkHref = '';
+            let ahLinkElement = null;
 
-            if (ahLinkElement && ahLinkElement.is('element', 'ah:link')) {
-              // Extract the name attribute from ah:link - this is the predefined link name
-              linkName = ahLinkElement.getAttribute('name') as string || '';
-
-              // Use the linkName as the href value (predefined link ID)
-              linkHref = linkName;
-
-              // Store additional information about the link format and name
-              this.editor.model.once('_afterConversion', () => {
-                this.editor.model.change(writer => {
-                  const selection = this.editor.model.document.selection;
-                  const range = selection.getFirstRange();
-
-                  if (range) {
-                    writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', range);
-                    writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, range);
-                  }
-                });
-              });
-
-              // Return the linkName as the href value - this is crucial
-              return linkName || '';
+            // Find the ah:link element among children
+            for (const child of viewElement.getChildren()) {
+              if (child.is && child.is('element', 'ah:link')) {
+                ahLinkElement = child;
+                break;
+              }
             }
 
-            // Fallback to the href attribute if no ah:link is found
+            // Process if an ah:link element was found
+            if (ahLinkElement) {
+              // Extract the name attribute from ah:link
+              const linkName = ahLinkElement.getAttribute('name');
+
+              if (linkName) {
+                // Store additional attributes on the model immediately after conversion
+                this.editor.model.enqueueChange(writer => {
+                  // Get the current selection (representing converted element)
+                  const selection = this.editor.model.document.selection;
+
+                  // Set attributes on the selection to be applied to text
+                  writer.setSelectionAttribute('alightPredefinedLinkPluginFormat', 'ahcustom');
+                  writer.setSelectionAttribute('alightPredefinedLinkPluginLinkName', linkName);
+                });
+
+                // Use the linkName as the href value for predefined links
+                return linkName;
+              }
+            }
+
+            // Fallback: check for data-link-name attribute
+            const dataLinkName = viewElement.getAttribute('data-link-name');
+            if (dataLinkName) {
+              this.editor.model.enqueueChange(writer => {
+                writer.setSelectionAttribute('alightPredefinedLinkPluginFormat', 'ahcustom');
+                writer.setSelectionAttribute('alightPredefinedLinkPluginLinkName', dataLinkName);
+              });
+
+              return dataLinkName;
+            }
+
+            // Last resort: use href attribute
             return viewElement.getAttribute('href') || '#';
           }
         },
