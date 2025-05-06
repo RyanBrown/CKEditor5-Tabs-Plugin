@@ -316,7 +316,6 @@ export function filterLinkAttributes(attributes: Record<string, string>): Record
  */
 export function ensurePredefinedLinkStructure(html: string): string {
   try {
-    // First use DOM to find and standardize the structure
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = html;
 
@@ -324,11 +323,10 @@ export function ensurePredefinedLinkStructure(html: string): string {
     const links = tempDiv.querySelectorAll('a.AHCustomeLink');
 
     links.forEach(link => {
-      // FIXED: Only get linkName from attributes, never from text content
-      // Priority 1: Get from data-link-name attribute
+      // Find linkName using simple priority order
       let linkName = link.getAttribute('data-link-name');
 
-      // Priority 2: Get from existing ah:link name attribute
+      // Try to get from existing ah:link element
       if (!linkName) {
         const existingAhLink = link.querySelector('ah\\:link') || link.querySelector('ah:link');
         if (existingAhLink) {
@@ -336,42 +334,32 @@ export function ensurePredefinedLinkStructure(html: string): string {
         }
       }
 
-      // Priority 3: Extract from href if it's a predefined link ID pattern
+      // Generate a simple ID if no linkName found
       if (!linkName) {
-        const href = link.getAttribute('href');
-        if (href) {
-          linkName = extractPredefinedLinkId(href);
-        }
+        linkName = 'link-' + Math.random().toString(36).substring(2, 7);
       }
 
-      // If still no linkName, use a fallback ID
-      // IMPORTANT: Never use text content as fallback
-      if (!linkName) {
-        console.error('Could not determine link name for predefined link');
-        linkName = 'unknown-link-' + Math.random().toString(36).substring(2, 9);
-      }
-
-      // Keep only href and class, remove all other attributes
-      const href = link.getAttribute('href') || '#';
-
-      // Remove all attributes
-      while (link.attributes.length > 0) {
-        link.removeAttribute(link.attributes[0].name);
-      }
-
-      // Add back only the desired attributes
+      // Clean up link element - keep only href and class
       link.setAttribute('href', '#');
-      link.classList.add('AHCustomeLink');
+      link.setAttribute('class', 'AHCustomeLink');
 
-      // Check for ah:link element
-      const existingAhLink = link.querySelector('ah\\:link') || link.querySelector('ah:link');
+      // Remove all other attributes
+      const attrNames = Array.from(link.attributes).map(attr => attr.name);
+      attrNames.forEach(attrName => {
+        if (attrName !== 'href' && attrName !== 'class') {
+          link.removeAttribute(attrName);
+        }
+      });
 
-      if (existingAhLink) {
-        // Update name attribute only
-        existingAhLink.setAttribute('name', linkName);
+      // Handle ah:link element
+      let ahLink = link.querySelector('ah\\:link') || link.querySelector('ah:link');
+
+      if (ahLink) {
+        // Update name attribute
+        ahLink.setAttribute('name', linkName);
       } else {
-        // Create ah:link if needed
-        const ahLink = document.createElement('ah:link');
+        // Create new ah:link element
+        ahLink = document.createElement('ah:link');
         ahLink.setAttribute('name', linkName);
 
         // Move content to ah:link

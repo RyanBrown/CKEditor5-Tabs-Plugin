@@ -109,56 +109,29 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
    * @param options Options including manual decorator attributes.
    */
   public override execute(href: string, options: LinkOptions = {}): void {
-    // Clean up empty href for non-predefined links
-    if ((href === '' || href === '#') && !isPredefinedLink(href)) {
-      href = '#'; // Use a minimum valid href
-    }
-
-    // Determine if href is a predefined link ID
+    // Determine if href is a predefined link
     const isPredefined = isPredefinedLink(href);
 
-    // Get the format attribute from the current selection if it exists
-    let linkFormat = '';
+    // Get linkName - for predefined links this is critical
     let linkName = '';
 
     const model = this.editor.model;
     const selection = model.document.selection;
 
-    // Check if the current link has a predefined format we need to preserve
-    if (selection.hasAttribute('alightPredefinedLinkPluginFormat')) {
-      linkFormat = selection.getAttribute('alightPredefinedLinkPluginFormat') as string;
-    }
-
-    // Check if the current link has a link name attribute we need to preserve
+    // For existing links, get the current linkName
     if (selection.hasAttribute('alightPredefinedLinkPluginLinkName')) {
       linkName = selection.getAttribute('alightPredefinedLinkPluginLinkName') as string;
     }
 
-    // For predefined links, always use the link name from the href or the current linkName
+    // For predefined links, always ensure we have a linkName
     if (isPredefined) {
-      // If we don't have a link name yet, extract it from the href
+      // If no existing linkName, extract from href or generate one
       if (!linkName) {
         linkName = extractPredefinedLinkId(href) || href;
-      }
 
-      // VALIDATION: Ensure predefinedLinkName is not empty for predefined links
-      if (!linkName || linkName.trim() === '') {
-        console.error('Predefined link must have a valid linkName. Operation aborted.');
-        // Use a generated ID as last resort, never fall back to text content
-        linkName = 'link-' + Math.random().toString(36).substring(2, 9);
-
-        // Optionally, add a notification to the UI
-        const notification = this.editor.plugins.has('Notification') ?
-          this.editor.plugins.get('Notification') : null;
-
-        if (notification) {
-          notification.showWarning(
-            'Predefined link requires a name. Using generated ID as fallback.',
-            {
-              namespace: 'alightPredefinedLinkPlugin',
-              title: 'Link Warning'
-            }
-          );
+        // If still no valid linkName, generate one
+        if (!linkName || linkName.trim() === '') {
+          linkName = 'link-' + Math.random().toString(36).substring(2, 7);
         }
       }
     }
@@ -176,11 +149,11 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
     }
 
     model.change(writer => {
-      // If selection is collapsed then update selected link or insert new one at the place of caret.
+      // If selection is collapsed then update selected link or insert new one
       if (selection.isCollapsed) {
         const position = selection.getFirstPosition()!;
 
-        // When selection is inside text with `alightPredefinedLinkPluginHref` attribute.
+        // When selection is inside text with `alightPredefinedLinkPluginHref` attribute
         if (selection.hasAttribute('alightPredefinedLinkPluginHref')) {
           // Get the link range
           const linkRange = findAttributeRange(
@@ -190,45 +163,36 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
             model
           );
 
-          // Update the existing link with the new href
+          // Update attributes
           writer.setAttribute('alightPredefinedLinkPluginHref', href, linkRange);
 
-          // If it's a predefined link and we have format and name, set these attributes
+          // For predefined links, set format and linkName
           if (isPredefined) {
-            if (linkFormat) {
-              writer.setAttribute('alightPredefinedLinkPluginFormat', linkFormat, linkRange);
-            } else {
-              writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', linkRange);
-            }
-
-            // VALIDATION: Always set the linkName attribute for predefined links
+            writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', linkRange);
             writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, linkRange);
           }
 
-          // Set truthyManualDecorators attributes
+          // Set manual decorators
           truthyManualDecorators.forEach(item => {
             writer.setAttribute(item, true, linkRange);
           });
 
-          // Remove falsyManualDecorators attributes
           falsyManualDecorators.forEach(item => {
             writer.removeAttribute(item, linkRange);
           });
 
-          // Put the selection back where it was
+          // Restore selection
           writer.setSelection(position);
         }
-        // If not then insert text node with `alightPredefinedLinkPluginHref` attribute in place of caret.
+        // If not, then insert text node with link attributes
         else if (href !== '') {
           const attributes = toMap(selection.getAttributes());
 
           attributes.set('alightPredefinedLinkPluginHref', href);
 
-          // If it's a predefined link, set format attribute and linkName
+          // For predefined links, set format and linkName
           if (isPredefined) {
             attributes.set('alightPredefinedLinkPluginFormat', 'ahcustom');
-
-            // VALIDATION: Always set linkName for predefined links
             attributes.set('alightPredefinedLinkPluginLinkName', linkName);
           }
 
@@ -236,8 +200,7 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
             attributes.set(item, true);
           });
 
-          // Create text with the link text
-          // Instead of using the href as text, use a better display name for predefined links
+          // Create text with appropriate display text
           const linkText = isPredefined ? linkName : href;
 
           const { end: positionAfter } = model.insertContent(
@@ -245,19 +208,18 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
             position
           );
 
-          // Put the selection at the end of the inserted link.
+          // Put selection at the end of the inserted link
           writer.setSelection(positionAfter);
         }
 
-        // Remove the `alightPredefinedLinkPluginHref` attribute and all link decorators from the selection.
-        // It stops adding a new content into the link element.
+        // Remove link attributes from selection to prevent extending the link
         ['alightPredefinedLinkPluginHref', 'alightPredefinedLinkPluginFormat', 'alightPredefinedLinkPluginLinkName',
           ...truthyManualDecorators, ...falsyManualDecorators].forEach(item => {
             writer.removeSelectionAttribute(item);
           });
-      } else {
-        // IMPORTANT: For non-collapsed selections, we need to keep the original text
-        // and just apply the link attributes to it
+      }
+      // For non-collapsed selections, apply attributes to existing text
+      else {
         const ranges = model.schema.getValidRanges(selection.getRanges(), 'alightPredefinedLinkPluginHref');
 
         // Process each range
@@ -265,20 +227,17 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
           // Set the alightPredefinedLinkPluginHref attribute on the selected text
           writer.setAttribute('alightPredefinedLinkPluginHref', href, range);
 
-          // If it's a predefined link, set format attributes
+          // If it's a predefined link, set format and linkName
           if (isPredefined) {
             writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', range);
-
-            // VALIDATION: Always set the linkName for predefined links
             writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, range);
           }
 
-          // Set truthyManualDecorators attributes
+          // Set manual decorators
           truthyManualDecorators.forEach(item => {
             writer.setAttribute(item, true, range);
           });
 
-          // Remove falsyManualDecorators attributes
           falsyManualDecorators.forEach(item => {
             writer.removeAttribute(item, range);
           });
@@ -286,7 +245,7 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
       }
     });
 
-    // Fire an event after command execution to notify UI
+    // Fire event after command execution to notify UI
     this._fireEvent('executed', { href, options });
   }
 

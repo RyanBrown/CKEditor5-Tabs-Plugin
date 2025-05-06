@@ -108,50 +108,34 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         const { writer, mapper } = conversionApi;
         const href = data.attributeNewValue;
 
-        // If the attribute was removed
-        if (!href) {
-          return;
-        }
-
-        // Only proceed for text items
-        if (!data.item.is('$textProxy') && !data.item.is('$text')) {
+        // If the attribute was removed or not a text item, return
+        if (!href || (!data.item.is('$textProxy') && !data.item.is('$text'))) {
           return;
         }
 
         // Get position range for conversion
         const viewRange = mapper.toViewRange(data.range);
 
-        // FIXED: Strict isolation of linkName from text content
-        // ONLY get predefinedLinkName from the model attribute, never from text
-        let linkName = '';
+        // SIMPLIFIED: Get predefinedLinkName directly from model attribute
+        let linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName');
 
-        // Get the predefinedLinkName attribute if it exists
-        if (data.item.hasAttribute && data.item.hasAttribute('alightPredefinedLinkPluginLinkName')) {
-          linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName');
-        } else {
-          // If no linkName attribute exists, log an error and use a fallback
-          console.error('Missing predefinedLinkName for predefined link');
-          // As last resort for predefined links, extract ID from href, but NEVER use text content
-          if (isPredefinedLink(href)) {
-            linkName = extractPredefinedLinkId(href) || 'unknown-link';
-          } else {
-            linkName = 'regular-link'; // For normal links
-          }
+        // If no linkName is found (which shouldn't happen), use a simple generated ID
+        if (!linkName) {
+          linkName = 'link-' + Math.random().toString(36).substring(2, 7);
         }
 
-        // Create the outer link element as a ContainerElement
+        // Create the outer link element
         const linkElement = writer.createContainerElement('a', {
           'href': '#',
           'class': 'AHCustomeLink'
         });
 
-        // Create the inner ah:link element with ONLY the predefined link name
+        // Create the inner ah:link element with the predefinedLinkName attribute
         const ahLinkElement = writer.createContainerElement('ah:link', {
-          'name': linkName  // Strictly from the attribute, never from text content
+          'name': linkName
         });
 
-        // Get text content from the view range - this is ONLY used for the content
-        // inside the ah:link tag, NEVER for the name attribute
+        // Get text content from the view range for the ah:link content
         let textContent = '';
         for (const item of viewRange.getItems()) {
           if ((item as ViewNode).is && ((item as ViewNode).is('$text') || (item as ViewNode).is('$textProxy'))) {
@@ -159,7 +143,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           }
         }
 
-        // Add the text to the ah:link element as content only
+        // Add the text to the ah:link element
         if (textContent) {
           writer.insert(writer.createPositionAt(ahLinkElement, 0), writer.createText(textContent));
         }
@@ -175,13 +159,14 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
       });
     });
 
+
     // Setup editing downcast for interactive editing view - using custom downcast converter
     editor.conversion.for('editingDowncast').attributeToElement({
       model: 'alightPredefinedLinkPluginHref',
       view: (href, { writer }) => {
-        // For editing view, use attributeElement for proper behavior
+        // For editing view, use the actual href for better user experience
         const linkElement = writer.createAttributeElement('a', {
-          'href': href, // Use the actual href value (predefinedLinkName) instead of "#"
+          'href': href, // Use the actual href value
           'class': 'AHCustomeLink',
           'data-id': 'predefined_link'
         }, {
@@ -522,6 +507,8 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
 
 /**
  * Make the selection free of link-related model attributes.
+ * All link-related model attributes start with "link". That includes not only "alightPredefinedLinkPluginHref"
+ * but also all decorator attributes (they have dynamic names), or even custom plugins.
  */
 function removeLinkAttributesFromSelection(writer: Writer, linkAttributes: Array<string>): void {
   writer.removeSelectionAttribute('alightPredefinedLinkPluginHref');
