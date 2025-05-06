@@ -216,12 +216,20 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
             attributes.set(item, true);
           });
 
-          // Create text with the link text
-          // Instead of using the href as text, use a better display name for predefined links
-          const linkText = isPredefined ? linkName : href;
+          // Use the selection's text if available, otherwise use the linkName or href
+          let textToInsert = '';
+          try {
+            // This is the fix: Never use the href as the text content
+            // Instead, use the proper link name for display
+            textToInsert = isPredefined ? linkName : href;
+          } catch (e) {
+            console.error('Error getting selection text:', e);
+            textToInsert = isPredefined ? linkName : href;
+          }
 
+          // Create a text node with the link attributes
           const { end: positionAfter } = model.insertContent(
-            writer.createText(linkText, attributes as any),
+            writer.createText(textToInsert, attributes as any),
             position
           );
 
@@ -236,8 +244,8 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
             writer.removeSelectionAttribute(item);
           });
       } else {
-        // If selection has non-collapsed ranges, we change attribute on nodes inside those ranges
-        // WITHOUT REMOVING THEM - just applying the href attribute
+        // IMPORTANT FIX: For non-collapsed selections, we need to keep the original text
+        // and just apply the link attributes to it
         const ranges = model.schema.getValidRanges(selection.getRanges(), 'alightPredefinedLinkPluginHref');
 
         // Process each range

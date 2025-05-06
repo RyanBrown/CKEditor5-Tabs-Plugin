@@ -41,13 +41,31 @@ export const LINK_KEYSTROKE = 'Ctrl+K';
  * Returns `true` if a given view node is the link element.
  */
 export function isLinkElement(node: ViewNode | ViewDocumentFragment): boolean {
-  return (
-    node.is('attributeElement') && (
-      !!node.getCustomProperty('alight-predefined-link') ||
-      node.hasClass('AHCustomeLink') ||
-      node.getAttribute('data-id') === 'predefined_link'
-    )
-  );
+  if (!node) {
+    return false;
+  }
+
+  // First check if it's an attributeElement to avoid "is" errors
+  if (!node.is || typeof node.is !== 'function') {
+    return false;
+  }
+
+  try {
+    // Check if it's an attributeElement first
+    if (!node.is('attributeElement')) {
+      return false;
+    }
+
+    // Now it's safe to check other attributes and custom properties
+    const hasCustomProperty = !!node.getCustomProperty && !!node.getCustomProperty('alight-predefined-link');
+    const hasAHCustomeClass = typeof node.hasClass === 'function' && node.hasClass('AHCustomeLink');
+    const hasPredefinedLinkDataId = node.getAttribute && node.getAttribute('data-id') === 'predefined_link';
+
+    return hasCustomProperty || hasAHCustomeClass || hasPredefinedLinkDataId;
+  } catch (e) {
+    console.error('Error in isLinkElement check:', e);
+    return false;
+  }
 }
 
 /**

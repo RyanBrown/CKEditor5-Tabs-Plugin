@@ -790,30 +790,47 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
     }
   }
 
-  // Returns the link element under the editing view's selection or `null` if there is none.
+  /**
+   * Returns the link element under the editing view's selection or `null` if there is none.
+   * More robust handling of selection ranges.
+   */
   private _getSelectedLinkElement(): ViewAttributeElement | null {
     const view = this.editor.editing.view;
     const selection = view.document.selection;
     const selectedElement = selection.getSelectedElement();
 
     // The selection is collapsed or some widget is selected (especially inline widget).
-    if (selection.isCollapsed || selectedElement && isWidget(selectedElement)) {
+    if (selection.isCollapsed || (selectedElement && isWidget(selectedElement))) {
       return findLinkElementAncestor(selection.getFirstPosition()!);
     } else {
       // The range for fully selected link is usually anchored in adjacent text nodes.
       // Trim it to get closer to the actual link element.
-      const range = selection.getFirstRange()!.getTrimmed();
-      const startLink = findLinkElementAncestor(range.start);
-      const endLink = findLinkElementAncestor(range.end);
+      try {
+        const range = selection.getFirstRange()!.getTrimmed();
+        const startLink = findLinkElementAncestor(range.start);
+        const endLink = findLinkElementAncestor(range.end);
 
-      if (!startLink || startLink != endLink) {
-        return null;
-      }
+        if (!startLink || startLink != endLink) {
+          return null;
+        }
 
-      // Check if the link element is fully selected.
-      if (view.createRangeIn(startLink).getTrimmed().isEqual(range)) {
-        return startLink;
-      } else {
+        // Check if the link element is fully selected.
+        if (view.createRangeIn(startLink).getTrimmed().isEqual(range)) {
+          return startLink;
+        } else {
+          return null;
+        }
+      } catch (e) {
+        console.error('Error getting selected link element:', e);
+        // If there was an error in range processing, try to at least return startLink if possible
+        try {
+          const range = selection.getFirstRange();
+          if (range) {
+            return findLinkElementAncestor(range.start);
+          }
+        } catch (innerError) {
+          console.error('Failed to get fallback link element:', innerError);
+        }
         return null;
       }
     }
@@ -822,6 +839,22 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
 
 // Returns a link element if there's one among the ancestors of the provided `Position`.
 function findLinkElementAncestor(position: any): ViewAttributeElement | null {
-  const linkElement = position.getAncestors().find((ancestor: any) => isLinkElement(ancestor));
-  return linkElement && linkElement.is('attributeElement') ? linkElement : null;
+  try {
+    if (!position || !position.getAncestors) {
+      return null;
+    }
+
+    const ancestors = position.getAncestors();
+
+    for (const ancestor of ancestors) {
+      if (isLinkElement(ancestor)) {
+        return ancestor.is('attributeElement') ? ancestor : null;
+      }
+    }
+
+    return null;
+  } catch (e) {
+    console.error('Error in findLinkElementAncestor:', e);
+    return null;
+  }
 }
