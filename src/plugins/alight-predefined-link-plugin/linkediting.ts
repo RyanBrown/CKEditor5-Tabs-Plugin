@@ -32,6 +32,8 @@ import {
   normalizeDecorators,
   addLinkProtocolIfApplicable,
   createBookmarkCallbacks,
+  isPredefinedLink,
+  extractPredefinedLinkId,
   type NormalizedLinkDecoratorAutomaticDefinition,
   type NormalizedLinkDecoratorManualDefinition
 } from './utils';
@@ -45,9 +47,6 @@ const EXTERNAL_LINKS_REGEXP = /^(https?:)?\/\//;
 
 /**
  * The link engine feature.
- *
- * It introduces the `alightPredefinedLinkPluginHref="url"` attribute in the model which renders to the view as a `<a href="url">` element
- * as well as `'link'` and `'unlink'` commands.
  */
 export default class AlightPredefinedLinkPluginEditing extends Plugin {
   /**
@@ -68,7 +67,6 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
    * @inheritDoc
    */
   public static get requires() {
-    // Clipboard is required for handling cut and paste events while typing over the link.
     return [TwoStepCaretMovement, Input, ClipboardPipeline] as const;
   }
 
@@ -98,9 +96,6 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
     editor.model.schema.extend('$text', { allowAttributes: 'alightPredefinedLinkPluginLinkName' });
     editor.model.schema.extend('$text', { allowAttributes: 'alightPredefinedLinkPluginFormat' });
 
-    // Allow orgnameattr attribute to be present, so we can remove it later
-    editor.model.schema.extend('$text', { allowAttributes: 'orgnameattr' });
-
     // Setup data downcast conversion for links with a nested ah:link element
     // This is for the output HTML when saving the content
     editor.conversion.for('dataDowncast').add(dispatcher => {
@@ -126,22 +121,23 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         // Get position range for conversion
         const viewRange = mapper.toViewRange(data.range);
 
-        // MODIFIED: Always use predefinedLinkName for the name attribute
-        // Get the predefinedLinkName from the model attribute
+        // FIXED: Strict isolation of linkName from text content
+        // ONLY get predefinedLinkName from the model attribute, never from text
         let linkName = '';
 
-        // Get predefinedLinkName if it exists
+        // Get the predefinedLinkName attribute if it exists
         if (data.item.hasAttribute && data.item.hasAttribute('alightPredefinedLinkPluginLinkName')) {
           linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName');
         } else {
-          // If there's no predefinedLinkName attribute, we won't use href as fallback
-          // This ensures we only use predefinedLinkName for the name attribute
-          console.warn('No predefinedLinkName found for link, using empty string');
-          // We could throw an error here instead if we want to enforce having a predefinedLinkName
+          // If no linkName attribute exists, log an error and use a fallback
+          console.error('Missing predefinedLinkName for predefined link');
+          // As last resort for predefined links, extract ID from href, but NEVER use text content
+          if (isPredefinedLink(href)) {
+            linkName = extractPredefinedLinkId(href) || 'unknown-link';
+          } else {
+            linkName = 'regular-link'; // For normal links
+          }
         }
-
-        // Log for debugging
-        console.log('Using linkName for output:', linkName);
 
         // Create the outer link element as a ContainerElement
         const linkElement = writer.createContainerElement('a', {
@@ -149,10 +145,9 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           'class': 'AHCustomeLink'
         });
 
-        // Create the inner ah:link element with the predefined link name
-        // Now only using predefinedLinkName, NEVER the href or text content
+        // Create the inner ah:link element with ONLY the predefined link name
         const ahLinkElement = writer.createContainerElement('ah:link', {
-          'name': linkName
+          'name': linkName  // Strictly from the attribute, never from text content
         });
 
         // Get text content from the view range - this is ONLY used for the content
@@ -333,22 +328,11 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
     // Handle link following by CTRL+click or ALT+ENTER
     this._enableLinkOpen();
 
-    // Clears the DocumentSelection decorator attributes if the selection is no longer in a link (for example while using 2-SCM).
+    // Clears the DocumentSelection decorator attributes if the selection is no longer in a link
     this._enableSelectionAttributesFixer();
 
     // Handle adding default protocol to pasted links.
     this._enableClipboardIntegration();
-  }
-
-  /**
-   * Helper function to check if the URL is a predefined link 
-   * This is added here to avoid circular dependency
-   */
-  private isPredefinedLink(url: string | null | undefined): boolean {
-    // If the URL is empty, null, or undefined, it's not a predefined link
-    if (!url) return false;
-
-    return true;
   }
 
   /**
@@ -357,8 +341,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
    */
   private _enableAutomaticDecorators(automaticDecoratorDefinitions: Array<NormalizedLinkDecoratorAutomaticDefinition>): void {
     const editor = this.editor;
-    // Store automatic decorators in the command instance as we do the same with manual decorators.
-    // Thanks to that, `AlightPredefinedLinkPluginImageEditing` plugin can re-use the same definitions.
+    // Store automatic decorators in the command instance
     const command = editor.commands.get('alight-predefined-link') as AlightPredefinedLinkPluginCommand;
     const automaticDecorators = command.automaticDecorators;
 
@@ -372,7 +355,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
   /**
    * Processes an array of configured manual decorators,
    * transforms them into ManualDecorator instances and stores them in the
-   * LinkCommand's manualDecorators collection (a model for manual decorators state).
+   * LinkCommand's manualDecorators collection.
    */
   private _enableManualDecorators(manualDecoratorDefinitions: Array<NormalizedLinkDecoratorManualDefinition>): void {
     if (!manualDecoratorDefinitions.length) {
@@ -539,8 +522,6 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
 
 /**
  * Make the selection free of link-related model attributes.
- * All link-related model attributes start with "link". That includes not only "alightPredefinedLinkPluginHref"
- * but also all decorator attributes (they have dynamic names), or even custom plugins.
  */
 function removeLinkAttributesFromSelection(writer: Writer, linkAttributes: Array<string>): void {
   writer.removeSelectionAttribute('alightPredefinedLinkPluginHref');

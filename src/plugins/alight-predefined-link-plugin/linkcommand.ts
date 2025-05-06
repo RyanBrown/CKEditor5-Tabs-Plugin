@@ -2,7 +2,7 @@
 import { Command } from '@ckeditor/ckeditor5-core';
 import { findAttributeRange } from '@ckeditor/ckeditor5-typing';
 import { Collection, first, toMap } from '@ckeditor/ckeditor5-utils';
-import type { Range, Writer } from '@ckeditor/ckeditor5-engine';
+import type { Range } from '@ckeditor/ckeditor5-engine';
 import AutomaticDecorators from './utils/automaticdecorators';
 import { isLinkableElement, isPredefinedLink, extractPredefinedLinkId } from './utils';
 import type ManualDecorator from './utils/manualdecorator';
@@ -141,20 +141,19 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
         linkName = extractPredefinedLinkId(href) || href;
       }
 
-      // NEW VALIDATION: Ensure predefinedLinkName is not empty for predefined links
+      // VALIDATION: Ensure predefinedLinkName is not empty for predefined links
       if (!linkName || linkName.trim() === '') {
         console.error('Predefined link must have a valid linkName. Operation aborted.');
-        // You could throw an error here, or add UI feedback, or set a default value
-        // For now, we'll use the href as a last resort fallback
-        linkName = href;
+        // Use a generated ID as last resort, never fall back to text content
+        linkName = 'link-' + Math.random().toString(36).substring(2, 9);
 
-        // Optionally, you could add a notification to the UI
+        // Optionally, add a notification to the UI
         const notification = this.editor.plugins.has('Notification') ?
           this.editor.plugins.get('Notification') : null;
 
         if (notification) {
           notification.showWarning(
-            'Predefined link requires a name. Using link ID as fallback.',
+            'Predefined link requires a name. Using generated ID as fallback.',
             {
               namespace: 'alightPredefinedLinkPlugin',
               title: 'Link Warning'
@@ -194,9 +193,6 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
           // Update the existing link with the new href
           writer.setAttribute('alightPredefinedLinkPluginHref', href, linkRange);
 
-          // Find and remove orgnameattr attribute if it exists
-          this._removeOrgnameAttr(writer, linkRange);
-
           // If it's a predefined link and we have format and name, set these attributes
           if (isPredefined) {
             if (linkFormat) {
@@ -205,7 +201,7 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
               writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', linkRange);
             }
 
-            // NEW VALIDATION: Always set the linkName attribute for predefined links
+            // VALIDATION: Always set the linkName attribute for predefined links
             writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, linkRange);
           }
 
@@ -232,7 +228,7 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
           if (isPredefined) {
             attributes.set('alightPredefinedLinkPluginFormat', 'ahcustom');
 
-            // NEW VALIDATION: Ensure linkName is set for predefined links
+            // VALIDATION: Always set linkName for predefined links
             attributes.set('alightPredefinedLinkPluginLinkName', linkName);
           }
 
@@ -260,15 +256,12 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
             writer.removeSelectionAttribute(item);
           });
       } else {
-        // IMPORTANT FIX: For non-collapsed selections, we need to keep the original text
+        // IMPORTANT: For non-collapsed selections, we need to keep the original text
         // and just apply the link attributes to it
         const ranges = model.schema.getValidRanges(selection.getRanges(), 'alightPredefinedLinkPluginHref');
 
         // Process each range
         for (const range of ranges) {
-          // Find and remove orgnameattr attribute if it exists
-          this._removeOrgnameAttr(writer, range);
-
           // Set the alightPredefinedLinkPluginHref attribute on the selected text
           writer.setAttribute('alightPredefinedLinkPluginHref', href, range);
 
@@ -276,7 +269,7 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
           if (isPredefined) {
             writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', range);
 
-            // NEW VALIDATION: Always set the linkName for predefined links
+            // VALIDATION: Always set the linkName for predefined links
             writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, range);
           }
 
@@ -298,20 +291,7 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
   }
 
   /**
-   * Removes the orgnameattr attribute from a given range if it exists.
-   * This handles both orgnameattr="" and orgnameattr attribute formats.
-   * 
-   * @param writer The model writer
-   * @param range The range to process
-   */
-  private _removeOrgnameAttr(writer: Writer, range: Range): void {
-    // Remove the orgnameattr attribute from the range
-    // The schema check isn't needed here because removeAttribute is safe to call even if the attribute doesn't exist
-    writer.removeAttribute('orgnameattr', range);
-  }
-
-  /**
-   * Provides information whether a decorator with a given name is present in the currently processed selection.
+   * Provides information whether a decorator is present in the current selection.
    */
   private _getDecoratorStateFromModel(decoratorName: string): boolean | undefined {
     const model = this.editor.model;

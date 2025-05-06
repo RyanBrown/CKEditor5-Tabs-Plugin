@@ -65,8 +65,6 @@ export default class LinkActionsView extends View {
    */
   private readonly _focusCycler: FocusCycler;
 
-  declare public t: LocaleTranslate;
-
   /**
    * @inheritDoc
    */
@@ -75,11 +73,15 @@ export default class LinkActionsView extends View {
 
     const t = locale.t;
 
+    // IMPORTANT: Set observable properties BEFORE creating buttons
+    // This fixes the binding error
+    this.set({
+      href: undefined
+    });
+
     this.previewButtonView = this._createPreviewButton();
     this.unlinkButtonView = this._createButton(t('Unlink'), unlinkIcon, 'unlink');
     this.editButtonView = this._createButton(t('Edit link'), icons.pencil, 'edit');
-
-    this.set('href', undefined);
 
     this._focusCycler = new FocusCycler({
       focusables: this._focusables,
@@ -226,7 +228,7 @@ export default class LinkActionsView extends View {
     // Create a custom view instead of using ButtonView
     const customView = new View(this.locale);
     const bind = this.bindTemplate;
-    const t = this.t!;
+    const t = this.locale.t;
 
     // Set up the template for a simple div with your custom class
     customView.setTemplate({

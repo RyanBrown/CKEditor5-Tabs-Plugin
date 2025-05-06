@@ -324,8 +324,32 @@ export function ensurePredefinedLinkStructure(html: string): string {
     const links = tempDiv.querySelectorAll('a.AHCustomeLink');
 
     links.forEach(link => {
-      // Get the link name
-      const linkName = link.getAttribute('data-link-name') || extractPredefinedLinkId(link.textContent || '') || link.textContent || '';
+      // FIXED: Only get linkName from attributes, never from text content
+      // Priority 1: Get from data-link-name attribute
+      let linkName = link.getAttribute('data-link-name');
+
+      // Priority 2: Get from existing ah:link name attribute
+      if (!linkName) {
+        const existingAhLink = link.querySelector('ah\\:link') || link.querySelector('ah:link');
+        if (existingAhLink) {
+          linkName = existingAhLink.getAttribute('name');
+        }
+      }
+
+      // Priority 3: Extract from href if it's a predefined link ID pattern
+      if (!linkName) {
+        const href = link.getAttribute('href');
+        if (href) {
+          linkName = extractPredefinedLinkId(href);
+        }
+      }
+
+      // If still no linkName, use a fallback ID
+      // IMPORTANT: Never use text content as fallback
+      if (!linkName) {
+        console.error('Could not determine link name for predefined link');
+        linkName = 'unknown-link-' + Math.random().toString(36).substring(2, 9);
+      }
 
       // Keep only href and class, remove all other attributes
       const href = link.getAttribute('href') || '#';
@@ -338,12 +362,12 @@ export function ensurePredefinedLinkStructure(html: string): string {
       // Add back only the desired attributes
       link.setAttribute('href', '#');
       link.classList.add('AHCustomeLink');
-      // data-id is intentionally not re-added
 
       // Check for ah:link element
       const existingAhLink = link.querySelector('ah\\:link') || link.querySelector('ah:link');
 
       if (existingAhLink) {
+        // Update name attribute only
         existingAhLink.setAttribute('name', linkName);
       } else {
         // Create ah:link if needed
