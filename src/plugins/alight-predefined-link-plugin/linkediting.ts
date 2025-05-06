@@ -9,7 +9,11 @@ import type {
   ViewElement,
   ViewDocumentKeyDownEvent,
   ViewDocumentClickEvent,
-  DocumentSelectionChangeAttributeEvent
+  DocumentSelectionChangeAttributeEvent,
+  ViewNode,
+  ViewDocumentFragment,
+  ViewRange,
+  ViewText
 } from '@ckeditor/ckeditor5-engine';
 import {
   Input,
@@ -43,6 +47,19 @@ const HIGHLIGHT_CLASS = 'ck-link_selected';
 const DECORATOR_AUTOMATIC = 'automatic';
 const DECORATOR_MANUAL = 'manual';
 const EXTERNAL_LINKS_REGEXP = /^(https?:)?\/\//;
+
+/**
+ * Returns `true` if a given view node is the link element.
+ */
+function isLinkElement(node: ViewNode | ViewDocumentFragment): boolean {
+  return (
+    node.is('attributeElement') && (
+      !!node.getCustomProperty('alight-predefined-link') ||
+      node.hasClass('AHCustomeLink') ||
+      node.getAttribute('data-id') === 'predefined_link'
+    )
+  );
+}
 
 /**
  * The link engine feature.
@@ -104,21 +121,42 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
 
     // Setup data downcast conversion for links with a nested ah:link element
     // This is for the output HTML when saving the content
-    editor.conversion.for('dataDowncast').attributeToElement({
-      model: 'alightPredefinedLinkPluginHref',
-      view: (href, { writer }, { item }) => {
+    editor.conversion.for('dataDowncast').add(dispatcher => {
+      dispatcher.on('attribute:alightPredefinedLinkPluginHref', (evt, data, conversionApi) => {
+        // Skip if attribute already consumed
+        if (!conversionApi.consumable.consume(data.item, evt.name)) {
+          return;
+        }
+
+        const { writer, mapper } = conversionApi;
+
+        const href = data.attributeNewValue;
+
+        // If the attribute was removed
+        if (!href) {
+          return;
+        }
+
+        // Only proceed for text items
+        if (!data.item.is('$textProxy') && !data.item.is('$text')) {
+          return;
+        }
+
+        // Get position range for conversion
+        const viewRange = mapper.toViewRange(data.range);
+
         // Get link name from model attribute or extract from href
         let linkName = '';
 
         // Try to get link name from the model attribute if available
-        if (item && typeof item.getAttribute === 'function' && item.getAttribute('alightPredefinedLinkPluginLinkName')) {
-          linkName = item.getAttribute('alightPredefinedLinkPluginLinkName') as string;
+        if (data.item && typeof data.item.getAttribute === 'function' && data.item.getAttribute('alightPredefinedLinkPluginLinkName')) {
+          linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName') as string;
         } else {
           // Fall back to extracting from href
           linkName = extractPredefinedLinkId(href) || href;
         }
 
-        // Create the outer link element as a ContainerElement, not an AttributeElement
+        // Create the outer link element as a ContainerElement
         const linkElement = writer.createContainerElement('a', {
           'href': '#',
           'class': 'AHCustomeLink',
@@ -130,26 +168,42 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           'name': linkName
         });
 
+        // Get text content from the view range
+        let textContent = '';
+        for (const item of viewRange.getItems()) {
+          if ((item as ViewNode).is && ((item as ViewNode).is('$text') || (item as ViewNode).is('$textProxy'))) {
+            textContent += (item as ViewText).data;
+          }
+        }
+
+        // Add the text to the ah:link element
+        if (textContent) {
+          writer.insert(writer.createPositionAt(ahLinkElement, 0), writer.createText(textContent));
+        }
+
         // Insert the ah:link element into the link
         writer.insert(writer.createPositionAt(linkElement, 0), ahLinkElement);
 
-        return linkElement;
-      }
+        // Insert the link structure where the original text was
+        writer.insert(viewRange.start, linkElement);
+
+        // Remove the original text
+        writer.remove(viewRange);
+      });
     });
 
-    // Setup editing downcast for interactive editing view
+    // Setup editing downcast for interactive editing view - using custom downcast converter
     editor.conversion.for('editingDowncast').attributeToElement({
       model: 'alightPredefinedLinkPluginHref',
       view: (href, { writer }) => {
-        // For editing view, use attributeElement for proper editing behavior
-        // But make sure to properly configure it
+        // For editing view, use attributeElement for proper behavior
         const linkElement = writer.createAttributeElement('a', {
           'href': '#',
           'class': 'AHCustomeLink',
           'data-id': 'predefined_link'
         }, {
           priority: 5,
-          id: 'predefined-link' // Add a unique ID to help with attribute element identification
+          id: 'predefined-link'
         });
 
         // Set custom property for link identification
@@ -287,13 +341,8 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
   }
 
   /**
-   * Processes an array of configured {@link module:link/linkconfig~LinkDecoratorAutomaticDefinition automatic decorators}
-   * and registers a {@link module:engine/conversion/downcastdispatcher~DowncastDispatcher downcast dispatcher}
-   * for each one of them. Downcast dispatchers are obtained using the
-   * {@link module:link/utils/automaticdecorators~AutomaticDecorators#getDispatcher} method.
-   *
-   * **Note**: This method also activates the automatic external link decorator if enabled with
-   * {@link module:link/linkconfig~LinkConfig#addTargetToExternalLinks `config.link.addTargetToExternalLinks`}.
+   * Processes an array of configured automatic decorators
+   * and registers a downcast dispatcher for each one of them.
    */
   private _enableAutomaticDecorators(automaticDecoratorDefinitions: Array<NormalizedLinkDecoratorAutomaticDefinition>): void {
     const editor = this.editor;
@@ -310,13 +359,9 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
   }
 
   /**
-   * Processes an array of configured {@link module:link/linkconfig~LinkDecoratorManualDefinition manual decorators},
-   * transforms them into {@link module:link/utils/manualdecorator~ManualDecorator} instances and stores them in the
-   * {@link module:link/AlightPredefinedLinkPluginCommand~AlightPredefinedLinkPluginCommand#manualDecorators} collection (a model for manual decorators state).
-   *
-   * Also registers an {@link module:engine/conversion/downcasthelpers~DowncastHelpers#attributeToElement attribute-to-element}
-   * converter for each manual decorator and extends the {@link module:engine/model/schema~Schema model's schema}
-   * with adequate model attributes.
+   * Processes an array of configured manual decorators,
+   * transforms them into ManualDecorator instances and stores them in the
+   * LinkCommand's manualDecorators collection (a model for manual decorators state).
    */
   private _enableManualDecorators(manualDecoratorDefinitions: Array<NormalizedLinkDecoratorManualDefinition>): void {
     if (!manualDecoratorDefinitions.length) {
@@ -337,21 +382,16 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
 
       editor.conversion.for('downcast').attributeToElement({
         model: decorator.id,
-        view: (manualDecoratorValue, { writer, schema }, { item }) => {
-          // Manual decorators for block links are handled e.g. in AlightPredefinedLinkPluginImageEditing.
-          if (!(item.is('selection') || schema.isInline(item))) {
-            return;
-          }
-
+        view: (manualDecoratorValue, { writer }) => {
           if (manualDecoratorValue) {
             // For editing view, use attributeElement
-            const element = writer.createAttributeElement('a', decorator.attributes, { priority: 5 });
+            const element = writer.createAttributeElement('a', decorator.attributes || {}, { priority: 5 });
 
             if (decorator.classes) {
               writer.addClass(decorator.classes, element);
             }
 
-            for (const key in decorator.styles) {
+            for (const key in decorator.styles || {}) {
               writer.setStyle(key, decorator.styles[key], element);
             }
 
@@ -359,6 +399,8 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
 
             return element;
           }
+
+          return null;
         }
       });
 
