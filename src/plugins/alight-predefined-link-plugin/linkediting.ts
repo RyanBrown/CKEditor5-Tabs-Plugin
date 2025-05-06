@@ -139,8 +139,6 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
 
     // Setup data downcast conversion for links with a nested ah:link element
     // This is for the output HTML when saving the content
-    // Setup data downcast conversion for links with a nested ah:link element
-    // This is for the output HTML when saving the content - FOCUS ON THIS PART
     editor.conversion.for('dataDowncast').add(dispatcher => {
       dispatcher.on('attribute:alightPredefinedLinkPluginHref', (evt, data, conversionApi) => {
         // Skip if attribute already consumed
@@ -164,9 +162,18 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         // Get position range for conversion
         const viewRange = mapper.toViewRange(data.range);
 
-        // DIRECT SOLUTION: Always use the stored predefinedLinkName 
-        // Get it directly from the item's attributes
-        const linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName') || href;
+        // GUARANTEED SOLUTION: Only use predefined link name, NEVER use text content
+        let linkName = '';
+
+        // NEVER reference viewRange or text content when determining the linkName
+        // Only get it from the model attributes
+        if (data.item.hasAttribute && data.item.hasAttribute('alightPredefinedLinkPluginLinkName')) {
+          linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName');
+        } else {
+          // If no specific link name attribute, use the href as a fallback
+          // This should still be the predefined link ID, not the text content
+          linkName = href;
+        }
 
         // Log for debugging
         console.log('Using linkName for output:', linkName);
@@ -178,11 +185,13 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         });
 
         // Create the inner ah:link element with the predefined link name
+        // This is now guaranteed to not be the text content
         const ahLinkElement = writer.createContainerElement('ah:link', {
           'name': linkName
         });
 
-        // Get text content from the view range
+        // Get text content from the view range - this is ONLY used for the content
+        // inside the ah:link tag, NEVER for the name attribute
         let textContent = '';
         for (const item of viewRange.getItems()) {
           if ((item as ViewNode).is && ((item as ViewNode).is('$text') || (item as ViewNode).is('$textProxy'))) {
@@ -190,7 +199,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           }
         }
 
-        // Add the text to the ah:link element
+        // Add the text to the ah:link element as content only
         if (textContent) {
           writer.insert(writer.createPositionAt(ahLinkElement, 0), writer.createText(textContent));
         }
@@ -239,6 +248,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           value: (viewElement: ViewElement) => {
             // Check for ah:link element inside
             let ahLinkElement = null;
+            let linkName = '';
 
             // Find the ah:link element among children
             for (const child of viewElement.getChildren()) {
@@ -251,15 +261,17 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
             // Process if an ah:link element was found
             if (ahLinkElement) {
               // Extract the name attribute from ah:link
-              const linkName = ahLinkElement.getAttribute('name');
+              linkName = ahLinkElement.getAttribute('name');
 
+              // Only process and store attributes if we have a valid linkName
               if (linkName) {
-                // Store additional attributes on the model immediately after conversion
+                console.log('Upcast: Found linkName from ah:link attribute:', linkName);
+
+                // Store additional attributes on the model
                 this.editor.model.enqueueChange(writer => {
-                  // Get the current selection (representing converted element)
                   const selection = this.editor.model.document.selection;
 
-                  // Set attributes on the selection to be applied to text
+                  // Set both attributes to ensure consistency
                   writer.setSelectionAttribute('alightPredefinedLinkPluginFormat', 'ahcustom');
                   writer.setSelectionAttribute('alightPredefinedLinkPluginLinkName', linkName);
                 });
@@ -272,6 +284,8 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
             // Fallback: check for data-link-name attribute
             const dataLinkName = viewElement.getAttribute('data-link-name');
             if (dataLinkName) {
+              console.log('Upcast: Found linkName from data-link-name:', dataLinkName);
+
               this.editor.model.enqueueChange(writer => {
                 writer.setSelectionAttribute('alightPredefinedLinkPluginFormat', 'ahcustom');
                 writer.setSelectionAttribute('alightPredefinedLinkPluginLinkName', dataLinkName);
@@ -281,7 +295,9 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
             }
 
             // Last resort: use href attribute
-            return viewElement.getAttribute('href') || '#';
+            const href = viewElement.getAttribute('href');
+            console.log('Upcast: Using href as fallback:', href);
+            return href || '#';
           }
         },
         converterPriority: 'highest'
