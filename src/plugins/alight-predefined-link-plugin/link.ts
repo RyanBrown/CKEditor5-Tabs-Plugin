@@ -7,8 +7,7 @@ import AlightPredefinedLinkPluginIntegration from './linkpluginintegration';
 import './styles/alight-predefined-link-plugin.scss';
 import {
   isPredefinedLink,
-  extractPredefinedLinkId,
-  ensurePredefinedLinkStructure
+  extractPredefinedLinkId
 } from './utils';
 
 /**
@@ -116,8 +115,61 @@ export default class AlightPredefinedLinkPlugin extends Plugin {
 
       // Process the HTML string to ensure proper link structure
       try {
-        // Use the ensure structure function directly
-        return ensurePredefinedLinkStructure(data);
+        // Create a temporary container
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = data;
+
+        // Find all links with AHCustomeLink class
+        const links = tempDiv.querySelectorAll('a.AHCustomeLink');
+
+        links.forEach(link => {
+          // Store the text content before processing
+          const linkText = link.textContent || '';
+
+          // Get the link name from the data attribute or use the link text as fallback
+          const linkName = link.getAttribute('data-link-name') || link.textContent || '';
+
+          // Remove all attributes from the link
+          while (link.attributes.length > 0) {
+            link.removeAttribute(link.attributes[0].name);
+          }
+
+          // Add only the required attributes - without data-id
+          link.setAttribute('href', '#');
+          link.classList.add('AHCustomeLink');
+
+          // Check if this link already has an ah:link child
+          const existingAhLink = link.querySelector('ah\\:link') || link.querySelector('ah:link');
+
+          if (!existingAhLink) {
+            // Create the ah:link element with ONLY the name attribute
+            const ahLink = document.createElement('ah:link');
+            ahLink.setAttribute('name', linkName);
+
+            // Move content to ah:link
+            while (link.firstChild) {
+              ahLink.appendChild(link.firstChild);
+            }
+
+            // Add ah:link to link
+            link.appendChild(ahLink);
+          } else {
+            // Remove all attributes from ah:link
+            while (existingAhLink.attributes.length > 0) {
+              existingAhLink.removeAttribute(existingAhLink.attributes[0].name);
+            }
+
+            // Add back only the name attribute
+            existingAhLink.setAttribute('name', linkName);
+          }
+        });
+
+        // Convert the processed HTML back to a string with escaped quotes
+        const processedHtml = tempDiv.innerHTML
+          .replace(/"/g, '\\"')  // Escape double quotes
+          .replace(/<a href="#" class="AHCustomeLink" data-id="predefined_link">/g, '<a href=\\"#\\" class=\\"AHCustomeLink\\">');
+
+        return processedHtml;
       } catch (error) {
         console.error('Error processing links in output:', error);
         // Return original data if there was an error
