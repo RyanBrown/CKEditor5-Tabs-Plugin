@@ -140,6 +140,28 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
       if (!linkName) {
         linkName = extractPredefinedLinkId(href) || href;
       }
+
+      // NEW VALIDATION: Ensure predefinedLinkName is not empty for predefined links
+      if (!linkName || linkName.trim() === '') {
+        console.error('Predefined link must have a valid linkName. Operation aborted.');
+        // You could throw an error here, or add UI feedback, or set a default value
+        // For now, we'll use the href as a last resort fallback
+        linkName = href;
+
+        // Optionally, you could add a notification to the UI
+        const notification = this.editor.plugins.has('Notification') ?
+          this.editor.plugins.get('Notification') : null;
+
+        if (notification) {
+          notification.showWarning(
+            'Predefined link requires a name. Using link ID as fallback.',
+            {
+              namespace: 'alightPredefinedLinkPlugin',
+              title: 'Link Warning'
+            }
+          );
+        }
+      }
     }
 
     // Extract decorator options
@@ -183,7 +205,7 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
               writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', linkRange);
             }
 
-            // Use the extracted link name or the provided one
+            // NEW VALIDATION: Always set the linkName attribute for predefined links
             writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, linkRange);
           }
 
@@ -209,6 +231,8 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
           // If it's a predefined link, set format attribute and linkName
           if (isPredefined) {
             attributes.set('alightPredefinedLinkPluginFormat', 'ahcustom');
+
+            // NEW VALIDATION: Ensure linkName is set for predefined links
             attributes.set('alightPredefinedLinkPluginLinkName', linkName);
           }
 
@@ -251,6 +275,8 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
           // If it's a predefined link, set format attributes
           if (isPredefined) {
             writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', range);
+
+            // NEW VALIDATION: Always set the linkName for predefined links
             writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, range);
           }
 
