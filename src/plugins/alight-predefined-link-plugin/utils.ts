@@ -295,12 +295,11 @@ export function filterLinkAttributes(attributes: Record<string, string>): Record
 }
 
 /**
- * Ensures links have the ah:link structure in the HTML and properly escapes quotes
- * for specific attributes.
+ * Ensures links have the ah:link structure in the HTML without escaping quotes.
  * 
  * Ensures the following structure for predefined links:
- * <a href=\"#\" class=\"AHCustomeLink\">
- *   <ah:link name=\"predefinedLinkName\">Selected Text</ah:link>
+ * <a href="#" class="AHCustomeLink">
+ *   <ah:link name="predefinedLinkName">Selected Text</ah:link>
  * </a>
  */
 export function ensurePredefinedLinkStructure(html: string): string {
@@ -348,20 +347,7 @@ export function ensurePredefinedLinkStructure(html: string): string {
       }
     });
 
-    // Get the standardized HTML
-    let output = tempDiv.innerHTML;
-
-    // Now do string-based replacements for the specific format with backslash escapes
-
-    // For href and class attributes in the <a> tag - with escaped quotes
-    output = output.replace(/<a href="([^"]*)" class="([^"]*)">/g,
-      (match, href, className) => `<a href=\\"${href}\\" class=\\"${className}\\">`);
-
-    // For the name attribute in the <ah:link> tag - with escaped quotes
-    output = output.replace(/<ah:link name="([^"]*)">/g,
-      (match, name) => `<ah:link name=\\"${name}\\">`);
-
-    return output;
+    return tempDiv.innerHTML;
   } catch (error) {
     console.error('Error ensuring predefined link structure:', error);
     return html;
