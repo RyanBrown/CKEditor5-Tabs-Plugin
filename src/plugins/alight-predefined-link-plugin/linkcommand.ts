@@ -216,8 +216,12 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
             attributes.set(item, true);
           });
 
+          // Create text with the link text
+          // Instead of using the href as text, use a better display name for predefined links
+          const linkText = isPredefined ? linkName : href;
+
           const { end: positionAfter } = model.insertContent(
-            writer.createText(href, attributes as any),
+            writer.createText(linkText, attributes as any),
             position
           );
 

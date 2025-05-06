@@ -1,30 +1,25 @@
-// src/plugins/alight-existing-document-link-plugin/utils/automaticdecorators.ts
-// This updates the automatic decorator handling to respect the different downcast/upcast formats
-
+// src/plugins/alight-predefined-link-plugin/utils/automaticdecorators.ts
 import { type ArrayOrItem } from '@ckeditor/ckeditor5-utils';
 import type {
   DowncastAttributeEvent,
   DowncastDispatcher,
-  ViewAttributeElement,
-  ViewElement,
-  Item
+  ViewElement
 } from '@ckeditor/ckeditor5-engine';
 import type { NormalizedLinkDecoratorAutomaticDefinition } from '../utils';
 
 /**
- * Helper class that ties together all {@link module:link/linkconfig~LinkDecoratorAutomaticDefinition} and provides
- * the {@link module:engine/conversion/downcasthelpers~DowncastHelpers#attributeToElement downcast dispatchers} for them.
+ * Helper class that ties together all automatic link decorator definitions and provides
+ * the downcast dispatchers for them.
  */
 export default class AutomaticDecorators {
   /**
-   * Stores the definition of {@link module:link/linkconfig~LinkDecoratorAutomaticDefinition automatic decorators}.
+   * Stores the definition of automatic decorators.
    * This data is used as a source for a downcast dispatcher to create a proper conversion to output data.
    */
   private _definitions = new Set<NormalizedLinkDecoratorAutomaticDefinition>();
 
   /**
-   * Gives information about the number of decorators stored in the {@link module:link/utils/automaticdecorators~AutomaticDecorators}
-   * instance.
+   * Gives information about the number of decorators stored in the AutomaticDecorators instance.
    */
   public get length(): number {
     return this._definitions.size;
@@ -44,9 +39,9 @@ export default class AutomaticDecorators {
   }
 
   /**
-   * Provides the conversion helper used in the {@link module:engine/conversion/downcasthelpers~DowncastHelpers#add} method.
+   * Provides the conversion helper used in the downcast method.
    *
-   * @returns A dispatcher function used as conversion helper in {@link module:engine/conversion/downcasthelpers~DowncastHelpers#add}.
+   * @returns A dispatcher function used as conversion helper.
    */
   public getDispatcher(): (dispatcher: DowncastDispatcher) => void {
     return dispatcher => {
@@ -73,47 +68,41 @@ export default class AutomaticDecorators {
           try {
             const viewWriter = conversionApi.writer;
 
-            // Instead of using wrap, we'll use a different approach based on whether
-            // we're dealing with a selection or a text node
+            // Instead of using wrap, we'll use a different approach
             if (data.item.is('selection')) {
-              // For selections, we'll update the existing attributes
+              // For selections, we need to be very careful - no wrapping
+              // We'll just mark it as decorated, but the actual attributes will be applied
+              // during direct editing downcast
               isDecorated = true;
             } else {
-              // For text nodes, we'll find existing link elements in the range
-              const viewRange = conversionApi.mapper.toViewRange(data.range);
+              // For text nodes, get the mapper to find the corresponding view element
+              if (data.range) {
+                const viewRange = conversionApi.mapper.toViewRange(data.range);
 
-              // Process items in the range that can be safely converted to elements
-              // First collect all potential elements
-              const viewItems = Array.from(viewRange.getItems()).filter(item => {
-                return item.is && (typeof item.is === 'function') &&
-                  (item.is('element') || item.is('attributeElement'));
-              });
+                // Iterate over items in the range that can be safely modified
+                for (const item of viewRange.getItems()) {
+                  // Skip non-element items
+                  if (!item.is('element') && !item.is('attributeElement')) {
+                    continue;
+                  }
 
-              // Then process those that are link elements or can have link attributes
-              for (const item of viewItems) {
-                if (item.is('element') || item.is('attributeElement')) {
                   const viewElement = item as ViewElement;
 
-                  // Add attributes
+                  // Apply the decorator attributes directly to the element
                   if (decorator.attributes) {
                     for (const key in decorator.attributes) {
                       viewWriter.setAttribute(key, decorator.attributes[key], viewElement);
                     }
                   }
 
-                  // Add classes
                   if (decorator.classes) {
                     viewWriter.addClass(decorator.classes, viewElement);
                   }
 
-                  // Add styles
-                  if (decorator.styles) {
-                    for (const key in decorator.styles) {
-                      viewWriter.setStyle(key, decorator.styles[key], viewElement);
-                    }
+                  for (const key in decorator.styles || {}) {
+                    viewWriter.setStyle(key, decorator.styles[key], viewElement);
                   }
 
-                  // Set custom property for link identification
                   viewWriter.setCustomProperty('alight-predefined-link', true, viewElement);
                   isDecorated = true;
                 }

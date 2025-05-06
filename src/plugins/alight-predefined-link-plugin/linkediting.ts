@@ -138,51 +138,18 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
     });
 
     // Setup editing downcast for interactive editing view
-    editor.conversion.for('dataDowncast').attributeToElement({
-      model: 'alightPredefinedLinkPluginHref',
-      view: (href, { writer }, { item }) => {
-        // Get link name from model attribute or extract from href
-        let linkName = '';
-
-        // Try to get link name from the model attribute if available
-        if (item && typeof item.getAttribute === 'function' && item.getAttribute('alightPredefinedLinkPluginLinkName')) {
-          linkName = item.getAttribute('alightPredefinedLinkPluginLinkName') as string;
-        } else {
-          // Fall back to extracting from href
-          linkName = extractPredefinedLinkId(href) || href;
-        }
-
-        // Create the outer link element as a ContainerElement, not an AttributeElement
-        const linkElement = writer.createContainerElement('a', {
-          'href': '#',
-          'class': 'AHCustomeLink',
-          'data-id': 'predefined_link'
-        });
-
-        // Create the inner ah:link element
-        const ahLinkElement = writer.createContainerElement('ah:link', {
-          'name': linkName
-        });
-
-        // Insert the ah:link element into the link
-        writer.insert(writer.createPositionAt(linkElement, 0), ahLinkElement);
-
-        return linkElement;
-      }
-    });
-
-    // For the editing downcast, keep it simple with attribute elements
     editor.conversion.for('editingDowncast').attributeToElement({
       model: 'alightPredefinedLinkPluginHref',
-      view: (href, { writer }, { item }) => {
+      view: (href, { writer }) => {
         // For editing view, use attributeElement for proper editing behavior
+        // But make sure to properly configure it
         const linkElement = writer.createAttributeElement('a', {
           'href': '#',
           'class': 'AHCustomeLink',
           'data-id': 'predefined_link'
         }, {
           priority: 5,
-          id: 'predefined-link'
+          id: 'predefined-link' // Add a unique ID to help with attribute element identification
         });
 
         // Set custom property for link identification
@@ -192,7 +159,6 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
       }
     });
 
-    // Handle standard links - upcast conversion
     // Handle specific format for predefined links with ah:link element
     editor.conversion.for('upcast')
       .elementToAttribute({
@@ -235,6 +201,50 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           }
         },
         converterPriority: 'highest'
+      });
+
+    // Handle standard links - upcast conversion
+    editor.conversion.for('upcast')
+      .elementToAttribute({
+        view: {
+          name: 'a',
+          attributes: {
+            'href': true
+          }
+        },
+        model: {
+          key: 'alightPredefinedLinkPluginHref',
+          value: (viewElement: ViewElement) => {
+            // First check if it has AHCustomeLink class
+            const hasAHCustomeLink = viewElement.hasClass('AHCustomeLink');
+
+            // If it has AHCustomeLink class but wasn't handled by the previous converter
+            if (hasAHCustomeLink) {
+              // Check for ah:link element inside as a fallback
+              for (const child of viewElement.getChildren()) {
+                if (child.is('element', 'ah:link')) {
+                  const linkName = child.getAttribute('name');
+                  return linkName || viewElement.getAttribute('href') || '#';
+                }
+              }
+
+              // Get data-link-name attribute if no ah:link
+              const dataLinkName = viewElement.getAttribute('data-link-name');
+              return dataLinkName || viewElement.getAttribute('href') || '#';
+            }
+
+            // For regular links, just get the href value
+            const href = viewElement.getAttribute('href');
+
+            // If it's empty or just #, and not a predefined link, don't create a link
+            if ((href === '' || href === '#') && !hasAHCustomeLink) {
+              return false; // This will prevent the attribute from being set
+            }
+
+            return href;
+          }
+        },
+        converterPriority: 'high'
       });
 
     // Create linking commands.
