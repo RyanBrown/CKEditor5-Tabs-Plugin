@@ -145,12 +145,19 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         // Get position range for conversion
         const viewRange = mapper.toViewRange(data.range);
 
-        // Get link name from model attribute or extract from href
+        // Get link name from model attribute or extract from href - KEY FIX HERE
         let linkName = '';
 
         // Try to get link name from the model attribute if available
-        if (data.item && typeof data.item.getAttribute === 'function' && data.item.getAttribute('alightPredefinedLinkPluginLinkName')) {
-          linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName') as string;
+        if (data.item && typeof data.item.getAttribute === 'function') {
+          // PRIORITY 1: Use alightPredefinedLinkPluginLinkName attribute if it exists
+          if (data.item.getAttribute('alightPredefinedLinkPluginLinkName')) {
+            linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName') as string;
+          }
+          // PRIORITY 2: Extract from href if no linkName attribute
+          else {
+            linkName = extractPredefinedLinkId(href) || href;
+          }
         } else {
           // Fall back to extracting from href
           linkName = extractPredefinedLinkId(href) || href;
@@ -160,12 +167,11 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         const linkElement = writer.createContainerElement('a', {
           'href': '#',
           'class': 'AHCustomeLink'
-          //'data-id': 'predefined_link'
         });
 
-        // Create the inner ah:link element
+        // Create the inner ah:link element with the linkName (not the text content)
         const ahLinkElement = writer.createContainerElement('ah:link', {
-          'name': linkName
+          'name': linkName // Using linkName, not text content
         });
 
         // Get text content from the view range
