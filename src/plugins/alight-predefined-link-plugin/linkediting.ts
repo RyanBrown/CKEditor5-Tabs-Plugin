@@ -234,12 +234,17 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           value: (viewElement: ViewElement) => {
             // Check for ah:link element inside
             const ahLinkElement = viewElement.getChild(0);
+            let linkName = '';
+            let linkHref = '';
 
             if (ahLinkElement && ahLinkElement.is('element', 'ah:link')) {
-              // Extract the name attribute from ah:link
-              const linkName = ahLinkElement.getAttribute('name');
+              // Extract the name attribute from ah:link - this is the predefined link name
+              linkName = ahLinkElement.getAttribute('name') as string || '';
 
-              // Store additional information about the link format
+              // Use the linkName as the href value (predefined link ID)
+              linkHref = linkName;
+
+              // Store additional information about the link format and name
               this.editor.model.once('_afterConversion', () => {
                 this.editor.model.change(writer => {
                   const selection = this.editor.model.document.selection;
@@ -252,7 +257,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
                 });
               });
 
-              // Return the link name as the href value
+              // Return the linkName as the href value - this is crucial
               return linkName || '';
             }
 
@@ -277,20 +282,51 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           value: (viewElement: ViewElement) => {
             // First check if it has AHCustomeLink class
             const hasAHCustomeLink = viewElement.hasClass('AHCustomeLink');
+            let linkName = '';
+            let linkHref = '';
 
             // If it has AHCustomeLink class but wasn't handled by the previous converter
             if (hasAHCustomeLink) {
               // Check for ah:link element inside as a fallback
               for (const child of viewElement.getChildren()) {
                 if (child.is('element', 'ah:link')) {
-                  const linkName = child.getAttribute('name');
+                  linkName = child.getAttribute('name') as string || '';
+
+                  // Store the name attribute as the linkName and href
+                  this.editor.model.once('_afterConversion', () => {
+                    this.editor.model.change(writer => {
+                      const selection = this.editor.model.document.selection;
+                      const range = selection.getFirstRange();
+
+                      if (range) {
+                        writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', range);
+                        writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, range);
+                      }
+                    });
+                  });
+
                   return linkName || viewElement.getAttribute('href') || '#';
                 }
               }
 
               // Get data-link-name attribute if no ah:link
-              const dataLinkName = viewElement.getAttribute('data-link-name');
-              return dataLinkName || viewElement.getAttribute('href') || '#';
+              linkName = viewElement.getAttribute('data-link-name') as string || '';
+              if (linkName) {
+                // Store the data-link-name as the linkName
+                this.editor.model.once('_afterConversion', () => {
+                  this.editor.model.change(writer => {
+                    const selection = this.editor.model.document.selection;
+                    const range = selection.getFirstRange();
+
+                    if (range) {
+                      writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', range);
+                      writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, range);
+                    }
+                  });
+                });
+                return linkName;
+              }
+              return viewElement.getAttribute('href') || '#';
             }
 
             // For regular links, just get the href value
