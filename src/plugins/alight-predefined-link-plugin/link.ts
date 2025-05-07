@@ -84,9 +84,19 @@ export default class AlightPredefinedLinkPlugin extends Plugin {
 
                     // Extract and set link name
                     const linkId = extractPredefinedLinkId(href as string);
-                    if (linkId) {
-                      writer.setAttribute('alightPredefinedLinkPluginLinkName', linkId, item);
+                    // PRIORITY FIX: Always ensure we have a linkName
+                    let linkName = linkId;
+
+                    // If no valid linkId, try to use existing linkName or generate one
+                    if (!linkName || linkName.trim() === '') {
+                      linkName = item.getAttribute('alightPredefinedLinkPluginLinkName') as string;
+                      if (!linkName || linkName.trim() === '') {
+                        linkName = 'link-' + Math.random().toString(36).substring(2, 7);
+                      }
                     }
+
+                    // Always set the linkName attribute
+                    writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, item);
                   }
 
                   updatedNodes.add(item);

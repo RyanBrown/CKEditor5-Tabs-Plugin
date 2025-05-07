@@ -119,9 +119,11 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         // SIMPLIFIED: Get predefinedLinkName directly from model attribute
         let linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName');
 
-        // If no linkName is found (which shouldn't happen), use a simple generated ID
+        // If no linkName is found (which shouldn't happen), try to extract from href
         if (!linkName) {
-          linkName = 'link-' + Math.random().toString(36).substring(2, 7);
+          // Try to extract from href as a fallback
+          const extractResult = extractPredefinedLinkId(href);
+          linkName = extractResult || 'link-' + Math.random().toString(36).substring(2, 7);
         }
 
         // Create the outer link element
