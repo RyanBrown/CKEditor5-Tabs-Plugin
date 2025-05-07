@@ -97,7 +97,6 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
     editor.model.schema.extend('$text', { allowAttributes: 'alightPredefinedLinkPluginFormat' });
 
     // Setup data downcast conversion for links with a nested ah:link element
-    // This is for the output HTML when saving the content
     editor.conversion.for('dataDowncast').add(dispatcher => {
       dispatcher.on('attribute:alightPredefinedLinkPluginHref', (evt, data, conversionApi) => {
         // Skip if attribute already consumed
@@ -116,14 +115,13 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         // Get position range for conversion
         const viewRange = mapper.toViewRange(data.range);
 
-        // SIMPLIFIED: Get predefinedLinkName directly from model attribute
+        // ONLY use predefinedLinkName - no fallbacks
         let linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName');
 
-        // If no linkName is found (which shouldn't happen), try to extract from href
+        // If no linkName, exit early - we won't create a predefined link without a proper name
         if (!linkName) {
-          // Try to extract from href as a fallback
-          const extractResult = extractPredefinedLinkId(href);
-          linkName = extractResult || 'link-' + Math.random().toString(36).substring(2, 7);
+          console.warn('Attempted to create a predefined link without a predefinedLinkName');
+          return;
         }
 
         // Create the outer link element
@@ -132,7 +130,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           'class': 'AHCustomeLink'
         });
 
-        // Create the inner ah:link element with the predefinedLinkName attribute
+        // Create the inner ah:link element with ONLY the predefinedLinkName attribute
         const ahLinkElement = writer.createContainerElement('ah:link', {
           'name': linkName
         });
