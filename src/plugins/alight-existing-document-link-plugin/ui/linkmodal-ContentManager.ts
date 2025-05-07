@@ -364,7 +364,6 @@ export class ContentManager implements ILinkManager {
           ${link.population ? `<li><strong>Population:</strong> ${link.population}</li>` : ''}
           ${link.locale ? `<li><strong>Language:</strong> ${link.locale}</li>` : ''}
           ${link.fileType ? `<li><strong>File Type:</strong> ${link.fileType}</li>` : ''}
-          ${link.documentDescription ? `<li><strong>Description:</strong> ${link.documentDescription}</li>` : ''}
         </ul>
       </div>
     `;
