@@ -115,22 +115,22 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         // Get position range for conversion
         const viewRange = mapper.toViewRange(data.range);
 
-        // ONLY use predefinedLinkName - no fallbacks
-        let linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName');
+        // CRITICAL: Get the predefinedLinkName from the model
+        const linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName');
 
-        // If no linkName, exit early - we won't create a predefined link without a proper name
+        // If no linkName, this is not a predefined link, so treat as normal link
         if (!linkName) {
-          console.warn('Attempted to create a predefined link without a predefinedLinkName');
           return;
         }
 
         // Create the outer link element
         const linkElement = writer.createContainerElement('a', {
           'href': '#',
-          'class': 'AHCustomeLink'
+          'class': 'AHCustomeLink',
+          'data-predefined-link-name': linkName  // IMPORTANT: Store the name here too
         });
 
-        // Create the inner ah:link element with ONLY the predefinedLinkName attribute
+        // Create the inner ah:link element with the predefinedLinkName attribute
         const ahLinkElement = writer.createContainerElement('ah:link', {
           'name': linkName
         });
