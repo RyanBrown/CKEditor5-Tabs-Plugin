@@ -1,0 +1,17 @@
+{
+  "expressionDetails": [
+    {
+      "expressionName": "All_Authenticated_Users",
+      "expressionDescription": "Includes all authenticated users",
+      "expressionType": "PORTAL",
+      "expressionRevisions": [
+        {
+          "description": "Includes all authenticated users",
+          "expressionValue": "${databean:postauth_booleanValue()} Equals ${literal:true:boolean}"
+        }
+      ],
+      "overridable": true,
+      "clientFacing": true
+    }
+  ]
+}

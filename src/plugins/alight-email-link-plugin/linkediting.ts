@@ -32,7 +32,6 @@ import {
   normalizeDecorators,
   addLinkProtocolIfApplicable,
   createBookmarkCallbacks,
-  openLink,
   type NormalizedLinkDecoratorAutomaticDefinition,
   type NormalizedLinkDecoratorManualDefinition
 } from './utils';
@@ -41,7 +40,7 @@ import type { LinkDecoratorDefinition } from './linkconfig';
 
 import '@ckeditor/ckeditor5-link/theme/link.css';
 
-const HIGHLIGHT_CLASS = 'ck-alight-email-link_selected';
+const HIGHLIGHT_CLASS = 'ck-link_selected';
 const DECORATOR_AUTOMATIC = 'automatic';
 const DECORATOR_MANUAL = 'manual';
 const EXTERNAL_LINKS_REGEXP = /^(https?:)?\/\//;
@@ -157,7 +156,7 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
           name: 'a',
           attributes: {
             href: /^mailto:/,
-            'data-id': 'email_editor'
+            'data-id': 'email_link'
           }
         },
         model: {
@@ -495,8 +494,6 @@ export default class AlightEmailLinkPluginEditing extends Plugin {
     function handleLinkOpening(url: string): void {
       if (bookmarkCallbacks.isScrollableToTarget(url)) {
         bookmarkCallbacks.scrollToTarget(url);
-      } else {
-        openLink(url);
       }
     }
 

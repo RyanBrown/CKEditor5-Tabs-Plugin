@@ -38,7 +38,7 @@ export default class AlightPastePluginCommand extends Command {
 
         // Show success notification
         const notification = editor.plugins.get('Notification');
-        notification.showSuccess('Content pasted with styles!', {
+        notification.showSuccess('Content pasted with formatting!', {
           namespace: 'alightPastePlugin',
           title: 'Success'
         });

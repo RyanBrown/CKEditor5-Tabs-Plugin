@@ -261,13 +261,6 @@ $spacing-values: (
 // Text helper classes
 .cka-text-center {
   text-align: center;
-
-  li {
-    &.hide-overflow {
-      box-sizing: border-box;
-      display: block;
-    }
-  }
 }
 
 // Width helper classes
@@ -312,21 +305,18 @@ $spacing-values: (
 }
 
 // Predefined and Existing Docs styles
-.cka-link-item {
+.cka-link-item,
+.cka-population-item {
   align-items: center;
   border-bottom: 1px solid var(--gray-400);
   display: flex;
+  font-size: var(--font-size-sm);
   padding: 0;
   transition: background-color 0.15s;
 
   &:hover {
     background-color: var(--neutral-gallery);
     cursor: pointer;
-  }
-
-  &:last-of-type {
-    border-bottom: none;
-    padding-bottom: 1.75rem;
   }
 
   >.radio-container {
@@ -340,30 +330,76 @@ $spacing-values: (
     width: 100%;
 
     li {
-      font-size: var(--font-size-sm);
+      word-break: break-all;
 
       &:first-child {
-        font-size: var(--font-size-lg);
-        font-weight: var(--font-weight-bold);
-      }
-
-      &.wrap-text {
-        max-width: 80%;
-        white-space: break-spaces;
-        word-wrap: break-word;
-      }
-
-      &.hide-overflow {
-        box-sizing: border-box;
-        display: block;
-        max-width: 90%;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        width: 100%;
+        font-size: var(--font-size-base);
       }
     }
   }
+}
+
+// Balloon title classes
+.cka-button-title {
+  display: inline-block;
+  font-size: inherit;
+  line-height: 1;
+  min-height: 2.3rem;
+  min-width: 2.3rem;
+  text-align: center;
+  user-select: none;
+  vertical-align: middle;
+  white-space: nowrap;
+
+  .cka-button-title-text {
+    color: var(--neutral-black);
+    display: inline-block;
+    font-weight: var(--font-weight-bold);
+    line-height: 2.3rem;
+    max-width: 14.625rem;
+    min-height: 2.3rem;
+    overflow: hidden;
+    padding: calc(0.6rem * 0.3) 0.3rem;
+    text-overflow: ellipsis;
+    user-select: none;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+}
+
+// Current selected link
+.current-url-info {
+  background-color: #eef5ff;
+  border-bottom: 1px solid var(--gray-400);
+  padding-top: .5rem;
+
+  .cka-link-item {
+    &:hover {
+      background-color: transparent;
+      cursor: default;
+    }
+  }
+
+  h3 {
+    background-color: var(--info-background);
+    border-radius: .5rem;
+    border: 1px solid var(--core-tropical-blue);
+    box-shadow: rgba(38, 107, 227, .2) 0 1px 2px;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-normal);
+    margin: 0 .5rem;
+    padding: .5rem 1rem;
+  }
+
+  .cka-note-message {
+    padding: 1rem var(--spacing-xl);
+  }
+}
+
+// Pagination
+.pagination-controls {
+  align-items: center;
+  display: flex;
 }
 
 // Center info text modals

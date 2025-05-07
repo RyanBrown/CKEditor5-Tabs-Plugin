@@ -5,7 +5,7 @@ import { Collection, first, toMap } from '@ckeditor/ckeditor5-utils';
 import type { Range, Writer } from '@ckeditor/ckeditor5-engine';
 
 import AutomaticDecorators from './utils/automaticdecorators';
-import { isLinkableElement, isValidUrl, ensureUrlProtocol, isLegacyEditorLink } from './utils';
+import { isLinkableElement, isValidUrl, ensureUrlProtocol } from './utils';
 import type ManualDecorator from './utils/manualdecorator';
 
 /**
@@ -74,7 +74,16 @@ export default class AlightExternalLinkPluginCommand extends Command {
       this.isEnabled = model.schema.checkAttribute(selectedElement, 'alightExternalLinkPluginHref');
     } else {
       this.value = selection.getAttribute('alightExternalLinkPluginHref') as string | undefined;
-      this.isEnabled = model.schema.checkAttributeInSelection(selection, 'alightExternalLinkPluginHref');
+
+      // Determine if the command should be enabled based on selection state and schema
+      const schemaAllowsAttribute = model.schema.checkAttributeInSelection(selection, 'alightExternalLinkPluginHref');
+      const hasSelection = !selection.isCollapsed;
+      const isInLink = selection.hasAttribute('alightExternalLinkPluginHref');
+
+      // The command should be enabled only if:
+      // 1. The schema allows the attribute AND
+      // 2. Either there is a text selection OR the cursor is inside an existing link
+      this.isEnabled = schemaAllowsAttribute && (hasSelection || isInLink);
     }
 
     for (const manualDecorator of this.manualDecorators) {
@@ -234,7 +243,7 @@ export default class AlightExternalLinkPluginCommand extends Command {
     }
 
     // If the URL is not HTTP/HTTPS and doesn't have a special suffix, don't proceed
-    if (!href.startsWith('http://') && !href.startsWith('https://') && !isLegacyEditorLink(href)) {
+    if (!href.startsWith('http://') && !href.startsWith('https://')) {
       console.warn('AlightExternalLinkPlugin only supports HTTP and HTTPS URLs or special editor links.');
       return;
     }

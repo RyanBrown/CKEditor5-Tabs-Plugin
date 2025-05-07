@@ -1,5 +1,4 @@
 // src/plugins/alight-predefined-link-plugin/linkui.ts
-import { Plugin } from '@ckeditor/ckeditor5-core';
 import {
   ClickObserver,
   type ViewAttributeElement,
@@ -17,19 +16,17 @@ import AlightPredefinedLinkPluginEditing from './linkediting';
 import LinkActionsView from './ui/linkactionsview';
 import type AlightPredefinedLinkPluginCommand from './linkcommand';
 import type AlightPredefinedLinkPluginUnlinkCommand from './unlinkcommand';
-import { isLinkElement } from './utils';
+import { isLinkElement, isPredefinedLink, extractPredefinedLinkId } from './utils';
 import { CkAlightModalDialog } from './../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import './../ui-components/alight-checkbox-component/alight-checkbox-component';
 
 // Import the ContentManager and types from the updated location
 import { ContentManager } from './ui/linkmodal-ContentManager';
 import { PredefinedLink } from './ui/linkmodal-modal-types';
+import AlightDataLoadPlugin from '../../alight-common/alight-data-load-plugin';
 
-// Import the services
-import { LinksService } from './../../services/links-service';
-import { SessionService } from './../../services/session-service';
-
-import linkIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
+import LinksLoadService from '../../services/links-load-service';
+import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 
 const VISUAL_SELECTION_MARKER_NAME = 'alight-predefined-link-ui';
 
@@ -38,23 +35,28 @@ const VISUAL_SELECTION_MARKER_NAME = 'alight-predefined-link-ui';
  * 
  * Uses a balloon for unlink actions, and a modal dialog for create/edit functions.
  */
-export default class AlightPredefinedLinkPluginUI extends Plugin {
+export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
   private _modalDialog: CkAlightModalDialog | null = null;
   private _linkManager: ContentManager | null = null;
 
-  private _linksService: LinksService | null = null;
   public actionsView: LinkActionsView | null = null;
 
   private _balloon!: ContextualBalloon;
   private _isUpdatingUI: boolean = false;
 
+  private _predefinedLinks: PredefinedLink[] = [];
+  private readonly loadService: LinksLoadService = new LinksLoadService();
+
+  // Add flag to track whether data is loaded
+  private _dataLoaded: boolean = false;
+
   public static get requires() {
     return [AlightPredefinedLinkPluginEditing, ContextualBalloon] as const;
   }
 
-  public static get pluginName() {
-    return 'AlightPredefinedLinkPluginUI' as const;
-  }
+  public static override get pluginName(): string { return 'AlightPredefinedLinkPluginUI' as const; }
+  public override get pluginName(): string { return AlightPredefinedLinkPluginUI.pluginName; }
+  public override get pluginId(): string { return 'AlightPredefinedLinkPlugin'; }
 
   public static override get isOfficialPlugin(): true {
     return true;
@@ -63,9 +65,6 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
   public init(): void {
     const editor = this.editor;
     const t = this.editor.t;
-
-    // Initialize the services
-    this._initServices();
 
     editor.editing.view.addObserver(ClickObserver);
     this._balloon = editor.plugins.get(ContextualBalloon);
@@ -122,130 +121,149 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
 
     // Register the UI component
     editor.ui.componentFactory.add('alightPredefinedLinkPlugin', locale => {
-      return this._createButton(ButtonView);
+      this._createButton(ButtonView);
+      this.setModalContents();
+      return this.buttonView;
     });
 
     // Listen for command execution to show balloon
     const linkCommand = editor.commands.get('alight-predefined-link') as AlightPredefinedLinkPluginCommand;
 
+    // Listen to selection changes to update button state
+    editor.model.document.on('change:selection', () => {
+      this._updateButtonState();
+    });
+
     // Also listen to selection changes to detect when user enters a link or clicks on it
     this.listenTo(editor.editing.view.document, 'selectionChange', () => {
       // Use a small delay to ensure the selection is fully updated
-      setTimeout(() => this._checkAndShowBalloon(), 10);
+      setTimeout(() => {
+        this._checkAndShowBalloon();
+        this._updateButtonState();
+      }, 10);
     });
   }
 
-  // Initialize the services with config from editor.
-  private _initServices(): void {
-    try {
-      // Store the session service as a class property so it doesn't get garbage collected
-      const sessionService = new SessionService();
+  /**
+   * Updates the button state based on data loading status and selection
+   */
+  private _updateButtonState(): void {
+    const editor = this.editor;
+    const linkCommand = editor.commands.get('alight-predefined-link') as AlightPredefinedLinkPluginCommand;
 
-      // Check if apiUrl exists in sessionStorage
-      if (!sessionStorage.getItem('apiUrl')) {
-        // Set a default API URL if none exists
-        sessionStorage.setItem('apiUrl', 'https://example.com/api');
+    // This will call the refresh() method which checks for selection
+    linkCommand.refresh();
 
-        // Also set dummy values for other required session items
-        if (!sessionStorage.getItem('dummyColleagueSessionToken')) {
-          sessionStorage.setItem('dummyColleagueSessionToken', 'dummy-token');
-        }
-        if (!sessionStorage.getItem('dummyRequestHeader')) {
-          sessionStorage.setItem('dummyRequestHeader', '{"clientId":"dummy-client"}');
-        }
+    // Button should be enabled only if:
+    // 1. The data has been loaded successfully
+    // 2. AND the link command is enabled (there's valid selection)
+    if (this.buttonView) {
+      const shouldBeEnabled = this._dataLoaded && linkCommand.isEnabled;
+
+      // Only update if the state actually changed to avoid unnecessary renders
+      if (this.buttonView.isEnabled !== shouldBeEnabled) {
+        this.buttonView.set('isEnabled', shouldBeEnabled);
       }
-
-      // Initialize links service with the session service
-      this._linksService = new LinksService(sessionService);
-    } catch (error) {
-      console.error('Error initializing services:', error);
-
-      // Fallback to create a basic links service with a dummy implementation
-      this._linksService = {
-        getPredefinedLinks: async () => {
-          return [];
-        }
-      } as LinksService;
     }
   }
 
-  // Fetch predefined links from the service
-  private async _fetchPredefinedLinks(): Promise<PredefinedLink[]> {
-    if (!this._linksService) {
-      console.warn('Links service not initialized');
-      return [];
-    }
+  protected override setModalContents = (): void => {
+    if (this.verboseMode) console.log(`Loading predefined links...`);
 
-    try {
-      // Get links from the service
-      const rawLinks = await this._linksService.getPredefinedLinks();
+    // Set data loaded flag to false while loading
+    this._dataLoaded = false;
 
-      // If we got empty links, return empty array
-      if (!rawLinks || rawLinks.length === 0) {
-        console.warn('No predefined links returned from service');
-        return [];
+    // Update button state immediately to disable it during loading
+    this._updateButtonState();
+
+    this.loadService.loadPredefinedLinks().then(
+      (data) => {
+        this._predefinedLinks = data;
+        if (this.verboseMode) console.log(data);
+
+        // Update the actions view with the loaded predefined links if it's already created
+        if (this.actionsView) {
+          this.actionsView.setPredefinedLinks(this._predefinedLinks);
+        }
+
+        // Set data loaded flag to true when data is loaded
+        this._dataLoaded = true;
+        this.isReady = true;
+
+        // Update button state after data is loaded
+        this._updateButtonState();
+      },
+      (error) => {
+        console.log(error);
+        // Keep data loaded flag as false if there was an error
+        this._dataLoaded = false;
+
+        // Update button state to reflect the error
+        this._updateButtonState();
       }
+    );
+  }
 
-      // Check if we have the nested predefinedLinksDetails structure
-      // and extract the actual links from it
-      let processedLinks: any[] = [];
+  private processLinks = (rawLinks: PredefinedLink[]) => {
+    // Check if we have the nested predefinedLinksDetails structure
+    // and extract the actual links from it
+    let processedLinks: any[] = [];
 
-      for (const rawLink of rawLinks as PredefinedLink[]) {
-        if (rawLink.predefinedLinksDetails && Array.isArray(rawLink.predefinedLinksDetails)) {
-          // The API response has nested predefinedLinksDetails - extract and process those
-          console.log(`Found ${rawLink.predefinedLinksDetails.length} nested links for ${rawLink.pageCode}`);
+    for (const rawLink of rawLinks as PredefinedLink[]) {
+      if (rawLink.predefinedLinksDetails && Array.isArray(rawLink.predefinedLinksDetails)) {
+        // The API response has nested predefinedLinksDetails - extract and process those
+        console.log(`Found ${rawLink.predefinedLinksDetails.length} nested links for ${rawLink.pageCode}`);
 
-          // Process each nested link and add parent data
-          rawLink.predefinedLinksDetails.forEach((nestedLink) => {
-            processedLinks.push({
-              // Base properties from parent link
-              baseOrClientSpecific: rawLink.baseOrClientSpecific || 'base',
-              pageType: rawLink.pageType || 'Unknown',
-              pageCode: rawLink.pageCode || '',
-              domain: rawLink.domain || '',
+        // Process each nested link and add parent data
+        rawLink.predefinedLinksDetails.forEach((nestedLink) => {
+          processedLinks.push({
+            // Base properties from parent link
+            baseOrClientSpecific: rawLink.baseOrClientSpecific || 'base',
+            pageType: rawLink.pageType || 'Unknown',
+            pageCode: rawLink.pageCode || '',
+            domain: rawLink.domain || '',
 
-              // Properties from nested link
-              predefinedLinkName: nestedLink.linkName || nestedLink.name || 'Unnamed Link',
-              predefinedLinkDescription: nestedLink.description || '',
-              destination: nestedLink.url || nestedLink.destination || '',
-              uniqueId: nestedLink.id || nestedLink.uniqueId || '',
-              attributeName: nestedLink.attributeName || '',
-              attributeValue: nestedLink.attributeValue || ''
-            });
+            // Properties from nested link
+            predefinedLinkName: nestedLink.linkName || nestedLink.name || 'Unnamed Link',
+            predefinedLinkDescription: nestedLink.description || '',
+            destination: nestedLink.url || nestedLink.destination || '',
+            uniqueId: nestedLink.id || nestedLink.uniqueId || '',
+            attributeName: nestedLink.attributeName || '',
+            attributeValue: nestedLink.attributeValue || ''
           });
-        } else {
-          // Standard link without nesting
-          processedLinks.push(rawLink);
-        }
+        });
+      } else {
+        // Standard link without nesting
+        processedLinks.push(rawLink);
       }
-
-      // Process links directly without transformation
-      const links = processedLinks.filter(link =>
-        link.destination && link.destination.trim() !== '' &&
-        (link.predefinedLinkName || link.name) &&
-        (link.predefinedLinkName || link.name).trim() !== ''
-      );
-
-      console.log(`Final links: ${links.length}`);
-
-      // Return empty array if no valid links
-      if (links.length === 0) {
-        console.warn('No valid links found');
-        return [];
-      }
-
-      return links;
-    } catch (error) {
-      console.error('Error fetching predefined links:', error);
-      return [];
     }
-  }
+    // Process links directly without transformation
+    return processedLinks.filter(link =>
+      link.destination && link.destination.trim() !== '' &&
+      (link.predefinedLinkName || link.name) &&
+      (link.predefinedLinkName || link.name).trim() !== ''
+    );
+  };
 
   // Checks if the current selection is in a link and shows the balloon if needed
   private _checkAndShowBalloon(): void {
     const selectedLink = this._getSelectedLinkElement();
+
+    // Check if the selected link is a predefined link
     if (selectedLink) {
-      this._showBalloon();
+      const href = selectedLink.getAttribute('href');
+      const dataId = selectedLink.getAttribute('data-id');
+      const hasAHCustomeClass = selectedLink.hasClass('AHCustomeLink');
+
+      // Show the balloon for predefined links identified by:
+      // 1. data-id="predefined_link" attribute
+      // 2. AHCustomeLink class
+      // 3. URL format matching predefined link pattern
+      if ((dataId === 'predefined_link') ||
+        hasAHCustomeClass ||
+        (href && isPredefinedLink(href as string))) {
+        this._showBalloon();
+      }
     }
   }
 
@@ -271,6 +289,8 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
       const button = this._createButton(MenuBarMenuListItemButtonView);
 
       button.set({
+        // Start with button disabled, will be updated when data loads
+        isEnabled: false,
         role: 'menuitemcheckbox'
       });
 
@@ -283,23 +303,24 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
     const editor = this.editor;
     const locale = editor.locale;
     const command = editor.commands.get('alight-predefined-link')!;
-    const view = new ButtonClass(editor.locale) as InstanceType<T>;
+    this.buttonView = new ButtonClass(editor.locale) as InstanceType<T>;
     const t = locale.t;
 
-    view.set({
+    this.buttonView.set({
+      isEnabled: false, // Start disabled
       label: t('Predefined link'),
-      icon: linkIcon,
+      icon: ToolBarIcon,
       isToggleable: true,
       withText: true
     });
 
-    view.bind('isEnabled').to(command, 'isEnabled');
-    view.bind('isOn').to(command, 'value', value => !!value);
+    // Bind to command's value for the isOn state
+    this.buttonView.bind('isOn').to(command, 'value', value => !!value);
 
     // Show the modal dialog on button click for creating new links
-    this.listenTo(view, 'execute', () => this._showUI());
+    this.listenTo(this.buttonView, 'execute', () => this._showUI());
 
-    return view;
+    return this.buttonView as InstanceType<T>;
   }
 
   // Creates the {@link module:link/ui/linkactionsview~LinkActionsView} instance.
@@ -310,6 +331,11 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
     const unlinkCommand = editor.commands.get('alight-predefined-unlink') as AlightPredefinedLinkPluginUnlinkCommand;
 
     actionsView.bind('href').to(linkCommand, 'value');
+
+    // Pass the predefined links data to the actions view if available
+    if (this._predefinedLinks && this._predefinedLinks.length > 0) {
+      actionsView.setPredefinedLinks(this._predefinedLinks);
+    }
 
     actionsView.editButtonView.bind('isEnabled').to(linkCommand);
     actionsView.unlinkButtonView.bind('isEnabled').to(unlinkCommand);
@@ -348,6 +374,12 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
   private _normalizeUrl(url: string): string {
     if (!url) return '';
 
+    // For predefined links, extract the ID for comparison
+    const predefinedId = extractPredefinedLinkId(url);
+    if (predefinedId) {
+      return predefinedId.toLowerCase();
+    }
+
     // Remove trailing slash
     let normalized = url.endsWith('/') ? url.slice(0, -1) : url;
 
@@ -359,17 +391,35 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
 
   // Find predefined link by URL using the links service
   private async _findPredefinedLinkByUrl(url: string): Promise<PredefinedLink | null> {
-    if (!this._linksService) {
-      console.warn('Links service not initialized');
-      return null;
-    }
-
     try {
-      // Fetch all predefined links
-      const links = await this._linksService.getPredefinedLinks();
+      // Extract predefined link ID if present
+      const predefinedId = extractPredefinedLinkId(url);
 
-      // Find the matching link by URL - compare regardless of trailing slash or protocol differences
-      return links.find(link => {
+      if (predefinedId) {
+        // For predefined links, try to find by exact ID match first
+        const exactMatch = this._predefinedLinks.find(link => {
+          // Check if the link has a uniqueId that matches
+          if (link.uniqueId && link.uniqueId.toString() === predefinedId) {
+            return true;
+          }
+
+          // If the destination matches the predefined ID
+          if (link.destination &&
+            (link.destination === predefinedId ||
+              link.destination.includes(predefinedId))) {
+            return true;
+          }
+
+          return false;
+        });
+
+        if (exactMatch) {
+          return exactMatch;
+        }
+      }
+
+      // Fallback to normalized URL comparison
+      return this._predefinedLinks.find(link => {
         const normalizedDestination = this._normalizeUrl(link.destination as string);
         const normalizedUrl = this._normalizeUrl(url);
         return normalizedDestination === normalizedUrl;
@@ -390,8 +440,12 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
       const selectedLink = this._getSelectedLinkElement();
 
       if (selectedLink) {
-        // Show balloon with actions (edit/unlink) when clicking on a link
-        this._showBalloon();
+        // Check if it's a predefined link before showing the balloon
+        const href = selectedLink.getAttribute('href');
+        if (href && isPredefinedLink(href as string)) {
+          // Show balloon with actions (edit/unlink) when clicking on a predefined link
+          this._showBalloon();
+        }
       }
     });
   }
@@ -419,6 +473,17 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
       const selectedLink = this._getSelectedLinkElement();
       if (!selectedLink) {
         return;
+      }
+
+      // Verify it's a predefined link
+      const href = selectedLink.getAttribute('href');
+      if (!href || !isPredefinedLink(href as string)) {
+        return;
+      }
+
+      // Pass the predefined links data to the actions view for lookup
+      if (this._predefinedLinks && this._predefinedLinks.length > 0) {
+        this.actionsView.setPredefinedLinks(this._predefinedLinks);
       }
 
       this._balloon.add({
@@ -499,14 +564,15 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
   // Custom HTML content for the predefined links
   private _createCustomContent(): HTMLElement {
     const container = document.createElement('div');
+    container.className = 'cka-flex-links-wrap';
 
     const linksContainer = document.createElement('div');
     linksContainer.id = 'links-container';
     linksContainer.innerHTML = `
-      <div class="cka-loading-container">
-        <div class="cka-loading-spinner"></div>
-      </div>
-    `;
+    <div class="cka-loading-container">
+      <div class="cka-loading-spinner"></div>
+    </div>
+  `;
 
     const paginationContainer = document.createElement('div');
     paginationContainer.id = 'pagination-container';
@@ -518,11 +584,26 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
     return container;
   }
 
-  // Shows the modal dialog for link editing.
+  /**
+   * Shows the modal dialog for link editing.
+   * @param isEditing Whether we're editing an existing link
+   */
   private async _showUI(isEditing: boolean = false): Promise<void> {
+    // Check if predefined links data is loaded
+    if (!this._dataLoaded || this._predefinedLinks.length === 0) {
+      console.warn('Cannot show UI - data not loaded yet');
+      return;
+    }
+
     const editor = this.editor;
     const t = editor.t;
     const linkCommand = editor.commands.get('alight-predefined-link') as AlightPredefinedLinkPluginCommand;
+
+    // Check if there's valid selection
+    if (!linkCommand.isEnabled && !isEditing) {
+      console.warn('Cannot show UI - no valid selection');
+      return;
+    }
 
     // Store the current selection to restore it later
     const originalSelection = editor.model.document.selection;
@@ -536,15 +617,15 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
     if (isEditing && linkCommand.value) {
       initialUrl = linkCommand.value as string;
 
-      // Remove the predefined suffix for display
-      if (initialUrl.includes('~predefined_editor_id')) {
-        const displayUrl = initialUrl.replace('~predefined_editor_id', '');
-        console.log('Editing predefined link:', displayUrl);
-      }
-
       // Try to find the link data from the API
       try {
         initialLink = await this._findPredefinedLinkByUrl(initialUrl);
+
+        // If we couldn't find a link by URL but it's a predefined link format,
+        // set a flag to force the UI to open in edit mode
+        if (!initialLink && isPredefinedLink(initialUrl)) {
+          console.log('Predefined link format detected but not found in available links:', initialUrl);
+        }
       } catch (error) {
         console.error('Error fetching link data:', error);
       }
@@ -576,31 +657,22 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
           const selectedLink = this._linkManager?.getSelectedLink();
           console.log('Selected link:', selectedLink);
 
-          if (selectedLink && selectedLink.destination) {
+          if (selectedLink && selectedLink.predefinedLinkName) {
             // Create the link in the editor using the built-in link command
-            linkCommand.execute(selectedLink.destination);
+            // Use predefinedLinkName instead of destination
+            let href = selectedLink.predefinedLinkName;
+
+            linkCommand.execute(href);
 
             // Hide the modal after creating the link
             this._modalDialog?.hide();
           } else {
             // Show some feedback that no link was selected
-            console.warn('No link selected or missing destination');
+            console.warn('No link selected or missing predefinedLinkName');
 
-            // Show an alert to the user
-            const alertDiv = document.createElement('div');
-            alertDiv.className = 'cka-alert cka-alert-error';
-            alertDiv.innerHTML = `<div class="cka-alert-warning">Please select a link</div>`;
-
-            // Find the container for the alert and show it
-            const modalContent = this._modalDialog?.getElement();
-            if (modalContent) {
-              // Insert at the top
-              modalContent.insertBefore(alertDiv, modalContent.firstChild);
-
-              // Remove after a delay
-              setTimeout(() => {
-                alertDiv.remove();
-              }, 10000);
+            // Show an alert to the user through our ContentManager
+            if (this._linkManager) {
+              this._linkManager.showAlert('Please select a predefined link', 'error');
             }
           }
         }
@@ -619,25 +691,21 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
 
     // Then fetch data and initialize the content manager in the background
     try {
-      // Fetch predefined links from the service
-      const predefinedLinks = await this._fetchPredefinedLinks();
-      console.log('Fetched predefined links:', predefinedLinks);
-
-      if (predefinedLinks.length === 0) {
+      if (this._predefinedLinks.length === 0) {
         // Show message if no links found
         const linksContainer = customContent.querySelector('#links-container');
         if (linksContainer) {
           linksContainer.innerHTML = `
-          <div class="cka-no-results">
-            <p>No predefined links available.</p>
-          </div>
-        `;
+            <div class="cka-center-modal-message">
+              <p>No predefined links available.</p>
+            </div>
+          `;
         }
         return;
       }
 
       // Create the ContentManager with the initialUrl and predefined links data
-      this._linkManager = new ContentManager(initialUrl, predefinedLinks);
+      this._linkManager = new ContentManager(initialUrl, this._predefinedLinks);
 
       // Pass the modal dialog reference to enable/disable the Continue button
       // Add an event listener for link selection
@@ -650,6 +718,15 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
 
       // Set initial button state based on whether we have an initial link
       this._updateContinueButtonState(!!initialLink);
+
+      // If the URL is a predefined link format but not in our list, show a message
+      if (initialUrl && isPredefinedLink(initialUrl) && !initialLink) {
+        this._linkManager.showAlert(
+          'This predefined link is not in the current list of available links. You can select a new link or cancel.',
+          'warning',
+          0 // Don't auto-dismiss
+        );
+      }
     } catch (error) {
       console.error('Error setting up predefined links:', error);
 
@@ -657,10 +734,10 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
       const linksContainer = customContent.querySelector('#links-container');
       if (linksContainer) {
         linksContainer.innerHTML = `
-      <div class="cka-error-state">
-        <p class="cka-error-details">${error.message || 'Unknown error'}</p>
-      </div>
-    `;
+          <div class="cka-center-modal-message">
+            <p>${error.message || 'Unknown error'}</p>
+          </div>
+        `;
       }
     }
   }
@@ -713,30 +790,47 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
     }
   }
 
-  // Returns the link element under the editing view's selection or `null` if there is none.
+  /**
+   * Returns the link element under the editing view's selection or `null` if there is none.
+   * More robust handling of selection ranges.
+   */
   private _getSelectedLinkElement(): ViewAttributeElement | null {
     const view = this.editor.editing.view;
     const selection = view.document.selection;
     const selectedElement = selection.getSelectedElement();
 
     // The selection is collapsed or some widget is selected (especially inline widget).
-    if (selection.isCollapsed || selectedElement && isWidget(selectedElement)) {
+    if (selection.isCollapsed || (selectedElement && isWidget(selectedElement))) {
       return findLinkElementAncestor(selection.getFirstPosition()!);
     } else {
       // The range for fully selected link is usually anchored in adjacent text nodes.
       // Trim it to get closer to the actual link element.
-      const range = selection.getFirstRange()!.getTrimmed();
-      const startLink = findLinkElementAncestor(range.start);
-      const endLink = findLinkElementAncestor(range.end);
+      try {
+        const range = selection.getFirstRange()!.getTrimmed();
+        const startLink = findLinkElementAncestor(range.start);
+        const endLink = findLinkElementAncestor(range.end);
 
-      if (!startLink || startLink != endLink) {
-        return null;
-      }
+        if (!startLink || startLink != endLink) {
+          return null;
+        }
 
-      // Check if the link element is fully selected.
-      if (view.createRangeIn(startLink).getTrimmed().isEqual(range)) {
-        return startLink;
-      } else {
+        // Check if the link element is fully selected.
+        if (view.createRangeIn(startLink).getTrimmed().isEqual(range)) {
+          return startLink;
+        } else {
+          return null;
+        }
+      } catch (e) {
+        console.error('Error getting selected link element:', e);
+        // If there was an error in range processing, try to at least return startLink if possible
+        try {
+          const range = selection.getFirstRange();
+          if (range) {
+            return findLinkElementAncestor(range.start);
+          }
+        } catch (innerError) {
+          console.error('Failed to get fallback link element:', innerError);
+        }
         return null;
       }
     }
@@ -745,6 +839,22 @@ export default class AlightPredefinedLinkPluginUI extends Plugin {
 
 // Returns a link element if there's one among the ancestors of the provided `Position`.
 function findLinkElementAncestor(position: any): ViewAttributeElement | null {
-  const linkElement = position.getAncestors().find((ancestor: any) => isLinkElement(ancestor));
-  return linkElement && linkElement.is('attributeElement') ? linkElement : null;
+  try {
+    if (!position || !position.getAncestors) {
+      return null;
+    }
+
+    const ancestors = position.getAncestors();
+
+    for (const ancestor of ancestors) {
+      if (isLinkElement(ancestor)) {
+        return ancestor.is('attributeElement') ? ancestor : null;
+      }
+    }
+
+    return null;
+  } catch (e) {
+    console.error('Error in findLinkElementAncestor:', e);
+    return null;
+  }
 }

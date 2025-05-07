@@ -14,6 +14,7 @@ export class ContentManager implements ILinkManager {
   private container: HTMLElement | null = null;
   private initialUrl: string = '';
   private loadingIndicator: HTMLElement | null = null;
+  private alerts: Array<{ message: string, type: 'error' | 'info' | 'success' | 'warning', id: string }> = [];
 
   // Add callback for link selection events
   public onLinkSelected: ((link: PredefinedLink | null) => void) | null = null;
@@ -38,11 +39,12 @@ export class ContentManager implements ILinkManager {
     );
   }
 
-  public getSelectedLink(): { destination: string; title: string } | null {
+  public getSelectedLink(): { destination: string; title: string; predefinedLinkName: string } | null {
     if (!this.selectedLink) return null;
     return {
       destination: this.selectedLink.destination,
-      title: this.selectedLink.predefinedLinkName
+      title: this.selectedLink.predefinedLinkName,
+      predefinedLinkName: this.selectedLink.predefinedLinkName
     };
   }
 
@@ -57,6 +59,64 @@ export class ContentManager implements ILinkManager {
     normalized = normalized.replace(/^https?:\/\//, '');
 
     return normalized.toLowerCase();
+  }
+
+  // Add method to show alerts
+  public showAlert(message: string, type: 'error' | 'info' | 'success' | 'warning', timeout: number = 10000): void {
+    const alertId = `alert-${Date.now()}`;
+    this.alerts.push({ message, type, id: alertId });
+
+    // Re-render to show the alert
+    if (this.container) {
+      this.renderContent(this.container);
+    }
+
+    // Auto-remove the alert after the timeout
+    if (timeout > 0) {
+      setTimeout(() => {
+        this.removeAlert(alertId);
+      }, timeout);
+    }
+  }
+
+  // Method to remove a specific alert
+  public removeAlert(alertId: string): void {
+    // Find the alert element in the DOM
+    const alertElement = document.querySelector(`.cka-alert[data-alert-id="${alertId}"]`);
+
+    if (alertElement) {
+      // Add the removing class to trigger the CSS transition
+      alertElement.classList.add('cka-alert-removing');
+
+      // Wait for the animation to complete before actually removing from the data structure
+      setTimeout(() => {
+        // Remove the alert from the data array
+        this.alerts = this.alerts.filter(alert => alert.id !== alertId);
+
+        // Re-render if necessary (you might not need this if the DOM element is already gone)
+        if (this.container) {
+          this.renderContent(this.container);
+        }
+      }, 500); // This timing should match your CSS transition duration
+    } else {
+      // If element isn't found in DOM, just remove it from the data structure
+      this.alerts = this.alerts.filter(alert => alert.id !== alertId);
+
+      // Re-render if necessary
+      if (this.container) {
+        this.renderContent(this.container);
+      }
+    }
+  }
+
+  // Method to clear all alerts
+  public clearAlerts(): void {
+    this.alerts = [];
+
+    // Re-render to update the alerts
+    if (this.container) {
+      this.renderContent(this.container);
+    }
   }
 
   private handleSearchResults = (filteredData: PredefinedLink[]): void => {
@@ -115,6 +175,9 @@ export class ContentManager implements ILinkManager {
     // Finally attach link selection listeners
     this.attachLinkSelectionListeners(container);
 
+    // Add alert dismissal listeners
+    this.attachAlertListeners(container);
+
     // Ensure radio buttons reflect current selection
     if (this.selectedLink) {
       const selectedRadio = container.querySelector(`cka-radio-button[value="${this.selectedLink.predefinedLinkName}"]`) as any;
@@ -122,6 +185,41 @@ export class ContentManager implements ILinkManager {
         selectedRadio.checked = true;
       }
     }
+  }
+
+  // Add method to attach alert dismissal listeners
+  private attachAlertListeners(container: HTMLElement): void {
+    container.querySelectorAll('.cka-alert-dismiss').forEach(button => {
+      button.addEventListener('click', (event) => {
+        const alertElement = (event.target as HTMLElement).closest('.cka-alert');
+        if (alertElement) {
+          const alertId = alertElement.getAttribute('data-alert-id');
+          if (alertId) {
+            this.removeAlert(alertId);
+          }
+        }
+      });
+    });
+  }
+
+  // Build alerts HTML
+  private buildAlertsMarkup(): string {
+    if (this.alerts.length === 0) {
+      return '';
+    }
+
+    return `
+      <div class="cka-alerts-container">
+        ${this.alerts.map(alert => `
+          <div class="cka-alert cka-alert-${alert.type}" data-alert-id="${alert.id}">
+            ${alert.message}
+            <button class="cka-button cka-button-rounded cka-button-${alert.type} cka-button-icon-only cka-button-text cka-alert-dismiss" aria-label="Dismiss alert">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        `).join('')}
+      </div>
+    `;
   }
 
   private buildContentForPage(): string {
@@ -144,7 +242,10 @@ export class ContentManager implements ILinkManager {
     const searchContainerMarkup = `<div id="search-container-root" class="cka-search-container"></div>`;
 
     // Current URL info if we have an initial URL
-    const currentUrlInfo = this.initialUrl ? this.buildCurrentUrlInfoMarkup() : '';
+    const selectedUrlInfo = this.initialUrl ? this.buildSelectedUrlInfoMarkup() : '';
+
+    // Alerts markup
+    const alertsMarkup = this.buildAlertsMarkup();
 
     // Links list
     const linksMarkup = currentPageData.length > 0
@@ -157,16 +258,17 @@ export class ContentManager implements ILinkManager {
     const paginationMarkup = `<div id="pagination-container" class="cka-pagination"></div>`;
 
     return `
-    ${searchContainerMarkup}
-    ${currentUrlInfo}
-    <div id="links-container">
-      ${linksMarkup}
-    </div>
-    ${paginationMarkup}
-  `;
+      ${searchContainerMarkup}
+      ${alertsMarkup}
+      <div id="links-container" class="cka-links-container">
+        ${selectedUrlInfo}
+        ${linksMarkup}
+      </div>
+      ${paginationMarkup}
+    `;
   }
 
-  private buildCurrentUrlInfoMarkup(): string {
+  private buildSelectedUrlInfoMarkup(): string {
     // Find the matching link for this URL
     const matchingLink = this.predefinedLinksData.find(link =>
       link.destination === this.initialUrl
@@ -204,20 +306,15 @@ export class ContentManager implements ILinkManager {
             name="${radioGroupName}" 
             value="${link.predefinedLinkName}" 
             ${isSelected ? 'checked' : ''}
-          >
-          </cka-radio-button>
+          ></cka-radio-button>
         </div>
         <ul>
-          <li>${link.predefinedLinkName}</li>
-          <li><strong>Description:</strong> ${link.predefinedLinkDescription}</li>
-          <li><strong>Base/Client Specific:</strong> ${link.baseOrClientSpecific}</li>
-          <li><strong>Page Type:</strong> ${link.pageType}</li>
-          <li class="wrap-text"><strong>Destination:</strong> ${link.destination}</li>
-          ${link.pageCode ? `<li><strong>Page Code:</strong> ${link.pageCode}</li>` : ''}
-          <li><strong>Domain:</strong> ${link.domain}</li>
-          <!--<li><strong>Unique ID:</strong> ${link.uniqueId}</li>
-          <li><strong>Attribute Name:</strong> ${link.attributeName}</li>
-          <li><strong>Attribute Value:</strong> ${link.attributeValue}</li>-->
+          ${link.predefinedLinkDescription ? `<li><strong>${link.predefinedLinkDescription}</strong></li>` : ''}
+          ${link.predefinedLinkName ? `<li><strong>Link Item Name:</strong> ${link.predefinedLinkName}</li>` : ''}
+          ${link.baseOrClientSpecific ? `<li><strong>Base / Client Specific:</strong> ${link.baseOrClientSpecific}</li>` : ''}
+          ${link.pageType ? `<li><strong>Page Type:</strong> ${link.pageType}</li>` : ''}
+          ${link.destination ? `<li><strong>Destination:</strong> ${link.destination}</ >` : ''}
+          ${link.domain ? `<li><strong>Domain:</strong> ${link.domain}</ >` : ''}
         </ul>
       </div>
     `;

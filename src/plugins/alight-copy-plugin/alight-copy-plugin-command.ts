@@ -74,7 +74,7 @@ export default class alightCopyPluginCommand extends Command {
 
       // Show success notification using the correct API
       const notification = this.editor.plugins.get('Notification');
-      notification.showSuccess('Content copied with styles!', {
+      notification.showSuccess('Content copied with formatting!', {
         namespace: 'alightCopyPlugin',
         title: 'Success'
       });

@@ -114,8 +114,8 @@ export default class AlightExistingDocumentLinkPluginAutoLink extends Plugin {
    * If position is not inside a link, returns `null`.
    */
   private _expandLinkRange(model: Model, position: Position): Range | null {
-    if (position.textNode && position.textNode.hasAttribute('AlightExistingDocumentLinkPluginHref')) {
-      return findAttributeRange(position, 'AlightExistingDocumentLinkPluginHref', position.textNode.getAttribute('AlightExistingDocumentLinkPluginHref'), model);
+    if (position.textNode && position.textNode.hasAttribute('alightExistingDocumentLinkPluginHref')) {
+      return findAttributeRange(position, 'alightExistingDocumentLinkPluginHref', position.textNode.getAttribute('alightExistingDocumentLinkPluginHref'), model);
     } else {
       return null;
     }
@@ -337,7 +337,7 @@ export default class AlightExistingDocumentLinkPluginAutoLink extends Plugin {
 
     // Enqueue change to make undo step.
     model.enqueueChange(writer => {
-      writer.setAttribute('AlightExistingDocumentLinkPluginHref', url, range);
+      writer.setAttribute('alightExistingDocumentLinkPluginHref', url, range);
 
       model.enqueueChange(() => {
         deletePlugin.requestUndoOnBackspace();
@@ -358,10 +358,10 @@ function getUrlAtTextEnd(text: string): string | null {
 }
 
 function isLinkAllowedOnRange(range: Range, model: Model): boolean {
-  return model.schema.checkAttributeInSelection(model.createSelection(range), 'AlightExistingDocumentLinkPluginHref');
+  return model.schema.checkAttributeInSelection(model.createSelection(range), 'alightExistingDocumentLinkPluginHref');
 }
 
 function linkIsAlreadySet(range: Range): boolean {
   const item = range.start.nodeAfter;
-  return !!item && item.hasAttribute('AlightExistingDocumentLinkPluginHref');
+  return !!item && item.hasAttribute('alightExistingDocumentLinkPluginHref');
 }

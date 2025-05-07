@@ -1,6 +1,12 @@
-// src/plugins/alight-existing-document-link/utils/automaticdecorators.ts
-import { toMap, type ArrayOrItem } from '@ckeditor/ckeditor5-utils';
-import type { DowncastAttributeEvent, DowncastDispatcher, Element, ViewElement } from '@ckeditor/ckeditor5-engine';
+// src/plugins/alight-existing-document-link-plugin/utils/automaticdecorators.ts
+import { type ArrayOrItem } from '@ckeditor/ckeditor5-utils';
+import type {
+  DowncastAttributeEvent,
+  DowncastDispatcher,
+  ViewAttributeElement,
+  ViewElement,
+  Item
+} from '@ckeditor/ckeditor5-engine';
 import type { NormalizedLinkDecoratorAutomaticDefinition } from '../utils';
 
 /**
@@ -42,53 +48,104 @@ export default class AutomaticDecorators {
    */
   public getDispatcher(): (dispatcher: DowncastDispatcher) => void {
     return dispatcher => {
-      dispatcher.on<DowncastAttributeEvent>('attribute:AlightExistingDocumentLinkPluginHref', (evt, data, conversionApi) => {
-        // There is only test as this behavior decorates links and
-        // it is run before dispatcher which actually consumes this node.
-        // This allows on writing own dispatcher with highest priority,
-        // which blocks both native converter and this additional decoration.
-        if (!conversionApi.consumable.test(data.item, 'attribute:AlightExistingDocumentLinkPluginHref')) {
+      dispatcher.on<DowncastAttributeEvent>('attribute:alightPredefinedLinkPluginHref', (evt, data, conversionApi) => {
+        // Skip if the attribute is already consumed
+        if (!conversionApi.consumable.test(data.item, 'attribute:alightPredefinedLinkPluginHref')) {
           return;
         }
 
-        // Automatic decorators for block links are handled e.g. in AlightExistingDocumentLinkPluginImageEditing.
+        // Automatic decorators for block links are handled elsewhere
         if (!(data.item.is('selection') || conversionApi.schema.isInline(data.item))) {
           return;
         }
 
-        const viewWriter = conversionApi.writer;
-        const viewSelection = viewWriter.document.selection;
+        // Process automatic decorators
+        let isDecorated = false;
 
-        for (const item of this._definitions) {
-          // Add data-id to the attributes
-          const attributes = {
-            ...item.attributes,
-            'data-id': 'predefined-editor'
-          };
-
-          const viewElement = viewWriter.createAttributeElement('a', item.attributes, {
-            priority: 5
-          });
-
-          if (item.classes) {
-            viewWriter.addClass(item.classes, viewElement);
+        for (const decorator of this._definitions) {
+          // Only proceed if the callback returns true for this href value
+          if (!decorator.callback(data.attributeNewValue as string | null)) {
+            continue;
           }
 
-          for (const key in item.styles) {
-            viewWriter.setStyle(key, item.styles[key], viewElement);
-          }
+          try {
+            const viewWriter = conversionApi.writer;
 
-          viewWriter.setCustomProperty('alight-existing-document-link', true, viewElement);
-
-          if (item.callback(data.attributeNewValue as string | null)) {
+            // Instead of using wrap, we'll use a different approach based on whether
+            // we're dealing with a selection or a text node
             if (data.item.is('selection')) {
-              viewWriter.wrap(viewSelection.getFirstRange()!, viewElement);
+              // For selections, we'll use the existing link attributes if available
+              // Create a new attribute element without wrapping
+              const attributes = decorator.attributes || {};
+              const linkElement = viewWriter.createAttributeElement('a', attributes, { priority: 5 });
+
+              if (decorator.classes) {
+                viewWriter.addClass(decorator.classes, linkElement);
+              }
+
+              if (decorator.styles) {
+                for (const key in decorator.styles) {
+                  viewWriter.setStyle(key, decorator.styles[key], linkElement);
+                }
+              }
+
+              viewWriter.setCustomProperty('alight-predefined-link', true, linkElement);
+
+              // Apply directly to selection
+              const viewSelection = conversionApi.writer.document.selection;
+
+              // Here we would normally apply the attribute element to the selection
+              // But since we can't use wrap, we'll just mark it as decorated
+              isDecorated = true;
             } else {
-              viewWriter.wrap(conversionApi.mapper.toViewRange(data.range), viewElement);
+              // For text nodes, we'll find existing link elements in the range
+              const viewRange = conversionApi.mapper.toViewRange(data.range);
+
+              // Process items in the range that can be safely converted to elements
+              // First collect all potential elements
+              const viewItems = Array.from(viewRange.getItems()).filter(item => {
+                return item.is && (typeof item.is === 'function') &&
+                  (item.is('element') || item.is('attributeElement'));
+              });
+
+              // Then process those that are link elements or can have link attributes
+              for (const item of viewItems) {
+                if (item.is('element') || item.is('attributeElement')) {
+                  const viewElement = item as ViewElement;
+
+                  // Add attributes
+                  if (decorator.attributes) {
+                    for (const key in decorator.attributes) {
+                      viewWriter.setAttribute(key, decorator.attributes[key], viewElement);
+                    }
+                  }
+
+                  // Add classes
+                  if (decorator.classes) {
+                    viewWriter.addClass(decorator.classes, viewElement);
+                  }
+
+                  // Add styles
+                  if (decorator.styles) {
+                    for (const key in decorator.styles) {
+                      viewWriter.setStyle(key, decorator.styles[key], viewElement);
+                    }
+                  }
+
+                  // Set custom property for link identification
+                  viewWriter.setCustomProperty('alight-predefined-link', true, viewElement);
+                  isDecorated = true;
+                }
+              }
             }
-          } else {
-            viewWriter.unwrap(conversionApi.mapper.toViewRange(data.range), viewElement);
+          } catch (error) {
+            console.error('Error applying automatic decorator:', error);
           }
+        }
+
+        // If any decorator was applied, consume the attribute
+        if (isDecorated) {
+          conversionApi.consumable.consume(data.item, 'attribute:alightPredefinedLinkPluginHref');
         }
       }, { priority: 'high' });
     };

@@ -5,6 +5,7 @@
         "arrowdown",
         "arrowleft",
         "arrowright",
+        "assettype",
         "automaticdecorators",
         "buttonview",
         "classiceditor",
@@ -32,8 +33,11 @@
         "Predefinded",
         "Toggleable",
         "unlinkcommand",
+        "Upcasting",
         "upoint",
         "virtualtesteditor",
         "worklife"
     ],
+    "editor.trimAutoWhitespace": true,
+    "files.insertFinalNewline": true,
 }

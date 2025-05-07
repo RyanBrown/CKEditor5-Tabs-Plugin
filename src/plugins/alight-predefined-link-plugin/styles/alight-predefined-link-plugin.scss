@@ -2,37 +2,34 @@
 @use './../../../styles/mixins' as mixins;
 
 .cka-predefined-link-content {
-  flex: 1;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
   padding: 0;
-  position: relative;
 }
 
-.current-url-info {
-  background-color: #eef5ff;
-  border-bottom: 1px solid var(--gray-400);
+.cka-flex-links-wrap {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
 
-  h3 {
-    border-bottom: 2px solid var(--gray-400);
-    font-weight: var(--font-weight-normal);
-    margin: 0;
-    padding: 1rem var(--spacing-xl);
-  }
-
-  .cka-note-message {
-    padding: 1rem var(--spacing-xl);
+  .cka-links-container {
+    flex-grow: 1;
+    overflow: auto;
+    padding: 0;
   }
 }
 
 .filter-section {
-  h4:first-of-type {
-    margin-top: 0;
+  h4 {
+    margin: 1rem 0 .5rem;
   }
-}
 
-.pagination-controls {
-  align-items: center;
-  display: flex;
+  &:first-of-type {
+    h4 {
+      margin: .5rem 0;
+    }
+  }
 }
 
 .ck.ck-link-actions .ck-button.ck-link-actions__preview.cka-disabled-link-preview .ck-button__label {
@@ -40,10 +37,4 @@
   cursor: default;
   font-weight: bold;
   pointer-events: none;
-}
-
-.cka-alert-warning {
-  background-color: var(--warning);
-  font-weight: var(--font-weight-bold);
-  padding: 1rem var(--spacing-xl);
 }

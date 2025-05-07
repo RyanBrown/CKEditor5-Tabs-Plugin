@@ -32,7 +32,6 @@ import {
   normalizeDecorators,
   addLinkProtocolIfApplicable,
   createBookmarkCallbacks,
-  openLink,
   ensureUrlProtocol,
   type NormalizedLinkDecoratorAutomaticDefinition,
   type NormalizedLinkDecoratorManualDefinition
@@ -42,7 +41,7 @@ import type { LinkDecoratorDefinition } from './linkconfig';
 
 import '@ckeditor/ckeditor5-link/theme/link.css';
 
-const HIGHLIGHT_CLASS = 'ck-alight-external-link_selected';
+const HIGHLIGHT_CLASS = 'ck-link_selected';
 const DECORATOR_AUTOMATIC = 'automatic';
 const DECORATOR_MANUAL = 'manual';
 const EXTERNAL_LINKS_REGEXP = /^(https?:)?\/\//;
@@ -142,7 +141,6 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
           if (linkCommand && linkCommand.organization) {
             attrs.orgnameattr = linkCommand.organization;
           }
-
           return createLinkElement(ensureSafeUrl(href, allowedProtocols), { ...conversionApi, attrs });
         },
         converterPriority: 'high'
@@ -521,8 +519,6 @@ export default class AlightExternalLinkPluginEditing extends Plugin {
     function handleLinkOpening(url: string): void {
       if (bookmarkCallbacks.isScrollableToTarget(url)) {
         bookmarkCallbacks.scrollToTarget(url);
-      } else {
-        openLink(url);
       }
     }
 

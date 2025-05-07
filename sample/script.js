@@ -1,108 +1,115 @@
-const apiUrl = 'https://my.api.mockaroo.com/predefined_link.json?key=b3c0df80';
-const apiKey = 'b3c0df80';
+// sample/script.js
 
-async function fetchPredefinedLinks() {
-	try {
-		const response = await fetch(apiUrl, {
-			method: 'GET',
-			headers: {
-				'X-API-Key': apiKey,
-				'Content-Type': 'application/json'
-			}
-		});
+// Simple JavaScript version - put this in /build/script.js
+document.addEventListener('DOMContentLoaded', async () => {
+  // Set up necessary session storage variables
+  sessionStorage.setItem('apiUrl', 'https://api.mockaroo.com');
+  sessionStorage.setItem('dummyColleagueSessionToken', 'b3c0df80'); // Mockaroo API key
+  sessionStorage.setItem('dummyRequestHeader', JSON.stringify({
+    clientId: 'test-client',
+    'X-API-Key': 'b3c0df80'
+  }));
 
-		if (!response.ok) {
-			const errorText = await response.text();
-			throw new Error(`API request failed with status ${response.status}: ${errorText}`);
-		}
+  try {
+    // Initialize SessionService
+    if (typeof SessionService !== 'undefined') {
+      SessionService.create(sessionStorage);
+      console.log('SessionService initialized');
 
-		const data = await response.json();
-		console.log('Fetched data:', data);
-		return data;
-	} catch (error) {
-		console.error('Error fetching from Mockaroo:', error);
-		return null;
-	}
-}
+      // Initialize links services
+      try {
+        if (typeof LinksLoadService !== 'undefined') {
+          const linksLoadService = new LinksLoadService();
 
-// Initialize the editor with predefined links
-async function initializeEditor() {
-	try {
-		// Fetch predefined links data
-		const predefinedLinks = await fetchPredefinedLinks();
-		console.log('Fetched predefined links:', predefinedLinks);
+          // Preload data with better error handling
+          console.log('Preloading links data...');
 
-		// Store data in sessionStorage
-		sessionStorage.setItem('predefinedLinks', JSON.stringify(predefinedLinks));
+          // Handle each API call separately with try/catch for better resilience
+          try {
+            const predefinedLinks = await linksLoadService.loadPredefinedLinks();
+            console.log('Predefined links loaded:', predefinedLinks.length);
+          } catch (err) {
+            console.warn('Error loading predefined links:', err);
+          }
 
-		// Initialize the editor with the configuration
-		const editor = await AlightEditor.create(document.querySelector('.editor'), {
-			// Editor config
-			predefinedLinks: predefinedLinks,
-			// Add any other config options you need
-		});
+          try {
+            const documentLinks = await linksLoadService.loadDocumentLinks();
+            console.log('Document links loaded:', documentLinks.length);
+          } catch (err) {
+            console.warn('Error loading document links:', err);
+          }
 
-		window.editor = editor;
+          try {
+            const categories = await linksLoadService.loadCategories();
+            console.log('Categories loaded:', categories.length);
+          } catch (err) {
+            console.warn('Error loading categories:', err);
+          }
+        } else {
+          console.warn('LinksLoadService not available');
+        }
+      } catch (linksError) {
+        console.warn('Error preloading links data:', linksError);
+      }
+    } else {
+      console.warn('SessionService not available');
+    }
 
-		// Store API information in sessionStorage
-		sessionStorage.setItem('apiUrl', apiUrl);
-		sessionStorage.setItem('dummyColleagueSessionToken', apiKey);
-		sessionStorage.setItem('dummyRequestHeader', apiKey);
+    // Initialize the editor
+    const editor = await AlightEditor.create(document.querySelector('.editor'), {
+      // Editor configuration can be added here
+    });
 
-		// Add event listeners or additional setup as needed
+    // Store editor instance globally
+    window.editor = editor;
 
-	} catch (error) {
-		handleSampleError(error);
-	}
-}
+    // Initialize CKEditor Inspector if available
+    if (window.CKEditorInspector) {
+      window.CKEditorInspector.attach(editor);
+    }
+  } catch (error) {
+    handleSampleError(error);
+  }
+});
 
+/**
+ * Handles and displays errors in a user-friendly way
+ * @param error - The error that occurred
+ */
 function handleSampleError(error) {
-	const issueUrl = 'https://github.com/ckeditor/ckeditor5/issues';
+  const issueUrl = 'https://github.com/ckeditor/ckeditor5/issues';
 
-	const message = [
-		'Oops, something went wrong!',
-		`Please, report the following error on ${issueUrl} with the build id "8d10683l9mj7-aq8r9rg4xws6" and the error stack trace:`
-	].join('\n');
+  const message = [
+    'Oops, something went wrong!',
+    `Please, report the following error on ${issueUrl} with the build id "8d10683l9mj7-aq8r9rg4xws6" and the error stack trace:`
+  ].join('\n');
 
-	console.error(message);
-	console.error(error);
+  console.error(message);
+  console.error(error);
 }
 
-// Initialize the editor when the DOM is ready
-document.addEventListener('DOMContentLoaded', initializeEditor);
+// AlightEditor
+//   .create(document.querySelector('.editor'), {
+//     // Editor.configuration.
+//   })
+//   .then(editor => {
+//     window.editor = editor;
+//     CKEditorInspector.attach(editor);
 
-// const watchdog = new CKSource.EditorWatchdog();
+//     sessionStorage.setItem('apiUrl', 'https://test.com');
+//     sessionStorage.setItem('dummyColleagueSessionToken', '1234');
+//     sessionStorage.setItem('dummyRequestHeader', '{}');
+//   }).catch(handleSampleError);
 
-// window.watchdog = watchdog;
 
-// watchdog.setCreator( ( element, config ) => {
-// 	return CKSource.Editor
-// 		.create( element, config )
-// 		.then( editor => {
-// 			return editor;
-// 		} );
-// } );
+// function handleSampleError(error) {
+//   const issueUrl = 'https://github.com/ckeditor/ckeditor5/issues';
 
-// watchdog.setDestructor( editor => {
-// 	return editor.destroy();
-// } );
+//   const message = [
+//     'Oops, something went wrong!',
+//     `Please, report the following error on ${issueUrl} with the build id "8d10683l9mj7-aq8r9rg4xws6" and the error stack trace:`
+//   ].join('\n');
 
-// watchdog.on( 'error', handleSampleError );
-
-// watchdog
-// 	.create( document.querySelector( '.editor' ), {
-// 		// Editor configuration.
-// 	} )
-// 	.catch( handleSampleError );
-
-// function handleSampleError( error ) {
-// 	const issueUrl = 'https://github.com/ckeditor/ckeditor5/issues';
-
-// 	const message = [
-// 		'Oops, something went wrong!',
-// 		`Please, report the following error on ${ issueUrl } with the build id "8d10683l9mj7-aq8r9rg4xws6" and the error stack trace:`
-// 	].join( '\n' );
-
-// 	console.error( message );
-// 	console.error( error );
+//   console.error(message);
+//   console.error(error);
 // }

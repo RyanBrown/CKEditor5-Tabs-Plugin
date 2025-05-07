@@ -1,6 +1,6 @@
 // src/data-sources/base-source/data-source-post.ts
-import { DataSourceRequest, IDataSourceRequest } from './data-source-request';
-import { HttpRequestMethod } from './http-request-method';
+import { DataSourceRequest, IDataSourceRequest } from "./data-source-request";
+import { HttpRequestMethod } from "./http-request-method";
 
 export class DataSourcePost extends DataSourceRequest implements IDataSourceRequest {
 

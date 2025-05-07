@@ -5,7 +5,8 @@ import type {
   Schema,
   ViewAttributeElement,
   ViewNode,
-  ViewDocumentFragment
+  ViewDocumentFragment,
+  ViewElement as ViewElementType
 } from '@ckeditor/ckeditor5-engine';
 
 import type { Editor } from '@ckeditor/ckeditor5-core';
@@ -48,23 +49,50 @@ export const LINK_KEYSTROKE = 'Ctrl+K';
  * Returns `true` if a given view node is the link element.
  */
 export function isLinkElement(node: ViewNode | ViewDocumentFragment): boolean {
-  return node.is('attributeElement') && !!node.getCustomProperty('alight-existing-document-link');
+  return (
+    node.is('attributeElement') && (
+      !!node.getCustomProperty('alight-existing-document-link') ||
+      node.hasClass('document_tag') ||
+      node.getAttribute('data-id') === 'existing-document_link'
+    )
+  );
+}
+
+/**
+ * Helper function to detect existing document links based on attributes
+ * rather than URL suffix
+ */
+// Update the isExistingDocumentLink function in utils.ts
+export function isExistingDocumentLink(url: string | null | undefined): boolean {
+  // If the URL is empty, null, or undefined, it's not a existing document link
+  if (!url) return false;
+
+  return true;
 }
 
 /**
  * Creates a link {@link module:engine/view/attributeelement~AttributeElement} with the provided `href` attribute.
  */
-// Helper function to detect external document link
-export function isExistingDocumentEditorLink(url: string): boolean {
-  return url.includes('~existing_document_editor_id');
-}
-
 export function createLinkElement(href: string, { writer }: DowncastConversionApi): ViewAttributeElement {
+  // Check if this is a existing document link
+  const isExistingDocument = isExistingDocumentLink(href);
+
+  // Build attributes without target="_blank" for downcast
+  const attributes: Record<string, string> = { href };
+
+  // Add data-id for existing document links
+  if (isExistingDocument) {
+    attributes['data-id'] = 'existing-document_link';
+  }
+
+  // Create the base link element
   // Priority 5 - https://github.com/ckeditor/ckeditor5-link/issues/121.
-  const linkElement = writer.createAttributeElement('a', {
-    href,
-    'data-id': 'predefined-editor'
-  }, { priority: 5 });
+  const linkElement = writer.createAttributeElement('a', attributes, { priority: 5 });
+
+  // Add document_tag class for existing document links
+  if (isExistingDocument) {
+    writer.addClass('document_tag', linkElement);
+  }
 
   writer.setCustomProperty('alight-existing-document-link', true, linkElement);
 
@@ -83,6 +111,12 @@ export function createLinkElement(href: string, { writer }: DowncastConversionAp
 export function ensureSafeUrl(url: unknown, allowedProtocols: Array<string> = DEFAULT_LINK_PROTOCOLS): string {
   const urlString = String(url);
 
+  // Special handling for existing document links
+  if (isExistingDocumentLink(urlString)) {
+    return urlString; // Return unmodified
+  }
+
+  // Normal URL safety handling for non-existing document links
   const protocolsList = allowedProtocols.join('|');
   const customSafeRegex = new RegExp(`${SAFE_URL_TEMPLATE.replace('<protocols>', protocolsList)}`, 'i');
 
@@ -93,6 +127,11 @@ export function ensureSafeUrl(url: unknown, allowedProtocols: Array<string> = DE
  * Checks whether the given URL is safe for the user (does not contain any malicious code).
  */
 function isSafeUrl(url: string, customRegexp: RegExp): boolean {
+  // Consider existing document links safe
+  if (isExistingDocumentLink(url)) {
+    return true;
+  }
+
   const normalizedUrl = url.replace(ATTRIBUTE_WHITESPACES, '');
 
   return !!normalizedUrl.match(customRegexp);
@@ -152,14 +191,14 @@ export function normalizeDecorators(decorators?: Record<string, LinkDecoratorDef
 }
 
 /**
- * Returns `true` if the specified `element` can be linked (the element allows the `AlightExistingDocumentLinkPluginHref` attribute).
+ * Returns `true` if the specified `element` can be linked (the element allows the `alightExistingDocumentLinkPluginHref` attribute).
  */
 export function isLinkableElement(element: Element | null, schema: Schema): element is Element {
   if (!element) {
     return false;
   }
 
-  return schema.checkAttribute(element.name, 'AlightExistingDocumentLinkPluginHref');
+  return schema.checkAttribute(element.name, 'alightExistingDocumentLinkPluginHref');
 }
 
 /**
@@ -177,6 +216,11 @@ export function isEmail(value: string): boolean {
  * * or the link is an email address.
  */
 export function addLinkProtocolIfApplicable(link: string, defaultProtocol?: string): string {
+  // Don't modify existing document links
+  if (isExistingDocumentLink(link)) {
+    return link;
+  }
+
   const protocol = isEmail(link) ? 'mailto:' : defaultProtocol;
   const isProtocolNeeded = !!protocol && !linkHasProtocol(link);
 
@@ -188,13 +232,6 @@ export function addLinkProtocolIfApplicable(link: string, defaultProtocol?: stri
  */
 export function linkHasProtocol(link: string): boolean {
   return PROTOCOL_REG_EXP.test(link);
-}
-
-/**
- * Opens the link in a new browser tab.
- */
-export function openLink(link: string): void {
-  window.open(link, '_blank', 'noopener');
 }
 
 /**
@@ -236,6 +273,73 @@ export function createBookmarkCallbacks(editor: Editor): LinkActionsViewOptions 
     isScrollableToTarget,
     scrollToTarget
   };
+}
+
+/**
+ * Extracts the existing document link ID from the URL or attributes
+ * @param href The href attribute value
+ * @returns The link ID or null if not a existing document link
+ */
+export function extractExternalDocumentLinkId(href: string | null | undefined): string | null {
+  if (!href) return null;
+
+  // Handle links with ah:link nested element - extract from the name attribute
+  const documentTag = href.match(/name="([^"]+)"/);
+  if (documentTag && documentTag[1]) {
+    return documentTag[1];
+  }
+
+  // Handle numeric IDs
+  if (/^[0-9]+$/.test(href)) {
+    return href;
+  }
+
+  // If nothing specific is found, just return the href as-is
+  // for existing document links
+  return isExistingDocumentLink(href) ? href : null;
+}
+
+// Add a function to check if an element has document_tag class
+export function hasDocumentTagClass(element: ViewAttributeElement): boolean {
+  return element.hasClass('document_tag');
+}
+
+/**
+ * Filters link attributes to remove unwanted attributes like data-cke-saved-href
+ * @param attributes Original attributes object
+ * @returns Filtered attributes object
+ */
+export function filterLinkAttributes(attributes: Record<string, string>): Record<string, string> {
+  const result: Record<string, string> = {};
+
+  // Copy only the attributes we want to keep
+  for (const key in attributes) {
+    // Skip data-cke-saved-href attribute
+    if (key === 'data-cke-saved-href') {
+      continue;
+    }
+
+    // Skip empty href or "#" href for non-existing document links
+    if (key === 'href' && (attributes[key] === '' || attributes[key] === '#')) {
+      // Keep empty href only for existing document links
+      if (attributes['data-id'] === 'existing-document_link') {
+        result[key] = '#existing-document-link';
+      } else {
+        result[key] = '#';
+      }
+      continue;
+    }
+
+    // Preserve target="_blank" if it was in the original attributes
+    if (key === 'target' && attributes[key] === '_blank') {
+      result[key] = attributes[key];
+    } else {
+      // Keep all other attributes
+      result[key] = attributes[key];
+    }
+  }
+
+  return result;
 }
 
 export type NormalizedLinkDecoratorAutomaticDefinition = LinkDecoratorAutomaticDefinition & { id: string };

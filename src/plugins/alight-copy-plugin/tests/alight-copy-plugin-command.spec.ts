@@ -101,7 +101,7 @@ describe('AlightCopyPluginCommand', () => {
 
       expect(navigator.clipboard.write).toHaveBeenCalled();
       expect(mockShowSuccess).toHaveBeenCalledWith(
-        'Content copied with styles!',
+        'Content copied with formatting!',
         jasmine.any(Object)
       );
     });
@@ -134,7 +134,7 @@ describe('AlightCopyPluginCommand', () => {
 
       expect(document.execCommand).toHaveBeenCalledWith('copy');
       expect(mockShowSuccess).toHaveBeenCalledWith(
-        'Content copied with styles!',
+        'Content copied with formatting!',
         jasmine.any(Object)
       );
     });

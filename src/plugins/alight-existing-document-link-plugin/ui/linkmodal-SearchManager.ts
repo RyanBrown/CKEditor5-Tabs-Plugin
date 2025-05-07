@@ -5,9 +5,11 @@ import { DocumentLink, SelectedFilters } from './linkmodal-modal-types';
 
 export class SearchManager {
   private currentSearchQuery = '';
+  private populationSearchQuery = ''; // Field for population text input
   private overlayPanel: AlightOverlayPanel | null = null;
   private readonly advancedSearchTriggerId = 'advanced-search-trigger';
   private searchInput: HTMLInputElement | null = null;
+  private populationInput: HTMLInputElement | null = null; // Reference to the population input
 
   private selectedFilters: SelectedFilters = {
     fileType: [],
@@ -83,7 +85,6 @@ export class SearchManager {
       this.searchInput.addEventListener('input', () => {
         this.currentSearchQuery = this.searchInput.value;
         resetButton.style.display = this.searchInput.value.length > 0 ? 'inline-flex' : 'none';
-        // Optionally trigger search on input change (debounced if needed)
       });
 
       // Clear input and hide reset button when clicked
@@ -106,10 +107,6 @@ export class SearchManager {
       new Set(this.existingDocumentLinksData.map(item => item.fileType))
     ).filter(Boolean).sort();
 
-    const populationOptions = Array.from(
-      new Set(this.existingDocumentLinksData.map(item => item.population))
-    ).filter(Boolean).sort();
-
     const localeOptions = Array.from(
       new Set(this.existingDocumentLinksData.map(item => item.locale))
     ).filter(Boolean).sort();
@@ -117,8 +114,26 @@ export class SearchManager {
     return `
       <div class="search-filters">
         ${this.createFilterSection('File Type', 'fileType', fileTypeOptions)}
-        ${this.createFilterSection('Population', 'population', populationOptions)}
+        ${this.createPopulationFilterSection()}
         ${this.createFilterSection('Locale', 'locale', localeOptions)}
+      </div>
+    `;
+  }
+
+  // Method to create the Population filter with text input
+  private createPopulationFilterSection(): string {
+    return `
+      <div class="filter-section">
+        <h4>Population</h4>
+        <div class="population-input-container">
+          <input 
+            class="cka-input-text cka-width-75"
+            id="population-filter-input" 
+            placeholder="Filter by population..." 
+            type="text" 
+            value="${this.populationSearchQuery || ''}"
+          />
+        </div>
       </div>
     `;
   }
@@ -161,10 +176,13 @@ export class SearchManager {
     }
 
     this.overlayPanel = new AlightOverlayPanel(triggerEl as HTMLElement, {
-      width: '38rem',
+      width: '24rem',
       height: 'auto',
       onShow: () => {
-        this.setupAdvancedSearchListeners(container);
+        // Use a small timeout to ensure the DOM is ready
+        setTimeout(() => {
+          this.setupAdvancedSearchListeners(container);
+        }, 50);
       }
     });
   }
@@ -181,28 +199,95 @@ export class SearchManager {
   }
 
   private setupAdvancedSearchListeners(container: HTMLElement): void {
-    // Handle the apply filters button click
-    document.querySelectorAll('#apply-filters').forEach(button => {
-      button.addEventListener('click', () => {
-        this.applyFilters();
-      });
+    // Initialize the population input field
+    const populationInputElement = document.getElementById('population-filter-input');
+    if (!populationInputElement) {
+      console.error('Population input element not found');
+      return;
+    }
+
+    this.populationInput = populationInputElement as HTMLInputElement;
+
+    // Make sure the value is set correctly from the stored value
+    this.populationInput.value = this.populationSearchQuery || '';
+    console.log('Initial population filter value:', this.populationInput.value);
+
+    // Add direct event listener for population input changes
+    this.populationInput.addEventListener('input', (event: Event) => {
+      const target = event.target as HTMLInputElement;
+      this.populationSearchQuery = target.value;
+      console.log('Population search query updated:', this.populationSearchQuery);
     });
 
-    // Handle the clear filters button click
-    document.querySelectorAll('#clear-filters').forEach(button => {
-      button.addEventListener('click', () => {
-        this.clearFilters(container);
-      });
+    // Also add keypress listener for Enter key
+    this.populationInput.addEventListener('keypress', (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        console.log('Enter key pressed in population input, applying filters');
+        this.applyFilters();
+      }
     });
+
+    // Handle the apply filters button click
+    const applyBtn = document.getElementById('apply-filters');
+    if (applyBtn) {
+      // Remove existing listeners to prevent duplicates
+      const newApplyBtn = applyBtn.cloneNode(true);
+      if (applyBtn.parentNode) {
+        applyBtn.parentNode.replaceChild(newApplyBtn, applyBtn);
+      }
+
+      newApplyBtn.addEventListener('click', () => {
+        console.log('Apply filters button clicked');
+        this.applyFilters();
+      });
+    }
+
+    // Handle the clear filters button click
+    const clearBtn = document.getElementById('clear-filters');
+    if (clearBtn) {
+      // Remove existing listeners to prevent duplicates
+      const newClearBtn = clearBtn.cloneNode(true);
+      if (clearBtn.parentNode) {
+        clearBtn.parentNode.replaceChild(newClearBtn, clearBtn);
+      }
+
+      newClearBtn.addEventListener('click', () => {
+        console.log('Clear filters button clicked');
+        this.clearFilters();
+      });
+    }
 
     // Setup checkbox listeners for all checkboxes in the document
     document.querySelectorAll('cka-checkbox').forEach(checkbox => {
       this.setupSingleCheckboxListener(checkbox);
+
+      // Ensure checkboxes reflect the current state
+      this.updateCheckboxState(checkbox);
     });
   }
 
+  // New method to update checkbox state based on selectedFilters
+  private updateCheckboxState(checkbox: Element): void {
+    const filterType = checkbox.getAttribute('data-filter-type') as keyof SelectedFilters;
+    const value = checkbox.getAttribute('data-value');
+
+    if (filterType && value && this.selectedFilters[filterType]) {
+      // Set checked property to match selected filters state
+      const isSelected = this.selectedFilters[filterType].includes(value);
+      (checkbox as any).checked = isSelected;
+
+      console.log(`Updated checkbox: ${value} (${filterType}) is ${isSelected ? 'checked' : 'unchecked'}`);
+    }
+  }
+
   private setupSingleCheckboxListener(checkbox: Element): void {
-    checkbox.addEventListener('change', (event: Event) => {
+    // Remove existing listeners to prevent duplicates
+    const newCheckbox = checkbox.cloneNode(true);
+    if (checkbox.parentNode) {
+      checkbox.parentNode.replaceChild(newCheckbox, checkbox);
+    }
+
+    newCheckbox.addEventListener('change', (event: Event) => {
       const target = event.target as HTMLElement;
       const filterType = target.getAttribute('data-filter-type') as keyof SelectedFilters;
       const value = target.getAttribute('data-value');
@@ -211,9 +296,13 @@ export class SearchManager {
       if (filterType && value) {
         if (isChecked && !this.selectedFilters[filterType].includes(value)) {
           this.selectedFilters[filterType].push(value);
+          console.log(`Added ${value} to ${filterType} filters`);
         } else if (!isChecked) {
           this.selectedFilters[filterType] = this.selectedFilters[filterType].filter((v: string) => v !== value);
+          console.log(`Removed ${value} from ${filterType} filters`);
         }
+
+        console.log('Updated selected filters:', JSON.stringify(this.selectedFilters));
       }
     });
   }
@@ -223,50 +312,156 @@ export class SearchManager {
     this.updateFilteredData();
   }
 
-  private clearFilters(container: HTMLElement): void {
-    // Reset all filters
+  private clearFilters(): void {
+    console.log('Clearing all filters...');
+
+    // First, reset all the internal filter state
     this.selectedFilters = {
       fileType: [],
       population: [],
       locale: []
     };
 
-    // Uncheck all checkboxes within the advanced search panel
-    const advancedSearchPanel = container.querySelector('.cka-overlay-panel[data-id="advanced-search-panel"]');
-    if (advancedSearchPanel) {
-      document.querySelectorAll('cka-checkbox').forEach(checkbox => {
-        (checkbox as any).checked = false;
-      });
+    // Clear population search query from both state and input element
+    this.populationSearchQuery = '';
+
+    // Find and clear the population input element directly
+    const populationInput = document.getElementById('population-filter-input') as HTMLInputElement;
+    if (populationInput) {
+      console.log('Clearing population input field, previous value:', populationInput.value);
+      populationInput.value = '';
+    } else {
+      console.warn('Population input element not found during clearFilters');
     }
 
-    // Update the filtered data and UI
+    // Uncheck all checkboxes in the advanced search panel
+    const checkboxes = document.querySelectorAll('cka-checkbox');
+    if (checkboxes && checkboxes.length > 0) {
+      console.log('Found', checkboxes.length, 'checkboxes to reset');
+
+      checkboxes.forEach((checkbox: any) => {
+        // Force uncheck state
+        checkbox.checked = false;
+        console.log('Unchecked checkbox:', checkbox.textContent.trim());
+      });
+    } else {
+      console.warn('No checkboxes found to reset');
+    }
+
+    console.log('Filters cleared, state reset to:', {
+      populationQuery: this.populationSearchQuery,
+      selectedFilters: this.selectedFilters
+    });
+
+    // Update filtered data with cleared filters
     this.updateFilteredData();
   }
 
   private applyFilters(): void {
+    // Make sure we grab the current value directly from the input element
+    const populationInput = document.getElementById('population-filter-input') as HTMLInputElement;
+    if (populationInput) {
+      this.populationSearchQuery = populationInput.value;
+      console.log('Applying population filter with value:', this.populationSearchQuery);
+    } else {
+      console.warn('Population input element not found during apply filters');
+    }
+
+    // Get current checkbox states to ensure selectedFilters is accurate
+    document.querySelectorAll('cka-checkbox').forEach((checkbox: any) => {
+      const filterType = checkbox.getAttribute('data-filter-type') as keyof SelectedFilters;
+      const value = checkbox.getAttribute('data-value');
+      const isChecked = checkbox.checked;
+
+      if (filterType && value) {
+        // Update the filter array based on current checked state
+        const filterArray = this.selectedFilters[filterType];
+        const valueExists = filterArray.includes(value);
+
+        if (isChecked && !valueExists) {
+          filterArray.push(value);
+          console.log(`Added ${value} to ${filterType} filters during apply`);
+        } else if (!isChecked && valueExists) {
+          this.selectedFilters[filterType] = filterArray.filter(v => v !== value);
+          console.log(`Removed ${value} from ${filterType} filters during apply`);
+        }
+      }
+    });
+
+    // Update filtered data with the current filters
     this.updateFilteredData();
+
+    // Close the panel
     this.overlayPanel?.hide();
   }
 
   private updateFilteredData(): void {
-    const filteredData = this.existingDocumentLinksData.filter(link => {
-      const matchesSearch = !this.currentSearchQuery ||
-        link.title.toLowerCase().includes(this.currentSearchQuery.toLowerCase()) ||
-        (link.documentDescription && link.documentDescription.toLowerCase().includes(this.currentSearchQuery.toLowerCase())) ||
-        (link.serverFilePath && link.serverFilePath.toLowerCase().includes(this.currentSearchQuery.toLowerCase()));
+    // Debugging info
+    console.log('Updating filtered data:');
+    console.log('- Main search query:', this.currentSearchQuery);
+    console.log('- Population query:', this.populationSearchQuery);
+    console.log('- File types:', this.selectedFilters.fileType);
+    console.log('- Locales:', this.selectedFilters.locale);
 
-      const matchesFilters =
-        (this.selectedFilters.fileType.length === 0 ||
-          this.selectedFilters.fileType.includes(link.fileType)) &&
-        (this.selectedFilters.population.length === 0 ||
-          this.selectedFilters.population.includes(link.population)) &&
-        (this.selectedFilters.locale.length === 0 ||
-          this.selectedFilters.locale.includes(link.locale));
+    // Get and normalize the population filter query
+    const populationQuery = (this.populationSearchQuery || '').toLowerCase().trim();
 
-      return matchesSearch && matchesFilters;
-    });
+    // Start with all documents
+    let filteredData = [...this.existingDocumentLinksData];
 
+    // Apply each filter independently to ensure equal treatment
+
+    // 1. Apply main search filter if present
+    if (this.currentSearchQuery) {
+      const query = this.currentSearchQuery.toLowerCase();
+      filteredData = filteredData.filter(link =>
+        (link.title && link.title.toLowerCase().includes(query)) ||
+        (link.documentDescription && link.documentDescription.toLowerCase().includes(query)) ||
+        (link.serverFilePath && link.serverFilePath.toLowerCase().includes(query))
+      );
+      console.log(`After main search filter: ${filteredData.length} items remaining`);
+    }
+
+    // 2. Apply population filter if present
+    if (populationQuery) {
+      filteredData = filteredData.filter(link => {
+        const populationValue = (link.population || '').toLowerCase();
+        const matches = populationValue.includes(populationQuery);
+
+        // Log for debugging
+        if (!matches && Math.random() < 0.1) {
+          console.log(`Population filter rejected: "${populationValue}" does not include "${populationQuery}"`);
+        }
+
+        return matches;
+      });
+      console.log(`After population filter: ${filteredData.length} items remaining`);
+    }
+
+    // 3. Apply file type filter if any types are selected
+    if (this.selectedFilters.fileType.length > 0) {
+      filteredData = filteredData.filter(link => {
+        const fileType = link.fileType || '';
+        return this.selectedFilters.fileType.includes(fileType);
+      });
+      console.log(`After file type filter: ${filteredData.length} items remaining`);
+    }
+
+    // 4. Apply locale filter if any locales are selected
+    if (this.selectedFilters.locale.length > 0) {
+      filteredData = filteredData.filter(link => {
+        const locale = link.locale || '';
+        return this.selectedFilters.locale.includes(locale);
+      });
+      console.log(`After locale filter: ${filteredData.length} items remaining`);
+    }
+
+    console.log(`Final filtered data: ${filteredData.length} of ${this.existingDocumentLinksData.length} items match`);
+
+    // Send filtered data to handler
     this.onSearch(filteredData);
+
+    // Update pagination
     this.paginationManager.setPage(1, filteredData.length);
   }
 
@@ -275,6 +470,7 @@ export class SearchManager {
       this.searchInput.value = '';
     }
     this.currentSearchQuery = '';
+    this.populationSearchQuery = '';
     this.selectedFilters = {
       fileType: [],
       population: [],

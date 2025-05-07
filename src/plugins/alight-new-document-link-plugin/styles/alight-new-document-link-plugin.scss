@@ -1,5 +1,9 @@
-// src/plugins/alight-generic-link-plugin/styles/alight-generic-link-plugin.scss
+// src/plugins/alight-new-document-link-plugin/styles/alight-new-document-link-plugin.scss
 @use './../../../styles/mixins' as mixins;
+
+.cka-new-document-link-content {
+  padding: var(--spacing-xl) var(--spacing-xl) 0;
+}
 
 .cka-choose-categories-list {
   border: 1px solid var(--gray-400);
@@ -73,6 +77,7 @@
   }
 
   .cka-input-file {
+    cursor: pointer;
     height: 100%;
     left: 0;
     opacity: 0;
@@ -80,10 +85,6 @@
     top: 0;
     width: 100%;
     z-index: 1;
-    cursor: pointer;
-
-    /* Prevent propagation of click events to parent */
-    pointer-events: none;
   }
 }
 

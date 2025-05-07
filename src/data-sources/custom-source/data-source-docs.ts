@@ -1,8 +1,8 @@
 // src/data-sources/custom-source/data-source-docs.ts
-import { DataSourceGet } from '../base-source/data-source-get';
-import { DataSourcePost } from '../base-source/data-source-post';
-import { DataSources } from './data-sources';
-import { IReadSource, IWriteSource } from '../base-source/data-source';
+import { DataSourceGet } from "../base-source/data-source-get";
+import { DataSourcePost } from "../base-source/data-source-post";
+import { DataSources } from "./data-sources";
+import { IReadSource, IWriteSource } from "../base-source/data-source";
 
 class DataSourceDocsPaths extends DataSources {
   protected static getPath = `dummy-path/content/documentPath`;

@@ -1,0 +1,56 @@
+{
+  "languages": [
+    {
+      "displayLanguageText": "All Languages",
+      "languageCode": "All_Languages"
+    },
+    {
+      "languageCode": "en_US",
+      "displayLanguageText": "English (default)"
+    },
+    {
+      "languageCode": "ar_SA",
+      "displayLanguageText": "Arabic"
+    },
+    {
+      "languageCode": "zh_CH",
+      "displayLanguageText": "Chinese"
+    },
+    {
+      "languageCode": "nl_NK",
+      "displayLanguageText": "Dutch"
+    },
+    {
+      "languageCode": "fr_CS",
+      "displayLanguageText": "French (Canada)"
+    },
+    {
+      "languageCode": "fr_FR",
+      "displayLanguageText": "French (France)"
+    },
+    {
+      "languageCode": "de_DE",
+      "displayLanguageText": "German"
+    },
+    {
+      "languageCode": "it_IT",
+      "displayLanguageText": "Italian"
+    },
+    {
+      "languageCode": "ja_JP",
+      "displayLanguageText": "Japanese"
+    },
+    {
+      "languageCode": "pt_BR",
+      "displayLanguageText": "Portuguese"
+    },
+    {
+      "languageCode": "ru_RU",
+      "displayLanguageText": "Russian"
+    },
+    {
+      "languageCode": "es_US",
+      "displayLanguageText": "Spanish"
+    }
+  ]
+}

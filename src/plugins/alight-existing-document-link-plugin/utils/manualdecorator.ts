@@ -77,10 +77,33 @@ export default class ManualDecorator extends /* #__PURE__ */ ObservableMixin() {
    * @internal
    */
   public _createPattern(): MatcherObjectPattern {
-    return {
-      attributes: this.attributes,
-      classes: this.classes,
-      styles: this.styles
-    };
+    const pattern: MatcherObjectPattern = {};
+
+    // Create a proper matcher pattern based on attributes
+    if (this.attributes) {
+      pattern.attributes = {};
+
+      // Handle classes properly for CKEditor 5
+      if (this.classes) {
+        // Convert classes array to a class attribute
+        if (Array.isArray(this.classes)) {
+          pattern.attributes.class = this.classes.join(' ');
+        } else {
+          pattern.attributes.class = this.classes;
+        }
+      }
+
+      // Copy all attributes to the pattern - include target="_blank" for upcast matching only
+      for (const key in this.attributes) {
+        pattern.attributes[key] = this.attributes[key];
+      }
+    }
+
+    // Add styles to pattern if present
+    if (this.styles) {
+      pattern.styles = this.styles;
+    }
+
+    return pattern;
   }
 }

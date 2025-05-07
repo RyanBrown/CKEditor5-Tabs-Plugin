@@ -59,7 +59,7 @@ export function createLinkElement(href: string, { writer, attrs = {}, item }: Do
   // Start with default attributes
   const attributes: Record<string, string> = {
     href,
-    'data-id': 'external_editor',
+    'data-id': 'external_link',
     ...attrs
   };
 
@@ -232,13 +232,6 @@ export function addLinkProtocolIfApplicable(link: string, defaultProtocol?: stri
  */
 export function linkHasProtocol(link: string): boolean {
   return PROTOCOL_REG_EXP.test(link);
-}
-
-/**
- * Opens the link in a new browser tab.
- */
-export function openLink(link: string): void {
-  window.open(link, '_blank', 'noopener');
 }
 
 /**

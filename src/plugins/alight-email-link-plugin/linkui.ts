@@ -20,7 +20,7 @@ import type AlightEmailUnlinkCommand from './unlinkcommand';
 import { isLinkElement } from './utils';
 import { CkAlightModalDialog } from './../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 
-import linkIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
+import ToolBarIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 
 // Use a unique marker name to avoid conflicts with standard link plugin
 const VISUAL_SELECTION_MARKER_NAME = 'alight-email-link-ui';
@@ -122,6 +122,15 @@ export default class AlightEmailLinkPluginUI extends Plugin {
       }
     });
 
+    // Listen to selection changes to ensure UI state is updated
+    this.listenTo(editor.model.document, 'change:data', () => {
+      // Force refresh the command on selection changes
+      const linkCommand = editor.commands.get('alight-email-link');
+      if (linkCommand) {
+        linkCommand.refresh();
+      }
+    });
+
     // Enable balloon-modal interactions
     this._enableBalloonInteractions();
 
@@ -196,21 +205,46 @@ export default class AlightEmailLinkPluginUI extends Plugin {
     const t = locale.t;
 
     view.set({
-      label: t('Email link'),
-      icon: linkIcon,
+      class: 'ck-alight-email-link-button',
+      icon: ToolBarIcon,
       isToggleable: true,
+      label: t('Email link'),
       withText: true,
-      // Add a custom class to differentiate from standard link button
-      class: 'ck-alight-email-link-button'
     });
 
     view.bind('isEnabled').to(command, 'isEnabled');
     view.bind('isOn').to(command, 'value', value => !!value);
 
+    // Listen to selection changes to update button state
+    this.listenTo(editor.model.document, 'change:data', () => {
+      view.set('isEnabled', this._shouldEnableButton());
+    });
+
     // Show the modal dialog on button click for creating new links
     this.listenTo(view, 'execute', () => this._showUI());
 
     return view;
+  }
+
+  /**
+   * Determines whether the button should be enabled based on selection state
+   * @returns True if the button should be enabled, false otherwise
+   */
+  private _shouldEnableButton(): boolean {
+    const editor = this.editor;
+    const command = editor.commands.get('alight-email-link')!;
+    const selection = editor.model.document.selection;
+
+    // If the command itself is disabled, button should be disabled too
+    if (!command.isEnabled) {
+      return false;
+    }
+
+    // Enable if text is selected (not collapsed) or cursor is in an existing link
+    const hasSelection = !selection.isCollapsed;
+    const isInLink = selection.hasAttribute('alightEmailLinkPluginHref');
+
+    return hasSelection || isInLink;
   }
 
   /**

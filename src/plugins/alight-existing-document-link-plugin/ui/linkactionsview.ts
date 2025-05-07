@@ -30,7 +30,7 @@ export default class LinkActionsView extends View {
   /**
    * The href preview view.
    */
-  public previewButtonView: ButtonView;
+  public previewButtonView: View;
 
   /**
    * The unlink button view.
@@ -90,11 +90,7 @@ export default class LinkActionsView extends View {
     this.setTemplate({
       tag: 'div',
       attributes: {
-        class: [
-          'ck',
-          'ck-link-actions',
-          'ck-responsive-form'
-        ],
+        class: ['ck', 'ck-link-actions', 'ck-responsive-form'],
         // https://github.com/ckeditor/ckeditor5-link/issues/90
         tabindex: '-1'
       },
@@ -113,7 +109,6 @@ export default class LinkActionsView extends View {
     super.render();
 
     const childViews = [
-      this.previewButtonView,
       this.editButtonView,
       this.unlinkButtonView
     ];
@@ -170,45 +165,37 @@ export default class LinkActionsView extends View {
   }
 
   /**
-   * Creates a link href preview button.
-   *
-   * @returns The button view instance.
-   */
-  private _createPreviewButton(): ButtonView {
-    const button = new ButtonView(this.locale);
+ * Creates a custom view for the link title display.
+ *
+ * @returns The custom view instance.
+ */
+  private _createPreviewButton(): View {
+    // Create a custom view instead of using ButtonView
+    const customView = new View(this.locale);
     const bind = this.bindTemplate;
     const t = this.t!;
 
-    button.set({
-      withText: true,
-      tooltip: t('Open existing document link')
-    });
-
-    button.extendTemplate({
+    // Set up the template for a simple div with your custom class
+    customView.setTemplate({
+      tag: 'div',
       attributes: {
-        class: [
-          'ck',
-          'ck-link-actions__preview'
-        ],
-        href: bind.to('href', href => href && ensureSafeUrl(href)),
-        target: '_blank',
-        rel: 'noopener noreferrer'
+        class: ['ck', 'cka-button-title']
       },
+      children: [{
+        tag: 'span',
+        attributes: {
+          class: ['ck', 'ck-button__label', 'cka-button-title-text']
+        },
+        children: [{
+          text: bind.to('href', href => {
+            // Default text when href is empty or undefined
+            return href || t('This link has no title');
+          })
+        }]
+      }]
     });
 
-    button.bind('label').to(this, 'href', href => {
-      // Hide mailto: from display in the UI
-      if (href && href.startsWith('mailto:')) {
-        return href.substring(7); // Remove mailto: prefix for display
-      }
-      return href || t('This link has no URL');
-    });
-
-    button.bind('isEnabled').to(this, 'href', href => !!href);
-
-    button.template!.tag = 'a';
-
-    return button;
+    return customView;
   }
 }
 

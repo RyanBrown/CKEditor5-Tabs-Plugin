@@ -2,10 +2,9 @@
 import { Command } from '@ckeditor/ckeditor5-core';
 import { findAttributeRange } from '@ckeditor/ckeditor5-typing';
 import { Collection, first, toMap } from '@ckeditor/ckeditor5-utils';
-import type { Range, DocumentSelection, Model, Writer } from '@ckeditor/ckeditor5-engine';
-
+import type { Range, Writer } from '@ckeditor/ckeditor5-engine';
 import AutomaticDecorators from './utils/automaticdecorators';
-import { isLinkableElement } from './utils';
+import { isLinkableElement, isPredefinedLink, extractPredefinedLinkId } from './utils';
 import type ManualDecorator from './utils/manualdecorator';
 
 /**
@@ -75,7 +74,16 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
       this.isEnabled = model.schema.checkAttribute(selectedElement, 'alightPredefinedLinkPluginHref');
     } else {
       this.value = selection.getAttribute('alightPredefinedLinkPluginHref') as string | undefined;
-      this.isEnabled = model.schema.checkAttributeInSelection(selection, 'alightPredefinedLinkPluginHref');
+
+      // The key change: Only enable if there's a non-collapsed selection OR
+      // if the cursor is inside an existing link (to allow editing it)
+      const hasNonCollapsedSelection = !selection.isCollapsed;
+      const isInsideLink = this.value !== undefined;
+
+      // Only enable the command if schema allows AND we have a text selection
+      // or we're inside an existing link
+      this.isEnabled = model.schema.checkAttributeInSelection(selection, 'alightPredefinedLinkPluginHref') &&
+        (hasNonCollapsedSelection || isInsideLink);
     }
 
     for (const manualDecorator of this.manualDecorators) {
@@ -101,38 +109,46 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
    * @param options Options including manual decorator attributes.
    */
   public override execute(href: string, options: LinkOptions = {}): void {
-    // Check if the current link has a predefined editor suffix we need to preserve
-    let predefinedSuffix = '';
-    if (this.value && typeof this.value === 'string' && this.value.includes('~predefined_editor_id')) {
-      predefinedSuffix = '~predefined_editor_id';
-    }
+    // Determine if href is a predefined link
+    const isPredefined = isPredefinedLink(href);
 
-    // Add the predefined suffix if needed and not already present
-    if (predefinedSuffix && !href.includes(predefinedSuffix)) {
-      href = href + predefinedSuffix;
-    }
+    // Get linkName - for predefined links this is critical
+    let linkName = '';
 
     const model = this.editor.model;
     const selection = model.document.selection;
 
-    // Extract decorator options
-    const truthyManualDecorators: Array<string> = [];
-    const falsyManualDecorators: Array<string> = [];
+    // For existing links, get the current linkName
+    if (selection.hasAttribute('alightPredefinedLinkPluginLinkName')) {
+      linkName = selection.getAttribute('alightPredefinedLinkPluginLinkName') as string;
+    }
 
-    for (const name in options) {
-      if (options[name] === true) {
-        truthyManualDecorators.push(name);
-      } else if (options[name] === false) {
-        falsyManualDecorators.push(name);
+    // CRITICAL: For predefined links, always set a linkName
+    // This is what ensures our output structure is correct
+    if (isPredefined && !linkName) {
+      // Use the href itself as the linkName if no other value is available
+      linkName = href;
+    }
+
+    // For predefined links, always ensure we have a linkName
+    if (isPredefined) {
+      // If no existing linkName, extract from href or generate one
+      if (!linkName) {
+        linkName = extractPredefinedLinkId(href) || href;
+
+        // If still no valid linkName, generate one
+        if (!linkName || linkName.trim() === '') {
+          linkName = 'link-' + Math.random().toString(36).substring(2, 7);
+        }
       }
     }
 
     model.change(writer => {
-      // If selection is collapsed then update selected link or insert new one at the place of caret.
+      // If selection is collapsed then update selected link or insert new one
       if (selection.isCollapsed) {
         const position = selection.getFirstPosition()!;
 
-        // When selection is inside text with `alightPredefinedLinkPluginHref` attribute.
+        // When selection is inside text with `alightPredefinedLinkPluginHref` attribute
         if (selection.hasAttribute('alightPredefinedLinkPluginHref')) {
           // Get the link range
           const linkRange = findAttributeRange(
@@ -142,49 +158,53 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
             model
           );
 
-          // Update the existing link with the new href
+          // Update attributes
           writer.setAttribute('alightPredefinedLinkPluginHref', href, linkRange);
 
-          // Set truthyManualDecorators attributes
-          truthyManualDecorators.forEach(item => {
-            writer.setAttribute(item, true, linkRange);
-          });
+          // For predefined links, set format and linkName
+          if (isPredefined) {
+            writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', linkRange);
+            writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, linkRange);
+          }
 
-          // Remove falsyManualDecorators attributes
-          falsyManualDecorators.forEach(item => {
-            writer.removeAttribute(item, linkRange);
-          });
+          // Process decorator options
+          this._processDecoratorOptions(writer, linkRange, options);
 
-          // Put the selection back where it was
+          // Restore selection
           writer.setSelection(position);
         }
-        // If not then insert text node with `alightPredefinedLinkPluginHref` attribute in place of caret.
+        // If not, then insert text node with link attributes
         else if (href !== '') {
           const attributes = toMap(selection.getAttributes());
 
           attributes.set('alightPredefinedLinkPluginHref', href);
 
-          truthyManualDecorators.forEach(item => {
-            attributes.set(item, true);
-          });
+          // For predefined links, set format and linkName
+          if (isPredefined) {
+            attributes.set('alightPredefinedLinkPluginFormat', 'ahcustom');
+            attributes.set('alightPredefinedLinkPluginLinkName', linkName);
+          }
+
+          // Set decorator attributes
+          this._setDecoratorAttributes(attributes, options);
+
+          // Create text with appropriate display text
+          const linkText = isPredefined ? linkName : href;
 
           const { end: positionAfter } = model.insertContent(
-            writer.createText(href, attributes as any),
+            writer.createText(linkText, attributes as any),
             position
           );
 
-          // Put the selection at the end of the inserted link.
+          // Put selection at the end of the inserted link
           writer.setSelection(positionAfter);
         }
 
-        // Remove the `alightPredefinedLinkPluginHref` attribute and all link decorators from the selection.
-        // It stops adding a new content into the link element.
-        ['alightPredefinedLinkPluginHref', ...truthyManualDecorators, ...falsyManualDecorators].forEach(item => {
-          writer.removeSelectionAttribute(item);
-        });
-      } else {
-        // If selection has non-collapsed ranges, we change attribute on nodes inside those ranges
-        // WITHOUT REMOVING THEM - just applying the href attribute
+        // Remove link attributes from selection
+        this._removeAttributesFromSelection(writer);
+      }
+      // For non-collapsed selections, apply attributes to existing text
+      else {
         const ranges = model.schema.getValidRanges(selection.getRanges(), 'alightPredefinedLinkPluginHref');
 
         // Process each range
@@ -192,25 +212,81 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
           // Set the alightPredefinedLinkPluginHref attribute on the selected text
           writer.setAttribute('alightPredefinedLinkPluginHref', href, range);
 
-          // Set truthyManualDecorators attributes
-          truthyManualDecorators.forEach(item => {
-            writer.setAttribute(item, true, range);
-          });
+          // If it's a predefined link, set format and linkName
+          if (isPredefined) {
+            writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', range);
+            writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, range);
+          }
 
-          // Remove falsyManualDecorators attributes
-          falsyManualDecorators.forEach(item => {
-            writer.removeAttribute(item, range);
-          });
+          // Process decorator options
+          this._processDecoratorOptions(writer, range, options);
         }
       }
     });
 
-    // Fire an event after command execution to notify UI
+    // Fire event after command execution to notify UI
     this._fireEvent('executed', { href, options });
   }
 
   /**
-   * Provides information whether a decorator with a given name is present in the currently processed selection.
+   * Processes decorator options and applies them to the range
+   * 
+   * @param writer The model writer
+   * @param range The range to apply decorators to
+   * @param options The decorator options
+   */
+  private _processDecoratorOptions(writer: Writer, range: Range, options: LinkOptions): void {
+    // Handle manual decorators for truthiness and falsiness
+    for (const [name, value] of Object.entries(options)) {
+      if (value === true) {
+        writer.setAttribute(name, true, range);
+      } else if (value === false) {
+        writer.removeAttribute(name, range);
+      }
+    }
+  }
+
+  /**
+   * Sets decorator attributes on the attributes map
+   * 
+   * @param attributes The attributes map to update
+   * @param options The decorator options to apply
+   */
+  private _setDecoratorAttributes(attributes: Map<string, unknown>, options: LinkOptions): void {
+    // Add truthy decorator attributes to the attributes map
+    for (const [name, value] of Object.entries(options)) {
+      if (value === true) {
+        attributes.set(name, true);
+      }
+    }
+  }
+
+  /**
+   * Removes link attributes from the current selection
+   * 
+   * @param writer The model writer
+   */
+  private _removeAttributesFromSelection(writer: Writer): void {
+    // List of attributes to remove
+    const attributesToRemove = [
+      'alightPredefinedLinkPluginHref',
+      'alightPredefinedLinkPluginFormat',
+      'alightPredefinedLinkPluginLinkName'
+    ];
+
+    // Add decorator attributes
+    for (const decorator of this.manualDecorators) {
+      attributesToRemove.push(decorator.id);
+    }
+
+    // Remove all attributes
+    for (const attribute of attributesToRemove) {
+      writer.removeSelectionAttribute(attribute);
+    }
+  }
+
+  /**
+   * Provides information whether a decorator is present in the current selection.
    */
   private _getDecoratorStateFromModel(decoratorName: string): boolean | undefined {
     const model = this.editor.model;
