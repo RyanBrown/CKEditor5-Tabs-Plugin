@@ -39,23 +39,22 @@ export function isLinkElement(node: ViewNode | ViewDocumentFragment): boolean {
     return false;
   }
 
-  // First check if it's an attributeElement to avoid "is" errors
+  // Check if it's an attributeElement first
   if (!node.is || typeof node.is !== 'function') {
     return false;
   }
 
   try {
-    // Check if it's an attributeElement first
     if (!node.is('attributeElement')) {
       return false;
     }
 
-    // Now it's safe to check other attributes and custom properties
-    const hasCustomProperty = !!node.getCustomProperty && !!node.getCustomProperty('alight-predefined-link');
-    const hasAHCustomeClass = typeof node.hasClass === 'function' && node.hasClass('AHCustomeLink');
-    const hasPredefinedLinkDataId = node.getAttribute && node.getAttribute('data-id') === 'predefined_link';
-
-    return hasCustomProperty || hasAHCustomeClass || hasPredefinedLinkDataId;
+    // Check if it has the custom property or specific classes/attributes
+    return !!(
+      (node.getCustomProperty && node.getCustomProperty('alight-predefined-link')) ||
+      (typeof node.hasClass === 'function' && node.hasClass('AHCustomeLink')) ||
+      (node.getAttribute && node.getAttribute('data-id') === 'predefined_link')
+    );
   } catch (e) {
     console.error('Error in isLinkElement check:', e);
     return false;
@@ -67,25 +66,21 @@ export function isLinkElement(node: ViewNode | ViewDocumentFragment): boolean {
  */
 export function isPredefinedLink(url: string | null | undefined): boolean {
   // If the URL is empty, null, or undefined, it's not a predefined link
-  if (!url) return false;
-
-  return true;
+  return !!url;
 }
 
 /**
  * Creates a link AttributeElement with the provided `href` attribute.
- * For editing view, this creates only the outer link element.
- * For data view, the complete structure with ah:link is created in the conversion.
  */
 export function createLinkElement(href: string, { writer }: DowncastConversionApi): ViewAttributeElement {
   // Create the link element as an attribute element with required attributes
   const linkElement = writer.createAttributeElement('a', {
-    'href': '#',
+    'href': href,
     'class': 'AHCustomeLink',
     'data-id': 'predefined_link'
   }, {
     priority: 5,
-    id: 'predefined-link' // Add a unique ID to help with attribute element identification
+    id: 'predefined-link'
   });
 
   // Set custom property for link identification
@@ -100,19 +95,19 @@ export function createLinkElement(href: string, { writer }: DowncastConversionAp
 export function ensureSafeUrl(url: unknown, allowedProtocols: Array<string> = DEFAULT_LINK_PROTOCOLS): string {
   const urlString = String(url);
 
-  // Special handling for predefined links
+  // For predefined links, return unmodified
   if (isPredefinedLink(urlString)) {
-    return urlString; // Return unmodified
+    return urlString;
   }
 
-  // For javascript: and other protocols, check if they're in allowed protocols
+  // Check if the protocol is allowed
   for (const protocol of allowedProtocols) {
     if (urlString.toLowerCase().startsWith(`${protocol}:`)) {
-      return urlString; // Allow if it's in the allowed protocols list
+      return urlString;
     }
   }
 
-  // Normal URL safety handling for non-predefined links
+  // Check if URL is safe using regex
   const protocolsList = allowedProtocols.join('|');
   const customSafeRegex = new RegExp(`${SAFE_URL_TEMPLATE.replace('<protocols>', protocolsList)}`, 'i');
 
@@ -120,7 +115,7 @@ export function ensureSafeUrl(url: unknown, allowedProtocols: Array<string> = DE
 }
 
 /**
- * Checks whether the given URL is safe for the user (does not contain any malicious code).
+ * Checks whether the given URL is safe for the user.
  */
 function isSafeUrl(url: string, customRegexp: RegExp): boolean {
   // Consider predefined links safe
@@ -129,7 +124,6 @@ function isSafeUrl(url: string, customRegexp: RegExp): boolean {
   }
 
   const normalizedUrl = url.replace(ATTRIBUTE_WHITESPACES, '');
-
   return !!normalizedUrl.match(customRegexp);
 }
 
@@ -149,8 +143,6 @@ export function getLocalizedDecorators(
     if ('label' in decorator && localizedDecoratorsLabels[decorator.label]) {
       decorator.label = localizedDecoratorsLabels[decorator.label];
     }
-
-    return decorator;
   });
 
   return decorators;
@@ -198,7 +190,6 @@ export function addLinkProtocolIfApplicable(link: string, defaultProtocol?: stri
   }
 
   const isProtocolNeeded = !!defaultProtocol && !linkHasProtocol(link);
-
   return link && isProtocolNeeded ? defaultProtocol + link : link;
 }
 
@@ -228,7 +219,7 @@ export function createBookmarkCallbacks(editor: Editor): LinkActionsViewOptions 
   }
 
   /**
-   * Scrolls the view to the desired bookmark or open a link in new window.
+   * Scrolls the view to the desired bookmark.
    */
   function scrollToTarget(link: string): void {
     const bookmarkId = link.slice(1);
@@ -256,19 +247,18 @@ export function createBookmarkCallbacks(editor: Editor): LinkActionsViewOptions 
 export function extractPredefinedLinkId(href: string | null | undefined): string | null {
   if (!href) return null;
 
-  // Handle links with ah:link nested element - extract from the name attribute
+  // For numeric IDs, return directly
+  if (/^[0-9]+$/.test(href)) {
+    return href;
+  }
+
+  // Try to extract from HTML structure
   const ahLinkMatch = href.match(/name="([^"]+)"/);
   if (ahLinkMatch && ahLinkMatch[1]) {
     return ahLinkMatch[1];
   }
 
-  // Handle numeric IDs
-  if (/^[0-9]+$/.test(href)) {
-    return href;
-  }
-
-  // If nothing specific is found, just return the href as-is
-  // for predefined links
+  // For predefined links, return the href itself
   return isPredefinedLink(href) ? href : null;
 }
 
@@ -285,21 +275,20 @@ export function hasAHCustomeLinkClass(element: ViewAttributeElement): boolean {
 export function filterLinkAttributes(attributes: Record<string, string>): Record<string, string> {
   const result: Record<string, string> = {};
 
-  // Copy only the attributes we want to keep
+  // Keep only the attributes we want
   for (const key in attributes) {
     // Skip data-cke-saved-href attribute
     if (key === 'data-cke-saved-href') {
       continue;
     }
 
-    // Special handling for href attribute
+    // Always keep href as '#' for predefined links
     if (key === 'href' && (attributes[key] === '' || attributes[key] === '#')) {
-      // Always keep the href
       result[key] = '#';
       continue;
     }
 
-    // Keep all attributes
+    // Keep all other attributes
     result[key] = attributes[key];
   }
 
@@ -307,12 +296,8 @@ export function filterLinkAttributes(attributes: Record<string, string>): Record
 }
 
 /**
- * Ensures links have the ah:link structure in the HTML without escaping quotes.
- * 
- * Ensures the following structure for predefined links:
- * <a href="#" class="AHCustomeLink">
- *   <ah:link name="predefinedLinkName">Selected Text</ah:link>
- * </a>
+ * Ensures links have the ah:link structure in the HTML.
+ * Simplified to directly create the correct structure without complex parsing.
  */
 export function ensurePredefinedLinkStructure(html: string): string {
   try {
@@ -323,15 +308,14 @@ export function ensurePredefinedLinkStructure(html: string): string {
     const links = tempDiv.querySelectorAll('a.AHCustomeLink');
 
     links.forEach(link => {
-      // Find linkName using simple priority order
+      // Get linkName
       let linkName = link.getAttribute('data-link-name');
+      let existingAhLink = null;
 
       // Try to get from existing ah:link element
-      if (!linkName) {
-        const existingAhLink = link.querySelector('ah\\:link') || link.querySelector('ah:link');
-        if (existingAhLink) {
-          linkName = existingAhLink.getAttribute('name');
-        }
+      existingAhLink = link.querySelector('ah\\:link') || link.querySelector('ah:link');
+      if (existingAhLink) {
+        linkName = existingAhLink.getAttribute('name') || linkName;
       }
 
       // Generate a simple ID if no linkName found
@@ -339,35 +323,28 @@ export function ensurePredefinedLinkStructure(html: string): string {
         linkName = 'link-' + Math.random().toString(36).substring(2, 7);
       }
 
-      // Clean up link element - keep only href and class
+      // Simplify link attributes - keep only href="#" and class="AHCustomeLink"
+      while (link.attributes.length > 0) {
+        link.removeAttribute(link.attributes[0].name);
+      }
       link.setAttribute('href', '#');
       link.setAttribute('class', 'AHCustomeLink');
 
-      // Remove all other attributes
-      const attrNames = Array.from(link.attributes).map(attr => attr.name);
-      attrNames.forEach(attrName => {
-        if (attrName !== 'href' && attrName !== 'class') {
-          link.removeAttribute(attrName);
-        }
-      });
-
-      // Handle ah:link element
-      let ahLink = link.querySelector('ah\\:link') || link.querySelector('ah:link');
-
-      if (ahLink) {
-        // Update name attribute
-        ahLink.setAttribute('name', linkName);
-      } else {
+      // Create or update ah:link element
+      if (!existingAhLink) {
         // Create new ah:link element
-        ahLink = document.createElement('ah:link');
-        ahLink.setAttribute('name', linkName);
+        existingAhLink = document.createElement('ah:link');
+        existingAhLink.setAttribute('name', linkName);
 
         // Move content to ah:link
         while (link.firstChild) {
-          ahLink.appendChild(link.firstChild);
+          existingAhLink.appendChild(link.firstChild);
         }
 
-        link.appendChild(ahLink);
+        link.appendChild(existingAhLink);
+      } else {
+        // Update existing ah:link
+        existingAhLink.setAttribute('name', linkName);
       }
     });
 

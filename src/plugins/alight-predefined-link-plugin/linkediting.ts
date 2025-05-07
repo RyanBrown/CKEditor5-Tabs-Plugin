@@ -135,11 +135,11 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           'name': linkName
         });
 
-        // Get text content from the view range for the ah:link content
+        // Get text content from the view range
         let textContent = '';
         for (const item of viewRange.getItems()) {
-          if ((item as ViewNode).is && ((item as ViewNode).is('$text') || (item as ViewNode).is('$textProxy'))) {
-            textContent += (item as ViewText).data;
+          if ((item.is && (item.is('$text') || item.is('$textProxy')))) {
+            textContent += item.data;
           }
         }
 
@@ -159,14 +159,13 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
       });
     });
 
-
-    // Setup editing downcast for interactive editing view - using custom downcast converter
+    // Simplified editing downcast for interactive editing view
     editor.conversion.for('editingDowncast').attributeToElement({
       model: 'alightPredefinedLinkPluginHref',
       view: (href, { writer }) => {
-        // For editing view, use the actual href for better user experience
+        // Create a simple link element with the required attributes
         const linkElement = writer.createAttributeElement('a', {
-          'href': href, // Use the actual href value
+          'href': href,
           'class': 'AHCustomeLink',
           'data-id': 'predefined_link'
         }, {
@@ -190,59 +189,35 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         },
         model: {
           key: 'alightPredefinedLinkPluginHref',
-          value: (viewElement: ViewElement) => {
-            // Check for ah:link element inside
-            let ahLinkElement = null;
-            let linkName = '';
-
+          value: (viewElement: ViewElement): string | null => {
             // Find the ah:link element among children
-            for (const child of viewElement.getChildren()) {
-              if (child.is && child.is('element', 'ah:link')) {
-                ahLinkElement = child;
-                break;
-              }
-            }
+            const ahLinkElement = Array.from(viewElement.getChildren())
+              .find(child => {
+                return child.is &&
+                  typeof child.is === 'function' &&
+                  child.is('element', 'ah:link');
+              });
 
-            // Process if an ah:link element was found
-            if (ahLinkElement) {
-              // Extract the name attribute from ah:link
-              linkName = ahLinkElement.getAttribute('name');
+            if (ahLinkElement && ahLinkElement.is('element')) {
+              // Get the name attribute from ah:link
+              const linkName = ahLinkElement.getAttribute('name');
 
               // Only process and store attributes if we have a valid linkName
               if (linkName) {
-                console.log('Upcast: Found linkName from ah:link attribute:', linkName);
-
-                // Store additional attributes on the model
+                // Store additional attributes for the predefined link
                 this.editor.model.enqueueChange(writer => {
-                  const selection = this.editor.model.document.selection;
-
                   // Set attributes on the selection to be applied to text
                   writer.setSelectionAttribute('alightPredefinedLinkPluginFormat', 'ahcustom');
                   writer.setSelectionAttribute('alightPredefinedLinkPluginLinkName', linkName);
                 });
 
-                // Use the linkName as the href value for predefined links
+                // Use the linkName as the href value
                 return linkName;
               }
             }
 
-            // Fallback: check for data-link-name attribute
-            const dataLinkName = viewElement.getAttribute('data-link-name');
-            if (dataLinkName) {
-              console.log('Upcast: Found linkName from data-link-name:', dataLinkName);
-
-              this.editor.model.enqueueChange(writer => {
-                writer.setSelectionAttribute('alightPredefinedLinkPluginFormat', 'ahcustom');
-                writer.setSelectionAttribute('alightPredefinedLinkPluginLinkName', dataLinkName);
-              });
-
-              return dataLinkName;
-            }
-
-            // Last resort: use href attribute
-            const href = viewElement.getAttribute('href');
-            console.log('Upcast: Using href as fallback:', href);
-            return href || '#';
+            // Fallback to href attribute
+            return viewElement.getAttribute('href') || '#';
           }
         },
         converterPriority: 'highest'

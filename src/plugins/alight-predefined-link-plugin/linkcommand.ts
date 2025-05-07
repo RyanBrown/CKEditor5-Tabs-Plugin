@@ -2,7 +2,7 @@
 import { Command } from '@ckeditor/ckeditor5-core';
 import { findAttributeRange } from '@ckeditor/ckeditor5-typing';
 import { Collection, first, toMap } from '@ckeditor/ckeditor5-utils';
-import type { Range } from '@ckeditor/ckeditor5-engine';
+import type { Range, Writer } from '@ckeditor/ckeditor5-engine';
 import AutomaticDecorators from './utils/automaticdecorators';
 import { isLinkableElement, isPredefinedLink, extractPredefinedLinkId } from './utils';
 import type ManualDecorator from './utils/manualdecorator';
@@ -136,18 +136,6 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
       }
     }
 
-    // Extract decorator options
-    const truthyManualDecorators: Array<string> = [];
-    const falsyManualDecorators: Array<string> = [];
-
-    for (const name in options) {
-      if (options[name] === true) {
-        truthyManualDecorators.push(name);
-      } else if (options[name] === false) {
-        falsyManualDecorators.push(name);
-      }
-    }
-
     model.change(writer => {
       // If selection is collapsed then update selected link or insert new one
       if (selection.isCollapsed) {
@@ -172,14 +160,8 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
             writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, linkRange);
           }
 
-          // Set manual decorators
-          truthyManualDecorators.forEach(item => {
-            writer.setAttribute(item, true, linkRange);
-          });
-
-          falsyManualDecorators.forEach(item => {
-            writer.removeAttribute(item, linkRange);
-          });
+          // Process decorator options
+          this._processDecoratorOptions(writer, linkRange, options);
 
           // Restore selection
           writer.setSelection(position);
@@ -196,9 +178,8 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
             attributes.set('alightPredefinedLinkPluginLinkName', linkName);
           }
 
-          truthyManualDecorators.forEach(item => {
-            attributes.set(item, true);
-          });
+          // Set decorator attributes
+          this._setDecoratorAttributes(attributes, options);
 
           // Create text with appropriate display text
           const linkText = isPredefined ? linkName : href;
@@ -212,11 +193,8 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
           writer.setSelection(positionAfter);
         }
 
-        // Remove link attributes from selection to prevent extending the link
-        ['alightPredefinedLinkPluginHref', 'alightPredefinedLinkPluginFormat', 'alightPredefinedLinkPluginLinkName',
-          ...truthyManualDecorators, ...falsyManualDecorators].forEach(item => {
-            writer.removeSelectionAttribute(item);
-          });
+        // Remove link attributes from selection
+        this._removeAttributesFromSelection(writer);
       }
       // For non-collapsed selections, apply attributes to existing text
       else {
@@ -233,20 +211,71 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
             writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, range);
           }
 
-          // Set manual decorators
-          truthyManualDecorators.forEach(item => {
-            writer.setAttribute(item, true, range);
-          });
-
-          falsyManualDecorators.forEach(item => {
-            writer.removeAttribute(item, range);
-          });
+          // Process decorator options
+          this._processDecoratorOptions(writer, range, options);
         }
       }
     });
 
     // Fire event after command execution to notify UI
     this._fireEvent('executed', { href, options });
+  }
+
+  /**
+   * Processes decorator options and applies them to the range
+   * 
+   * @param writer The model writer
+   * @param range The range to apply decorators to
+   * @param options The decorator options
+   */
+  private _processDecoratorOptions(writer: Writer, range: Range, options: LinkOptions): void {
+    // Handle manual decorators for truthiness and falsiness
+    for (const [name, value] of Object.entries(options)) {
+      if (value === true) {
+        writer.setAttribute(name, true, range);
+      } else if (value === false) {
+        writer.removeAttribute(name, range);
+      }
+    }
+  }
+
+  /**
+   * Sets decorator attributes on the attributes map
+   * 
+   * @param attributes The attributes map to update
+   * @param options The decorator options to apply
+   */
+  private _setDecoratorAttributes(attributes: Map<string, unknown>, options: LinkOptions): void {
+    // Add truthy decorator attributes to the attributes map
+    for (const [name, value] of Object.entries(options)) {
+      if (value === true) {
+        attributes.set(name, true);
+      }
+    }
+  }
+
+  /**
+   * Removes link attributes from the current selection
+   * 
+   * @param writer The model writer
+   */
+  private _removeAttributesFromSelection(writer: Writer): void {
+    // List of attributes to remove
+    const attributesToRemove = [
+      'alightPredefinedLinkPluginHref',
+      'alightPredefinedLinkPluginFormat',
+      'alightPredefinedLinkPluginLinkName'
+    ];
+
+    // Add decorator attributes
+    for (const decorator of this.manualDecorators) {
+      attributesToRemove.push(decorator.id);
+    }
+
+    // Remove all attributes
+    for (const attribute of attributesToRemove) {
+      writer.removeSelectionAttribute(attribute);
+    }
   }
 
   /**
