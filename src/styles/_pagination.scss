@@ -20,4 +20,42 @@
       min-width: 100px;
     }
   }
+
+  &.loading {
+    &::after {
+      align-items: center;
+      background-color: rgba(255, 255, 255, 0.7);
+      bottom: 0;
+      content: "";
+      display: flex;
+      justify-content: center;
+      left: 0;
+      position: absolute;
+      right: 0;
+      top: 0;
+      z-index: 1;
+    }
+  }
+}
+
+// Prevent interaction during page transitions
+.cka-predefined-link-content,
+.cka-existing-document-link-content {
+  &.updating {
+    pointer-events: none;
+    position: relative;
+  }
+
+  &.updating {
+    &::after {
+      background-color: rgba(255, 255, 255, 0.5);
+      bottom: 0;
+      content: "";
+      left: 0;
+      position: absolute;
+      right: 0;
+      top: 0;
+      z-index: 10;
+    }
+  }
 }
