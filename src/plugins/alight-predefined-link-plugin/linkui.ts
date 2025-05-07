@@ -657,10 +657,10 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
           const selectedLink = this._linkManager?.getSelectedLink();
           console.log('Selected link:', selectedLink);
 
-          if (selectedLink && selectedLink.destination) {
+          if (selectedLink && selectedLink.predefinedLinkName) {
             // Create the link in the editor using the built-in link command
-            // We no longer need to add the suffix
-            let href = selectedLink.destination;
+            // Use predefinedLinkName instead of destination
+            let href = selectedLink.predefinedLinkName;
 
             linkCommand.execute(href);
 
@@ -668,7 +668,7 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
             this._modalDialog?.hide();
           } else {
             // Show some feedback that no link was selected
-            console.warn('No link selected or missing destination');
+            console.warn('No link selected or missing predefinedLinkName');
 
             // Show an alert to the user through our ContentManager
             if (this._linkManager) {

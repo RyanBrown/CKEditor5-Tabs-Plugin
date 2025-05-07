@@ -39,11 +39,12 @@ export class ContentManager implements ILinkManager {
     );
   }
 
-  public getSelectedLink(): { destination: string; title: string } | null {
+  public getSelectedLink(): { destination: string; title: string; predefinedLinkName: string } | null {
     if (!this.selectedLink) return null;
     return {
       destination: this.selectedLink.destination,
-      title: this.selectedLink.predefinedLinkName
+      title: this.selectedLink.predefinedLinkName,
+      predefinedLinkName: this.selectedLink.predefinedLinkName
     };
   }
 
