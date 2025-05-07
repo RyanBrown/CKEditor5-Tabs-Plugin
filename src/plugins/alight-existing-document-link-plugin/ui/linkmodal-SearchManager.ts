@@ -10,6 +10,9 @@ export class SearchManager {
   private readonly advancedSearchTriggerId = 'advanced-search-trigger';
   private searchInput: HTMLInputElement | null = null;
   private populationInput: HTMLInputElement | null = null; // Reference to the population input
+  private containerRef: HTMLElement | null = null;
+  private searchDebounceTimer: number | null = null;
+  private isInitialized = false;
 
   private selectedFilters: SelectedFilters = {
     fileType: [],
@@ -25,15 +28,33 @@ export class SearchManager {
 
   public initialize(container: HTMLElement): void {
     console.log('Initializing SearchManager...');
+
+    // Store container reference
+    this.containerRef = container;
+
     const searchContainer = container.querySelector('#search-container-root');
     if (!searchContainer) {
       console.error('Search container not found');
       return;
     }
 
-    this.injectSearchUI(searchContainer as HTMLElement);
-    this.setupOverlayPanel(container);
+    // Check if UI is already initialized and searchContainer already has content
+    const hasExistingUI = searchContainer.children.length > 0;
+
+    // Only inject UI if not already initialized or if the container is empty
+    if (!this.isInitialized || !hasExistingUI) {
+      this.injectSearchUI(searchContainer as HTMLElement);
+      this.setupOverlayPanel(container);
+    }
+
+    // Always refresh event listeners
     this.setupEventListeners(container);
+    this.isInitialized = true;
+  }
+
+  // Add getter method to expose current search query
+  public getCurrentSearchQuery(): string {
+    return this.currentSearchQuery;
   }
 
   private injectSearchUI(searchContainer: HTMLElement): void {
@@ -79,24 +100,8 @@ export class SearchManager {
     this.searchInput = searchContainer.querySelector('#search-input') as HTMLInputElement;
     const resetButton = searchContainer.querySelector('#reset-search-btn') as HTMLButtonElement;
 
-    // Add event listeners for search input and reset button
+    // Ensure reset button visibility is set correctly initially
     if (this.searchInput && resetButton) {
-      // Ensure reset button visibility is tied to input value
-      this.searchInput.addEventListener('input', () => {
-        this.currentSearchQuery = this.searchInput.value;
-        resetButton.style.display = this.searchInput.value.length > 0 ? 'inline-flex' : 'none';
-      });
-
-      // Clear input and hide reset button when clicked
-      resetButton.addEventListener('click', () => {
-        this.searchInput.value = '';
-        this.currentSearchQuery = '';
-        resetButton.style.display = 'none';
-        this.searchInput.dispatchEvent(new Event('input')); // Trigger input event
-        this.updateFilteredData(); // Update search results
-      });
-
-      // Ensure reset button is hidden initially, even if there's a value from currentSearchQuery
       resetButton.style.display = this.searchInput.value.length > 0 ? 'inline-flex' : 'none';
     }
   }
@@ -169,6 +174,15 @@ export class SearchManager {
   }
 
   private setupOverlayPanel(container: HTMLElement): void {
+    // Clean up existing overlay panel to prevent duplicates
+    if (this.overlayPanel) {
+      try {
+        this.overlayPanel = null;
+      } catch (error) {
+        console.error('Error cleaning up overlay panel:', error);
+      }
+    }
+
     const triggerEl = container.querySelector(`#${this.advancedSearchTriggerId}`);
     if (!triggerEl) {
       console.error('Advanced search trigger not found');
@@ -176,293 +190,243 @@ export class SearchManager {
     }
 
     this.overlayPanel = new AlightOverlayPanel(triggerEl as HTMLElement, {
-      width: '24rem',
+      width: '38rem',
       height: 'auto',
       onShow: () => {
-        // Use a small timeout to ensure the DOM is ready
-        setTimeout(() => {
-          this.setupAdvancedSearchListeners(container);
-        }, 50);
+        this.setupAdvancedSearchListeners(container);
       }
     });
   }
 
   private setupEventListeners(container: HTMLElement): void {
-    // Basic search functionality
-    container.querySelector('#search-btn')?.addEventListener('click', () => this.performSearch());
-    // Add enter key listener for search input
-    this.searchInput?.addEventListener('keypress', (e: KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        this.performSearch();
-      }
-    });
+    // Remove any existing listeners first
+    this.removeEventListeners();
+
+    // Get the search button and input elements
+    const searchBtn = container.querySelector('#search-btn');
+    const searchInput = container.querySelector('#search-input') as HTMLInputElement;
+    const resetBtn = container.querySelector('#reset-search-btn') as HTMLButtonElement;
+
+    if (searchBtn) {
+      // Add click handler for search button
+      searchBtn.addEventListener('click', this.handleSearchBtnClick);
+    }
+
+    if (searchInput) {
+      // Store reference to search input
+      this.searchInput = searchInput;
+
+      // Set input value from current search query to maintain state
+      searchInput.value = this.currentSearchQuery;
+
+      // Add input handler
+      searchInput.addEventListener('input', this.handleSearchInputChange);
+
+      // Add keypress handler for Enter key
+      searchInput.addEventListener('keypress', this.handleSearchInputKeypress);
+    }
+
+    if (resetBtn) {
+      // Add click handler for reset button
+      resetBtn.addEventListener('click', this.handleResetBtnClick);
+
+      // Set initial visibility
+      resetBtn.style.display =
+        searchInput && searchInput.value.length > 0 ? 'inline-flex' : 'none';
+    }
   }
+
+  private handleSearchBtnClick = (): void => {
+    this.performSearch();
+  };
+
+  private handleSearchInputChange = (e: Event): void => {
+    const target = e.target as HTMLInputElement;
+    this.currentSearchQuery = target.value;
+
+    // Update reset button visibility
+    const resetBtn = this.containerRef?.querySelector('#reset-search-btn') as HTMLButtonElement;
+    if (resetBtn) {
+      resetBtn.style.display = target.value.length > 0 ? 'inline-flex' : 'none';
+    }
+
+    // Debounce search input to avoid excessive filtering
+    if (this.searchDebounceTimer !== null) {
+      window.clearTimeout(this.searchDebounceTimer);
+    }
+
+    this.searchDebounceTimer = window.setTimeout(() => {
+      this.performSearch();
+      this.searchDebounceTimer = null;
+    }, 300);
+  };
+
+  private handleSearchInputKeypress = (e: KeyboardEvent): void => {
+    if (e.key === 'Enter') {
+      // Cancel any pending debounce and search immediately
+      if (this.searchDebounceTimer !== null) {
+        window.clearTimeout(this.searchDebounceTimer);
+        this.searchDebounceTimer = null;
+      }
+      this.performSearch();
+    }
+  };
+
+  private handleResetBtnClick = (): void => {
+    if (this.searchInput) {
+      this.searchInput.value = '';
+      this.currentSearchQuery = '';
+
+      // Update reset button visibility
+      const resetBtn = this.containerRef?.querySelector('#reset-search-btn') as HTMLButtonElement;
+      if (resetBtn) {
+        resetBtn.style.display = 'none';
+      }
+
+      // Update search results
+      this.updateFilteredData();
+    }
+  };
 
   private setupAdvancedSearchListeners(container: HTMLElement): void {
+    // Apply filters button
+    const applyFiltersBtn = document.querySelector('#apply-filters');
+    if (applyFiltersBtn) {
+      applyFiltersBtn.removeEventListener('click', this.handleApplyFilters);
+      applyFiltersBtn.addEventListener('click', this.handleApplyFilters);
+    }
+
+    // Clear filters button
+    const clearFiltersBtn = document.querySelector('#clear-filters');
+    if (clearFiltersBtn) {
+      clearFiltersBtn.removeEventListener('click', this.handleClearFilters);
+      clearFiltersBtn.addEventListener('click', this.handleClearFilters);
+    }
+
     // Initialize the population input field
     const populationInputElement = document.getElementById('population-filter-input');
-    if (!populationInputElement) {
-      console.error('Population input element not found');
-      return;
-    }
+    if (populationInputElement) {
+      this.populationInput = populationInputElement as HTMLInputElement;
+      this.populationInput.value = this.populationSearchQuery || '';
 
-    this.populationInput = populationInputElement as HTMLInputElement;
-
-    // Make sure the value is set correctly from the stored value
-    this.populationInput.value = this.populationSearchQuery || '';
-    console.log('Initial population filter value:', this.populationInput.value);
-
-    // Add direct event listener for population input changes
-    this.populationInput.addEventListener('input', (event: Event) => {
-      const target = event.target as HTMLInputElement;
-      this.populationSearchQuery = target.value;
-      console.log('Population search query updated:', this.populationSearchQuery);
-    });
-
-    // Also add keypress listener for Enter key
-    this.populationInput.addEventListener('keypress', (e: KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        console.log('Enter key pressed in population input, applying filters');
-        this.applyFilters();
-      }
-    });
-
-    // Handle the apply filters button click
-    const applyBtn = document.getElementById('apply-filters');
-    if (applyBtn) {
-      // Remove existing listeners to prevent duplicates
-      const newApplyBtn = applyBtn.cloneNode(true);
-      if (applyBtn.parentNode) {
-        applyBtn.parentNode.replaceChild(newApplyBtn, applyBtn);
-      }
-
-      newApplyBtn.addEventListener('click', () => {
-        console.log('Apply filters button clicked');
-        this.applyFilters();
+      // Add input handler with debounce for population input changes
+      this.populationInput.addEventListener('input', (event: Event) => {
+        const target = event.target as HTMLInputElement;
+        this.populationSearchQuery = target.value;
       });
-    }
 
-    // Handle the clear filters button click
-    const clearBtn = document.getElementById('clear-filters');
-    if (clearBtn) {
-      // Remove existing listeners to prevent duplicates
-      const newClearBtn = clearBtn.cloneNode(true);
-      if (clearBtn.parentNode) {
-        clearBtn.parentNode.replaceChild(newClearBtn, clearBtn);
-      }
-
-      newClearBtn.addEventListener('click', () => {
-        console.log('Clear filters button clicked');
-        this.clearFilters();
-      });
-    }
-
-    // Setup checkbox listeners for all checkboxes in the document
-    document.querySelectorAll('cka-checkbox').forEach(checkbox => {
-      this.setupSingleCheckboxListener(checkbox);
-
-      // Ensure checkboxes reflect the current state
-      this.updateCheckboxState(checkbox);
-    });
-  }
-
-  // New method to update checkbox state based on selectedFilters
-  private updateCheckboxState(checkbox: Element): void {
-    const filterType = checkbox.getAttribute('data-filter-type') as keyof SelectedFilters;
-    const value = checkbox.getAttribute('data-value');
-
-    if (filterType && value && this.selectedFilters[filterType]) {
-      // Set checked property to match selected filters state
-      const isSelected = this.selectedFilters[filterType].includes(value);
-      (checkbox as any).checked = isSelected;
-
-      console.log(`Updated checkbox: ${value} (${filterType}) is ${isSelected ? 'checked' : 'unchecked'}`);
-    }
-  }
-
-  private setupSingleCheckboxListener(checkbox: Element): void {
-    // Remove existing listeners to prevent duplicates
-    const newCheckbox = checkbox.cloneNode(true);
-    if (checkbox.parentNode) {
-      checkbox.parentNode.replaceChild(newCheckbox, checkbox);
-    }
-
-    newCheckbox.addEventListener('change', (event: Event) => {
-      const target = event.target as HTMLElement;
-      const filterType = target.getAttribute('data-filter-type') as keyof SelectedFilters;
-      const value = target.getAttribute('data-value');
-      const isChecked = (target as any).checked;
-
-      if (filterType && value) {
-        if (isChecked && !this.selectedFilters[filterType].includes(value)) {
-          this.selectedFilters[filterType].push(value);
-          console.log(`Added ${value} to ${filterType} filters`);
-        } else if (!isChecked) {
-          this.selectedFilters[filterType] = this.selectedFilters[filterType].filter((v: string) => v !== value);
-          console.log(`Removed ${value} from ${filterType} filters`);
+      // Add keypress handler for Enter key in population input
+      this.populationInput.addEventListener('keypress', (e: KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          this.handleApplyFilters();
         }
+      });
+    }
 
-        console.log('Updated selected filters:', JSON.stringify(this.selectedFilters));
-      }
+    // Setup checkbox listeners
+    document.querySelectorAll('cka-checkbox').forEach(checkbox => {
+      checkbox.removeEventListener('change', this.handleCheckboxChange);
+      checkbox.addEventListener('change', this.handleCheckboxChange);
     });
   }
+
+  private handleApplyFilters = (): void => {
+    // Make sure we grab the current value directly from the input element
+    if (this.populationInput) {
+      this.populationSearchQuery = this.populationInput.value;
+    }
+
+    this.updateFilteredData();
+
+    if (this.overlayPanel) {
+      this.overlayPanel.hide();
+    }
+  };
+
+  private handleClearFilters = (): void => {
+    this.clearFilters();
+  };
+
+  private handleCheckboxChange = (event: Event): void => {
+    const target = event.target as HTMLElement;
+    const filterType = target.getAttribute('data-filter-type') as keyof SelectedFilters;
+    const value = target.getAttribute('data-value');
+    const isChecked = (target as any).checked;
+
+    if (filterType && value) {
+      if (isChecked && !this.selectedFilters[filterType].includes(value)) {
+        this.selectedFilters[filterType].push(value);
+      } else if (!isChecked) {
+        this.selectedFilters[filterType] = this.selectedFilters[filterType].filter((v: string) => v !== value);
+      }
+    }
+  };
 
   private performSearch(): void {
-    this.currentSearchQuery = this.searchInput?.value || '';
+    if (this.searchInput) {
+      this.currentSearchQuery = this.searchInput.value;
+    }
     this.updateFilteredData();
   }
 
   private clearFilters(): void {
-    console.log('Clearing all filters...');
-
-    // First, reset all the internal filter state
+    // Reset all filters
     this.selectedFilters = {
       fileType: [],
       population: [],
       locale: []
     };
 
-    // Clear population search query from both state and input element
+    // Clear population search query and input field
     this.populationSearchQuery = '';
-
-    // Find and clear the population input element directly
-    const populationInput = document.getElementById('population-filter-input') as HTMLInputElement;
-    if (populationInput) {
-      console.log('Clearing population input field, previous value:', populationInput.value);
-      populationInput.value = '';
-    } else {
-      console.warn('Population input element not found during clearFilters');
+    if (this.populationInput) {
+      this.populationInput.value = '';
     }
 
-    // Uncheck all checkboxes in the advanced search panel
-    const checkboxes = document.querySelectorAll('cka-checkbox');
-    if (checkboxes && checkboxes.length > 0) {
-      console.log('Found', checkboxes.length, 'checkboxes to reset');
-
-      checkboxes.forEach((checkbox: any) => {
-        // Force uncheck state
-        checkbox.checked = false;
-        console.log('Unchecked checkbox:', checkbox.textContent.trim());
-      });
-    } else {
-      console.warn('No checkboxes found to reset');
-    }
-
-    console.log('Filters cleared, state reset to:', {
-      populationQuery: this.populationSearchQuery,
-      selectedFilters: this.selectedFilters
+    // Uncheck all checkboxes within the advanced search panel
+    document.querySelectorAll('cka-checkbox').forEach(checkbox => {
+      (checkbox as any).checked = false;
     });
 
-    // Update filtered data with cleared filters
+    // Update the filtered data
     this.updateFilteredData();
-  }
-
-  private applyFilters(): void {
-    // Make sure we grab the current value directly from the input element
-    const populationInput = document.getElementById('population-filter-input') as HTMLInputElement;
-    if (populationInput) {
-      this.populationSearchQuery = populationInput.value;
-      console.log('Applying population filter with value:', this.populationSearchQuery);
-    } else {
-      console.warn('Population input element not found during apply filters');
-    }
-
-    // Get current checkbox states to ensure selectedFilters is accurate
-    document.querySelectorAll('cka-checkbox').forEach((checkbox: any) => {
-      const filterType = checkbox.getAttribute('data-filter-type') as keyof SelectedFilters;
-      const value = checkbox.getAttribute('data-value');
-      const isChecked = checkbox.checked;
-
-      if (filterType && value) {
-        // Update the filter array based on current checked state
-        const filterArray = this.selectedFilters[filterType];
-        const valueExists = filterArray.includes(value);
-
-        if (isChecked && !valueExists) {
-          filterArray.push(value);
-          console.log(`Added ${value} to ${filterType} filters during apply`);
-        } else if (!isChecked && valueExists) {
-          this.selectedFilters[filterType] = filterArray.filter(v => v !== value);
-          console.log(`Removed ${value} from ${filterType} filters during apply`);
-        }
-      }
-    });
-
-    // Update filtered data with the current filters
-    this.updateFilteredData();
-
-    // Close the panel
-    this.overlayPanel?.hide();
   }
 
   private updateFilteredData(): void {
-    // Debugging info
-    console.log('Updating filtered data:');
-    console.log('- Main search query:', this.currentSearchQuery);
-    console.log('- Population query:', this.populationSearchQuery);
-    console.log('- File types:', this.selectedFilters.fileType);
-    console.log('- Locales:', this.selectedFilters.locale);
+    console.log('Filtering data with query:', this.currentSearchQuery);
+    console.log('Population query:', this.populationSearchQuery);
+    console.log('Selected filters:', this.selectedFilters);
 
-    // Get and normalize the population filter query
-    const populationQuery = (this.populationSearchQuery || '').toLowerCase().trim();
+    const filteredData = this.existingDocumentLinksData.filter(link => {
+      // Main search (title, description, or path)
+      const matchesSearch = !this.currentSearchQuery ||
+        (link.title && link.title.toLowerCase().includes(this.currentSearchQuery.toLowerCase())) ||
+        (link.documentDescription && link.documentDescription.toLowerCase().includes(this.currentSearchQuery.toLowerCase())) ||
+        (link.serverFilePath && link.serverFilePath.toLowerCase().includes(this.currentSearchQuery.toLowerCase()));
 
-    // Start with all documents
-    let filteredData = [...this.existingDocumentLinksData];
+      // Population filter
+      const matchesPopulation = !this.populationSearchQuery ||
+        (link.population && link.population.toLowerCase().includes(this.populationSearchQuery.toLowerCase()));
 
-    // Apply each filter independently to ensure equal treatment
+      // File Type filter
+      const matchesFileType = this.selectedFilters.fileType.length === 0 ||
+        (link.fileType && this.selectedFilters.fileType.includes(link.fileType));
 
-    // 1. Apply main search filter if present
-    if (this.currentSearchQuery) {
-      const query = this.currentSearchQuery.toLowerCase();
-      filteredData = filteredData.filter(link =>
-        (link.title && link.title.toLowerCase().includes(query)) ||
-        (link.documentDescription && link.documentDescription.toLowerCase().includes(query)) ||
-        (link.serverFilePath && link.serverFilePath.toLowerCase().includes(query))
-      );
-      console.log(`After main search filter: ${filteredData.length} items remaining`);
-    }
+      // Locale filter
+      const matchesLocale = this.selectedFilters.locale.length === 0 ||
+        (link.locale && this.selectedFilters.locale.includes(link.locale));
 
-    // 2. Apply population filter if present
-    if (populationQuery) {
-      filteredData = filteredData.filter(link => {
-        const populationValue = (link.population || '').toLowerCase();
-        const matches = populationValue.includes(populationQuery);
+      // All conditions must be true
+      return matchesSearch && matchesPopulation && matchesFileType && matchesLocale;
+    });
 
-        // Log for debugging
-        if (!matches && Math.random() < 0.1) {
-          console.log(`Population filter rejected: "${populationValue}" does not include "${populationQuery}"`);
-        }
+    console.log('Filtered data count:', filteredData.length);
 
-        return matches;
-      });
-      console.log(`After population filter: ${filteredData.length} items remaining`);
-    }
-
-    // 3. Apply file type filter if any types are selected
-    if (this.selectedFilters.fileType.length > 0) {
-      filteredData = filteredData.filter(link => {
-        const fileType = link.fileType || '';
-        return this.selectedFilters.fileType.includes(fileType);
-      });
-      console.log(`After file type filter: ${filteredData.length} items remaining`);
-    }
-
-    // 4. Apply locale filter if any locales are selected
-    if (this.selectedFilters.locale.length > 0) {
-      filteredData = filteredData.filter(link => {
-        const locale = link.locale || '';
-        return this.selectedFilters.locale.includes(locale);
-      });
-      console.log(`After locale filter: ${filteredData.length} items remaining`);
-    }
-
-    console.log(`Final filtered data: ${filteredData.length} of ${this.existingDocumentLinksData.length} items match`);
-
-    // Send filtered data to handler
-    this.onSearch(filteredData);
-
-    // Update pagination
+    // First notify pagination manager to reset to page 1
     this.paginationManager.setPage(1, filteredData.length);
+
+    // Then notify callback about new filtered data
+    this.onSearch(filteredData);
   }
 
   public reset(): void {
@@ -476,12 +440,69 @@ export class SearchManager {
       population: [],
       locale: []
     };
-    this.updateFilteredData();
 
-    // Ensure reset button is hidden after reset
-    const resetButton = document.querySelector('#reset-search-btn') as HTMLButtonElement;
-    if (resetButton) {
-      resetButton.style.display = 'none';
+    // Reset input field in the DOM
+    if (this.containerRef) {
+      const searchInput = this.containerRef.querySelector('#search-input') as HTMLInputElement;
+      if (searchInput) {
+        searchInput.value = '';
+      }
+
+      // Hide reset button
+      const resetButton = this.containerRef.querySelector('#reset-search-btn') as HTMLButtonElement;
+      if (resetButton) {
+        resetButton.style.display = 'none';
+      }
     }
+
+    this.updateFilteredData();
+  }
+
+  private removeEventListeners(): void {
+    // Search button
+    if (this.containerRef) {
+      const searchBtn = this.containerRef.querySelector('#search-btn');
+      if (searchBtn) {
+        searchBtn.removeEventListener('click', this.handleSearchBtnClick);
+      }
+
+      // Search input
+      if (this.searchInput) {
+        this.searchInput.removeEventListener('input', this.handleSearchInputChange);
+        this.searchInput.removeEventListener('keypress', this.handleSearchInputKeypress);
+      }
+
+      // Reset button
+      const resetBtn = this.containerRef.querySelector('#reset-search-btn');
+      if (resetBtn) {
+        resetBtn.removeEventListener('click', this.handleResetBtnClick);
+      }
+    }
+
+    // Cancel any pending debounce
+    if (this.searchDebounceTimer !== null) {
+      window.clearTimeout(this.searchDebounceTimer);
+      this.searchDebounceTimer = null;
+    }
+  }
+
+  // Add destroy method for cleanup
+  public destroy(): void {
+    this.removeEventListeners();
+
+    // Clean up overlay panel
+    if (this.overlayPanel) {
+      try {
+        this.overlayPanel = null;
+      } catch (error) {
+        console.error('Error cleaning up overlay panel:', error);
+      }
+    }
+
+    // Clear references
+    this.searchInput = null;
+    this.populationInput = null;
+    this.containerRef = null;
+    this.isInitialized = false;
   }
 }

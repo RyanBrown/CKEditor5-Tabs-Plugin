@@ -15,6 +15,7 @@ export class ContentManager implements ILinkManager {
   private initialUrl: string = '';
   private loadingIndicator: HTMLElement | null = null;
   private alerts: Array<{ message: string, type: 'error' | 'info' | 'success' | 'warning', id: string }> = [];
+  private isRendering = false;  // Flag to prevent recursive rendering
 
   // Add callback for link selection events
   public onLinkSelected: ((link: DocumentLink | null) => void) | null = null;
@@ -66,7 +67,7 @@ export class ContentManager implements ILinkManager {
     this.alerts.push({ message, type, id: alertId });
 
     // Re-render to show the alert
-    if (this.container) {
+    if (this.container && !this.isRendering) {
       this.renderContent(this.container);
     }
 
@@ -93,7 +94,7 @@ export class ContentManager implements ILinkManager {
         this.alerts = this.alerts.filter(alert => alert.id !== alertId);
 
         // Re-render if necessary (you might not need this if the DOM element is already gone)
-        if (this.container) {
+        if (this.container && !this.isRendering) {
           this.renderContent(this.container);
         }
       }, 500); // This timing should match your CSS transition duration
@@ -102,7 +103,7 @@ export class ContentManager implements ILinkManager {
       this.alerts = this.alerts.filter(alert => alert.id !== alertId);
 
       // Re-render if necessary
-      if (this.container) {
+      if (this.container && !this.isRendering) {
         this.renderContent(this.container);
       }
     }
@@ -113,7 +114,7 @@ export class ContentManager implements ILinkManager {
     this.alerts = [];
 
     // Re-render to update the alerts
-    if (this.container) {
+    if (this.container && !this.isRendering) {
       this.renderContent(this.container);
     }
   }
@@ -126,17 +127,25 @@ export class ContentManager implements ILinkManager {
     // Maintain selected link if still in filtered results, otherwise clear selection
     if (this.selectedLink && !filteredData.some(link => link.serverFilePath === this.selectedLink?.serverFilePath)) {
       this.selectedLink = null;
+
+      // Notify of deselection if callback exists
+      if (this.onLinkSelected) {
+        this.onLinkSelected(null);
+      }
     }
 
     // Re-render the UI
-    if (this.container) {
-      console.log('Re-rendering content');
+    if (this.container && !this.isRendering) {
+      console.log('Re-rendering content due to search results update');
       this.renderContent(this.container);
     }
   };
 
   private handlePageChange = (page: number): void => {
-    if (this.container) {
+    console.log('Page changed to:', page);
+
+    // Only re-render if we have a container and aren't already rendering
+    if (this.container && !this.isRendering) {
       this.renderContent(this.container);
     }
   };
@@ -151,25 +160,54 @@ export class ContentManager implements ILinkManager {
       this.onLinkSelected(null);
     }
 
-    if (this.container) {
+    if (this.container && !this.isRendering) {
       this.renderContent(this.container);
     }
   }
 
   public renderContent(container: HTMLElement): void {
-    this.container = container;
-    container.innerHTML = this.buildContentForPage();
+    // Prevent recursive renders
+    if (this.isRendering) {
+      console.warn('Preventing recursive render');
+      return;
+    }
 
-    // Initialize components in correct order
-    this.initializeComponents(container);
+    this.isRendering = true;
+    try {
+      this.container = container;
+
+      // Build all content at once
+      container.innerHTML = this.buildContentForPage();
+
+      // Initialize components in correct order
+      this.initializeComponents(container);
+    } catch (error) {
+      console.error('Error rendering content:', error);
+    } finally {
+      // Always ensure we reset the rendering flag
+      this.isRendering = false;
+    }
   }
 
   private initializeComponents(container: HTMLElement): void {
     // Initialize search first as it sets up the search container
     this.searchManager.initialize(container);
 
-    // Then initialize pagination
+    // Then initialize pagination with the correct count of filtered items
     this.paginationManager.initialize(container, this.filteredLinksData.length);
+
+    // Make sure the search input has the current search query
+    const searchInput = container.querySelector('#search-input') as HTMLInputElement;
+    if (searchInput && this.searchManager) {
+      // Set the search input value to maintain search state
+      searchInput.value = this.searchManager.getCurrentSearchQuery();
+
+      // Show/hide reset button based on search query
+      const resetButton = container.querySelector('#reset-search-btn') as HTMLButtonElement;
+      if (resetButton) {
+        resetButton.style.display = searchInput.value.length > 0 ? 'inline-flex' : 'none';
+      }
+    }
 
     // Finally attach link selection listeners
     this.attachLinkSelectionListeners(container);
@@ -227,6 +265,7 @@ export class ContentManager implements ILinkManager {
       return `
       <div class="cka-loading-container">
         <div class="cka-loading-spinner"></div>
+        <div class="cka-loading-message">Loading document links...</div>
       </div>
     `;
     }
@@ -251,10 +290,22 @@ export class ContentManager implements ILinkManager {
       ? currentPageData
         .map(link => this.buildLinkItemMarkup(link))
         .join('')
-      : '<div class="cka-center-modal-message">No results found.</div>';
+      : '<div class="cka-center-modal-message">No results found. Try adjusting your search criteria.</div>';
 
     // Pagination container
     const paginationMarkup = `<div id="pagination-container" class="cka-pagination"></div>`;
+
+    // Debugging metadata (can be removed in production)
+    const debugInfo = `
+      <!-- 
+      Data summary:
+      - Total links: ${this.existingDocumentLinksData.length}
+      - Filtered links: ${this.filteredLinksData.length}
+      - Current page: ${currentPage}
+      - Items on page: ${currentPageData.length}
+      - Page size: ${pageSize}
+      -->
+    `;
 
     return `
       ${searchContainerMarkup}
@@ -264,6 +315,7 @@ export class ContentManager implements ILinkManager {
         ${linksMarkup}
       </div>
       ${paginationMarkup}
+      ${debugInfo}
     `;
   }
 
@@ -312,42 +364,57 @@ export class ContentManager implements ILinkManager {
           ${link.population ? `<li><strong>Population:</strong> ${link.population}</li>` : ''}
           ${link.locale ? `<li><strong>Language:</strong> ${link.locale}</li>` : ''}
           ${link.fileType ? `<li><strong>File Type:</strong> ${link.fileType}</li>` : ''}
+          ${link.documentDescription ? `<li><strong>Description:</strong> ${link.documentDescription}</li>` : ''}
         </ul>
       </div>
     `;
   }
 
   private attachLinkSelectionListeners(container: HTMLElement): void {
-    // Link item click handlers
-    container.querySelectorAll('.cka-link-item').forEach(item => {
-      item.addEventListener('click', (e: Event) => {
-        const target = e.target as HTMLElement;
-        // Ignore clicks on the radio button itself and on any links
-        if (target.closest('cka-radio-button') || target.tagName === 'A') return;
+    // Use event delegation for improved performance and to avoid duplicate listeners
+    const linksContainer = container.querySelector('#links-container');
+    if (!linksContainer) return;
 
-        const linkName = (item as HTMLElement).dataset.linkName;
-        if (!linkName) return;
+    // Remove any existing listener first to prevent duplicates
+    linksContainer.removeEventListener('click', this.handleLinkItemClick);
 
-        this.handleLinkSelection(linkName, item as HTMLElement);
-      });
-    });
+    // Add a single click handler for the entire links container
+    linksContainer.addEventListener('click', this.handleLinkItemClick);
 
-    // Radio button change handlers
+    // Handle radio button change events separately
     container.querySelectorAll('cka-radio-button').forEach(radio => {
-      radio.addEventListener('change', (e: Event) => {
-        const target = e.target as HTMLInputElement;
-        if (!target.checked) return;
-
-        const linkItem = target.closest('.cka-link-item');
-        if (!linkItem) return;
-
-        const linkName = (linkItem as HTMLElement).dataset.linkName;
-        if (linkName) {
-          this.handleLinkSelection(linkName, linkItem as HTMLElement);
-        }
-      });
+      radio.addEventListener('change', this.handleRadioChange);
     });
   }
+
+  private handleLinkItemClick = (e: Event): void => {
+    const target = e.target as HTMLElement;
+
+    // Ignore clicks on the radio button itself or on links
+    if (target.closest('cka-radio-button') || target.tagName === 'A') return;
+
+    // Find the closest link item
+    const linkItem = target.closest('.cka-link-item') as HTMLElement;
+    if (!linkItem) return;
+
+    const linkName = linkItem.dataset.linkName;
+    if (linkName) {
+      this.handleLinkSelection(linkName, linkItem);
+    }
+  };
+
+  private handleRadioChange = (e: Event): void => {
+    const radio = e.target as HTMLInputElement;
+    if (!radio.checked) return;
+
+    const linkItem = radio.closest('.cka-link-item') as HTMLElement;
+    if (!linkItem) return;
+
+    const linkName = linkItem.dataset.linkName;
+    if (linkName) {
+      this.handleLinkSelection(linkName, linkItem);
+    }
+  };
 
   private handleLinkSelection(linkName: string, linkItem: HTMLElement): void {
     this.selectedLink = this.existingDocumentLinksData.find(
@@ -376,5 +443,34 @@ export class ContentManager implements ILinkManager {
     if (this.onLinkSelected) {
       this.onLinkSelected(this.selectedLink);
     }
+  }
+
+  // Clean up method to prevent memory leaks
+  public destroy(): void {
+    // Clean up event listeners
+    if (this.container) {
+      const linksContainer = this.container.querySelector('#links-container');
+      if (linksContainer) {
+        linksContainer.removeEventListener('click', this.handleLinkItemClick);
+      }
+
+      // Clean up radio button listeners
+      this.container.querySelectorAll('cka-radio-button').forEach(radio => {
+        radio.removeEventListener('change', this.handleRadioChange);
+      });
+    }
+
+    // Clean up pagination and search managers
+    if (this.paginationManager) {
+      this.paginationManager.destroy();
+    }
+
+    if (this.searchManager) {
+      this.searchManager.destroy();
+    }
+
+    // Clear references
+    this.container = null;
+    this.selectedLink = null;
   }
 }
