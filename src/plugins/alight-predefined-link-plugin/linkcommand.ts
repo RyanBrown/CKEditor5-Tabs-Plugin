@@ -123,6 +123,13 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
       linkName = selection.getAttribute('alightPredefinedLinkPluginLinkName') as string;
     }
 
+    // CRITICAL: For predefined links, always set a linkName
+    // This is what ensures our output structure is correct
+    if (isPredefined && !linkName) {
+      // Use the href itself as the linkName if no other value is available
+      linkName = href;
+    }
+
     // For predefined links, always ensure we have a linkName
     if (isPredefined) {
       // If no existing linkName, extract from href or generate one

@@ -308,63 +308,27 @@ export function ensurePredefinedLinkStructure(html: string): string {
     const links = tempDiv.querySelectorAll('a.AHCustomeLink');
 
     links.forEach(link => {
-      // CRITICAL: Get predefinedLinkName attribute - this is our ONLY source of truth
-      let linkName = link.getAttribute('data-predefined-link-name');
+      // Look for existing ah:link element
+      let existingAhLink = link.querySelector('ah\\:link') || link.querySelector('ah:link');
+      let linkName = '';
 
-      // If direct attribute isn't available, try to get from other attributes
-      if (!linkName) {
-        linkName = link.getAttribute('data-link-name');
+      if (existingAhLink) {
+        // Get name from existing ah:link
+        linkName = existingAhLink.getAttribute('name') || '';
+
+        // Just keep the existing structure if it's already correct
+        if (linkName) {
+          return;
+        }
       }
 
-      // If still no linkName, check for existing ah:link element
-      let existingAhLink = null;
-      existingAhLink = link.querySelector('ah\\:link') || link.querySelector('ah:link');
-
-      if (existingAhLink && !linkName) {
-        // If we have an ah:link but no linkName yet, get it from the existing element
-        linkName = existingAhLink.getAttribute('name');
-      }
-
-      // If still no linkName, we have a problem - we'll just keep the original structure
+      // If we don't have a valid name, keep original structure
       if (!linkName) {
-        console.warn('Could not determine predefined link name for link:', link.outerHTML);
         return;
       }
 
-      // Simplify link attributes - keep only href="#" and class="AHCustomeLink"
-      while (link.attributes.length > 0) {
-        link.removeAttribute(link.attributes[0].name);
-      }
-      link.setAttribute('href', '#');
-      link.setAttribute('class', 'AHCustomeLink');
-
-      // Create a completely new ah:link element
-      const newAhLink = document.createElement('ah:link');
-      newAhLink.setAttribute('name', linkName);
-
-      // Save the original inner content
-      const originalContent = link.innerHTML;
-
-      // Clear the link
-      link.innerHTML = '';
-
-      // If existing content contains an ah:link, extract just the text
-      if (originalContent.includes('<ah:link')) {
-        const tempInnerDiv = document.createElement('div');
-        tempInnerDiv.innerHTML = originalContent;
-        const existingAhLink = tempInnerDiv.querySelector('ah:link, ah\\:link');
-        if (existingAhLink) {
-          newAhLink.innerHTML = existingAhLink.innerHTML;
-        } else {
-          newAhLink.innerHTML = originalContent;
-        }
-      } else {
-        // Just use the original content
-        newAhLink.innerHTML = originalContent;
-      }
-
-      // Add the new ah:link to the link element
-      link.appendChild(newAhLink);
+      // Create a proper structure
+      link.innerHTML = `<ah:link name="${linkName}">${link.textContent}</ah:link>`;
     });
 
     return tempDiv.innerHTML;
