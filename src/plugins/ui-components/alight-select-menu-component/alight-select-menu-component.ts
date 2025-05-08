@@ -424,6 +424,15 @@ export class CkAlightSelectMenu<T extends SelectOption> {
     this.updateSelectedDisplay();
   }
 
+  /**
+   * Updates the options of the select menu.
+   * This is an alias for setOptions to maintain compatibility with pagination components.
+   * @param options The new options array
+   */
+  public updateOptions(options: T[]): void {
+    this.setOptions(options);
+  }
+
   public disable(): void {
     this.disabled = true;
     this.element.classList.add('disabled');

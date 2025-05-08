@@ -6,6 +6,8 @@ export class PaginationManager {
   private readonly pageSize: number;
   private totalItems = 0;
   private selectMenu: CkAlightSelectMenu<any> | null = null;
+  private containerRef: HTMLElement | null = null;
+  private isUpdating = false; // Add flag to prevent concurrent updates
 
   constructor(
     private onPageChange: (page: number) => void,
@@ -15,7 +17,10 @@ export class PaginationManager {
   }
 
   public initialize(container: HTMLElement, totalItems: number): void {
+    // Store container reference for future use
+    this.containerRef = container;
     this.totalItems = totalItems;
+
     const paginationContainer = container.querySelector('#pagination-container');
     if (!paginationContainer) {
       console.error('Pagination container not found');
@@ -26,7 +31,7 @@ export class PaginationManager {
 
     // Update current page if it's out of bounds with new total
     if (this.currentPage > totalPages) {
-      this.currentPage = totalPages;
+      this.currentPage = Math.max(1, totalPages);
     }
 
     // Render pagination UI
@@ -37,7 +42,7 @@ export class PaginationManager {
   }
 
   private initializeComponents(container: HTMLElement, totalPages: number): void {
-    // Attach button listeners first
+    // Attach pagination event delegation (once)
     this.attachPaginationListeners(container);
 
     // Then initialize the page select
@@ -55,24 +60,112 @@ export class PaginationManager {
     return this.pageSize;
   }
 
-  public setPage(page: number, totalItems: number): void {
-    const totalPages = this.calculateTotalPages(totalItems);
-    const newPage = Math.max(1, Math.min(page, totalPages));
+  /**
+   * Get total pages based on item count
+   */
+  public getTotalPages(): number {
+    return this.calculateTotalPages(this.totalItems);
+  }
 
-    if (newPage !== this.currentPage) {
-      this.currentPage = newPage;
-      this.totalItems = totalItems;
+  /**
+   * Set page with optimized handling for first/last navigation
+   */
+  public setPage(page: number, totalItems: number): void {
+    // Prevent concurrent updates
+    if (this.isUpdating) {
+      console.log('Update already in progress, skipping');
+      return;
+    }
+
+    this.isUpdating = true;
+
+    try {
+      // Save old values to check if anything changed
+      const oldPage = this.currentPage;
+      const oldTotalItems = this.totalItems;
+      const oldTotalPages = this.calculateTotalPages(oldTotalItems);
+
+      // Calculate new values
+      const totalPages = this.calculateTotalPages(totalItems);
+      const newPage = Math.max(1, Math.min(page, totalPages));
+
+      // Only make changes if something is different
+      if (newPage !== oldPage || totalItems !== oldTotalItems) {
+        // Update internal state first
+        this.currentPage = newPage;
+        this.totalItems = totalItems;
+
+        // Use the stored container reference instead of querying the document
+        if (this.containerRef) {
+          // Check if pagination elements exist before updating them
+          const paginationContainer = this.containerRef.querySelector('#pagination-container');
+          if (paginationContainer) {
+            // If the total number of pages changed, redraw the entire pagination
+            if (totalPages !== oldTotalPages) {
+              paginationContainer.innerHTML = this.getPaginationMarkup(totalPages);
+              this.initializeComponents(this.containerRef, totalPages);
+            } else {
+              // Otherwise just update the existing UI elements
+              this.updateButtonStates(this.containerRef, newPage, totalPages);
+              this.updatePageSelect(this.containerRef, newPage, totalPages);
+            }
+
+            // Notify of page change only after UI is updated
+            this.onPageChange(this.currentPage);
+          } else {
+            // If container is gone, just notify of page change
+            this.onPageChange(this.currentPage);
+          }
+        } else {
+          // If container reference is gone, just notify of page change
+          this.onPageChange(this.currentPage);
+        }
+      }
+    } catch (error) {
+      console.error('Error in setPage:', error);
+    }
+
+    // Always release the update lock
+    this.isUpdating = false;
+  }
+
+  /**
+   * Optimized method for jumping directly to first/last page
+   */
+  public jumpToPage(pageType: 'first' | 'last'): void {
+    if (this.isUpdating) {
+      return; // Prevent concurrent updates
+    }
+
+    this.isUpdating = true;
+
+    try {
+      const totalPages = this.calculateTotalPages(this.totalItems);
+      const targetPage = pageType === 'first' ? 1 : totalPages;
+
+      // If already on target page, do nothing
+      if (this.currentPage === targetPage) {
+        this.isUpdating = false;
+        return;
+      }
+
+      // Update internal state first
+      this.currentPage = targetPage;
+
+      // Update UI
+      if (this.containerRef) {
+        this.updateButtonStates(this.containerRef, targetPage, totalPages);
+        this.updatePageSelect(this.containerRef, targetPage, totalPages);
+      }
 
       // Notify of page change
       this.onPageChange(this.currentPage);
-
-      // Update UI elements if container exists
-      const container = document.querySelector('.cka-existing-document-link-content');
-      if (container) {
-        this.updateButtonStates(container as HTMLElement, this.currentPage, totalPages);
-        this.updatePageSelect(container as HTMLElement, this.currentPage, totalPages);
-      }
+    } catch (error) {
+      console.error('Error jumping to page:', error);
     }
+
+    // Always release the update lock
+    this.isUpdating = false;
   }
 
   private calculateTotalPages(totalItems: number): number {
@@ -88,7 +181,7 @@ export class PaginationManager {
         <button 
           id="first-page" 
           class="cka-button cka-button-icon-only cka-button-text first"
-          data-page="1" 
+          data-page-type="first"
           ${this.currentPage === 1 ? 'disabled' : ''}
           aria-label="First page"
         >
@@ -116,7 +209,7 @@ export class PaginationManager {
         <button 
           id="last-page" 
           class="cka-button cka-button-icon-only cka-button-text last"
-          data-page="${totalPages}" 
+          data-page-type="last"
           ${this.currentPage === totalPages ? 'disabled' : ''}
           aria-label="Last page"
         >
@@ -127,26 +220,41 @@ export class PaginationManager {
   }
 
   private attachPaginationListeners(container: HTMLElement): void {
-    const paginationDiv = container.querySelector('#pagination');
-    if (!paginationDiv) return;
+    // Use event delegation to handle all pagination button clicks
+    const paginationContainer = container.querySelector('#pagination-container');
+    if (!paginationContainer) return;
 
-    // Remove any existing listeners
-    const newPaginationDiv = paginationDiv.cloneNode(true);
-    paginationDiv.parentNode?.replaceChild(newPaginationDiv, paginationDiv);
+    // Remove existing handler if there is one (clean up event listeners)
+    paginationContainer.removeEventListener('click', this.handlePaginationClick);
 
-    newPaginationDiv.addEventListener('click', (e: Event) => {
-      const target = e.target as HTMLElement;
-      if (!target.matches('.cka-button') || target.hasAttribute('disabled')) return;
-
-      const pageAttr = target.getAttribute('data-page');
-      if (!pageAttr) return;
-
-      const newPage = parseInt(pageAttr, 10);
-      if (!isNaN(newPage) && newPage !== this.currentPage) {
-        this.setPage(newPage, this.totalItems);
-      }
-    });
+    // Add the click handler to the container
+    paginationContainer.addEventListener('click', this.handlePaginationClick);
   }
+
+  // Using a named method allows us to remove it later if needed
+  private handlePaginationClick = (e: Event) => {
+    const target = e.target as HTMLElement;
+    const button = target.closest('.cka-button') as HTMLButtonElement;
+
+    if (!button || button.hasAttribute('disabled')) return;
+
+    // Handle first/last page special case
+    const pageType = button.getAttribute('data-page-type');
+    if (pageType === 'first' || pageType === 'last') {
+      e.preventDefault();
+      this.jumpToPage(pageType as 'first' | 'last');
+      return;
+    }
+
+    // Regular page navigation
+    const pageAttr = button.getAttribute('data-page');
+    if (!pageAttr) return;
+
+    const newPage = parseInt(pageAttr, 10);
+    if (!isNaN(newPage) && newPage !== this.currentPage) {
+      this.setPage(newPage, this.totalItems);
+    }
+  };
 
   private updateButtonStates(container: HTMLElement, currentPage: number, totalPages: number): void {
     const buttons = {
@@ -158,7 +266,6 @@ export class PaginationManager {
 
     if (buttons.first) {
       buttons.first.disabled = currentPage === 1;
-      buttons.first.setAttribute('data-page', '1');
     }
 
     if (buttons.prev) {
@@ -173,7 +280,6 @@ export class PaginationManager {
 
     if (buttons.last) {
       buttons.last.disabled = currentPage === totalPages;
-      buttons.last.setAttribute('data-page', totalPages.toString());
     }
   }
 
@@ -181,32 +287,59 @@ export class PaginationManager {
     const pageSelectContainer = container.querySelector('#page-select-container');
     if (!pageSelectContainer) return;
 
-    // Clean up existing select menu if it exists
-    if (this.selectMenu) {
-      this.selectMenu = null;
-    }
-
+    // Create page options array
     const pageOptions = Array.from({ length: totalPages }, (_, i) => ({
       label: `${i + 1} of ${totalPages}`,
       value: i + 1
     }));
 
-    this.selectMenu = new CkAlightSelectMenu({
-      options: pageOptions,
-      value: pageNum,
-      placeholder: `Page ${pageNum} of ${totalPages}`,
-      onChange: (selectedValue) => {
-        if (selectedValue && typeof selectedValue === 'number' && selectedValue !== this.currentPage) {
-          this.setPage(selectedValue, this.totalItems);
-        }
-      }
-    });
+    // Always recreate the select menu - this is the simplest solution
+    // First, clean up any existing menu
+    this.selectMenu = null;
 
+    // Clean up the container
     pageSelectContainer.innerHTML = '';
-    this.selectMenu.mount(pageSelectContainer as HTMLElement);
+
+    try {
+      // Create a new select menu
+      this.selectMenu = new CkAlightSelectMenu({
+        options: pageOptions,
+        value: pageNum,
+        placeholder: `Page ${pageNum} of ${totalPages}`,
+        onChange: (selectedValue) => {
+          if (selectedValue && typeof selectedValue === 'number' && selectedValue !== this.currentPage) {
+            this.setPage(selectedValue, this.totalItems);
+          }
+        }
+      });
+
+      // Mount it to the container
+      this.selectMenu.mount(pageSelectContainer as HTMLElement);
+    } catch (error) {
+      console.error('Error creating select menu:', error);
+
+      // Fallback to simple text display
+      pageSelectContainer.innerHTML = `<span>Page ${pageNum} of ${totalPages}</span>`;
+    }
   }
 
   private updatePageSelect(container: HTMLElement, currentPage: number, totalPages: number): void {
+    // Always reinitialize the page select for simplicity
     this.initializePageSelect(container, currentPage, totalPages);
+  }
+
+  // Add cleanup method to prevent memory leaks
+  public destroy(): void {
+    this.selectMenu = null;
+
+    if (this.containerRef) {
+      const paginationContainer = this.containerRef.querySelector('#pagination-container');
+      if (paginationContainer) {
+        paginationContainer.removeEventListener('click', this.handlePaginationClick);
+      }
+      this.containerRef = null;
+    }
+
+    this.isUpdating = false;
   }
 }
