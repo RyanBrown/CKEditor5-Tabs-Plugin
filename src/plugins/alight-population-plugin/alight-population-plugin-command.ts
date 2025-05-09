@@ -140,19 +140,19 @@ export class AddPopulationCommand extends Command {
   private _insertEmptyPopulation(writer: Writer, position: Position, populationName: string, populationId?: string): Range {
     let currentPosition = position;
 
-    // Create ahExpr element
+    // Create ahExpr element with modified attributes
     const ahExprElement = writer.createElement('ahExpr', {
       name: populationName,
       class: 'expeSelector',
       title: populationName,
-      assettype: 'Expression',
-      populationId: populationId
+      assettype: 'Expression'
+      // Remove contenteditable and populationId from ahExpr
     });
 
-    // Insert begin marker
+    // Insert begin marker with populationId
     const beginElement = writer.createElement('populationBegin', {
       name: populationName,
-      populationId: populationId
+      populationId: populationId || 'generatedWhenCreated'
     });
     writer.insert(beginElement, currentPosition);
     currentPosition = writer.createPositionAfter(beginElement);
@@ -164,10 +164,10 @@ export class AddPopulationCommand extends Command {
 
     const beforeEndPosition = currentPosition;
 
-    // Insert end marker
+    // Insert end marker with matching populationId
     const endElement = writer.createElement('populationEnd', {
       name: populationName,
-      populationId: populationId
+      populationId: populationId || 'generatedWhenCreated'
     });
     writer.insert(endElement, currentPosition);
 
@@ -197,26 +197,26 @@ export class AddPopulationCommand extends Command {
     const start = range.start;
     const end = range.end;
 
-    // Create ahExpr element
+    // Create ahExpr element with modified attributes
     const ahExprElement = writer.createElement('ahExpr', {
       name: populationName,
       class: 'expeSelector',
       title: populationName,
-      assettype: 'Expression',
-      populationId: populationId
+      assettype: 'Expression'
+      // Remove contenteditable and populationId from ahExpr
     });
 
-    // Insert begin marker
+    // Insert begin marker with populationId
     const beginElement = writer.createElement('populationBegin', {
       name: populationName,
-      populationId: populationId
+      populationId: populationId || 'generatedWhenCreated'
     });
     writer.insert(beginElement, start);
 
-    // Insert end marker
+    // Insert end marker with matching populationId
     const endElement = writer.createElement('populationEnd', {
       name: populationName,
-      populationId: populationId
+      populationId: populationId || 'generatedWhenCreated'
     });
     writer.insert(endElement, end);
 

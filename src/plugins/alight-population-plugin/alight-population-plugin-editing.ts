@@ -5,7 +5,8 @@ import {
 } from '@ckeditor/ckeditor5-widget';
 import type {
   DowncastWriter,
-  ViewElement
+  ViewElement,
+  ViewText
 } from '@ckeditor/ckeditor5-engine';
 
 /**
@@ -117,16 +118,34 @@ export default class AlightPopulationPluginEditing extends Plugin {
         classes: ['cka-population-tag', 'cka-population-begin']
       },
       model: (viewElement, { writer }) => {
-        const name = viewElement.getAttribute('data-population-name');
-        const populationId = viewElement.getAttribute('data-population-id');
+        // Support both attribute formats - new (populationId) and old (data-population-*)
+        let name = viewElement.getAttribute('data-population-name');
+
+        // If no data-population-name, try to extract from text content
+        if (!name && viewElement.hasClass('hide-in-awl') && viewElement.childCount > 0) {
+          const child = viewElement.getChild(0);
+          // Make sure we're dealing with a text node
+          if (child && child.is('$text')) {
+            const text = (child as ViewText).data;
+            // Extract name from text format "[BEGIN *name*]"
+            const match = text.match(/\[BEGIN \*([^*]+)\*\]/);
+            if (match && match[1]) {
+              name = match[1];
+            }
+          }
+        }
+
+        const populationId = viewElement.getAttribute('populationId') ||
+          viewElement.getAttribute('data-population-id') ||
+          'generatedWhenCreated';
 
         if (!name) {
-          console.warn('Upcast: population begin span missing "data-population-name" attribute');
+          console.warn('Upcast: population begin span missing name information');
           return null;
         }
         return writer.createElement('populationBegin', {
           name: String(name),
-          populationId: populationId || undefined
+          populationId: populationId
         });
       }
     });
@@ -138,16 +157,34 @@ export default class AlightPopulationPluginEditing extends Plugin {
         classes: ['cka-population-tag', 'cka-population-end']
       },
       model: (viewElement, { writer }) => {
-        const name = viewElement.getAttribute('data-population-name');
-        const populationId = viewElement.getAttribute('data-population-id');
+        // Support both attribute formats - new (populationId) and old (data-population-*)
+        let name = viewElement.getAttribute('data-population-name');
+
+        // If no data-population-name, try to extract from text content
+        if (!name && viewElement.hasClass('hide-in-awl') && viewElement.childCount > 0) {
+          const child = viewElement.getChild(0);
+          // Make sure we're dealing with a text node
+          if (child && child.is('$text')) {
+            const text = (child as ViewText).data;
+            // Extract name from text format "[*name* END]"
+            const match = text.match(/\[\*([^*]+)\* END\]/);
+            if (match && match[1]) {
+              name = match[1];
+            }
+          }
+        }
+
+        const populationId = viewElement.getAttribute('populationId') ||
+          viewElement.getAttribute('data-population-id') ||
+          'generatedWhenCreated';
 
         if (!name) {
-          console.warn('Upcast: population end span missing "data-population-name" attribute');
+          console.warn('Upcast: population end span missing name information');
           return null;
         }
         return writer.createElement('populationEnd', {
           name: String(name),
-          populationId: populationId || undefined
+          populationId: populationId
         });
       }
     });
@@ -169,8 +206,8 @@ export default class AlightPopulationPluginEditing extends Plugin {
           name: String(name),
           class: modelElement.getAttribute('class') || 'expeSelector',
           title: modelElement.getAttribute('title') || name,
-          assettype: 'Expression',
-          populationId: populationId || undefined
+          assettype: 'Expression'
+          // Remove contenteditable="false" and populationId from here
         });
       }
     });
@@ -180,16 +217,16 @@ export default class AlightPopulationPluginEditing extends Plugin {
       model: 'populationBegin',
       view: (modelElement, { writer }) => {
         const name = modelElement.getAttribute('name');
-        const populationId = modelElement.getAttribute('populationId');
+        const populationId = modelElement.getAttribute('populationId') || 'generatedWhenCreated';
 
         if (!name) {
           console.warn('Data downcast: populationBegin missing required "name" attribute');
           return null;
         }
         const beginSpan = writer.createContainerElement('span', {
-          class: 'cka-population-tag cka-population-begin',
-          'data-population-name': name,
-          'data-population-id': populationId || ''
+          class: 'cka-population-tag cka-population-begin hide-in-awl',
+          populationId: populationId
+          // Replace data-population-name and data-population-id with populationId
         });
         writer.insert(
           writer.createPositionAt(beginSpan, 0),
@@ -204,16 +241,16 @@ export default class AlightPopulationPluginEditing extends Plugin {
       model: 'populationEnd',
       view: (modelElement, { writer }) => {
         const name = modelElement.getAttribute('name');
-        const populationId = modelElement.getAttribute('populationId');
+        const populationId = modelElement.getAttribute('populationId') || 'generatedWhenCreated';
 
         if (!name) {
           console.warn('Data downcast: populationEnd missing required "name" attribute');
           return null;
         }
         const endSpan = writer.createContainerElement('span', {
-          class: 'cka-population-tag cka-population-end',
-          'data-population-name': name,
-          'data-population-id': populationId || ''
+          class: 'cka-population-tag cka-population-end hide-in-awl',
+          populationId: populationId
+          // Replace data-population-name and data-population-id with populationId
         });
         writer.insert(
           writer.createPositionAt(endSpan, 0),
@@ -240,8 +277,8 @@ export default class AlightPopulationPluginEditing extends Plugin {
           name: String(name),
           class: modelElement.getAttribute('class') || 'expeSelector',
           title: modelElement.getAttribute('title') || name,
-          assettype: 'Expression',
-          populationId: populationId || undefined
+          assettype: 'Expression'
+          // Remove contenteditable="false" and populationId from ahExpr
         });
         return toWidget(ahExprElement, writer, { label: `Population container: ${name}` });
       }
@@ -300,9 +337,9 @@ export default class AlightPopulationPluginEditing extends Plugin {
   ): ViewElement {
     // Create a container for the tag using only CSS classes - no inline styles
     const tagContainer = writer.createContainerElement('span', {
-      class: `cka-population-tag cka-population-${type}`,
-      'data-population-name': populationName,
-      'data-population-id': populationId || ''
+      class: `cka-population-tag cka-population-${type} hide-in-awl`,
+      populationId: populationId || 'generatedWhenCreated'
+      // Change to use populationId instead of data-* attributes
     });
 
     // Create the text content for the tag
@@ -339,8 +376,30 @@ export default class AlightPopulationPluginEditing extends Plugin {
         populationName = viewElement.getAttribute('name');
         populationId = viewElement.getAttribute('populationId');
       } else if (viewElement.hasClass && viewElement.hasClass('cka-population-tag')) {
+        // Support both old and new attribute formats
         populationName = viewElement.getAttribute('data-population-name');
-        populationId = viewElement.getAttribute('data-population-id');
+
+        // If no data-population-name, try to extract from text content
+        if (!populationName && viewElement.childCount > 0) {
+          const child = viewElement.getChild(0);
+          if (child && child.is('$text')) {
+            const text = (child as ViewText).data;
+            if (viewElement.hasClass('cka-population-begin')) {
+              const match = text.match(/\[BEGIN \*([^*]+)\*\]/);
+              if (match && match[1]) {
+                populationName = match[1];
+              }
+            } else {
+              const match = text.match(/\[\*([^*]+)\* END\]/);
+              if (match && match[1]) {
+                populationName = match[1];
+              }
+            }
+          }
+        }
+
+        populationId = viewElement.getAttribute('populationId') ||
+          viewElement.getAttribute('data-population-id');
       } else {
         // Check parent elements
         viewElement = viewElement.getAncestor('ah:expr');
