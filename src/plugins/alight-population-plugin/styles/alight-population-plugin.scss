@@ -53,6 +53,17 @@
       box-shadow: none !important;
       background-color: inherit !important;
     }
+
+    // Ensure widget selection handles are not shown
+    &>.ck-widget__selection-handle {
+      display: none !important;
+    }
+
+    // Make sure population tags never have contenteditable="false"
+    &[contenteditable="false"] {
+      cursor: pointer;
+      user-select: none;
+    }
   }
 
   // Ensure ah:expr is properly styled as an editable container
@@ -106,15 +117,6 @@
   }
 }
 
-// Ensure population tags never have widget selection handles
-.ck-content .cka-population-tag.ck-widget {
-
-  // Remove widget selection handle
-  &>.ck-widget__selection-handle {
-    display: none !important;
-  }
-}
-
 // Modal styles for external content
 .cka-dialog {
   .cka-population-list {
@@ -143,4 +145,58 @@
       }
     }
   }
+}
+
+// Add styles for error alerts in modal
+.cka-alert {
+  margin: 10px;
+  padding: 10px;
+  border-radius: 4px;
+
+  &.cka-alert-error {
+    background-color: #ffebee;
+    border: 1px solid #ffcdd2;
+
+    .cka-alert-warning {
+      color: #c62828;
+      font-weight: bold;
+    }
+  }
+}
+
+// Loading indicator styles
+.cka-loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+
+  .cka-loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid var(--success);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+}
+
+// Center modal message
+.cka-center-modal-message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  text-align: center;
+  padding: 20px;
 }

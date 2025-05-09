@@ -38,6 +38,9 @@ export default class AlightPopulationPluginEditing extends Plugin {
     this._defineSchema();
     this._defineConverters();
     this._fixSelectionRange();
+
+    // Log initialization
+    console.log('AlightPopulationPluginEditing initialized');
   }
 
   /**
@@ -73,6 +76,11 @@ export default class AlightPopulationPluginEditing extends Plugin {
         (childDefinition.name === 'populationBegin' || childDefinition.name === 'populationEnd')) {
         return true;
       }
+    });
+
+    // Add support for legacy population color attribute
+    schema.extend('$text', {
+      allowAttributes: ['legacyPopulationColor']
     });
   }
 
@@ -112,7 +120,81 @@ export default class AlightPopulationPluginEditing extends Plugin {
       converterPriority: 'high' // Ensure this runs before child conversions
     });
 
-    // Upcast for population begin tag (inside ah:expr)
+    // Upcast for legacy format population begin tag
+    conversion.for('upcast').elementToElement({
+      view: {
+        name: 'span',
+        classes: ['selectorTag', 'startBracket']
+      },
+      model: (viewElement, { writer }) => {
+        // Extract population name from text content
+        let name = 'population'; // Default name
+
+        if (viewElement.childCount > 0) {
+          const child = viewElement.getChild(0);
+          if (child && child.is('$text')) {
+            const text = (child as ViewText).data;
+            // Extract name from text format "[Begin population]"
+            const match = text.match(/\[Begin ([^\]]+)\]/i);
+            if (match && match[1]) {
+              name = match[1].trim();
+            }
+          }
+        }
+
+        // Create a populationBegin element with the extracted name
+        return writer.createElement('populationBegin', {
+          name: name,
+          populationId: name // Use name as ID for legacy format
+        });
+      }
+    });
+
+    // Upcast for legacy format population end tag
+    conversion.for('upcast').elementToElement({
+      view: {
+        name: 'span',
+        classes: ['selectorTag', 'endBracket']
+      },
+      model: (viewElement, { writer }) => {
+        // Extract population name from text content
+        let name = 'population'; // Default name
+
+        if (viewElement.childCount > 0) {
+          const child = viewElement.getChild(0);
+          if (child && child.is('$text')) {
+            const text = (child as ViewText).data;
+            // Extract name from text format "[END population]"
+            const match = text.match(/\[END ([^\]]+)\]/i);
+            if (match && match[1]) {
+              name = match[1].trim();
+            }
+          }
+        }
+
+        // Create a populationEnd element with the extracted name
+        return writer.createElement('populationEnd', {
+          name: name,
+          populationId: name // Use name as ID for legacy format
+        });
+      }
+    });
+
+    // Upcast for colored spans that might contain population tags (legacy format)
+    conversion.for('upcast').elementToAttribute({
+      view: {
+        name: 'span',
+        styles: {
+          color: /^#33cc00$/
+        }
+      },
+      model: {
+        key: 'legacyPopulationColor',
+        value: true
+      }
+    });
+
+    // Upcast for new format population begin tag
     conversion.for('upcast').elementToElement({
       view: {
         name: 'span',
@@ -121,37 +203,39 @@ export default class AlightPopulationPluginEditing extends Plugin {
       model: (viewElement, { writer }) => {
         // Support both attribute formats - new (populationId) and old (data-population-*)
         let name = viewElement.getAttribute('data-population-name');
+        let populationId = viewElement.getAttribute('populationId') ||
+          viewElement.getAttribute('data-population-id');
 
-        // If no data-population-name, try to extract from text content
-        if (!name && viewElement.hasClass('hide-in-awl') && viewElement.childCount > 0) {
+        // If no name attribute, try to extract from text content
+        if (!name && viewElement.childCount > 0) {
           const child = viewElement.getChild(0);
-          // Make sure we're dealing with a text node
           if (child && child.is('$text')) {
             const text = (child as ViewText).data;
-            // Extract name from text format "[BEGIN *name*]"
-            const match = text.match(/BEGIN ([^*]+)/);
+            // Extract name from text format "BEGIN name"
+            const match = text.match(/BEGIN ([^\n]+)/);
             if (match && match[1]) {
-              name = match[1];
+              name = match[1].trim();
+              // If no populationId, use the name as ID
+              if (!populationId) {
+                populationId = name;
+              }
             }
           }
         }
-
-        const populationId = viewElement.getAttribute('populationId') ||
-          viewElement.getAttribute('data-population-id') ||
-          'generatedWhenCreated';
 
         if (!name) {
           console.warn('Upcast: population begin span missing name information');
           return null;
         }
+
         return writer.createElement('populationBegin', {
           name: String(name),
-          populationId: populationId
+          populationId: populationId || name
         });
       }
     });
 
-    // Upcast for population end tag (inside ah:expr)
+    // Upcast for new format population end tag
     conversion.for('upcast').elementToElement({
       view: {
         name: 'span',
@@ -160,32 +244,34 @@ export default class AlightPopulationPluginEditing extends Plugin {
       model: (viewElement, { writer }) => {
         // Support both attribute formats - new (populationId) and old (data-population-*)
         let name = viewElement.getAttribute('data-population-name');
+        let populationId = viewElement.getAttribute('populationId') ||
+          viewElement.getAttribute('data-population-id');
 
-        // If no data-population-name, try to extract from text content
-        if (!name && viewElement.hasClass('hide-in-awl') && viewElement.childCount > 0) {
+        // If no name attribute, try to extract from text content
+        if (!name && viewElement.childCount > 0) {
           const child = viewElement.getChild(0);
-          // Make sure we're dealing with a text node
           if (child && child.is('$text')) {
             const text = (child as ViewText).data;
             // Extract name from text format "name END"
-            const match = text.match(/([^*]+) END/);
+            const match = text.match(/([^\n]+) END/);
             if (match && match[1]) {
-              name = match[1];
+              name = match[1].trim();
+              // If no populationId, use the name as ID
+              if (!populationId) {
+                populationId = name;
+              }
             }
           }
         }
-
-        const populationId = viewElement.getAttribute('populationId') ||
-          viewElement.getAttribute('data-population-id') ||
-          'generatedWhenCreated';
 
         if (!name) {
           console.warn('Upcast: population end span missing name information');
           return null;
         }
+
         return writer.createElement('populationEnd', {
           name: String(name),
-          populationId: populationId
+          populationId: populationId || name
         });
       }
     });
@@ -225,9 +311,8 @@ export default class AlightPopulationPluginEditing extends Plugin {
           return null;
         }
         const beginSpan = writer.createContainerElement('span', {
-          class: 'cka-population-tag cka-population-begin hide-in-awl',
+          class: 'cka-population-tag cka-population-begin',
           populationId: populationId
-          // Replace data-population-name and data-population-id with populationId
         });
         writer.insert(
           writer.createPositionAt(beginSpan, 0),
@@ -249,9 +334,8 @@ export default class AlightPopulationPluginEditing extends Plugin {
           return null;
         }
         const endSpan = writer.createContainerElement('span', {
-          class: 'cka-population-tag cka-population-end hide-in-awl',
+          class: 'cka-population-tag cka-population-end',
           populationId: populationId
-          // Replace data-population-name and data-population-id with populationId
         });
         writer.insert(
           writer.createPositionAt(endSpan, 0),
@@ -347,6 +431,9 @@ export default class AlightPopulationPluginEditing extends Plugin {
       }
     });
 
+    // Remove downcast conversion for legacyPopulationColor (we don't want to preserve it)
+    // By not defining a downcast for this attribute, it will be ignored when generating output
+
     // Add double-click handler to open the edit modal
     this._enableDoubleClickHandler();
   }
@@ -434,14 +521,14 @@ export default class AlightPopulationPluginEditing extends Plugin {
           if (child && child.is('$text')) {
             const text = (child as ViewText).data;
             if (viewElement.hasClass('cka-population-begin')) {
-              const match = text.match(/BEGIN ([^*]+)/);
+              const match = text.match(/BEGIN ([^\n]+)/);
               if (match && match[1]) {
-                populationName = match[1];
+                populationName = match[1].trim();
               }
             } else {
-              const match = text.match(/([^*]+) END/);
+              const match = text.match(/([^\n]+) END/);
               if (match && match[1]) {
-                populationName = match[1];
+                populationName = match[1].trim();
               }
             }
           }
@@ -449,6 +536,26 @@ export default class AlightPopulationPluginEditing extends Plugin {
 
         populationId = viewElement.getAttribute('populationId') ||
           viewElement.getAttribute('data-population-id');
+      } else if (viewElement.hasClass && viewElement.hasClass('selectorTag')) {
+        // Handle legacy format tags
+        if (viewElement.childCount > 0) {
+          const child = viewElement.getChild(0);
+          if (child && child.is('$text')) {
+            const text = (child as ViewText).data;
+            let match;
+
+            if (viewElement.hasClass('startBracket')) {
+              match = text.match(/\[Begin ([^\]]+)\]/i);
+            } else if (viewElement.hasClass('endBracket')) {
+              match = text.match(/\[END ([^\]]+)\]/i);
+            }
+
+            if (match && match[1]) {
+              populationName = match[1].trim();
+              populationId = populationName; // Use name as ID for legacy format
+            }
+          }
+        }
       } else {
         // Check parent elements
         viewElement = viewElement.getAncestor('ah:expr');
@@ -463,11 +570,17 @@ export default class AlightPopulationPluginEditing extends Plugin {
       // Prevent default behavior
       evt.stop();
 
-      // Open the population modal with the current population name
-      editor.execute('openPopulationModal', {
-        populationName,
-        populationId
-      });
+      // Check if the command exists before executing
+      const command = editor.commands.get('openPopulationModal');
+      if (command) {
+        // Open the population modal with the current population name
+        editor.execute('openPopulationModal', {
+          populationName,
+          populationId
+        });
+      } else {
+        console.warn('Command "openPopulationModal" not found - unable to open modal on double-click');
+      }
     });
   }
 }

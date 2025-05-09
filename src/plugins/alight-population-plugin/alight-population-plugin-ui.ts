@@ -67,6 +67,9 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
   init() {
     const editor = this.editor;
 
+    // Log available commands before creating buttons (for debugging)
+    console.log('UI Plugin Init - Available commands:', Array.from(editor.commands.names()));
+
     // Add the "Add Population" and "Remove Population" buttons to the editor toolbar
     this._createButtons();
 
@@ -88,7 +91,7 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
 
     // Add the "Add Population" button
     editor.ui.componentFactory.add('alightPopulationPlugin', locale => {
-      const command = editor.commands.get('alightPopulationPlugin');
+      // Create the button first
       this.buttonView = new ButtonView(locale);
 
       this.buttonView.set({
@@ -98,35 +101,69 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
         isEnabled: false // Start disabled until command is ready
       });
 
-      // Bind button state to command state
-      this.buttonView.bind('isEnabled').to(command, 'isEnabled');
+      // Get the command safely - this might be undefined if commands aren't registered yet
+      const command = editor.commands.get('alightPopulationPlugin');
 
-      // Execute the command when the button is clicked
-      this.buttonView.on('execute', () => {
-        this._showPopulationModal();
-      });
+      if (command) {
+        // Bind button state to command state if command exists
+        this.buttonView.bind('isEnabled').to(command, 'isEnabled');
+
+        // Execute the command when the button is clicked
+        this.buttonView.on('execute', () => {
+          this._showPopulationModal();
+        });
+      } else {
+        console.warn('AlightPopulationPluginUI: "alightPopulationPlugin" command not found - button may not function correctly');
+
+        // Set up a fallback execute handler that checks for command again
+        this.buttonView.on('execute', () => {
+          const cmd = editor.commands.get('alightPopulationPlugin');
+          if (cmd) {
+            this._showPopulationModal();
+          } else {
+            console.error('Command "alightPopulationPlugin" still not available when button executed');
+          }
+        });
+      }
 
       return this.buttonView;
     });
 
     // Add the "Remove Population" button
     editor.ui.componentFactory.add('removePopulation', locale => {
-      const command = editor.commands.get('removePopulation');
       const buttonView = new ButtonView(locale);
 
       buttonView.set({
         label: 'Remove Population',
         icon: ToolBarIcon,
-        tooltip: true
+        tooltip: true,
+        isEnabled: false // Start disabled until command is ready
       });
 
-      // Bind button state to command state
-      buttonView.bind('isEnabled').to(command);
+      // Get the command safely
+      const command = editor.commands.get('removePopulation');
 
-      // Execute the command when the button is clicked
-      buttonView.on('execute', () => {
-        editor.execute('removePopulation');
-      });
+      if (command) {
+        // Bind button state to command state if command exists
+        buttonView.bind('isEnabled').to(command);
+
+        // Execute the command when the button is clicked
+        buttonView.on('execute', () => {
+          editor.execute('removePopulation');
+        });
+      } else {
+        console.warn('AlightPopulationPluginUI: "removePopulation" command not found - button may not function correctly');
+
+        // Set up a fallback execute handler
+        buttonView.on('execute', () => {
+          const cmd = editor.commands.get('removePopulation');
+          if (cmd) {
+            editor.execute('removePopulation');
+          } else {
+            console.error('Command "removePopulation" still not available when button executed');
+          }
+        });
+      }
 
       return buttonView;
     });
@@ -171,7 +208,14 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
    */
   protected override _enablePluginButton = () => {
     if (this.buttonView) {
-      this.editor.commands.get('alightPopulationPlugin').refresh();
+      const command = this.editor.commands.get('alightPopulationPlugin');
+      if (command) {
+        command.refresh();
+      } else {
+        console.warn('Unable to refresh "alightPopulationPlugin" command - not found');
+        // If command doesn't exist, manually enable the button
+        this.buttonView.isEnabled = true;
+      }
     }
   }
 
@@ -199,6 +243,9 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
     }
     // Register the command
     editor.commands.add('openPopulationModal', new OpenPopulationModalCommand(editor));
+
+    // Log command registration
+    console.log('AlightPopulationPluginUI: Registered "openPopulationModal" command');
   }
 
   /**
@@ -209,8 +256,17 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
 
     // Update the command states on selection change
     editor.model.document.selection.on('change:range', () => {
-      editor.commands.get('alightPopulationPlugin').refresh();
-      editor.commands.get('removePopulation').refresh();
+      const addCommand = editor.commands.get('alightPopulationPlugin');
+      const removeCommand = editor.commands.get('removePopulation');
+
+      // Only refresh commands if they exist
+      if (addCommand) {
+        addCommand.refresh();
+      }
+
+      if (removeCommand) {
+        removeCommand.refresh();
+      }
     });
   }
 
@@ -259,55 +315,33 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
           if (selectedPopulation && selectedPopulation.title) {
             console.log('Applying population:', selectedPopulation.title);
 
-            // Execute the add population command with the selected population name and ID
-            try {
-              editor.execute('alightPopulationPlugin', {
-                populationName: selectedPopulation.title,
-                populationId: selectedPopulation.id
-              });
+            // Get the command safely
+            const addCommand = editor.commands.get('alightPopulationPlugin');
 
-              // Hide the modal after creating the population tag
-              this._populationModal?.hide();
-            } catch (error) {
-              console.error('Error applying population tag:', error);
+            if (addCommand) {
+              try {
+                // Execute the add population command with the selected population name and ID
+                editor.execute('alightPopulationPlugin', {
+                  populationName: selectedPopulation.title,
+                  populationId: selectedPopulation.id
+                });
 
-              // Show an error message to the user
-              const alertDiv = document.createElement('div');
-              alertDiv.className = 'cka-alert cka-alert-error';
-              alertDiv.innerHTML = `<div class="cka-alert-warning">Error applying population: ${error.message || 'Unknown error'}</div>`;
+                // Hide the modal after creating the population tag
+                this._populationModal?.hide();
+              } catch (error) {
+                console.error('Error applying population tag:', error);
 
-              // Find the container for the alert and show it
-              const modalContent = this._populationModal?.getElement();
-              if (modalContent) {
-                // Insert at the top
-                modalContent.insertBefore(alertDiv, modalContent.firstChild);
-
-                // Remove after a delay
-                setTimeout(() => {
-                  alertDiv.remove();
-                }, 10000);
+                // Show an error message to the user
+                this._showErrorAlert(`Error applying population: ${error.message || 'Unknown error'}`);
               }
+            } else {
+              console.error('Command "alightPopulationPlugin" not found when trying to apply population');
+              this._showErrorAlert('Unable to apply population: command not available');
             }
           } else {
             // Show some feedback that no population was selected
             console.warn('No population selected');
-
-            // Show an alert to the user
-            const alertDiv = document.createElement('div');
-            alertDiv.className = 'cka-alert cka-alert-error';
-            alertDiv.innerHTML = `<div class="cka-alert-warning">Please select a population</div>`;
-
-            // Find the container for the alert and show it
-            const modalContent = this._populationModal?.getElement();
-            if (modalContent) {
-              // Insert at the top
-              modalContent.insertBefore(alertDiv, modalContent.firstChild);
-
-              // Remove after a delay
-              setTimeout(() => {
-                alertDiv.remove();
-              }, 10000);
-            }
+            this._showErrorAlert('Please select a population');
           }
         }
       });
@@ -371,6 +405,27 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
           <p>${error.message || 'Unknown error'}</p>
         </div>
       `;
+    }
+  }
+
+  /**
+   * Helper method to show error alerts in the modal
+   */
+  private _showErrorAlert(message: string) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'cka-alert cka-alert-error';
+    alertDiv.innerHTML = `<div class="cka-alert-warning">${message}</div>`;
+
+    // Find the container for the alert and show it
+    const modalContent = this._populationModal?.getElement();
+    if (modalContent) {
+      // Insert at the top
+      modalContent.insertBefore(alertDiv, modalContent.firstChild);
+
+      // Remove after a delay
+      setTimeout(() => {
+        alertDiv.remove();
+      }, 10000);
     }
   }
 

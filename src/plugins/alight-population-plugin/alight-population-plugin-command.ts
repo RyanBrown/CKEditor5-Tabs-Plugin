@@ -347,5 +347,11 @@ export default class AlightPopulationPluginCommand extends Plugin {
 
     // Register the Remove Population command
     editor.commands.add('removePopulation', new RemovePopulationCommand(editor));
+
+    // Log command registration for debugging
+    console.log('AlightPopulationPluginCommand: Commands registered:',
+      'alightPopulationPlugin:', !!editor.commands.get('alightPopulationPlugin'),
+      'removePopulation:', !!editor.commands.get('removePopulation')
+    );
   }
 }

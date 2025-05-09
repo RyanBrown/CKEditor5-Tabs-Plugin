@@ -33,9 +33,10 @@ export default class AlightPopulationsPlugin extends Plugin {
    */
   static get requires() {
     return [
+      // Changed order to ensure commands are registered before UI
+      AlightPopulationPluginCommand,
       AlightPopulationPluginEditing,
-      AlightPopulationPluginUI,
-      AlightPopulationPluginCommand
+      AlightPopulationPluginUI
     ];
   }
 
@@ -45,35 +46,29 @@ export default class AlightPopulationsPlugin extends Plugin {
   init() {
     const editor = this.editor;
 
-    // Initialize the plugin components
-    editor.plugins.get('AlightPopulationPluginEditing');
-    editor.plugins.get('AlightPopulationPluginUI');
-    editor.plugins.get('AlightPopulationPluginCommand');
+    // Initialize the plugin components in the correct order
+    // First initialize the command plugin to ensure commands are registered
+    const commandPlugin = editor.plugins.get('AlightPopulationPluginCommand');
+    if (!commandPlugin) {
+      console.error('AlightPopulationPluginCommand plugin not found');
+    }
 
-    // Register the UI components in the editor's UI component factory
-    this._registerUIComponents();
+    // Then initialize the editing plugin
+    const editingPlugin = editor.plugins.get('AlightPopulationPluginEditing');
+    if (!editingPlugin) {
+      console.error('AlightPopulationPluginEditing plugin not found');
+    }
+
+    // Finally initialize the UI plugin which depends on commands
+    const uiPlugin = editor.plugins.get('AlightPopulationPluginUI');
+    if (!uiPlugin) {
+      console.error('AlightPopulationPluginUI plugin not found');
+    }
 
     // Log plugin initialization for debugging
     console.log('AlightPopulationsPlugin initialized');
-  }
 
-  /**
-   * Registers the UI components needed for the population modal.
-   * This ensures that all required components are available when the modal is displayed.
-   */
-  private _registerUIComponents() {
-    const editor = this.editor;
-
-    // Register the alightPopulationPlugin button in the editor's UI component factory
-    // This is already handled in AlightPopulationPluginUI
-
-    // Register the removePopulation button in the editor's UI component factory
-    // This is already handled in AlightPopulationPluginUI
-
-    // Register the openPopulationModal command in the editor's command collection
-    // This is already handled in AlightPopulationPluginUI
-
-    // The CkAlightModalDialog component is registered globally through the import
-    // The other UI components are also registered globally through imports
+    // Log available commands for debugging
+    console.log('Available commands:', Array.from(editor.commands.names()));
   }
 }
