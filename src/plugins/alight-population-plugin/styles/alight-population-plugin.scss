@@ -13,16 +13,16 @@
 
   // Base styles for all population tags
   .cka-population-tag {
-    display: inline-block;
-    color: var(--neutral-white);
-    background-color: var(--success-shadow);
+    background-color: #e4f4ee;
     border-radius: 3px;
-    padding: 2px 6px;
-    margin: 2px;
-    font-size: 0.85em;
-    font-family: monospace;
-    user-select: none;
+    color: var(--success);
     cursor: pointer;
+    display: inline-block;
+    font-family: monospace;
+    font-size: 0.85em;
+    margin: 2px;
+    padding: 2px 6px;
+    user-select: none;
     white-space: nowrap;
 
     // Apply transition for hover effect
