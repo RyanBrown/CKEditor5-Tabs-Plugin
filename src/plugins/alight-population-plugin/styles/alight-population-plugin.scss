@@ -32,27 +32,48 @@
 
     &:hover {
       background-color: var(--success);
+      color: #fff;
     }
 
     // Specific styles for begin and end tags
     &.cka-population-begin {
       margin-right: 3px;
-
-      // For block elements, display above
-      .ck-widget+& {
-        display: block;
-        margin-bottom: 5px;
-      }
     }
 
     &.cka-population-end {
       margin-left: 3px;
+    }
 
-      // For block elements, display below
-      +.ck-widget {
-        display: block;
-        margin-top: 5px;
-      }
+    // IMPORTANT: Override any CKEditor widget styling
+    &.ck-widget,
+    &.ck-widget_selected,
+    &.ck-widget_with-selection-handle {
+      outline: none !important;
+      border: none !important;
+      box-shadow: none !important;
+      background-color: inherit !important;
+    }
+  }
+
+  // Ensure ah:expr is properly styled as an editable container
+  ah\:expr {
+    // Basic container styling
+    display: inline-block;
+    position: relative;
+
+    // Allow text selection inside
+    cursor: text;
+
+    // Make sure text content is properly editable
+    &>*:not(.cka-population-tag) {
+      cursor: text;
+      user-select: text;
+    }
+
+    // Remove default CKEditor widget outline only on focused state
+    &.ck-widget.ck-widget_selected {
+      // Keep a subtle styling to indicate it's selected but not obtrusive
+      outline: 1px dashed var(--ck-color-widget-border-subtle, #ddd) !important;
     }
   }
 
@@ -70,9 +91,7 @@
   }
 }
 
-// Extra styles for specific cases
-
-// Inline population tags within text
+// Fix selection issues in paragraph contexts
 .ck-content p,
 .ck-content h1,
 .ck-content h2,
@@ -87,55 +106,12 @@
   }
 }
 
-// Population tags around tables
-.ck-content table {
-  .cka-population-tag.cka-population-begin {
-    display: block;
-    margin-bottom: 5px;
-  }
+// Ensure population tags never have widget selection handles
+.ck-content .cka-population-tag.ck-widget {
 
-  .cka-population-tag.cka-population-end {
-    display: block;
-    margin-top: 5px;
-  }
-}
-
-// Population tags around sections
-.ck-content .section {
-  .cka-population-tag.cka-population-begin {
-    display: block;
-    margin-bottom: 5px;
-  }
-
-  .cka-population-tag.cka-population-end {
-    display: block;
-    margin-top: 5px;
-  }
-}
-
-// Population tags around tabs
-.ck-content .tab {
-  .cka-population-tag.cka-population-begin {
-    display: block;
-    margin-bottom: 5px;
-  }
-
-  .cka-population-tag.cka-population-end {
-    display: block;
-    margin-top: 5px;
-  }
-}
-
-// Population tags around images
-.ck-content .image {
-  .cka-population-tag.cka-population-begin {
-    display: block;
-    margin-bottom: 5px;
-  }
-
-  .cka-population-tag.cka-population-end {
-    display: block;
-    margin-top: 5px;
+  // Remove widget selection handle
+  &>.ck-widget__selection-handle {
+    display: none !important;
   }
 }
 

@@ -37,6 +37,7 @@ export default class AlightPopulationPluginEditing extends Plugin {
   init() {
     this._defineSchema();
     this._defineConverters();
+    this._fixSelectionRange();
   }
 
   /**
@@ -267,52 +268,82 @@ export default class AlightPopulationPluginEditing extends Plugin {
       model: 'ahExpr',
       view: (modelElement, { writer }) => {
         const name = modelElement.getAttribute('name');
-        const populationId = modelElement.getAttribute('populationId');
 
         if (!name) {
           console.warn('Editing downcast: ahExpr missing required "name" attribute');
           return null;
         }
+
+        // Create the container element
         const ahExprElement = writer.createContainerElement('ah:expr', {
           name: String(name),
           class: modelElement.getAttribute('class') || 'expeSelector',
           title: modelElement.getAttribute('title') || name,
           assettype: 'Expression'
-          // Remove contenteditable="false" and populationId from ahExpr
         });
-        return toWidget(ahExprElement, writer, { label: `Population container: ${name}` });
+
+        // We still need to make the ahExpr a widget to maintain proper structure
+        // But we'll ensure inner content is properly editable
+        return toWidget(ahExprElement, writer, {
+          label: `Population container: ${name}`,
+          hasSelectionHandle: true
+        });
       }
     });
 
-    // Convert populationBegin in the editing view
+    // Convert populationBegin in the editing view (NOT AS WIDGET)
     conversion.for('editingDowncast').elementToElement({
       model: 'populationBegin',
       view: (modelElement, { writer }) => {
         const name = modelElement.getAttribute('name');
-        const populationId = modelElement.getAttribute('populationId');
+        const populationId = modelElement.getAttribute('populationId') || 'generatedWhenCreated';
 
         if (!name) {
           console.warn('Editing downcast: populationBegin missing required "name" attribute');
           return null;
         }
-        const tagElement = this._createPopulationView(writer, 'begin', String(name), populationId as string);
-        return toWidget(tagElement, writer, { label: 'Population begin tag' });
+
+        // Create the span exactly as specified in the requirement
+        const tagElement = writer.createContainerElement('span', {
+          class: 'cka-population-tag cka-population-begin',
+          populationId: populationId
+        });
+
+        // Add the text content with proper spacing
+        writer.insert(
+          writer.createPositionAt(tagElement, 0),
+          writer.createText(`BEGIN ${name}`)
+        );
+
+        return tagElement; // Return as a normal element, not a widget
       }
     });
 
-    // Convert populationEnd in the editing view
+    // Convert populationEnd in the editing view (NOT AS WIDGET)
     conversion.for('editingDowncast').elementToElement({
       model: 'populationEnd',
       view: (modelElement, { writer }) => {
         const name = modelElement.getAttribute('name');
-        const populationId = modelElement.getAttribute('populationId');
+        const populationId = modelElement.getAttribute('populationId') || 'generatedWhenCreated';
 
         if (!name) {
           console.warn('Editing downcast: populationEnd missing required "name" attribute');
           return null;
         }
-        const tagElement = this._createPopulationView(writer, 'end', String(name), populationId as string);
-        return toWidget(tagElement, writer, { label: 'Population end tag' });
+
+        // Create the span exactly as specified in the requirement
+        const tagElement = writer.createContainerElement('span', {
+          class: 'cka-population-tag cka-population-end',
+          populationId: populationId
+        });
+
+        // Add the text content with proper spacing
+        writer.insert(
+          writer.createPositionAt(tagElement, 0),
+          writer.createText(`${name} END`)
+        );
+
+        return tagElement; // Return as a normal element, not a widget
       }
     });
 
@@ -321,38 +352,56 @@ export default class AlightPopulationPluginEditing extends Plugin {
   }
 
   /**
-   * Creates a view element for a population tag.
-   * 
-   * @param {DowncastWriter} writer The downcast writer.
-   * @param {string} type The tag type ('begin' or 'end').
-   * @param {string} populationName The name of the population.
-   * @param {string} populationId The ID of the population.
-   * @returns {ViewElement} The created view element.
+   * Fixes the issue where the last character is cut off in selections within population tags.
    */
-  private _createPopulationView(
-    writer: DowncastWriter,
-    type: 'begin' | 'end',
-    populationName: string,
-    populationId?: string
-  ): ViewElement {
-    // Create a container for the tag using only CSS classes - no inline styles
-    const tagContainer = writer.createContainerElement('span', {
-      class: `cka-population-tag cka-population-${type} hide-in-awl`,
-      populationId: populationId || 'generatedWhenCreated'
-      // Change to use populationId instead of data-* attributes
+  private _fixSelectionRange() {
+    const editor = this.editor;
+    const view = editor.editing.view;
+
+    // Add a listener to detect and fix selection changes
+    view.document.on('selectionChange', (evt, data) => {
+      const selection = view.document.selection;
+
+      // Check if we're inside an ah:expr element
+      // First get the first position, then check if any of its ancestors is an ah:expr
+      const firstPosition = selection.getFirstPosition();
+      const isInPopulationExpr = firstPosition ? !!firstPosition.getAncestors().find(
+        ancestor => ancestor.is('element') && ancestor.name === 'ah:expr'
+      ) : false;
+
+      if (isInPopulationExpr) {
+        const ranges = Array.from(selection.getRanges());
+
+        for (const range of ranges) {
+          // Only process non-collapsed ranges (actual selections, not just cursor positions)
+          if (!range.isCollapsed) {
+            // Get the text node at the end of the range
+            const endNode = range.end.parent;
+
+            // If we have a text node at the end
+            if (endNode && endNode.is('$text')) {
+              const text = endNode.data;
+              const offset = range.end.offset;
+
+              // If the selection doesn't include the last character of the text node
+              // and we're not at the end of the text node
+              if (offset < text.length) {
+                // Create a new range that includes the last character
+                const newRange = view.createRange(
+                  range.start,
+                  view.createPositionAt(endNode, offset + 1)
+                );
+
+                // Apply the modified range to the selection
+                view.change(writer => {
+                  writer.setSelection(newRange);
+                });
+              }
+            }
+          }
+        }
+      }
     });
-
-    // Create the text content for the tag
-    let tagContent;
-    if (type === 'begin') {
-      tagContent = writer.createText(`BEGIN ${populationName}`);
-    } else {
-      tagContent = writer.createText(`${populationName} END`);
-    }
-
-    writer.insert(writer.createPositionAt(tagContainer, 0), tagContent);
-
-    return tagContainer;
   }
 
   /**
