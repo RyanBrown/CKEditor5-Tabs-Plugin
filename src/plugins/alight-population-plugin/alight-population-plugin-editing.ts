@@ -128,7 +128,7 @@ export default class AlightPopulationPluginEditing extends Plugin {
           if (child && child.is('$text')) {
             const text = (child as ViewText).data;
             // Extract name from text format "[BEGIN *name*]"
-            const match = text.match(/\[BEGIN \*([^*]+)\*\]/);
+            const match = text.match(/BEGIN ([^*]+)/);
             if (match && match[1]) {
               name = match[1];
             }
@@ -166,8 +166,8 @@ export default class AlightPopulationPluginEditing extends Plugin {
           // Make sure we're dealing with a text node
           if (child && child.is('$text')) {
             const text = (child as ViewText).data;
-            // Extract name from text format "[*name* END]"
-            const match = text.match(/\[\*([^*]+)\* END\]/);
+            // Extract name from text format "name END"
+            const match = text.match(/([^*]+) END/);
             if (match && match[1]) {
               name = match[1];
             }
@@ -230,7 +230,7 @@ export default class AlightPopulationPluginEditing extends Plugin {
         });
         writer.insert(
           writer.createPositionAt(beginSpan, 0),
-          writer.createText(`[BEGIN *${name}*]`)
+          writer.createText(`BEGIN ${name}`)
         );
         return beginSpan;
       }
@@ -254,7 +254,7 @@ export default class AlightPopulationPluginEditing extends Plugin {
         });
         writer.insert(
           writer.createPositionAt(endSpan, 0),
-          writer.createText(`[*${name}* END]`)
+          writer.createText(`${name} END`)
         );
         return endSpan;
       }
@@ -345,9 +345,9 @@ export default class AlightPopulationPluginEditing extends Plugin {
     // Create the text content for the tag
     let tagContent;
     if (type === 'begin') {
-      tagContent = writer.createText(`[BEGIN *${populationName}*]`);
+      tagContent = writer.createText(`BEGIN ${populationName}`);
     } else {
-      tagContent = writer.createText(`[*${populationName}* END]`);
+      tagContent = writer.createText(`${populationName} END`);
     }
 
     writer.insert(writer.createPositionAt(tagContainer, 0), tagContent);
@@ -385,12 +385,12 @@ export default class AlightPopulationPluginEditing extends Plugin {
           if (child && child.is('$text')) {
             const text = (child as ViewText).data;
             if (viewElement.hasClass('cka-population-begin')) {
-              const match = text.match(/\[BEGIN \*([^*]+)\*\]/);
+              const match = text.match(/BEGIN ([^*]+)/);
               if (match && match[1]) {
                 populationName = match[1];
               }
             } else {
-              const match = text.match(/\[\*([^*]+)\* END\]/);
+              const match = text.match(/([^*]+) END/);
               if (match && match[1]) {
                 populationName = match[1];
               }
