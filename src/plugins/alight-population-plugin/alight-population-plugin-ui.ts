@@ -191,10 +191,10 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
 
     // Create a custom command class for opening the population modal
     class OpenPopulationModalCommand extends Command {
-      override execute(options: { populationName?: string }) {
+      override execute(options: { populationName?: string, populationId?: string }) {
         // Access the UI plugin instance to show the modal
         const uiPlugin = editor.plugins.get('AlightPopulationPluginUI') as AlightPopulationPluginUI;
-        uiPlugin._showPopulationModal(options.populationName);
+        uiPlugin._showPopulationModal(options.populationName, options.populationId);
       }
     }
     // Register the command
@@ -218,8 +218,9 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
    * Shows the population modal dialog.
    * 
    * @param {string} [currentPopulation] The current population name if editing.
+   * @param {string} [populationId] The current population ID if editing.
    */
-  _showPopulationModal(currentPopulation?: string) {
+  _showPopulationModal(currentPopulation?: string, populationId?: string) {
     const editor = this.editor;
     const t = editor.t;
 
@@ -258,10 +259,11 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
           if (selectedPopulation && selectedPopulation.title) {
             console.log('Applying population:', selectedPopulation.title);
 
-            // Execute the add population command with the selected population name
+            // Execute the add population command with the selected population name and ID
             try {
               editor.execute('alightPopulationPlugin', {
-                populationName: selectedPopulation.title
+                populationName: selectedPopulation.title,
+                populationId: selectedPopulation.id
               });
 
               // Hide the modal after creating the population tag

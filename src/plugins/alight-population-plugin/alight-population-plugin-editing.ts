@@ -48,20 +48,20 @@ export default class AlightPopulationPluginEditing extends Plugin {
     schema.register('populationBegin', {
       isInline: true,
       allowWhere: '$text',
-      allowAttributes: ['name']
+      allowAttributes: ['name', 'populationId']
     });
 
     schema.register('populationEnd', {
       isInline: true,
       allowWhere: '$text',
-      allowAttributes: ['name']
+      allowAttributes: ['name', 'populationId']
     });
 
     // Register ah:expr as a container element
     schema.register('ahExpr', {
       isObject: true, // Treat as a structural element
       allowIn: '$block', // Allow in block-level elements
-      allowAttributes: ['name', 'class', 'title', 'assettype'],
+      allowAttributes: ['name', 'class', 'title', 'assettype', 'populationId'],
       allowContentOf: '$block' // Allow text and inline elements inside
     });
 
@@ -88,11 +88,13 @@ export default class AlightPopulationPluginEditing extends Plugin {
       view: {
         name: 'ah:expr',
         attributes: {
-          assettype: 'population'
+          assettype: 'Expression'
         }
       },
       model: (viewElement, { writer }) => {
         const name = viewElement.getAttribute('name');
+        const populationId = viewElement.getAttribute('populationId');
+
         if (!name) {
           console.warn('Upcast: ah:expr element missing required "name" attribute');
           return null; // Skip if no name
@@ -101,7 +103,8 @@ export default class AlightPopulationPluginEditing extends Plugin {
           name: String(name),
           class: viewElement.getAttribute('class') || 'expeSelector',
           title: viewElement.getAttribute('title') || name,
-          assettype: 'population'
+          assettype: 'Expression',
+          populationId: populationId || undefined
         });
       },
       converterPriority: 'high' // Ensure this runs before child conversions
@@ -115,11 +118,16 @@ export default class AlightPopulationPluginEditing extends Plugin {
       },
       model: (viewElement, { writer }) => {
         const name = viewElement.getAttribute('data-population-name');
+        const populationId = viewElement.getAttribute('data-population-id');
+
         if (!name) {
           console.warn('Upcast: population begin span missing "data-population-name" attribute');
           return null;
         }
-        return writer.createElement('populationBegin', { name: String(name) });
+        return writer.createElement('populationBegin', {
+          name: String(name),
+          populationId: populationId || undefined
+        });
       }
     });
 
@@ -131,11 +139,16 @@ export default class AlightPopulationPluginEditing extends Plugin {
       },
       model: (viewElement, { writer }) => {
         const name = viewElement.getAttribute('data-population-name');
+        const populationId = viewElement.getAttribute('data-population-id');
+
         if (!name) {
           console.warn('Upcast: population end span missing "data-population-name" attribute');
           return null;
         }
-        return writer.createElement('populationEnd', { name: String(name) });
+        return writer.createElement('populationEnd', {
+          name: String(name),
+          populationId: populationId || undefined
+        });
       }
     });
 
@@ -146,6 +159,8 @@ export default class AlightPopulationPluginEditing extends Plugin {
       model: 'ahExpr',
       view: (modelElement, { writer }) => {
         const name = modelElement.getAttribute('name');
+        const populationId = modelElement.getAttribute('populationId');
+
         if (!name) {
           console.warn('Data downcast: ahExpr missing required "name" attribute');
           return null;
@@ -154,7 +169,8 @@ export default class AlightPopulationPluginEditing extends Plugin {
           name: String(name),
           class: modelElement.getAttribute('class') || 'expeSelector',
           title: modelElement.getAttribute('title') || name,
-          assettype: 'population'
+          assettype: 'Expression',
+          populationId: populationId || undefined
         });
       }
     });
@@ -164,13 +180,16 @@ export default class AlightPopulationPluginEditing extends Plugin {
       model: 'populationBegin',
       view: (modelElement, { writer }) => {
         const name = modelElement.getAttribute('name');
+        const populationId = modelElement.getAttribute('populationId');
+
         if (!name) {
           console.warn('Data downcast: populationBegin missing required "name" attribute');
           return null;
         }
         const beginSpan = writer.createContainerElement('span', {
           class: 'cka-population-tag cka-population-begin',
-          'data-population-name': name
+          'data-population-name': name,
+          'data-population-id': populationId || ''
         });
         writer.insert(
           writer.createPositionAt(beginSpan, 0),
@@ -185,13 +204,16 @@ export default class AlightPopulationPluginEditing extends Plugin {
       model: 'populationEnd',
       view: (modelElement, { writer }) => {
         const name = modelElement.getAttribute('name');
+        const populationId = modelElement.getAttribute('populationId');
+
         if (!name) {
           console.warn('Data downcast: populationEnd missing required "name" attribute');
           return null;
         }
         const endSpan = writer.createContainerElement('span', {
           class: 'cka-population-tag cka-population-end',
-          'data-population-name': name
+          'data-population-name': name,
+          'data-population-id': populationId || ''
         });
         writer.insert(
           writer.createPositionAt(endSpan, 0),
@@ -208,6 +230,8 @@ export default class AlightPopulationPluginEditing extends Plugin {
       model: 'ahExpr',
       view: (modelElement, { writer }) => {
         const name = modelElement.getAttribute('name');
+        const populationId = modelElement.getAttribute('populationId');
+
         if (!name) {
           console.warn('Editing downcast: ahExpr missing required "name" attribute');
           return null;
@@ -216,7 +240,8 @@ export default class AlightPopulationPluginEditing extends Plugin {
           name: String(name),
           class: modelElement.getAttribute('class') || 'expeSelector',
           title: modelElement.getAttribute('title') || name,
-          assettype: 'population'
+          assettype: 'Expression',
+          populationId: populationId || undefined
         });
         return toWidget(ahExprElement, writer, { label: `Population container: ${name}` });
       }
@@ -227,11 +252,13 @@ export default class AlightPopulationPluginEditing extends Plugin {
       model: 'populationBegin',
       view: (modelElement, { writer }) => {
         const name = modelElement.getAttribute('name');
+        const populationId = modelElement.getAttribute('populationId');
+
         if (!name) {
           console.warn('Editing downcast: populationBegin missing required "name" attribute');
           return null;
         }
-        const tagElement = this._createPopulationView(writer, 'begin', String(name));
+        const tagElement = this._createPopulationView(writer, 'begin', String(name), populationId as string);
         return toWidget(tagElement, writer, { label: 'Population begin tag' });
       }
     });
@@ -241,11 +268,13 @@ export default class AlightPopulationPluginEditing extends Plugin {
       model: 'populationEnd',
       view: (modelElement, { writer }) => {
         const name = modelElement.getAttribute('name');
+        const populationId = modelElement.getAttribute('populationId');
+
         if (!name) {
           console.warn('Editing downcast: populationEnd missing required "name" attribute');
           return null;
         }
-        const tagElement = this._createPopulationView(writer, 'end', String(name));
+        const tagElement = this._createPopulationView(writer, 'end', String(name), populationId as string);
         return toWidget(tagElement, writer, { label: 'Population end tag' });
       }
     });
@@ -260,13 +289,20 @@ export default class AlightPopulationPluginEditing extends Plugin {
    * @param {DowncastWriter} writer The downcast writer.
    * @param {string} type The tag type ('begin' or 'end').
    * @param {string} populationName The name of the population.
+   * @param {string} populationId The ID of the population.
    * @returns {ViewElement} The created view element.
    */
-  private _createPopulationView(writer: DowncastWriter, type: 'begin' | 'end', populationName: string): ViewElement {
+  private _createPopulationView(
+    writer: DowncastWriter,
+    type: 'begin' | 'end',
+    populationName: string,
+    populationId?: string
+  ): ViewElement {
     // Create a container for the tag using only CSS classes - no inline styles
     const tagContainer = writer.createContainerElement('span', {
       class: `cka-population-tag cka-population-${type}`,
-      'data-population-name': populationName
+      'data-population-name': populationName,
+      'data-population-id': populationId || ''
     });
 
     // Create the text content for the tag
@@ -297,15 +333,20 @@ export default class AlightPopulationPluginEditing extends Plugin {
 
       // Check if the clicked element is an ah:expr or population tag
       let populationName: string | null = null;
-      if (viewElement.name === 'ah:expr' && viewElement.getAttribute('assettype') === 'population') {
+      let populationId: string | null = null;
+
+      if (viewElement.name === 'ah:expr' && viewElement.getAttribute('assettype') === 'Expression') {
         populationName = viewElement.getAttribute('name');
+        populationId = viewElement.getAttribute('populationId');
       } else if (viewElement.hasClass && viewElement.hasClass('cka-population-tag')) {
         populationName = viewElement.getAttribute('data-population-name');
+        populationId = viewElement.getAttribute('data-population-id');
       } else {
         // Check parent elements
         viewElement = viewElement.getAncestor('ah:expr');
-        if (viewElement && viewElement.getAttribute('assettype') === 'population') {
+        if (viewElement && viewElement.getAttribute('assettype') === 'Expression') {
           populationName = viewElement.getAttribute('name');
+          populationId = viewElement.getAttribute('populationId');
         }
       }
 
@@ -315,7 +356,10 @@ export default class AlightPopulationPluginEditing extends Plugin {
       evt.stop();
 
       // Open the population modal with the current population name
-      editor.execute('openPopulationModal', { populationName });
+      editor.execute('openPopulationModal', {
+        populationName,
+        populationId
+      });
     });
   }
 }

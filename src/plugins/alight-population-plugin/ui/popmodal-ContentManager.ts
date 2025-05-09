@@ -62,11 +62,12 @@ export class ContentManager implements ILinkManager {
     );
   }
 
-  public getSelectedLink(): { destination: string; title: string } | null {
+  public getSelectedLink(): { destination: string; title: string; id?: string } | null {
     if (!this.selectedPopulation) return null;
     return {
       destination: this.selectedPopulation.destination,
-      title: this.selectedPopulation.populationTagName
+      title: this.selectedPopulation.populationTagName,
+      id: this.selectedPopulation.uniqueId ? String(this.selectedPopulation.uniqueId) : undefined
     };
   }
 

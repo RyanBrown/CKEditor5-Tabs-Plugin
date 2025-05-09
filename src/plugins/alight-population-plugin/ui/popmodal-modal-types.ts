@@ -11,6 +11,7 @@ export interface PopulationTagData {
   uniqueId: string | number;
   attributeName: string;
   attributeValue: string;
+  populationId?: string; // Added field for population ID
 }
 
 export interface SelectedFilters {

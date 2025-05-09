@@ -14,6 +14,7 @@ export interface PopulationTags {
   begin: ModelElement;
   end: ModelElement;
   populationName: string;
+  populationId?: string; // Added field
 }
 
 /**
@@ -57,7 +58,7 @@ export function isSelectionInPopulation(selection: Selection | DocumentSelection
  * @param {Position} position The position to check.
  * @returns {Object|null} Population info or null if not in a population.
  */
-export function getPopulationAtPosition(position: Position): { name: string } | null {
+export function getPopulationAtPosition(position: Position): { name: string; populationId?: string } | null {
   if (!position) return null;
 
   // Get the node at the position
@@ -67,13 +68,15 @@ export function getPopulationAtPosition(position: Position): { name: string } | 
   // Check if the node is a population tag element
   if (nodeAfter && nodeAfter.is('element') && nodeAfter.name === 'populationBegin') {
     return {
-      name: String(nodeAfter.getAttribute('name') || '')
+      name: String(nodeAfter.getAttribute('name') || ''),
+      populationId: nodeAfter.getAttribute('populationId') as string
     };
   }
 
   if (nodeBefore && nodeBefore.is('element') && nodeBefore.name === 'populationEnd') {
     return {
-      name: String(nodeBefore.getAttribute('name') || '')
+      name: String(nodeBefore.getAttribute('name') || ''),
+      populationId: nodeBefore.getAttribute('populationId') as string
     };
   }
   return null;
@@ -130,6 +133,7 @@ export function findPopulationTagsInRange(
   // Check each begin tag to see if it has a matching end tag that surrounds or intersects with the selection
   for (const beginTag of populationBeginTags) {
     const name = beginTag.getAttribute('name') as string;
+    const populationId = beginTag.getAttribute('populationId') as string;
     const endTagsForName = populationEndTags.get(name) || [];
 
     for (const endTag of endTagsForName) {
@@ -149,7 +153,8 @@ export function findPopulationTagsInRange(
           return {
             begin: beginTag,
             end: endTag,
-            populationName: name
+            populationName: name,
+            populationId: populationId
           };
         }
       } catch (error) {

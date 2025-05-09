@@ -26,8 +26,9 @@ export class AddPopulationCommand extends Command {
    * 
    * @param {Object} options The command options.
    * @param {string} options.populationName The name of the population to add.
+   * @param {string} options.populationId The ID of the population to add.
    */
-  override execute({ populationName }: { populationName: string }) {
+  override execute({ populationName, populationId }: { populationName: string; populationId?: string }) {
     if (!populationName) {
       console.error('Population name is required');
       return;
@@ -46,7 +47,7 @@ export class AddPopulationCommand extends Command {
           return;
         }
 
-        const emptyPopulationRange = this._insertEmptyPopulation(writer, position, populationName);
+        const emptyPopulationRange = this._insertEmptyPopulation(writer, position, populationName, populationId);
 
         // Set selection between the tags
         writer.setSelection(emptyPopulationRange);
@@ -66,7 +67,7 @@ export class AddPopulationCommand extends Command {
         if (range.isCollapsed) continue;
 
         // Create population tags for the range
-        this._addPopulationToRange(writer, range, populationName);
+        this._addPopulationToRange(writer, range, populationName, populationId);
       }
     });
   }
@@ -133,9 +134,10 @@ export class AddPopulationCommand extends Command {
    * @param {Writer} writer The model writer.
    * @param {Position} position The position to insert at.
    * @param {string} populationName The name of the population.
+   * @param {string} populationId The ID of the population.
    * @returns {Range} The range between the inserted tags.
    */
-  private _insertEmptyPopulation(writer: Writer, position: Position, populationName: string): Range {
+  private _insertEmptyPopulation(writer: Writer, position: Position, populationName: string, populationId?: string): Range {
     let currentPosition = position;
 
     // Create ahExpr element
@@ -143,11 +145,15 @@ export class AddPopulationCommand extends Command {
       name: populationName,
       class: 'expeSelector',
       title: populationName,
-      assettype: 'population'
+      assettype: 'Expression',
+      populationId: populationId
     });
 
     // Insert begin marker
-    const beginElement = writer.createElement('populationBegin', { name: populationName });
+    const beginElement = writer.createElement('populationBegin', {
+      name: populationName,
+      populationId: populationId
+    });
     writer.insert(beginElement, currentPosition);
     currentPosition = writer.createPositionAfter(beginElement);
 
@@ -159,7 +165,10 @@ export class AddPopulationCommand extends Command {
     const beforeEndPosition = currentPosition;
 
     // Insert end marker
-    const endElement = writer.createElement('populationEnd', { name: populationName });
+    const endElement = writer.createElement('populationEnd', {
+      name: populationName,
+      populationId: populationId
+    });
     writer.insert(endElement, currentPosition);
 
     // Wrap all elements in ahExpr
@@ -181,8 +190,9 @@ export class AddPopulationCommand extends Command {
    * @param {Writer} writer The model writer.
    * @param {Range} range The range to add population tags to.
    * @param {string} populationName The name of the population.
+   * @param {string} populationId The ID of the population.
    */
-  private _addPopulationToRange(writer: Writer, range: Range, populationName: string) {
+  private _addPopulationToRange(writer: Writer, range: Range, populationName: string, populationId?: string) {
     // Get the start and end positions of the range
     const start = range.start;
     const end = range.end;
@@ -192,15 +202,22 @@ export class AddPopulationCommand extends Command {
       name: populationName,
       class: 'expeSelector',
       title: populationName,
-      assettype: 'population'
+      assettype: 'Expression',
+      populationId: populationId
     });
 
     // Insert begin marker
-    const beginElement = writer.createElement('populationBegin', { name: populationName });
+    const beginElement = writer.createElement('populationBegin', {
+      name: populationName,
+      populationId: populationId
+    });
     writer.insert(beginElement, start);
 
     // Insert end marker
-    const endElement = writer.createElement('populationEnd', { name: populationName });
+    const endElement = writer.createElement('populationEnd', {
+      name: populationName,
+      populationId: populationId
+    });
     writer.insert(endElement, end);
 
     // Wrap the range (including markers) in ahExpr
