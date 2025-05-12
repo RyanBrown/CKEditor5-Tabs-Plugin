@@ -1,4 +1,70 @@
-// Add new test coverage to focus specifically on the error handling paths
+describe('Constructor Initialization', () => {
+  // We need a local container for this test suite
+  let constructorContainer: HTMLElement;
+
+  beforeEach(() => {
+    constructorContainer = document.createElement('div');
+    document.body.appendChild(constructorContainer);
+  });
+
+  afterEach(() => {
+    document.body.removeChild(constructorContainer);
+  });
+
+  it('should have the required attributes reflected in DOM after initialization', (done) => {
+    // Create a div with HTML content for all test cases
+    const testHtml = `
+      <div>
+        <cka-radio-button id="disabled-radio" disabled></cka-radio-button>
+        <cka-radio-button id="checked-radio" checked></cka-radio-button>
+        <cka-radio-button id="both-radio" checked disabled></cka-radio-button>
+      </div>
+    `;
+
+    // Set the HTML content
+    constructorContainer.innerHTML = testHtml;
+
+    // Use setTimeout to ensure custom elements are upgraded
+    setTimeout(() => {
+      try {
+        // Test disabled radio
+        const disabledRadio = document.getElementById('disabled-radio') as CkAlightRadioButton;
+        const disabledWrapper = disabledRadio.querySelector('.cka-radio-button');
+        const disabledInput = disabledRadio.querySelector('input');
+
+        expect(disabledWrapper).toBeTruthy();
+        expect(disabledInput).toBeTruthy();
+        expect(disabledWrapper?.classList.contains('disabled')).toBe(true);
+        expect((disabledInput as HTMLInputElement)?.disabled).toBe(true);
+        expect((disabledInput as HTMLInputElement)?.checked).toBe(false);
+
+        // Test checked radio
+        const checkedRadio = document.getElementById('checked-radio') as CkAlightRadioButton;
+        const checkedInput = checkedRadio.querySelector('input') as HTMLInputElement;
+
+        expect(checkedInput).toBeTruthy();
+        expect(checkedInput?.checked).toBe(true);
+        expect(checkedInput?.disabled).toBe(false);
+
+        // Test both attributes
+        const bothRadio = document.getElementById('both-radio') as CkAlightRadioButton;
+        const bothWrapper = bothRadio.querySelector('.cka-radio-button');
+        const bothInput = bothRadio.querySelector('input') as HTMLInputElement;
+
+        expect(bothWrapper).toBeTruthy();
+        expect(bothInput).toBeTruthy();
+        expect(bothWrapper?.classList.contains('disabled')).toBe(true);
+        expect(bothInput?.disabled).toBe(true);
+        expect(bothInput?.checked).toBe(true);
+
+        // Complete the test
+        done();
+      } catch (e) {
+        done.fail(e);
+      }
+    }, 0);
+  });
+});  // Add new test coverage to focus specifically on the error handling paths
 describe('Error Handling', () => {
   // We need our own container variable for this test section
   let errorContainer: HTMLElement;
