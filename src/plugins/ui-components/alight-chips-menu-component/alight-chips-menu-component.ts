@@ -48,8 +48,13 @@ export class CkAlightChipsMenu {
   }
 
   private handlePaste(event: ClipboardEvent): void {
+    // Guard against null clipboardData
+    if (!event.clipboardData) {
+      return;
+    }
+
     event.preventDefault();
-    const pastedText = event.clipboardData?.getData('text');
+    const pastedText = event.clipboardData.getData('text');
 
     if (pastedText) {
       // Split by commas and filter out empty strings
@@ -68,12 +73,16 @@ export class CkAlightChipsMenu {
   }
 
   private handleKeyDown(event: KeyboardEvent): void {
-    if (this.inputElement) {
-      if (event.key === 'Enter' && this.inputElement.value.trim()) {
-        event.preventDefault();
-        this.processInputValue(this.inputElement.value);
-        this.inputElement.value = '';
-      }
+    // Safe early return if inputElement is null
+    if (!this.inputElement) {
+      return;
+    }
+
+    // Handle case where event.key might be undefined
+    if (event.key && event.key === 'Enter' && this.inputElement.value.trim()) {
+      event.preventDefault();
+      this.processInputValue(this.inputElement.value);
+      this.inputElement.value = '';
     }
   }
 

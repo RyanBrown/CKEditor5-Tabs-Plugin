@@ -85,7 +85,7 @@ describe('CkAlightChipsMenu', () => {
         return originalGetData.call(this, format);
       };
 
-      // Listen for the paste event to complete
+      // Listen for the add event to complete
       container.addEventListener('add', () => {
         setTimeout(() => {
           const chips = component.getChips();
@@ -136,7 +136,7 @@ describe('CkAlightChipsMenu', () => {
         return originalGetData.call(this, format);
       };
 
-      // Listen for the paste event to complete
+      // Listen for the add event to complete
       container.addEventListener('add', () => {
         setTimeout(() => {
           const chips = component.getChips();
@@ -341,6 +341,21 @@ describe('CkAlightChipsMenu', () => {
           bubbles: true
         }));
       }).not.toThrow();
+    });
+
+    it('should handle keydown event with undefined key property', () => {
+      const input = container.querySelector('.cka-chips-input') as HTMLInputElement;
+      input.value = 'Test Chip';
+
+      // Create a custom event without a key property
+      const customEvent = new CustomEvent('keydown', { bubbles: true }) as any;
+
+      // This test verifies no errors are thrown and no chip is added
+      expect(() => {
+        input.dispatchEvent(customEvent);
+      }).not.toThrow();
+
+      expect(component.getChips().length).toBe(0);
     });
   });
 
