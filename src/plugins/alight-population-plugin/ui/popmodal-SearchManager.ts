@@ -60,7 +60,7 @@ export class SearchManager {
           <h3>Advanced Search</h3>
           <button class="cka-close-btn"><i class="fa-regular fa-xmark"></i></button>
         </header>
-        <main class="advanced-search-content">
+        <main class="cka-advanced-search-content">
           ${this.createAdvancedSearchFilters()}
         </main>
         <footer>
@@ -115,7 +115,7 @@ export class SearchManager {
     ).filter(Boolean).sort();
 
     return `
-      <div class="search-filters">
+      <div class="cka-search-filters">
         ${this.createFilterSection('Base/Client Specific', 'baseOrClientSpecific', baseOrClientSpecificOptions)}
         ${this.createFilterSection('Page Type', 'pageType', pageTypeOptions)}
         ${this.createFilterSection('Domain', 'domain', domainOptions)}
@@ -126,7 +126,7 @@ export class SearchManager {
   private createFilterSection(title: string, filterType: string, options: string[]): string {
     if (options.length === 0) {
       return `
-        <div class="filter-section">
+        <div class="cka-filter-section">
           <h4>${title}</h4>
           <p>No options available</p>
         </div>
@@ -134,7 +134,7 @@ export class SearchManager {
     }
 
     return `
-      <div class="filter-section">
+      <div class="cka-filter-section">
         <h4>${title}</h4>
         <ul class="cka-checkbox-list">
           ${options.map(option => `

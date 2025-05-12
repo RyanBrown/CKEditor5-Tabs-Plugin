@@ -319,7 +319,7 @@ $spacing-values: (
     cursor: pointer;
   }
 
-  >.radio-container {
+  >.cka-radio-container {
     margin-left: 2rem;
   }
 
@@ -368,7 +368,7 @@ $spacing-values: (
 }
 
 // Current selected link
-.current-url-info {
+.cka-current-url-info {
   background-color: #eef5ff;
   border-bottom: 1px solid var(--gray-400);
   padding-top: .5rem;
@@ -397,7 +397,7 @@ $spacing-values: (
 }
 
 // Pagination
-.pagination-controls {
+.cka-pagination-controls {
   align-items: center;
   display: flex;
 }

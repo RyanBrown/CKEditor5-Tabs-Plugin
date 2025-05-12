@@ -232,7 +232,7 @@ export class ContentManager implements ILinkManager {
     const currentPageData = populations.slice(startIndex, endIndex);
 
     // Start with the title
-    let content = `<h2 class="tab-content-title">${title}</h2>`;
+    let content = `<h2 class="cka-tab-content-title">${title}</h2>`;
 
     if (currentPageData.length === 0) {
       return content + '<div class="cka-center-modal-message">No results found.</div>';
@@ -240,13 +240,13 @@ export class ContentManager implements ILinkManager {
 
     // Add description based on tab type
     if (title === 'System Populations') {
-      content += `<p class="tab-content-description">These are standard system population tags and authentication expressions that can be used across all documents.</p>`;
+      content += `<p class="cka-tab-content-description">These are standard system population tags and authentication expressions that can be used across all documents.</p>`;
     } else if (title === 'Created Populations') {
-      content += `<p class="tab-content-description">These are custom population tags and authentication expressions that have been created specifically for your content.</p>`;
+      content += `<p class="cka-tab-content-description">These are custom population tags and authentication expressions that have been created specifically for your content.</p>`;
     }
 
     // Display count
-    content += `<p class="tab-content-count">Showing ${startIndex + 1}-${startIndex + currentPageData.length} of ${populations.length} items</p>`;
+    content += `<p class="cka-tab-content-count">Showing ${startIndex + 1}-${startIndex + currentPageData.length} of ${populations.length} items</p>`;
 
     // Add the population items
     content += currentPageData
@@ -286,7 +286,7 @@ export class ContentManager implements ILinkManager {
 
     if (!matchingPopulation) {
       return `
-      <div class="current-population-info">
+      <div class="cka-current-population-info">
         <h3><strong>Current Population:</strong> ${this.initialPopulationName}</h3>
         <div class="cka-note-message">This population is not in the available population tags list.</div>
       </div>
@@ -295,7 +295,7 @@ export class ContentManager implements ILinkManager {
 
     // Use the shared population item markup function but customize for current population context
     return `
-    <div class="current-population-info">
+    <div class="cka-current-population-info">
       <h3>Current Selected Population</h3>
       ${this.buildPopulationItemMarkup(matchingPopulation, true, 'current-population')}
     </div>
@@ -313,7 +313,7 @@ export class ContentManager implements ILinkManager {
 
     return `
       <div class="cka-population-item ${isSelected ? 'selected' : ''} ${tagClass}" data-population-name="${population.populationTagName}">
-        <div class="radio-container">
+        <div class="cka-radio-container">
           <cka-radio-button 
             name="${radioGroupName}" 
             value="${population.populationTagName}" 
