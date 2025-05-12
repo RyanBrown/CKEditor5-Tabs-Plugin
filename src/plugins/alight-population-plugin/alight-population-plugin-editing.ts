@@ -227,7 +227,6 @@ export default class AlightPopulationPluginEditing extends Plugin {
           console.warn('Upcast: population begin span missing name information');
           return null;
         }
-
         return writer.createElement('populationBegin', {
           name: String(name),
           populationId: populationId || name
@@ -357,7 +356,6 @@ export default class AlightPopulationPluginEditing extends Plugin {
           console.warn('Editing downcast: ahExpr missing required "name" attribute');
           return null;
         }
-
         // Create the container element
         const ahExprElement = writer.createContainerElement('ah:expr', {
           name: String(name),
@@ -386,7 +384,6 @@ export default class AlightPopulationPluginEditing extends Plugin {
           console.warn('Editing downcast: populationBegin missing required "name" attribute');
           return null;
         }
-
         // Create the span exactly as specified in the requirement
         const tagElement = writer.createContainerElement('span', {
           class: 'cka-population-tag cka-population-begin',
@@ -414,7 +411,6 @@ export default class AlightPopulationPluginEditing extends Plugin {
           console.warn('Editing downcast: populationEnd missing required "name" attribute');
           return null;
         }
-
         // Create the span exactly as specified in the requirement
         const tagElement = writer.createContainerElement('span', {
           class: 'cka-population-tag cka-population-end',

@@ -33,7 +33,6 @@ export default class AlightPopulationsPlugin extends Plugin {
    */
   static get requires() {
     return [
-      // Changed order to ensure commands are registered before UI
       AlightPopulationPluginCommand,
       AlightPopulationPluginEditing,
       AlightPopulationPluginUI

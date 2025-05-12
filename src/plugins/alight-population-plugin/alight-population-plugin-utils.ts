@@ -14,7 +14,7 @@ export interface PopulationTags {
   begin: ModelElement;
   end: ModelElement;
   populationName: string;
-  populationId?: string; // Added field
+  populationId?: string;
 }
 
 /**

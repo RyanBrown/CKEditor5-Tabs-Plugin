@@ -32,16 +32,18 @@
 
     &:hover {
       background-color: var(--success);
-      color: #fff;
+      color: var(--neutral-white);
     }
 
     // Specific styles for begin and end tags
     &.cka-population-begin {
       margin-right: 3px;
+      user-select: none;
     }
 
     &.cka-population-end {
       margin-left: 3px;
+      user-select: none;
     }
 
     // IMPORTANT: Override any CKEditor widget styling
