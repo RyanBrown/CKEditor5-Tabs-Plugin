@@ -15,6 +15,7 @@ export interface PopulationTags {
   end: ModelElement;
   populationName: string;
   populationId?: string;
+  ahExpr?: ModelElement;
 }
 
 /**
@@ -35,21 +36,35 @@ export function isSelectionInPopulation(selection: Selection | DocumentSelection
     const nodeBefore = position.nodeBefore;
     const nodeAfter = position.nodeAfter;
 
-    return (nodeBefore && nodeBefore.is('element') && nodeBefore.name === 'populationBegin') ||
-      (nodeAfter && nodeAfter.is('element') && nodeAfter.name === 'populationEnd');
+    // Check if selection is within a population tag
+    if ((nodeBefore && nodeBefore.is('element') && nodeBefore.name === 'populationBegin') ||
+      (nodeAfter && nodeAfter.is('element') && nodeAfter.name === 'populationEnd')) {
+      return true;
+    }
+
+    // Check if any ancestor is an ahExpr element
+    const ancestors = position.getAncestors();
+    return !!ancestors.find(ancestor => ancestor.is('element') && ancestor.name === 'ahExpr');
   }
 
-  // For non-empty selection, check if it has population markers
+  // For non-empty selection, check if it has population markers or is in an ahExpr
   const range = selection.getFirstRange();
   if (!range) return false;
 
+  // Check if selection contains population markers
   const walker = range.getWalker({ ignoreElementEnd: true });
   for (const { item } of walker) {
-    if (item.is('element') && (item.name === 'populationBegin' || item.name === 'populationEnd')) {
+    if (item.is('element') && (item.name === 'populationBegin' || item.name === 'populationEnd' || item.name === 'ahExpr')) {
       return true;
     }
   }
-  return false;
+
+  // Check if selection is within an ahExpr
+  const startAncestors = range.start.getAncestors();
+  const endAncestors = range.end.getAncestors();
+
+  return !!(startAncestors.find(ancestor => ancestor.is('element') && ancestor.name === 'ahExpr') ||
+    endAncestors.find(ancestor => ancestor.is('element') && ancestor.name === 'ahExpr'));
 }
 
 /**
@@ -79,6 +94,23 @@ export function getPopulationAtPosition(position: Position): { name: string; pop
       populationId: nodeBefore.getAttribute('populationId') as string
     };
   }
+
+  // Check if any ancestor is an ahExpr element
+  const ancestors = position.getAncestors();
+  const ahExpr = ancestors.find(ancestor =>
+    ancestor.is('element') && ancestor.name === 'ahExpr'
+  );
+
+  if (ahExpr && ahExpr.is('element')) {
+    const name = ahExpr.getAttribute('name');
+    const populationId = ahExpr.getAttribute('populationId');
+
+    return {
+      name: name ? String(name) : '',
+      populationId: populationId as string | undefined
+    };
+  }
+
   return null;
 }
 
@@ -99,7 +131,45 @@ export function findPopulationTagsInRange(
   const range = selection.getFirstRange();
   if (!range) return null;
 
-  // Expand range to include the whole document
+  // First check if the selection is inside an ahExpr element
+  const startAncestors = range.start.getAncestors();
+  const endAncestors = range.end.getAncestors();
+
+  // Find ahExpr in ancestors
+  const ahExpr = startAncestors.find(ancestor => ancestor.is('element') && ancestor.name === 'ahExpr') ||
+    endAncestors.find(ancestor => ancestor.is('element') && ancestor.name === 'ahExpr');
+
+  if (ahExpr) {
+    // Find begin and end tags inside the ahExpr
+    let beginTag: ModelElement | null = null;
+    let endTag: ModelElement | null = null;
+
+    // Create a range in the ahExpr and find the tags
+    const ahExprRange = model.createRangeIn(ahExpr);
+    const walker = ahExprRange.getWalker({ ignoreElementEnd: true });
+
+    for (const { item } of walker) {
+      if (item.is('element')) {
+        if (item.name === 'populationBegin') {
+          beginTag = item;
+        } else if (item.name === 'populationEnd') {
+          endTag = item;
+        }
+      }
+    }
+
+    if (beginTag && endTag) {
+      return {
+        begin: beginTag,
+        end: endTag,
+        populationName: String(beginTag.getAttribute('name') || ''),
+        populationId: beginTag.getAttribute('populationId') as string,
+        ahExpr: ahExpr as ModelElement
+      };
+    }
+  }
+
+  // If not found in ahExpr, expand range to include the whole document
   const root = range.root;
   const fullRange = model.createRangeIn(root);
 
@@ -121,7 +191,6 @@ export function findPopulationTagsInRange(
       } else if (item.name === 'populationEnd') {
         const name = item.getAttribute('name') as string;
 
-        // Add this end tag to the array for its name
         if (!populationEndTags.has(name)) {
           populationEndTags.set(name, []);
         }
@@ -137,6 +206,10 @@ export function findPopulationTagsInRange(
     const endTagsForName = populationEndTags.get(name) || [];
 
     for (const endTag of endTagsForName) {
+      // Find the parent ahExpr for this begin tag if it exists
+      const ancestors = beginTag.getAncestors();
+      const ahExprParent = ancestors.find(ancestor => ancestor.is('element') && ancestor.name === 'ahExpr') as ModelElement | undefined;
+
       const beginPos = model.createPositionAfter(beginTag);
       const endPos = model.createPositionBefore(endTag);
 
@@ -154,7 +227,8 @@ export function findPopulationTagsInRange(
             begin: beginTag,
             end: endTag,
             populationName: name,
-            populationId: populationId
+            populationId: populationId,
+            ahExpr: ahExprParent
           };
         }
       } catch (error) {

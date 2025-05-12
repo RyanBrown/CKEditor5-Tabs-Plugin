@@ -1,3 +1,4 @@
+// src/plugins/alight-population-plugin/alight-population-plugin-editing.ts
 import { Plugin } from '@ckeditor/ckeditor5-core';
 import {
   toWidget,

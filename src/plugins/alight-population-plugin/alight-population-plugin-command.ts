@@ -256,10 +256,70 @@ export class RemovePopulationCommand extends Command {
 
       if (!populationTags) return;
 
-      // Remove begin and end tags
-      writer.remove(populationTags.begin);
-      writer.remove(populationTags.end);
+      // Store the content and attributes before removing
+      const content = this._getPopulationContent(populationTags.begin, populationTags.end);
+      const populationName = populationTags.begin.getAttribute('name');
+      const populationId = populationTags.begin.getAttribute('populationId');
+
+      // Find the parent ahExpr element
+      const ahExprElement = this._findParentAhExprElement(populationTags.begin);
+
+      if (ahExprElement) {
+        // Remove the entire ahExpr element (which contains begin/end tags)
+        writer.remove(ahExprElement);
+      } else {
+        // Just remove begin and end tags if no ahExpr parent
+        writer.remove(populationTags.begin);
+        writer.remove(populationTags.end);
+      }
+
+      // Store this information for potential re-application later
+      // Since we're facing TypeScript restrictions, we'll take a simpler approach
+      // and log the information for debugging purposes only
+
+      console.log('Population removed:', {
+        name: populationName,
+        populationId: populationId,
+        content: content
+      });
+
+      // For a production implementation, we would need to define a proper interface
+      // and extend the Editor type to include our custom property, but that's
+      // outside the scope of this current fix
     });
+  }
+
+  /**
+   * Gets the content between population begin and end tags.
+   */
+  private _getPopulationContent(beginTag: Element, endTag: Element): string {
+    const model = this.editor.model;
+    const beginPos = model.createPositionAfter(beginTag);
+    const endPos = model.createPositionBefore(endTag);
+    const range = model.createRange(beginPos, endPos);
+
+    // This is a simplification - in a real implementation, you would traverse
+    // the range and serialize the content as needed
+    return Array.from(range.getItems()).map(item => {
+      if (item.is('$text')) {
+        return item.data;
+      }
+      return '';
+    }).join('');
+  }
+
+  /**
+   * Finds the parent ahExpr element for a given element.
+   */
+  private _findParentAhExprElement(element: Element): Element | null {
+    let parent = element.parent;
+    while (parent) {
+      if (parent.is('element') && parent.name === 'ahExpr') {
+        return parent;
+      }
+      parent = parent.parent;
+    }
+    return null;
   }
 
   /**

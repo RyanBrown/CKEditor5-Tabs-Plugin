@@ -320,6 +320,16 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
 
             if (addCommand) {
               try {
+                // If we're editing an existing population, we need to first remove the old one
+                if (currentPopulation) {
+                  // First check if the removePopulation command is enabled
+                  const removeCommand = editor.commands.get('removePopulation');
+                  if (removeCommand && removeCommand.isEnabled) {
+                    // Execute the remove population command
+                    editor.execute('removePopulation');
+                  }
+                }
+
                 // Execute the add population command with the selected population name and ID
                 editor.execute('alightPopulationPlugin', {
                   populationName: selectedPopulation.title,
@@ -460,7 +470,7 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
 
     // Set initial button state based on whether we have a current population
     const initialPopulation = this._allPopulationTags.find(tag => tag.populationTagName === currentPopulation);
-    this._updateContinueButtonState(!!initialPopulation);
+    this._updateContinueButtonState(!!initialPopulation || !!currentPopulation);
   }
 
   /**
