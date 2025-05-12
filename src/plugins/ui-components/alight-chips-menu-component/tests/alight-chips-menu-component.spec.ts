@@ -334,13 +334,14 @@ describe('CkAlightChipsMenu', () => {
       // Force inputElement to be null
       (component as any).inputElement = null;
 
-      // This test just verifies no errors are thrown
+      // Verify no errors are thrown and no chips are added
       expect(() => {
         document.dispatchEvent(new KeyboardEvent('keydown', {
           key: 'Enter',
           bubbles: true
         }));
       }).not.toThrow();
+      expect(component.getChips().length).toBe(0);
     });
 
     it('should handle keydown event with undefined key property', () => {
@@ -350,11 +351,10 @@ describe('CkAlightChipsMenu', () => {
       // Create a custom event without a key property
       const customEvent = new CustomEvent('keydown', { bubbles: true }) as any;
 
-      // This test verifies no errors are thrown and no chip is added
+      // Verify no errors are thrown and no chip is added
       expect(() => {
         input.dispatchEvent(customEvent);
       }).not.toThrow();
-
       expect(component.getChips().length).toBe(0);
     });
   });
