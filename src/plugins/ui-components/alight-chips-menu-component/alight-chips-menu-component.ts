@@ -78,8 +78,13 @@ export class CkAlightChipsMenu {
       return;
     }
 
-    // Handle case where event.key might be undefined
-    if (event.key && event.key === 'Enter' && this.inputElement.value.trim()) {
+    // Handle case where event.key might be undefined or null
+    const key = event.key;
+    if (!key) {
+      return;
+    }
+
+    if (key === 'Enter' && this.inputElement.value.trim()) {
       event.preventDefault();
       this.processInputValue(this.inputElement.value);
       this.inputElement.value = '';
