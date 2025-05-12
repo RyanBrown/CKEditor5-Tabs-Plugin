@@ -575,41 +575,170 @@ describe('CkAlightSelectMenu', () => {
     });
   });
 
-  describe('Dropdown Positioning', () => {
-    it('should handle dropdown positioning calculations', () => {
+  describe('Dropdown Positioning and Scroll Handling', () => {
+    it('should position dropdown based on calculation result', () => {
       // Create select menu
       selectMenu = new CkAlightSelectMenu();
       selectMenu.mount(container);
 
-      // Access the private method and test it with various scenarios
+      // Get private methods
       const calculatePositionFn = (selectMenu as any).calculateDropdownPosition;
+      const positionDropdownFn = (selectMenu as any).positionDropdown;
 
-      // Get element references
-      const selectElement = container.querySelector('.cka-select');
-      const dropdownElement = document.querySelector('.cka-select-dropdown');
+      // Get dropdown element
+      const dropdownElement = document.querySelector('.cka-select-dropdown') as HTMLElement;
 
-      // Modify window.innerHeight for testing the positioning logic
-      const originalInnerHeight = window.innerHeight;
-      Object.defineProperty(window, 'innerHeight', {
-        writable: true,
-        configurable: true,
-        value: 1000
-      });
+      // Mock calculateDropdownPosition to return top: true
+      spyOn(selectMenu as any, 'calculateDropdownPosition').and.returnValue({ top: true });
 
-      // We're not going to test the actual implementation, just verify it works
-      // and returns valid results, since the details can vary by browser
-      const result = calculatePositionFn.call(selectMenu);
+      // Call positionDropdown
+      positionDropdownFn.call(selectMenu);
 
-      // Result should be an object with top property
-      expect(typeof result).toBe('object');
-      expect('top' in result).toBe(true);
+      // Should add top class and remove bottom class
+      expect(dropdownElement.classList.contains('cka-select-dropdown--top')).toBe(true);
+      expect(dropdownElement.classList.contains('cka-select-dropdown--bottom')).toBe(false);
 
-      // Restore window.innerHeight
-      Object.defineProperty(window, 'innerHeight', {
-        writable: true,
-        configurable: true,
-        value: originalInnerHeight
-      });
+      // Now mock calculateDropdownPosition to return top: false
+      (selectMenu as any).calculateDropdownPosition.and.returnValue({ top: false });
+
+      // Call positionDropdown again
+      positionDropdownFn.call(selectMenu);
+
+      // Should add bottom class and remove top class
+      expect(dropdownElement.classList.contains('cka-select-dropdown--top')).toBe(false);
+      expect(dropdownElement.classList.contains('cka-select-dropdown--bottom')).toBe(true);
+    });
+
+    it('should handle scroll and resize events', () => {
+      // Create select menu
+      selectMenu = new CkAlightSelectMenu();
+      selectMenu.mount(container);
+
+      // Spy on positionDropdown method
+      const positionDropdownSpy = spyOn(selectMenu as any, 'positionDropdown');
+
+      // Set isOpen to true to allow handleResize to call positionDropdown
+      (selectMenu as any).isOpen = true;
+
+      // Get handleResize method
+      const handleResizeFn = (selectMenu as any).handleResize;
+
+      // Call handleResize
+      handleResizeFn.call(selectMenu);
+
+      // Should call positionDropdown
+      expect(positionDropdownSpy).toHaveBeenCalled();
+
+      // Reset call count
+      positionDropdownSpy.calls.reset();
+
+      // Set isOpen to false
+      (selectMenu as any).isOpen = false;
+
+      // Call handleResize again
+      handleResizeFn.call(selectMenu);
+
+      // Should not call positionDropdown when closed
+      expect(positionDropdownSpy).not.toHaveBeenCalled();
+    });
+
+    it('should add and remove scroll listeners', () => {
+      // Create a scrollable parent
+      const scrollableParent = document.createElement('div');
+      scrollableParent.style.overflowY = 'auto';
+      container.appendChild(scrollableParent); // Append to container instead of body
+
+      // Create a new container inside scrollable parent
+      const innerContainer = document.createElement('div');
+      scrollableParent.appendChild(innerContainer);
+
+      // Create select menu inside scrollable parent
+      selectMenu = new CkAlightSelectMenu();
+      selectMenu.mount(innerContainer);
+
+      // Spy on event listeners
+      const addEventSpy = spyOn(scrollableParent, 'addEventListener');
+      const removeEventSpy = spyOn(scrollableParent, 'removeEventListener');
+      const addWindowEventSpy = spyOn(window, 'addEventListener');
+      const removeWindowEventSpy = spyOn(window, 'removeEventListener');
+
+      // Get private methods
+      const addScrollListenerFn = (selectMenu as any).addScrollListener;
+      const removeScrollListenerFn = (selectMenu as any).removeScrollListener;
+
+      // Call addScrollListener
+      addScrollListenerFn.call(selectMenu);
+
+      // Should add listeners to parent and window
+      expect(addEventSpy).toHaveBeenCalled();
+      expect(addEventSpy.calls.mostRecent().args[0]).toBe('scroll');
+      expect(addWindowEventSpy).toHaveBeenCalled();
+      expect(addWindowEventSpy.calls.mostRecent().args[0]).toBe('scroll');
+
+      // Call removeScrollListener
+      removeScrollListenerFn.call(selectMenu);
+
+      // Should remove listeners from parent and window
+      expect(removeEventSpy).toHaveBeenCalled();
+      expect(removeEventSpy.calls.mostRecent().args[0]).toBe('scroll');
+      expect(removeWindowEventSpy).toHaveBeenCalled();
+      expect(removeWindowEventSpy.calls.mostRecent().args[0]).toBe('scroll');
+
+      // No need to remove scrollableParent as it's part of the container
+      // that gets cleaned up automatically in afterEach
+    });
+
+    it('should handle parent element without overflow', () => {
+      // Create a non-scrollable parent inside the test container
+      const nonScrollableParent = document.createElement('div');
+      nonScrollableParent.style.overflowY = 'visible'; // Not auto or scroll
+      container.appendChild(nonScrollableParent);
+
+      // Create a new inner container for the select menu
+      const innerContainer = document.createElement('div');
+      nonScrollableParent.appendChild(innerContainer);
+
+      // Create select menu inside non-scrollable parent
+      selectMenu = new CkAlightSelectMenu();
+      selectMenu.mount(innerContainer);
+
+      // Spy on window event listeners only
+      const addWindowEventSpy = spyOn(window, 'addEventListener');
+      const removeWindowEventSpy = spyOn(window, 'removeEventListener');
+
+      // Get private methods
+      const addScrollListenerFn = (selectMenu as any).addScrollListener;
+      const removeScrollListenerFn = (selectMenu as any).removeScrollListener;
+
+      // Call addScrollListener
+      addScrollListenerFn.call(selectMenu);
+
+      // Should only add listener to window, not to parent
+      expect(addWindowEventSpy).toHaveBeenCalled();
+      expect(addWindowEventSpy.calls.mostRecent().args[0]).toBe('scroll');
+
+      // Call removeScrollListener
+      removeScrollListenerFn.call(selectMenu);
+
+      // Should only remove listener from window
+      expect(removeWindowEventSpy).toHaveBeenCalled();
+      expect(removeWindowEventSpy.calls.mostRecent().args[0]).toBe('scroll');
+
+      // No need to do explicit cleanup - container will be cleaned up in afterEach
+    });
+
+    it('should handle case when dropdown is already closed during cleanup', () => {
+      selectMenu = new CkAlightSelectMenu();
+      selectMenu.mount(container);
+
+      // Make sure dropdown is closed
+      (selectMenu as any).isOpen = false;
+      (selectMenu as any).dropdownElement.style.display = 'none';
+
+      // Destroy should not throw errors even though dropdown is already closed
+      expect(() => {
+        selectMenu.destroy();
+      }).not.toThrow();
     });
 
     it('should clean up properly when destroyed', () => {
@@ -632,28 +761,6 @@ describe('CkAlightSelectMenu', () => {
 
       // Position manager should be unregistered
       expect(positionManagerMock.unregister).toHaveBeenCalled();
-    });
-
-    it('should handle cleanup when elements have already been removed', () => {
-      selectMenu = new CkAlightSelectMenu();
-      selectMenu.mount(container);
-
-      // Manually remove elements before destroy
-      const selectElement = container.querySelector('.cka-select');
-      const dropdownElement = document.querySelector('.cka-select-dropdown');
-
-      if (selectElement?.parentNode) {
-        selectElement.parentNode.removeChild(selectElement);
-      }
-
-      if (dropdownElement?.parentNode) {
-        dropdownElement.parentNode.removeChild(dropdownElement);
-      }
-
-      // This should not throw errors
-      expect(() => {
-        selectMenu.destroy();
-      }).not.toThrow();
     });
   });
 });
