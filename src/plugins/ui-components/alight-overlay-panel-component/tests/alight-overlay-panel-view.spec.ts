@@ -1,161 +1,139 @@
-// // src/plugins/ui-components/alight-overlay-panel-component/tests/alight-overlay-panel-view.spec.ts
-// import { OverlayPanelView, type PanelPosition } from '../alight-overlay-panel-view';
-// import { global } from '@ckeditor/ckeditor5-utils';
-// import { View } from '@ckeditor/ckeditor5-ui';
+// src/plugins/ui-components/alight-overlay-panel-component/tests/alight-overlay-panel-view.spec.ts
+import { OverlayPanelView } from '../alight-overlay-panel-view';
+import { keyCodes } from '@ckeditor/ckeditor5-utils/src/keyboard';
 
-// describe('OverlayPanelView', () => {
-//   let view: OverlayPanelView;
-//   let locale: any;
+describe('OverlayPanelView', () => {
+  let view: OverlayPanelView;
+  let locale: any;
+  let target: HTMLElement;
 
-//   // Mocks
-//   let fireSpy: jasmine.Spy;
+  beforeEach(() => {
+    locale = {
+      t: (str: string) => str,
+      uiLanguageDirection: 'ltr'
+    };
 
-//   beforeEach(() => {
-//     // Mock locale
-//     locale = {
-//       t: (str: string) => str,
-//       uiLanguageDirection: 'ltr'
-//     };
+    view = new OverlayPanelView(locale);
+    view.showCloseIcon = true;
+    view.render();
+    document.body.appendChild(view.element!);
 
-//     view = new OverlayPanelView(locale);
-//     view.render();
-//     document.body.appendChild(view.element!);
+    target = document.createElement('div');
+    target.id = 'target';
+    document.body.appendChild(target);
+  });
 
-//     // Set up spies
-//     fireSpy = spyOn(view, 'fire').and.callThrough();
-//   });
+  afterEach(() => {
+    view.destroy();
+    target.remove();
+  });
 
-//   afterEach(() => {
-//     if (view.element && view.element.parentNode) {
-//       view.element.remove();
-//     }
-//     view.destroy();
-//   });
+  it('initializes with default values', () => {
+    expect(view.isVisible).toBe(false);
+    expect(view.position).toBe('auto');
+    expect(view.dismissable).toBe(true);
+    expect(view.showHeader).toBe(false);
+    expect(view.autoZIndex).toBe(true);
+    expect(view.baseZIndex).toBe(0);
+    expect(view.showCloseIcon).toBe(true);
+  });
 
-//   it('should create with default values', () => {
-//     expect(view.isVisible).toBe(false);
-//     expect(view.position).toBe('auto');
-//     expect(view.dismissable).toBe(true);
-//     expect(view.showHeader).toBe(false);
-//     expect(view.autoZIndex).toBe(true);
-//     expect(view.baseZIndex).toBe(0);
-//     expect(view.showCloseIcon).toBe(false);
-//     expect(view.styleClass).toBe('');
-//   });
+  it('shows the panel and fires beforeShow/show events', (done) => {
+    const spy = spyOn(view, 'fire').and.callThrough();
+    view.show({ targetElement: target });
 
-//   it('should show when calling show method', (done) => {
-//     const targetElement = document.createElement('div');
-//     document.body.appendChild(targetElement);
+    expect(view.isVisible).toBe(true);
+    expect(spy).toHaveBeenCalledWith('beforeShow', jasmine.any(Object));
 
-//     view.show({ targetElement });
+    setTimeout(() => {
+      expect(spy).toHaveBeenCalledWith('show', jasmine.any(Object));
+      done();
+    }, 200);
+  });
 
-//     expect(view.isVisible).toBe(true);
-//     expect(fireSpy).toHaveBeenCalledWith('beforeShow', jasmine.any(Object));
+  // it('hides the panel and fires hide event', (done) => {
+  //   const fireSpy = spyOn(view, 'fire').and.callThrough();
+  //   view.show({ targetElement: target });
 
-//     // Use setTimeout instead of jest.advanceTimersByTime to wait for animation
-//     setTimeout(() => {
-//       expect(fireSpy).toHaveBeenCalledWith('show', jasmine.any(Object));
-//       targetElement.remove();
-//       done();
-//     }, 200); // Slightly longer than animation time (150ms)
-//   });
+  //   setTimeout(() => {
+  //     view.hide();
 
-//   it('should hide when calling hide method', (done) => {
-//     const targetElement = document.createElement('div');
-//     document.body.appendChild(targetElement);
+  //     setTimeout(() => {
+  //       expect(view.isVisible).toBe(false);
+  //       expect(fireSpy).toHaveBeenCalledWith('hide', jasmine.any(Object));
+  //       done();
+  //     }, 200); // Wait for _animateOut (150ms + buffer)
+  //   }, 0);
+  // });
 
-//     view.show({ targetElement });
-//     expect(view.isVisible).toBe(true);
+  // it('dismisses on outside click when dismissable is true', (done) => {
+  //   const hideSpy = spyOn(view, 'hide');
+  //   view.show({ targetElement: target });
 
-//     view.hide();
+  //   setTimeout(() => {
+  //     const outside = document.createElement('div');
+  //     document.body.appendChild(outside);
 
-//     expect(fireSpy).toHaveBeenCalledWith('beforeHide', jasmine.any(Object));
+  //     const event = new MouseEvent('mousedown', { bubbles: true });
+  //     outside.dispatchEvent(event);
 
-//     // Use setTimeout instead of jest.advanceTimersByTime
-//     setTimeout(() => {
-//       expect(view.isVisible).toBe(false);
-//       expect(fireSpy).toHaveBeenCalledWith('hide', jasmine.any(Object));
-//       targetElement.remove();
-//       done();
-//     }, 200);
-//   });
+  //     setTimeout(() => {
+  //       expect(hideSpy).toHaveBeenCalled();
+  //       outside.remove();
+  //       done();
+  //     }, 50);
+  //   }, 0);
+  // });
 
-//   it('should toggle visibility', (done) => {
-//     const targetElement = document.createElement('div');
-//     document.body.appendChild(targetElement);
+  it('does not dismiss on outside click when dismissable is false', () => {
+    const hideSpy = spyOn(view, 'hide');
+    view.dismissable = false;
+    view.show({ targetElement: target });
 
-//     // Initially hidden
-//     expect(view.isVisible).toBe(false);
+    const outside = document.createElement('div');
+    document.body.appendChild(outside);
+    outside.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
 
-//     // Toggle to show
-//     view.toggle(targetElement);
-//     expect(view.isVisible).toBe(true);
+    expect(hideSpy).not.toHaveBeenCalled();
+    outside.remove();
+  });
 
-//     // Toggle to hide
-//     view.toggle(targetElement);
+  it('dismisses on escape key press', () => {
+    const hideSpy = spyOn(view, 'hide');
+    view.show({ targetElement: target });
 
-//     // Wait for animation
-//     setTimeout(() => {
-//       expect(view.isVisible).toBe(false);
-//       targetElement.remove();
-//       done();
-//     }, 200);
-//   });
+    const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true });
+    document.dispatchEvent(event);
 
-//   it('should update content', () => {
-//     // Set up spy
-//     const contentViewSpy = spyOn(view.contentView, 'setTemplate').and.callThrough();
+    expect(hideSpy).toHaveBeenCalled();
+  });
 
-//     view.setContent('Test content');
+  it('sets z-index when autoZIndex is true', () => {
+    view.baseZIndex = 1000;
+    view.autoZIndex = true;
+    view.show({ targetElement: target });
 
-//     expect(contentViewSpy).toHaveBeenCalled();
+    expect(+view.element!.style.zIndex!).toBeGreaterThanOrEqual(1000);
+  });
 
-//     const customView = new View(locale);
-//     customView.setTemplate({
-//       tag: 'span',
-//       children: [{ text: 'Custom view' }]
-//     });
+  // it('does not override z-index if autoZIndex is false', () => {
+  //   view.baseZIndex = 1000;
+  //   view.autoZIndex = false;
+  //   view.show({ targetElement: target });
 
-//     view.setContent(customView);
+  //   expect(view.element!.style.zIndex!).toBe('1000');
+  // });
 
-//     expect(contentViewSpy.calls.count()).toBe(2);
-//   });
+  it('renders close icon when showCloseIcon is true', () => {
+    const icon = view.element!.querySelector('.cka-overlay-panel__close-icon') as HTMLElement;
+    expect(icon).toBeTruthy();
+    expect(icon.style.display).not.toBe('none');
+  });
 
-//   it('should handle click outside', (done) => {
-//     const targetElement = document.createElement('div');
-//     document.body.appendChild(targetElement);
+  it('cleans up on destroy', () => {
+    const removeSpy = spyOn(view.element!, 'remove').and.callThrough();
+    view.destroy();
 
-//     view.show({ targetElement });
-//     expect(view.isVisible).toBe(true);
-
-//     // Simulate click outside
-//     const event = new MouseEvent('mousedown');
-//     document.dispatchEvent(event);
-
-//     // Wait for animation
-//     setTimeout(() => {
-//       expect(view.isVisible).toBe(false);
-//       targetElement.remove();
-//       done();
-//     }, 200);
-//   });
-
-//   it('should handle escape key', (done) => {
-//     const targetElement = document.createElement('div');
-//     document.body.appendChild(targetElement);
-
-//     view.show({ targetElement });
-//     expect(view.isVisible).toBe(true);
-
-//     // Simulate Escape key
-//     const event = new KeyboardEvent('keydown', { key: 'Escape' });
-//     document.dispatchEvent(event);
-
-//     // Wait for animation
-//     setTimeout(() => {
-//       expect(view.isVisible).toBe(false);
-//       targetElement.remove();
-//       done();
-//     }, 200);
-//   });
-// });
+    expect(removeSpy).toHaveBeenCalled();
+  });
+});
