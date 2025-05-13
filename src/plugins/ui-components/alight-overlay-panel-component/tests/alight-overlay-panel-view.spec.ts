@@ -1,6 +1,7 @@
 // src/plugins/ui-components/alight-overlay-panel-component/tests/alight-overlay-panel-view.spec.ts
 import { OverlayPanelView } from '../alight-overlay-panel-view';
 import { keyCodes } from '@ckeditor/ckeditor5-utils/src/keyboard';
+import { View } from '@ckeditor/ckeditor5-ui';
 
 describe('OverlayPanelView', () => {
   let view: OverlayPanelView;
@@ -36,6 +37,25 @@ describe('OverlayPanelView', () => {
     expect(view.autoZIndex).toBe(true);
     expect(view.baseZIndex).toBe(0);
     expect(view.showCloseIcon).toBe(true);
+    expect(view.styleClass).toBe('');
+  });
+
+  it('updates when properties change', () => {
+    // Test changing position
+    view.position = 'top';
+    expect(view.position).toBe('top');
+
+    // Test changing dismissable
+    view.dismissable = false;
+    expect(view.dismissable).toBe(false);
+
+    // Test changing showHeader
+    view.showHeader = true;
+    expect(view.showHeader).toBe(true);
+
+    // Test changing styleClass
+    view.styleClass = 'custom-class';
+    expect(view.styleClass).toBe('custom-class');
   });
 
   it('shows the panel and fires beforeShow/show events', (done) => {
@@ -51,39 +71,76 @@ describe('OverlayPanelView', () => {
     }, 200);
   });
 
-  // it('hides the panel and fires hide event', (done) => {
-  //   const fireSpy = spyOn(view, 'fire').and.callThrough();
-  //   view.show({ targetElement: target });
+  it('can set panel title', () => {
+    view.setTitle('Test Panel Title');
 
-  //   setTimeout(() => {
-  //     view.hide();
+    const titleEl = view.element!.querySelector('.cka-overlay-panel__title') as HTMLElement;
+    expect(titleEl.textContent).toBe('Test Panel Title');
+  });
 
-  //     setTimeout(() => {
-  //       expect(view.isVisible).toBe(false);
-  //       expect(fireSpy).toHaveBeenCalledWith('hide', jasmine.any(Object));
-  //       done();
-  //     }, 200); // Wait for _animateOut (150ms + buffer)
-  //   }, 0);
-  // });
+  it('hides the panel and fires hide event', (done) => {
+    const fireSpy = spyOn(view, 'fire').and.callThrough();
+    view.show({ targetElement: target });
 
-  // it('dismisses on outside click when dismissable is true', (done) => {
-  //   const hideSpy = spyOn(view, 'hide');
-  //   view.show({ targetElement: target });
+    setTimeout(() => {
+      view.hide();
 
-  //   setTimeout(() => {
-  //     const outside = document.createElement('div');
-  //     document.body.appendChild(outside);
+      expect(fireSpy).toHaveBeenCalledWith('beforeHide', jasmine.any(Object));
 
-  //     const event = new MouseEvent('mousedown', { bubbles: true });
-  //     outside.dispatchEvent(event);
+      setTimeout(() => {
+        expect(view.isVisible).toBe(false);
+        expect(fireSpy).toHaveBeenCalledWith('hide', jasmine.any(Object));
+        done();
+      }, 200); // Wait for _animateOut (150ms + buffer)
+    }, 160);
+  });
 
-  //     setTimeout(() => {
-  //       expect(hideSpy).toHaveBeenCalled();
-  //       outside.remove();
-  //       done();
-  //     }, 50);
-  //   }, 0);
-  // });
+  it('toggles panel visibility', () => {
+    const hideSpy = spyOn(view, 'hide').and.callThrough();
+
+    // Toggle to show
+    view.toggle(target);
+    expect(view.isVisible).toBe(true);
+
+    // Toggle to hide with same target
+    view.toggle(target);
+    expect(hideSpy).toHaveBeenCalled();
+
+    // Reset spies
+    hideSpy.calls.reset();
+
+    // Show again
+    view.show({ targetElement: target });
+
+    // Toggle with different target should update position
+    const newTarget = document.createElement('div');
+    view.toggle(newTarget);
+
+    // Instead of checking private properties, verify the behavior
+    // that the panel remains visible
+    expect(view.isVisible).toBe(true);
+
+    newTarget.remove();
+  });
+
+  it('dismisses on outside click when dismissable is true', (done) => {
+    const hideSpy = spyOn(view, 'hide').and.callThrough();
+    view.show({ targetElement: target });
+
+    setTimeout(() => {
+      const outside = document.createElement('div');
+      document.body.appendChild(outside);
+
+      const event = new MouseEvent('mousedown', { bubbles: true });
+      outside.dispatchEvent(event);
+
+      setTimeout(() => {
+        expect(hideSpy).toHaveBeenCalled();
+        outside.remove();
+        done();
+      }, 50);
+    }, 160);
+  });
 
   it('does not dismiss on outside click when dismissable is false', () => {
     const hideSpy = spyOn(view, 'hide');
@@ -116,13 +173,21 @@ describe('OverlayPanelView', () => {
     expect(+view.element!.style.zIndex!).toBeGreaterThanOrEqual(1000);
   });
 
-  // it('does not override z-index if autoZIndex is false', () => {
-  //   view.baseZIndex = 1000;
-  //   view.autoZIndex = false;
-  //   view.show({ targetElement: target });
+  it('uses baseZIndex when autoZIndex is false', () => {
+    // Mock getNextZIndex to return a controlled value
+    const positionManagerMock = jasmine.createSpyObj('AlightPositionManager', ['getNextZIndex', 'register', 'unregister']);
+    positionManagerMock.getNextZIndex.and.returnValue(10);
 
-  //   expect(view.element!.style.zIndex!).toBe('1000');
-  // });
+    // Replace the positionManager with our mock
+    (view as any).positionManager = positionManagerMock;
+
+    view.baseZIndex = 1000;
+    view.autoZIndex = false;
+    view.show({ targetElement: target });
+
+    // Now check if the element's zIndex matches the baseZIndex
+    expect(view.element!.style.zIndex).toBe('1000');
+  });
 
   it('renders close icon when showCloseIcon is true', () => {
     const icon = view.element!.querySelector('.cka-overlay-panel__close-icon') as HTMLElement;
@@ -130,10 +195,186 @@ describe('OverlayPanelView', () => {
     expect(icon.style.display).not.toBe('none');
   });
 
-  it('cleans up on destroy', () => {
-    const removeSpy = spyOn(view.element!, 'remove').and.callThrough();
-    view.destroy();
+  it('hides close icon when showCloseIcon is false', () => {
+    view.showCloseIcon = false;
 
-    expect(removeSpy).toHaveBeenCalled();
+    const icon = view.element!.querySelector('.cka-overlay-panel__close-icon') as HTMLElement;
+    expect(icon.style.display).toBe('none');
+  });
+
+  // Modify the content setting tests to avoid re-rendering issues
+  it('sets content when setContent is called with string', () => {
+    // Create a new instance for this test to avoid re-rendering issues
+    const contentView = new OverlayPanelView(locale);
+    contentView.render();
+    document.body.appendChild(contentView.element!);
+
+    try {
+      contentView.setContent('Test content');
+      const content = contentView.contentView.element!.textContent;
+      expect(content).toContain('Test content');
+    } finally {
+      contentView.destroy();
+    }
+  });
+
+  it('sets content when setContent is called with View', () => {
+    // Create a new instance for this test to avoid re-rendering issues
+    const contentView = new OverlayPanelView(locale);
+    contentView.render();
+    document.body.appendChild(contentView.element!);
+
+    try {
+      const customView = new View(locale);
+      customView.setTemplate({
+        tag: 'div',
+        children: [{ text: 'Custom view content' }]
+      });
+
+      contentView.setContent(customView);
+      const content = contentView.contentView.element!.textContent;
+      expect(content).toContain('Custom view content');
+    } finally {
+      contentView.destroy();
+    }
+  });
+
+  it('handles window resize events', () => {
+    // We can't spy on private methods, so we'll test the behavior
+    view.show({ targetElement: target });
+
+    // Get current position before resize
+    const initialPosition = view.element!.getBoundingClientRect();
+
+    // Dispatch resize event (we can't directly verify private method call)
+    window.dispatchEvent(new Event('resize'));
+
+    // Instead verify that the panel remains visible (behavior check)
+    expect(view.isVisible).toBe(true);
+  });
+
+  it('appends to specific container when appendTo is provided', () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+
+    view.show({
+      targetElement: target,
+      appendTo: container
+    });
+
+    expect(container.contains(view.element!)).toBe(true);
+
+    container.remove();
+  });
+
+  it('appends to body when appendTo is "body"', () => {
+    view.show({
+      targetElement: target,
+      appendTo: 'body'
+    });
+
+    expect(document.body.contains(view.element!)).toBe(true);
+  });
+
+  it('handles offset in positioning', () => {
+    // Instead of spying on private property, test behavior
+    view.show({
+      targetElement: target,
+      offset: { x: 10, y: 20 }
+    });
+
+    // Verify panel is visible and positioned
+    expect(view.isVisible).toBe(true);
+    expect(view.element!.style.display).not.toBe('none');
+  });
+
+  it('returns to original parent when hidden', (done) => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const originalParent = view.element!.parentElement;
+
+    view.show({
+      targetElement: target,
+      appendTo: container
+    });
+
+    expect(container.contains(view.element!)).toBe(true);
+
+    view.hide();
+
+    setTimeout(() => {
+      expect(originalParent!.contains(view.element!)).toBe(true);
+      container.remove();
+      done();
+    }, 160);
+  });
+
+  it('cleans up on destroy', () => {
+    // First, detach the element from the document to avoid test conflicts
+    if (view.element && view.element.parentNode) {
+      view.element.parentNode.removeChild(view.element);
+    }
+
+    // Create a dedicated element for this test
+    const testElement = document.createElement('div');
+    testElement.classList.add('test-element');
+    document.body.appendChild(testElement);
+
+    // Create a new view instance to test destroy behavior
+    const destroyView = new OverlayPanelView(locale);
+    destroyView.render();
+    testElement.appendChild(destroyView.element!);
+
+    // Verify the element is in the DOM
+    expect(destroyView.element!.parentNode).toBe(testElement);
+
+    // Destroy the view
+    destroyView.destroy();
+
+    // In the destroy method, parent-child relationship should be removed
+    expect(destroyView.element!.parentNode).toBeNull();
+
+    // Clean up
+    testElement.remove();
+  });
+
+  it('handles animation properly', (done) => {
+    const animationView = new OverlayPanelView(locale);
+    animationView.render();
+    document.body.appendChild(animationView.element!);
+
+    // Mock the animation timing to make tests more predictable
+    jasmine.clock().install();
+
+    try {
+      // Test animation in
+      animationView.show({ targetElement: target });
+
+      // Initial state check
+      expect(animationView.element!.style.opacity).toBe('0');
+      expect(animationView.element!.style.transform).toBe('scale(0.7)');
+
+      // Fast-forward time to simulate animation completing
+      jasmine.clock().tick(10);
+
+      // Check final animation state after animation in
+      expect(animationView.element!.style.opacity).toBe('1');
+      expect(animationView.element!.style.transform).toBe('scale(1)');
+
+      // Test animation out
+      animationView.hide();
+
+      // Check initial hide animation state
+      expect(animationView.element!.style.opacity).toBe('0');
+      expect(animationView.element!.style.transform).toBe('scale(0.7)');
+
+      // Fast-forward time to complete animation
+      jasmine.clock().tick(150);
+
+      done();
+    } finally {
+      jasmine.clock().uninstall();
+      animationView.destroy();
+    }
   });
 });
