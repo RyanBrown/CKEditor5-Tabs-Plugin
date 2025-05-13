@@ -118,6 +118,17 @@ describe('CkAlightSelectMenu', () => {
       expect(() => selectMenu.mount('#non-existent-container')).toThrow();
     });
 
+    it('should handle properly when mounting to valid selector string', () => {
+      const testId = 'test-container-' + Math.random().toString(36).substr(2, 9);
+      container.id = testId;
+
+      selectMenu = new CkAlightSelectMenu();
+      expect(() => selectMenu.mount('#' + testId)).not.toThrow();
+
+      // Check that it was mounted properly
+      expect(container.querySelector('.cka-select')).toBeTruthy();
+    });
+
     it('should initialize with predefined value', () => {
       selectMenu = new CkAlightSelectMenu({
         options: mockOptions,
@@ -128,6 +139,59 @@ describe('CkAlightSelectMenu', () => {
       expect(selectMenu.getValue()).toBe(2);
       const valueElement = container.querySelector('.cka-select-value');
       expect(valueElement?.textContent).toBe('Option 2');
+    });
+
+    it('should handle initialization with empty options array', () => {
+      selectMenu = new CkAlightSelectMenu({
+        options: [],
+        placeholder: 'No options available'
+      });
+      selectMenu.mount(container);
+
+      const valueElement = container.querySelector('.cka-select-value');
+      expect(valueElement?.textContent).toBe('No options available');
+
+      // Open dropdown
+      const selectButton = container.querySelector<HTMLElement>('.cka-select-button');
+      if (selectButton) {
+        selectButton.click();
+      }
+
+      // Should have empty options container
+      const options = document.querySelectorAll('.cka-select-option');
+      expect(options.length).toBe(0);
+    });
+
+    it('should handle initialization with all configuration options', () => {
+      const onChange = jasmine.createSpy('onChange');
+      selectMenu = new CkAlightSelectMenu({
+        options: mockOptions,
+        placeholder: 'Select from list',
+        onChange: onChange,
+        disabled: false,
+        multiple: true,
+        filter: true,
+        optionLabel: 'label',
+        optionValue: 'value',
+        value: [1],
+        position: 'top',
+        offset: 8,
+        followTrigger: true,
+        constrainToViewport: true,
+        autoFlip: true,
+        alignment: 'end'
+      });
+      selectMenu.mount(container);
+
+      // Verify config was properly applied
+      expect(selectMenu.getValue()).toEqual([1]);
+
+      // Check that the value displays properly
+      const valueElement = container.querySelector('.cka-select-value');
+      expect(valueElement?.textContent?.includes('Option 1')).toBeTruthy();
+
+      // We don't need to test position manager registration here since that's tested elsewhere
+      // and it depends on requestAnimationFrame which makes it tricky to test synchronously
     });
   });
 
@@ -260,6 +324,79 @@ describe('CkAlightSelectMenu', () => {
       const dropdown = document.querySelector('.cka-select-dropdown');
       expect(dropdown?.classList.contains('open')).toBeFalsy();
     });
+
+    it('should handle option selection with null or undefined value', () => {
+      // Create options with a null value
+      const optionsWithNull = [
+        { label: 'Option 1', value: 1 },
+        { label: 'Empty Option', value: null },
+        { label: 'Undefined Option', value: undefined }
+      ];
+
+      selectMenu.destroy();
+      selectMenu = new CkAlightSelectMenu({
+        options: optionsWithNull,
+        onChange: onChangeSpy
+      });
+      selectMenu.mount(container);
+
+      // Open dropdown
+      const selectButton = container.querySelector<HTMLElement>('.cka-select-button');
+      if (selectButton) {
+        selectButton.click();
+      }
+
+      // Select the null value option
+      const options = document.querySelectorAll<HTMLElement>('.cka-select-option');
+      if (options[1]) {
+        options[1].click();
+      }
+
+      expect(onChangeSpy).toHaveBeenCalledWith(null);
+      expect(selectMenu.getValue()).toBeNull();
+
+      // Reopen dropdown
+      if (selectButton) {
+        selectButton.click();
+      }
+
+      // Select the undefined value option
+      if (options[2]) {
+        options[2].click();
+      }
+
+      expect(onChangeSpy).toHaveBeenCalledWith(undefined);
+      expect(selectMenu.getValue()).toBeUndefined();
+    });
+
+    it('should handle case where option is removed after selection', () => {
+      // Open dropdown
+      const selectButton = container.querySelector<HTMLElement>('.cka-select-button');
+      if (selectButton) {
+        selectButton.click();
+      }
+
+      // Select first option
+      const options = document.querySelectorAll<HTMLElement>('.cka-select-option');
+      if (options[0]) {
+        options[0].click();
+      }
+
+      expect(selectMenu.getValue()).toBe(1);
+
+      // Remove the selected option from options
+      const newOptions = mockOptions.slice(1);
+      selectMenu.setOptions(newOptions);
+
+      // Value should still be 1, but display might show various placeholder text
+      expect(selectMenu.getValue()).toBe(1);
+
+      // Since we can't be sure if the implementation adds the placeholder class
+      // or what exact text is shown, let's just verify the selectedDisplay doesn't
+      // show the text of the removed option anymore
+      const valueElement = container.querySelector('.cka-select-value');
+      expect(valueElement?.textContent?.includes('Option 1')).toBeFalsy();
+    });
   });
 
   describe('Filter Functionality', () => {
@@ -352,6 +489,57 @@ describe('CkAlightSelectMenu', () => {
       // All options should be visible again
       const visibleOptions = document.querySelectorAll('.cka-select-option');
       expect(visibleOptions.length).toBe(3);
+    });
+
+    it('should handle filtering with no matching results', () => {
+      selectMenu = new CkAlightSelectMenu({
+        options: mockOptions,
+        filter: true
+      });
+      selectMenu.mount(container);
+
+      // Open dropdown
+      const selectButton = container.querySelector<HTMLElement>('.cka-select-button');
+      if (selectButton) {
+        selectButton.click();
+      }
+
+      // Get filter input and type something that won't match any options
+      const filterInput = document.querySelector('.cka-select-filter input') as HTMLInputElement;
+      if (filterInput) {
+        filterInput.value = 'No matches for this';
+        filterInput.dispatchEvent(new Event('input'));
+      }
+
+      // Should have no visible options
+      const visibleOptions = document.querySelectorAll('.cka-select-option');
+      expect(visibleOptions.length).toBe(0);
+    });
+
+    it('should filter case-insensitively', () => {
+      selectMenu = new CkAlightSelectMenu({
+        options: mockOptions,
+        filter: true
+      });
+      selectMenu.mount(container);
+
+      // Open dropdown
+      const selectButton = container.querySelector<HTMLElement>('.cka-select-button');
+      if (selectButton) {
+        selectButton.click();
+      }
+
+      // Get filter input and type lowercase version of option
+      const filterInput = document.querySelector('.cka-select-filter input') as HTMLInputElement;
+      if (filterInput) {
+        filterInput.value = 'option 2'; // Lowercase, original is "Option 2"
+        filterInput.dispatchEvent(new Event('input'));
+      }
+
+      // Should still match the option
+      const visibleOptions = document.querySelectorAll('.cka-select-option');
+      expect(visibleOptions.length).toBe(1);
+      expect(visibleOptions[0].textContent).toBe('Option 2');
     });
   });
 
@@ -485,6 +673,41 @@ describe('CkAlightSelectMenu', () => {
         done();
       }, 50);
     });
+
+    it('should apply open class after dropdown is positioned', (done) => {
+      selectMenu = new CkAlightSelectMenu();
+      selectMenu.mount(container);
+
+      // Open dropdown
+      const selectButton = container.querySelector<HTMLElement>('.cka-select-button');
+      if (selectButton) {
+        selectButton.click();
+      }
+
+      // Initially, open class should not be applied yet (before requestAnimationFrame)
+      const dropdown = document.querySelector('.cka-select-dropdown') as HTMLElement;
+      expect(dropdown.classList.contains('open')).toBeFalsy();
+
+      // Check after requestAnimationFrame
+      setTimeout(() => {
+        expect(dropdown.classList.contains('open')).toBeTruthy();
+        done();
+      }, 50);
+    });
+
+    it('should handle disabled state when trying to open dropdown', () => {
+      selectMenu = new CkAlightSelectMenu({
+        disabled: true
+      });
+      selectMenu.mount(container);
+
+      // Call openDropdown directly to test disabled check
+      (selectMenu as any).openDropdown();
+
+      // Dropdown should remain closed
+      const dropdown = document.querySelector('.cka-select-dropdown') as HTMLElement;
+      expect(dropdown.style.display).toBe('none');
+    });
   });
 
   describe('Public Methods', () => {
@@ -572,6 +795,32 @@ describe('CkAlightSelectMenu', () => {
       const valueElement = container.querySelector('.cka-select-value');
       expect(valueElement?.textContent).toBe('Select Multiple');
       expect(valueElement?.classList.contains('placeholder')).toBeTruthy();
+    });
+
+    it('should handle setValue with different value types in multiple mode', () => {
+      selectMenu = new CkAlightSelectMenu({
+        options: mockOptions,
+        multiple: true
+      });
+      selectMenu.mount(container);
+
+      // Set single value in array
+      selectMenu.setValue([1]);
+      expect(selectMenu.getValue()).toEqual([1]);
+      expect(container.querySelector('.cka-select-value')?.textContent?.includes('Option 1')).toBeTruthy();
+
+      // Set multiple values
+      selectMenu.setValue([1, 2]);
+      expect(selectMenu.getValue()).toEqual([1, 2]);
+      expect(container.querySelector('.cka-select-value')?.textContent?.includes('Option 1')).toBeTruthy();
+      expect(container.querySelector('.cka-select-value')?.textContent?.includes('Option 2')).toBeTruthy();
+
+      // Set empty array - this should show the placeholder
+      // But since different implementations may have different placeholder text,
+      // we'll just check that the placeholder class is applied
+      selectMenu.setValue([]);
+      expect(selectMenu.getValue()).toEqual([]);
+      expect(container.querySelector('.cka-select-value')?.classList.contains('placeholder')).toBeTruthy();
     });
   });
 
@@ -761,6 +1010,142 @@ describe('CkAlightSelectMenu', () => {
 
       // Position manager should be unregistered
       expect(positionManagerMock.unregister).toHaveBeenCalled();
+    });
+
+    it('should test basic calculation logic in calculateDropdownPosition', () => {
+      selectMenu = new CkAlightSelectMenu();
+      selectMenu.mount(container);
+
+      // Basic test - check that the function returns a valid result with a boolean 'top' property
+      const result = (selectMenu as any).calculateDropdownPosition();
+      expect(typeof result).toBe('object');
+      expect(typeof result.top === 'boolean').toBeTruthy();
+    });
+  });
+
+  describe('Edge Cases and Comprehensive Coverage', () => {
+    it('should handle non-string labels gracefully', () => {
+      const numericLabelOptions = [
+        { label: 1, value: 'one' },
+        { label: 2, value: 'two' },
+        { label: true, value: 'boolean' },
+        { label: { nested: 'object' }, value: 'object' }
+      ];
+
+      selectMenu = new CkAlightSelectMenu({
+        options: numericLabelOptions
+      });
+      selectMenu.mount(container);
+
+      // Open dropdown
+      const selectButton = container.querySelector<HTMLElement>('.cka-select-button');
+      if (selectButton) {
+        selectButton.click();
+      }
+
+      // Check that all labels are properly converted to strings
+      const optionElements = document.querySelectorAll('.cka-select-option');
+      expect(optionElements[0].textContent).toBe('1');
+      expect(optionElements[1].textContent).toBe('2');
+      expect(optionElements[2].textContent).toBe('true');
+      expect(optionElements[3].textContent).toBe('[object Object]');
+
+      // Select one of the options
+      if (optionElements[0]) {
+        (optionElements[0] as HTMLElement).click();
+      }
+
+      // Check that the value display is also properly converted
+      expect(container.querySelector('.cka-select-value')?.textContent).toBe('1');
+    });
+
+    it('should handle very large option sets efficiently', () => {
+      // Create 1000 options
+      const manyOptions = Array.from({ length: 1000 }, (_, i) => ({
+        label: `Option ${i}`,
+        value: i
+      }));
+
+      selectMenu = new CkAlightSelectMenu({
+        options: manyOptions,
+        filter: true
+      });
+      selectMenu.mount(container);
+
+      // Open dropdown
+      const selectButton = container.querySelector<HTMLElement>('.cka-select-button');
+      if (selectButton) {
+        selectButton.click();
+      }
+
+      // Filter to narrow down options
+      const filterInput = document.querySelector('.cka-select-filter input') as HTMLInputElement;
+      if (filterInput) {
+        filterInput.value = 'Option 5'; // Should match Option 5, 50-59, 500-599
+        filterInput.dispatchEvent(new Event('input'));
+      }
+
+      // Check filtered options
+      const filteredOptions = document.querySelectorAll('.cka-select-option');
+      expect(filteredOptions.length).toBe(111); // Option 5, 50-59, 500-599
+
+      // Select one option
+      if (filteredOptions[0]) {
+        (filteredOptions[0] as HTMLElement).click();
+      }
+
+      // Verify selection
+      expect(selectMenu.getValue()).toBe(5); // Should select Option 5
+    });
+
+    it('should handle re-opening dropdown after options change', () => {
+      selectMenu = new CkAlightSelectMenu({
+        options: mockOptions
+      });
+      selectMenu.mount(container);
+
+      // Open dropdown
+      const selectButton = container.querySelector<HTMLElement>('.cka-select-button');
+      if (selectButton) {
+        selectButton.click();
+      }
+
+      // Close dropdown
+      if (selectButton) {
+        selectButton.click();
+      }
+
+      // Change options
+      const newOptions = [
+        { label: 'Changed 1', value: 'c1' },
+        { label: 'Changed 2', value: 'c2' }
+      ];
+      selectMenu.setOptions(newOptions);
+
+      // Open dropdown again
+      if (selectButton) {
+        selectButton.click();
+      }
+
+      // Check that options are updated
+      const options = document.querySelectorAll('.cka-select-option');
+      expect(options.length).toBe(2);
+      expect(options[0].textContent).toBe('Changed 1');
+      expect(options[1].textContent).toBe('Changed 2');
+    });
+
+    it('should gracefully handle destroy when elements are already removed from DOM', () => {
+      selectMenu = new CkAlightSelectMenu();
+      selectMenu.mount(container);
+
+      // Remove elements manually
+      container.innerHTML = '';
+      document.body.removeChild(document.querySelector('.cka-select-dropdown') as HTMLElement);
+
+      // Should not throw error on destroy
+      expect(() => {
+        selectMenu.destroy();
+      }).not.toThrow();
     });
   });
 });
