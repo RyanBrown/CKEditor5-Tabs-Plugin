@@ -9,6 +9,13 @@ import AlightDataLoadPlugin from '../../alight-common/alight-data-load-plugin';
 import PopulationLoadService from '../../services/population-load-service';
 
 /**
+ * Interface for the result of converting legacy population tags
+ */
+interface ConversionResult {
+  convertedCount: number;
+}
+
+/**
  * The UI part of the AlightPopulationsPlugin.
  * This plugin handles the toolbar buttons and modal integration.
  */
@@ -81,6 +88,29 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
 
     // Immediately load population tags data
     this.loadPopulationData();
+
+    // Set up a listener for model changes to automatically convert legacy tags
+    this._setupAutoConversion();
+  }
+
+  /**
+   * Sets up the automatic conversion of legacy population tags when detected
+   */
+  private _setupAutoConversion() {
+    const editor = this.editor;
+
+    // Check for legacy tags when the editor is ready
+    editor.model.document.on('change:data', () => {
+      const convertCommand = editor.commands.get('convertLegacyPopulations');
+      if (convertCommand && convertCommand.isEnabled) {
+        try {
+          // Execute the conversion immediately
+          editor.execute('convertLegacyPopulations');
+        } catch (error) {
+          console.error('Error automatically converting population tags:', error);
+        }
+      }
+    });
   }
 
   /**
@@ -167,6 +197,9 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
 
       return buttonView;
     });
+
+    // We no longer need the Convert Legacy Populations button since conversion is automatic
+    // But we'll keep the command registration for internal use
   }
 
   /**
@@ -258,6 +291,7 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
     editor.model.document.selection.on('change:range', () => {
       const addCommand = editor.commands.get('alightPopulationPlugin');
       const removeCommand = editor.commands.get('removePopulation');
+      const convertCommand = editor.commands.get('convertLegacyPopulations');
 
       // Only refresh commands if they exist
       if (addCommand) {
@@ -266,6 +300,18 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
 
       if (removeCommand) {
         removeCommand.refresh();
+      }
+
+      if (convertCommand) {
+        convertCommand.refresh();
+      }
+    });
+
+    // Also refresh the convert command when model changes
+    editor.model.document.on('change:data', () => {
+      const convertCommand = editor.commands.get('convertLegacyPopulations');
+      if (convertCommand) {
+        convertCommand.refresh();
       }
     });
   }
@@ -342,7 +388,7 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
                 console.error('Error applying population tag:', error);
 
                 // Show an error message to the user
-                this._showErrorAlert(`Error applying population: ${error.message || 'Unknown error'}`);
+                this._showErrorAlert(`Error applying population: ${error instanceof Error ? error.message : 'Unknown error'}`);
               }
             } else {
               console.error('Command "alightPopulationPlugin" not found when trying to apply population');
@@ -396,7 +442,7 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
             console.error('Error loading population tags:', error);
             modalContainer.innerHTML = `
               <div class="cka-center-modal-message">
-                <p>Error loading population tags: ${error.message || 'Unknown error'}</p>
+                <p>Error loading population tags: ${error instanceof Error ? error.message : 'Unknown error'}</p>
               </div>
             `;
           });
@@ -412,7 +458,7 @@ export default class AlightPopulationPluginUI extends AlightDataLoadPlugin {
       // Show error message
       modalContainer.innerHTML = `
         <div class="cka-center-modal-message">
-          <p>${error.message || 'Unknown error'}</p>
+          <p>${error instanceof Error ? error.message : 'Unknown error'}</p>
         </div>
       `;
     }

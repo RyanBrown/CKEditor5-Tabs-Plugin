@@ -202,3 +202,125 @@
   text-align: center;
   padding: 20px;
 }
+
+// // Confirm dialog content
+// .cka-confirm-content {
+//   padding: 20px;
+//   line-height: 1.5;
+
+//   p {
+//     margin-bottom: 10px;
+//   }
+// }
+
+// // Notification styles
+// .cka-notification {
+//   position: fixed;
+//   top: 20px;
+//   right: 20px;
+//   z-index: 10000;
+//   width: 300px;
+//   padding: 15px;
+//   border-radius: 4px;
+//   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+//   animation: slide-in 0.3s ease-out;
+
+//   .cka-notification-content {
+//     display: flex;
+//     justify-content: space-between;
+//     align-items: flex-start;
+//   }
+
+//   .cka-notification-message {
+//     flex: 1;
+//     padding-right: 10px;
+//   }
+
+//   .cka-notification-close {
+//     background: none;
+//     border: none;
+//     font-size: 18px;
+//     cursor: pointer;
+//     color: rgba(0, 0, 0, 0.5);
+
+//     &:hover {
+//       color: rgba(0, 0, 0, 0.8);
+//     }
+//   }
+
+//   // Different types of notifications
+//   &.cka-notification-success {
+//     background-color: #e8f5e9;
+//     border-left: 4px solid #4caf50;
+//   }
+
+//   &.cka-notification-info {
+//     background-color: #e3f2fd;
+//     border-left: 4px solid #2196f3;
+//   }
+
+//   &.cka-notification-warning {
+//     background-color: #fff3e0;
+//     border-left: 4px solid #ff9800;
+//   }
+
+//   &.cka-notification-error {
+//     background-color: #ffebee;
+//     border-left: 4px solid #f44336;
+//   }
+// }
+
+// @keyframes slide-in {
+//   from {
+//     transform: translateX(100%);
+//     opacity: 0;
+//   }
+
+//   to {
+//     transform: translateX(0);
+//     opacity: 1;
+//   }
+// }
+
+// // Legacy population format styles to ensure they're visible during editing
+// // before conversion
+// .ck-content {
+
+//   // Style for legacy population markers with green color
+//   p[id="populationStart"] {
+//     position: relative;
+//     border: 1px dashed #4caf50;
+//     padding: 8px;
+//     margin: 8px 0;
+
+//     // Add a hint to convert
+//     &::before {
+//       content: "Legacy Population";
+//       position: absolute;
+//       top: -12px;
+//       left: 10px;
+//       background-color: #e8f5e9;
+//       padding: 2px 6px;
+//       font-size: 10px;
+//       color: #4caf50;
+//       border-radius: 2px;
+//     }
+//   }
+
+//   // Style for old population begin/end tags
+//   span.hide-in-awl.p-hidden {
+//     background-color: rgba(76, 175, 80, 0.1);
+//     border: 1px solid rgba(76, 175, 80, 0.3);
+//     border-radius: 2px;
+//     padding: 1px 3px;
+//     margin: 0 2px;
+//     font-family: monospace;
+//     font-size: 0.8em;
+//   }
+// }
+
+// // Highlight legacy formats to make them more visible before conversion
+// span[style="color:green;"] {
+//   display: inline-block;
+//   background-color: rgba(76, 175, 80, 0.05);
+// }

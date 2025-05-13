@@ -4,8 +4,12 @@ import type {
   DocumentSelection,
   Selection,
   Position,
-  Element as ModelElement
+  Element as ModelElement,
+  Writer,
+  Node
 } from '@ckeditor/ckeditor5-engine';
+// Import Editor from core instead of engine
+import type { Editor } from '@ckeditor/ckeditor5-core';
 
 /**
  * Interface representing population tag elements.
@@ -16,6 +20,13 @@ export interface PopulationTags {
   populationName: string;
   populationId?: string;
   ahExpr?: ModelElement;
+}
+
+/**
+ * Extended element interface for working with spans that have classes
+ */
+interface ElementWithClass extends ModelElement {
+  hasClass(className: string): boolean;
 }
 
 /**
@@ -238,4 +249,174 @@ export function findPopulationTagsInRange(
     }
   }
   return null;
+}
+
+/**
+ * Helper function to check if an element has class-related methods
+ */
+function hasClassMethods(element: ModelElement): element is ElementWithClass {
+  return typeof (element as any).hasClass === 'function';
+}
+
+/**
+ * Converts legacy population tags to the new format.
+ * 
+ * @param {Editor} editor The CKEditor instance.
+ * @returns {number} The number of population tags converted.
+ */
+export function convertLegacyPopulationTags(editor: Editor): number {
+  const model = editor.model;
+  const document = model.document;
+  let convertedCount = 0;
+
+  // Start a batch of changes
+  model.change((writer: Writer) => {
+    // Create a range for the entire document
+    const root = document.getRoot();
+    if (!root) return;
+
+    const range = model.createRangeIn(root);
+
+    // Find all paragraph elements that might contain legacy population tags
+    const paragraphsToCheck: ModelElement[] = [];
+    for (const { item } of range.getWalker({ ignoreElementEnd: true })) {
+      if (item.is('element') &&
+        item.name === 'paragraph' &&
+        item.hasAttribute('id') &&
+        item.getAttribute('id') === 'populationStart') {
+        paragraphsToCheck.push(item);
+      }
+    }
+
+    // Process each paragraph
+    for (const paragraph of paragraphsToCheck) {
+      // Find the begin and end population spans
+      let beginSpanElement: ModelElement | null = null;
+      let endSpanElement: ModelElement | null = null;
+      let populationId = '';
+      let populationContent: Node | null = null;
+
+      // Look for the begin span with the green styling and [BEGIN] text
+      const paragraphRange = model.createRangeIn(paragraph);
+      for (const { item } of paragraphRange.getWalker({ ignoreElementEnd: true })) {
+        if (item.is('element') && item.name === 'span') {
+          const spanElement = item as ModelElement;
+
+          // Check for a span that might have style="color:green;"
+          for (const child of spanElement.getChildren()) {
+            if (child.is('element') && child.name === 'span') {
+              const childSpan = child as ModelElement;
+
+              // Check if the element has the hasClass method
+              if (hasClassMethods(childSpan)) {
+                if (childSpan.hasClass('hide-in-awl') &&
+                  childSpan.hasClass('p-hidden') &&
+                  childSpan.hasAttribute('populationid')) {
+
+                  if (childSpan.hasAttribute('contenteditable') &&
+                    childSpan.getAttribute('contenteditable') === 'false') {
+                    // Get the population ID
+                    const popId = childSpan.getAttribute('populationid');
+                    if (typeof popId === 'string') {
+                      populationId = popId;
+
+                      // Check if this is the begin or end span
+                      if (spanElement.parent && spanElement.nextSibling && !beginSpanElement) {
+                        beginSpanElement = spanElement;
+                        // The content is likely the next sibling after the begin span
+                        populationContent = spanElement.nextSibling;
+                      } else if (spanElement.parent &&
+                        childSpan.hasAttribute('id') &&
+                        childSpan.getAttribute('id') === 'populationEnd') {
+                        endSpanElement = spanElement;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // If we found both begin and end spans and a population ID
+      if (beginSpanElement && endSpanElement && populationId && populationContent) {
+        // Create the new ah:expr element
+        const ahExprElement = writer.createElement('ahExpr', {
+          name: populationId,
+          class: 'expeSelector',
+          title: populationId,
+          assettype: 'Expression'
+        });
+
+        // Create the begin marker with populationId
+        const beginElement = writer.createElement('populationBegin', {
+          name: populationId,
+          populationId: populationId
+        });
+
+        // Create the end marker with matching populationId
+        const endElement = writer.createElement('populationEnd', {
+          name: populationId,
+          populationId: populationId
+        });
+
+        // Get paragraph position
+        const paragraphPosition = model.createPositionBefore(paragraph);
+
+        // Insert the ah:expr structure
+        writer.insert(ahExprElement, paragraphPosition);
+        writer.insert(beginElement, model.createPositionAt(ahExprElement, 0));
+
+        // Clone the population content and insert it
+        if (populationContent.is('$text')) {
+          writer.insert(writer.createText(populationContent.data), model.createPositionAfter(beginElement));
+        } else if (populationContent.is('element')) {
+          // Clone or handle non-text content as needed
+          writer.insert(writer.cloneElement(populationContent as ModelElement), model.createPositionAfter(beginElement));
+        }
+
+        // Insert the end marker
+        writer.insert(endElement, model.createPositionAt(ahExprElement, 'end'));
+
+        // Remove the original paragraph with legacy population tag
+        writer.remove(paragraph);
+
+        convertedCount++;
+      }
+    }
+  });
+
+  return convertedCount;
+}
+
+/**
+ * Scans the document for legacy population tags that need conversion.
+ * This function only scans but doesn't modify the document.
+ * 
+ * @param {Editor} editor The CKEditor instance.
+ * @returns {number} The number of legacy population tags found.
+ */
+export function scanForLegacyPopulationTags(editor: Editor): number {
+  const model = editor.model;
+  const document = model.document;
+  let count = 0;
+
+  // Create a range for the entire document
+  const root = document.getRoot();
+  if (!root) return 0;
+
+  const range = model.createRangeIn(root);
+
+  // Find all paragraphs with id="populationStart"
+  for (const { item } of range.getWalker({ ignoreElementEnd: true })) {
+    if (item.is('element') &&
+      item.name === 'paragraph' &&
+      item.hasAttribute('id') &&
+      item.getAttribute('id') === 'populationStart') {
+      count++;
+    }
+  }
+
+  return count;
 }

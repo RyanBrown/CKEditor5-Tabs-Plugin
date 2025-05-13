@@ -3,6 +3,7 @@ import { Plugin } from '@ckeditor/ckeditor5-core';
 import { Command } from '@ckeditor/ckeditor5-core';
 import type { Writer } from '@ckeditor/ckeditor5-engine';
 import type { Element, Range, Selection, DocumentSelection, Position } from '@ckeditor/ckeditor5-engine';
+import { convertLegacyPopulationTags, scanForLegacyPopulationTags } from './alight-population-plugin-utils';
 
 /**
  * Command for adding population tags around selected content.
@@ -386,6 +387,30 @@ export class RemovePopulationCommand extends Command {
 }
 
 /**
+ * Command for converting legacy population tags to the new format.
+ */
+export class ConvertLegacyPopulationsCommand extends Command {
+  /**
+   * @inheritDoc
+   */
+  override refresh() {
+    // The command is enabled if there are legacy population tags to convert
+    this.isEnabled = scanForLegacyPopulationTags(this.editor) > 0;
+  }
+
+  /**
+   * Executes the command to convert legacy population tags.
+   * @returns {Object} Object containing the number of converted tags
+   */
+  override execute(): { convertedCount: number } {
+    const convertedCount = convertLegacyPopulationTags(this.editor);
+
+    // Return the count of converted tags
+    return { convertedCount };
+  }
+}
+
+/**
  * Plugin that registers the commands for the AlightPopulationsPlugin.
  */
 export default class AlightPopulationPluginCommand extends Plugin {
@@ -408,10 +433,14 @@ export default class AlightPopulationPluginCommand extends Plugin {
     // Register the Remove Population command
     editor.commands.add('removePopulation', new RemovePopulationCommand(editor));
 
+    // Register the Convert Legacy Populations command
+    editor.commands.add('convertLegacyPopulations', new ConvertLegacyPopulationsCommand(editor));
+
     // Log command registration for debugging
     console.log('AlightPopulationPluginCommand: Commands registered:',
       'alightPopulationPlugin:', !!editor.commands.get('alightPopulationPlugin'),
-      'removePopulation:', !!editor.commands.get('removePopulation')
+      'removePopulation:', !!editor.commands.get('removePopulation'),
+      'convertLegacyPopulations:', !!editor.commands.get('convertLegacyPopulations')
     );
   }
 }
