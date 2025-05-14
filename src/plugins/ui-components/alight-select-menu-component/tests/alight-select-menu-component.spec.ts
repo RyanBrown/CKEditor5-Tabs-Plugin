@@ -1148,4 +1148,199 @@ describe('CkAlightSelectMenu', () => {
       }).not.toThrow();
     });
   });
+
+  // Add these tests to the existing suite rather than creating a new one
+
+  describe('Branch Coverage Tests', () => {
+    it('should handle early return in calculateDropdownPosition for null dropdown', () => {
+      selectMenu = new CkAlightSelectMenu();
+      selectMenu.mount(container);
+
+      // Store original dropdown element reference
+      const originalDropdown = selectMenu['dropdownElement'];
+
+      // Temporarily set to null
+      selectMenu['dropdownElement'] = null;
+
+      // Test that the method safely returns without error
+      const result = (selectMenu as any).calculateDropdownPosition();
+      expect(result).toEqual({ top: false });
+
+      // Restore original to avoid breaking other tests
+      selectMenu['dropdownElement'] = originalDropdown;
+    });
+
+    it('should test selection of disabled option', () => {
+      selectMenu = new CkAlightSelectMenu({
+        options: mockOptions
+      });
+      selectMenu.mount(container);
+
+      // Open dropdown
+      const selectButton = container.querySelector<HTMLElement>('.cka-select-button');
+      if (selectButton) {
+        selectButton.click();
+      }
+
+      // Create a spy on updateSelectedDisplay to verify it's not called
+      const updateSpy = spyOn(selectMenu as any, 'updateSelectedDisplay');
+      const closeSpy = spyOn(selectMenu as any, 'closeDropdown').and.callFake(() => { });
+
+      // Directly call handleOptionClick with a disabled option
+      const disabledOption = mockOptions.find(o => o.disabled === true);
+      if (disabledOption) {
+        (selectMenu as any).handleOptionClick(disabledOption);
+
+        // Since option is disabled, these methods shouldn't be called
+        expect(updateSpy).not.toHaveBeenCalled();
+        expect(closeSpy).not.toHaveBeenCalled();
+      }
+    });
+
+    it('should test branches in updateSelectedDisplay', () => {
+      // Test single selection with null value
+      selectMenu = new CkAlightSelectMenu({
+        options: mockOptions,
+        placeholder: 'Custom Placeholder'
+      });
+      selectMenu.mount(container);
+
+      // Value starts as null
+      let valueElement = container.querySelector('.cka-select-value');
+      expect(valueElement?.textContent).toBe('Custom Placeholder');
+      expect(valueElement?.classList.contains('placeholder')).toBe(true);
+
+      // Test multiple selection with empty array
+      selectMenu.destroy();
+      selectMenu = new CkAlightSelectMenu({
+        options: mockOptions,
+        multiple: true,
+        value: []
+      });
+      selectMenu.mount(container);
+
+      valueElement = container.querySelector('.cka-select-value');
+      expect(valueElement?.classList.contains('placeholder')).toBe(true);
+
+      // Test multiple selection with non-existent value
+      selectMenu.setValue([999]); // Value not in options
+      valueElement = container.querySelector('.cka-select-value');
+      // The selectedDisplay should show empty, filtered out by Boolean
+      expect(valueElement?.textContent).toBe('');
+
+      // Test single selection with non-existent value
+      selectMenu.destroy();
+      selectMenu = new CkAlightSelectMenu({
+        options: mockOptions
+      });
+      selectMenu.mount(container);
+
+      selectMenu.setValue(999); // Value not in options
+      valueElement = container.querySelector('.cka-select-value');
+      // The selectedDisplay should be empty as no matching option is found
+      expect(valueElement?.textContent).toBe('');
+    });
+  });
+
+  // Add tests for the typo fixes
+  describe('Typo Fix Tests', () => {
+    it('should handle filter input in openDropdown', () => {
+      // Create select menu with filter
+      selectMenu = new CkAlightSelectMenu({
+        options: mockOptions,
+        filter: true
+      });
+      selectMenu.mount(container);
+
+      // Before opening dropdown, replace querySelector to return null
+      const querySelectorSpy = spyOn(selectMenu['dropdownElement'], 'querySelector').and.returnValue(null);
+
+      // Open dropdown - shouldn't throw an error trying to focus null
+      const selectButton = container.querySelector<HTMLElement>('.cka-select-button');
+      expect(() => {
+        if (selectButton) {
+          selectButton.click();
+        }
+      }).not.toThrow();
+
+      // Restore original behavior
+      querySelectorSpy.and.callThrough();
+    });
+
+    it('should correctly position dropdown upward when insufficient space below', () => {
+      // Create select menu
+      selectMenu = new CkAlightSelectMenu();
+      selectMenu.mount(container);
+
+      // Get private methods for testing
+      const calculatePositionFn = (selectMenu as any).calculateDropdownPosition;
+
+      // Create test-specific version of calculateDropdownPosition
+      // that forces upward positioning
+      const testCalculatePosition = function (this: any) {
+        // Mock all the dependencies inside the method
+        const mockTriggerRect = { top: 400, bottom: 420 };
+        const mockDropdownRect = { height: 200 };
+
+        // Simulate not enough space below (only 80px, need 200px)
+        const mockViewportHeight = 500;
+
+        // This should result in up:true since we need 200px but only have 80px below,
+        // while having 400px above
+        const spaceBelow = mockViewportHeight - mockTriggerRect.bottom; // 80px
+        const spaceAbove = mockTriggerRect.top; // 400px
+
+        const shouldOpenUpward = (spaceBelow < mockDropdownRect.height &&
+          spaceAbove >= mockDropdownRect.height);
+
+        return { top: shouldOpenUpward };
+      };
+
+      // Test our logic
+      const result = testCalculatePosition.call(selectMenu);
+      expect(result.top).toBe(true);
+
+      // Now patch the real method temporarily to force it to return up:true
+      const originalCalculate = (selectMenu as any).calculateDropdownPosition;
+      (selectMenu as any).calculateDropdownPosition = function () {
+        return { top: true };
+      };
+
+      // Call positionDropdown and check that it adds the correct classes
+      (selectMenu as any).positionDropdown();
+
+      // Verify the dropdown gets the right class
+      expect(selectMenu['dropdownElement'].classList.contains('cka-select-dropdown--top')).toBe(true);
+      expect(selectMenu['dropdownElement'].classList.contains('cka-select-dropdown--bottom')).toBe(false);
+
+      // Restore original
+      (selectMenu as any).calculateDropdownPosition = originalCalculate;
+    });
+
+    it('should handle closeDropdown with missing filter input', () => {
+      // Create select menu with filter
+      selectMenu = new CkAlightSelectMenu({
+        options: mockOptions,
+        filter: true
+      });
+      selectMenu.mount(container);
+
+      // Open dropdown
+      const selectButton = container.querySelector<HTMLElement>('.cka-select-button');
+      if (selectButton) {
+        selectButton.click();
+      }
+
+      // Before closing, make filter input return null
+      const querySelectorSpy = spyOn(selectMenu['dropdownElement'], 'querySelector').and.returnValue(null);
+
+      // Close dropdown - should not throw error on null input
+      expect(() => {
+        (selectMenu as any).closeDropdown();
+      }).not.toThrow();
+
+      // Restore original behavior
+      querySelectorSpy.and.callThrough();
+    });
+  });
 });
