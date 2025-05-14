@@ -145,7 +145,8 @@ describe('AutomaticDecorators', () => {
             setCustomProperty: jasmine.createSpy('setCustomProperty'),
             document: {
               selection: {}
-            }
+            },
+            setAttribute: jasmine.createSpy('setAttribute')
           },
           mapper: {
             toViewRange: jasmine.createSpy('toViewRange').and.returnValue({
@@ -204,6 +205,196 @@ describe('AutomaticDecorators', () => {
           mockData.item,
           'attribute:alightPredefinedLinkPluginHref'
         );
+      });
+
+      it('should handle non-selection items with view elements', () => {
+        // Arrange - test the branch for non-selection items
+        mockData.item.is.and.returnValue(false);
+
+        // Create mock view elements to be returned from getItems
+        const mockViewElement = {
+          is: jasmine.createSpy('is').and.callFake((type) => type === 'element' || type === 'attributeElement')
+        };
+
+        // Setup view range to return our mock elements
+        mockConversionApi.mapper.toViewRange.and.returnValue({
+          getItems: jasmine.createSpy('getItems').and.returnValue([mockViewElement])
+        });
+
+        // Act
+        eventCallback(mockEvent, mockData, mockConversionApi);
+
+        // Assert
+        expect(mockConversionApi.writer.setAttribute).toHaveBeenCalledWith(
+          'target',
+          '_blank',
+          mockViewElement
+        );
+        expect(mockConversionApi.writer.addClass).toHaveBeenCalledWith(['external-link'], mockViewElement);
+        expect(mockConversionApi.writer.setStyle).toHaveBeenCalledWith('color', 'blue', mockViewElement);
+        expect(mockConversionApi.writer.setCustomProperty).toHaveBeenCalledWith(
+          'alight-predefined-link',
+          true,
+          mockViewElement
+        );
+        expect(mockConversionApi.consumable.consume).toHaveBeenCalledWith(
+          mockData.item,
+          'attribute:alightPredefinedLinkPluginHref'
+        );
+      });
+
+      it('should handle non-matching URL in decorator callback', () => {
+        // Arrange
+        mockData.item.is.and.callFake((type: string) => type === 'selection');
+        mockData.attributeNewValue = 'https://non-matching-url.com';
+
+        // Act
+        eventCallback(mockEvent, mockData, mockConversionApi);
+
+        // Assert - should not consume the attribute since no decorator matched
+        expect(mockConversionApi.consumable.consume).not.toHaveBeenCalled();
+      });
+
+      it('should handle non-element items in the view range', () => {
+        // Arrange - test the branch for non-selection items
+        mockData.item.is.and.returnValue(false);
+
+        // Create mock items that are not elements (text nodes, etc.)
+        const mockTextNode = {
+          is: jasmine.createSpy('is').and.returnValue(false)
+        };
+
+        // Setup view range to return our mock non-elements
+        mockConversionApi.mapper.toViewRange.and.returnValue({
+          getItems: jasmine.createSpy('getItems').and.returnValue([mockTextNode])
+        });
+
+        // Act
+        eventCallback(mockEvent, mockData, mockConversionApi);
+
+        // Assert - should not apply any attributes to non-elements
+        expect(mockConversionApi.writer.setAttribute).not.toHaveBeenCalled();
+        expect(mockConversionApi.writer.addClass).not.toHaveBeenCalled();
+        expect(mockConversionApi.writer.setStyle).not.toHaveBeenCalled();
+        expect(mockConversionApi.consumable.consume).not.toHaveBeenCalled();
+      });
+
+      it('should handle errors during decorator application', () => {
+        // Arrange
+        mockData.item.is.and.callFake((type: string) => type === 'selection');
+
+        // Set up a method to throw an error
+        mockConversionApi.writer.createAttributeElement.and.throwError(new Error('Test error'));
+
+        // Spy on console.error
+        spyOn(console, 'error');
+
+        // Act
+        eventCallback(mockEvent, mockData, mockConversionApi);
+
+        // Assert
+        expect(console.error).toHaveBeenCalledWith(
+          'Error applying automatic decorator:',
+          jasmine.any(Error)
+        );
+        // Verify that consumable.consume was not called because of the error
+        expect(mockConversionApi.consumable.consume).not.toHaveBeenCalled();
+      });
+
+      it('should apply different decorator aspects based on availability', () => {
+        // Arrange
+        automaticDecorators.add({
+          id: 'partial-decorator',
+          mode: 'automatic',
+          callback: (url: string) => url === 'https://example.com',
+          // Only specify attributes, no classes or styles
+          attributes: { rel: 'nofollow' }
+        } as any);
+
+        mockData.item.is.and.callFake((type: string) => type === 'selection');
+
+        // Act
+        eventCallback(mockEvent, mockData, mockConversionApi);
+
+        // Assert - should only apply the attributes, not classes or styles for the second decorator
+        expect(mockConversionApi.writer.createAttributeElement).toHaveBeenCalled();
+        expect(mockConversionApi.writer.setCustomProperty).toHaveBeenCalled();
+        expect(mockConversionApi.consumable.consume).toHaveBeenCalled();
+      });
+
+      it('should handle decorator with only styles, no classes or attributes', () => {
+        // Reset the decorators
+        automaticDecorators = new AutomaticDecorators();
+
+        // Add a decorator with only styles
+        automaticDecorators.add({
+          id: 'styles-only-decorator',
+          mode: 'automatic',
+          callback: (url: string) => url === 'https://example.com',
+          styles: { 'text-decoration': 'underline' }
+        } as any);
+
+        // Set up dispatcher again
+        dispatcherCallback = automaticDecorators.getDispatcher();
+        (dispatcher.on as jasmine.Spy).and.callFake((event, callback) => {
+          eventCallback = callback;
+        });
+        dispatcherCallback(dispatcher);
+
+        mockData.item.is.and.callFake((type: string) => type === 'selection');
+
+        // Act
+        eventCallback(mockEvent, mockData, mockConversionApi);
+
+        // Assert - should only apply styles, not classes or attributes
+        expect(mockConversionApi.writer.createAttributeElement).toHaveBeenCalledWith(
+          'a',
+          {}, // Empty attributes
+          { priority: 5 }
+        );
+        expect(mockConversionApi.writer.setStyle).toHaveBeenCalledWith(
+          'text-decoration',
+          'underline',
+          jasmine.any(Object)
+        );
+        expect(mockConversionApi.consumable.consume).toHaveBeenCalled();
+      });
+
+      it('should handle decorator with only classes, no styles or attributes', () => {
+        // Reset the decorators
+        automaticDecorators = new AutomaticDecorators();
+
+        // Add a decorator with only classes
+        automaticDecorators.add({
+          id: 'classes-only-decorator',
+          mode: 'automatic',
+          callback: (url: string) => url === 'https://example.com',
+          classes: ['highlight', 'special-link']
+        } as any);
+
+        // Set up dispatcher again
+        dispatcherCallback = automaticDecorators.getDispatcher();
+        (dispatcher.on as jasmine.Spy).and.callFake((event, callback) => {
+          eventCallback = callback;
+        });
+        dispatcherCallback(dispatcher);
+
+        mockData.item.is.and.callFake((type: string) => type === 'selection');
+
+        // Act
+        eventCallback(mockEvent, mockData, mockConversionApi);
+
+        // Assert - should only apply classes, not styles or attributes
+        expect(mockConversionApi.writer.createAttributeElement).toHaveBeenCalledWith(
+          'a',
+          {}, // Empty attributes
+          { priority: 5 }
+        );
+        expect(mockConversionApi.writer.addClass).toHaveBeenCalledWith(
+          ['highlight', 'special-link'],
+          jasmine.any(Object)
+        );
+        expect(mockConversionApi.consumable.consume).toHaveBeenCalled();
       });
     });
   });
