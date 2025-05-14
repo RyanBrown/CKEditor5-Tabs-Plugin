@@ -330,20 +330,6 @@ describe('CkAlightChipsMenu', () => {
       expect(input.value).toBe('Test Chip');
     });
 
-    // it('should handle keydown event when inputElement is null', () => {
-    //   // Force inputElement to be null
-    //   (component as any).inputElement = null;
-
-    //   // Verify no errors are thrown and no chips are added
-    //   expect(() => {
-    //     document.dispatchEvent(new KeyboardEvent('keydown', {
-    //       key: 'Enter',
-    //       bubbles: true
-    //     }));
-    //   }).not.toThrow();
-    //   expect(component.getChips().length).toBe(0);
-    // });
-
     it('should handle keydown event with undefined key property', () => {
       const input = container.querySelector('.cka-chips-input') as HTMLInputElement;
       input.value = 'Test Chip';
@@ -461,5 +447,168 @@ describe('CkAlightChipsMenu', () => {
         component.enable();
       }).not.toThrow();
     });
+  });
+
+  // Add these test cases to the existing test suite
+
+  // In the "Initialization" describe block, add this test:
+  it('should handle initialization when inputElement is null', () => {
+    // Create container first
+    container = document.createElement('div');
+    container.id = 'test-chips-container';
+    document.body.appendChild(container);
+
+    // Create the component
+    component = new CkAlightChipsMenu('test-chips-container');
+
+    // Save original querySelector to restore later
+    const originalQuerySelector = component['container'].querySelector;
+
+    // Override querySelector to return null
+    component['container'].querySelector = () => null;
+
+    // Call initialize directly
+    (component as any).initialize();
+
+    // Verify no error is thrown and inputElement is null
+    expect(component['inputElement']).toBeNull();
+
+    // Restore original querySelector
+    component['container'].querySelector = originalQuerySelector;
+  });
+
+  // In the "Keyboard Interaction" describe block, add this test:
+  it('should handle keydown event when inputElement is null', () => {
+    // Create the component
+    component = new CkAlightChipsMenu('test-chips-container');
+
+    // Force inputElement to be null
+    (component as any).inputElement = null;
+
+    // Call handleKeyDown directly to ensure coverage
+    expect(() => {
+      (component as any).handleKeyDown(new KeyboardEvent('keydown', {
+        key: 'Enter',
+        bubbles: true
+      }));
+    }).not.toThrow();
+
+    expect(component.getChips().length).toBe(0);
+  });
+
+  // In the "Configuration" describe block, add these tests:
+  it('should handle setConfig with non-boolean allowDuplicates', () => {
+    // Create component
+    component = new CkAlightChipsMenu('test-chips-container');
+
+    // Add some chips
+    component.addChip('chip1');
+    component.addChip('chip2');
+
+    // Create config with non-boolean value
+    const config = { allowDuplicates: 'true' as any };
+
+    // Spy on renderChips after component is properly initialized
+    spyOn(component as any, 'renderChips');
+
+    // Set config with invalid value
+    component.setConfig(config);
+
+    // Check that renderChips was not called
+    expect((component as any).renderChips).not.toHaveBeenCalled();
+  });
+
+  it('should handle setConfig with allowDuplicates true', () => {
+    // Create component
+    component = new CkAlightChipsMenu('test-chips-container');
+
+    // Add some chips
+    component.addChip('chip1');
+    component.addChip('chip2');
+
+    // Spy on renderChips after component is properly initialized
+    spyOn(component as any, 'renderChips');
+
+    // Set allowDuplicates to true
+    component.setConfig({ allowDuplicates: true });
+
+    // Check that renderChips was not called (since no change is needed)
+    expect((component as any).renderChips).not.toHaveBeenCalled();
+  });
+
+  // In the "Adding Chips" describe block, add this test:
+  it('should not add a chip if it already exists', () => {
+    // Create component
+    component = new CkAlightChipsMenu('test-chips-container');
+
+    // Add a chip
+    component.addChip('Test Chip');
+
+    // Set up spies after the component is properly initialized
+    spyOn(component as any, 'renderChips');
+    spyOn(component as any, 'dispatchEvent');
+
+    // Try to add the same chip again
+    component.addChip('Test Chip');
+
+    // Verify that renderChips and dispatchEvent weren't called
+    expect((component as any).renderChips).not.toHaveBeenCalled();
+    expect((component as any).dispatchEvent).not.toHaveBeenCalled();
+
+    // Check that only one chip exists
+    expect(component.getChips().length).toBe(1);
+  });
+
+  // In the "Keyboard Interaction" describe block, add this test:
+  it('should handle processInputValue with duplicates', () => {
+    // Create component
+    component = new CkAlightChipsMenu('test-chips-container');
+
+    // Add a chip first
+    component.addChip('chip1');
+
+    // Set up spy after component is properly initialized
+    spyOn(component, 'addChip').and.callThrough();
+
+    // Process input with both existing and new chips
+    (component as any).processInputValue('chip1, chip2');
+
+    // Verify addChip was called with chip2 (chip1 already exists)
+    expect(component.addChip).toHaveBeenCalledWith('chip2');
+
+    // Check final chips
+    expect(component.getChips()).toEqual(['chip1', 'chip2']);
+  });
+
+  // In the "Adding Chips" describe block, add this test:
+  it('should handle paste event with duplicates in the pasted text', () => {
+    // Create component
+    component = new CkAlightChipsMenu('test-chips-container');
+
+    const input = container.querySelector('.cka-chips-input') as HTMLInputElement;
+    expect(input).toBeTruthy('Input element should exist');
+
+    // Set up spy after component is properly initialized
+    const addChipSpy = spyOn(component, 'addChip').and.callThrough();
+
+    const pasteEvent = new ClipboardEvent('paste', {
+      clipboardData: new DataTransfer()
+    });
+
+    // Create a getData mock with duplicates
+    const originalGetData = pasteEvent.clipboardData.getData;
+    pasteEvent.clipboardData.getData = function (format: string) {
+      if (format === 'text/plain' || format === 'text') {
+        return 'chip1, chip1, chip2';
+      }
+      return originalGetData.call(this, format);
+    };
+
+    // Dispatch paste event
+    input.dispatchEvent(pasteEvent);
+
+    // Verify addChip was called for both unique chips
+    expect(addChipSpy).toHaveBeenCalledWith('chip1');
+    expect(addChipSpy).toHaveBeenCalledWith('chip2');
   });
 });
