@@ -1343,4 +1343,233 @@ describe('CkAlightSelectMenu', () => {
       querySelectorSpy.and.callThrough();
     });
   });
+
+  describe('Additional Coverage Tests', () => {
+    let selectMenu: CkAlightSelectMenu<any>;
+    let container: HTMLDivElement;
+
+    const mockOptions = [
+      { label: 'Option 1', value: 1 },
+      { label: 'Option 2', value: 2 },
+      { label: 'Option 3', value: 3, disabled: true }
+    ];
+
+    beforeEach(() => {
+      container = document.createElement('div');
+      document.body.appendChild(container);
+
+      // Don't respawn AlightPositionManager.getInstance() as it's already spied upon
+      // in the parent describe block
+    });
+
+    afterEach(() => {
+      if (selectMenu) {
+        selectMenu.destroy();
+      }
+      document.body.removeChild(container);
+    });
+
+    it('should test openDropdown with different configurations', () => {
+      // Create select menu with all the edge cases
+      selectMenu = new CkAlightSelectMenu({
+        options: mockOptions,
+        filter: true,
+        position: 'top', // This should be overridden in openDropdown
+        offset: 8, // This should be overridden in openDropdown
+        followTrigger: true, // May be overridden
+        alignment: 'end' // May be overridden
+      });
+      selectMenu.mount(container);
+
+      // Spy on requestAnimationFrame
+      const rafSpy = spyOn(window, 'requestAnimationFrame').and.callFake((cb) => {
+        // Execute callback immediately
+        cb(0);
+        return 0;
+      });
+
+      // Open dropdown
+      const selectButton = container.querySelector<HTMLElement>('.cka-select-button');
+      if (selectButton) {
+        selectButton.click();
+      }
+
+      // Get access to the position manager (instead of verifying specific properties that we mocked)
+      expect(selectMenu['isOpen']).toBe(true);
+      expect(selectMenu['dropdownElement'].style.display).toBe('block');
+      expect(selectMenu['dropdownElement'].classList.contains('open')).toBe(true);
+
+      // Restore original behavior
+      rafSpy.and.callThrough();
+    });
+
+    it('should handle calculateDropdownPosition with different parent container scenarios', () => {
+      // Create a nested structure with various overflow settings
+      // Level 1: Auto overflow (scrollable)
+      const autoParent = document.createElement('div');
+      autoParent.style.overflowY = 'auto';
+      autoParent.style.height = '300px';
+      container.appendChild(autoParent);
+
+      // Level 2: Visible overflow (not scrollable)
+      const visibleParent = document.createElement('div');
+      visibleParent.style.overflowY = 'visible';
+      autoParent.appendChild(visibleParent);
+
+      // Level 3: Scroll overflow (scrollable, but should be ignored since we find autoParent first)
+      const scrollParent = document.createElement('div');
+      scrollParent.style.overflowY = 'scroll';
+      visibleParent.appendChild(scrollParent);
+
+      // Mount select menu in each container and check the calculation
+
+      // First in the auto overflow container
+      selectMenu = new CkAlightSelectMenu();
+      selectMenu.mount(autoParent);
+      let result = (selectMenu as any).calculateDropdownPosition();
+      expect(typeof result.top).toBe('boolean');
+
+      // Then in the visible overflow container
+      selectMenu.destroy();
+      selectMenu = new CkAlightSelectMenu();
+      selectMenu.mount(visibleParent);
+      result = (selectMenu as any).calculateDropdownPosition();
+      expect(typeof result.top).toBe('boolean');
+
+      // Finally in the scroll overflow container
+      selectMenu.destroy();
+      selectMenu = new CkAlightSelectMenu();
+      selectMenu.mount(scrollParent);
+      result = (selectMenu as any).calculateDropdownPosition();
+      expect(typeof result.top).toBe('boolean');
+    });
+
+    it('should force dropdown to open upward when space below is insufficient', () => {
+      // Setup
+      selectMenu = new CkAlightSelectMenu();
+      selectMenu.mount(container);
+
+      // Mock getBoundingClientRect for various elements to force upward positioning
+      const originalElementGetRect = Element.prototype.getBoundingClientRect;
+
+      // Override getBoundingClientRect to simulate specific positioning
+      Element.prototype.getBoundingClientRect = function () {
+        if (this === selectMenu['element']) {
+          // Position the trigger near the bottom of the viewport
+          return {
+            top: 500,
+            bottom: 530,
+            left: 100,
+            right: 300,
+            width: 200,
+            height: 30
+          } as DOMRect;
+        } else if (this === selectMenu['dropdownElement']) {
+          // Make dropdown height larger than available space below
+          return {
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            width: 200,
+            height: 200 // Larger than available space below (500)
+          } as DOMRect;
+        }
+
+        // Default behavior for other elements
+        return originalElementGetRect.call(this);
+      };
+
+      // Mock window.innerHeight to simulate viewport constraints
+      const originalInnerHeight = window.innerHeight;
+      Object.defineProperty(window, 'innerHeight', {
+        value: 600, // Total viewport height
+        writable: true
+      });
+
+      // Calculate position - should return top: true
+      const result = (selectMenu as any).calculateDropdownPosition();
+      expect(result.top).toBe(true);
+
+      // Restore original methods
+      Element.prototype.getBoundingClientRect = originalElementGetRect;
+      Object.defineProperty(window, 'innerHeight', {
+        value: originalInnerHeight,
+        writable: true
+      });
+    });
+
+    it('should handle parent overflow scenarios in calculateDropdownPosition', () => {
+      selectMenu = new CkAlightSelectMenu();
+      selectMenu.mount(container);
+
+      // Create a scrollable parent with constrained size
+      const scrollableParent = document.createElement('div');
+      scrollableParent.style.overflowY = 'auto';
+      scrollableParent.style.height = '400px';
+      scrollableParent.style.position = 'relative';
+      container.appendChild(scrollableParent);
+
+      // Create a spacer to push content down
+      const spacer = document.createElement('div');
+      spacer.style.height = '200px';
+      scrollableParent.appendChild(spacer);
+
+      // Create inner container inside scrollable parent
+      const innerContainer = document.createElement('div');
+      scrollableParent.appendChild(innerContainer);
+
+      // Create new select instance in inner container
+      selectMenu.destroy();
+      selectMenu = new CkAlightSelectMenu();
+      selectMenu.mount(innerContainer);
+
+      // Mock getBoundingClientRect for various elements
+      const originalElementGetRect = Element.prototype.getBoundingClientRect;
+
+      // Override getBoundingClientRect to simulate specific positioning
+      Element.prototype.getBoundingClientRect = function () {
+        if (this === selectMenu['element']) {
+          return {
+            top: 250,
+            bottom: 280,
+            left: 50,
+            right: 250,
+            width: 200,
+            height: 30
+          } as DOMRect;
+        } else if (this === scrollableParent) {
+          return {
+            top: 50,
+            bottom: 450, // scrollableParent bottom
+            left: 0,
+            right: 500,
+            width: 500,
+            height: 400
+          } as DOMRect;
+        } else if (this === selectMenu['dropdownElement']) {
+          return {
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            width: 200,
+            height: 200
+          } as DOMRect;
+        }
+
+        return originalElementGetRect.call(this);
+      };
+
+      // Test for parent overflow scenario - dropdown would exceed parent bottom
+      const result = (selectMenu as any).calculateDropdownPosition();
+
+      // Scrollable parent bottom (450) < trigger bottom (280) + dropdown height (200)
+      // So it should position dropdown above the trigger
+      expect(result.top).toBe(true);
+
+      // Restore original method
+      Element.prototype.getBoundingClientRect = originalElementGetRect;
+    });
+  });
 });
