@@ -78,7 +78,7 @@ describe('CkAlightChipsMenu', () => {
 
       // Create a more reliable getData mock
       const originalGetData = pasteEvent.clipboardData.getData;
-      pasteEvent.clipboardData.getData = function (format: string) {
+      pasteEvent.clipboardData.getData = function (format: string): string {
         if (format === 'text/plain' || format === 'text') {
           return 'chip1, chip2, chip3';
         }
@@ -106,7 +106,7 @@ describe('CkAlightChipsMenu', () => {
 
       // More reliable getData mock
       const originalGetData = pasteEvent.clipboardData.getData;
-      pasteEvent.clipboardData.getData = function (format: string) {
+      pasteEvent.clipboardData.getData = function (format: string): string {
         if (format === 'text/plain' || format === 'text') {
           return '';
         }
@@ -129,7 +129,7 @@ describe('CkAlightChipsMenu', () => {
 
       // More reliable getData mock
       const originalGetData = pasteEvent.clipboardData.getData;
-      pasteEvent.clipboardData.getData = function (format: string) {
+      pasteEvent.clipboardData.getData = function (format: string): string {
         if (format === 'text/plain' || format === 'text') {
           return 'chip1, chip2';
         }
@@ -597,7 +597,7 @@ describe('CkAlightChipsMenu', () => {
 
     // Create a getData mock with duplicates
     const originalGetData = pasteEvent.clipboardData.getData;
-    pasteEvent.clipboardData.getData = function (format: string) {
+    pasteEvent.clipboardData.getData = function (format: string): string {
       if (format === 'text/plain' || format === 'text') {
         return 'chip1, chip1, chip2';
       }
