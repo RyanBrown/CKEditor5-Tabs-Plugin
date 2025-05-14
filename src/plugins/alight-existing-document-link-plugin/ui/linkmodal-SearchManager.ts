@@ -130,7 +130,7 @@ export class SearchManager {
     return `
       <div class="cka-filter-section">
         <h4>Population</h4>
-        <div class="population-input-container">
+        <div class="cka-population-input-container">
           <input 
             class="cka-input-text cka-width-75"
             id="population-filter-input" 

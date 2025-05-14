@@ -410,3 +410,36 @@ $spacing-values: (
   justify-content: center;
   padding: 1rem var(--spacing-xl);
 }
+
+// links modal css
+.cka-flex-links-wrap {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  position: relative;
+
+  .cka-links-container {
+    flex-grow: 1;
+    overflow: auto;
+    padding: 0;
+  }
+}
+
+.cka-filter-section {
+  h4 {
+    margin: 1rem 0 .5rem;
+  }
+
+  &:first-of-type {
+    h4 {
+      margin: .5rem 0;
+    }
+  }
+}
+
+.ck.ck-link-actions .ck-button.ck-link-actions__preview.cka-disabled-link-preview .ck-button__label {
+  color: var(--neutral-black);
+  cursor: default;
+  font-weight: bold;
+  pointer-events: none;
+}
