@@ -114,7 +114,7 @@ describe('AutomaticDecorators', () => {
         automaticDecorators.add({
           id: 'example-link',
           mode: 'automatic',
-          callback: (url) => url === 'https://example.com',
+          callback: (url: string) => url === 'https://example.com',
           attributes: { target: '_blank' },
           classes: ['external-link'],
           styles: { color: 'blue' }
@@ -269,11 +269,14 @@ describe('ManualDecorator', () => {
       // Act
       const pattern = decorator._createPattern();
 
-      // Using optional chaining to avoid TypeScript errors
-      expect(pattern.attributes).toBeDefined();
-      expect(pattern.attributes?.target).toBe('_blank');
-      expect(pattern.attributes?.rel).toBe('noopener noreferrer');
-      expect(pattern.attributes?.class).toBe('class1 class2');
+      // Use type assertion to work around TypeScript errors
+      const attributes = pattern.attributes as any;
+
+      // Assert using type assertion
+      expect(attributes).toBeDefined();
+      expect(attributes.target).toBe('_blank');
+      expect(attributes.rel).toBe('noopener noreferrer');
+      expect(attributes.class).toBe('class1 class2');
       expect(pattern.styles).toEqual({ color: 'blue', 'font-weight': 'bold' });
     });
 
@@ -289,10 +292,13 @@ describe('ManualDecorator', () => {
       // Act
       const pattern = decorator._createPattern();
 
-      // Assert with optional chaining
-      expect(pattern.attributes).toBeDefined();
-      expect(pattern.attributes?.target).toBe('_blank');
-      expect(pattern.attributes?.class).toBeUndefined();
+      // Use type assertion
+      const attributes = pattern.attributes as any;
+
+      // Assert
+      expect(attributes).toBeDefined();
+      expect(attributes.target).toBe('_blank');
+      expect(attributes.class).toBeUndefined();
       expect(pattern.styles).toBeUndefined();
     });
 
@@ -326,9 +332,12 @@ describe('ManualDecorator', () => {
       // Act
       const pattern = decorator._createPattern();
 
-      // Assert with optional chaining
-      expect(pattern.attributes).toBeDefined();
-      expect(pattern.attributes?.class).toBe('single-class');
+      // Use type assertion
+      const attributes = pattern.attributes as any;
+
+      // Assert
+      expect(attributes).toBeDefined();
+      expect(attributes.class).toBe('single-class');
     });
 
     it('should create an empty pattern without attributes or styles', () => {
