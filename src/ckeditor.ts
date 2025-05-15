@@ -92,15 +92,13 @@ import AlightPopulationPlugin from "./plugins/alight-population-plugin/alight-po
 import AlightTabsPlugin from "./plugins/alight-tabs-plugin/alight-tabs-plugin";
 
 // Link Specific plugins
-import AlightParentLinkPlugin from "./plugins/alight-parent-link-plugin"; // Use the index file
-import type { LinkPluginConfig } from "./plugins/alight-parent-link-plugin"; // Import type
+import AlightParentLinkPlugin from "./plugins/alight-parent-link-plugin";
 import AlightPredefinedLinkPlugin from "./plugins/alight-predefined-link-plugin/link";
 import AlightNewDocumentLinkPlugin from "./plugins/alight-new-document-link-plugin/link";
-// import AlightExistingDocumentLinkPlugin from "./plugins/alight-existing-document-link-plugin/alight-existing-document-link-plugin";
 import AlightExistingDocumentLinkPlugin from "./plugins/alight-existing-document-link-plugin/link";
 import AlightExternalLinkPlugin from "./plugins/alight-external-link-plugin/link";
 import AlightEmailLinkPlugin from "./plugins/alight-email-link-plugin/link";
-import { AlightPreventLinkNestingPlugin } from './plugins/alight-prevent-link-nesting-plugin';
+import AlightPreventLinkNestingPlugin from './plugins/alight-prevent-link-nesting-plugin/link';
 
 
 // Import custom styles for headings, style definitions and custom plugins
