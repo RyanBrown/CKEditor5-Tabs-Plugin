@@ -60,10 +60,12 @@ export default class AutomaticDecorators {
         const viewSelection = viewWriter.document.selection;
 
         for (const item of this._definitions) {
-          // Build attributes with data-id
+          // Build attributes with data-id and always include target="_blank" and rel="noopener noreferrer"
           const attributes: Record<string, string> = {
             ...item.attributes,
-            'data-id': 'external_link'
+            'data-id': 'external_link',
+            'target': '_blank',
+            'rel': 'noopener noreferrer'
           };
 
           // Check if the model item has organization name attribute and add it to view

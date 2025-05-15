@@ -84,7 +84,7 @@ export class PaginationManager {
     if (totalPages <= 1) return '';
 
     return `
-      <article id="pagination" class="pagination-controls">
+      <article id="pagination" class="cka-pagination-controls">
         <button 
           id="first-page" 
           class="cka-button cka-button-icon-only cka-button-text first"

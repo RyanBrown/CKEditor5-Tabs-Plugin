@@ -3,6 +3,7 @@ import { Plugin } from '@ckeditor/ckeditor5-core';
 import { Command } from '@ckeditor/ckeditor5-core';
 import type { Writer } from '@ckeditor/ckeditor5-engine';
 import type { Element, Range, Selection, DocumentSelection, Position } from '@ckeditor/ckeditor5-engine';
+import { convertLegacyPopulationTags, scanForLegacyPopulationTags } from './alight-population-plugin-utils';
 
 /**
  * Command for adding population tags around selected content.
@@ -26,8 +27,9 @@ export class AddPopulationCommand extends Command {
    * 
    * @param {Object} options The command options.
    * @param {string} options.populationName The name of the population to add.
+   * @param {string} options.populationId The ID of the population to add.
    */
-  override execute({ populationName }: { populationName: string }) {
+  override execute({ populationName, populationId }: { populationName: string; populationId?: string }) {
     if (!populationName) {
       console.error('Population name is required');
       return;
@@ -46,7 +48,7 @@ export class AddPopulationCommand extends Command {
           return;
         }
 
-        const emptyPopulationRange = this._insertEmptyPopulation(writer, position, populationName);
+        const emptyPopulationRange = this._insertEmptyPopulation(writer, position, populationName, populationId);
 
         // Set selection between the tags
         writer.setSelection(emptyPopulationRange);
@@ -66,7 +68,7 @@ export class AddPopulationCommand extends Command {
         if (range.isCollapsed) continue;
 
         // Create population tags for the range
-        this._addPopulationToRange(writer, range, populationName);
+        this._addPopulationToRange(writer, range, populationName, populationId);
       }
     });
   }
@@ -133,21 +135,26 @@ export class AddPopulationCommand extends Command {
    * @param {Writer} writer The model writer.
    * @param {Position} position The position to insert at.
    * @param {string} populationName The name of the population.
+   * @param {string} populationId The ID of the population.
    * @returns {Range} The range between the inserted tags.
    */
-  private _insertEmptyPopulation(writer: Writer, position: Position, populationName: string): Range {
+  private _insertEmptyPopulation(writer: Writer, position: Position, populationName: string, populationId?: string): Range {
     let currentPosition = position;
 
-    // Create ahExpr element
+    // Create ahExpr element with modified attributes
     const ahExprElement = writer.createElement('ahExpr', {
       name: populationName,
       class: 'expeSelector',
       title: populationName,
-      assettype: 'population'
+      assettype: 'Expression'
+      // Remove contenteditable and populationId from ahExpr
     });
 
-    // Insert begin marker
-    const beginElement = writer.createElement('populationBegin', { name: populationName });
+    // Insert begin marker with populationId
+    const beginElement = writer.createElement('populationBegin', {
+      name: populationName,
+      populationId: populationId || 'generatedWhenCreated'
+    });
     writer.insert(beginElement, currentPosition);
     currentPosition = writer.createPositionAfter(beginElement);
 
@@ -158,8 +165,11 @@ export class AddPopulationCommand extends Command {
 
     const beforeEndPosition = currentPosition;
 
-    // Insert end marker
-    const endElement = writer.createElement('populationEnd', { name: populationName });
+    // Insert end marker with matching populationId
+    const endElement = writer.createElement('populationEnd', {
+      name: populationName,
+      populationId: populationId || 'generatedWhenCreated'
+    });
     writer.insert(endElement, currentPosition);
 
     // Wrap all elements in ahExpr
@@ -181,26 +191,34 @@ export class AddPopulationCommand extends Command {
    * @param {Writer} writer The model writer.
    * @param {Range} range The range to add population tags to.
    * @param {string} populationName The name of the population.
+   * @param {string} populationId The ID of the population.
    */
-  private _addPopulationToRange(writer: Writer, range: Range, populationName: string) {
+  private _addPopulationToRange(writer: Writer, range: Range, populationName: string, populationId?: string) {
     // Get the start and end positions of the range
     const start = range.start;
     const end = range.end;
 
-    // Create ahExpr element
+    // Create ahExpr element with modified attributes
     const ahExprElement = writer.createElement('ahExpr', {
       name: populationName,
       class: 'expeSelector',
       title: populationName,
-      assettype: 'population'
+      assettype: 'Expression'
+      // Remove contenteditable and populationId from ahExpr
     });
 
-    // Insert begin marker
-    const beginElement = writer.createElement('populationBegin', { name: populationName });
+    // Insert begin marker with populationId
+    const beginElement = writer.createElement('populationBegin', {
+      name: populationName,
+      populationId: populationId || 'generatedWhenCreated'
+    });
     writer.insert(beginElement, start);
 
-    // Insert end marker
-    const endElement = writer.createElement('populationEnd', { name: populationName });
+    // Insert end marker with matching populationId
+    const endElement = writer.createElement('populationEnd', {
+      name: populationName,
+      populationId: populationId || 'generatedWhenCreated'
+    });
     writer.insert(endElement, end);
 
     // Wrap the range (including markers) in ahExpr
@@ -239,10 +257,70 @@ export class RemovePopulationCommand extends Command {
 
       if (!populationTags) return;
 
-      // Remove begin and end tags
-      writer.remove(populationTags.begin);
-      writer.remove(populationTags.end);
+      // Store the content and attributes before removing
+      const content = this._getPopulationContent(populationTags.begin, populationTags.end);
+      const populationName = populationTags.begin.getAttribute('name');
+      const populationId = populationTags.begin.getAttribute('populationId');
+
+      // Find the parent ahExpr element
+      const ahExprElement = this._findParentAhExprElement(populationTags.begin);
+
+      if (ahExprElement) {
+        // Remove the entire ahExpr element (which contains begin/end tags)
+        writer.remove(ahExprElement);
+      } else {
+        // Just remove begin and end tags if no ahExpr parent
+        writer.remove(populationTags.begin);
+        writer.remove(populationTags.end);
+      }
+
+      // Store this information for potential re-application later
+      // Since we're facing TypeScript restrictions, we'll take a simpler approach
+      // and log the information for debugging purposes only
+
+      console.log('Population removed:', {
+        name: populationName,
+        populationId: populationId,
+        content: content
+      });
+
+      // For a production implementation, we would need to define a proper interface
+      // and extend the Editor type to include our custom property, but that's
+      // outside the scope of this current fix
     });
+  }
+
+  /**
+   * Gets the content between population begin and end tags.
+   */
+  private _getPopulationContent(beginTag: Element, endTag: Element): string {
+    const model = this.editor.model;
+    const beginPos = model.createPositionAfter(beginTag);
+    const endPos = model.createPositionBefore(endTag);
+    const range = model.createRange(beginPos, endPos);
+
+    // This is a simplification - in a real implementation, you would traverse
+    // the range and serialize the content as needed
+    return Array.from(range.getItems()).map(item => {
+      if (item.is('$text')) {
+        return item.data;
+      }
+      return '';
+    }).join('');
+  }
+
+  /**
+   * Finds the parent ahExpr element for a given element.
+   */
+  private _findParentAhExprElement(element: Element): Element | null {
+    let parent = element.parent;
+    while (parent) {
+      if (parent.is('element') && parent.name === 'ahExpr') {
+        return parent;
+      }
+      parent = parent.parent;
+    }
+    return null;
   }
 
   /**
@@ -309,6 +387,30 @@ export class RemovePopulationCommand extends Command {
 }
 
 /**
+ * Command for converting legacy population tags to the new format.
+ */
+export class ConvertLegacyPopulationsCommand extends Command {
+  /**
+   * @inheritDoc
+   */
+  override refresh() {
+    // The command is enabled if there are legacy population tags to convert
+    this.isEnabled = scanForLegacyPopulationTags(this.editor) > 0;
+  }
+
+  /**
+   * Executes the command to convert legacy population tags.
+   * @returns {Object} Object containing the number of converted tags
+   */
+  override execute(): { convertedCount: number } {
+    const convertedCount = convertLegacyPopulationTags(this.editor);
+
+    // Return the count of converted tags
+    return { convertedCount };
+  }
+}
+
+/**
  * Plugin that registers the commands for the AlightPopulationsPlugin.
  */
 export default class AlightPopulationPluginCommand extends Plugin {
@@ -330,5 +432,15 @@ export default class AlightPopulationPluginCommand extends Plugin {
 
     // Register the Remove Population command
     editor.commands.add('removePopulation', new RemovePopulationCommand(editor));
+
+    // Register the Convert Legacy Populations command
+    editor.commands.add('convertLegacyPopulations', new ConvertLegacyPopulationsCommand(editor));
+
+    // Log command registration for debugging
+    console.log('AlightPopulationPluginCommand: Commands registered:',
+      'alightPopulationPlugin:', !!editor.commands.get('alightPopulationPlugin'),
+      'removePopulation:', !!editor.commands.get('removePopulation'),
+      'convertLegacyPopulations:', !!editor.commands.get('convertLegacyPopulations')
+    );
   }
 }

@@ -327,7 +327,7 @@ export class ContentManager implements ILinkManager {
 
     if (!matchingLink) {
       return `
-      <div class="current-url-info">
+      <div class="cka-current-url-info">
         <h3><strong>Current Link URL:</strong> ${this.initialUrl}</h3>
         <div class="cka-note-message">This URL is not in the existing document links list.</div>
       </div>
@@ -336,7 +336,7 @@ export class ContentManager implements ILinkManager {
 
     // Use the shared link markup function but customize for current link context
     return `
-    <div class="current-url-info">
+    <div class="cka-current-url-info">
       <h3>Current Selected Link</h3>
       ${this.buildLinkItemMarkup(matchingLink, true, 'current-link')}
     </div>
@@ -352,7 +352,7 @@ export class ContentManager implements ILinkManager {
 
     return `
       <div class="cka-link-item ${isSelected ? 'selected' : ''}" data-link-name="${link.serverFilePath}">
-        <div class="radio-container">
+        <div class="cka-radio-container">
           <cka-radio-button 
             name="${radioGroupName}" 
             value="${link.serverFilePath}" 

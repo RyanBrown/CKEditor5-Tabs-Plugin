@@ -83,7 +83,7 @@ export class SearchManager {
           <h3>Advanced Search</h3>
           <button class="cka-close-btn"><i class="fa-regular fa-xmark"></i></button>
         </header>
-        <main class="advanced-search-content">
+        <main class="cka-advanced-search-content">
           ${this.createAdvancedSearchFilters()}
         </main>
         <footer>
@@ -117,7 +117,7 @@ export class SearchManager {
     ).filter(Boolean).sort();
 
     return `
-      <div class="search-filters">
+      <div class="cka-search-filters">
         ${this.createFilterSection('File Type', 'fileType', fileTypeOptions)}
         ${this.createPopulationFilterSection()}
         ${this.createFilterSection('Locale', 'locale', localeOptions)}
@@ -128,9 +128,9 @@ export class SearchManager {
   // Method to create the Population filter with text input
   private createPopulationFilterSection(): string {
     return `
-      <div class="filter-section">
+      <div class="cka-filter-section">
         <h4>Population</h4>
-        <div class="population-input-container">
+        <div class="cka-population-input-container">
           <input 
             class="cka-input-text cka-width-75"
             id="population-filter-input" 
@@ -146,7 +146,7 @@ export class SearchManager {
   private createFilterSection(title: string, filterType: string, options: string[]): string {
     if (options.length === 0) {
       return `
-        <div class="filter-section">
+        <div class="cka-filter-section">
           <h4>${title}</h4>
           <p>No options available</p>
         </div>
@@ -154,7 +154,7 @@ export class SearchManager {
     }
 
     return `
-      <div class="filter-section">
+      <div class="cka-filter-section">
         <h4>${title}</h4>
         <ul class="cka-checkbox-list">
           ${options.map(option => `
