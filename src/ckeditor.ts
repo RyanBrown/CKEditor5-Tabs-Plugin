@@ -100,6 +100,7 @@ import AlightNewDocumentLinkPlugin from "./plugins/alight-new-document-link-plug
 import AlightExistingDocumentLinkPlugin from "./plugins/alight-existing-document-link-plugin/link";
 import AlightExternalLinkPlugin from "./plugins/alight-external-link-plugin/link";
 import AlightEmailLinkPlugin from "./plugins/alight-email-link-plugin/link";
+import { AlightPreventLinkNestingPlugin } from './plugins/alight-prevent-link-nesting-plugin';
 
 
 // Import custom styles for headings, style definitions and custom plugins
@@ -253,6 +254,7 @@ class AlightEditor extends ClassicEditor {
     AlightPopulationPlugin,
     AlightPredefinedLinkPlugin,
     AlightTabsPlugin,
+    AlightPreventLinkNestingPlugin,
   ];
 
   public static override defaultConfig: EditorConfig = {
@@ -364,6 +366,19 @@ class AlightEditor extends ClassicEditor {
           enabled: true
         }
       ]
+    },
+    alightPreventLinkNesting: {
+      linkAttributes: [
+        'linkHref',                             // Standard CKEditor link attribute
+        'alightExternalLinkPluginHref',         // External link plugin
+        'alightPredefinedLinkPluginHref',       // Predefined link plugin
+        'alightEmailLinkPluginHref',            // Email link plugin
+        'alightExistingDocumentLinkPluginHref', // Existing document link plugin
+        'alightNewDocumentLinkPluginHref'       // New document link plugin
+      ],
+      mergeOverlappingLinks: true,
+      showWarningModal: true,
+      warningMessage: 'Links cannot be nested inside existing links.'
     },
     htmlSupport: {
       allow: [

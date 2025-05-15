@@ -1,0 +1,78 @@
+// src/plugins/alight-prevent-link-nesting-plugin/styles/alight-prevent-link-nesting.scss
+// Use existing modal styles as a base and only override what's needed
+
+.cka-link-nesting-warning-modal {
+  .cka-dialog-header {
+    background-color: #f8d7da;
+    border-bottom: 1px solid #f5c6cb;
+    color: #721c24;
+
+    .cka-dialog-title {
+      font-weight: 600;
+    }
+  }
+
+  .cka-dialog-content {
+    align-items: center;
+    display: flex;
+
+    .cka-link-nesting-warning-icon {
+      color: #dc3545;
+      font-size: 24px;
+      margin-right: 16px;
+
+      i {
+        display: inline-block;
+      }
+    }
+
+    .cka-link-nesting-warning-message {
+      color: #333;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+  }
+
+  .cka-dialog-footer {
+    .cka-button-primary {
+      background-color: #dc3545;
+      border-color: #dc3545;
+      color: white;
+
+      &:hover {
+        background-color: #c82333;
+        border-color: #bd2130;
+      }
+    }
+  }
+}
+
+/* Style for the warning icon fallback if Font Awesome doesn't load */
+.fa-triangle-exclamation {
+  display: inline-block;
+  height: 24px;
+  position: relative;
+  width: 24px;
+
+  &:before {
+    border-bottom: 21px solid #dc3545;
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    content: "";
+    display: block;
+    height: 0;
+    width: 0;
+  }
+
+  &:after {
+    color: white;
+    content: "!";
+    font-size: 14px;
+    font-style: normal;
+    font-weight: bold;
+    left: 50%;
+    position: absolute;
+    top: 5px;
+    transform: translateX(-50%);
+  }
+}
