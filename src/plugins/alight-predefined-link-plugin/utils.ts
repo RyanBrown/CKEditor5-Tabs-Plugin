@@ -61,16 +61,33 @@ export function isLinkElement(node: ViewNode | ViewDocumentFragment): boolean {
 }
 
 /**
- * Helper function to detect predefined links
+ * Helper function to detect predefined links.
+ * 
+ * IMPORTANT: A valid predefined link MUST have both:
+ * 1. A URL without standard protocols (http://, https://, mailto:)
+ * 2. The AHCustomeLink class
+ * 
+ * For complete validation, always provide the element parameter.
+ * 
+ * @param url The URL to check
+ * @param element Optional element to check for AHCustomeLink class
+ * @returns true if URL format is valid; if element is provided, also checks for AHCustomeLink class
  */
-export function isPredefinedLink(url: string | null | undefined): boolean {
+export function isPredefinedLink(url: string | null | undefined, element?: any): boolean {
   // If the URL is empty, null, or undefined, it's not a predefined link
   if (!url) return false;
 
-  // For links to be considered predefined links, they must:
-  // 1. Not have standard protocol patterns (http://, https://, mailto:)
-  // 2. Be identified by the caller with additional context (via hasAHCustomeLink)
-  return !url.includes('://') && !url.startsWith('mailto:');
+  // Check URL format
+  const validUrlFormat = !url.includes('://') && !url.startsWith('mailto:');
+  if (!validUrlFormat) return false;
+
+  // If element is provided, also check for AHCustomeLink class
+  if (element !== undefined) {
+    return hasAHCustomeLink(element);
+  }
+
+  // If no element provided, only URL format was checked
+  return true;
 }
 
 /**
