@@ -297,7 +297,7 @@ export function filterLinkAttributes(attributes: Record<string, string>): Record
 
 /**
  * Ensures links have the ah:link structure in the HTML.
- * Simplified to directly create the correct structure without complex parsing.
+ * Updated to ensure the exact structure needed.
  */
 export function ensurePredefinedLinkStructure(html: string): string {
   try {
@@ -308,27 +308,34 @@ export function ensurePredefinedLinkStructure(html: string): string {
     const links = tempDiv.querySelectorAll('a.AHCustomeLink');
 
     links.forEach(link => {
+      // Always ensure these attributes are set correctly
+      link.setAttribute('href', '#');
+      link.setAttribute('data-id', 'predefined_link');
+
       // Look for existing ah:link element
       let existingAhLink = link.querySelector('ah\\:link') || link.querySelector('ah:link');
       let linkName = '';
 
+      // Try to get the link name from various sources
       if (existingAhLink) {
-        // Get name from existing ah:link
         linkName = existingAhLink.getAttribute('name') || '';
-
-        // Just keep the existing structure if it's already correct
-        if (linkName) {
-          return;
-        }
       }
 
-      // If we don't have a valid name, keep original structure
       if (!linkName) {
-        return;
+        // Try alternative attribute sources
+        linkName = link.getAttribute('data-link-name') || link.getAttribute('data-href') || '';
       }
 
-      // Create a proper structure
-      link.innerHTML = `<ah:link name="${linkName}">${link.textContent}</ah:link>`;
+      // If still no name, use the text content or a fallback
+      if (!linkName || linkName.trim() === '') {
+        linkName = link.textContent?.trim() || 'unnamed-link';
+      }
+
+      // Save the original text content before modifying
+      const textContent = link.textContent || '';
+
+      // Create the standardized structure
+      link.innerHTML = `<ah:link name="${linkName}">${textContent}</ah:link>`;
     });
 
     return tempDiv.innerHTML;

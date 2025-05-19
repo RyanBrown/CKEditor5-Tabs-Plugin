@@ -1,4 +1,4 @@
-// src/plugins/alight-predefined-link-plugin/utils/automaticdecorators.ts
+// src/plugins/alight-predefined-link-plugin/automaticdecorators.ts
 import { type ArrayOrItem } from '@ckeditor/ckeditor5-utils';
 import type {
   DowncastAttributeEvent,
@@ -40,6 +40,7 @@ export default class AutomaticDecorators {
 
   /**
    * Provides the conversion helper used in the downcast method.
+   * Updated to ensure consistent output format for predefined links.
    *
    * @returns A dispatcher function used as conversion helper.
    */
