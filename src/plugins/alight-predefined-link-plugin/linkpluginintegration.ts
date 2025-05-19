@@ -85,13 +85,28 @@ export default class AlightPredefinedLinkPluginIntegration extends Plugin {
       if (standardUnlinkCommand) {
         standardUnlinkCommand.on('execute', (evt) => {
           const selection = editor.model.document.selection;
+          const predefinedUnlinkCommand = editor.commands.get('alight-predefined-unlink');
 
-          // If the selection has our predefined link attribute, use our unlink command instead
-          if (selection.hasAttribute('alightPredefinedLinkPluginHref')) {
+          // If our predefined unlink command exists and is enabled, use it instead
+          if (predefinedUnlinkCommand && predefinedUnlinkCommand.isEnabled) {
+            // Stop the standard unlink command
             evt.stop();
+
+            // Execute our unlink command
             editor.execute('alight-predefined-unlink');
+
+            // Log for debugging
+            console.log('Executed alight-predefined-unlink command');
+          } else {
+            // If our command isn't enabled but the selection has our attribute,
+            // still try to use our command
+            if (selection.hasAttribute('alightPredefinedLinkPluginHref')) {
+              evt.stop();
+              editor.execute('alight-predefined-unlink');
+              console.log('Executed alight-predefined-unlink command via attribute check');
+            }
           }
-        }, { priority: 'high' });
+        }, { priority: 'highest' }); // Use 'highest' priority to ensure our handler runs first
       }
     }
   }

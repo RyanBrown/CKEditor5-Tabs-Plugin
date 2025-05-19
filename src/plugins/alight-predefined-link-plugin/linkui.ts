@@ -253,15 +253,17 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
     if (selectedLink) {
       const href = selectedLink.getAttribute('href');
       const dataId = selectedLink.getAttribute('data-id');
-      const hasAHCustomeClass = selectedLink.hasClass('AHCustomeLink');
+      const hasAHCustomeClass = selectedLink.hasClass('AHCustomeClass') || selectedLink.hasClass('AHCustomeLink');
 
-      // Show the balloon for predefined links identified by:
+      // Show the balloon for predefined links identified by any of these criteria:
       // 1. data-id="predefined_link" attribute
-      // 2. AHCustomeLink class
+      // 2. AHCustomeLink or AHCustomeClass class
       // 3. URL format matching predefined link pattern
+      // 4. Any link element (broader check to catch reopened links)
       if ((dataId === 'predefined_link') ||
         hasAHCustomeClass ||
-        (href && isPredefinedLink(href as string))) {
+        (href && isPredefinedLink(href as string)) ||
+        selectedLink.name === 'a') {  // This is the new check for any link element
         this._showBalloon();
       }
     }
@@ -803,23 +805,34 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
     if (selection.isCollapsed || (selectedElement && isWidget(selectedElement))) {
       return findLinkElementAncestor(selection.getFirstPosition()!);
     } else {
-      // The range for fully selected link is usually anchored in adjacent text nodes.
-      // Trim it to get closer to the actual link element.
+      // For non-collapsed selection, try different approaches to find the link
       try {
+        // First try the standard approach with trimmed range
         const range = selection.getFirstRange()!.getTrimmed();
         const startLink = findLinkElementAncestor(range.start);
         const endLink = findLinkElementAncestor(range.end);
 
-        if (!startLink || startLink != endLink) {
-          return null;
+        if (startLink && startLink === endLink) {
+          // Check if the link element is fully selected
+          if (view.createRangeIn(startLink).getTrimmed().isEqual(range)) {
+            return startLink;
+          }
         }
 
-        // Check if the link element is fully selected.
-        if (view.createRangeIn(startLink).getTrimmed().isEqual(range)) {
+        // If that fails, just try to find any link at the selection start
+        if (startLink) {
           return startLink;
-        } else {
-          return null;
         }
+
+        // As a last resort, look for any <a> element in the selection
+        for (const item of range.getItems()) {
+          if (item.is('element', 'a') ||
+            (item.is('attributeElement') && item.name === 'a')) {
+            return item.is('attributeElement') ? item : null;
+          }
+        }
+
+        return null;
       } catch (e) {
         console.error('Error getting selected link element:', e);
         // If there was an error in range processing, try to at least return startLink if possible
@@ -847,7 +860,10 @@ function findLinkElementAncestor(position: any): ViewAttributeElement | null {
     const ancestors = position.getAncestors();
 
     for (const ancestor of ancestors) {
-      if (isLinkElement(ancestor)) {
+      // Check for both custom link detection and standard a elements
+      if (isLinkElement(ancestor) ||
+        (ancestor.is && ancestor.is('element', 'a')) ||
+        (ancestor.is && ancestor.is('attributeElement') && ancestor.name === 'a')) {
         return ancestor.is('attributeElement') ? ancestor : null;
       }
     }
