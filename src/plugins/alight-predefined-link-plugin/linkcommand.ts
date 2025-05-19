@@ -229,6 +229,27 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
   }
 
   /**
+   * Helper method to remove all link-related attributes from a range.
+   * This method is used by the UnlinkCommand to ensure all attributes are properly removed.
+   * 
+   * @param writer The model writer
+   * @param range The range to remove attributes from
+   */
+  public removeAllLinkAttributes(writer: Writer, range: Range): void {
+    // Remove the primary link attribute
+    writer.removeAttribute('alightPredefinedLinkPluginHref', range);
+
+    // Remove additional predefined link attributes
+    writer.removeAttribute('alightPredefinedLinkPluginFormat', range);
+    writer.removeAttribute('alightPredefinedLinkPluginLinkName', range);
+
+    // Remove all decorator attributes
+    for (const decorator of this.manualDecorators) {
+      writer.removeAttribute(decorator.id, range);
+    }
+  }
+
+  /**
    * Processes decorator options and applies them to the range
    * 
    * @param writer The model writer

@@ -20,7 +20,14 @@ export default class AlightPredefinedLinkPluginUnlinkCommand extends Command {
     if (isLinkableElement(selectedElement, model.schema)) {
       this.isEnabled = model.schema.checkAttribute(selectedElement, 'alightPredefinedLinkPluginHref');
     } else {
-      this.isEnabled = model.schema.checkAttributeInSelection(selection, 'alightPredefinedLinkPluginHref');
+      // Check for both collapsed and non-collapsed selections
+      if (selection.isCollapsed) {
+        // For collapsed selection, check if cursor is inside link
+        this.isEnabled = selection.hasAttribute('alightPredefinedLinkPluginHref');
+      } else {
+        // For non-collapsed selection, check if attribute can be applied to selection
+        this.isEnabled = model.schema.checkAttributeInSelection(selection, 'alightPredefinedLinkPluginHref');
+      }
     }
   }
 
@@ -29,6 +36,7 @@ export default class AlightPredefinedLinkPluginUnlinkCommand extends Command {
    *
    * When the selection is collapsed, it removes the `alightPredefinedLinkPluginHref` attribute from each node with the same `alightPredefinedLinkPluginHref` attribute value.
    * When the selection is non-collapsed, it removes the `alightPredefinedLinkPluginHref` attribute from each node in selected ranges.
+   * This implementation also removes additional attributes used by predefined links.
    */
   public override execute(): void {
     const editor = this.editor;
@@ -47,14 +55,25 @@ export default class AlightPredefinedLinkPluginUnlinkCommand extends Command {
         )] :
         model.schema.getValidRanges(selection.getRanges(), 'alightPredefinedLinkPluginHref');
 
-      // Remove `alightPredefinedLinkPluginHref` attribute from specified ranges.
+      // Remove all predefined link attributes from specified ranges.
       for (const range of rangesToUnlink) {
-        writer.removeAttribute('alightPredefinedLinkPluginHref', range);
+        if (linkCommand && typeof linkCommand.removeAllLinkAttributes === 'function') {
+          // Use the helper method if available
+          linkCommand.removeAllLinkAttributes(writer, range);
+        } else {
+          // Fallback implementation if helper method is not available
+          // Remove the main link attribute
+          writer.removeAttribute('alightPredefinedLinkPluginHref', range);
 
-        // If there are registered custom attributes, then remove them during unlink.
-        if (linkCommand) {
-          for (const manualDecorator of linkCommand.manualDecorators) {
-            writer.removeAttribute(manualDecorator.id, range);
+          // Remove additional predefined link attributes
+          writer.removeAttribute('alightPredefinedLinkPluginFormat', range);
+          writer.removeAttribute('alightPredefinedLinkPluginLinkName', range);
+
+          // If there are registered custom attributes, then remove them during unlink.
+          if (linkCommand) {
+            for (const manualDecorator of linkCommand.manualDecorators) {
+              writer.removeAttribute(manualDecorator.id, range);
+            }
           }
         }
       }

@@ -78,6 +78,21 @@ export default class AlightPredefinedLinkPluginIntegration extends Plugin {
           }
         };
       }
+
+      // Add listener to the standard unlink command to handle predefined links
+      // Use get() and check if the command exists instead of has()
+      const standardUnlinkCommand = editor.commands.get('unlink');
+      if (standardUnlinkCommand) {
+        standardUnlinkCommand.on('execute', (evt) => {
+          const selection = editor.model.document.selection;
+
+          // If the selection has our predefined link attribute, use our unlink command instead
+          if (selection.hasAttribute('alightPredefinedLinkPluginHref')) {
+            evt.stop();
+            editor.execute('alight-predefined-unlink');
+          }
+        }, { priority: 'high' });
+      }
     }
   }
 }
