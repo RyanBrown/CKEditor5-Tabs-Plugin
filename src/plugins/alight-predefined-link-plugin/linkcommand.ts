@@ -243,9 +243,41 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
     writer.removeAttribute('alightPredefinedLinkPluginFormat', range);
     writer.removeAttribute('alightPredefinedLinkPluginLinkName', range);
 
+    // Remove standard link attributes that might also be present
+    writer.removeAttribute('linkHref', range);
+
+    // Remove commonly used decorator attributes
+    const commonDecorators = [
+      'linkIsExternal',
+      'linkIsDownloadable',
+      'linkTarget',
+      'linkRel'
+    ];
+
+    for (const decorator of commonDecorators) {
+      writer.removeAttribute(decorator, range);
+    }
+
     // Remove all decorator attributes
     for (const decorator of this.manualDecorators) {
       writer.removeAttribute(decorator.id, range);
+    }
+
+    // Search for and remove any other attributes that start with 'link'
+    const model = this.editor.model;
+    const selection = model.document.selection;
+    const firstPosition = selection.getFirstPosition();
+
+    if (firstPosition) {
+      const item = firstPosition.textNode || firstPosition.nodeBefore;
+
+      if (item) {
+        for (const [key] of item.getAttributes()) {
+          if (typeof key === 'string' && (key.startsWith('link') || key.includes('link'))) {
+            writer.removeAttribute(key, range);
+          }
+        }
+      }
     }
   }
 

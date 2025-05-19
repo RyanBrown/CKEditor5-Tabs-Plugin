@@ -114,8 +114,6 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
 
         // Get position range for conversion
         const viewRange = mapper.toViewRange(data.range);
-
-        // Get the linkName attribute
         const linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName');
 
         // Get text content from the view range
@@ -253,7 +251,6 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
               writer.setSelectionAttribute('alightPredefinedLinkPluginFormat', 'ahcustom');
               writer.setSelectionAttribute('alightPredefinedLinkPluginLinkName', linkName);
             });
-
             return linkName;
           }
         },
@@ -352,7 +349,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
             return false;
           }
         },
-        converterPriority: 'lowest'  // Lowest priority to avoid interfering with standard links
+        converterPriority: 'lowest'
       });
 
     // Create linking commands.

@@ -68,6 +68,7 @@ export default class AlightPredefinedLinkPluginUnlinkCommand extends Command {
           // Remove additional predefined link attributes
           writer.removeAttribute('alightPredefinedLinkPluginFormat', range);
           writer.removeAttribute('alightPredefinedLinkPluginLinkName', range);
+          writer.removeAttribute('linkHref', range);
 
           // If there are registered custom attributes, then remove them during unlink.
           if (linkCommand) {
@@ -75,6 +76,19 @@ export default class AlightPredefinedLinkPluginUnlinkCommand extends Command {
               writer.removeAttribute(manualDecorator.id, range);
             }
           }
+        }
+      }
+      // Remove any link-related attributes that might remain
+      const additionalLinkAttrs = [
+        'linkIsExternal',
+        'linkIsDownloadable',
+        'linkTarget',
+        'linkRel'
+      ];
+
+      for (const range of rangesToUnlink) {
+        for (const attr of additionalLinkAttrs) {
+          writer.removeAttribute(attr, range);
         }
       }
     });
