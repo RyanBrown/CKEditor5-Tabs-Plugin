@@ -61,17 +61,25 @@ export function isLinkElement(node: ViewNode | ViewDocumentFragment): boolean {
 }
 
 /**
- * Helper function to detect predefined links.
+ * Helper function to check if an element has the predefined link data-id
+ */
+export function hasPredefinedLinkId(element: any): boolean {
+  if (!element) return false;
+
+  // Check if it's a ViewAttributeElement with a getAttribute method
+  return element.getAttribute && typeof element.getAttribute === 'function' &&
+    element.getAttribute('data-id') === 'predefined_link';
+}
+
+/**
+ * Helper function to detect predefined links
  * 
- * IMPORTANT: A valid predefined link MUST have both:
+ * IMPORTANT: A valid predefined link MUST have:
  * 1. A URL without standard protocols (http://, https://, mailto:)
  * 2. The AHCustomeLink class
+ * 3. data-id="predefined_link" attribute
  * 
  * For complete validation, always provide the element parameter.
- * 
- * @param url The URL to check
- * @param element Optional element to check for AHCustomeLink class
- * @returns true if URL format is valid; if element is provided, also checks for AHCustomeLink class
  */
 export function isPredefinedLink(url: string | null | undefined, element?: any): boolean {
   // If the URL is empty, null, or undefined, it's not a predefined link
@@ -81,9 +89,9 @@ export function isPredefinedLink(url: string | null | undefined, element?: any):
   const validUrlFormat = !url.includes('://') && !url.startsWith('mailto:');
   if (!validUrlFormat) return false;
 
-  // If element is provided, also check for AHCustomeLink class
+  // If element is provided, also check for AHCustomeLink class and data-id
   if (element !== undefined) {
-    return hasAHCustomeLink(element);
+    return hasAHCustomeLink(element) && hasPredefinedLinkId(element);
   }
 
   // If no element provided, only URL format was checked
@@ -109,6 +117,7 @@ export function createLinkElement(href: string, { writer }: DowncastConversionAp
   const linkElement = writer.createAttributeElement('a', {
     'href': href,
     'class': 'AHCustomeLink',
+    'data-id': 'predefined_link'
   }, {
     priority: 5,
     id: 'predefined-link'

@@ -82,6 +82,9 @@ export default class AlightPredefinedLinkPlugin extends Plugin {
                     // Always set AHCustomeLink format for predefined links
                     writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', item);
 
+                    // *** KEY CHANGE: Add data-id attribute for predefined links ***
+                    writer.setAttribute('data-id', 'predefined_link', item);
+
                     // Extract and set link name
                     const linkId = extractPredefinedLinkId(href as string);
                     // PRIORITY FIX: Always ensure we have a linkName

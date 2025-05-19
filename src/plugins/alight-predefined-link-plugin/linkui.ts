@@ -16,7 +16,13 @@ import AlightPredefinedLinkPluginEditing from './linkediting';
 import LinkActionsView from './ui/linkactionsview';
 import type AlightPredefinedLinkPluginCommand from './linkcommand';
 import type AlightPredefinedLinkPluginUnlinkCommand from './unlinkcommand';
-import { isLinkElement, isPredefinedLink, extractPredefinedLinkId } from './utils';
+import {
+  isLinkElement,
+  isPredefinedLink,
+  extractPredefinedLinkId,
+  hasAHCustomeLink,
+  hasPredefinedLinkId
+} from './utils';
 import { CkAlightModalDialog } from './../ui-components/alight-modal-dialog-component/alight-modal-dialog-component';
 import './../ui-components/alight-checkbox-component/alight-checkbox-component';
 
@@ -251,10 +257,11 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
 
     // Check if the selected link is a predefined link
     if (selectedLink) {
-      // *** KEY CHANGE: Check specifically for AHCustomeLink class ***
-      const hasAHCustomeClass = selectedLink.hasClass('AHCustomeLink');
+      // *** KEY CHANGE: Check for BOTH AHCustomeLink class AND data-id attribute ***
+      const hasAHCustomeClass = hasAHCustomeLink(selectedLink);
+      const isPredefinedId = hasPredefinedLinkId(selectedLink);
 
-      if (hasAHCustomeClass) {
+      if (hasAHCustomeClass && isPredefinedId) {
         this._showBalloon();
       }
     }
@@ -436,8 +443,11 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
         // Check if it's a predefined link before showing the balloon
         const href = selectedLink.getAttribute('href');
         if (href && isPredefinedLink(href as string)) {
-          // Show balloon with actions (edit/unlink) when clicking on a predefined link
-          this._showBalloon();
+          // Only show balloon if it has both required attributes
+          if (hasAHCustomeLink(selectedLink) && hasPredefinedLinkId(selectedLink)) {
+            // Show balloon with actions (edit/unlink) when clicking on a predefined link
+            this._showBalloon();
+          }
         }
       }
     });
@@ -468,9 +478,12 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
         return;
       }
 
-      // Verify it's a predefined link
+      // Verify it's a predefined link with both required indicators
       const href = selectedLink.getAttribute('href');
-      if (!href || !isPredefinedLink(href as string)) {
+      const hasCustomLinkClass = hasAHCustomeLink(selectedLink);
+      const isPredefinedLinkId = hasPredefinedLinkId(selectedLink);
+
+      if (!href || !isPredefinedLink(href as string) || !hasCustomLinkClass || !isPredefinedLinkId) {
         return;
       }
 

@@ -129,7 +129,8 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           // Create the link with the exact structure we want
           const linkElement = writer.createContainerElement('a', {
             'href': '#',
-            'class': 'AHCustomeLink'
+            'class': 'AHCustomeLink',
+            'data-id': 'predefined_link'
           });
 
           const ahLinkElement = writer.createContainerElement('ah:link', {
@@ -190,6 +191,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           const linkElement = writer.createContainerElement('a', {
             'href': '#',
             'class': 'AHCustomeLink',
+            'data-id': 'predefined_link'
           });
 
           const ahLinkElement = writer.createContainerElement('ah:link', {
@@ -235,8 +237,9 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           value: (viewElement: ViewElement): string | boolean => {
             // *** KEY CHANGE: Only process as predefined link if it has AHCustomeLink class ***
             const hasAHCustomeLink = viewElement.hasClass('AHCustomeLink');
+            const hasPredefinedId = viewElement.getAttribute('data-id') === 'predefined_link';
 
-            if (hasAHCustomeLink) {
+            if (hasAHCustomeLink && hasPredefinedId) {
               // Try to find ah:link element inside
               const ahLinkElement = Array.from(viewElement.getChildren())
                 .find(child => {
