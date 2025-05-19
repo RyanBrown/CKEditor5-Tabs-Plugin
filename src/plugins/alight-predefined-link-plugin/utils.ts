@@ -33,21 +33,13 @@ const DEFAULT_LINK_PROTOCOLS = [
 
 /**
  * Returns `true` if a given view node is the link element.
- * Updated to be more inclusive of different link types.
  */
 export function isLinkElement(node: ViewNode | ViewDocumentFragment): boolean {
   if (!node) {
     return false;
   }
 
-  // First check if it's a standard 'a' element
-  if (node.is && typeof node.is === 'function') {
-    if (node.is('element', 'a')) {
-      return true;
-    }
-  }
-
-  // Then check if it's an attributeElement
+  // Check if it's an attributeElement first
   if (!node.is || typeof node.is !== 'function') {
     return false;
   }
@@ -57,19 +49,11 @@ export function isLinkElement(node: ViewNode | ViewDocumentFragment): boolean {
       return false;
     }
 
-    // If it's an attribute element with name 'a', it's a link
-    if (node.name === 'a') {
-      return true;
-    }
-
-    // Check for custom properties, classes or attributes
+    // Check if it has the custom property or specific classes/attributes
     return !!(
       (node.getCustomProperty && node.getCustomProperty('alight-predefined-link')) ||
-      (typeof node.hasClass === 'function' &&
-        (node.hasClass('AHCustomeLink') || node.hasClass('AHCustomeClass'))) ||
-      (node.getAttribute &&
-        (node.getAttribute('data-id') === 'predefined_link' ||
-          node.getAttribute('href')))
+      (typeof node.hasClass === 'function' && node.hasClass('AHCustomeLink')) ||
+      (node.getAttribute && node.getAttribute('data-id') === 'predefined_link')
     );
   } catch (e) {
     console.error('Error in isLinkElement check:', e);
@@ -79,28 +63,31 @@ export function isLinkElement(node: ViewNode | ViewDocumentFragment): boolean {
 
 /**
  * Helper function to detect predefined links
- * Made more permissive to handle reopened documents
  */
 export function isPredefinedLink(url: string | null | undefined): boolean {
   // If the URL is empty, null, or undefined, it's not a predefined link
-  if (!url) return false;
-
-  // Check for specific patterns that indicate predefined links
-  if (url.includes('predefined_link') ||
-    url.includes('ahcustom') ||
-    url === '#' ||
-    url.includes('<ah:link')) {
-    return true;
-  }
-
-  // For numeric IDs or simple strings, consider them predefined links
-  if (/^[0-9]+$/.test(url) || url.length < 20) {
-    return true;
-  }
-
-  return true; // Default to true for maximum compatibility with saved documents
+  return !!url;
 }
 
+/**
+ * Creates a link AttributeElement with the provided `href` attribute.
+ */
+export function createLinkElement(href: string, { writer }: DowncastConversionApi): ViewAttributeElement {
+  // Create the link element as an attribute element with required attributes
+  const linkElement = writer.createAttributeElement('a', {
+    'href': href,
+    'class': 'AHCustomeLink',
+    'data-id': 'predefined_link'
+  }, {
+    priority: 5,
+    id: 'predefined-link'
+  });
+
+  // Set custom property for link identification
+  writer.setCustomProperty('alight-predefined-link', true, linkElement);
+
+  return linkElement;
+}
 
 /**
  * Returns a safe URL based on a given value.
