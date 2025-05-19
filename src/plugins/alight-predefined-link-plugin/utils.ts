@@ -74,28 +74,36 @@ export function hasPredefinedLinkId(element: any): boolean {
 /**
  * Helper function to detect predefined links
  * 
- * IMPORTANT: A valid predefined link MUST have:
+ * IMPORTANT: A valid predefined link MUST have either:
  * 1. A URL without standard protocols (http://, https://, mailto:)
- * 2. The AHCustomeLink class
- * 3. data-id="predefined_link" attribute
+ * 2. The AHCustomeLink class OR data-id="predefined_link" attribute
  * 
- * For complete validation, always provide the element parameter.
+ * @param url The URL to check
+ * @param element Optional element to check for AHCustomeLink class or data-id
+ * @returns true if URL format is valid or if element has one of the required identifiers
  */
 export function isPredefinedLink(url: string | null | undefined, element?: any): boolean {
-  // If the URL is empty, null, or undefined, it's not a predefined link
+  // If the URL is empty, null, or undefined, check if the element has identifiers
+  if (!url && element) {
+    return hasAHCustomeLink(element) || hasPredefinedLinkId(element);
+  }
+
+  // If no URL and no element, it's not a predefined link
   if (!url) return false;
 
   // Check URL format
   const validUrlFormat = !url.includes('://') && !url.startsWith('mailto:');
-  if (!validUrlFormat) return false;
 
-  // If element is provided, also check for AHCustomeLink class and data-id
+  // If URL format is valid, it's a predefined link
+  if (validUrlFormat) return true;
+
+  // If element is provided, check for either identifier even if URL format isn't valid
   if (element !== undefined) {
-    return hasAHCustomeLink(element) && hasPredefinedLinkId(element);
+    return hasAHCustomeLink(element) || hasPredefinedLinkId(element);
   }
 
-  // If no element provided, only URL format was checked
-  return true;
+  // Not a predefined link
+  return false;
 }
 
 /**
@@ -344,31 +352,26 @@ export function ensurePredefinedLinkStructure(html: string): string {
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = html;
 
-    // Find all links with AHCustomeLink class
-    const links = tempDiv.querySelectorAll('a.AHCustomeLink');
+    // Find all links that could be predefined links (either by class or data-id)
+    const linksWithClass = Array.from(tempDiv.querySelectorAll('a.AHCustomeLink'));
+    const linksWithDataId = Array.from(tempDiv.querySelectorAll('a[data-id="predefined_link"]'));
 
-    links.forEach(link => {
-      // Look for existing ah:link element
-      let existingAhLink = link.querySelector('ah\\:link') || link.querySelector('ah:link');
-      let linkName = '';
+    // Create a Set to avoid processing the same link twice
+    const processedLinks = new Set<HTMLElement>();
 
-      if (existingAhLink) {
-        // Get name from existing ah:link
-        linkName = existingAhLink.getAttribute('name') || '';
+    // Process links with AHCustomeLink class
+    linksWithClass.forEach(link => {
+      const htmlLink = link as HTMLElement;
+      processedLinks.add(htmlLink);
+      processPredefinedLink(htmlLink);
+    });
 
-        // Just keep the existing structure if it's already correct
-        if (linkName) {
-          return;
-        }
+    // Process links with data-id attribute (if not already processed)
+    linksWithDataId.forEach(link => {
+      const htmlLink = link as HTMLElement;
+      if (!processedLinks.has(htmlLink)) {
+        processPredefinedLink(htmlLink);
       }
-
-      // If we don't have a valid name, keep original structure
-      if (!linkName) {
-        return;
-      }
-
-      // Create a proper structure
-      link.innerHTML = `<ah:link name="${linkName}">${link.textContent}</ah:link>`;
     });
 
     return tempDiv.innerHTML;
@@ -376,6 +379,39 @@ export function ensurePredefinedLinkStructure(html: string): string {
     console.error('Error ensuring predefined link structure:', error);
     return html;
   }
+}
+
+/**
+ * Helper function to process a predefined link
+ * @param link The HTML anchor element to process
+ */
+function processPredefinedLink(link: HTMLElement): void {
+  // Look for existing ah:link element
+  const existingAhLink = link.querySelector('ah\\:link') || link.querySelector('ah:link');
+  let linkName = '';
+
+  if (existingAhLink) {
+    // Get name from existing ah:link
+    linkName = existingAhLink.getAttribute('name') || '';
+
+    // Just keep the existing structure if it's already correct
+    if (linkName) {
+      return;
+    }
+  }
+
+  // If we don't have a valid name, try to get it from data attributes
+  if (!linkName) {
+    linkName = link.getAttribute('data-link-name') || '';
+  }
+
+  // If we still don't have a valid name, keep original structure
+  if (!linkName) {
+    return;
+  }
+
+  // Create a proper structure with ah:link
+  link.innerHTML = `<ah:link name="${linkName}">${link.textContent}</ah:link>`;
 }
 
 export type NormalizedLinkDecoratorAutomaticDefinition = LinkDecoratorAutomaticDefinition & { id: string };

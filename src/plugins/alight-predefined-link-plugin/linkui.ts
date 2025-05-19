@@ -257,11 +257,11 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
 
     // Check if the selected link is a predefined link
     if (selectedLink) {
-      // *** KEY CHANGE: Check for BOTH AHCustomeLink class AND data-id attribute ***
-      const hasAHCustomeClass = hasAHCustomeLink(selectedLink);
-      const isPredefinedId = hasPredefinedLinkId(selectedLink);
+      // Check for EITHER AHCustomeLink class OR data-id attribute
+      const hasAHCustomeLinkClass = hasAHCustomeLink(selectedLink);
+      const isPredefinedIdAttribute = hasPredefinedLinkId(selectedLink);
 
-      if (hasAHCustomeClass && isPredefinedId) {
+      if (hasAHCustomeLinkClass || isPredefinedIdAttribute) {
         this._showBalloon();
       }
     }
@@ -443,8 +443,8 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
         // Check if it's a predefined link before showing the balloon
         const href = selectedLink.getAttribute('href');
         if (href && isPredefinedLink(href as string)) {
-          // Only show balloon if it has both required attributes
-          if (hasAHCustomeLink(selectedLink) && hasPredefinedLinkId(selectedLink)) {
+          // Only show balloon if it has either required attribute
+          if (hasAHCustomeLink(selectedLink) || hasPredefinedLinkId(selectedLink)) {
             // Show balloon with actions (edit/unlink) when clicking on a predefined link
             this._showBalloon();
           }
@@ -478,12 +478,12 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
         return;
       }
 
-      // Verify it's a predefined link with both required indicators
+      // Verify it's a predefined link with either required identifier
       const href = selectedLink.getAttribute('href');
       const hasCustomLinkClass = hasAHCustomeLink(selectedLink);
-      const isPredefinedLinkId = hasPredefinedLinkId(selectedLink);
+      const hasPredefinedIdAttr = hasPredefinedLinkId(selectedLink);
 
-      if (!href || !isPredefinedLink(href as string) || !hasCustomLinkClass || !isPredefinedLinkId) {
+      if (!href || !isPredefinedLink(href as string) || !(hasCustomLinkClass || hasPredefinedIdAttr)) {
         return;
       }
 

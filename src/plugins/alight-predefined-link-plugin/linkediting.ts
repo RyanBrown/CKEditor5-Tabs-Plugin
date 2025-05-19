@@ -34,6 +34,8 @@ import {
   createBookmarkCallbacks,
   isPredefinedLink,
   extractPredefinedLinkId,
+  hasAHCustomeLink,
+  hasPredefinedLinkId,
   type NormalizedLinkDecoratorAutomaticDefinition,
   type NormalizedLinkDecoratorManualDefinition
 } from './utils';
@@ -170,7 +172,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         const viewRange = mapper.toViewRange(data.range);
 
         // *** KEY CHANGE: Check if this should be treated as a predefined link ***
-        // For predefined links, we'll check both the href format AND the format attribute
+        // For predefined links, we'll check the href format and the format attribute
         const isPredefined = isPredefinedLink(href) &&
           data.item.hasAttribute('alightPredefinedLinkPluginFormat') &&
           data.item.getAttribute('alightPredefinedLinkPluginFormat') === 'ahcustom';
@@ -188,6 +190,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
 
         if (isPredefined && linkName) {
           // Create the link with nested structure for editing view
+          // Still add both class and data-id for backward compatibility and strong identification
           const linkElement = writer.createContainerElement('a', {
             'href': '#',
             'class': 'AHCustomeLink',
@@ -235,11 +238,11 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         model: {
           key: 'alightPredefinedLinkPluginHref',
           value: (viewElement: ViewElement): string | boolean => {
-            // *** KEY CHANGE: Only process as predefined link if it has AHCustomeLink class ***
-            const hasAHCustomeLink = viewElement.hasClass('AHCustomeLink');
-            const hasPredefinedId = viewElement.getAttribute('data-id') === 'predefined_link';
+            // Check if it has EITHER AHCustomeLink class OR data-id attribute
+            const hasAHCustomeLinkClass = viewElement.hasClass('AHCustomeLink');
+            const hasPredefinedIdAttribute = viewElement.getAttribute('data-id') === 'predefined_link';
 
-            if (hasAHCustomeLink && hasPredefinedId) {
+            if (hasAHCustomeLinkClass || hasPredefinedIdAttribute) {
               // Try to find ah:link element inside
               const ahLinkElement = Array.from(viewElement.getChildren())
                 .find(child => {

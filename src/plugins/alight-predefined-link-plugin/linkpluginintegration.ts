@@ -38,8 +38,8 @@ export default class AlightPredefinedLinkPluginIntegration extends Plugin {
         const linkElement = selectedElement && selectedElement.is('attributeElement') && selectedElement.name === 'a' ?
           selectedElement : getAncestorLink(selection.getFirstPosition());
 
-        // *** KEY CHANGE: Check for both AHCustomeLink class AND data-id=predefined_link ***
-        if (linkElement && hasAHCustomeLink(linkElement) && hasPredefinedLinkId(linkElement)) {
+        // Check if it has EITHER AHCustomeLink class OR data-id attribute
+        if (linkElement && (hasAHCustomeLink(linkElement) || hasPredefinedLinkId(linkElement))) {
           // If it's a predefined link, use our plugin instead
           const predefinedLinkUI = editor.plugins.get('AlightPredefinedLinkPluginUI');
           predefinedLinkUI.showUI(isEditing);
@@ -60,17 +60,16 @@ export default class AlightPredefinedLinkPluginIntegration extends Plugin {
           if (selection.hasAttribute('alightPredefinedLinkPluginHref')) {
             const currentHref = selection.getAttribute('alightPredefinedLinkPluginHref');
 
-            // Get the element to check for AHCustomeLink class
+            // Get the element to check for AHCustomeLink class or data-id attribute
             const ancestors = editor.editing.view.document.selection.getFirstPosition()?.getAncestors() || [];
             const linkElement = ancestors.find(ancestor =>
               ancestor.is && typeof ancestor.is === 'function' && ancestor.is('attributeElement') && ancestor.name === 'a'
             );
 
-            // *** KEY CHANGE: Check URL format, AHCustomeLink class, AND data-id attribute ***
+            // Check URL format OR either identifier
             if (isPredefinedLink(currentHref as string) &&
               linkElement &&
-              hasAHCustomeLink(linkElement) &&
-              hasPredefinedLinkId(linkElement)) {
+              (hasAHCustomeLink(linkElement) || hasPredefinedLinkId(linkElement))) {
               // Stop execution of the standard link command for predefined links
               evt.stop();
               // Execute our command instead
