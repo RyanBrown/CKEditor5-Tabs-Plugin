@@ -251,17 +251,10 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
 
     // Check if the selected link is a predefined link
     if (selectedLink) {
-      const href = selectedLink.getAttribute('href');
-      const dataId = selectedLink.getAttribute('data-id');
+      // *** KEY CHANGE: Check specifically for AHCustomeLink class ***
       const hasAHCustomeClass = selectedLink.hasClass('AHCustomeLink');
 
-      // Show the balloon for predefined links identified by:
-      // 1. data-id="predefined_link" attribute
-      // 2. AHCustomeLink class
-      // 3. URL format matching predefined link pattern
-      if ((dataId === 'predefined_link') ||
-        hasAHCustomeClass ||
-        (href && isPredefinedLink(href as string))) {
+      if (hasAHCustomeClass) {
         this._showBalloon();
       }
     }

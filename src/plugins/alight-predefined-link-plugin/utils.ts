@@ -52,8 +52,7 @@ export function isLinkElement(node: ViewNode | ViewDocumentFragment): boolean {
     // Check if it has the custom property or specific classes/attributes
     return !!(
       (node.getCustomProperty && node.getCustomProperty('alight-predefined-link')) ||
-      (typeof node.hasClass === 'function' && node.hasClass('AHCustomeLink')) ||
-      (node.getAttribute && node.getAttribute('data-id') === 'predefined_link')
+      (typeof node.hasClass === 'function' && node.hasClass('AHCustomeLink'))
     );
   } catch (e) {
     console.error('Error in isLinkElement check:', e);
@@ -66,7 +65,23 @@ export function isLinkElement(node: ViewNode | ViewDocumentFragment): boolean {
  */
 export function isPredefinedLink(url: string | null | undefined): boolean {
   // If the URL is empty, null, or undefined, it's not a predefined link
-  return !!url;
+  if (!url) return false;
+
+  // For links to be considered predefined links, they must:
+  // 1. Not have standard protocol patterns (http://, https://, mailto:)
+  // 2. Be identified by the caller with additional context (via hasAHCustomeLink)
+  return !url.includes('://') && !url.startsWith('mailto:');
+}
+
+/**
+ * Helper function to check if an element has AHCustomeLink class
+ * This should be used in conjunction with isPredefinedLink
+ */
+export function hasAHCustomeLink(element: any): boolean {
+  if (!element) return false;
+
+  // Check if it's a ViewAttributeElement with a hasClass method
+  return element.hasClass && typeof element.hasClass === 'function' && element.hasClass('AHCustomeLink');
 }
 
 /**
@@ -77,7 +92,6 @@ export function createLinkElement(href: string, { writer }: DowncastConversionAp
   const linkElement = writer.createAttributeElement('a', {
     'href': href,
     'class': 'AHCustomeLink',
-    'data-id': 'predefined_link'
   }, {
     priority: 5,
     id: 'predefined-link'

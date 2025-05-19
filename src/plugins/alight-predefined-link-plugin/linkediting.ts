@@ -168,8 +168,11 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         // Get position range for conversion
         const viewRange = mapper.toViewRange(data.range);
 
-        // Determine if this is a predefined link
-        const isPredefined = isPredefinedLink(href);
+        // *** KEY CHANGE: Check if this should be treated as a predefined link ***
+        // For predefined links, we'll check both the href format AND the format attribute
+        const isPredefined = isPredefinedLink(href) &&
+          data.item.hasAttribute('alightPredefinedLinkPluginFormat') &&
+          data.item.getAttribute('alightPredefinedLinkPluginFormat') === 'ahcustom';
 
         // Get linkName - for predefined links specifically
         const linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName') || href;
@@ -187,7 +190,6 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           const linkElement = writer.createContainerElement('a', {
             'href': '#',
             'class': 'AHCustomeLink',
-            'data-id': 'predefined_link'
           });
 
           const ahLinkElement = writer.createContainerElement('ah:link', {
@@ -231,7 +233,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         model: {
           key: 'alightPredefinedLinkPluginHref',
           value: (viewElement: ViewElement): string | boolean => {
-            // First check if it has AHCustomeLink class
+            // *** KEY CHANGE: Only process as predefined link if it has AHCustomeLink class ***
             const hasAHCustomeLink = viewElement.hasClass('AHCustomeLink');
 
             if (hasAHCustomeLink) {
@@ -276,13 +278,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
             }
 
             // For regular links, just get the href value
-            const href = viewElement.getAttribute('href');
-
-            // If it's empty or just #, and not a predefined link, don't create a link
-            if ((href === '' || href === '#') && !hasAHCustomeLink) {
-              return false; // This will prevent the attribute from being set
-            }
-            return href;
+            return viewElement.getAttribute('href');
           }
         },
         converterPriority: 'highest'
