@@ -153,24 +153,72 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
     });
 
     // Simplified editing downcast for interactive editing view
-    editor.conversion.for('editingDowncast').attributeToElement({
-      model: 'alightPredefinedLinkPluginHref',
-      view: (href, { writer }) => {
-        // Create a simple link element with the required attributes
-        const linkElement = writer.createAttributeElement('a', {
-          'href': href,
-          'class': 'AHCustomeLink',
-          'data-id': 'predefined_link'
-        }, {
-          priority: 5,
-          id: 'predefined-link'
-        });
+    editor.conversion.for('editingDowncast').add(dispatcher => {
+      dispatcher.on('attribute:alightPredefinedLinkPluginHref', (evt, data, conversionApi) => {
+        // Skip if attribute already consumed
+        if (!conversionApi.consumable.consume(data.item, evt.name)) {
+          return;
+        }
 
-        // Set custom property for link identification
-        writer.setCustomProperty('alight-predefined-link', true, linkElement);
+        const { writer, mapper } = conversionApi;
+        const href = data.attributeNewValue;
 
-        return linkElement;
-      }
+        // If the attribute was removed or not a text item, return
+        if (!href || (!data.item.is('$textProxy') && !data.item.is('$text'))) {
+          return;
+        }
+
+        // Get position range for conversion
+        const viewRange = mapper.toViewRange(data.range);
+
+        // Determine if this is a predefined link
+        const isPredefined = isPredefinedLink(href);
+
+        // Get linkName - for predefined links specifically
+        const linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName') || href;
+
+        // Get text content from the view range
+        let textContent = '';
+        for (const item of viewRange.getItems()) {
+          if ((item.is && (item.is('$text') || item.is('$textProxy')))) {
+            textContent += item.data;
+          }
+        }
+
+        if (isPredefined && linkName) {
+          // Create the link with nested structure for editing view
+          const linkElement = writer.createContainerElement('a', {
+            'href': '#',
+            'class': 'AHCustomeLink',
+            'data-id': 'predefined_link'
+          });
+
+          const ahLinkElement = writer.createContainerElement('ah:link', {
+            'name': linkName
+          });
+
+          // Add text content to ah:link
+          writer.insert(writer.createPositionAt(ahLinkElement, 0), writer.createText(textContent));
+
+          // Insert ah:link into a
+          writer.insert(writer.createPositionAt(linkElement, 0), ahLinkElement);
+
+          // Add to document and remove original
+          writer.insert(viewRange.start, linkElement);
+          writer.remove(viewRange);
+
+          // Set custom property for link identification
+          writer.setCustomProperty('alight-predefined-link', true, linkElement);
+        } else {
+          // For regular links, use the simpler structure
+          const linkElement = writer.createAttributeElement('a', { 'href': href }, {
+            priority: 5,
+            id: 'link'
+          });
+
+          writer.wrap(viewRange, linkElement);
+        }
+      });
     });
 
     // Handle specific format for predefined links with ah:link element
