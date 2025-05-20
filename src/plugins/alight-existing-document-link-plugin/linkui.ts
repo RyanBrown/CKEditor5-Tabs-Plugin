@@ -167,6 +167,10 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
     }
   }
 
+  /**
+   * Loads document links data and sorts it alphabetically by title.
+   * This method is called when initializing the component.
+   */
   protected override setModalContents = (): void => {
     if (this.verboseMode) console.log(`Loading existing document links...`);
 
@@ -178,8 +182,14 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
 
     this.loadService.loadDocumentLinks().then(
       (data) => {
-        this._documentLinks = data || []; // Add null check
-        if (this.verboseMode) console.log(data);
+        // Sort the document links by title alphabetically
+        this._documentLinks = (data || []).sort((a, b) => {
+          // Use localeCompare for proper alphabetical sorting that handles special characters
+          // Use optional chaining and nullish coalescing to safely handle potential undefined values
+          return (a.title?.toLowerCase() || '').localeCompare(b.title?.toLowerCase() || '');
+        });
+
+        if (this.verboseMode) console.log(this._documentLinks);
 
         // Set data loaded flag to true when data is loaded
         this._dataLoaded = true;
@@ -189,7 +199,7 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
         this._updateButtonState();
       },
       (error) => {
-        console.log(error);
+        console.error('Error loading document links:', error);
 
         // Keep data loaded flag as false if there was an error
         this._dataLoaded = false;
@@ -201,10 +211,10 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
   }
 
   /**
- * Processes raw document links to ensure they have consistent structure
- * @param rawLinks The raw links to process
- * @returns A filtered list of processed links
- */
+   * Processes raw document links to ensure they have consistent structure
+   * @param rawLinks The raw links to process
+   * @returns A filtered list of processed links
+   */
   private processLinks = (rawLinks: DocumentLink[]) => {
     // Initialize array to hold processed links
     let processedLinks: any[] = [];
@@ -248,6 +258,11 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
 
   // Checks if the current selection is in a link and shows the balloon if needed
   private _checkAndShowBalloon(): void {
+    // If UI is already updating, don't check
+    if (this._isUpdatingUI) {
+      return;
+    }
+
     const selectedLink = this._getSelectedLinkElement();
 
     // Check if the selected link is a existing document link
@@ -345,8 +360,19 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
 
     // Execute unlink command after clicking on the "Unlink" button
     this.listenTo(actionsView, 'unlink', () => {
-      editor.execute('alight-existing-document-unlink');
-      this._hideUI();
+      const unlinkCommand = editor.commands.get('alight-existing-document-unlink') as AlightExistingDocumentLinkPluginUnlinkCommand;
+
+      // Make sure the command is still enabled before executing
+      if (unlinkCommand && unlinkCommand.isEnabled) {
+        // First hide the UI to prevent race conditions
+        this._hideUI();
+
+        // Then execute the command
+        editor.execute('alight-existing-document-unlink');
+
+        // Force model change to ensure the UI reflects the updated state
+        editor.editing.view.focus();
+      }
     });
 
     // Close the balloon on Esc key press
