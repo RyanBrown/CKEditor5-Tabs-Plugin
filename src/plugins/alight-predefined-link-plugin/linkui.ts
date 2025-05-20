@@ -2,7 +2,10 @@
 import {
   ClickObserver,
   type ViewAttributeElement,
-  type ViewDocumentClickEvent
+  type ViewDocumentClickEvent,
+  type Model,
+  type Position,
+  type Range
 } from '@ckeditor/ckeditor5-engine';
 import {
   ButtonView,
@@ -606,10 +609,109 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
   }
 
   /**
+ * Cleans up any nested link elements that might be in the editor
+ * Call this method when opening the UI to ensure clean link structure
+ */
+  private _cleanupNestedLinks(): void {
+    // Access the editor's model and editing view
+    const editor = this.editor;
+    const model = editor.model;
+
+    // Search the entire document for text with the alightPredefinedLinkPluginHref attribute
+    model.change(writer => {
+      const root = model.document.getRoot();
+      if (!root) return;
+
+      const range = writer.createRangeIn(root);
+
+      // Find all text nodes with link attribute
+      for (const item of range.getItems()) {
+        if (item.is('$text') && item.hasAttribute('alightPredefinedLinkPluginHref')) {
+          const href = item.getAttribute('alightPredefinedLinkPluginHref') as string;
+          const linkName = item.getAttribute('alightPredefinedLinkPluginLinkName') as string || '';
+
+          // Check if this text node belongs to an overlapping link structure
+          const textParentRange = writer.createRangeOn(item);
+          const position = textParentRange.start;
+
+          // Find if there's another link attribute starting from this position
+          const linkRange = findOverlappingLinkRange(model, position, href);
+
+          // If we found an overlapping link range, fix it
+          if (linkRange) {
+            // Remove all link attributes from the range first
+            writer.removeAttribute('alightPredefinedLinkPluginHref', linkRange);
+            writer.removeAttribute('alightPredefinedLinkPluginLinkName', linkRange);
+            writer.removeAttribute('alightPredefinedLinkPluginFormat', linkRange);
+
+            // Then set clean attributes on the entire range
+            writer.setAttribute('alightPredefinedLinkPluginHref', href, linkRange);
+            writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, linkRange);
+            writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', linkRange);
+          }
+        }
+      }
+    });
+
+    // Helper function to find overlapping link ranges
+    function findOverlappingLinkRange(model: Model, position: Position, href: string): Range | null {
+      const root = model.document.getRoot();
+      if (!root) return null;
+
+      // Look for all text nodes with the same href value
+      const ranges: Range[] = [];
+      const fullRange = model.createRangeIn(root);
+
+      for (const item of fullRange.getItems()) {
+        if (item.is('$text') &&
+          item.hasAttribute('alightPredefinedLinkPluginHref') &&
+          item.getAttribute('alightPredefinedLinkPluginHref') === href) {
+
+          // Check if this range overlaps with any existing range
+          const itemRange = model.createRangeOn(item);
+          let foundOverlap = false;
+
+          for (let i = 0; i < ranges.length; i++) {
+            if (ranges[i].containsRange(itemRange) ||
+              itemRange.containsRange(ranges[i]) ||
+              ranges[i].start.isEqual(itemRange.end) ||
+              ranges[i].end.isEqual(itemRange.start)) {
+
+              // Merge the ranges
+              ranges[i] = model.createRange(
+                ranges[i].start.isBefore(itemRange.start) ? ranges[i].start : itemRange.start,
+                ranges[i].end.isAfter(itemRange.end) ? ranges[i].end : itemRange.end
+              );
+              foundOverlap = true;
+              break;
+            }
+          }
+
+          if (!foundOverlap) {
+            ranges.push(itemRange);
+          }
+        }
+      }
+
+      // Find which range contains our position
+      for (const range of ranges) {
+        if (range.containsPosition(position)) {
+          return range;
+        }
+      }
+
+      return null;
+    }
+  }
+
+  /**
    * Shows the modal dialog for link editing.
    * @param isEditing Whether we're editing an existing link
    */
   private async _showUI(isEditing: boolean = false): Promise<void> {
+    // First call the helper to cleanup any nested links
+    this._cleanupNestedLinks();
+
     // Check if predefined links data is loaded
     if (!this._dataLoaded || this._predefinedLinks.length === 0) {
       console.warn('Cannot show UI - data not loaded yet');

@@ -321,168 +321,82 @@ export function ensurePredefinedLinkStructure(html: string): string {
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = html;
 
-    // Find all links with AHCustomeLink class
+    // First pass: Find nested links - This is the common cause of the issue
+    const nestedLinks = Array.from(tempDiv.querySelectorAll('a a'));
+
+    // Handle nested links first
+    nestedLinks.forEach(innerLink => {
+      const outerLink = innerLink.closest('a');
+      if (!outerLink || outerLink === innerLink) return;
+
+      // Get the inner link content and attributes
+      const innerLinkName = innerLink.getAttribute('data-link-name') ||
+        extractPredefinedLinkId(innerLink.getAttribute('href') || '') ||
+        '';
+      const innerContent = innerLink.textContent || '';
+
+      // Remove the inner link but keep the text content
+      const textNode = document.createTextNode(innerContent);
+      innerLink.parentNode?.replaceChild(textNode, innerLink);
+    });
+
+    // Second pass: Now process all AHCustomeLink links
     const links = tempDiv.querySelectorAll('a.AHCustomeLink');
 
     links.forEach(link => {
-      // Check if this link already contains another anchor tag (nested link)
-      const nestedLinks = link.querySelectorAll('a');
+      // Get the link name from various possible sources
+      let linkName = '';
 
-      if (nestedLinks.length > 0) {
-        // We have nested links - extract the inner content
-        const innerLink = nestedLinks[0]; // Get the first inner link
-        const textContent = innerLink.textContent || link.textContent || '';
+      // Check for ah:link elements
+      const ahLink = link.querySelector('ah\\:link') || link.querySelector('ah:link');
 
-        // Get the link name from various possible sources
-        let linkName = '';
+      if (ahLink) {
+        linkName = ahLink.getAttribute('name') || '';
+      }
 
-        // Check for ah:link elements
-        const ahLink = link.querySelector('ah\\:link') || link.querySelector('ah:link') ||
-          innerLink.querySelector('ah\\:link') || innerLink.querySelector('ah:link');
+      // If no linkName from ah:link, try data-link-name or href attributes
+      if (!linkName) {
+        linkName = link.getAttribute('data-link-name') ||
+          link.getAttribute('href') || '';
 
-        if (ahLink) {
-          linkName = ahLink.getAttribute('name') || '';
+        // If href is just '#' or empty, generate a random name
+        if (!linkName || linkName === '#') {
+          linkName = 'link-' + Math.random().toString(36).substring(2, 7);
         }
+      }
 
-        // If no linkName from ah:link, try data-link-name or href attributes
-        if (!linkName) {
-          linkName = innerLink.getAttribute('data-link-name') ||
-            link.getAttribute('data-link-name') ||
-            innerLink.getAttribute('href') ||
-            link.getAttribute('href') || '';
+      // Extract the text content
+      let textContent = link.textContent || '';
 
-          // If href is just '#' or empty, generate a random name
-          if (!linkName || linkName === '#') {
-            linkName = 'link-' + Math.random().toString(36).substring(2, 7);
-          }
-        }
+      // Create a clean new link with proper structure
+      const newLink = document.createElement('a');
+      newLink.className = 'AHCustomeLink';
+      newLink.setAttribute('href', '#');
+      newLink.setAttribute('data-id', 'predefined_link');
 
-        // Create a new clean link to replace the nested structure
-        const newLink = document.createElement('a');
-        newLink.className = 'AHCustomeLink';
-        newLink.setAttribute('href', '#');
-        newLink.setAttribute('data-id', 'predefined_link');
+      // Create proper ah:link structure
+      const ahLinkElement = document.createElement('ah:link');
+      ahLinkElement.setAttribute('name', linkName);
+      ahLinkElement.textContent = textContent;
 
-        // Create proper ah:link structure
-        const ahLinkElement = document.createElement('ah:link');
-        ahLinkElement.setAttribute('name', linkName);
-        ahLinkElement.textContent = textContent;
+      // Add ah:link to the new link
+      newLink.appendChild(ahLinkElement);
 
-        // Add ah:link to the new link
-        newLink.appendChild(ahLinkElement);
-
-        // Replace the original link with our clean one
-        if (link.parentNode) {
-          link.parentNode.replaceChild(newLink, link);
-        }
-      } else {
-        // No nested links - look for existing ah:link element
-        let existingAhLink = link.querySelector('ah\\:link') || link.querySelector('ah:link');
-        let linkName = '';
-
-        if (existingAhLink) {
-          // Get name from existing ah:link
-          linkName = existingAhLink.getAttribute('name') || '';
-
-          // Just keep the existing structure if it's already correct
-          if (linkName) {
-            // Just ensure it has the data-id attribute
-            if (!link.hasAttribute('data-id')) {
-              link.setAttribute('data-id', 'predefined_link');
-            }
-            return;
-          }
-        }
-
-        // If no existing ah:link or no name, try to get linkName from other attributes
-        if (!linkName) {
-          // Try data-link-name attribute
-          linkName = link.getAttribute('data-link-name') || '';
-
-          // Try href attribute if it's not a regular URL
-          if (!linkName) {
-            const href = link.getAttribute('href');
-            if (href && (href === '#' || !href.startsWith('http'))) {
-              linkName = href;
-            }
-          }
-
-          // If no linkName available, log error and remove the link
-          if (!linkName || linkName === '#') {
-            console.error('AlightPredefinedLinkPlugin: Missing linkName for link. Removing invalid link.', {
-              element: link.outerHTML
-            });
-
-            // Extract text content before removing
-            const textContent = link.textContent || '';
-
-            // Create a text node to replace the link
-            const textNode = document.createTextNode(textContent);
-
-            // Replace the link with just text
-            if (link.parentNode) {
-              link.parentNode.replaceChild(textNode, link);
-            }
-
-            // Skip rest of processing for this link
-            return;
-          }
-        }
-
-        // Create a proper structure - using DOM API for better safety
-        // Save the original text content first
-        const textContent = link.textContent || '';
-
-        // Clear the link's inner HTML
-        link.innerHTML = '';
-
-        // Create a new ah:link element
-        const ahLinkElement = document.createElement('ah:link');
-        ahLinkElement.setAttribute('name', linkName);
-        ahLinkElement.textContent = textContent;
-
-        // Add the ah:link to the link element
-        link.appendChild(ahLinkElement);
-
-        // Always ensure correct attributes
-        link.setAttribute('href', '#');
-        link.setAttribute('data-id', 'predefined_link');
-
-        // Make sure the link has the AHCustomeLink class
-        if (!link.classList.contains('AHCustomeLink')) {
-          link.classList.add('AHCustomeLink');
-        }
+      // Replace the original link with our clean one
+      if (link.parentNode) {
+        link.parentNode.replaceChild(newLink, link);
       }
     });
 
-    // Handle orphaned ah:link elements outside of a tags (if any)
+    // Third pass: Handle orphaned ah:link elements outside of a tags (if any)
     const orphanedAhLinks = Array.from(tempDiv.querySelectorAll('ah\\:link, ah:link')).filter(ahLink => {
       // Check if direct parent is not an 'a' element
       return !ahLink.parentElement || ahLink.parentElement.tagName.toLowerCase() !== 'a';
     });
 
     orphanedAhLinks.forEach(ahLink => {
-      // Check if we have a valid name attribute
-      if (!ahLink.getAttribute('name')) {
-        console.error('AlightPredefinedLinkPlugin: Orphaned ah:link element without name attribute. Removing invalid element.', {
-          element: ahLink.outerHTML
-        });
-
-        // Extract text content to preserve it
-        const textContent = ahLink.textContent || '';
-
-        // Create a text node with the original content
-        const textNode = document.createTextNode(textContent);
-
-        // Replace the orphaned ah:link with just text
-        if (ahLink.parentNode) {
-          ahLink.parentNode.replaceChild(textNode, ahLink);
-        }
-
-        return;
-      }
-
-      const linkName = ahLink.getAttribute('name');
+      // Get the name attribute if it exists
+      const linkName = ahLink.getAttribute('name') || ('link-' + Math.random().toString(36).substring(2, 7));
       const textContent = ahLink.textContent || '';
 
       // Create a proper link structure
