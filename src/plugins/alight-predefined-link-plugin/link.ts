@@ -92,6 +92,9 @@ export default class AlightPredefinedLinkPlugin extends Plugin {
                   if (!linkName || linkName.trim() === '') {
                     linkName = item.getAttribute('alightPredefinedLinkPluginLinkName') as string;
                     if (!linkName || linkName.trim() === '') {
+                      // Log error when no valid linkName is found
+                      console.error('AlightPredefinedLinkPlugin: No valid predefinedLinkName found for link. Using fallback.', { href });
+
                       // Use href directly or generate a fallback name
                       linkName = (href as string) || 'link-' + Math.random().toString(36).substring(2, 7);
                     }

@@ -409,6 +409,9 @@ export function ensurePredefinedLinkStructure(html: string): string {
 
           // Generate a fallback name if still no linkName
           if (!linkName || linkName === '#') {
+            console.error('AlightPredefinedLinkPlugin: Missing linkName for link. Using generated value.', {
+              element: link.outerHTML
+            });
             linkName = 'link-' + Math.random().toString(36).substring(2, 7);
           }
         }
@@ -447,6 +450,11 @@ export function ensurePredefinedLinkStructure(html: string): string {
 
     orphanedAhLinks.forEach(ahLink => {
       const linkName = ahLink.getAttribute('name') || 'link-' + Math.random().toString(36).substring(2, 7);
+      if (!ahLink.getAttribute('name')) {
+        console.error('AlightPredefinedLinkPlugin: Orphaned ah:link element without name attribute', {
+          element: ahLink.outerHTML
+        });
+      }
       const textContent = ahLink.textContent || '';
 
       // Create a proper link structure

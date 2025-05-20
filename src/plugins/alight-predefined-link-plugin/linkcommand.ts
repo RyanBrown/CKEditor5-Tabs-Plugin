@@ -130,11 +130,16 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
       if (!linkName) {
         linkName = extractPredefinedLinkId(href) || href;
 
-        // If still no valid linkName, generate one
+        // If still no valid linkName, generate one and log warning
         if (!linkName || linkName.trim() === '') {
+          console.error('AlightPredefinedLinkPlugin: No valid predefinedLinkName found. Using generated value instead.', { href });
           linkName = 'link-' + Math.random().toString(36).substring(2, 7);
         }
       }
+    } else if (!linkName) {
+      // Even for non-predefined links, we need a linkName for consistent structure
+      console.warn('AlightPredefinedLinkPlugin: No linkName specified for link. Using href as fallback.', { href });
+      linkName = href;
     }
 
     model.change(writer => {

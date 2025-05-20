@@ -173,6 +173,10 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
 
         // If no linkName is set, use href as the linkName (ensuring all links get the ah:link structure)
         if (!linkName) {
+          console.error('AlightPredefinedLinkPluginEditing: Missing predefinedLinkName attribute for link', {
+            href,
+            content: textContent
+          });
           linkName = href;
         }
 
