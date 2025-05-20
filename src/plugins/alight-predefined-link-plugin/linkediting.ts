@@ -211,6 +211,110 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
       });
     });
 
+    // Add editing downcast converter to handle links in editing view
+    editor.conversion.for('editingDowncast').add(dispatcher => {
+      dispatcher.on('attribute:alightPredefinedLinkPluginHref', (evt, data, conversionApi) => {
+        // Skip if attribute already consumed
+        if (!conversionApi.consumable.consume(data.item, evt.name)) {
+          return;
+        }
+
+        const { writer, mapper } = conversionApi;
+        const href = data.attributeNewValue;
+
+        // Get position range for conversion
+        const viewRange = mapper.toViewRange(data.range);
+
+        // IMPORTANT: Handle attribute removal case
+        if (!href) {
+          try {
+            // Find all link elements in the range
+            const linkElements = [];
+            for (const item of viewRange.getItems()) {
+              if (item.is && item.is('element', 'a')) {
+                linkElements.push(item);
+              }
+            }
+
+            // Remove each link element and replace with its textual content
+            for (const linkElement of linkElements) {
+              // Extract text content from the link
+              let textContent = '';
+              for (const child of linkElement.getChildren()) {
+                if (child.is('$text')) {
+                  textContent += child.data;
+                }
+              }
+
+              // Insert the text content at the link position
+              if (textContent) {
+                writer.insert(viewRange.start, writer.createText(textContent));
+              }
+
+              // Remove the entire link element
+              writer.remove(linkElement);
+            }
+          } catch (error) {
+            console.error('Error removing link structure:', error);
+          }
+          return;
+        }
+
+        // Check for and remove any existing link elements in the range first
+        // This is critical to prevent nested links
+        const existingLinks = [];
+        for (const item of viewRange.getItems()) {
+          if (item.is && item.is('element', 'a')) {
+            existingLinks.push(item);
+          }
+        }
+
+        // Remove existing links first
+        for (const link of existingLinks) {
+          writer.remove(link);
+        }
+
+        // Get text content from the view range
+        let textContent = '';
+        for (const item of viewRange.getItems()) {
+          if ((item.is && (item.is('$text') || item.is('$textProxy')))) {
+            textContent += item.data;
+          }
+        }
+
+        // Get the link name
+        let linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName');
+
+        if (!linkName) {
+          console.error('Missing predefinedLinkName attribute for link in editing view. Link creation aborted.', {
+            href,
+            content: textContent
+          });
+          // Insert plain text instead
+          writer.insert(viewRange.start, writer.createText(textContent));
+          writer.remove(viewRange);
+          return;
+        }
+
+        // Create the link element for editing view - simpler than data downcast
+        const linkElement = writer.createContainerElement('a', {
+          'href': '#',
+          'class': 'AHCustomeLink',
+          'data-id': 'predefined_link'
+        });
+
+        // Add text content directly to link (simpler structure for editing view)
+        writer.insert(writer.createPositionAt(linkElement, 0), writer.createText(textContent));
+
+        // Set custom property for link identification
+        writer.setCustomProperty('alight-predefined-link', true, linkElement);
+
+        // Important: Remove original content FIRST, then insert new
+        writer.remove(viewRange);
+        writer.insert(viewRange.start, linkElement);
+      });
+    });
+
     // Handle specific format for predefined links with ah:link element
     // Handle all links in a single upcast conversion
     editor.conversion.for('upcast')
