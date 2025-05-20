@@ -63,7 +63,7 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
   }
 
   /**
-   * Sorts an array of predefined links alphabetically by their predefinedLinkName property
+   * Sorts an array of predefined links alphabetically by their predefinedLinkDescription property
    * 
    * @param links The array of predefined links to sort
    * @param ascending Whether to sort in ascending (A-Z) order
@@ -71,12 +71,12 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
    */
   private _sortPredefinedLinks(links: PredefinedLink[], ascending: boolean = true): PredefinedLink[] {
     return [...links].sort((a, b) => {
-      // Get link name with safe empty string fallback for undefined/null values
-      const nameA = (a.predefinedLinkName || '').toLowerCase();
-      const nameB = (b.predefinedLinkName || '').toLowerCase();
+      // Get link description with fallback to name if description not available
+      const descA = (a.predefinedLinkDescription || a.predefinedLinkName || '').toLowerCase();
+      const descB = (b.predefinedLinkDescription || b.predefinedLinkName || '').toLowerCase();
 
-      // Simple alphabetical comparison based on name
-      const result = nameA.localeCompare(nameB);
+      // Simple alphabetical comparison based on description
+      const result = descA.localeCompare(descB);
       return ascending ? result : -result;
     });
   }
