@@ -125,12 +125,6 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
 
     // CRITICAL: For predefined links, always set a linkName
     // This is what ensures our output structure is correct
-    if (isPredefined && !linkName) {
-      // Use the href itself as the linkName if no other value is available
-      linkName = href;
-    }
-
-    // For predefined links, always ensure we have a linkName
     if (isPredefined) {
       // If no existing linkName, extract from href or generate one
       if (!linkName) {
@@ -158,14 +152,10 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
             model
           );
 
-          // Update attributes
+          // Always update all required attributes together
           writer.setAttribute('alightPredefinedLinkPluginHref', href, linkRange);
-
-          // For predefined links, set format and linkName
-          if (isPredefined) {
-            writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', linkRange);
-            writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, linkRange);
-          }
+          writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', linkRange);
+          writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName || href, linkRange);
 
           // Process decorator options
           this._processDecoratorOptions(writer, linkRange, options);
@@ -177,13 +167,10 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
         else if (href !== '') {
           const attributes = toMap(selection.getAttributes());
 
+          // Always set all link attributes together
           attributes.set('alightPredefinedLinkPluginHref', href);
-
-          // For predefined links, set format and linkName
-          if (isPredefined) {
-            attributes.set('alightPredefinedLinkPluginFormat', 'ahcustom');
-            attributes.set('alightPredefinedLinkPluginLinkName', linkName);
-          }
+          attributes.set('alightPredefinedLinkPluginFormat', 'ahcustom');
+          attributes.set('alightPredefinedLinkPluginLinkName', linkName || href);
 
           // Set decorator attributes
           this._setDecoratorAttributes(attributes, options);
@@ -209,14 +196,10 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
 
         // Process each range
         for (const range of ranges) {
-          // Set the alightPredefinedLinkPluginHref attribute on the selected text
+          // Always update all attributes for consistency
           writer.setAttribute('alightPredefinedLinkPluginHref', href, range);
-
-          // If it's a predefined link, set format and linkName
-          if (isPredefined) {
-            writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', range);
-            writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, range);
-          }
+          writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', range);
+          writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName || href, range);
 
           // Process decorator options
           this._processDecoratorOptions(writer, range, options);

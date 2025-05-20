@@ -176,7 +176,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           linkName = href;
         }
 
-        // Create the link with the exact structure we want
+        // Always create the exact link structure we want
         const linkElement = writer.createContainerElement('a', {
           'href': '#',
           'class': 'AHCustomeLink',
@@ -470,7 +470,8 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
       }
 
       model.change(writer => {
-        removeLinkAttributesFromSelection(writer, getLinkAttributesAllowedOnText(model.schema));
+        // Use the improved removeLinkAttributesFromSelection function
+        removeLinkAttributesFromSelection.call(this, writer, getLinkAttributesAllowedOnText(model.schema));
       });
     });
   }
@@ -504,17 +505,27 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
 }
 
 /**
- * Make the selection free of link-related model attributes.
- * All link-related model attributes start with "link". That includes not only "alightPredefinedLinkPluginHref"
- * but also all decorator attributes (they have dynamic names), or even custom plugins.
+ * Make the selection free of link-related model attributes using the LinkCommand's helper.
+ * This is a critical improvement to ensure consistency in link handling.
  */
 function removeLinkAttributesFromSelection(writer: Writer, linkAttributes: Array<string>): void {
-  writer.removeSelectionAttribute('alightPredefinedLinkPluginHref');
-  writer.removeSelectionAttribute('alightPredefinedLinkPluginLinkName');
-  writer.removeSelectionAttribute('alightPredefinedLinkPluginFormat');
+  const editor = this.editor;
+  const model = editor.model;
+  const linkCommand = editor.commands.get('alight-predefined-link') as AlightPredefinedLinkPluginCommand;
+  const selectionRange = model.document.selection.getFirstRange();
 
-  for (const attribute of linkAttributes) {
-    writer.removeSelectionAttribute(attribute);
+  // Use the comprehensive removeAllLinkAttributes method from LinkCommand
+  if (linkCommand && typeof linkCommand.removeAllLinkAttributes === 'function' && selectionRange) {
+    linkCommand.removeAllLinkAttributes(writer, selectionRange);
+  } else {
+    // Fallback to the original method if the command method is not available
+    writer.removeSelectionAttribute('alightPredefinedLinkPluginHref');
+    writer.removeSelectionAttribute('alightPredefinedLinkPluginLinkName');
+    writer.removeSelectionAttribute('alightPredefinedLinkPluginFormat');
+
+    for (const attribute of linkAttributes) {
+      writer.removeSelectionAttribute(attribute);
+    }
   }
 }
 

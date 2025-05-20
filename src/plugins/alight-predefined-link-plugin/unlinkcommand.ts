@@ -58,7 +58,7 @@ export default class AlightPredefinedLinkPluginUnlinkCommand extends Command {
       // Remove all predefined link attributes from specified ranges.
       for (const range of rangesToUnlink) {
         if (linkCommand && typeof linkCommand.removeAllLinkAttributes === 'function') {
-          // Use the enhanced helper method
+          // Use the enhanced helper method from linkcommand.ts
           linkCommand.removeAllLinkAttributes(writer, range);
         } else {
           // Fallback implementation if helper method is not available
@@ -69,6 +69,21 @@ export default class AlightPredefinedLinkPluginUnlinkCommand extends Command {
           writer.removeAttribute('alightPredefinedLinkPluginFormat', range);
           writer.removeAttribute('alightPredefinedLinkPluginLinkName', range);
           writer.removeAttribute('linkHref', range);
+
+          // Remove commonly used decorator attributes
+          const commonDecorators = [
+            'linkIsExternal',
+            'linkIsDownloadable',
+            'linkTarget',
+            'linkRel',
+            'data-id',
+            'class',
+            'AHCustomeLink'
+          ];
+
+          for (const decorator of commonDecorators) {
+            writer.removeAttribute(decorator, range);
+          }
 
           // If there are registered custom attributes, then remove them during unlink.
           if (linkCommand) {

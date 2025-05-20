@@ -414,14 +414,58 @@ export function ensurePredefinedLinkStructure(html: string): string {
         }
 
         // Create a proper structure - using DOM API for better safety
+        // Save the original text content first
+        const textContent = link.textContent || '';
+
+        // Clear the link's inner HTML
         link.innerHTML = '';
+
+        // Create a new ah:link element
         const ahLinkElement = document.createElement('ah:link');
         ahLinkElement.setAttribute('name', linkName);
-        ahLinkElement.textContent = link.textContent || '';
+        ahLinkElement.textContent = textContent;
+
+        // Add the ah:link to the link element
         link.appendChild(ahLinkElement);
 
-        // Always ensure it has the data-id attribute
+        // Always ensure correct attributes
+        link.setAttribute('href', '#');
         link.setAttribute('data-id', 'predefined_link');
+
+        // Make sure the link has the AHCustomeLink class
+        if (!link.classList.contains('AHCustomeLink')) {
+          link.classList.add('AHCustomeLink');
+        }
+      }
+    });
+
+    // Handle orphaned ah:link elements outside of a tags (if any)
+    const orphanedAhLinks = Array.from(tempDiv.querySelectorAll('ah\\:link, ah:link')).filter(ahLink => {
+      // Check if direct parent is not an 'a' element
+      return !ahLink.parentElement || ahLink.parentElement.tagName.toLowerCase() !== 'a';
+    });
+
+    orphanedAhLinks.forEach(ahLink => {
+      const linkName = ahLink.getAttribute('name') || 'link-' + Math.random().toString(36).substring(2, 7);
+      const textContent = ahLink.textContent || '';
+
+      // Create a proper link structure
+      const newLink = document.createElement('a');
+      newLink.className = 'AHCustomeLink';
+      newLink.setAttribute('href', '#');
+      newLink.setAttribute('data-id', 'predefined_link');
+
+      // Create a new ah:link with proper attributes
+      const newAhLink = document.createElement('ah:link');
+      newAhLink.setAttribute('name', linkName);
+      newAhLink.textContent = textContent;
+
+      // Add to the link
+      newLink.appendChild(newAhLink);
+
+      // Replace the orphaned ah:link with our proper structure
+      if (ahLink.parentNode) {
+        ahLink.parentNode.replaceChild(newLink, ahLink);
       }
     });
 
