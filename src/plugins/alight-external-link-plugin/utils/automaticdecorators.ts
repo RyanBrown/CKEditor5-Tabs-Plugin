@@ -60,7 +60,7 @@ export default class AutomaticDecorators {
         const viewSelection = viewWriter.document.selection;
 
         for (const item of this._definitions) {
-          // Build attributes with data-id and always include target="_blank" and rel="noopener noreferrer"
+          // Build attributes including the decorator's attributes but without hardcoding target/rel
           const attributes: Record<string, string> = {
             ...item.attributes,
             'data-id': 'external_link',

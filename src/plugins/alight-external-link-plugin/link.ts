@@ -73,8 +73,11 @@ export default class AlightExternalLinkPlugin extends Plugin {
         if (!href) return null;
         const linkCommand = editor.commands.get('alight-external-link') as AlightExternalLinkPluginCommand;
 
-        // Build attributes object
-        const attrs: Record<string, string> = {};
+        // Build attributes object with target and rel
+        const attrs: Record<string, string> = {
+          'target': '_blank',
+          'rel': 'noopener noreferrer'
+        };
 
         // Use the organization name from the link command if available
         if (linkCommand && linkCommand.organization) {
@@ -93,8 +96,11 @@ export default class AlightExternalLinkPlugin extends Plugin {
         if (!href) return null;
         const linkCommand = editor.commands.get('alight-external-link') as AlightExternalLinkPluginCommand;
 
-        // Build attributes object
-        const attrs: Record<string, string> = {};
+        // Build attributes object with target and rel
+        const attrs: Record<string, string> = {
+          'target': '_blank',
+          'rel': 'noopener noreferrer'
+        };
 
         // Use the organization name from the link command if available
         if (linkCommand && linkCommand.organization) {

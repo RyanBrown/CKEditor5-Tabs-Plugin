@@ -56,12 +56,10 @@ export function isLegacyEditorLink(url: string): boolean {
  * Handles non-breaking spaces and special characters in organization names.
  */
 export function createLinkElement(href: string, { writer, attrs = {}, item }: DowncastConversionApi & { attrs?: Record<string, string>; item?: any }): ViewAttributeElement {
-  // Start with default attributes - ALWAYS include target="_blank" and rel="noopener noreferrer"
+  // Base attributes without target/rel - these will be added by converter
   const attributes: Record<string, string> = {
     href,
     'data-id': 'external_link',
-    'target': '_blank',
-    'rel': 'noopener noreferrer',
     ...attrs
   };
 
