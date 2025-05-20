@@ -322,9 +322,23 @@ export function ensurePredefinedLinkStructure(html: string): string {
         }
       }
 
-      // If we don't have a valid name, keep original structure
+      // If no existing ah:link or no name, try to get linkName from other attributes
       if (!linkName) {
-        return;
+        // Try data-link-name attribute
+        linkName = link.getAttribute('data-link-name') || '';
+
+        // Try href attribute if it's not a regular URL
+        if (!linkName) {
+          const href = link.getAttribute('href');
+          if (href && (href === '#' || !href.startsWith('http'))) {
+            linkName = href;
+          }
+        }
+
+        // Generate a fallback name if still no linkName
+        if (!linkName || linkName === '#') {
+          linkName = 'link-' + Math.random().toString(36).substring(2, 7);
+        }
       }
 
       // Create a proper structure

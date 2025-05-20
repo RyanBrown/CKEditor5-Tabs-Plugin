@@ -115,9 +115,6 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         // Get position range for conversion
         const viewRange = mapper.toViewRange(data.range);
 
-        // Get the link name - this is critical for predefined links
-        const linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName');
-
         // Get text content from the view range
         let textContent = '';
         for (const item of viewRange.getItems()) {
@@ -126,28 +123,33 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           }
         }
 
-        // Only create predefined link structure if linkName exists
-        if (linkName) {
-          // Create the link with the exact structure we want
-          const linkElement = writer.createContainerElement('a', {
-            'href': '#',
-            'class': 'AHCustomeLink'
-          });
+        // Get the link name - this is critical for predefined links
+        let linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName');
 
-          const ahLinkElement = writer.createContainerElement('ah:link', {
-            'name': linkName
-          });
-
-          // Add text content to ah:link
-          writer.insert(writer.createPositionAt(ahLinkElement, 0), writer.createText(textContent));
-
-          // Insert ah:link into a
-          writer.insert(writer.createPositionAt(linkElement, 0), ahLinkElement);
-
-          // Add to document and remove original
-          writer.insert(viewRange.start, linkElement);
-          writer.remove(viewRange);
+        // If no linkName is set, use href as the linkName (ensuring all links get the ah:link structure)
+        if (!linkName) {
+          linkName = href;
         }
+
+        // Create the link with the exact structure we want
+        const linkElement = writer.createContainerElement('a', {
+          'href': '#',
+          'class': 'AHCustomeLink'
+        });
+
+        const ahLinkElement = writer.createContainerElement('ah:link', {
+          'name': linkName
+        });
+
+        // Add text content to ah:link
+        writer.insert(writer.createPositionAt(ahLinkElement, 0), writer.createText(textContent));
+
+        // Insert ah:link into a
+        writer.insert(writer.createPositionAt(linkElement, 0), ahLinkElement);
+
+        // Add to document and remove original
+        writer.insert(viewRange.start, linkElement);
+        writer.remove(viewRange);
       });
     });
 

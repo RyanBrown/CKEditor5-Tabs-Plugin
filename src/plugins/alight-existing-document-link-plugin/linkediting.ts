@@ -119,7 +119,6 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
       const attributes = {
         'href': linkId,
         'data-id': 'existing-document_link',
-        'data-format': 'existingDocumentTag',
         'data-link-name': linkId
       };
 
@@ -159,13 +158,13 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
     });
 
     // Handle existing document links and standard links
+    // Handle existing document links and standard links
     editor.conversion.for('upcast')
       .elementToAttribute({
         view: {
           name: 'a',
           attributes: {
-            'href': true,
-            'data-cke-saved-href': true
+            'href': true
           }
         },
         model: {
@@ -183,9 +182,7 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
               return dataLinkName;
             }
 
-            // Otherwise get the actual href (prefer data-cke-saved-href if available)
-            const savedHref = viewElement.getAttribute('data-cke-saved-href');
-            const href = savedHref || viewElement.getAttribute('href');
+            const href = viewElement.getAttribute('href');
 
             // If it's empty or just #, and not a existing document link, don't create a link
             if ((href === '' || href === '#') && !viewElement.hasClass('document_tag')) {
@@ -196,67 +193,6 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
           }
         },
         converterPriority: 'high'
-      });
-
-    // Custom document_tag format with ah:link element inside
-    editor.conversion.for('upcast')
-      .elementToAttribute({
-        view: {
-          name: 'a',
-          classes: 'document_tag'
-        },
-        model: {
-          key: 'alightExistingDocumentLinkPluginHref',
-          value: (viewElement: ViewElement) => {
-            // Always add target="_blank" to links during upcast
-            viewElement._setAttribute('target', '_blank');
-
-            // Try to find ah:link element inside
-            const ahLink = viewElement.getChild(0);
-            if (ahLink && ahLink.is('element', 'ah:link')) {
-              const linkName = ahLink.getAttribute('name');
-
-              // Check for orgnameattr attribute on the ah:link element
-              const orgnameattr = ahLink.getAttribute('orgnameattr');
-              if (orgnameattr !== undefined) {
-                // We need to use the after conversion hook, not direct model.change
-                this.editor.model.once('_afterConversion', () => {
-                  this.editor.model.change(writer => {
-                    const selection = this.editor.model.document.selection;
-                    const range = selection.getFirstRange();
-
-                    if (range) {
-                      writer.setAttribute('orgnameattr', orgnameattr, range);
-                    }
-                  });
-                });
-              }
-
-              // Store additional information for document_tag format
-              // We need to use the after conversion hook, not direct model.change
-              const format = 'existingDocumentTag';
-              const name = linkName;
-              this.editor.model.once('_afterConversion', () => {
-                this.editor.model.change(writer => {
-                  const selection = this.editor.model.document.selection;
-                  const range = selection.getFirstRange();
-
-                  if (range) {
-                    writer.setAttribute('AlightExistingDocumentLinkPluginFormat', format, range);
-                    writer.setAttribute('AlightExistingDocumentPluginLinkName', name, range);
-                  }
-                });
-              });
-
-              // Return the link name as the href without adding any suffix
-              return linkName;
-            }
-
-            // Fallback to standard href
-            return viewElement.getAttribute('href');
-          }
-        },
-        converterPriority: 'highest' // Higher priority than standard link converter
       });
 
     // Create linking commands.

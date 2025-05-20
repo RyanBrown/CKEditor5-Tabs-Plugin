@@ -78,27 +78,27 @@ export default class AlightPredefinedLinkPlugin extends Plugin {
                 if (item.hasAttribute('alightPredefinedLinkPluginHref')) {
                   const href = item.getAttribute('alightPredefinedLinkPluginHref');
 
+                  // Always set AHCustomeLink format for all links
+                  writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', item);
+
+                  // Extract and set link name - always ensure we have a linkName
+                  let linkName = '';
+
                   if (isPredefinedLink(href as string)) {
-                    // Always set AHCustomeLink format for predefined links
-                    writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', item);
-
-                    // Extract and set link name
-                    const linkId = extractPredefinedLinkId(href as string);
-                    // PRIORITY FIX: Always ensure we have a linkName
-                    let linkName = linkId;
-
-                    // If no valid linkId, try to use existing linkName or generate one
-                    if (!linkName || linkName.trim() === '') {
-                      linkName = item.getAttribute('alightPredefinedLinkPluginLinkName') as string;
-                      if (!linkName || linkName.trim() === '') {
-                        linkName = 'link-' + Math.random().toString(36).substring(2, 7);
-                      }
-                    }
-
-                    // Always set the linkName attribute
-                    writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, item);
+                    linkName = extractPredefinedLinkId(href as string);
                   }
 
+                  // If no valid linkId, try to use existing linkName or generate one
+                  if (!linkName || linkName.trim() === '') {
+                    linkName = item.getAttribute('alightPredefinedLinkPluginLinkName') as string;
+                    if (!linkName || linkName.trim() === '') {
+                      // Use href directly or generate a fallback name
+                      linkName = (href as string) || 'link-' + Math.random().toString(36).substring(2, 7);
+                    }
+                  }
+
+                  // Always set the linkName attribute
+                  writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, item);
                   updatedNodes.add(item);
                 }
               }
