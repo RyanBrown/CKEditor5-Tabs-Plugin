@@ -71,12 +71,11 @@ export function isPredefinedLink(url: string | null | undefined): boolean {
 
 /**
  * Creates a link AttributeElement with the provided `href` attribute.
- * Updated to ensure consistent structure with ah:link element.
  */
 export function createLinkElement(href: string, { writer }: DowncastConversionApi): ViewAttributeElement {
   // Create the link element as an attribute element with required attributes
   const linkElement = writer.createAttributeElement('a', {
-    'href': '#', // Always use # for predefined links
+    'href': href,
     'class': 'AHCustomeLink',
     'data-id': 'predefined_link'
   }, {
@@ -86,9 +85,6 @@ export function createLinkElement(href: string, { writer }: DowncastConversionAp
 
   // Set custom property for link identification
   writer.setCustomProperty('alight-predefined-link', true, linkElement);
-
-  // Note: The actual ah:link element will be added during the data downcast conversion
-  // This function is primarily used for the editing view where we simplify the structure
 
   return linkElement;
 }
@@ -301,7 +297,7 @@ export function filterLinkAttributes(attributes: Record<string, string>): Record
 
 /**
  * Ensures links have the ah:link structure in the HTML.
- * Updated to ensure the exact structure needed.
+ * Simplified to directly create the correct structure without complex parsing.
  */
 export function ensurePredefinedLinkStructure(html: string): string {
   try {
@@ -312,47 +308,27 @@ export function ensurePredefinedLinkStructure(html: string): string {
     const links = tempDiv.querySelectorAll('a.AHCustomeLink');
 
     links.forEach(link => {
-      // Always ensure these attributes are set correctly
-      link.setAttribute('href', '#');
-      link.setAttribute('data-id', 'predefined_link');
-
       // Look for existing ah:link element
       let existingAhLink = link.querySelector('ah\\:link') || link.querySelector('ah:link');
       let linkName = '';
 
-      // Try to get the link name from various sources
       if (existingAhLink) {
+        // Get name from existing ah:link
         linkName = existingAhLink.getAttribute('name') || '';
+
+        // Just keep the existing structure if it's already correct
+        if (linkName) {
+          return;
+        }
       }
 
+      // If we don't have a valid name, keep original structure
       if (!linkName) {
-        // Try alternative attribute sources
-        linkName = link.getAttribute('data-link-name') ||
-          link.getAttribute('data-href') ||
-          link.getAttribute('alightPredefinedLinkPluginLinkName') || '';
+        return;
       }
 
-      // If still no name, use the text content or a fallback
-      if (!linkName || linkName.trim() === '') {
-        linkName = link.textContent?.trim() || 'unnamed-link';
-      }
-
-      // Save the original text content before modifying
-      const textContent = link.textContent || '';
-
-      // Create the standardized structure - explicit whitespace to match target format
-      link.innerHTML = `<ah:link name="${linkName}">${textContent}</ah:link>`;
-
-      // Verify the ah:link was created properly
-      if (!link.querySelector('ah\\:link') && !link.querySelector('ah:link')) {
-        // Try alternative approach if browser sanitized the custom element
-        const wrapper = document.createElement('span');
-        wrapper.setAttribute('class', 'ah-link-wrapper');
-        wrapper.setAttribute('data-name', linkName);
-        wrapper.textContent = textContent;
-        link.innerHTML = '';
-        link.appendChild(wrapper);
-      }
+      // Create a proper structure
+      link.innerHTML = `<ah:link name="${linkName}">${link.textContent}</ah:link>`;
     });
 
     return tempDiv.innerHTML;

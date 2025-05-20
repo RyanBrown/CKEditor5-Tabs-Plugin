@@ -126,56 +126,8 @@ export default class AlightPredefinedLinkPlugin extends Plugin {
 
       // Process the HTML string to ensure proper link structure
       try {
-        // Enhanced processor for standardizing the structure
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = data;
-
-        // Find all links with AHCustomeLink class
-        const links = tempDiv.querySelectorAll('a.AHCustomeLink');
-
-        links.forEach(link => {
-          // Always set these attributes correctly for predefined links
-          link.setAttribute('href', '#');
-          link.setAttribute('data-id', 'predefined_link');
-
-          // Look for existing ah:link element
-          let existingAhLink = link.querySelector('ah\\:link') || link.querySelector('ah:link');
-          let linkName = '';
-
-          if (existingAhLink) {
-            linkName = existingAhLink.getAttribute('name') || '';
-          }
-
-          if (!linkName) {
-            // Try alternative sources for the link name
-            linkName = link.getAttribute('data-link-name') || '';
-          }
-
-          if (!linkName || linkName.trim() === '') {
-            // Use fallback if no name available
-            linkName = link.textContent?.trim() || 'unnamed-link';
-          }
-
-          // Save the text content before modifying
-          const textContent = link.textContent || '';
-
-          // Set the standardized structure - ensure exact format
-          link.innerHTML = `<ah:link name="${linkName}">${textContent}</ah:link>`;
-
-          // Double check that the ah:link element was created properly
-          const verifyAhLink = link.querySelector('ah\\:link') || link.querySelector('ah:link');
-          if (!verifyAhLink) {
-            // If the browser didn't create the element properly, try an alternative approach
-            link.innerHTML = '';
-            const ahLinkElement = document.createElement('span');
-            ahLinkElement.setAttribute('is', 'ah:link');
-            ahLinkElement.setAttribute('name', linkName);
-            ahLinkElement.textContent = textContent;
-            link.appendChild(ahLinkElement);
-          }
-        });
-
-        return tempDiv.innerHTML;
+        // Use the ensure structure function directly
+        return ensurePredefinedLinkStructure(data);
       } catch (error) {
         console.error('Error processing links in output:', error);
         // Return original data if there was an error
