@@ -45,16 +45,33 @@ export function isLinkElement(node: ViewNode | ViewDocumentFragment): boolean {
   }
 
   try {
-    if (!node.is('attributeElement')) {
-      return false;
+    // Check if it's an 'a' element
+    if (node.is('element', 'a')) {
+      // This is an 'a' element, now check if it's one of our predefined links
+      return !!(
+        // Either it has the custom property
+        (node.getCustomProperty && node.getCustomProperty('alight-predefined-link')) ||
+        // Or it has the AHCustomeLink class
+        (typeof node.hasClass === 'function' && node.hasClass('AHCustomeLink')) ||
+        // Or it has the data-id attribute
+        (node.getAttribute && node.getAttribute('data-id') === 'predefined_link') ||
+        // Or it contains an ah:link element
+        (node.getChild &&
+          Array.from(node.getChildren()).some(child =>
+            child.is && child.is('element', 'ah:link')
+          ))
+      );
     }
 
-    // Check if it has the custom property or specific classes/attributes
-    return !!(
-      (node.getCustomProperty && node.getCustomProperty('alight-predefined-link')) ||
-      (typeof node.hasClass === 'function' && node.hasClass('AHCustomeLink')) ||
-      (node.getAttribute && node.getAttribute('data-id') === 'predefined_link')
-    );
+    // Check if it's an attribute element for 'a'
+    if (node.is('attributeElement') && node.name === 'a') {
+      return !!(
+        (node.getCustomProperty && node.getCustomProperty('alight-predefined-link')) ||
+        (typeof node.hasClass === 'function' && node.hasClass('AHCustomeLink')) ||
+        (node.getAttribute && node.getAttribute('data-id') === 'predefined_link')
+      );
+    }
+    return false;
   } catch (e) {
     console.error('Error in isLinkElement check:', e);
     return false;
@@ -318,6 +335,10 @@ export function ensurePredefinedLinkStructure(html: string): string {
 
         // Just keep the existing structure if it's already correct
         if (linkName) {
+          // But ensure it has the data-id attribute
+          if (!link.hasAttribute('data-id')) {
+            link.setAttribute('data-id', 'predefined_link');
+          }
           return;
         }
       }
@@ -343,6 +364,9 @@ export function ensurePredefinedLinkStructure(html: string): string {
 
       // Create a proper structure
       link.innerHTML = `<ah:link name="${linkName}">${link.textContent}</ah:link>`;
+
+      // Always ensure it has the data-id attribute
+      link.setAttribute('data-id', 'predefined_link');
     });
 
     return tempDiv.innerHTML;

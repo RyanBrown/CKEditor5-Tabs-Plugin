@@ -871,8 +871,21 @@ function findLinkElementAncestor(position: any): ViewAttributeElement | null {
     const ancestors = position.getAncestors();
 
     for (const ancestor of ancestors) {
-      if (isLinkElement(ancestor)) {
-        return ancestor.is('attributeElement') ? ancestor : null;
+      // Check if it's an 'a' element first, before calling isLinkElement
+      // This helps with cases where the link might not have all required properties
+      if (ancestor.is && ancestor.is('element', 'a')) {
+        // First check using the standard isLinkElement function
+        if (isLinkElement(ancestor)) {
+          return ancestor.is('attributeElement') ? ancestor : null;
+        }
+
+        // Secondary check for links that might have lost some attributes
+        if (ancestor.hasAttribute && (
+          ancestor.hasAttribute('href') ||
+          ancestor.hasClass && ancestor.hasClass('AHCustomeLink')
+        )) {
+          return ancestor.is('attributeElement') ? ancestor : null;
+        }
       }
     }
 
