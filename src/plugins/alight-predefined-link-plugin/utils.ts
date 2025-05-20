@@ -314,7 +314,7 @@ export function filterLinkAttributes(attributes: Record<string, string>): Record
 
 /**
  * Ensures links have the ah:link structure in the HTML.
- * Simplified to directly create the correct structure without complex parsing.
+ * Prevents nesting of anchor tags and ensures proper structure.
  */
 export function ensurePredefinedLinkStructure(html: string): string {
   try {
@@ -325,48 +325,104 @@ export function ensurePredefinedLinkStructure(html: string): string {
     const links = tempDiv.querySelectorAll('a.AHCustomeLink');
 
     links.forEach(link => {
-      // Look for existing ah:link element
-      let existingAhLink = link.querySelector('ah\\:link') || link.querySelector('ah:link');
-      let linkName = '';
+      // Check if this link already contains another anchor tag (nested link)
+      const nestedLinks = link.querySelectorAll('a');
 
-      if (existingAhLink) {
-        // Get name from existing ah:link
-        linkName = existingAhLink.getAttribute('name') || '';
+      if (nestedLinks.length > 0) {
+        // We have nested links - extract the inner content
+        const innerLink = nestedLinks[0]; // Get the first inner link
+        const textContent = innerLink.textContent || link.textContent || '';
 
-        // Just keep the existing structure if it's already correct
-        if (linkName) {
-          // But ensure it has the data-id attribute
-          if (!link.hasAttribute('data-id')) {
-            link.setAttribute('data-id', 'predefined_link');
-          }
-          return;
+        // Get the link name from various possible sources
+        let linkName = '';
+
+        // Check for ah:link elements
+        const ahLink = link.querySelector('ah\\:link') || link.querySelector('ah:link') ||
+          innerLink.querySelector('ah\\:link') || innerLink.querySelector('ah:link');
+
+        if (ahLink) {
+          linkName = ahLink.getAttribute('name') || '';
         }
-      }
 
-      // If no existing ah:link or no name, try to get linkName from other attributes
-      if (!linkName) {
-        // Try data-link-name attribute
-        linkName = link.getAttribute('data-link-name') || '';
-
-        // Try href attribute if it's not a regular URL
+        // If no linkName from ah:link, try data-link-name or href attributes
         if (!linkName) {
-          const href = link.getAttribute('href');
-          if (href && (href === '#' || !href.startsWith('http'))) {
-            linkName = href;
+          linkName = innerLink.getAttribute('data-link-name') ||
+            link.getAttribute('data-link-name') ||
+            innerLink.getAttribute('href') ||
+            link.getAttribute('href') || '';
+
+          // If href is just '#' or empty, generate a random name
+          if (!linkName || linkName === '#') {
+            linkName = 'link-' + Math.random().toString(36).substring(2, 7);
           }
         }
 
-        // Generate a fallback name if still no linkName
-        if (!linkName || linkName === '#') {
-          linkName = 'link-' + Math.random().toString(36).substring(2, 7);
+        // Create a new clean link to replace the nested structure
+        const newLink = document.createElement('a');
+        newLink.className = 'AHCustomeLink';
+        newLink.setAttribute('href', '#');
+        newLink.setAttribute('data-id', 'predefined_link');
+
+        // Create proper ah:link structure
+        const ahLinkElement = document.createElement('ah:link');
+        ahLinkElement.setAttribute('name', linkName);
+        ahLinkElement.textContent = textContent;
+
+        // Add ah:link to the new link
+        newLink.appendChild(ahLinkElement);
+
+        // Replace the original link with our clean one
+        if (link.parentNode) {
+          link.parentNode.replaceChild(newLink, link);
         }
+      } else {
+        // No nested links - look for existing ah:link element
+        let existingAhLink = link.querySelector('ah\\:link') || link.querySelector('ah:link');
+        let linkName = '';
+
+        if (existingAhLink) {
+          // Get name from existing ah:link
+          linkName = existingAhLink.getAttribute('name') || '';
+
+          // Just keep the existing structure if it's already correct
+          if (linkName) {
+            // Just ensure it has the data-id attribute
+            if (!link.hasAttribute('data-id')) {
+              link.setAttribute('data-id', 'predefined_link');
+            }
+            return;
+          }
+        }
+
+        // If no existing ah:link or no name, try to get linkName from other attributes
+        if (!linkName) {
+          // Try data-link-name attribute
+          linkName = link.getAttribute('data-link-name') || '';
+
+          // Try href attribute if it's not a regular URL
+          if (!linkName) {
+            const href = link.getAttribute('href');
+            if (href && (href === '#' || !href.startsWith('http'))) {
+              linkName = href;
+            }
+          }
+
+          // Generate a fallback name if still no linkName
+          if (!linkName || linkName === '#') {
+            linkName = 'link-' + Math.random().toString(36).substring(2, 7);
+          }
+        }
+
+        // Create a proper structure - using DOM API for better safety
+        link.innerHTML = '';
+        const ahLinkElement = document.createElement('ah:link');
+        ahLinkElement.setAttribute('name', linkName);
+        ahLinkElement.textContent = link.textContent || '';
+        link.appendChild(ahLinkElement);
+
+        // Always ensure it has the data-id attribute
+        link.setAttribute('data-id', 'predefined_link');
       }
-
-      // Create a proper structure
-      link.innerHTML = `<ah:link name="${linkName}">${link.textContent}</ah:link>`;
-
-      // Always ensure it has the data-id attribute
-      link.setAttribute('data-id', 'predefined_link');
     });
 
     return tempDiv.innerHTML;
