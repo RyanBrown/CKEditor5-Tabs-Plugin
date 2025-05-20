@@ -171,13 +171,16 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         // Get the link name - this is critical for predefined links
         let linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName');
 
-        // If no linkName is set, use href as the linkName (ensuring all links get the ah:link structure)
+        // If no linkName is set, log error and skip creating the link
         if (!linkName) {
-          console.error('AlightPredefinedLinkPluginEditing: Missing predefinedLinkName attribute for link', {
+          console.error('AlightPredefinedLinkPluginEditing: Missing predefinedLinkName attribute for link. Link creation aborted.', {
             href,
             content: textContent
           });
-          linkName = href;
+          // Instead of creating a link, insert plain text
+          writer.insert(viewRange.start, writer.createText(textContent));
+          writer.remove(viewRange);
+          return;
         }
 
         // Always create the exact link structure we want

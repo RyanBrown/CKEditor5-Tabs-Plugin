@@ -407,12 +407,25 @@ export function ensurePredefinedLinkStructure(html: string): string {
             }
           }
 
-          // Generate a fallback name if still no linkName
+          // If no linkName available, log error and remove the link
           if (!linkName || linkName === '#') {
-            console.error('AlightPredefinedLinkPlugin: Missing linkName for link. Using generated value.', {
+            console.error('AlightPredefinedLinkPlugin: Missing linkName for link. Removing invalid link.', {
               element: link.outerHTML
             });
-            linkName = 'link-' + Math.random().toString(36).substring(2, 7);
+
+            // Extract text content before removing
+            const textContent = link.textContent || '';
+
+            // Create a text node to replace the link
+            const textNode = document.createTextNode(textContent);
+
+            // Replace the link with just text
+            if (link.parentNode) {
+              link.parentNode.replaceChild(textNode, link);
+            }
+
+            // Skip rest of processing for this link
+            return;
           }
         }
 
@@ -449,12 +462,27 @@ export function ensurePredefinedLinkStructure(html: string): string {
     });
 
     orphanedAhLinks.forEach(ahLink => {
-      const linkName = ahLink.getAttribute('name') || 'link-' + Math.random().toString(36).substring(2, 7);
+      // Check if we have a valid name attribute
       if (!ahLink.getAttribute('name')) {
-        console.error('AlightPredefinedLinkPlugin: Orphaned ah:link element without name attribute', {
+        console.error('AlightPredefinedLinkPlugin: Orphaned ah:link element without name attribute. Removing invalid element.', {
           element: ahLink.outerHTML
         });
+
+        // Extract text content to preserve it
+        const textContent = ahLink.textContent || '';
+
+        // Create a text node with the original content
+        const textNode = document.createTextNode(textContent);
+
+        // Replace the orphaned ah:link with just text
+        if (ahLink.parentNode) {
+          ahLink.parentNode.replaceChild(textNode, ahLink);
+        }
+
+        return;
       }
+
+      const linkName = ahLink.getAttribute('name');
       const textContent = ahLink.textContent || '';
 
       // Create a proper link structure

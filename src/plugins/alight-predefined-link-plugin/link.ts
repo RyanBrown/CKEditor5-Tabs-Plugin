@@ -88,15 +88,19 @@ export default class AlightPredefinedLinkPlugin extends Plugin {
                     linkName = extractPredefinedLinkId(href as string);
                   }
 
-                  // If no valid linkId, try to use existing linkName or generate one
+                  // If no valid linkId, try to use existing linkName or reject
                   if (!linkName || linkName.trim() === '') {
                     linkName = item.getAttribute('alightPredefinedLinkPluginLinkName') as string;
                     if (!linkName || linkName.trim() === '') {
                       // Log error when no valid linkName is found
-                      console.error('AlightPredefinedLinkPlugin: No valid predefinedLinkName found for link. Using fallback.', { href });
+                      console.error('AlightPredefinedLinkPlugin: No valid predefinedLinkName found for link. Link creation aborted.', { href });
 
-                      // Use href directly or generate a fallback name
-                      linkName = (href as string) || 'link-' + Math.random().toString(36).substring(2, 7);
+                      // Remove the href attribute to prevent the link from being created
+                      writer.removeAttribute('alightPredefinedLinkPluginHref', item);
+                      updatedNodes.add(item);
+
+                      // Skip setting other attributes
+                      continue;
                     }
                   }
 

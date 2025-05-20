@@ -128,18 +128,30 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
     if (isPredefined) {
       // If no existing linkName, extract from href or generate one
       if (!linkName) {
-        linkName = extractPredefinedLinkId(href) || href;
+        linkName = extractPredefinedLinkId(href) || '';
 
-        // If still no valid linkName, generate one and log warning
+        // If no valid linkName, log error and prevent link creation
         if (!linkName || linkName.trim() === '') {
-          console.error('AlightPredefinedLinkPlugin: No valid predefinedLinkName found. Using generated value instead.', { href });
-          linkName = 'link-' + Math.random().toString(36).substring(2, 7);
+          console.error('AlightPredefinedLinkPlugin: No valid predefinedLinkName found. Link creation aborted.', { href });
+          // Fire event to notify UI of the error
+          this._fireEvent('error', {
+            message: 'Cannot create link: Missing predefined link name',
+            href
+          });
+          // Return early without creating the link
+          return;
         }
       }
     } else if (!linkName) {
-      // Even for non-predefined links, we need a linkName for consistent structure
-      console.warn('AlightPredefinedLinkPlugin: No linkName specified for link. Using href as fallback.', { href });
-      linkName = href;
+      // For non-predefined links, we still need a linkName
+      console.error('AlightPredefinedLinkPlugin: No linkName specified for link. Link creation aborted.', { href });
+      // Fire event to notify UI of the error
+      this._fireEvent('error', {
+        message: 'Cannot create link: Missing link name',
+        href
+      });
+      // Return early without creating the link
+      return;
     }
 
     model.change(writer => {
