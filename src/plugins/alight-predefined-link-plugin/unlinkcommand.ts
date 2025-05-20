@@ -58,7 +58,7 @@ export default class AlightPredefinedLinkPluginUnlinkCommand extends Command {
       // Remove all predefined link attributes from specified ranges.
       for (const range of rangesToUnlink) {
         if (linkCommand && typeof linkCommand.removeAllLinkAttributes === 'function') {
-          // Use the helper method if available
+          // Use the enhanced helper method
           linkCommand.removeAllLinkAttributes(writer, range);
         } else {
           // Fallback implementation if helper method is not available
@@ -76,19 +76,6 @@ export default class AlightPredefinedLinkPluginUnlinkCommand extends Command {
               writer.removeAttribute(manualDecorator.id, range);
             }
           }
-        }
-      }
-      // Remove any link-related attributes that might remain
-      const additionalLinkAttrs = [
-        'linkIsExternal',
-        'linkIsDownloadable',
-        'linkTarget',
-        'linkRel'
-      ];
-
-      for (const range of rangesToUnlink) {
-        for (const attr of additionalLinkAttrs) {
-          writer.removeAttribute(attr, range);
         }
       }
     });

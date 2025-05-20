@@ -52,6 +52,18 @@ export default class AlightPredefinedLinkPluginIntegration extends Plugin {
           }
         }, { priority: 'high' });
       }
+
+      // Intercept unlink command from standard link plugin
+      const standardUnlinkCommand = editor.commands.get('unlink');
+      if (standardUnlinkCommand) {
+        standardUnlinkCommand.on('execute', (evt) => {
+          // If we're in a predefined link, use our unlink command instead
+          if (editor.model.document.selection.hasAttribute('alightPredefinedLinkPluginHref')) {
+            evt.stop();
+            editor.execute('alight-predefined-unlink');
+          }
+        }, { priority: 'high' });
+      }
     }
   }
 }

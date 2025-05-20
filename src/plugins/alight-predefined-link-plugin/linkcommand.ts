@@ -251,7 +251,10 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
       'linkIsExternal',
       'linkIsDownloadable',
       'linkTarget',
-      'linkRel'
+      'linkRel',
+      'data-id',
+      'class',
+      'AHCustomeLink'
     ];
 
     for (const decorator of commonDecorators) {
@@ -263,18 +266,23 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
       writer.removeAttribute(decorator.id, range);
     }
 
-    // Search for and remove any other attributes that start with 'link'
-    const model = this.editor.model;
-    const selection = model.document.selection;
-    const firstPosition = selection.getFirstPosition();
+    // Thoroughly check for link-related attributes across the entire range
+    const items = Array.from(range.getItems());
+    for (const item of items) {
+      if (item.is('$text') || item.is('$textProxy')) {
+        const attributeNames = Array.from(item.getAttributeKeys());
 
-    if (firstPosition) {
-      const item = firstPosition.textNode || firstPosition.nodeBefore;
-
-      if (item) {
-        for (const [key] of item.getAttributes()) {
-          if (typeof key === 'string' && (key.startsWith('link') || key.includes('link'))) {
-            writer.removeAttribute(key, range);
+        for (const key of attributeNames) {
+          // Remove any attribute that might be related to links
+          if (typeof key === 'string' && (
+            key.startsWith('link') ||
+            key.includes('link') ||
+            key.includes('href') ||
+            key.includes('LinkPlugin') ||
+            key.includes('AHCustome') ||
+            key === 'data-id'
+          )) {
+            writer.removeAttribute(key, item);
           }
         }
       }

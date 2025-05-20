@@ -107,6 +107,51 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         const { writer, mapper } = conversionApi;
         const href = data.attributeNewValue;
 
+        // IMPORTANT: Handle attribute removal case
+        if (!href) {
+          // This is a case where the attribute is being removed
+          try {
+            const viewRange = mapper.toViewRange(data.range);
+            const linkElements = [];
+
+            // Find all link elements in the range
+            for (const item of viewRange.getItems()) {
+              if (item.is && item.is('element', 'a')) {
+                linkElements.push(item);
+              }
+            }
+
+            // Remove each link element and replace with its textual content
+            for (const linkElement of linkElements) {
+              // Extract text content from the link, handling nested ah:link elements
+              let textContent = '';
+              for (const child of linkElement.getChildren()) {
+                if (child.is && child.is('element', 'ah:link')) {
+                  // Extract text from ah:link
+                  for (const nestedItem of child.getChildren()) {
+                    if (nestedItem.is('$text')) {
+                      textContent += nestedItem.data;
+                    }
+                  }
+                } else if (child.is('$text')) {
+                  textContent += child.data;
+                }
+              }
+
+              // Insert the text content at the link position
+              if (textContent) {
+                writer.insert(viewRange.start, writer.createText(textContent));
+              }
+
+              // Remove the entire link element
+              writer.remove(linkElement);
+            }
+          } catch (error) {
+            console.error('Error removing link structure:', error);
+          }
+          return;
+        }
+
         // If the attribute was removed or not a text item, return
         if (!href || (!data.item.is('$textProxy') && !data.item.is('$text'))) {
           return;
