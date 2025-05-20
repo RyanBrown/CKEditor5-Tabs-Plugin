@@ -11,7 +11,7 @@ import type {
   ViewDocumentClickEvent,
   DocumentSelectionChangeAttributeEvent,
   ViewNode,
-  ViewText
+  ViewDocumentFragment
 } from '@ckeditor/ckeditor5-engine';
 import {
   Input,
@@ -89,6 +89,12 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
     const editor = this.editor;
     const allowedProtocols = this.editor.config.get('link.allowedProtocols');
 
+    // Register the ah:link element in the schema
+    editor.model.schema.register('ahLink', {
+      allowWhere: '$text',
+      allowAttributes: ['name']
+    });
+
     // Allow link attribute on all inline nodes.
     editor.model.schema.extend('$text', { allowAttributes: 'alightPredefinedLinkPluginHref' });
 
@@ -114,6 +120,8 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
 
         // Get position range for conversion
         const viewRange = mapper.toViewRange(data.range);
+
+        // Get the link name - this is critical for predefined links
         const linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName');
 
         // Get text content from the view range
@@ -124,11 +132,11 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           }
         }
 
-        // Create the link with the exact structure we want
-        // Always use the requested structure, even without a linkName
-        const finalLinkName = linkName || href || 'unnamed-link';
+        // Always use a valid linkName - fallback chain for maximum robustness
+        const finalLinkName = linkName || href || textContent || 'unnamed-link';
 
         // Create the link element with all required attributes
+        // Always use these fixed attributes for predefined links
         const linkElement = writer.createContainerElement('a', {
           'href': '#',
           'class': 'AHCustomeLink',
@@ -158,7 +166,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
       view: (href, { writer }) => {
         // Create a simple link element with the required attributes
         const linkElement = writer.createAttributeElement('a', {
-          'href': href,
+          'href': '#',
           'class': 'AHCustomeLink',
           'data-id': 'predefined_link'
         }, {
@@ -173,7 +181,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
       }
     });
 
-    // First upcast converter for links with predefined attributes
+    // Enhanced upcast conversion for predefined links - Fixed TypeScript errors
     editor.conversion.for('upcast')
       .elementToAttribute({
         view: {
@@ -188,70 +196,54 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
               .find(child => {
                 return child.is &&
                   typeof child.is === 'function' &&
-                  child.is('element', 'ah:link');
+                  // Fixed TypeScript error - properly check if it's an element before accessing name
+                  (child.is('element') &&
+                    (child.is('element', 'ah:link') ||
+                      (child as ViewElement).name === 'ah:link'));
               });
 
+            let predefinedLinkName = '';
+
+            // First try to get name from ah:link element if it's an element
             if (ahLinkElement && ahLinkElement.is('element')) {
-              // Get the name attribute from ah:link - this is the predefinedLinkName
-              const predefinedLinkName = ahLinkElement.getAttribute('name');
-
-              // Only process if we have a valid predefinedLinkName
-              if (predefinedLinkName) {
-                // Store additional attributes for the predefined link
-                this.editor.model.enqueueChange(writer => {
-                  // Always set format to 'ahcustom'
-                  writer.setSelectionAttribute('alightPredefinedLinkPluginFormat', 'ahcustom');
-
-                  // MOST IMPORTANTLY: Set the linkName attribute to predefinedLinkName
-                  writer.setSelectionAttribute('alightPredefinedLinkPluginLinkName', predefinedLinkName);
-                });
-
-                // Use the predefinedLinkName as the href value
-                return predefinedLinkName;
-              }
+              predefinedLinkName = ahLinkElement.getAttribute('name') as string;
             }
 
-            // Fallback to data-link-name attribute if no ah:link
-            const dataLinkName = viewElement.getAttribute('data-link-name');
-            if (dataLinkName) {
-              // Set relevant attributes
-              this.editor.model.enqueueChange(writer => {
-                writer.setSelectionAttribute('alightPredefinedLinkPluginFormat', 'ahcustom');
-                writer.setSelectionAttribute('alightPredefinedLinkPluginLinkName', dataLinkName);
-              });
-              return dataLinkName;
+            // If no ah:link or no name attribute, check for data-link-name
+            if (!predefinedLinkName) {
+              predefinedLinkName = viewElement.getAttribute('data-link-name') as string;
             }
 
-            // For fallback case, use href or element text
-            const href = viewElement.getAttribute('href');
-
-            // Safely extract text content from child elements
-            let textContent = '';
-
-            // Try to get text content from first child
-            const firstChild = viewElement.getChild(0);
-            if (firstChild) {
-              if (firstChild.is('element') && firstChild.is('element', 'ah:link')) {
-                // This is an ah:link element, get its text content
-                const nestedText = firstChild.getChild(0);
-                if (nestedText && nestedText.is('$text')) {
-                  textContent = nestedText.data;
+            // Fixed TypeScript errors - safely extract text content
+            if (!predefinedLinkName) {
+              // Try to extract text content safely with type checking
+              const textContent = Array.from(viewElement.getChildren()).reduce((text, child) => {
+                // Check if this is a text node before accessing data
+                if (child.is('$text')) {
+                  return text + child.data;
                 }
-              } else if (firstChild.is('$text')) {
-                // This is a text node
-                textContent = firstChild.data;
-              }
+                // If it's an element, try to get its text content
+                if (child.is('element')) {
+                  const nestedTexts = Array.from(child.getChildren())
+                    .filter(nestedChild => nestedChild.is('$text'))
+                    .map(textNode => (textNode as any).data || '')
+                    .join('');
+                  return text + nestedTexts;
+                }
+                return text;
+              }, '');
+
+              predefinedLinkName = textContent || 'unnamed-link';
             }
 
-            // Use the extracted text content or fallbacks
-            const linkName = textContent || (href as string) || 'unnamed-link';
-
-            // Set attributes for this case as well
+            // Always set these attributes
             this.editor.model.enqueueChange(writer => {
               writer.setSelectionAttribute('alightPredefinedLinkPluginFormat', 'ahcustom');
-              writer.setSelectionAttribute('alightPredefinedLinkPluginLinkName', linkName);
+              writer.setSelectionAttribute('alightPredefinedLinkPluginLinkName', predefinedLinkName);
             });
-            return linkName;
+
+            // Always return the predefinedLinkName as the href
+            return predefinedLinkName;
           }
         },
         converterPriority: 'highest'

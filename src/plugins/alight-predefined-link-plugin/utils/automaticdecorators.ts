@@ -69,7 +69,6 @@ export default class AutomaticDecorators {
           try {
             const viewWriter = conversionApi.writer;
 
-            // Instead of using wrap, we'll use a different approach
             if (data.item.is('selection')) {
               // For selections, we need to be very careful - no wrapping
               // We'll just mark it as decorated, but the actual attributes will be applied
@@ -80,32 +79,35 @@ export default class AutomaticDecorators {
               if (data.range) {
                 const viewRange = conversionApi.mapper.toViewRange(data.range);
 
-                // Iterate over items in the range that can be safely modified
+                // In editingDowncast, we need to add attributes to the outermost link element
+                // not to the ah:link element or text content
                 for (const item of viewRange.getItems()) {
-                  // Skip non-element items
                   if (!item.is('element') && !item.is('attributeElement')) {
                     continue;
                   }
 
                   const viewElement = item as ViewElement;
 
-                  // Apply the decorator attributes directly to the element
-                  if (decorator.attributes) {
-                    for (const key in decorator.attributes) {
-                      viewWriter.setAttribute(key, decorator.attributes[key], viewElement);
+                  // Only apply to link elements, not to the ah:link elements
+                  if (viewElement.name === 'a' || viewElement.hasClass('AHCustomeLink')) {
+                    // Apply the decorator attributes directly to the element
+                    if (decorator.attributes) {
+                      for (const key in decorator.attributes) {
+                        viewWriter.setAttribute(key, decorator.attributes[key], viewElement);
+                      }
                     }
-                  }
 
-                  if (decorator.classes) {
-                    viewWriter.addClass(decorator.classes, viewElement);
-                  }
+                    if (decorator.classes) {
+                      viewWriter.addClass(decorator.classes, viewElement);
+                    }
 
-                  for (const key in decorator.styles || {}) {
-                    viewWriter.setStyle(key, decorator.styles[key], viewElement);
-                  }
+                    for (const key in decorator.styles || {}) {
+                      viewWriter.setStyle(key, decorator.styles[key], viewElement);
+                    }
 
-                  viewWriter.setCustomProperty('alight-predefined-link', true, viewElement);
-                  isDecorated = true;
+                    viewWriter.setCustomProperty('alight-predefined-link', true, viewElement);
+                    isDecorated = true;
+                  }
                 }
               }
             }

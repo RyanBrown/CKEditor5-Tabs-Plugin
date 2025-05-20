@@ -71,11 +71,12 @@ export function isPredefinedLink(url: string | null | undefined): boolean {
 
 /**
  * Creates a link AttributeElement with the provided `href` attribute.
+ * Updated to ensure consistent structure with ah:link element.
  */
 export function createLinkElement(href: string, { writer }: DowncastConversionApi): ViewAttributeElement {
   // Create the link element as an attribute element with required attributes
   const linkElement = writer.createAttributeElement('a', {
-    'href': href,
+    'href': '#', // Always use # for predefined links
     'class': 'AHCustomeLink',
     'data-id': 'predefined_link'
   }, {
@@ -85,6 +86,9 @@ export function createLinkElement(href: string, { writer }: DowncastConversionAp
 
   // Set custom property for link identification
   writer.setCustomProperty('alight-predefined-link', true, linkElement);
+
+  // Note: The actual ah:link element will be added during the data downcast conversion
+  // This function is primarily used for the editing view where we simplify the structure
 
   return linkElement;
 }
@@ -323,7 +327,9 @@ export function ensurePredefinedLinkStructure(html: string): string {
 
       if (!linkName) {
         // Try alternative attribute sources
-        linkName = link.getAttribute('data-link-name') || link.getAttribute('data-href') || '';
+        linkName = link.getAttribute('data-link-name') ||
+          link.getAttribute('data-href') ||
+          link.getAttribute('alightPredefinedLinkPluginLinkName') || '';
       }
 
       // If still no name, use the text content or a fallback
@@ -334,8 +340,19 @@ export function ensurePredefinedLinkStructure(html: string): string {
       // Save the original text content before modifying
       const textContent = link.textContent || '';
 
-      // Create the standardized structure
+      // Create the standardized structure - explicit whitespace to match target format
       link.innerHTML = `<ah:link name="${linkName}">${textContent}</ah:link>`;
+
+      // Verify the ah:link was created properly
+      if (!link.querySelector('ah\\:link') && !link.querySelector('ah:link')) {
+        // Try alternative approach if browser sanitized the custom element
+        const wrapper = document.createElement('span');
+        wrapper.setAttribute('class', 'ah-link-wrapper');
+        wrapper.setAttribute('data-name', linkName);
+        wrapper.textContent = textContent;
+        link.innerHTML = '';
+        link.appendChild(wrapper);
+      }
     });
 
     return tempDiv.innerHTML;

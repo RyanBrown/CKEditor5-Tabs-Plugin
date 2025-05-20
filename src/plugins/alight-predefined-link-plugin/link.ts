@@ -159,8 +159,20 @@ export default class AlightPredefinedLinkPlugin extends Plugin {
           // Save the text content before modifying
           const textContent = link.textContent || '';
 
-          // Set the standardized structure
+          // Set the standardized structure - ensure exact format
           link.innerHTML = `<ah:link name="${linkName}">${textContent}</ah:link>`;
+
+          // Double check that the ah:link element was created properly
+          const verifyAhLink = link.querySelector('ah\\:link') || link.querySelector('ah:link');
+          if (!verifyAhLink) {
+            // If the browser didn't create the element properly, try an alternative approach
+            link.innerHTML = '';
+            const ahLinkElement = document.createElement('span');
+            ahLinkElement.setAttribute('is', 'ah:link');
+            ahLinkElement.setAttribute('name', linkName);
+            ahLinkElement.textContent = textContent;
+            link.appendChild(ahLinkElement);
+          }
         });
 
         return tempDiv.innerHTML;
