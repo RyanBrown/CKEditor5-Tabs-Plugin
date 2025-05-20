@@ -107,14 +107,14 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         const { writer, mapper } = conversionApi;
         const href = data.attributeNewValue;
 
+        // Get position range for conversion
+        const viewRange = mapper.toViewRange(data.range);
+
         // IMPORTANT: Handle attribute removal case
         if (!href) {
-          // This is a case where the attribute is being removed
           try {
-            const viewRange = mapper.toViewRange(data.range);
-            const linkElements = [];
-
             // Find all link elements in the range
+            const linkElements = [];
             for (const item of viewRange.getItems()) {
               if (item.is && item.is('element', 'a')) {
                 linkElements.push(item);
@@ -123,7 +123,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
 
             // Remove each link element and replace with its textual content
             for (const linkElement of linkElements) {
-              // Extract text content from the link, handling nested ah:link elements
+              // Extract text content from the link
               let textContent = '';
               for (const child of linkElement.getChildren()) {
                 if (child.is && child.is('element', 'ah:link')) {
@@ -152,13 +152,19 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           return;
         }
 
-        // If the attribute was removed or not a text item, return
-        if (!href || (!data.item.is('$textProxy') && !data.item.is('$text'))) {
-          return;
+        // Check for and remove any existing link elements in the range first
+        // This is critical to prevent nested links
+        const existingLinks = [];
+        for (const item of viewRange.getItems()) {
+          if (item.is && item.is('element', 'a')) {
+            existingLinks.push(item);
+          }
         }
 
-        // Get position range for conversion
-        const viewRange = mapper.toViewRange(data.range);
+        // Remove existing links first
+        for (const link of existingLinks) {
+          writer.remove(link);
+        }
 
         // Get text content from the view range
         let textContent = '';
@@ -168,22 +174,21 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           }
         }
 
-        // Get the link name - this is critical for predefined links
+        // Get the link name
         let linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName');
 
-        // If no linkName is set, log error and skip creating the link
         if (!linkName) {
-          console.error('AlightPredefinedLinkPluginEditing: Missing predefinedLinkName attribute for link. Link creation aborted.', {
+          console.error('Missing predefinedLinkName attribute for link. Link creation aborted.', {
             href,
             content: textContent
           });
-          // Instead of creating a link, insert plain text
+          // Insert plain text instead
           writer.insert(viewRange.start, writer.createText(textContent));
           writer.remove(viewRange);
           return;
         }
 
-        // Always create the exact link structure we want
+        // Create the link structure
         const linkElement = writer.createContainerElement('a', {
           'href': '#',
           'class': 'AHCustomeLink',
@@ -200,31 +205,10 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         // Insert ah:link into a
         writer.insert(writer.createPositionAt(linkElement, 0), ahLinkElement);
 
-        // Add to document and remove original
-        writer.insert(viewRange.start, linkElement);
+        // Important: Remove original content FIRST, then insert new
         writer.remove(viewRange);
+        writer.insert(viewRange.start, linkElement);
       });
-    });
-
-    // Simplified editing downcast for interactive editing view
-    editor.conversion.for('editingDowncast').attributeToElement({
-      model: 'alightPredefinedLinkPluginHref',
-      view: (href, { writer }) => {
-        // Create a simple link element with the required attributes
-        const linkElement = writer.createAttributeElement('a', {
-          'href': href,
-          'class': 'AHCustomeLink',
-          'data-id': 'predefined_link'
-        }, {
-          priority: 5,
-          id: 'predefined-link'
-        });
-
-        // Set custom property for link identification
-        writer.setCustomProperty('alight-predefined-link', true, linkElement);
-
-        return linkElement;
-      }
     });
 
     // Handle specific format for predefined links with ah:link element
