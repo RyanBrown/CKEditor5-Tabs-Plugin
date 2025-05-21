@@ -165,7 +165,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           priority: 5,
           id: 'predefined-link'
         });
-        console.log(`PDLEditor.editingDowncast.dispatcher -> 8 href: ${href}, setting alight-predefined-link property to linkElement: `, linkElement);
+        console.log(`PDLEditor.editingDowncast -> 8 href: ${href}, setting alight-predefined-link property to linkElement: `, linkElement);
         // Set custom property for link identification
         writer.setCustomProperty('alight-predefined-link', true, linkElement);
 
