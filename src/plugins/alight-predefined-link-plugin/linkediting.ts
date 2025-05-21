@@ -115,7 +115,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         // Get position range for conversion
         const viewRange = mapper.toViewRange(data.range);
         console.log(`PDLEditor.dataDowncast.dispatcher.on -> alightPredefinedLinkPluginLinkName: ${data.item.getAttribute('alightPredefinedLinkPluginLinkName')}, data: `, data);
-        console.log(`PDLEditor.dataDowncast.dispatcher.on -> alightPredefinedLinkPluginHref: ${data.item.getAttribute('alightPredefinedLinkPluginHref')}, data: `, data)
+        console.log(`PDLEditor.dataDowncast.dispatcher.on -> alightPredefinedLinkPluginHref: ${data.item.getAttribute('alightPredefinedLinkPluginHref')}, data: `, data);
         // ALWAYS use predefinedLinkName directly - this is the critical fix
         const linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName');
 
@@ -165,7 +165,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           priority: 5,
           id: 'predefined-link'
         });
-        console.log(`PDLEditor.dataDowncast.dispatcher ->8 href: ${href}, setting alight-predefined-link property to linkElement: `, linkElement);
+        console.log(`PDLEditor.editingDowncast.dispatcher -> 8 href: ${href}, setting alight-predefined-link property to linkElement: `, linkElement);
         // Set custom property for link identification
         writer.setCustomProperty('alight-predefined-link', true, linkElement);
 
