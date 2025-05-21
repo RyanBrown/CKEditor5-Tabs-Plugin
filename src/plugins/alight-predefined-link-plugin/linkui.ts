@@ -247,6 +247,7 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
       (data) => {
         // Sort the predefined links alphabetically and remove duplicates
         this._predefinedLinks = this._sortPredefinedLinks(data);
+
         if (this.verboseMode) console.log(data);
 
         // Update the actions view with the loaded predefined links if it's already created
@@ -772,7 +773,7 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
         return;
       }
 
-      // Make sure links are sorted before passing to the ContentManager
+      // Make sure links are sorted before passing to ContentManager
       const sortedLinks = this._sortPredefinedLinks(this._predefinedLinks);
 
       // Create the ContentManager with the initialUrl and sorted predefined links data
