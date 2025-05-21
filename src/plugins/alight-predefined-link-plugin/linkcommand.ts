@@ -111,41 +111,10 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
   public override execute(href: string, options: LinkOptions = {}): void {
     // Determine if href is a predefined link
     const isPredefined = isPredefinedLink(href);
-
-    // Get linkName - for predefined links this is critical
-    let linkName = '';
-
     const model = this.editor.model;
     const selection = model.document.selection;
 
-    // For existing links, get the current linkName
-    console.log(`AlightPredefinedLinkPluginCommand.execute -> has alightPredefinedLinkPluginLinkName: ${selection.hasAttribute('alightPredefinedLinkPluginLinkName')}`);
-    if (selection.hasAttribute('alightPredefinedLinkPluginLinkName')) {
-      linkName = selection.getAttribute('alightPredefinedLinkPluginLinkName') as string;
-    }
-    console.log(`AlightPredefinedLinkPluginCommand.execute -> 4 linkName: ${linkName}`);
-
-    // CRITICAL: For predefined links, always set a linkName
-    // This is what ensures our output structure is correct
-    if (isPredefined && !linkName) {
-      console.log(`AlightPredefinedLinkPluginCommand.execute -> 5 isPredefined && !linkName: ${isPredefined && !linkName}`);
-      // Use the href itself as the linkName if no other value is available
-      console.log(`AlightPredefinedLinkPluginCommand.execute -> setting linkName to href: ${href}`);
-      linkName = href;
-    }
-
-    // For predefined links, always ensure we have a linkName
-    if (isPredefined) {
-      // If no existing linkName, extract from href or generate one
-      if (!linkName) {
-        linkName = extractPredefinedLinkId(href) || href;
-
-        // If still no valid linkName, generate one
-        if (!linkName || linkName.trim() === '') {
-          linkName = 'link-' + Math.random().toString(36).substring(2, 7);
-        }
-      }
-    }
+    let linkName = this._deriveLinkName(href, selection, isPredefined);
 
     model.change(writer => {
       // If selection is collapsed then update selected link or insert new one
@@ -162,17 +131,7 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
             model
           );
 
-          // Update attributes
-          writer.setAttribute('alightPredefinedLinkPluginHref', href, linkRange);
-
-          // For predefined links, set format and linkName
-          if (isPredefined) {
-            writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', linkRange);
-            writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, linkRange);
-          }
-
-          // Process decorator options
-          this._processDecoratorOptions(writer, linkRange, options);
+          this._applyLinkAttributes(writer, linkRange, href, linkName, isPredefined, options);
 
           // Restore selection
           writer.setSelection(position);
@@ -213,23 +172,22 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
 
         // Process each range
         for (const range of ranges) {
-          // Set the alightPredefinedLinkPluginHref attribute on the selected text
-          writer.setAttribute('alightPredefinedLinkPluginHref', href, range);
-
-          // If it's a predefined link, set format and linkName
-          if (isPredefined) {
-            writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', range);
-            writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, range);
-          }
-
-          // Process decorator options
-          this._processDecoratorOptions(writer, range, options);
+          this._applyLinkAttributes(writer, range, href, linkName, isPredefined, options);
         }
       }
     });
 
     // Fire event after command execution to notify UI
     this._fireEvent('executed', { href, options });
+  }
+
+  private _applyLinkAttributes(writer: Writer, range: Range, href: string, linkName: string, isPredefined: boolean, options: LinkOptions): void {
+    writer.setAttribute('alightPredefinedLinkPluginHref', href, range);
+    if (isPredefined) {
+      writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', range);
+      writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, range);
+    }
+    this._processDecoratorOptions(writer, range, options);
   }
 
   /**
@@ -303,5 +261,20 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
     }
 
     return selection.getAttribute(decoratorName) as boolean | undefined;
+  }
+
+  private _deriveLinkName(href: string, selection: any, isPredefined: boolean): string {
+    let linkName = '';
+    if (selection.hasAttribute('alightPredefinedLinkPluginLinkName')) {
+      linkName = selection.getAttribute('alightPredefinedLinkPluginLinkName') as string;
+    }
+
+    if (isPredefined && !linkName) {
+      linkName = extractPredefinedLinkId(href) || href;
+      if (!linkName || !linkName.trim()) {
+        linkName = 'link-' + Math.random().toString(36).substring(2, 7);
+      }
+    }
+    return linkName;
   }
 }
