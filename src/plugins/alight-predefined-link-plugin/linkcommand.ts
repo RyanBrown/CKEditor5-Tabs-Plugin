@@ -119,14 +119,18 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
     const selection = model.document.selection;
 
     // For existing links, get the current linkName
+    console.log(`AlightPredefinedLinkPluginCommand.execute -> has alightPredefinedLinkPluginLinkName: ${selection.hasAttribute('alightPredefinedLinkPluginLinkName')}`);
     if (selection.hasAttribute('alightPredefinedLinkPluginLinkName')) {
       linkName = selection.getAttribute('alightPredefinedLinkPluginLinkName') as string;
     }
+    console.log(`AlightPredefinedLinkPluginCommand.execute -> 4 linkName: ${linkName}`);
 
     // CRITICAL: For predefined links, always set a linkName
     // This is what ensures our output structure is correct
     if (isPredefined && !linkName) {
+      console.log(`AlightPredefinedLinkPluginCommand.execute -> 5 isPredefined && !linkName: ${isPredefined && !linkName}`);
       // Use the href itself as the linkName if no other value is available
+      console.log(`AlightPredefinedLinkPluginCommand.execute -> setting linkName to href: ${href}`);
       linkName = href;
     }
 
