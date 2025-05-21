@@ -62,6 +62,25 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
     return true;
   }
 
+  /**
+   * Sorts an array of predefined links alphabetically by their predefinedLinkDescription property
+   * 
+   * @param links The array of predefined links to sort
+   * @param ascending Whether to sort in ascending (A~Z) order
+   * returns The sorted array of links
+  */
+  private _sortPredefinedLinks(links: PredefinedLink[], ascending: boolean = true): PredefinedLink[] {
+    return [...links].sort((a, b) => {
+      // Get link description with fallback to name if description not available
+      const descA = (a.predefinedLinkDescription || a.predefinedLinkName || '').toLowerCase();
+      const descB = (b.predefinedLinkDescription || b.predefinedLinkName || '').toLowerCase();
+
+      // Simple alphabetical comparison based on description
+      const result = descA.localeCompare(descB);
+      return ascending ? result : -result;
+    })
+  }
+
   public init(): void {
     const editor = this.editor;
     const t = this.editor.t;
@@ -178,7 +197,8 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
 
     this.loadService.loadPredefinedLinks().then(
       (data) => {
-        this._predefinedLinks = data;
+        // Sort the predefined links alphabetically
+        this._predefinedLinks = this._sortPredefinedLinks(data);
         if (this.verboseMode) console.log(data);
 
         // Update the actions view with the loaded predefined links if it's already created
@@ -704,8 +724,11 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
         return;
       }
 
-      // Create the ContentManager with the initialUrl and predefined links data
-      this._linkManager = new ContentManager(initialUrl, this._predefinedLinks);
+      // Make sure links are sorted before passing to the ContentManager
+      const sortedLinks = this._sortPredefinedLinks(this._predefinedLinks);
+
+      // Create the ContentManager with the initialUrl and sorted predefined links data
+      this._linkManager = new ContentManager(initialUrl, sortedLinks);
 
       // Pass the modal dialog reference to enable/disable the Continue button
       // Add an event listener for link selection

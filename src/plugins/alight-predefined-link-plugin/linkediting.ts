@@ -97,7 +97,6 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
     editor.model.schema.extend('$text', { allowAttributes: 'alightPredefinedLinkPluginFormat' });
 
     // Setup data downcast conversion for links with a nested ah:link element
-    // In linkediting.ts - replace your current dataDowncast conversion handler
     editor.conversion.for('dataDowncast').add(dispatcher => {
       dispatcher.on('attribute:alightPredefinedLinkPluginHref', (evt, data, conversionApi) => {
         // Skip if attribute already consumed
