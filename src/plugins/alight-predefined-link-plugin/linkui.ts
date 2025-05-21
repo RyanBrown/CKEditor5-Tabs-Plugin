@@ -63,14 +63,18 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
   }
 
   /**
-   * Sorts an array of predefined links alphabetically by their predefinedLinkDescription property
-   * 
-   * @param links The array of predefined links to sort
-   * @param ascending Whether to sort in ascending (A~Z) order
-   * returns The sorted array of links
-  */
+ * Sorts an array of predefined links alphabetically and removes duplicates
+ * 
+ * @param links The array of predefined links to sort
+ * @param ascending Whether to sort in ascending (A~Z) order
+ * @returns The sorted array of links with duplicates removed
+ */
   private _sortPredefinedLinks(links: PredefinedLink[], ascending: boolean = true): PredefinedLink[] {
-    return [...links].sort((a, b) => {
+    // First, deduplicate the links based on uniqueId
+    const uniqueLinks = this._removeDuplicateLinks(links);
+
+    // Then sort the unique links
+    return uniqueLinks.sort((a, b) => {
       // Get link description with fallback to name if description not available
       const descA = (a.predefinedLinkDescription || a.predefinedLinkName || '').toLowerCase();
       const descB = (b.predefinedLinkDescription || b.predefinedLinkName || '').toLowerCase();
@@ -78,7 +82,51 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
       // Simple alphabetical comparison based on description
       const result = descA.localeCompare(descB);
       return ascending ? result : -result;
-    })
+    });
+  }
+
+  /**
+   * Removes duplicate links from an array of predefined links
+   * 
+   * @param links The array of predefined links to deduplicate
+   * @returns A new array with duplicates removed
+   */
+  private _removeDuplicateLinks(links: PredefinedLink[]): PredefinedLink[] {
+    const uniqueMap = new Map<string, PredefinedLink>();
+
+    // Process each link and only keep one instance of each uniqueId
+    links.forEach(link => {
+      const key = this._getLinkUniqueKey(link);
+
+      // Only add the link if we haven't seen this key before
+      if (!uniqueMap.has(key)) {
+        uniqueMap.set(key, link);
+      }
+    });
+
+    // Convert the Map values back to an array
+    return Array.from(uniqueMap.values());
+  }
+
+  /**
+   * Gets a unique key for a link based on its properties
+   * 
+   * @param link The predefined link to get a key for
+   * @returns A string that can be used to identify duplicate links
+   */
+  private _getLinkUniqueKey(link: PredefinedLink): string {
+    // Prioritize uniqueId if available
+    if (link.uniqueId) {
+      return link.uniqueId.toString();
+    }
+
+    // Fall back to destination/URL
+    if (link.destination) {
+      return this._normalizeUrl(link.destination as string);
+    }
+
+    // Last resort: use name and description together
+    return `${link.predefinedLinkName || ''}-${link.predefinedLinkDescription || ''}`;
   }
 
   public init(): void {
@@ -197,7 +245,7 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
 
     this.loadService.loadPredefinedLinks().then(
       (data) => {
-        // Sort the predefined links alphabetically
+        // Sort the predefined links alphabetically and remove duplicates
         this._predefinedLinks = this._sortPredefinedLinks(data);
         if (this.verboseMode) console.log(data);
 
