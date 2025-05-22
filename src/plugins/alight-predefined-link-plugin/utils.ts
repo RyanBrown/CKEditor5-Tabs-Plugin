@@ -144,7 +144,6 @@ export function getLocalizedDecorators(
       decorator.label = localizedDecoratorsLabels[decorator.label];
     }
   });
-
   return decorators;
 }
 
@@ -165,7 +164,6 @@ export function normalizeDecorators(decorators?: Record<string, LinkDecoratorDef
       retArray.push(decorator);
     }
   }
-
   return retArray;
 }
 
@@ -234,7 +232,6 @@ export function createBookmarkCallbacks(editor: Editor): LinkActionsViewOptions 
       forceScroll: true
     });
   }
-
   return {
     isScrollableToTarget,
     scrollToTarget
@@ -257,7 +254,6 @@ export function extractPredefinedLinkId(href: string | null | undefined): string
   if (ahLinkMatch && ahLinkMatch[1]) {
     return ahLinkMatch[1];
   }
-
   // For predefined links, return the href itself
   return isPredefinedLink(href) ? href : null;
 }
@@ -291,7 +287,6 @@ export function filterLinkAttributes(attributes: Record<string, string>): Record
     // Keep all other attributes
     result[key] = attributes[key];
   }
-
   return result;
 }
 
@@ -330,7 +325,6 @@ export function ensurePredefinedLinkStructure(html: string): string {
       // Create a proper structure
       link.innerHTML = `<ah:link name="${linkName}">${link.textContent}</ah:link>`;
     });
-
     return tempDiv.innerHTML;
   } catch (error) {
     console.error('Error ensuring predefined link structure:', error);

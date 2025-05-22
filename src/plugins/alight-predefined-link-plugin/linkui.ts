@@ -103,7 +103,6 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
         uniqueMap.set(key, link);
       }
     });
-
     // Convert the Map values back to an array
     return Array.from(uniqueMap.values());
   }
@@ -165,7 +164,6 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
           ['ck-fake-link-selection', 'ck-fake-link-selection_collapsed'],
           markerElement
         );
-
         return markerElement;
       }
     });
@@ -525,7 +523,6 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
               link.destination.includes(predefinedId))) {
             return true;
           }
-
           return false;
         });
 

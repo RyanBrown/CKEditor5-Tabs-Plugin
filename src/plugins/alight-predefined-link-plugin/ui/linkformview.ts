@@ -219,7 +219,6 @@ export default class LinkFormView extends View {
         return false;
       }
     }
-
     return true;
   }
 
@@ -275,7 +274,6 @@ export default class LinkFormView extends View {
     if (eventName) {
       button.delegate('execute').to(this, eventName);
     }
-
     return button;
   }
 
@@ -308,7 +306,6 @@ export default class LinkFormView extends View {
 
       switches.add(switchButton);
     }
-
     return switches;
   }
 
@@ -372,7 +369,6 @@ export default class LinkFormView extends View {
     if (!element) {
       return null;
     }
-
     return element.value.trim();
   }
 }

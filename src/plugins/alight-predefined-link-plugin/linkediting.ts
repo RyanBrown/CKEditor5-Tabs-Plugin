@@ -9,9 +9,7 @@ import type {
   ViewElement,
   ViewDocumentKeyDownEvent,
   ViewDocumentClickEvent,
-  DocumentSelectionChangeAttributeEvent,
-  ViewNode,
-  ViewText
+  DocumentSelectionChangeAttributeEvent
 } from '@ckeditor/ckeditor5-engine';
 import {
   Input,
@@ -28,7 +26,6 @@ import {
   normalizeDecorators,
   createBookmarkCallbacks,
   isPredefinedLink,
-  extractPredefinedLinkId,
   type NormalizedLinkDecoratorAutomaticDefinition,
   type NormalizedLinkDecoratorManualDefinition
 } from './utils';
