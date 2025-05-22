@@ -63,12 +63,12 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
   }
 
   /**
- * Sorts an array of predefined links alphabetically and removes duplicates
- * 
- * @param links The array of predefined links to sort
- * @param ascending Whether to sort in ascending (A~Z) order
- * @returns The sorted array of links with duplicates removed
- */
+   * Sorts an array of predefined links alphabetically and removes duplicates
+   * 
+   * @param links The array of predefined links to sort
+   * @param ascending Whether to sort in ascending (A~Z) order
+   * @returns The sorted array of links with duplicates removed
+   */
   private _sortPredefinedLinks(links: PredefinedLink[], ascending: boolean = true): PredefinedLink[] {
     // First, deduplicate the links based on uniqueId
     const uniqueLinks = this._removeDuplicateLinks(links);
@@ -638,10 +638,10 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
     const linksContainer = document.createElement('div');
     linksContainer.id = 'links-container';
     linksContainer.innerHTML = `
-    <div class="cka-loading-container">
-      <div class="cka-loading-spinner"></div>
-    </div>
-  `;
+      <div class="cka-loading-container">
+        <div class="cka-loading-spinner"></div>
+      </div>
+    `;
 
     const paginationContainer = document.createElement('div');
     paginationContainer.id = 'pagination-container';
