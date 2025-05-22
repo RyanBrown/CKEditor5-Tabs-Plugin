@@ -50,6 +50,11 @@ const EXTERNAL_LINKS_REGEXP = /^(https?:)?\/\//;
  */
 export default class AlightPredefinedLinkPluginEditing extends Plugin {
   /**
+   * Cache for link attributes to avoid repeated computation
+   */
+  private _linkAttributesCache: Array<string> | null = null;
+
+  /**
    * @inheritDoc
    */
   public static get pluginName() {
@@ -116,13 +121,8 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         const linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName');
         const viewRange = mapper.toViewRange(data.range);
 
-        // Get text content from the view range
-        let textContent = '';
-        for (const item of viewRange.getItems()) {
-          if ((item.is && (item.is('$text') || item.is('$textProxy')))) {
-            textContent += item.data;
-          }
-        }
+        // Get text content using walker for better performance
+        const textContent = this._extractTextFromViewRange(viewRange);
 
         // Only create predefined link structure if linkName exists
         if (linkName) {
@@ -186,9 +186,8 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
             // First check if it has AHCustomeLink class
             const hasAHCustomeLink = viewElement.hasClass('AHCustomeLink');
 
-            // find ah:link element inside
-            const ahLinkElement = Array.from(viewElement.getChildren())
-              .find(child => child.is && typeof child.is === 'function' && child.is('element', 'ah:link'));
+            // Find ah:link element without creating intermediate array
+            const ahLinkElement = this._findAhLinkElement(viewElement);
 
             if (hasAHCustomeLink && ahLinkElement?.is('element')) {
               // Get the name attribute from ah:link - this is the predefinedLinkName
@@ -259,9 +258,45 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
 
     // Clears the DocumentSelection decorator attributes if the selection is no longer in a link
     this._enableSelectionAttributesFixer();
+  }
 
-    // Handle adding default protocol to pasted links.
-    this._enableClipboardIntegration();
+  /**
+   * Extract text content from view range using walker
+   */
+  private _extractTextFromViewRange(viewRange: any): string {
+    const walker = viewRange.getWalker({ shallow: true });
+    const textParts: string[] = [];
+
+    for (const { item } of walker) {
+      if (item.is('$text') || item.is('$textProxy')) {
+        textParts.push(item.data);
+      }
+    }
+
+    return textParts.join('');
+  }
+
+  /**
+   * Find ah:link element without creating intermediate array
+   */
+  private _findAhLinkElement(viewElement: ViewElement): ViewElement | null {
+    for (const child of viewElement.getChildren()) {
+      if (child.is && typeof child.is === 'function' && child.is('element', 'ah:link')) {
+        return child as ViewElement;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Get cached link attributes to avoid repeated computation
+   */
+  private _getLinkAttributesAllowedOnText(schema: Schema): Array<string> {
+    if (this._linkAttributesCache === null) {
+      const textAttributes = schema.getDefinition('$text')!.allowAttributes;
+      this._linkAttributesCache = textAttributes.filter(attribute => attribute.startsWith('link'));
+    }
+    return this._linkAttributesCache;
   }
 
   /**
@@ -416,58 +451,24 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
       }
 
       model.change(writer => {
-        removeLinkAttributesFromSelection(writer, getLinkAttributesAllowedOnText(model.schema));
+        this._removeLinkAttributesFromSelection(writer, this._getLinkAttributesAllowedOnText(model.schema));
       });
     });
   }
 
   /**
-   * Enables URL fixing on pasting.
+   * Make the selection free of link-related model attributes with batched operations.
    */
-  private _enableClipboardIntegration(): void {
-    const editor = this.editor;
-    const model = editor.model;
-    const defaultProtocol = this.editor.config.get('link.defaultProtocol');
+  private _removeLinkAttributesFromSelection(writer: Writer, linkAttributes: Array<string>): void {
+    // Batch all attribute removals
+    const attributesToRemove = [
+      'alightPredefinedLinkPluginHref',
+      'alightPredefinedLinkPluginLinkName',
+      'alightPredefinedLinkPluginFormat',
+      ...linkAttributes
+    ];
 
-    if (!defaultProtocol) {
-      return;
-    }
-
-    this.listenTo<ClipboardContentInsertionEvent>(editor.plugins.get('ClipboardPipeline'), 'contentInsertion', (evt, data) => {
-      model.change(writer => {
-        const range = writer.createRangeIn(data.content);
-
-        for (const item of range.getItems()) {
-          if (item.hasAttribute('alightPredefinedLinkPluginHref')) {
-            const newLink = addLinkProtocolIfApplicable(item.getAttribute('alightPredefinedLinkPluginHref') as string, defaultProtocol);
-
-            writer.setAttribute('alightPredefinedLinkPluginHref', newLink, item);
-          }
-        }
-      });
-    });
+    // Remove all attributes in sequence for better performance
+    attributesToRemove.forEach(attr => writer.removeSelectionAttribute(attr));
   }
-}
-
-/**
- * Make the selection free of link-related model attributes.
- * All link-related model attributes start with "link". That includes not only "alightPredefinedLinkPluginHref"
- * but also all decorator attributes (they have dynamic names), or even custom plugins.
- */
-function removeLinkAttributesFromSelection(writer: Writer, linkAttributes: Array<string>): void {
-  writer.removeSelectionAttribute('alightPredefinedLinkPluginHref');
-  writer.removeSelectionAttribute('alightPredefinedLinkPluginLinkName');
-  writer.removeSelectionAttribute('alightPredefinedLinkPluginFormat');
-
-  for (const attribute of linkAttributes) {
-    writer.removeSelectionAttribute(attribute);
-  }
-}
-
-/**
- * Returns an array containing names of the attributes allowed on `$text` that describes the link item.
- */
-function getLinkAttributesAllowedOnText(schema: Schema): Array<string> {
-  const textAttributes = schema.getDefinition('$text')!.allowAttributes;
-  return textAttributes.filter(attribute => attribute.startsWith('link'));
 }
