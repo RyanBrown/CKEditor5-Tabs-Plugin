@@ -322,15 +322,34 @@ export class ContentManager implements ILinkManager {
 
   private buildSelectedUrlInfoMarkup(): string {
     // Find the matching link for this URL
-    const matchingLink = this.predefinedLinksData.find(link =>
-      link.destination === this.initialUrl
-    );
+    // For predefined links, the initialUrl is the predefinedLinkName, not the destination
+    const matchingLink = this.predefinedLinksData.find(link => {
+      // Check if initialUrl matches the predefinedLinkName
+      if (link.predefinedLinkName === this.initialUrl) {
+        return true;
+      }
+
+      // Check if initialUrl matches the uniqueId
+      if (link.uniqueId && link.uniqueId.toString() === this.initialUrl) {
+        return true;
+      }
+
+      // Check if initialUrl matches the destination
+      if (link.destination === this.initialUrl) {
+        return true;
+      }
+
+      // For backward compatibility, check normalized URLs
+      const normalizedInitial = this.normalizeUrl(this.initialUrl);
+      const normalizedDestination = this.normalizeUrl(link.destination as string);
+      return normalizedInitial === normalizedDestination;
+    });
 
     if (!matchingLink) {
       return `
       <div class="cka-current-url-info">
-        <h3><strong>Current Link URL:</strong> ${this.initialUrl}</h3>
-        <div class="cka-note-message">This URL is not in the predefined links list.</div>
+        <h3><strong>Current Link:</strong> ${this.initialUrl}</h3>
+        <div class="cka-note-message">This link is not in the predefined links list.</div>
       </div>
     `;
     }
