@@ -517,6 +517,11 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
             return true;
           }
 
+          // Check if the predefinedLinkName matches
+          if (link.predefinedLinkName === predefinedId) {
+            return true;
+          }
+
           // If the destination matches the predefined ID
           if (link.destination &&
             (link.destination === predefinedId ||
@@ -530,7 +535,15 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
           return exactMatch;
         }
       }
+      // For predefined links, the URL might BE the predefinedLinkName
+      // So check for direct match with predefinedLinkName
+      const directMatch = this._predefinedLinks.find(link =>
+        link.predefinedLinkName === url
+      );
 
+      if (directMatch) {
+        return directMatch;
+      }
       // Fallback to normalized URL comparison
       return this._predefinedLinks.find(link => {
         const normalizedDestination = this._normalizeUrl(link.destination as string);

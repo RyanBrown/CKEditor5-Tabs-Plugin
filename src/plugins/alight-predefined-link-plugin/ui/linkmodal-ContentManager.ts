@@ -27,9 +27,24 @@ export class ContentManager implements ILinkManager {
 
     // If we have an initial URL, try to find and preselect the matching link
     if (initialUrl) {
+      // First try direct match by predefinedLinkName (for predefined links)
       this.selectedLink = this.predefinedLinksData.find(
-        link => link.destination === initialUrl
+        link => link.predefinedLinkName === initialUrl
       ) || null;
+
+      // If not found, try by uniqueId
+      if (!this.selectedLink) {
+        this.selectedLink = this.predefinedLinksData.find(
+          link => link.uniqueId && link.uniqueId.toString() === initialUrl
+        ) || null;
+      }
+
+      // If still not found, try by destination
+      if (!this.selectedLink) {
+        this.selectedLink = this.predefinedLinksData.find(
+          link => link.destination === initialUrl
+        ) || null;
+      }
     }
 
     this.paginationManager = new PaginationManager(this.handlePageChange.bind(this));
