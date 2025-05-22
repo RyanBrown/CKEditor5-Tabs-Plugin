@@ -199,6 +199,7 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
     // Listen to selection changes to update button state
     editor.model.document.on('change:selection', () => {
       this._updateButtonState();
+      this._updateActionsViewState();
     });
 
     // Also listen to selection changes to detect when user enters a link or clicks on it
@@ -207,6 +208,7 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
       setTimeout(() => {
         this._checkAndShowBalloon();
         this._updateButtonState();
+        this._updateActionsViewState();
       }, 10);
     });
   }
@@ -234,6 +236,43 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
     }
   }
 
+  /**
+   * Updates the actions view button states based on data loading status
+   */
+  private _updateActionsViewState(): void {
+    if (this.actionsView) {
+      const linkCommand = this.editor.commands.get('alight-predefined-link') as AlightPredefinedLinkPluginCommand;
+      const unlinkCommand = this.editor.commands.get('alight-predefined-unlink') as AlightPredefinedLinkPluginUnlinkCommand;
+
+      // Get the current link URL
+      const href = linkCommand.value;
+
+      // Determine if edit should be enabled:
+      // 1. Data must be loaded
+      // 2. Link command must be enabled
+      // 3. If it's a predefined link, we need the data
+      let editEnabled = linkCommand.isEnabled;
+
+      if (href && isPredefinedLink(href)) {
+        // For predefined links, only enable edit if data is loaded
+        editEnabled = editEnabled && this._dataLoaded;
+      }
+
+      // Update the edit button state
+      this.actionsView.editButtonView.set('isEnabled', editEnabled);
+
+      // Update tooltip to show why it's disabled if needed
+      if (!editEnabled && !this._dataLoaded && href && isPredefinedLink(href)) {
+        this.actionsView.editButtonView.set('tooltip', 'Loading predefined links data...');
+      } else {
+        this.actionsView.editButtonView.set('tooltip', true);
+      }
+
+      // Unlink button can always be enabled if the unlink command is enabled
+      this.actionsView.unlinkButtonView.set('isEnabled', unlinkCommand.isEnabled);
+    }
+  }
+
   protected override setModalContents = (): void => {
     if (this.verboseMode) console.log(`Loading predefined links...`);
 
@@ -242,6 +281,7 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
 
     // Update button state immediately to disable it during loading
     this._updateButtonState();
+    this._updateActionsViewState();
 
     this.loadService.loadPredefinedLinks().then(
       (data) => {
@@ -261,6 +301,7 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
 
         // Update button state after data is loaded
         this._updateButtonState();
+        this._updateActionsViewState();
       },
       (error) => {
         console.log(error);
@@ -269,6 +310,7 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
 
         // Update button state to reflect the error
         this._updateButtonState();
+        this._updateActionsViewState();
       }
     );
   }
@@ -406,11 +448,18 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
       actionsView.setPredefinedLinks(this._predefinedLinks);
     }
 
+    // Initial state - we'll update this dynamically
     actionsView.editButtonView.bind('isEnabled').to(linkCommand);
     actionsView.unlinkButtonView.bind('isEnabled').to(unlinkCommand);
 
     // Execute editing in a modal dialog after clicking the "Edit" button
     this.listenTo(actionsView, 'edit', () => {
+      // Double-check that data is loaded before allowing edit
+      if (!this._dataLoaded) {
+        console.warn('Cannot edit link - data not loaded yet');
+        return;
+      }
+
       this._hideUI();
       this._showUI(true);
     });
@@ -560,6 +609,9 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
         position: this._getBalloonPositionData()
       });
 
+      // Update button states right after showing the balloon
+      this._updateActionsViewState();
+
       // Begin responding to UI updates
       this._startUpdatingUI();
     }
@@ -614,6 +666,9 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
         } else if (this._areActionsInPanel) {
           // Update the balloon position as the selection changes
           this._balloon.updatePosition(this._getBalloonPositionData());
+
+          // Update button states whenever the UI updates
+          this._updateActionsViewState();
         }
 
         prevSelectedLink = selectedLink;
