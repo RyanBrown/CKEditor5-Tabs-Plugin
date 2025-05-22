@@ -142,11 +142,15 @@ export class ContentManager implements ILinkManager {
 
     // Maintain selected link if still in filtered results, otherwise clear selection
     if (this.selectedLink && !filteredData.some(link => link.predefinedLinkName === this.selectedLink?.predefinedLinkName)) {
-      this.selectedLink = null;
+      // If we have an initialUrl and the selected link matches it, keep the selection
+      // This ensures the current link stays selected even if filtered out
+      if (!(this.initialUrl && this.selectedLink.predefinedLinkName === this.initialUrl)) {
+        this.selectedLink = null;
 
-      // Notify of deselection if callback exists
-      if (this.onLinkSelected) {
-        this.onLinkSelected(null);
+        // Notify of deselection if callback exists
+        if (this.onLinkSelected) {
+          this.onLinkSelected(null);
+        }
       }
     }
 
@@ -181,6 +185,26 @@ export class ContentManager implements ILinkManager {
     }
   }
 
+  /**
+   * Checks if a link matches the current search query and filters
+   * This is used to determine if the selected link matches the search criteria
+   */
+  private _doesLinkMatchCurrentSearch(link: PredefinedLink): boolean {
+    // Get the current search query from the search manager
+    const searchQuery = this.searchManager.getCurrentSearchQuery().toLowerCase();
+
+    // Check if link matches search query
+    const matchesSearch = !searchQuery ||
+      (link.predefinedLinkName && link.predefinedLinkName.toLowerCase().includes(searchQuery)) ||
+      (link.predefinedLinkDescription && link.predefinedLinkDescription.toLowerCase().includes(searchQuery)) ||
+      (link.destination && link.destination.toLowerCase().includes(searchQuery));
+
+    // For now, we're only checking search query, not advanced filters
+    // If you want to include advanced filters, you'd need to expose them from SearchManager
+
+    return matchesSearch;
+  }
+
   public renderContent(container: HTMLElement): void {
     // Prevent recursive renders
     if (this.isRendering) {
@@ -209,8 +233,20 @@ export class ContentManager implements ILinkManager {
     // Initialize search first as it sets up the search container
     this.searchManager.initialize(container);
 
+    // Calculate total items for pagination, excluding the selected item if displayed separately
+    let paginationTotalItems = this.filteredLinksData.length;
+    if (this.initialUrl && this.selectedLink) {
+      // If we're showing the selected link separately, subtract 1 from total
+      const isSelectedInFiltered = this.filteredLinksData.some(link =>
+        link.predefinedLinkName === this.selectedLink?.predefinedLinkName
+      );
+      if (isSelectedInFiltered) {
+        paginationTotalItems--;
+      }
+    }
+
     // Then initialize pagination with the correct count of filtered items
-    this.paginationManager.initialize(container, this.filteredLinksData.length);
+    this.paginationManager.initialize(container, paginationTotalItems);
 
     // Make sure the search input has the current search query
     const searchInput = container.querySelector('#search-input') as HTMLInputElement;
@@ -311,11 +347,22 @@ export class ContentManager implements ILinkManager {
     const alertsMarkup = this.buildAlertsMarkup();
 
     // Links list
-    const linksMarkup = currentPageData.length > 0
-      ? currentPageData
+    let linksMarkup = '';
+    if (currentPageData.length > 0) {
+      linksMarkup = currentPageData
         .map(link => this.buildLinkItemMarkup(link))
-        .join('')
-      : '<div class="cka-center-modal-message">No results found. Try adjusting your search criteria.</div>';
+        .join('');
+    } else {
+      // Check if we're showing the selected link separately and it matches the search
+      const isShowingSelectedLink = this.initialUrl && this.selectedLink;
+      const selectedMatchesSearch = isShowingSelectedLink && this._doesLinkMatchCurrentSearch(this.selectedLink!);
+
+      if (!isShowingSelectedLink || !selectedMatchesSearch) {
+        // Only show "no results" if we're not showing a matching selected link
+        linksMarkup = '<div class="cka-center-modal-message">No results found. Try adjusting your search criteria.</div>';
+      }
+      // Otherwise, show nothing (empty list) since the result is shown above
+    }
 
     // Pagination container
     const paginationMarkup = `<div id="pagination-container" class="cka-pagination"></div>`;
@@ -326,6 +373,7 @@ export class ContentManager implements ILinkManager {
       Data summary:
       - Total links: ${this.predefinedLinksData.length}
       - Filtered links: ${this.filteredLinksData.length}
+      - Display filtered links: ${displayFilteredData.length}
       - Current page: ${currentPage}
       - Items on page: ${currentPageData.length}
       - Page size: ${pageSize}
