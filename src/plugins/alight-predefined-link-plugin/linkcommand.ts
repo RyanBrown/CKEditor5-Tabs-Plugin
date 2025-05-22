@@ -228,7 +228,15 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
 
     if (isPredefined) {
       attributesToSet.set('alightPredefinedLinkPluginFormat', 'ahcustom');
-      attributesToSet.set('alightPredefinedLinkPluginLinkName', linkName);
+
+      // For predefined links, ensure linkName matches the href
+      // since href IS the predefinedLinkName for these links
+      const updatedLinkName = extractPredefinedLinkId(href) || href;
+      attributesToSet.set('alightPredefinedLinkPluginLinkName', updatedLinkName);
+    } else {
+      // For non-predefined links, remove predefined attributes
+      writer.removeAttribute('alightPredefinedLinkPluginFormat', range);
+      writer.removeAttribute('alightPredefinedLinkPluginLinkName', range);
     }
 
     // Apply all link attributes atomically
@@ -282,24 +290,24 @@ export default class AlightPredefinedLinkPluginCommand extends Command {
     if (isLinkableElement(selectedElement, model.schema)) {
       return selectedElement.getAttribute(decoratorName) as boolean | undefined;
     }
-
     return selection.getAttribute(decoratorName) as boolean | undefined;
   }
 
   private _deriveLinkName(href: string, selection: any, isPredefined: boolean): string {
     let linkName = '';
 
-    if (selection.hasAttribute('alightPredefinedLinkPluginLinkName')) {
-      linkName = selection.getAttribute('alightPredefinedLinkPluginLinkName') as string;
-    }
-
-    if (isPredefined && !linkName) {
+    if (isPredefined) {
+      // For predefined links, always derive from the href
+      // Don't use the old linkName attribute
       linkName = extractPredefinedLinkId(href) || href;
+
       if (!linkName || !linkName.trim()) {
         linkName = 'link-' + Math.random().toString(36).substring(2, 7);
       }
+    } else if (selection.hasAttribute('alightPredefinedLinkPluginLinkName')) {
+      // Only use existing linkName for non-predefined links
+      linkName = selection.getAttribute('alightPredefinedLinkPluginLinkName') as string;
     }
-
     return linkName;
   }
 }

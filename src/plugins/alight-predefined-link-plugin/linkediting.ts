@@ -165,6 +165,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         const href = data.attributeNewValue;
         const linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName');
         const format = data.item.getAttribute('alightPredefinedLinkPluginFormat');
+        console.log('Data downcast - href:', href, 'linkName:', linkName, 'format:', format);
 
         if (!href || (!data.item.is('$textProxy') && !data.item.is('$text'))) {
           return;
@@ -175,6 +176,9 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           if (format === 'ahcustom' && linkName) {
             const viewRange = mapper.toViewRange(data.range);
             const textContent = this._extractTextFromViewRange(viewRange);
+            // Ensure the linkName in ah:link matches the href
+            // For predefined links, href should be the linkName
+            const ahLinkName = isPredefinedLink(href) ? href : linkName;
 
             // Create the complete structure
             const linkElement = writer.createContainerElement('a', {
@@ -183,7 +187,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
             });
 
             const ahLinkElement = writer.createContainerElement('ah:link', {
-              'name': linkName
+              'name': ahLinkName  // Use the corrected name
             });
 
             writer.insert(writer.createPositionAt(ahLinkElement, 0), writer.createText(textContent));
@@ -192,6 +196,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
             // Replace the original range
             writer.insert(viewRange.start, linkElement);
             writer.remove(viewRange);
+            console.log('Created ah:link with name:', ahLinkName);
           }
           // Handle regular links
           else {
@@ -388,7 +393,6 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         textParts.push(item.data);
       }
     }
-
     return textParts.join('');
   }
 
@@ -405,7 +409,6 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         text += this._getTextFromElement(child as ViewElement);
       }
     }
-
     return text;
   }
 
@@ -506,7 +509,6 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
 
             return element;
           }
-
           return null;
         }
       });

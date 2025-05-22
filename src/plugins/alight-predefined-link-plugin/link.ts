@@ -136,19 +136,21 @@ export default class AlightPredefinedLinkPlugin extends Plugin {
       attributesToSet.set('alightPredefinedLinkPluginFormat', 'ahcustom');
     }
 
-    // Set link name if not present
-    if (!item.hasAttribute('alightPredefinedLinkPluginLinkName')) {
-      let linkName = extractPredefinedLinkId(href);
-      if (!linkName || linkName.trim() === '') {
-        linkName = 'link-' + Math.random().toString(36).substring(2, 7);
-      }
-      attributesToSet.set('alightPredefinedLinkPluginLinkName', linkName);
+    // Always update linkName to match href for predefined links
+    let linkName = extractPredefinedLinkId(href) || href;
+    if (!linkName || linkName.trim() === '') {
+      linkName = 'link-' + Math.random().toString(36).substring(2, 7);
     }
+
+    // Always set the linkName, even if it already exists
+    // This ensures updates are properly reflected
+    attributesToSet.set('alightPredefinedLinkPluginLinkName', linkName);
 
     // Apply all attributes atomically
     attributesToSet.forEach((value, key) => {
       writer.setAttribute(key, value, item);
     });
+    console.log('Updated predefined link attributes - href:', href, 'linkName:', linkName);
   }
 
   /**

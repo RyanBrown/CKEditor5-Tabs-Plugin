@@ -404,7 +404,6 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
         isEnabled: false,
         role: 'menuitemcheckbox'
       });
-
       return button;
     });
   }
@@ -475,7 +474,6 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
       this._hideUI();
       cancel();
     });
-
     return actionsView;
   }
 
@@ -631,7 +629,6 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
     } else {
       target = view.domConverter.viewRangeToDom(viewDocument.selection.getFirstRange()!);
     }
-
     return { target };
   }
 
@@ -782,11 +779,15 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
           console.log('Selected link:', selectedLink);
 
           if (selectedLink && selectedLink.predefinedLinkName) {
-            // Create the link in the editor using the built-in link command
-            // Use predefinedLinkName instead of destination
+            // For predefined links, we need to ensure we're using the correct format
+            // The href should be the predefinedLinkName for predefined links
             let href = selectedLink.predefinedLinkName;
 
-            linkCommand.execute(href);
+            // Execute the command with the new link
+            // The command will handle updating all necessary attributes
+            linkCommand.execute(href, {
+              // Pass any additional options if needed
+            });
 
             // Hide the modal after creating the link
             this._modalDialog?.hide();
