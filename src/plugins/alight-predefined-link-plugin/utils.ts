@@ -2,6 +2,7 @@
 import type {
   DowncastConversionApi,
   Element,
+  Node as ModelNode,
   Schema,
   ViewAttributeElement,
   ViewNode,
@@ -30,6 +31,9 @@ const DEFAULT_LINK_PROTOCOLS = [
   'https?',
   'ftps?',
 ];
+
+// Predefined link identifier pattern - detect links with various ID formats
+const PREDEFINED_LINK_PATTERN = /^(id:|name:|#[\w-]+|[\w-]+)$/i;
 
 /**
  * Returns `true` if a given view node is the link element.
@@ -63,24 +67,88 @@ export function isLinkElement(node: ViewNode | ViewDocumentFragment): boolean {
 
 /**
  * Helper function to detect predefined links
+ * For testing purposes, let's make this more aggressive in detection
  */
 export function isPredefinedLink(url: string | null | undefined): boolean {
-  // If the URL is empty, null, or undefined, it's not a predefined link
-  return !!url;
+  if (!url) return false;
+
+  // For debugging - log what we're checking
+  console.log('Checking if predefined link:', url);
+
+  // Check if URL matches a predefined link pattern
+  if (PREDEFINED_LINK_PATTERN.test(url)) {
+    console.log('Matched PREDEFINED_LINK_PATTERN');
+    return true;
+  }
+
+  // Check for known predefined link prefixes
+  const knownPrefixes = ['predefined:', 'internal:', 'link:', 'id:', 'name:'];
+  for (const prefix of knownPrefixes) {
+    if (url.toLowerCase().startsWith(prefix.toLowerCase())) {
+      console.log('Matched known prefix:', prefix);
+      return true;
+    }
+  }
+
+  // Check for data-link-format or data-id attributes in HTML string format
+  if (url.includes('data-link-format="ahcustom"') ||
+    url.includes('data-id="predefined_link"') ||
+    url.includes('class="AHCustomeLink"')) {
+    console.log('Matched HTML attributes');
+    return true;
+  }
+
+  // Check for ah:link tag pattern
+  if (url.includes('<ah:link') && url.includes('</ah:link>')) {
+    console.log('Matched ah:link pattern');
+    return true;
+  }
+
+  // If the URL is already in the editor's model structure with the format attribute,
+  // we might have the presence of attribute markers
+  if (url.startsWith('ahcustom:') || url.includes('ahcustom')) {
+    console.log('Matched ahcustom pattern');
+    return true;
+  }
+
+  // TEMPORARY: For testing, let's treat any string that doesn't look like a URL as predefined
+  // This helps with debugging - you can remove this later
+  if (!url.startsWith('http') && !url.startsWith('mailto:') && !url.startsWith('tel:') && !url.startsWith('#')) {
+    console.log('Treating as predefined link (not a standard URL)');
+    return true;
+  }
+
+  console.log('Not a predefined link');
+  return false;
 }
 
 /**
  * Creates a link AttributeElement with the provided `href` attribute.
  */
 export function createLinkElement(href: string, { writer }: DowncastConversionApi): ViewAttributeElement {
+  // Check if this is a predefined link
+  const isPredefined = isPredefinedLink(href);
+  const linkId = isPredefined ? extractPredefinedLinkId(href) : null;
+
+  // Create attributes
+  const attributes: Record<string, string> = {
+    'href': href || '#'
+  };
+
+  // Add predefined link attributes
+  if (isPredefined) {
+    attributes['class'] = 'AHCustomeLink';
+    attributes['data-id'] = 'predefined_link';
+    if (linkId) {
+      attributes['data-link-name'] = linkId;
+    }
+    attributes['data-link-format'] = 'ahcustom';
+  }
+
   // Create the link element as an attribute element with required attributes
-  const linkElement = writer.createAttributeElement('a', {
-    'href': href,
-    'class': 'AHCustomeLink',
-    'data-id': 'predefined_link'
-  }, {
+  const linkElement = writer.createAttributeElement('a', attributes, {
     priority: 5,
-    id: 'predefined-link'
+    id: isPredefined ? 'predefined-link' : 'link'
   });
 
   // Set custom property for link identification
@@ -252,14 +320,41 @@ export function extractPredefinedLinkId(href: string | null | undefined): string
     return href;
   }
 
+  // For predefined format with explicit prefixes
+  const prefixMatch = href.match(/^(id:|name:|link:|predefined:)(.+)$/i);
+  if (prefixMatch && prefixMatch[2]) {
+    return prefixMatch[2];
+  }
+
+  // For format prefixes
+  if (href.startsWith('ahcustom:')) {
+    return href.substring(9);
+  }
+
+  // For hash-prefixed IDs
+  if (href.startsWith('#')) {
+    return href.substring(1);
+  }
+
   // Try to extract from HTML structure
   const ahLinkMatch = href.match(/name="([^"]+)"/);
   if (ahLinkMatch && ahLinkMatch[1]) {
     return ahLinkMatch[1];
   }
 
-  // For predefined links, return the href itself
-  return isPredefinedLink(href) ? href : null;
+  // Check for data-link-name attribute
+  const dataLinkNameMatch = href.match(/data-link-name="([^"]+)"/);
+  if (dataLinkNameMatch && dataLinkNameMatch[1]) {
+    return dataLinkNameMatch[1];
+  }
+
+  // If it passes our isPredefinedLink check but we couldn't extract an id,
+  // just return the href itself as the ID
+  if (isPredefinedLink(href)) {
+    return href;
+  }
+
+  return null;
 }
 
 /**
@@ -297,7 +392,6 @@ export function filterLinkAttributes(attributes: Record<string, string>): Record
 
 /**
  * Ensures links have the ah:link structure in the HTML.
- * Simplified to directly create the correct structure without complex parsing.
  */
 export function ensurePredefinedLinkStructure(html: string): string {
   try {
@@ -308,27 +402,25 @@ export function ensurePredefinedLinkStructure(html: string): string {
     const links = tempDiv.querySelectorAll('a.AHCustomeLink');
 
     links.forEach(link => {
-      // Look for existing ah:link element
-      let existingAhLink = link.querySelector('ah\\:link') || link.querySelector('ah:link');
-      let linkName = '';
+      // Get link name from data-link-name attribute
+      const linkName = link.getAttribute('data-link-name') || '';
 
-      if (existingAhLink) {
-        // Get name from existing ah:link
-        linkName = existingAhLink.getAttribute('name') || '';
-
-        // Just keep the existing structure if it's already correct
-        if (linkName) {
-          return;
-        }
-      }
-
-      // If we don't have a valid name, keep original structure
+      // Skip if no valid link name
       if (!linkName) {
         return;
       }
 
-      // Create a proper structure
-      link.innerHTML = `<ah:link name="${linkName}">${link.textContent}</ah:link>`;
+      // Check if there's already an ah:link element
+      const existingAhLink = link.querySelector('ah\\:link, ah:link');
+
+      // If there's already an ah:link with correct name, keep it
+      if (existingAhLink && existingAhLink.getAttribute('name') === linkName) {
+        return;
+      }
+
+      // Otherwise, create a proper structure
+      const linkText = link.textContent || '';
+      link.innerHTML = `<ah:link name="${linkName}">${linkText}</ah:link>`;
     });
 
     return tempDiv.innerHTML;
@@ -336,6 +428,17 @@ export function ensurePredefinedLinkStructure(html: string): string {
     console.error('Error ensuring predefined link structure:', error);
     return html;
   }
+}
+
+/**
+ * Type-safe helper function to check if a model element has a specific name
+ * 
+ * @param element The element to check
+ * @param name The element name to check for
+ * @returns True if the element has the specified name
+ */
+export function isModelElementWithName(node: ModelNode, name: string): node is Element {
+  return node.is('element') && node.name === name;
 }
 
 export type NormalizedLinkDecoratorAutomaticDefinition = LinkDecoratorAutomaticDefinition & { id: string };

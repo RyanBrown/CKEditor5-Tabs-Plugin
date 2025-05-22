@@ -7,11 +7,7 @@ import type {
   Schema,
   Writer,
   ViewElement,
-  ViewDocumentKeyDownEvent,
-  ViewDocumentClickEvent,
-  DocumentSelectionChangeAttributeEvent,
-  ViewNode,
-  ViewText
+  Element as ModelElement
 } from '@ckeditor/ckeditor5-engine';
 import {
   Input,
@@ -19,10 +15,8 @@ import {
   inlineHighlight
 } from '@ckeditor/ckeditor5-typing';
 import {
-  ClipboardPipeline,
-  type ClipboardContentInsertionEvent
+  ClipboardPipeline
 } from '@ckeditor/ckeditor5-clipboard';
-import { keyCodes, env } from '@ckeditor/ckeditor5-utils';
 
 import AlightPredefinedLinkPluginCommand from './linkcommand';
 import AlightPredefinedLinkPluginUnlinkCommand from './unlinkcommand';
@@ -30,12 +24,9 @@ import ManualDecorator from './utils/manualdecorator';
 import {
   getLocalizedDecorators,
   normalizeDecorators,
-  addLinkProtocolIfApplicable,
-  createBookmarkCallbacks,
-  isPredefinedLink,
-  extractPredefinedLinkId,
   type NormalizedLinkDecoratorAutomaticDefinition,
-  type NormalizedLinkDecoratorManualDefinition
+  type NormalizedLinkDecoratorManualDefinition,
+  isPredefinedLink
 } from './utils';
 
 import '@ckeditor/ckeditor5-link/theme/link.css';
@@ -43,10 +34,9 @@ import '@ckeditor/ckeditor5-link/theme/link.css';
 const HIGHLIGHT_CLASS = 'ck-link_selected';
 const DECORATOR_AUTOMATIC = 'automatic';
 const DECORATOR_MANUAL = 'manual';
-const EXTERNAL_LINKS_REGEXP = /^(https?:)?\/\//;
 
 /**
- * The link engine feature.
+ * The link engine feature for Alight Predefined Link Plugin.
  */
 export default class AlightPredefinedLinkPluginEditing extends Plugin {
   /**
@@ -88,205 +78,323 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
   public init(): void {
     const editor = this.editor;
 
-    // Allow link attribute on all inline nodes.
-    editor.model.schema.extend('$text', { allowAttributes: 'alightPredefinedLinkPluginHref' });
+    // Register schema with both element and attribute approaches
+    this._registerSchema(editor);
 
-    // For storing additional link data
-    editor.model.schema.extend('$text', { allowAttributes: 'alightPredefinedLinkPluginLinkName' });
-    editor.model.schema.extend('$text', { allowAttributes: 'alightPredefinedLinkPluginFormat' });
+    // Setup conversions
+    this._setupConversions(editor);
 
-    // Setup data downcast conversion for links with a nested ah:link element
-    editor.conversion.for('dataDowncast').add(dispatcher => {
-      dispatcher.on('attribute:alightPredefinedLinkPluginHref', (evt, data, conversionApi) => {
-        // Skip if attribute already consumed
-        if (!conversionApi.consumable.consume(data.item, evt.name)) {
-          return;
-        }
+    // Create linking commands
+    this._addLinkingCommands(editor);
 
-        const { writer, mapper } = conversionApi;
-        const href = data.attributeNewValue;
+    // Configure link decorators
+    this._configureDecorators(editor);
 
-        // If the attribute was removed or not a text item, return
-        if (!href || (!data.item.is('$textProxy') && !data.item.is('$text'))) {
-          return;
-        }
+    // Enable two-step caret movement
+    this._enableTwoStepCaretMovement(editor);
 
-        console.log(`PDLEditor.dataDowncast.dispatcher.on -> alightPredefinedLinkPluginLinkName: ${data.item.getAttribute('alightPredefinedLinkPluginLinkName')}, data: `, data);
-        console.log(`PDLEditor.dataDowncast.dispatcher.on -> alightPredefinedLinkPluginHref: ${data.item.getAttribute('alightPredefinedLinkPluginHref')}, data: `, data);
-        const linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName');
-        const viewRange = mapper.toViewRange(data.range);
-
-        // Get text content from the view range
-        let textContent = '';
-        for (const item of viewRange.getItems()) {
-          if ((item.is && (item.is('$text') || item.is('$textProxy')))) {
-            textContent += item.data;
-          }
-        }
-
-        // Only create predefined link structure if linkName exists
-        if (linkName) {
-          // Create the link with the exact structure we want
-          const linkElement = writer.createContainerElement('a', {
-            'href': '#',
-            'class': 'AHCustomeLink'
-          });
-
-          const ahLinkElement = writer.createContainerElement('ah:link', {
-            'name': linkName
-          });
-
-          // Add text content to ah:link
-          writer.insert(writer.createPositionAt(ahLinkElement, 0), writer.createText(textContent));
-
-          // Insert ah:link into a
-          writer.insert(writer.createPositionAt(linkElement, 0), ahLinkElement);
-
-          // Add to document and remove original
-          writer.insert(viewRange.start, linkElement);
-          writer.remove(viewRange);
-        }
-      });
-    });
-
-    // Simplified editing downcast for interactive editing view
-    editor.conversion.for('editingDowncast').attributeToElement({
-      model: 'alightPredefinedLinkPluginHref',
-      view: (href, { writer }) => {
-        // Create a simple link element with the required attributes
-        const linkElement = writer.createAttributeElement('a', {
-          'href': href,
-          'class': 'AHCustomeLink',
-          'data-id': 'predefined_link'
-        }, {
-          priority: 5,
-          id: 'predefined-link'
-        });
-        console.log(`PDLEditor.editingDowncast -> 8 href: ${href}, setting alight-predefined-link property to linkElement: `, linkElement);
-        // Set custom property for link identification
-        writer.setCustomProperty('alight-predefined-link', true, linkElement);
-
-        return linkElement;
-      }
-    });
-
-    // Handle specific format for predefined links with ah:link element
-    // Handle all links in a single upcast conversion
-    editor.conversion.for('upcast')
-      .elementToAttribute({
-        view: {
-          name: 'a',
-          attributes: {
-            'href': true
-          }
-        },
-        model: {
-          key: 'alightPredefinedLinkPluginHref',
-          value: (viewElement: ViewElement): string | boolean => {
-            // First check if it has AHCustomeLink class
-            const hasAHCustomeLink = viewElement.hasClass('AHCustomeLink');
-
-            // find ah:link element inside
-            const ahLinkElement = Array.from(viewElement.getChildren())
-              .find(child => child.is && typeof child.is === 'function' && child.is('element', 'ah:link'));
-
-            if (hasAHCustomeLink && ahLinkElement?.is('element')) {
-              // Get the name attribute from ah:link - this is the predefinedLinkName
-              const predefinedLinkName = ahLinkElement.getAttribute('name');
-              console.log(`PDLEditor.upcast -> hasAHCustomelink: true, ahLinkElement.is('element'): true, linkName: ${predefinedLinkName}`);
-              // Only process if we have a valid predefinedLinkName
-              if (predefinedLinkName) {
-                // Store additional attributes for the predefined link
-                this.editor.model.enqueueChange(writer => {
-                  // Always set format to 'ahcustom'
-                  writer.setSelectionAttribute('alightPredefinedLinkPluginFormat', 'ahcustom');
-
-                  // MOST IMPORTANTLY: Set the linkName attribute to predefinedLinkName
-                  writer.setSelectionAttribute('alightPredefinedLinkPluginLinkName', predefinedLinkName);
-                  writer.setSelectionAttribute('alightPredefinedLinkPluginHref', predefinedLinkName);
-                });
-
-                // Use the predefinedLinkName as the href value
-                return predefinedLinkName;
-              }
-            }
-
-            // Fallback to data-link-name attribute if no ah:link
-            const dataLinkName = viewElement.getAttribute('data-link-name');
-            if (dataLinkName) {
-              // Set relevant attributes
-              this.editor.model.enqueueChange(writer => {
-                writer.setSelectionAttribute('alightPredefinedLinkPluginFormat', 'ahcustom');
-                writer.setSelectionAttribute('alightPredefinedLinkPluginLinkName', dataLinkName);
-                writer.setSelectionAttribute('alightPredefinedLinkPluginHref', dataLinkName);
-              });
-              return dataLinkName;
-            }
-
-            // For regular links, just get the href value
-            const href = viewElement.getAttribute('href');
-
-            // If it's empty or just #, and not a predefined link, don't create a link
-            if ((href === '' || href === '#') && !hasAHCustomeLink) {
-              return false; // This will prevent the attribute from being set
-            }
-            return href;
-          }
-        },
-        converterPriority: 'highest'
-      });
-
-    // Create linking commands.
-    editor.commands.add('alight-predefined-link', new AlightPredefinedLinkPluginCommand(editor));
-    editor.commands.add('alight-predefined-unlink', new AlightPredefinedLinkPluginUnlinkCommand(editor));
-
-    const linkDecorators = getLocalizedDecorators(editor.t, normalizeDecorators(editor.config.get('link.decorators')));
-
-    this._enableAutomaticDecorators(linkDecorators
-      .filter((item): item is NormalizedLinkDecoratorAutomaticDefinition => item.mode === DECORATOR_AUTOMATIC));
-    this._enableManualDecorators(linkDecorators
-      .filter((item): item is NormalizedLinkDecoratorManualDefinition => item.mode === DECORATOR_MANUAL));
-
-    // Enable two-step caret movement for `alightPredefinedLinkPluginHref` attribute.
-    const twoStepCaretMovementPlugin = editor.plugins.get(TwoStepCaretMovement);
-    twoStepCaretMovementPlugin.registerAttribute('alightPredefinedLinkPluginHref');
-
-    // Setup highlight over selected link.
-    inlineHighlight(editor, 'alightPredefinedLinkPluginHref', 'a', HIGHLIGHT_CLASS);
-
-    // Handle link following by CTRL+click or ALT+ENTER
-    this._enableLinkOpen();
-
-    // Clears the DocumentSelection decorator attributes if the selection is no longer in a link
-    this._enableSelectionAttributesFixer();
-
-    // Handle adding default protocol to pasted links.
-    this._enableClipboardIntegration();
+    // Setup link highlight
+    this._setupLinkHighlight(editor);
   }
 
   /**
-   * Processes an array of configured automatic decorators
-   * and registers a downcast dispatcher for each one of them.
+   * Registers schema for attribute-based links (simplified approach)
    */
-  private _enableAutomaticDecorators(automaticDecoratorDefinitions: Array<NormalizedLinkDecoratorAutomaticDefinition>): void {
-    const editor = this.editor;
-    // Store automatic decorators in the command instance
-    const command = editor.commands.get('alight-predefined-link') as AlightPredefinedLinkPluginCommand;
-    const automaticDecorators = command.automaticDecorators;
+  private _registerSchema(editor: Editor): void {
+    // Use attribute-based approach - much simpler and preserves text content
+    editor.model.schema.extend('$text', {
+      allowAttributes: [
+        'alightPredefinedLinkPluginHref',
+        'alightPredefinedLinkPluginLinkName',
+        'alightPredefinedLinkPluginFormat'
+      ]
+    });
+  }
 
-    automaticDecorators.add(automaticDecoratorDefinitions);
+  /**
+   * Sets up conversions for the plugin
+   */
+  private _setupConversions(editor: Editor): void {
+    // UPCAST CONVERSIONS (View -> Model)
+    // 1. Handle AHCustomeLink wrapper - just convert to attributes, preserve text
+    editor.conversion.for('upcast').elementToAttribute({
+      view: {
+        name: 'a',
+        classes: 'AHCustomeLink',
+        attributes: {
+          'data-id': 'predefined_link'
+        }
+      },
+      model: {
+        key: 'alightPredefinedLinkPluginHref',
+        value: (viewElement: ViewElement) => {
+          // Extract href, defaulting to '#' for predefined links
+          return viewElement.getAttribute('href') || '#';
+        }
+      }
+    });
 
-    if (automaticDecorators.length) {
-      editor.conversion.for('downcast').add(automaticDecorators.getDispatcher());
+    // 2. Handle ah:link elements - extract the name attribute and convert to linkName attribute
+    editor.conversion.for('upcast').elementToAttribute({
+      view: {
+        name: 'ah:link'
+      },
+      model: {
+        key: 'alightPredefinedLinkPluginLinkName',
+        value: (viewElement: ViewElement) => {
+          return viewElement.getAttribute('name') || '';
+        }
+      }
+    });
+
+    // 3. Handle spans with data-exp="ah:link" (editing view format)
+    editor.conversion.for('upcast').elementToAttribute({
+      view: {
+        name: 'span',
+        attributes: {
+          'data-exp': 'ah:link'
+        }
+      },
+      model: {
+        key: 'alightPredefinedLinkPluginLinkName',
+        value: (viewElement: ViewElement) => {
+          return viewElement.getAttribute('name') || '';
+        }
+      }
+    });
+
+    // 4. Handle standard href attribute (for backward compatibility)
+    editor.conversion.for('upcast').attributeToAttribute({
+      view: {
+        name: 'a',
+        key: 'href'
+      },
+      model: {
+        key: 'alightPredefinedLinkPluginHref',
+        value: (viewElement: ViewElement) => viewElement.getAttribute('href')
+      }
+    });
+
+    // EDITING DOWNCAST CONVERSIONS (Model -> Editing View)
+    // For editing, we just need the link wrapper - text content is preserved automatically
+    editor.conversion.for('editingDowncast').attributeToElement({
+      model: 'alightPredefinedLinkPluginHref',
+      view: (modelAttributeValue, conversionApi) => {
+        if (!modelAttributeValue) {
+          return null;
+        }
+
+        const isPredefined = isPredefinedLink(modelAttributeValue as string);
+
+        if (isPredefined) {
+          // For editing view, create predefined link wrapper
+          return conversionApi.writer.createAttributeElement('a', {
+            href: '#',
+            class: 'AHCustomeLink',
+            'data-id': 'predefined_link'
+          }, {
+            priority: 5,
+            id: 'predefined-link'
+          });
+        } else {
+          // Standard link for editing
+          return conversionApi.writer.createAttributeElement('a', {
+            href: modelAttributeValue as string
+          }, {
+            priority: 5,
+            id: 'link'
+          });
+        }
+      }
+    });
+
+    // DATA DOWNCAST CONVERSIONS (Model -> Data/Output)
+    // For data output, we also just create the wrapper - post-processing handles the ah:link nesting
+    editor.conversion.for('dataDowncast').attributeToElement({
+      model: 'alightPredefinedLinkPluginHref',
+      view: (modelAttributeValue, conversionApi) => {
+        if (!modelAttributeValue) {
+          return null;
+        }
+
+        const isPredefined = isPredefinedLink(modelAttributeValue as string);
+
+        if (isPredefined) {
+          // Create the outer link element for data output
+          return conversionApi.writer.createAttributeElement('a', {
+            href: '#',
+            class: 'AHCustomeLink',
+            'data-id': 'predefined_link'
+          }, {
+            priority: 5,
+            id: 'predefined-link'
+          });
+        } else {
+          // Standard link for data output
+          return conversionApi.writer.createAttributeElement('a', {
+            href: modelAttributeValue as string
+          }, {
+            priority: 5,
+            id: 'link'
+          });
+        }
+      }
+    });
+
+    // Add conversion to include linkName as a data attribute for post-processing
+    editor.conversion.for('dataDowncast').attributeToAttribute({
+      model: 'alightPredefinedLinkPluginLinkName',
+      view: 'data-link-name'
+    });
+
+    // Post-processor to wrap text content in ah:link for data output
+    editor.data.on('get', (evt, data) => {
+      // Process the output to wrap predefined link content in ah:link tags
+      data[0] = this._wrapPredefinedLinksInOutput(data[0]);
+    });
+  }
+
+  /**
+   * Post-processes HTML output to wrap predefined link content in ah:link tags
+   * IMPORTANT: This preserves the original text content and only adds the ah:link wrapper
+   */
+  private _wrapPredefinedLinksInOutput(html: string): string {
+    try {
+      // Create a temporary DOM to process the HTML
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = html;
+
+      // Find all predefined links (AHCustomeLink class)
+      const predefinedLinks = tempDiv.querySelectorAll('a.AHCustomeLink[data-id="predefined_link"]');
+
+      predefinedLinks.forEach(link => {
+        // Get the link name from data attributes
+        let linkName = link.getAttribute('data-link-name') || 'predefinedLinkName';
+
+        // If we still don't have a good linkName, try to extract it from other sources
+        if (!linkName || linkName === 'predefinedLinkName') {
+          linkName = this._extractLinkNameFromElement(link);
+        }
+
+        // PRESERVE THE ORIGINAL TEXT CONTENT - don't modify it!
+        const originalContent = link.innerHTML;
+
+        // Only wrap if there isn't already an ah:link element
+        if (!link.querySelector('ah\\:link') && !originalContent.includes('<ah:link')) {
+          // Wrap the EXISTING content in ah:link, preserving whatever text/HTML was there
+          link.innerHTML = `<ah:link name="${this._escapeAttribute(linkName)}">${originalContent}</ah:link>`;
+        }
+      });
+
+      return tempDiv.innerHTML;
+    } catch (error) {
+      console.error('Error wrapping predefined links:', error);
+      return html;
     }
   }
 
   /**
-   * Processes an array of configured manual decorators,
-   * transforms them into ManualDecorator instances and stores them in the
-   * LinkCommand's manualDecorators collection.
+   * Helper to extract link name from element attributes and fallbacks
    */
-  private _enableManualDecorators(manualDecoratorDefinitions: Array<NormalizedLinkDecoratorManualDefinition>): void {
+  private _extractLinkNameFromElement(element: Element): string {
+    // Try various attributes and fallbacks
+    const linkName = element.getAttribute('data-link-name') ||
+      element.getAttribute('data-predefined-name') ||
+      element.getAttribute('title') ||
+      'predefinedLinkName';
+
+    return linkName;
+  }
+
+  /**
+   * Helper to escape HTML attributes
+   */
+  private _escapeAttribute(text: string): string {
+    return text.replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  /**
+   * Adds linking commands to the editor
+   */
+  private _addLinkingCommands(editor: Editor): void {
+    // Create link commands
+    const linkCommand = new AlightPredefinedLinkPluginCommand(editor);
+    const unlinkCommand = new AlightPredefinedLinkPluginUnlinkCommand(editor);
+
+    // Add under our custom command names
+    editor.commands.add('alight-predefined-link', linkCommand);
+    editor.commands.add('alight-predefined-unlink', unlinkCommand);
+  }
+
+  /**
+   * Configures link decorators
+   */
+  private _configureDecorators(editor: Editor): void {
+    const linkDecorators = getLocalizedDecorators(
+      editor.t,
+      normalizeDecorators(editor.config.get('link.decorators'))
+    );
+
+    // Process automatic decorators
+    const automaticDecoratorDefinitions = linkDecorators
+      .filter((item): item is NormalizedLinkDecoratorAutomaticDefinition =>
+        item.mode === DECORATOR_AUTOMATIC
+      );
+
+    // Process manual decorators  
+    const manualDecoratorDefinitions = linkDecorators
+      .filter((item): item is NormalizedLinkDecoratorManualDefinition =>
+        item.mode === DECORATOR_MANUAL
+      );
+
+    this._enableAutomaticDecorators(automaticDecoratorDefinitions);
+    this._enableManualDecorators(manualDecoratorDefinitions);
+  }
+
+  /**
+   * Enables two-step caret movement
+   */
+  private _enableTwoStepCaretMovement(editor: Editor): void {
+    const twoStepCaretMovementPlugin = editor.plugins.get(TwoStepCaretMovement);
+
+    // Register link attributes for proper caret movement
+    twoStepCaretMovementPlugin.registerAttribute('alightPredefinedLinkPluginHref');
+  }
+
+  /**
+   * Sets up link highlight
+   */
+  private _setupLinkHighlight(editor: Editor): void {
+    // Register highlighting for link types
+    inlineHighlight(editor, 'alightPredefinedLinkPluginHref', 'a', HIGHLIGHT_CLASS);
+  }
+
+  /**
+   * Processes configured automatic decorators
+   */
+  private _enableAutomaticDecorators(
+    automaticDecoratorDefinitions: NormalizedLinkDecoratorAutomaticDefinition[]
+  ): void {
+    const editor = this.editor;
+    const command = editor.commands.get('alight-predefined-link') as AlightPredefinedLinkPluginCommand;
+    const automaticDecorators = command.automaticDecorators;
+
+    if (automaticDecoratorDefinitions.length) {
+      automaticDecoratorDefinitions.forEach(definition => {
+        automaticDecorators.add(definition);
+      });
+    }
+  }
+
+  /**
+   * Processes configured manual decorators
+   */
+  private _enableManualDecorators(
+    manualDecoratorDefinitions: NormalizedLinkDecoratorManualDefinition[]
+  ): void {
     if (!manualDecoratorDefinitions.length) {
       return;
     }
@@ -296,153 +404,44 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
     const manualDecorators = command.manualDecorators;
 
     manualDecoratorDefinitions.forEach(decoratorDefinition => {
-      editor.model.schema.extend('$text', { allowAttributes: decoratorDefinition.id });
+      // Extend schema to allow the decorator attribute
+      editor.model.schema.extend('$text', {
+        allowAttributes: [decoratorDefinition.id]
+      });
 
-      // Keeps reference to manual decorator to decode its name to attributes during downcast.
-      const decorator = new ManualDecorator(decoratorDefinition);
+      // Create manual decorator
+      const decorator = new ManualDecorator({
+        ...decoratorDefinition
+      });
 
       manualDecorators.add(decorator);
 
-      editor.conversion.for('downcast').attributeToElement({
+      // Add conversion for manual decorators
+      editor.conversion.for('downcast').attributeToAttribute({
         model: decorator.id,
-        view: (manualDecoratorValue, { writer }) => {
-          if (manualDecoratorValue) {
-            // For editing view, use attributeElement
-            const element = writer.createAttributeElement('a', decorator.attributes || {}, { priority: 5 });
-
-            if (decorator.classes) {
-              writer.addClass(decorator.classes, element);
-            }
-
-            for (const key in decorator.styles || {}) {
-              writer.setStyle(key, decorator.styles[key], element);
-            }
-
-            writer.setCustomProperty('alight-predefined-link', true, element);
-
-            return element;
+        view: (attributeValue) => {
+          if (!attributeValue || !decorator.attributes) {
+            return null;
           }
 
-          return null;
+          // Return the first attribute key-value pair
+          const firstKey = Object.keys(decorator.attributes)[0];
+          return {
+            key: firstKey,
+            value: decorator.attributes[firstKey]
+          };
         }
       });
 
+      // Upcast conversion for manual decorator
       editor.conversion.for('upcast').elementToAttribute({
         view: {
           name: 'a',
           ...decorator._createPattern()
         },
         model: {
-          key: decorator.id
-        }
-      });
-    });
-  }
-
-  /**
-   * Attaches handlers for {@link module:engine/view/document~Document#event:enter} and
-   * {@link module:engine/view/document~Document#event:click} to enable link following.
-   */
-  private _enableLinkOpen(): void {
-    const editor = this.editor;
-    const view = editor.editing.view;
-    const viewDocument = view.document;
-    const bookmarkCallbacks = createBookmarkCallbacks(editor);
-
-    function handleLinkOpening(url: string): void {
-      if (bookmarkCallbacks.isScrollableToTarget(url)) {
-        bookmarkCallbacks.scrollToTarget(url);
-      }
-    }
-
-    this.listenTo<ViewDocumentClickEvent>(viewDocument, 'click', (evt, data) => {
-      const shouldOpen = env.isMac ? data.domEvent.metaKey : data.domEvent.ctrlKey;
-
-      if (!shouldOpen) {
-        return;
-      }
-
-      let clickedElement: Element | null = data.domTarget;
-
-      if (clickedElement.tagName.toLowerCase() != 'a') {
-        clickedElement = clickedElement.closest('a');
-      }
-
-      if (!clickedElement) {
-        return;
-      }
-
-      const url = clickedElement.getAttribute('href');
-
-      if (!url) {
-        return;
-      }
-
-      evt.stop();
-      data.preventDefault();
-
-      handleLinkOpening(url);
-    }, { context: '$capture' });
-
-    // Open link on Alt+Enter.
-    this.listenTo<ViewDocumentKeyDownEvent>(viewDocument, 'keydown', (evt, data) => {
-      const command = editor.commands.get('alight-predefined-link') as AlightPredefinedLinkPluginCommand;
-      const url = command.value;
-      const shouldOpen = !!url && data.keyCode === keyCodes.enter && data.altKey;
-
-      if (!shouldOpen) {
-        return;
-      }
-
-      evt.stop();
-
-      handleLinkOpening(url);
-    });
-  }
-
-  /**
-   * Watches the DocumentSelection attribute changes and removes link decorator attributes when the alightPredefinedLinkPluginHref attribute is removed.
-   *
-   * This is to ensure that there is no left-over link decorator attributes on the document selection that is no longer in a link.
-   */
-  private _enableSelectionAttributesFixer(): void {
-    const editor = this.editor;
-    const model = editor.model;
-    const selection = model.document.selection;
-
-    this.listenTo<DocumentSelectionChangeAttributeEvent>(selection, 'change:attribute', (evt, { attributeKeys }) => {
-      if (!attributeKeys.includes('alightPredefinedLinkPluginHref') || selection.hasAttribute('alightPredefinedLinkPluginHref')) {
-        return;
-      }
-
-      model.change(writer => {
-        removeLinkAttributesFromSelection(writer, getLinkAttributesAllowedOnText(model.schema));
-      });
-    });
-  }
-
-  /**
-   * Enables URL fixing on pasting.
-   */
-  private _enableClipboardIntegration(): void {
-    const editor = this.editor;
-    const model = editor.model;
-    const defaultProtocol = this.editor.config.get('link.defaultProtocol');
-
-    if (!defaultProtocol) {
-      return;
-    }
-
-    this.listenTo<ClipboardContentInsertionEvent>(editor.plugins.get('ClipboardPipeline'), 'contentInsertion', (evt, data) => {
-      model.change(writer => {
-        const range = writer.createRangeIn(data.content);
-
-        for (const item of range.getItems()) {
-          if (item.hasAttribute('alightPredefinedLinkPluginHref')) {
-            const newLink = addLinkProtocolIfApplicable(item.getAttribute('alightPredefinedLinkPluginHref') as string, defaultProtocol);
-
-            writer.setAttribute('alightPredefinedLinkPluginHref', newLink, item);
-          }
+          key: decorator.id,
+          value: true
         }
       });
     });
@@ -450,24 +449,27 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
 }
 
 /**
- * Make the selection free of link-related model attributes.
- * All link-related model attributes start with "link". That includes not only "alightPredefinedLinkPluginHref"
- * but also all decorator attributes (they have dynamic names), or even custom plugins.
+ * Removes link-related attributes from the current selection
  */
-function removeLinkAttributesFromSelection(writer: Writer, linkAttributes: Array<string>): void {
+export function removeLinkAttributesFromSelection(writer: Writer, linkAttributes: Array<string>): void {
+  // Remove core link attributes
   writer.removeSelectionAttribute('alightPredefinedLinkPluginHref');
   writer.removeSelectionAttribute('alightPredefinedLinkPluginLinkName');
   writer.removeSelectionAttribute('alightPredefinedLinkPluginFormat');
 
+  // Remove any additional link-related attributes
   for (const attribute of linkAttributes) {
     writer.removeSelectionAttribute(attribute);
   }
 }
 
 /**
- * Returns an array containing names of the attributes allowed on `$text` that describes the link item.
+ * Retrieves link-related attributes allowed on text elements
  */
-function getLinkAttributesAllowedOnText(schema: Schema): Array<string> {
+export function getLinkAttributesAllowedOnText(schema: Schema): Array<string> {
   const textAttributes = schema.getDefinition('$text')!.allowAttributes;
-  return textAttributes.filter(attribute => attribute.startsWith('link'));
+  return textAttributes.filter(attribute =>
+    attribute.startsWith('link') ||
+    attribute.startsWith('alightPredefinedLinkPlugin')
+  );
 }

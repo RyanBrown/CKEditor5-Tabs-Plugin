@@ -368,45 +368,50 @@ class AlightEditor extends ClassicEditor {
     htmlSupport: {
       allow: [
         {
-          name: /.*/,  // Allow all elements
-          attributes: {
-            onclick: true  // Specifically allow onclick attribute on all elements
-          }
+          name: /.*/,
+          attributes: true,
+          classes: true,
+          styles: true
         }, {
-          name: "ah:expr",
-          attributes: ["name", "class", "title", "assettype"],
-          classes: ["*"],
-          styles: ["*"]
+          name: /^ah:/,
+          attributes: true,
+          classes: true,
+          styles: true
         }, {
-          name: "ah:link",
+          name: /.*:.*/,
+          attributes: true,
+          classes: true,
+          styles: true
+        }, {
+          name: "span",
           attributes: {
-            name: true,
-            href: true,
-            onclick: true,
-            "data-id": true,
-            "*": true  // This allows any attribute on ah:link
+            "data-*": true,
+            "data-ck-unsafe-element": true,
+            "name": true,
+            "*": true
           },
-          classes: ["*"],
-          styles: ["*"]
+          classes: true,
+          styles: true
         }, {
           name: "a",
           attributes: {
             "data-*": true,
-            "data-cke-saved-href": true,
             "data-id": true,
-            href: true,
-            id: true,
-            onclick: true,
-            orgnameattr: true,
-            target: true,
+            "data-link-format": true,
+            "data-link-name": true,
+            "href": true,
+            "id": true,
+            "onclick": true,
+            "orgnameattr": true,
+            "target": true,
           },
-          classes: ["*"],
-          styles: ["*"]
+          classes: true,
+          styles: true
         }, {
           name: "figure",
           attributes: true,
-          classes: ["*"],
-          styles: ["*"]
+          classes: true,
+          styles: true
         }, {
           name: "img",
           attributes: {
@@ -414,15 +419,15 @@ class AlightEditor extends ClassicEditor {
             src: true,
             srcset: true,
             title: true,
-            width: true,
+            width: true
           },
-          classes: ["*"],
-          styles: ["*"]
+          classes: true,
+          styles: true
         }, {
           name: "svg",
           attributes: true,
-          classes: ["*"],
-          styles: ["*"]
+          classes: true,
+          styles: true
         }, {
           name: "span", // Ensure spans inside ah:expr are allowed
           classes: [
@@ -435,12 +440,13 @@ class AlightEditor extends ClassicEditor {
         }, {
           name: /^(h[1-6])$/,
           attributes: true, // Allows all attributes, including href from links
-          classes: ["*"],
-          styles: ["*"]
+          classes: true,
+          styles: true
         }
       ],
-      disallow: [] // Optionally disallow conflicting elements
-    },
+      disallow: []
+    }
+    ,
     fontBackgroundColor: {
       colors: awldsColorPalette,
       colorPicker: false,
