@@ -118,14 +118,14 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
 
         console.log(`PDLEditor.dataDowncast.dispatcher.on -> alightPredefinedLinkPluginLinkName: ${data.item.getAttribute('alightPredefinedLinkPluginLinkName')}, data: `, data);
         console.log(`PDLEditor.dataDowncast.dispatcher.on -> alightPredefinedLinkPluginHref: ${data.item.getAttribute('alightPredefinedLinkPluginHref')}, data: `, data);
-        const linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName');
-        const viewRange = mapper.toViewRange(data.range);
 
-        // Get text content using walker for better performance
-        const textContent = this._extractTextFromViewRange(viewRange);
+        const linkName = data.item.getAttribute('alightPredefinedLinkPluginLinkName');
 
         // Only create predefined link structure if linkName exists
         if (linkName) {
+          const viewRange = mapper.toViewRange(data.range);
+          const textContent = this._extractTextFromViewRange(viewRange);
+
           // Create the link with the exact structure we want
           const linkElement = writer.createContainerElement('a', {
             'href': '#',
@@ -142,11 +142,11 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           // Insert ah:link into a
           writer.insert(writer.createPositionAt(linkElement, 0), ahLinkElement);
 
-          // Add to document and remove original
+          // Replace the original range with our new structure
           writer.insert(viewRange.start, linkElement);
           writer.remove(viewRange);
         }
-      });
+      }, { priority: 'high' });
     });
 
     // Simplified editing downcast for interactive editing view
@@ -162,7 +162,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
           priority: 5,
           id: 'predefined-link'
         });
-        console.log(`PDLEditor.editingDowncast -> 8 href: ${href}, setting alight-predefined-link property to linkElement: `, linkElement);
+        console.log(`PDLEditor.editingDowncast -> href: ${href}, setting alight-predefined-link property to linkElement: `, linkElement);
         // Set custom property for link identification
         writer.setCustomProperty('alight-predefined-link', true, linkElement);
 
@@ -170,8 +170,7 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
       }
     });
 
-    // Handle specific format for predefined links with ah:link element
-    // Handle all links in a single upcast conversion
+    // Handle upcast conversion for all links
     editor.conversion.for('upcast')
       .elementToAttribute({
         view: {
@@ -193,19 +192,10 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
               // Get the name attribute from ah:link - this is the predefinedLinkName
               const predefinedLinkName = ahLinkElement.getAttribute('name');
               console.log(`PDLEditor.upcast -> hasAHCustomelink: true, ahLinkElement.is('element'): true, linkName: ${predefinedLinkName}`);
+
               // Only process if we have a valid predefinedLinkName
               if (predefinedLinkName) {
-                // Store additional attributes for the predefined link
-                this.editor.model.enqueueChange(writer => {
-                  // Always set format to 'ahcustom'
-                  writer.setSelectionAttribute('alightPredefinedLinkPluginFormat', 'ahcustom');
-
-                  // MOST IMPORTANTLY: Set the linkName attribute to predefinedLinkName
-                  writer.setSelectionAttribute('alightPredefinedLinkPluginLinkName', predefinedLinkName);
-                  writer.setSelectionAttribute('alightPredefinedLinkPluginHref', predefinedLinkName);
-                });
-
-                // Use the predefinedLinkName as the href value
+                // Return the predefinedLinkName as the href value
                 return predefinedLinkName;
               }
             }
@@ -213,12 +203,6 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
             // Fallback to data-link-name attribute if no ah:link
             const dataLinkName = viewElement.getAttribute('data-link-name');
             if (dataLinkName) {
-              // Set relevant attributes
-              this.editor.model.enqueueChange(writer => {
-                writer.setSelectionAttribute('alightPredefinedLinkPluginFormat', 'ahcustom');
-                writer.setSelectionAttribute('alightPredefinedLinkPluginLinkName', dataLinkName);
-                writer.setSelectionAttribute('alightPredefinedLinkPluginHref', dataLinkName);
-              });
               return dataLinkName;
             }
 
@@ -234,6 +218,37 @@ export default class AlightPredefinedLinkPluginEditing extends Plugin {
         },
         converterPriority: 'highest'
       });
+
+    // Handle upcast for predefined link additional attributes
+    editor.conversion.for('upcast').add(dispatcher => {
+      dispatcher.on('element:a', (evt, data, conversionApi) => {
+        const viewElement = data.viewItem;
+        const hasAHCustomeLink = viewElement.hasClass('AHCustomeLink');
+
+        if (!hasAHCustomeLink) {
+          return;
+        }
+
+        const ahLinkElement = this._findAhLinkElement(viewElement);
+
+        if (ahLinkElement?.is('element')) {
+          const predefinedLinkName = ahLinkElement.getAttribute('name');
+
+          if (predefinedLinkName && data.modelRange) {
+            // Set additional attributes for predefined links
+            conversionApi.writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', data.modelRange);
+            conversionApi.writer.setAttribute('alightPredefinedLinkPluginLinkName', predefinedLinkName, data.modelRange);
+          }
+        }
+
+        // Check for fallback data-link-name attribute
+        const dataLinkName = viewElement.getAttribute('data-link-name');
+        if (dataLinkName && data.modelRange) {
+          conversionApi.writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', data.modelRange);
+          conversionApi.writer.setAttribute('alightPredefinedLinkPluginLinkName', dataLinkName, data.modelRange);
+        }
+      }, { priority: 'high' });
+    });
 
     // Create linking commands.
     editor.commands.add('alight-predefined-link', new AlightPredefinedLinkPluginCommand(editor));
