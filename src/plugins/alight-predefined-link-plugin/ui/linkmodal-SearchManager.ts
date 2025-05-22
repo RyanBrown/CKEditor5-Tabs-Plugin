@@ -367,10 +367,10 @@ export class SearchManager {
 
     console.log('Filtered data count:', filteredData.length);
 
-    // First notify pagination manager to reset to page 1
-    this.paginationManager.setPage(1, filteredData.length);
+    // The pagination will be handled by the ContentManager since it knows about
+    // the selected link and whether it should be excluded from the count
 
-    // Then notify callback about new filtered data
+    // First notify callback about new filtered data
     this.onSearch(filteredData);
   }
 

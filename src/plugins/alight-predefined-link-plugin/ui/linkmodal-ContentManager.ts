@@ -286,11 +286,20 @@ export class ContentManager implements ILinkManager {
     `;
     }
 
+    // Filter out the currently selected link if we have an initial URL
+    let displayFilteredData = this.filteredLinksData;
+    if (this.initialUrl && this.selectedLink) {
+      // Remove the selected link from the display list to avoid duplication
+      displayFilteredData = this.filteredLinksData.filter(link =>
+        link.predefinedLinkName !== this.selectedLink?.predefinedLinkName
+      );
+    }
+
     const currentPage = this.paginationManager.getCurrentPage();
     const pageSize = this.paginationManager.getPageSize();
     const startIndex = (currentPage - 1) * pageSize;
-    const endIndex = Math.min(startIndex + pageSize, this.filteredLinksData.length);
-    const currentPageData = this.filteredLinksData.slice(startIndex, endIndex);
+    const endIndex = Math.min(startIndex + pageSize, displayFilteredData.length);
+    const currentPageData = displayFilteredData.slice(startIndex, endIndex);
 
     // Search container
     const searchContainerMarkup = `<div id="search-container-root" class="cka-search-container"></div>`;
