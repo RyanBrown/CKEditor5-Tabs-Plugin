@@ -62,6 +62,73 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
     return true;
   }
 
+  /**
+   * Sorts an array of document links alphabetically and removes duplicates
+   * 
+   * @param links The array of document links to sort
+   * @param ascending Whether to sort in ascending (A~Z) order
+   * @returns The sorted array of links with duplicates removed
+   */
+  private _sortDocumentLinks(links: DocumentLink[], ascending: boolean = true): DocumentLink[] {
+    // First, deduplicate the links based on serverFilePath
+    const uniqueLinks = this._removeDuplicateLinks(links);
+
+    // Then sort the unique links
+    return uniqueLinks.sort((a, b) => {
+      // Get link title for sorting
+      const titleA = (a.title || a.serverFilePath || '').toLowerCase();
+      const titleB = (b.title || b.serverFilePath || '').toLowerCase();
+
+      // Simple alphabetical comparison based on title
+      const result = titleA.localeCompare(titleB);
+      return ascending ? result : -result;
+    });
+  }
+
+  /**
+   * Removes duplicate links from an array of document links
+   * 
+   * @param links The array of document links to deduplicate
+   * @returns A new array with duplicates removed
+   */
+  private _removeDuplicateLinks(links: DocumentLink[]): DocumentLink[] {
+    const uniqueMap = new Map<string, DocumentLink>();
+
+    // Process each link and only keep one instance of each serverFilePath
+    links.forEach(link => {
+      const key = this._getLinkUniqueKey(link);
+
+      // Only add the link if we haven't seen this key before
+      if (!uniqueMap.has(key)) {
+        uniqueMap.set(key, link);
+      }
+    });
+
+    // Convert the Map values back to an array
+    return Array.from(uniqueMap.values());
+  }
+
+  /**
+   * Gets a unique key for a link based on its properties
+   * 
+   * @param link The document link to get a key for
+   * @returns A string that can be used to identify duplicate links
+   */
+  private _getLinkUniqueKey(link: DocumentLink): string {
+    // Prioritize serverFilePath if available
+    if (link.serverFilePath) {
+      return link.serverFilePath;
+    }
+
+    // Fall back to fileId
+    if (link.fileId) {
+      return link.fileId;
+    }
+
+    // Last resort: use title
+    return link.title || '';
+  }
+
   public init(): void {
     const editor = this.editor;
     const t = this.editor.t;
@@ -132,6 +199,7 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
     // Listen to selection changes to update button state
     editor.model.document.on('change:selection', () => {
       this._updateButtonState();
+      this._updateActionsViewState();
     });
 
     // Also listen to selection changes to detect when user enters a link or clicks on it
@@ -140,6 +208,7 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
       setTimeout(() => {
         this._checkAndShowBalloon();
         this._updateButtonState();
+        this._updateActionsViewState();
       }, 10);
     });
   }
@@ -167,6 +236,43 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
     }
   }
 
+  /**
+   * Updates the actions view button states based on data loading status
+   */
+  private _updateActionsViewState(): void {
+    if (this.actionsView) {
+      const linkCommand = this.editor.commands.get('alight-existing-document-link') as AlightExistingDocumentLinkPluginCommand;
+      const unlinkCommand = this.editor.commands.get('alight-existing-document-unlink') as AlightExistingDocumentLinkPluginUnlinkCommand;
+
+      // Get the current link URL
+      const href = linkCommand.value;
+
+      // Determine if edit should be enabled:
+      // 1. Data must be loaded
+      // 2. Link command must be enabled
+      // 3. If it's an existing document link, we need the data
+      let editEnabled = linkCommand.isEnabled;
+
+      if (href && isExistingDocumentLink(href)) {
+        // For existing document links, only enable edit if data is loaded
+        editEnabled = editEnabled && this._dataLoaded;
+      }
+
+      // Update the edit button state
+      this.actionsView.editButtonView.set('isEnabled', editEnabled);
+
+      // Update tooltip to show why it's disabled if needed
+      if (!editEnabled && !this._dataLoaded && href && isExistingDocumentLink(href)) {
+        this.actionsView.editButtonView.set('tooltip', 'Loading existing document links data...');
+      } else {
+        this.actionsView.editButtonView.set('tooltip', true);
+      }
+
+      // Unlink button can always be enabled if the unlink command is enabled
+      this.actionsView.unlinkButtonView.set('isEnabled', unlinkCommand.isEnabled);
+    }
+  }
+
   protected override setModalContents = (): void => {
     if (this.verboseMode) console.log(`Loading existing document links...`);
 
@@ -175,11 +281,19 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
 
     // Update button state immediately to disable it during loading
     this._updateButtonState();
+    this._updateActionsViewState();
 
     this.loadService.loadDocumentLinks().then(
       (data) => {
-        this._documentLinks = data || []; // Add null check
+        // Sort the document links alphabetically and remove duplicates
+        this._documentLinks = this._sortDocumentLinks(data || []);
+
         if (this.verboseMode) console.log(data);
+
+        // Update the actions view with the loaded document links if it's already created
+        if (this.actionsView) {
+          this.actionsView.setDocumentLinks(this._documentLinks);
+        }
 
         // Set data loaded flag to true when data is loaded
         this._dataLoaded = true;
@@ -187,6 +301,7 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
 
         // Update button state after data is loaded
         this._updateButtonState();
+        this._updateActionsViewState();
       },
       (error) => {
         console.log(error);
@@ -196,15 +311,16 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
 
         // Update button state to reflect the error
         this._updateButtonState();
+        this._updateActionsViewState();
       }
     );
   }
 
   /**
- * Processes raw document links to ensure they have consistent structure
- * @param rawLinks The raw links to process
- * @returns A filtered list of processed links
- */
+   * Processes raw document links to ensure they have consistent structure
+   * @param rawLinks The raw links to process
+   * @returns A filtered list of processed links
+   */
   private processLinks = (rawLinks: DocumentLink[]) => {
     // Initialize array to hold processed links
     let processedLinks: any[] = [];
@@ -334,11 +450,23 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
 
     actionsView.bind('href').to(linkCommand, 'value');
 
+    // Pass the document links data to the actions view if available
+    if (this._documentLinks && this._documentLinks.length > 0) {
+      actionsView.setDocumentLinks(this._documentLinks);
+    }
+
+    // Initial state - we'll update this dynamically
     actionsView.editButtonView.bind('isEnabled').to(linkCommand);
     actionsView.unlinkButtonView.bind('isEnabled').to(unlinkCommand);
 
     // Execute editing in a modal dialog after clicking the "Edit" button
     this.listenTo(actionsView, 'edit', () => {
+      // Double-check that data is loaded before allowing edit
+      if (!this._dataLoaded) {
+        console.warn('Cannot edit link - data not loaded yet');
+        return;
+      }
+
       this._hideUI();
       this._showUI(true);
     });
@@ -388,22 +516,26 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
 
   // Find document link by URL using the links service
   /**
- * Find document link by URL using the links service
- * @param url The URL to find a matching document link for
- * @returns The matching document link or null if not found
- */
+   * Find document link by URL using the links service
+   * @param url The URL to find a matching document link for
+   * @returns The matching document link or null if not found
+   */
   private async _findExistingDocumentByUrl(url: string): Promise<DocumentLink | null> {
     try {
       // Extract existing document link ID if present
       const existingDocumentId = extractExternalDocumentLinkId(url);
 
       if (existingDocumentId) {
-        // For existing document links, try to find by matching serverFilePath
+        // For existing document links, try to find by exact ID match first
         const exactMatch = this._documentLinks.find(link => {
-          // If the serverFilePath matches the existing document ID
-          if (link.serverFilePath &&
-            (link.serverFilePath === existingDocumentId ||
-              link.serverFilePath.includes(existingDocumentId))) {
+          // Check if the serverFilePath matches the existing document ID
+          if (link.serverFilePath === existingDocumentId ||
+            (link.serverFilePath && link.serverFilePath.includes(existingDocumentId))) {
+            return true;
+          }
+
+          // Check if the fileId matches
+          if (link.fileId === existingDocumentId) {
             return true;
           }
 
@@ -413,6 +545,16 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
         if (exactMatch) {
           return exactMatch;
         }
+      }
+
+      // For existing document links, the URL might BE the serverFilePath
+      // So check for direct match with serverFilePath
+      const directMatch = this._documentLinks.find(link =>
+        link.serverFilePath === url
+      );
+
+      if (directMatch) {
+        return directMatch;
       }
 
       // Fallback to normalized URL comparison
@@ -478,76 +620,22 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
         return;
       }
 
-      // Set just the href on the actionsView (needed for core functionality)
-      this.actionsView.set('href', href as string);
+      // Pass the document links data to the actions view for lookup
+      if (this._documentLinks && this._documentLinks.length > 0) {
+        this.actionsView.setDocumentLinks(this._documentLinks);
+      }
 
-      // First add the view to the balloon (this renders it in the DOM)
       this._balloon.add({
         view: this.actionsView,
         position: this._getBalloonPositionData()
       });
 
-      // AFTER the balloon is in the DOM, update the title text
-      setTimeout(() => {
-        this._updateBalloonTitle(selectedLink);
-      }, 0);
+      // Update button states right after showing the balloon
+      this._updateActionsViewState();
 
       // Begin responding to UI updates
       this._startUpdatingUI();
     }
-  }
-
-  // Add this new helper method for updating the title
-  private _updateBalloonTitle(selectedLink: ViewAttributeElement): void {
-    // Make sure everything exists
-    if (!this.actionsView || !this.actionsView.element) {
-      return;
-    }
-
-    // Get link attributes
-    const href = selectedLink.getAttribute('href') as string;
-    const linkName = selectedLink.getAttribute('data-link-name') as string;
-
-    // Find the title element in the balloon
-    const titleElement = this.actionsView.element.querySelector('.cka-button-title-text');
-    if (!titleElement) {
-      return;
-    }
-
-    // Find matching document data
-    let displayTitle = '';
-    const linkId = linkName || extractExternalDocumentLinkId(href);
-    if (linkId && this._documentLinks && this._documentLinks.length > 0) {
-      const matchingDoc = this._documentLinks.find(link =>
-        link.serverFilePath === linkId ||
-        (link.serverFilePath && link.serverFilePath.includes(linkId)) ||
-        link.fileId === linkId
-      );
-
-      if (matchingDoc) {
-        displayTitle = matchingDoc.title || '';
-
-        // If no title but has description, use that
-        if (!displayTitle && matchingDoc.documentDescription) {
-          displayTitle = matchingDoc.documentDescription;
-        }
-      }
-    }
-
-    // If we still don't have a title, extract from linkName or href
-    if (!displayTitle) {
-      if (linkName) {
-        displayTitle = linkName;
-      } else {
-        // Extract filename from path
-        const pathParts = href.split('/');
-        const fileName = pathParts[pathParts.length - 1];
-        displayTitle = fileName || href;
-      }
-    }
-
-    // Update the DOM element directly
-    titleElement.textContent = displayTitle || this.editor.t('This link has no title');
   }
 
   // Returns positioning options for the balloon.
@@ -596,12 +684,12 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
         // Hide the panel if the selection moved out of the link element
         if (prevSelectedLink && !selectedLink) {
           this._hideUI();
-        } else if (this._areActionsInPanel && selectedLink) {
-          // Update the balloon position and title as the selection changes
+        } else if (this._areActionsInPanel) {
+          // Update the balloon position as the selection changes
           this._balloon.updatePosition(this._getBalloonPositionData());
 
-          // Also update the title text when selection changes
-          this._updateBalloonTitle(selectedLink);
+          // Update button states whenever the UI updates
+          this._updateActionsViewState();
         }
 
         prevSelectedLink = selectedLink;
@@ -626,10 +714,10 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
     const linksContainer = document.createElement('div');
     linksContainer.id = 'links-container';
     linksContainer.innerHTML = `
-    <div class="cka-loading-container">
-      <div class="cka-loading-spinner"></div>
-    </div>
-  `;
+      <div class="cka-loading-container">
+        <div class="cka-loading-spinner"></div>
+      </div>
+    `;
 
     const paginationContainer = document.createElement('div');
     paginationContainer.id = 'pagination-container';
@@ -715,11 +803,15 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
           console.log('Selected link:', selectedLink);
 
           if (selectedLink && selectedLink.destination) {
-            // Create the link in the editor using the built-in link command
-            // We no longer need to add the suffix
+            // For existing document links, we need to ensure we're using the correct format
+            // The href should be the serverFilePath for existing document links
             let href = selectedLink.destination;
 
-            linkCommand.execute(href);
+            // Execute the command with the new link
+            // The command will handle updating all necessary attributes
+            linkCommand.execute(href, {
+              // Pass any additional options if needed
+            });
 
             // Hide the modal after creating the link
             this._modalDialog?.hide();
@@ -761,8 +853,11 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
         return;
       }
 
-      // Create the ContentManager with the initialUrl and document links data
-      this._linkManager = new ContentManager(initialUrl, this._documentLinks);
+      // Make sure links are sorted before passing to ContentManager
+      const sortedLinks = this._sortDocumentLinks(this._documentLinks);
+
+      // Create the ContentManager with the initialUrl and sorted document links data
+      this._linkManager = new ContentManager(initialUrl, sortedLinks);
 
       // Pass the modal dialog reference to enable/disable the Continue button
       // Add an event listener for link selection
@@ -847,30 +942,47 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
     }
   }
 
-  // Returns the link element under the editing view's selection or `null` if there is none.
+  /**
+   * Returns the link element under the editing view's selection or `null` if there is none.
+   * More robust handling of selection ranges.
+   */
   private _getSelectedLinkElement(): ViewAttributeElement | null {
     const view = this.editor.editing.view;
     const selection = view.document.selection;
     const selectedElement = selection.getSelectedElement();
 
     // The selection is collapsed or some widget is selected (especially inline widget).
-    if (selection.isCollapsed || selectedElement && isWidget(selectedElement)) {
+    if (selection.isCollapsed || (selectedElement && isWidget(selectedElement))) {
       return findLinkElementAncestor(selection.getFirstPosition()!);
     } else {
       // The range for fully selected link is usually anchored in adjacent text nodes.
       // Trim it to get closer to the actual link element.
-      const range = selection.getFirstRange()!.getTrimmed();
-      const startLink = findLinkElementAncestor(range.start);
-      const endLink = findLinkElementAncestor(range.end);
+      try {
+        const range = selection.getFirstRange()!.getTrimmed();
+        const startLink = findLinkElementAncestor(range.start);
+        const endLink = findLinkElementAncestor(range.end);
 
-      if (!startLink || startLink != endLink) {
-        return null;
-      }
+        if (!startLink || startLink != endLink) {
+          return null;
+        }
 
-      // Check if the link element is fully selected.
-      if (view.createRangeIn(startLink).getTrimmed().isEqual(range)) {
-        return startLink;
-      } else {
+        // Check if the link element is fully selected.
+        if (view.createRangeIn(startLink).getTrimmed().isEqual(range)) {
+          return startLink;
+        } else {
+          return null;
+        }
+      } catch (e) {
+        console.error('Error getting selected link element:', e);
+        // If there was an error in range processing, try to at least return startLink if possible
+        try {
+          const range = selection.getFirstRange();
+          if (range) {
+            return findLinkElementAncestor(range.start);
+          }
+        } catch (innerError) {
+          console.error('Failed to get fallback link element:', innerError);
+        }
         return null;
       }
     }
@@ -879,6 +991,22 @@ export default class AlightExistingDocumentLinkPluginUI extends AlightDataLoadPl
 
 // Returns a link element if there's one among the ancestors of the provided `Position`.
 function findLinkElementAncestor(position: any): ViewAttributeElement | null {
-  const linkElement = position.getAncestors().find((ancestor: any) => isLinkElement(ancestor));
-  return linkElement && linkElement.is('attributeElement') ? linkElement : null;
+  try {
+    if (!position || !position.getAncestors) {
+      return null;
+    }
+
+    const ancestors = position.getAncestors();
+
+    for (const ancestor of ancestors) {
+      if (isLinkElement(ancestor)) {
+        return ancestor.is('attributeElement') ? ancestor : null;
+      }
+    }
+
+    return null;
+  } catch (e) {
+    console.error('Error in findLinkElementAncestor:', e);
+    return null;
+  }
 }

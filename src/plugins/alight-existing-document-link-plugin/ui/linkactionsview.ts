@@ -2,8 +2,8 @@
 import { ButtonView, View, ViewCollection, FocusCycler, type FocusableView } from 'ckeditor5/src/ui';
 import { FocusTracker, KeystrokeHandler, type LocaleTranslate, type Locale } from 'ckeditor5/src/utils';
 import { icons } from 'ckeditor5/src/core';
-
-import { ensureSafeUrl } from '../utils';
+import { isExistingDocumentLink, extractExternalDocumentLinkId } from '../utils';
+import type { DocumentLink } from './linkmodal-modal-types';
 
 // See: #8833.
 // eslint-disable-next-line ckeditor5-rules/ckeditor-imports
@@ -50,6 +50,12 @@ export default class LinkActionsView extends View {
   declare public href: string | undefined;
 
   /**
+   * Available document links for lookup.
+   * This can be set from outside to enable lookup of link details.
+   */
+  private _documentLinks: DocumentLink[] = [];
+
+  /**
    * A collection of views that can be focused in the view.
    */
   private readonly _focusables = new ViewCollection<FocusableView>();
@@ -59,8 +65,6 @@ export default class LinkActionsView extends View {
    */
   private readonly _focusCycler: FocusCycler;
 
-  declare public t: LocaleTranslate;
-
   /**
    * @inheritDoc
    */
@@ -69,11 +73,15 @@ export default class LinkActionsView extends View {
 
     const t = locale.t;
 
+    // IMPORTANT: Set observable properties BEFORE creating buttons
+    // This fixes the binding error
+    this.set({
+      href: undefined
+    });
+
     this.previewButtonView = this._createPreviewButton();
     this.unlinkButtonView = this._createButton(t('Unlink'), unlinkIcon, 'unlink');
     this.editButtonView = this._createButton(t('Edit link'), icons.pencil, 'edit');
-
-    this.set('href', undefined);
 
     this._focusCycler = new FocusCycler({
       focusables: this._focusables,
@@ -100,6 +108,53 @@ export default class LinkActionsView extends View {
         this.unlinkButtonView
       ]
     });
+  }
+
+  /**
+   * Sets the available document links for lookup.
+   * 
+   * @param links The document links array
+   */
+  public setDocumentLinks(links: DocumentLink[]): void {
+    this._documentLinks = links;
+  }
+
+  /**
+   * Finds document link data based on the href
+   * 
+   * @param href The link href/URL
+   * @returns The document link or null if not found
+   */
+  private _findDocumentLink(href: string | undefined): DocumentLink | null {
+    if (!href || !this._documentLinks || this._documentLinks.length === 0) {
+      return null;
+    }
+
+    // Extract the link ID if this is an existing document link
+    const linkId = extractExternalDocumentLinkId(href);
+    if (!linkId) {
+      return null;
+    }
+
+    // Try to find the link by ID or by destination
+    return this._documentLinks.find(link => {
+      // Match by serverFilePath
+      if (link.serverFilePath === linkId) {
+        return true;
+      }
+
+      // Match by fileId
+      if (link.fileId === linkId) {
+        return true;
+      }
+
+      // Match by serverFilePath that contains the ID
+      if (link.serverFilePath && link.serverFilePath.includes(linkId)) {
+        return true;
+      }
+
+      return false;
+    }) || null;
   }
 
   /**
@@ -165,15 +220,15 @@ export default class LinkActionsView extends View {
   }
 
   /**
- * Creates a custom view for the link title display.
- *
- * @returns The custom view instance.
- */
+   * Creates a custom view for the link title display.
+   *
+   * @returns The custom view instance.
+   */
   private _createPreviewButton(): View {
     // Create a custom view instead of using ButtonView
     const customView = new View(this.locale);
     const bind = this.bindTemplate;
-    const t = this.t!;
+    const t = this.locale.t;
 
     // Set up the template for a simple div with your custom class
     customView.setTemplate({
@@ -188,7 +243,42 @@ export default class LinkActionsView extends View {
         },
         children: [{
           text: bind.to('href', href => {
-            // Default text when href is empty or undefined
+            // If this is an existing document link, try to lookup its info
+            if (href && isExistingDocumentLink(href)) {
+              const linkInfo = this._findDocumentLink(href);
+
+              if (linkInfo) {
+                // Priority 1: Use title if available
+                if (linkInfo.title) {
+                  return linkInfo.title;
+                }
+
+                // Priority 2: Use documentDescription if available
+                if (linkInfo.documentDescription) {
+                  return linkInfo.documentDescription;
+                }
+
+                // Priority 3: Use serverFilePath if available
+                if (linkInfo.serverFilePath) {
+                  // Extract filename from path
+                  const pathParts = linkInfo.serverFilePath.split('/');
+                  const fileName = pathParts[pathParts.length - 1];
+                  return fileName || linkInfo.serverFilePath;
+                }
+              }
+
+              // If it's an existing document link but we couldn't find details,
+              // use the extracted ID as a fallback
+              const linkId = extractExternalDocumentLinkId(href);
+              if (linkId) {
+                // Extract filename from path if possible
+                const pathParts = linkId.split('/');
+                const fileName = pathParts[pathParts.length - 1];
+                return fileName || linkId;
+              }
+            }
+
+            // Final fallback: just use the href or a placeholder message
             return href || t('This link has no title');
           })
         }]

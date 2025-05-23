@@ -27,9 +27,24 @@ export class ContentManager implements ILinkManager {
 
     // If we have an initial URL, try to find and preselect the matching link
     if (initialUrl) {
+      // First try direct match by serverFilePath
       this.selectedLink = this.existingDocumentLinksData.find(
         link => link.serverFilePath === initialUrl
       ) || null;
+
+      // If not found, try by fileId
+      if (!this.selectedLink) {
+        this.selectedLink = this.existingDocumentLinksData.find(
+          link => link.fileId === initialUrl
+        ) || null;
+      }
+
+      // If still not found, try partial match on serverFilePath
+      if (!this.selectedLink) {
+        this.selectedLink = this.existingDocumentLinksData.find(
+          link => link.serverFilePath && link.serverFilePath.includes(initialUrl)
+        ) || null;
+      }
     }
 
     this.paginationManager = new PaginationManager(this.handlePageChange.bind(this));
@@ -119,6 +134,26 @@ export class ContentManager implements ILinkManager {
     }
   }
 
+  /**
+   * Checks if a link matches the current search query and filters
+   * This is used to determine if the selected link matches the search criteria
+   */
+  private _doesLinkMatchCurrentSearch(link: DocumentLink): boolean {
+    // Get the current search query from the search manager
+    const searchQuery = this.searchManager.getCurrentSearchQuery().toLowerCase();
+
+    // Check if link matches search query
+    const matchesSearch = !searchQuery ||
+      (link.title && link.title.toLowerCase().includes(searchQuery)) ||
+      (link.documentDescription && link.documentDescription.toLowerCase().includes(searchQuery)) ||
+      (link.serverFilePath && link.serverFilePath.toLowerCase().includes(searchQuery));
+
+    // For now, we're only checking search query, not advanced filters
+    // If you want to include advanced filters, you'd need to expose them from SearchManager
+
+    return matchesSearch;
+  }
+
   private handleSearchResults = (filteredData: DocumentLink[]): void => {
     console.log('Search results updated:', filteredData.length, 'items');
 
@@ -126,11 +161,15 @@ export class ContentManager implements ILinkManager {
 
     // Maintain selected link if still in filtered results, otherwise clear selection
     if (this.selectedLink && !filteredData.some(link => link.serverFilePath === this.selectedLink?.serverFilePath)) {
-      this.selectedLink = null;
+      // If we have an initialUrl and the selected link matches it, keep the selection
+      // This ensures the current link stays selected even if filtered out
+      if (!(this.initialUrl && this.selectedLink.serverFilePath === this.initialUrl)) {
+        this.selectedLink = null;
 
-      // Notify of deselection if callback exists
-      if (this.onLinkSelected) {
-        this.onLinkSelected(null);
+        // Notify of deselection if callback exists
+        if (this.onLinkSelected) {
+          this.onLinkSelected(null);
+        }
       }
     }
 
@@ -193,8 +232,20 @@ export class ContentManager implements ILinkManager {
     // Initialize search first as it sets up the search container
     this.searchManager.initialize(container);
 
+    // Calculate total items for pagination, excluding the selected item if displayed separately
+    let paginationTotalItems = this.filteredLinksData.length;
+    if (this.initialUrl && this.selectedLink) {
+      // If we're showing the selected link separately, subtract 1 from total
+      const isSelectedInFiltered = this.filteredLinksData.some(link =>
+        link.serverFilePath === this.selectedLink?.serverFilePath
+      );
+      if (isSelectedInFiltered) {
+        paginationTotalItems--;
+      }
+    }
+
     // Then initialize pagination with the correct count of filtered items
-    this.paginationManager.initialize(container, this.filteredLinksData.length);
+    this.paginationManager.initialize(container, paginationTotalItems);
 
     // Make sure the search input has the current search query
     const searchInput = container.querySelector('#search-input') as HTMLInputElement;
@@ -265,16 +316,25 @@ export class ContentManager implements ILinkManager {
       return `
       <div class="cka-loading-container">
         <div class="cka-loading-spinner"></div>
-        <div class="cka-loading-message">Loading document links...</div>
+        <div class="cka-loading-message">Loading existing document links...</div>
       </div>
     `;
+    }
+
+    // Filter out the currently selected link if we have an initial URL
+    let displayFilteredData = this.filteredLinksData;
+    if (this.initialUrl && this.selectedLink) {
+      // Remove the selected link from the display list to avoid duplication
+      displayFilteredData = this.filteredLinksData.filter(link =>
+        link.serverFilePath !== this.selectedLink?.serverFilePath
+      );
     }
 
     const currentPage = this.paginationManager.getCurrentPage();
     const pageSize = this.paginationManager.getPageSize();
     const startIndex = (currentPage - 1) * pageSize;
-    const endIndex = Math.min(startIndex + pageSize, this.filteredLinksData.length);
-    const currentPageData = this.filteredLinksData.slice(startIndex, endIndex);
+    const endIndex = Math.min(startIndex + pageSize, displayFilteredData.length);
+    const currentPageData = displayFilteredData.slice(startIndex, endIndex);
 
     // Search container
     const searchContainerMarkup = `<div id="search-container-root" class="cka-search-container"></div>`;
@@ -286,11 +346,22 @@ export class ContentManager implements ILinkManager {
     const alertsMarkup = this.buildAlertsMarkup();
 
     // Links list
-    const linksMarkup = currentPageData.length > 0
-      ? currentPageData
+    let linksMarkup = '';
+    if (currentPageData.length > 0) {
+      linksMarkup = currentPageData
         .map(link => this.buildLinkItemMarkup(link))
-        .join('')
-      : '<div class="cka-center-modal-message">No results found. Try adjusting your search criteria.</div>';
+        .join('');
+    } else {
+      // Check if we're showing the selected link separately and it matches the search
+      const isShowingSelectedLink = this.initialUrl && this.selectedLink;
+      const selectedMatchesSearch = isShowingSelectedLink && this._doesLinkMatchCurrentSearch(this.selectedLink!);
+
+      if (!isShowingSelectedLink || !selectedMatchesSearch) {
+        // Only show "no results" if we're not showing a matching selected link
+        linksMarkup = '<div class="cka-center-modal-message">No results found. Try adjusting your search criteria.</div>';
+      }
+      // Otherwise, show nothing (empty list) since the result is shown above
+    }
 
     // Pagination container
     const paginationMarkup = `<div id="pagination-container" class="cka-pagination"></div>`;
@@ -301,6 +372,7 @@ export class ContentManager implements ILinkManager {
       Data summary:
       - Total links: ${this.existingDocumentLinksData.length}
       - Filtered links: ${this.filteredLinksData.length}
+      - Display filtered links: ${displayFilteredData.length}
       - Current page: ${currentPage}
       - Items on page: ${currentPageData.length}
       - Page size: ${pageSize}
@@ -321,15 +393,34 @@ export class ContentManager implements ILinkManager {
 
   private buildSelectedUrlInfoMarkup(): string {
     // Find the matching link for this URL
-    const matchingLink = this.existingDocumentLinksData.find(link =>
-      link.serverFilePath === this.initialUrl
-    );
+    // For existing document links, the initialUrl is the serverFilePath
+    const matchingLink = this.existingDocumentLinksData.find(link => {
+      // Check if initialUrl matches the serverFilePath
+      if (link.serverFilePath === this.initialUrl) {
+        return true;
+      }
+
+      // Check if initialUrl matches the fileId
+      if (link.fileId === this.initialUrl) {
+        return true;
+      }
+
+      // Check partial match on serverFilePath
+      if (link.serverFilePath && link.serverFilePath.includes(this.initialUrl)) {
+        return true;
+      }
+
+      // For backward compatibility, check normalized URLs
+      const normalizedInitial = this.normalizeUrl(this.initialUrl);
+      const normalizedServerFilePath = this.normalizeUrl(link.serverFilePath);
+      return normalizedInitial === normalizedServerFilePath;
+    });
 
     if (!matchingLink) {
       return `
       <div class="cka-current-url-info">
-        <h3><strong>Current Link URL:</strong> ${this.initialUrl}</h3>
-        <div class="cka-note-message">This URL is not in the existing document links list.</div>
+        <h3><strong>Current Link:</strong> ${this.initialUrl}</h3>
+        <div class="cka-note-message">This link is not in the existing document links list.</div>
       </div>
     `;
     }
@@ -361,9 +452,11 @@ export class ContentManager implements ILinkManager {
         </div>
         <ul>
           ${link.title ? `<li><strong>${link.title}</strong></li>` : ''}
+          <!--${link.documentDescription ? `<li><strong>Description:</strong> ${link.documentDescription}</li>` : ''}-->
           ${link.population ? `<li><strong>Population:</strong> ${link.population}</li>` : ''}
           ${link.locale ? `<li><strong>Language:</strong> ${link.locale}</li>` : ''}
           ${link.fileType ? `<li><strong>File Type:</strong> ${link.fileType}</li>` : ''}
+          <!--${link.serverFilePath ? `<li><strong>Path:</strong> ${link.serverFilePath}</li>` : ''}-->
         </ul>
       </div>
     `;
