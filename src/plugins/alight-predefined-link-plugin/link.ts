@@ -18,6 +18,13 @@ import {
  */
 export default class AlightPredefinedLinkPlugin extends Plugin {
   /**
+   * Track processing state per text node to avoid conflicts
+   */
+  private _processingNodes = new WeakSet();
+  private _pendingChanges = new Set();
+  private _processingTimeout: number | null = null;
+
+  /**
    * @inheritDoc
    */
   public static get requires() {
@@ -47,92 +54,144 @@ export default class AlightPredefinedLinkPlugin extends Plugin {
    * @inheritDoc
    */
   public init(): void {
-    // Register additional plugin-specific behaviors
-    this._handleLinkInterception();
+    // Only handle user-initiated link commands, not data loading
+    this._handleLinkCommandExecution();
 
     // Register a data processor to ensure proper format in getData() output
     this._registerDataProcessor();
   }
 
   /**
-   * Configures the editor to intercept link creation/editing of predefined links
+   * Handle only explicit link command execution
+   * This prevents interference during data loading/upcast
    */
-  private _handleLinkInterception(): void {
+  private _handleLinkCommandExecution(): void {
     const editor = this.editor;
 
-    editor.model.document.on('change', () => {
-      editor.model.change(writer => {
-        const changes = editor.model.document.differ.getChanges();
-        const updatedNodes = new Set();
+    // Use a more targeted approach - only listen to command execution
+    const linkCommand = editor.commands.get('alight-predefined-link');
 
-        for (const change of changes) {
-          if (change.type === 'insert' || change.type === 'attribute') {
-            const range = change.type === 'insert' ?
-              editor.model.createRange(change.position, change.position.getShiftedBy(1)) :
-              change.range;
+    if (linkCommand) {
+      // Listen only to explicit command execution
+      linkCommand.on('execute', (evt, args) => {
+        // This will only run when the user explicitly executes the link command
+        // Not during data loading/upcast
+        const href = args[0] as string;
 
-            if (!range) continue;
+        if (isPredefinedLink(href)) {
+          // Schedule processing after command execution completes
+          setTimeout(() => {
+            this._processNewPredefinedLink(href);
+          }, 0);
+        }
+      }, { priority: 'low' });
+    }
+  }
 
-            for (const item of range.getItems()) {
-              if (item.is('$text') && !updatedNodes.has(item)) {
-                if (item.hasAttribute('alightPredefinedLinkPluginHref')) {
-                  const href = item.getAttribute('alightPredefinedLinkPluginHref');
+  /**
+   * Process only newly created predefined links
+   */
+  private _processNewPredefinedLink(href: string): void {
+    const editor = this.editor;
+    const selection = editor.model.document.selection;
 
-                  if (isPredefinedLink(href as string)) {
-                    // Always set AHCustomeLink format for predefined links
-                    writer.setAttribute('alightPredefinedLinkPluginFormat', 'ahcustom', item);
+    // Only process if we have a valid selection with the href
+    if (!selection.hasAttribute('alightPredefinedLinkPluginHref')) {
+      return;
+    }
 
-                    // Extract and set link name
-                    const linkId = extractPredefinedLinkId(href as string);
-                    // PRIORITY FIX: Always ensure we have a linkName
-                    let linkName = linkId;
+    const currentHref = selection.getAttribute('alightPredefinedLinkPluginHref');
+    if (currentHref !== href) {
+      return;
+    }
 
-                    // If no valid linkId, try to use existing linkName or generate one
-                    if (!linkName || linkName.trim() === '') {
-                      linkName = item.getAttribute('alightPredefinedLinkPluginLinkName') as string;
-                      if (!linkName || linkName.trim() === '') {
-                        linkName = 'link-' + Math.random().toString(36).substring(2, 7);
-                      }
-                    }
+    editor.model.change(writer => {
+      const ranges = selection.isCollapsed ?
+        [editor.model.createRange(selection.getFirstPosition(), selection.getLastPosition())] :
+        Array.from(selection.getRanges());
 
-                    // Always set the linkName attribute
-                    writer.setAttribute('alightPredefinedLinkPluginLinkName', linkName, item);
-                  }
+      for (const range of ranges) {
+        for (const item of range.getItems()) {
+          if (item.is('$text') &&
+            item.hasAttribute('alightPredefinedLinkPluginHref') &&
+            item.getAttribute('alightPredefinedLinkPluginHref') === href &&
+            !this._processingNodes.has(item)) {
 
-                  updatedNodes.add(item);
-                }
-              }
-            }
+            this._processingNodes.add(item);
+            this._ensurePredefinedLinkAttributes(writer, item, href);
           }
         }
-      });
+      }
     });
   }
 
   /**
-   * Registers a data processor that ensures links have the proper structure in output data
+   * Ensure predefined link has all required attributes
+   */
+  private _ensurePredefinedLinkAttributes(writer: any, item: any, href: string): void {
+    const attributesToSet = new Map<string, any>();
+
+    // Set format if not present
+    if (!item.hasAttribute('alightPredefinedLinkPluginFormat')) {
+      attributesToSet.set('alightPredefinedLinkPluginFormat', 'ahcustom');
+    }
+
+    // Always update linkName to match href for predefined links
+    let linkName = extractPredefinedLinkId(href) || href;
+    if (!linkName || linkName.trim() === '') {
+      linkName = 'link-' + Math.random().toString(36).substring(2, 7);
+    }
+
+    // Always set the linkName, even if it already exists
+    // This ensures updates are properly reflected
+    attributesToSet.set('alightPredefinedLinkPluginLinkName', linkName);
+
+    // Apply all attributes atomically
+    attributesToSet.forEach((value, key) => {
+      writer.setAttribute(key, value, item);
+    });
+    console.log('Updated predefined link attributes - href:', href, 'linkName:', linkName);
+  }
+
+  /**
+   * Simplified data processor registration
    */
   private _registerDataProcessor(): void {
     const editor = this.editor;
     const dataProcessor = editor.data.processor;
 
+    // Safely check if toData method exists
+    if (!dataProcessor || typeof dataProcessor.toData !== 'function') {
+      return;
+    }
+
     // Get the original toData method
-    const originalToData = dataProcessor.toData;
+    const originalToData = dataProcessor.toData.bind(dataProcessor);
 
     // Override the toData method to ensure proper link structure in output
-    dataProcessor.toData = function (viewFragment) {
-      // Call the original method
-      const data = originalToData.call(this, viewFragment);
-
-      // Process the HTML string to ensure proper link structure
+    dataProcessor.toData = (viewFragment: any): string => {
       try {
-        // Use the ensure structure function directly
+        // Call the original method
+        const data = originalToData(viewFragment);
+
+        // Process the HTML string to ensure proper link structure
         return ensurePredefinedLinkStructure(data);
       } catch (error) {
         console.error('Error processing links in output:', error);
-        // Return original data if there was an error
-        return data;
+        return originalToData(viewFragment);
       }
     };
+  }
+
+  /**
+   * Clean up resources when plugin is destroyed
+   */
+  public override destroy(): void {
+    if (this._processingTimeout) {
+      clearTimeout(this._processingTimeout);
+    }
+    this._processingNodes = new WeakSet();
+    this._pendingChanges.clear();
+    super.destroy();
   }
 }

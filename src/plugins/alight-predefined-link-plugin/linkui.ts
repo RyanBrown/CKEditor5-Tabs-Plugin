@@ -62,6 +62,72 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
     return true;
   }
 
+  /**
+   * Sorts an array of predefined links alphabetically and removes duplicates
+   * 
+   * @param links The array of predefined links to sort
+   * @param ascending Whether to sort in ascending (A~Z) order
+   * @returns The sorted array of links with duplicates removed
+   */
+  private _sortPredefinedLinks(links: PredefinedLink[], ascending: boolean = true): PredefinedLink[] {
+    // First, deduplicate the links based on uniqueId
+    const uniqueLinks = this._removeDuplicateLinks(links);
+
+    // Then sort the unique links
+    return uniqueLinks.sort((a, b) => {
+      // Get link description with fallback to name if description not available
+      const descA = (a.predefinedLinkDescription || a.predefinedLinkName || '').toLowerCase();
+      const descB = (b.predefinedLinkDescription || b.predefinedLinkName || '').toLowerCase();
+
+      // Simple alphabetical comparison based on description
+      const result = descA.localeCompare(descB);
+      return ascending ? result : -result;
+    });
+  }
+
+  /**
+   * Removes duplicate links from an array of predefined links
+   * 
+   * @param links The array of predefined links to deduplicate
+   * @returns A new array with duplicates removed
+   */
+  private _removeDuplicateLinks(links: PredefinedLink[]): PredefinedLink[] {
+    const uniqueMap = new Map<string, PredefinedLink>();
+
+    // Process each link and only keep one instance of each uniqueId
+    links.forEach(link => {
+      const key = this._getLinkUniqueKey(link);
+
+      // Only add the link if we haven't seen this key before
+      if (!uniqueMap.has(key)) {
+        uniqueMap.set(key, link);
+      }
+    });
+    // Convert the Map values back to an array
+    return Array.from(uniqueMap.values());
+  }
+
+  /**
+   * Gets a unique key for a link based on its properties
+   * 
+   * @param link The predefined link to get a key for
+   * @returns A string that can be used to identify duplicate links
+   */
+  private _getLinkUniqueKey(link: PredefinedLink): string {
+    // Prioritize uniqueId if available
+    if (link.uniqueId) {
+      return link.uniqueId.toString();
+    }
+
+    // Fall back to destination/URL
+    if (link.destination) {
+      return this._normalizeUrl(link.destination as string);
+    }
+
+    // Last resort: use name and description together
+    return `${link.predefinedLinkName || ''}-${link.predefinedLinkDescription || ''}`;
+  }
+
   public init(): void {
     const editor = this.editor;
     const t = this.editor.t;
@@ -98,7 +164,6 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
           ['ck-fake-link-selection', 'ck-fake-link-selection_collapsed'],
           markerElement
         );
-
         return markerElement;
       }
     });
@@ -132,6 +197,7 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
     // Listen to selection changes to update button state
     editor.model.document.on('change:selection', () => {
       this._updateButtonState();
+      this._updateActionsViewState();
     });
 
     // Also listen to selection changes to detect when user enters a link or clicks on it
@@ -140,6 +206,7 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
       setTimeout(() => {
         this._checkAndShowBalloon();
         this._updateButtonState();
+        this._updateActionsViewState();
       }, 10);
     });
   }
@@ -167,6 +234,43 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
     }
   }
 
+  /**
+   * Updates the actions view button states based on data loading status
+   */
+  private _updateActionsViewState(): void {
+    if (this.actionsView) {
+      const linkCommand = this.editor.commands.get('alight-predefined-link') as AlightPredefinedLinkPluginCommand;
+      const unlinkCommand = this.editor.commands.get('alight-predefined-unlink') as AlightPredefinedLinkPluginUnlinkCommand;
+
+      // Get the current link URL
+      const href = linkCommand.value;
+
+      // Determine if edit should be enabled:
+      // 1. Data must be loaded
+      // 2. Link command must be enabled
+      // 3. If it's a predefined link, we need the data
+      let editEnabled = linkCommand.isEnabled;
+
+      if (href && isPredefinedLink(href)) {
+        // For predefined links, only enable edit if data is loaded
+        editEnabled = editEnabled && this._dataLoaded;
+      }
+
+      // Update the edit button state
+      this.actionsView.editButtonView.set('isEnabled', editEnabled);
+
+      // Update tooltip to show why it's disabled if needed
+      if (!editEnabled && !this._dataLoaded && href && isPredefinedLink(href)) {
+        this.actionsView.editButtonView.set('tooltip', 'Loading predefined links data...');
+      } else {
+        this.actionsView.editButtonView.set('tooltip', true);
+      }
+
+      // Unlink button can always be enabled if the unlink command is enabled
+      this.actionsView.unlinkButtonView.set('isEnabled', unlinkCommand.isEnabled);
+    }
+  }
+
   protected override setModalContents = (): void => {
     if (this.verboseMode) console.log(`Loading predefined links...`);
 
@@ -175,10 +279,13 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
 
     // Update button state immediately to disable it during loading
     this._updateButtonState();
+    this._updateActionsViewState();
 
     this.loadService.loadPredefinedLinks().then(
       (data) => {
-        this._predefinedLinks = data;
+        // Sort the predefined links alphabetically and remove duplicates
+        this._predefinedLinks = this._sortPredefinedLinks(data);
+
         if (this.verboseMode) console.log(data);
 
         // Update the actions view with the loaded predefined links if it's already created
@@ -192,6 +299,7 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
 
         // Update button state after data is loaded
         this._updateButtonState();
+        this._updateActionsViewState();
       },
       (error) => {
         console.log(error);
@@ -200,6 +308,7 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
 
         // Update button state to reflect the error
         this._updateButtonState();
+        this._updateActionsViewState();
       }
     );
   }
@@ -293,7 +402,6 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
         isEnabled: false,
         role: 'menuitemcheckbox'
       });
-
       return button;
     });
   }
@@ -337,11 +445,18 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
       actionsView.setPredefinedLinks(this._predefinedLinks);
     }
 
+    // Initial state - we'll update this dynamically
     actionsView.editButtonView.bind('isEnabled').to(linkCommand);
     actionsView.unlinkButtonView.bind('isEnabled').to(unlinkCommand);
 
     // Execute editing in a modal dialog after clicking the "Edit" button
     this.listenTo(actionsView, 'edit', () => {
+      // Double-check that data is loaded before allowing edit
+      if (!this._dataLoaded) {
+        console.warn('Cannot edit link - data not loaded yet');
+        return;
+      }
+
       this._hideUI();
       this._showUI(true);
     });
@@ -357,7 +472,6 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
       this._hideUI();
       cancel();
     });
-
     return actionsView;
   }
 
@@ -403,13 +517,17 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
             return true;
           }
 
+          // Check if the predefinedLinkName matches
+          if (link.predefinedLinkName === predefinedId) {
+            return true;
+          }
+
           // If the destination matches the predefined ID
           if (link.destination &&
             (link.destination === predefinedId ||
               link.destination.includes(predefinedId))) {
             return true;
           }
-
           return false;
         });
 
@@ -417,7 +535,15 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
           return exactMatch;
         }
       }
+      // For predefined links, the URL might BE the predefinedLinkName
+      // So check for direct match with predefinedLinkName
+      const directMatch = this._predefinedLinks.find(link =>
+        link.predefinedLinkName === url
+      );
 
+      if (directMatch) {
+        return directMatch;
+      }
       // Fallback to normalized URL comparison
       return this._predefinedLinks.find(link => {
         const normalizedDestination = this._normalizeUrl(link.destination as string);
@@ -491,6 +617,9 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
         position: this._getBalloonPositionData()
       });
 
+      // Update button states right after showing the balloon
+      this._updateActionsViewState();
+
       // Begin responding to UI updates
       this._startUpdatingUI();
     }
@@ -510,7 +639,6 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
     } else {
       target = view.domConverter.viewRangeToDom(viewDocument.selection.getFirstRange()!);
     }
-
     return { target };
   }
 
@@ -545,6 +673,9 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
         } else if (this._areActionsInPanel) {
           // Update the balloon position as the selection changes
           this._balloon.updatePosition(this._getBalloonPositionData());
+
+          // Update button states whenever the UI updates
+          this._updateActionsViewState();
         }
 
         prevSelectedLink = selectedLink;
@@ -569,10 +700,10 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
     const linksContainer = document.createElement('div');
     linksContainer.id = 'links-container';
     linksContainer.innerHTML = `
-    <div class="cka-loading-container">
-      <div class="cka-loading-spinner"></div>
-    </div>
-  `;
+      <div class="cka-loading-container">
+        <div class="cka-loading-spinner"></div>
+      </div>
+    `;
 
     const paginationContainer = document.createElement('div');
     paginationContainer.id = 'pagination-container';
@@ -658,11 +789,15 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
           console.log('Selected link:', selectedLink);
 
           if (selectedLink && selectedLink.predefinedLinkName) {
-            // Create the link in the editor using the built-in link command
-            // Use predefinedLinkName instead of destination
+            // For predefined links, we need to ensure we're using the correct format
+            // The href should be the predefinedLinkName for predefined links
             let href = selectedLink.predefinedLinkName;
 
-            linkCommand.execute(href);
+            // Execute the command with the new link
+            // The command will handle updating all necessary attributes
+            linkCommand.execute(href, {
+              // Pass any additional options if needed
+            });
 
             // Hide the modal after creating the link
             this._modalDialog?.hide();
@@ -704,8 +839,11 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
         return;
       }
 
-      // Create the ContentManager with the initialUrl and predefined links data
-      this._linkManager = new ContentManager(initialUrl, this._predefinedLinks);
+      // Make sure links are sorted before passing to ContentManager
+      const sortedLinks = this._sortPredefinedLinks(this._predefinedLinks);
+
+      // Create the ContentManager with the initialUrl and sorted predefined links data
+      this._linkManager = new ContentManager(initialUrl, sortedLinks);
 
       // Pass the modal dialog reference to enable/disable the Continue button
       // Add an event listener for link selection
