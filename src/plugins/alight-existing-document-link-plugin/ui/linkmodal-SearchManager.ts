@@ -9,7 +9,7 @@ export class SearchManager {
   private populationSearchQuery = ''; // Field for population text input
   private tempPopulationSearchQuery = ''; // Temporary storage for population input before applying
   private overlayPanel: AlightOverlayPanel | null = null;
-  private readonly advancedSearchTriggerId = 'advanced-search-trigger';
+  private readonly advancedSearchTriggerId = 'existing-doc-advanced-search-trigger';
   private searchInput: HTMLInputElement | null = null;
   private populationInput: HTMLInputElement | null = null; // Reference to the population input
   private containerRef: HTMLElement | null = null;
@@ -34,14 +34,14 @@ export class SearchManager {
   ) { }
 
   public initialize(container: HTMLElement): void {
-    console.log('Initializing SearchManager...');
+    console.log('Initializing Existing Document SearchManager...');
 
     // Store container reference
     this.containerRef = container;
 
-    const searchContainer = container.querySelector('#search-container-root');
+    const searchContainer = container.querySelector('#existing-doc-search-container-root');
     if (!searchContainer) {
-      console.error('Search container not found');
+      console.error('Existing document search container not found');
       return;
     }
 

@@ -337,7 +337,7 @@ export class ContentManager implements ILinkManager {
     const currentPageData = displayFilteredData.slice(startIndex, endIndex);
 
     // Search container
-    const searchContainerMarkup = `<div id="search-container-root" class="cka-search-container"></div>`;
+    const searchContainerMarkup = `<div id="existing-doc-search-container-root" class="cka-search-container"></div>`;
 
     // Current URL info if we have an initial URL
     const selectedUrlInfo = this.initialUrl ? this.buildSelectedUrlInfoMarkup() : '';
