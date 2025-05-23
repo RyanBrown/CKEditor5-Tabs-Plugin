@@ -327,6 +327,176 @@ describe('AutomaticDecorators', () => {
       expect(mockMapper.toViewRange).not.toHaveBeenCalled();
       expect(mockConsumable.consume).not.toHaveBeenCalled();
     });
+
+    it('should skip if attribute is already consumed', () => {
+      mockConsumable.test.and.returnValue(false);
+      mockData.item.is.and.returnValue(false);
+      mockSchema.isInline.and.returnValue(true);
+
+      eventHandler(mockEvent, mockData, mockConversionApi);
+
+      expect(mockConsumable.consume).not.toHaveBeenCalled();
+    });
+
+    it('should skip if item is not selection or inline', () => {
+      mockConsumable.test.and.returnValue(true);
+      mockData.item.is.and.returnValue(false);
+      mockSchema.isInline.and.returnValue(false);
+
+      eventHandler(mockEvent, mockData, mockConversionApi);
+
+      expect(mockConsumable.consume).not.toHaveBeenCalled();
+    });
+
+    it('should handle selection items', () => {
+      const decorator: NormalizedLinkDecoratorAutomaticDefinition = {
+        id: 'selectionDecorator',
+        mode: 'automatic',
+        callback: () => true,
+        attributes: { target: '_blank' }
+      };
+      automaticDecorators.add(decorator);
+
+      mockConsumable.test.and.returnValue(true);
+      mockData.item.is.and.returnValue(true); // is selection
+      mockSchema.isInline.and.returnValue(false);
+
+      eventHandler(mockEvent, mockData, mockConversionApi);
+
+      expect(mockConsumable.consume).toHaveBeenCalledWith(mockData.item, 'attribute:alightPredefinedLinkPluginHref');
+    });
+
+    it('should skip non-element items in view range', () => {
+      const decorator: NormalizedLinkDecoratorAutomaticDefinition = {
+        id: 'nonElementDecorator',
+        mode: 'automatic',
+        callback: () => true,
+        attributes: { target: '_blank' }
+      };
+      automaticDecorators.add(decorator);
+
+      const nonElementItem = {
+        is: jasmine.createSpy('is').and.returnValue(false)
+      };
+
+      mockConsumable.test.and.returnValue(true);
+      mockData.item.is.and.returnValue(false);
+      mockSchema.isInline.and.returnValue(true);
+      mockMapper.toViewRange.and.returnValue(mockViewRange);
+      mockViewRange.getItems.and.returnValue([nonElementItem]);
+
+      eventHandler(mockEvent, mockData, mockConversionApi);
+
+      expect(mockWriter.setAttribute).not.toHaveBeenCalled();
+      expect(mockConsumable.consume).not.toHaveBeenCalled();
+    });
+
+    it('should handle attribute elements', () => {
+      const decorator: NormalizedLinkDecoratorAutomaticDefinition = {
+        id: 'attributeElementDecorator',
+        mode: 'automatic',
+        callback: () => true,
+        attributes: { target: '_blank' }
+      };
+      automaticDecorators.add(decorator);
+
+      const attributeElement = {
+        is: jasmine.createSpy('is').and.callFake((type: string) => type === 'attributeElement')
+      };
+
+      mockConsumable.test.and.returnValue(true);
+      mockData.item.is.and.returnValue(false);
+      mockSchema.isInline.and.returnValue(true);
+      mockMapper.toViewRange.and.returnValue(mockViewRange);
+      mockViewRange.getItems.and.returnValue([attributeElement]);
+
+      eventHandler(mockEvent, mockData, mockConversionApi);
+
+      expect(mockWriter.setAttribute).toHaveBeenCalled();
+      expect(mockConsumable.consume).toHaveBeenCalled();
+    });
+
+    it('should handle multiple decorators for the same element', () => {
+      const decorator1: NormalizedLinkDecoratorAutomaticDefinition = {
+        id: 'decorator1',
+        mode: 'automatic',
+        callback: () => true,
+        attributes: { target: '_blank' }
+      };
+      const decorator2: NormalizedLinkDecoratorAutomaticDefinition = {
+        id: 'decorator2',
+        mode: 'automatic',
+        callback: () => true,
+        classes: ['external-link']
+      };
+      automaticDecorators.add([decorator1, decorator2]);
+
+      mockConsumable.test.and.returnValue(true);
+      mockData.item.is.and.returnValue(false);
+      mockSchema.isInline.and.returnValue(true);
+      mockMapper.toViewRange.and.returnValue(mockViewRange);
+      mockViewElement.is.and.returnValue(true);
+      mockViewRange.getItems.and.returnValue([mockViewElement]);
+
+      eventHandler(mockEvent, mockData, mockConversionApi);
+
+      expect(mockWriter.setAttribute).toHaveBeenCalledWith('target', '_blank', jasmine.anything());
+      expect(mockWriter.addClass).toHaveBeenCalledWith(['external-link'], jasmine.anything());
+      expect(mockConsumable.consume).toHaveBeenCalled();
+    });
+
+    it('should handle decorator with all properties (attributes, classes, styles)', () => {
+      const decorator: NormalizedLinkDecoratorAutomaticDefinition = {
+        id: 'fullDecorator',
+        mode: 'automatic',
+        callback: () => true,
+        attributes: { target: '_blank', rel: 'noopener' },
+        classes: ['external', 'secure'],
+        styles: { color: 'red', 'text-decoration': 'underline' }
+      };
+      automaticDecorators.add(decorator);
+
+      mockConsumable.test.and.returnValue(true);
+      mockData.item.is.and.returnValue(false);
+      mockSchema.isInline.and.returnValue(true);
+      mockMapper.toViewRange.and.returnValue(mockViewRange);
+      mockViewElement.is.and.returnValue(true);
+      mockViewRange.getItems.and.returnValue([mockViewElement]);
+
+      eventHandler(mockEvent, mockData, mockConversionApi);
+
+      expect(mockWriter.setAttribute).toHaveBeenCalledWith('target', '_blank', jasmine.anything());
+      expect(mockWriter.setAttribute).toHaveBeenCalledWith('rel', 'noopener', jasmine.anything());
+      expect(mockWriter.addClass).toHaveBeenCalledWith(['external', 'secure'], jasmine.anything());
+      expect(mockWriter.setStyle).toHaveBeenCalledWith('color', 'red', jasmine.anything());
+      expect(mockWriter.setStyle).toHaveBeenCalledWith('text-decoration', 'underline', jasmine.anything());
+      expect(mockWriter.setCustomProperty).toHaveBeenCalledWith('alight-predefined-link', true, jasmine.anything());
+      expect(mockConsumable.consume).toHaveBeenCalled();
+    });
+
+    it('should handle decorator with empty styles object', () => {
+      const decorator: NormalizedLinkDecoratorAutomaticDefinition = {
+        id: 'emptyStylesDecorator',
+        mode: 'automatic',
+        callback: () => true,
+        attributes: { target: '_blank' },
+        styles: {}
+      };
+      automaticDecorators.add(decorator);
+
+      mockConsumable.test.and.returnValue(true);
+      mockData.item.is.and.returnValue(false);
+      mockSchema.isInline.and.returnValue(true);
+      mockMapper.toViewRange.and.returnValue(mockViewRange);
+      mockViewElement.is.and.returnValue(true);
+      mockViewRange.getItems.and.returnValue([mockViewElement]);
+
+      eventHandler(mockEvent, mockData, mockConversionApi);
+
+      expect(mockWriter.setAttribute).toHaveBeenCalledWith('target', '_blank', jasmine.anything());
+      expect(mockWriter.setStyle).not.toHaveBeenCalled();
+      expect(mockConsumable.consume).toHaveBeenCalled();
+    });
   });
 });
 
