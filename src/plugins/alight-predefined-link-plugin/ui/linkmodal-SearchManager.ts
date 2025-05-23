@@ -59,6 +59,7 @@ export class SearchManager {
   // Helper method to check if any advanced filters are active
   private hasActiveFilters(): boolean {
     return !!(
+      this.currentSearchQuery ||
       this.selectedFilters.baseOrClientSpecific.length > 0 ||
       this.selectedFilters.pageType.length > 0 ||
       this.selectedFilters.domain.length > 0
@@ -85,9 +86,9 @@ export class SearchManager {
           <i class="fa-regular fa-xmark"></i>
         </button>
         <button id="${this.advancedSearchTriggerId}" 
-                class="cka-button cka-button-rounded cka-button-text cka-text-no-wrap"
+                class="cka-button cka-button-rounded cka-button-text cka-text-no-wrap ${this.hasActiveFilters() ? 'cka-button-active' : ''}"
                 data-panel-id="advanced-search-panel">
-          Advanced Search
+          Advanced Search ${this.hasActiveFilters() ? '(Active)' : ''}
         </button>
       </div>
       <button id="search-btn" class="cka-button cka-button-rounded cka-button-outlined">Search</button>
@@ -321,11 +322,18 @@ export class SearchManager {
 
   private handleCheckboxChange = (event: Event): void => {
     const target = event.target as HTMLElement;
-    const filterType = target.getAttribute('data-filter-type') as keyof SelectedFilters;
+    const filterType = target.getAttribute('data-filter-type');
     const value = target.getAttribute('data-value');
     const isChecked = (target as any).checked;
 
     if (filterType && value) {
+      // Check if this is a valid filter type in our interface
+      if (!this.tempSelectedFilters.hasOwnProperty(filterType)) {
+        console.warn(`Unknown filter type: ${filterType}`);
+        return;
+      }
+
+      // Now safely access the array
       if (isChecked && !this.tempSelectedFilters[filterType].includes(value)) {
         this.tempSelectedFilters[filterType].push(value);
       } else if (!isChecked) {

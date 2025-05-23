@@ -62,6 +62,7 @@ export class SearchManager {
   // Helper method to check if any advanced filters are active
   private hasActiveFilters(): boolean {
     return !!(
+      this.currentSearchQuery ||
       this.populationSearchQuery ||
       this.selectedFilters.fileType.length > 0 ||
       this.selectedFilters.population.length > 0 ||
@@ -363,11 +364,18 @@ export class SearchManager {
 
   private handleCheckboxChange = (event: Event): void => {
     const target = event.target as HTMLElement;
-    const filterType = target.getAttribute('data-filter-type') as keyof SelectedFilters;
+    const filterType = target.getAttribute('data-filter-type');
     const value = target.getAttribute('data-value');
     const isChecked = (target as any).checked;
 
     if (filterType && value) {
+      // Check if this is a valid filter type in our interface
+      if (!this.tempSelectedFilters.hasOwnProperty(filterType)) {
+        console.warn(`Unknown filter type: ${filterType}`);
+        return;
+      }
+
+      // Now safely access the array
       if (isChecked && !this.tempSelectedFilters[filterType].includes(value)) {
         this.tempSelectedFilters[filterType].push(value);
       } else if (!isChecked) {
