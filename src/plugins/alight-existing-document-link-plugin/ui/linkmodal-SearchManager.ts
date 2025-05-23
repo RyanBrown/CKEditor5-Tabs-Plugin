@@ -6,6 +6,7 @@ import { DocumentLink, SelectedFilters } from './linkmodal-modal-types';
 export class SearchManager {
   private currentSearchQuery = '';
   private populationSearchQuery = ''; // Field for population text input
+  private tempPopulationSearchQuery = ''; // Temporary storage for population input before applying
   private overlayPanel: AlightOverlayPanel | null = null;
   private readonly advancedSearchTriggerId = 'advanced-search-trigger';
   private searchInput: HTMLInputElement | null = null;
@@ -15,6 +16,12 @@ export class SearchManager {
   private isInitialized = false;
 
   private selectedFilters: SelectedFilters = {
+    fileType: [],
+    population: [],
+    locale: []
+  };
+
+  private tempSelectedFilters: SelectedFilters = {
     fileType: [],
     population: [],
     locale: []
@@ -52,6 +59,16 @@ export class SearchManager {
     this.isInitialized = true;
   }
 
+  // Helper method to check if any advanced filters are active
+  private hasActiveFilters(): boolean {
+    return !!(
+      this.populationSearchQuery ||
+      this.selectedFilters.fileType.length > 0 ||
+      this.selectedFilters.population.length > 0 ||
+      this.selectedFilters.locale.length > 0
+    );
+  }
+
   // Add getter method to expose current search query
   public getCurrentSearchQuery(): string {
     return this.currentSearchQuery;
@@ -72,9 +89,9 @@ export class SearchManager {
           <i class="fa-regular fa-xmark"></i>
         </button>
         <button id="${this.advancedSearchTriggerId}" 
-                class="cka-button cka-button-rounded cka-button-text cka-text-no-wrap"
+                class="cka-button cka-button-rounded cka-button-text cka-text-no-wrap ${this.hasActiveFilters() ? 'cka-button-active' : ''}"
                 data-panel-id="advanced-search-panel">
-          Advanced Search
+          Advanced Search ${this.hasActiveFilters() ? '(Active)' : ''}
         </button>
       </div>
       <button id="search-btn" class="cka-button cka-button-rounded cka-button-outlined">Search</button>
@@ -134,7 +151,7 @@ export class SearchManager {
           <input 
             class="cka-input-text cka-width-75"
             id="population-filter-input" 
-            placeholder="Type to filter populations (e.g., 'emp' for employees)..." 
+            placeholder="Type to filter populations (min. 2 characters)..." 
             type="text" 
             value="${this.populationSearchQuery || ''}"
           />
@@ -162,7 +179,7 @@ export class SearchManager {
               <cka-checkbox 
                 data-filter-type="${filterType}" 
                 data-value="${option}"
-                ${this.selectedFilters[filterType as keyof SelectedFilters].includes(option) ? 'checked' : ''}
+                ${this.tempSelectedFilters[filterType as keyof SelectedFilters].includes(option) ? 'checked' : ''}
               >
                 ${option}
               </cka-checkbox>
@@ -193,6 +210,13 @@ export class SearchManager {
       width: '38rem',
       height: 'auto',
       onShow: () => {
+        // Copy current filter values to temporary ones when opening the panel
+        this.tempPopulationSearchQuery = this.populationSearchQuery;
+        this.tempSelectedFilters = {
+          fileType: [...this.selectedFilters.fileType],
+          population: [...this.selectedFilters.population],
+          locale: [...this.selectedFilters.locale]
+        };
         this.setupAdvancedSearchListeners(container);
       }
     });
@@ -307,22 +331,13 @@ export class SearchManager {
     const populationInputElement = document.getElementById('population-filter-input');
     if (populationInputElement) {
       this.populationInput = populationInputElement as HTMLInputElement;
-      this.populationInput.value = this.populationSearchQuery || '';
+      // Use temp value when displaying
+      this.populationInput.value = this.tempPopulationSearchQuery || '';
 
-      // Add input handler with debounce for population input changes
+      // Add input handler for population input changes (store in temp variable)
       this.populationInput.addEventListener('input', (event: Event) => {
         const target = event.target as HTMLInputElement;
-        this.populationSearchQuery = target.value;
-
-        // Debounce the population search to avoid excessive filtering
-        if (this.searchDebounceTimer !== null) {
-          window.clearTimeout(this.searchDebounceTimer);
-        }
-
-        this.searchDebounceTimer = window.setTimeout(() => {
-          this.updateFilteredData();
-          this.searchDebounceTimer = null;
-        }, 300);
+        this.tempPopulationSearchQuery = target.value;
       });
 
       // Add keypress handler for Enter key in population input
@@ -341,10 +356,13 @@ export class SearchManager {
   }
 
   private handleApplyFilters = (): void => {
-    // Make sure we grab the current value directly from the input element
-    if (this.populationInput) {
-      this.populationSearchQuery = this.populationInput.value;
-    }
+    // Apply the temporary filter values to the actual filters
+    this.populationSearchQuery = this.tempPopulationSearchQuery;
+    this.selectedFilters = {
+      fileType: [...this.tempSelectedFilters.fileType],
+      population: [...this.tempSelectedFilters.population],
+      locale: [...this.tempSelectedFilters.locale]
+    };
 
     this.updateFilteredData();
 
@@ -364,10 +382,10 @@ export class SearchManager {
     const isChecked = (target as any).checked;
 
     if (filterType && value) {
-      if (isChecked && !this.selectedFilters[filterType].includes(value)) {
-        this.selectedFilters[filterType].push(value);
+      if (isChecked && !this.tempSelectedFilters[filterType].includes(value)) {
+        this.tempSelectedFilters[filterType].push(value);
       } else if (!isChecked) {
-        this.selectedFilters[filterType] = this.selectedFilters[filterType].filter((v: string) => v !== value);
+        this.tempSelectedFilters[filterType] = this.tempSelectedFilters[filterType].filter((v: string) => v !== value);
       }
     }
   };
