@@ -45,7 +45,7 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
   private _isUpdatingUI: boolean = false;
 
   private _predefinedLinks: PredefinedLink[] = [];
-  private readonly loadService: LinksLoadService = new LinksLoadService();
+  private readonly loadService: LinksLoadService;
 
   // Add flag to track whether data is loaded
   private _dataLoaded: boolean = false;
@@ -54,12 +54,17 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
     return [AlightPredefinedLinkPluginEditing, ContextualBalloon] as const;
   }
 
-  public static override get pluginName(): string { return 'AlightPredefinedLinkPluginUI' as const; }
-  public override get pluginName(): string { return AlightPredefinedLinkPluginUI.pluginName; }
+  public static override get pluginName(): string { return 'AlightPredefinedLinkPluginUI'; }
+  public override get pluginName(): string { return 'AlightPredefinedLinkPluginUI'; }
   public override get pluginId(): string { return 'AlightPredefinedLinkPlugin'; }
 
   public static override get isOfficialPlugin(): true {
     return true;
+  }
+
+  constructor(editor: any) {
+    super(editor);
+    this.loadService = new LinksLoadService();
   }
 
   /**
