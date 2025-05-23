@@ -335,17 +335,22 @@ export class SearchManager {
   };
 
   private performSearch(): void {
-    // Apply the temporary search query to the actual search query
     if (this.searchInput) {
-      this.tempSearchQuery = this.searchInput.value;
+      this.currentSearchQuery = this.searchInput.value;
     }
-    this.currentSearchQuery = this.tempSearchQuery;
     this.updateFilteredData();
   }
 
   private clearFilters(): void {
     // Reset temporary filters first
     this.tempSelectedFilters = {
+      baseOrClientSpecific: [],
+      pageType: [],
+      domain: []
+    };
+
+    // Reset actual filters
+    this.selectedFilters = {
       baseOrClientSpecific: [],
       pageType: [],
       domain: []
