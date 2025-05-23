@@ -119,8 +119,7 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
       const attributes = {
         'href': linkId,
         'data-id': 'existing-document_link',
-        'data-format': 'existingDocumentTag',
-        'data-link-name': linkId
+        'target': '_blank'
       };
 
       // Create the link element
