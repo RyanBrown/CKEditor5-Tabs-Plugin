@@ -25,12 +25,12 @@ export class SearchManager {
   ) { }
 
   public initialize(container: HTMLElement): void {
-    console.log('Initializing SearchManager...');
+    console.log('Initializing Predefined SearchManager...');
 
     // Store container reference
     this.containerRef = container;
 
-    const searchContainer = container.querySelector('#search-container-root');
+    const searchContainer = container.querySelector('#predefined-search-container-root');
     if (!searchContainer) {
       console.error('Search container not found');
       return;
