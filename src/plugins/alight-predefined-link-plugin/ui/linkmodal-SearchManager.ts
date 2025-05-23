@@ -5,14 +5,20 @@ import { PredefinedLink, SelectedFilters } from './linkmodal-modal-types';
 
 export class SearchManager {
   private currentSearchQuery = '';
+  private tempSearchQuery = ''; // Temporary storage for search input before applying
   private overlayPanel: AlightOverlayPanel | null = null;
-  private readonly advancedSearchTriggerId = 'advanced-search-trigger';
+  private readonly advancedSearchTriggerId = 'predefined-advanced-search-trigger';
   private searchInput: HTMLInputElement | null = null;
   private containerRef: HTMLElement | null = null;
-  private searchDebounceTimer: number | null = null;
   private isInitialized = false;
 
   private selectedFilters: SelectedFilters = {
+    baseOrClientSpecific: [],
+    pageType: [],
+    domain: []
+  };
+
+  private tempSelectedFilters: SelectedFilters = {
     baseOrClientSpecific: [],
     pageType: [],
     domain: []
@@ -32,7 +38,7 @@ export class SearchManager {
 
     const searchContainer = container.querySelector('#predefined-search-container-root');
     if (!searchContainer) {
-      console.error('Search container not found');
+      console.error('Predefined search container not found');
       return;
     }
 
@@ -48,6 +54,15 @@ export class SearchManager {
     // Always refresh event listeners
     this.setupEventListeners(container);
     this.isInitialized = true;
+  }
+
+  // Helper method to check if any advanced filters are active
+  private hasActiveFilters(): boolean {
+    return !!(
+      this.selectedFilters.baseOrClientSpecific.length > 0 ||
+      this.selectedFilters.pageType.length > 0 ||
+      this.selectedFilters.domain.length > 0
+    );
   }
 
   // Add getter method to expose current search query
@@ -146,7 +161,7 @@ export class SearchManager {
               <cka-checkbox 
                 data-filter-type="${filterType}" 
                 data-value="${option}"
-                ${this.selectedFilters[filterType as keyof SelectedFilters].includes(option) ? 'checked' : ''}
+                ${this.tempSelectedFilters[filterType as keyof SelectedFilters].includes(option) ? 'checked' : ''}
               >
                 ${option}
               </cka-checkbox>
@@ -177,6 +192,12 @@ export class SearchManager {
       width: '38rem',
       height: 'auto',
       onShow: () => {
+        // Copy current filter values to temporary ones when opening the panel
+        this.tempSelectedFilters = {
+          baseOrClientSpecific: [...this.selectedFilters.baseOrClientSpecific],
+          pageType: [...this.selectedFilters.pageType],
+          domain: [...this.selectedFilters.domain]
+        };
         this.setupAdvancedSearchListeners(container);
       }
     });
@@ -200,8 +221,8 @@ export class SearchManager {
       // Store reference to search input
       this.searchInput = searchInput;
 
-      // Set input value from current search query to maintain state
-      searchInput.value = this.currentSearchQuery;
+      // Set input value from temporary search query to maintain state
+      searchInput.value = this.tempSearchQuery || this.currentSearchQuery || '';
 
       // Add input handler
       searchInput.addEventListener('input', this.handleSearchInputChange);
@@ -226,32 +247,17 @@ export class SearchManager {
 
   private handleSearchInputChange = (e: Event): void => {
     const target = e.target as HTMLInputElement;
-    this.currentSearchQuery = target.value;
+    this.tempSearchQuery = target.value;
 
-    // Update reset button visibility
+    // Update reset button visibility based on input value
     const resetBtn = this.containerRef?.querySelector('#reset-search-btn') as HTMLButtonElement;
     if (resetBtn) {
       resetBtn.style.display = target.value.length > 0 ? 'inline-flex' : 'none';
     }
-
-    // Debounce search input to avoid excessive filtering
-    if (this.searchDebounceTimer !== null) {
-      window.clearTimeout(this.searchDebounceTimer);
-    }
-
-    this.searchDebounceTimer = window.setTimeout(() => {
-      this.performSearch();
-      this.searchDebounceTimer = null;
-    }, 300);
   };
 
   private handleSearchInputKeypress = (e: KeyboardEvent): void => {
     if (e.key === 'Enter') {
-      // Cancel any pending debounce and search immediately
-      if (this.searchDebounceTimer !== null) {
-        window.clearTimeout(this.searchDebounceTimer);
-        this.searchDebounceTimer = null;
-      }
       this.performSearch();
     }
   };
@@ -259,6 +265,7 @@ export class SearchManager {
   private handleResetBtnClick = (): void => {
     if (this.searchInput) {
       this.searchInput.value = '';
+      this.tempSearchQuery = '';
       this.currentSearchQuery = '';
 
       // Update reset button visibility
@@ -295,6 +302,13 @@ export class SearchManager {
   }
 
   private handleApplyFilters = (): void => {
+    // Apply the temporary filter values to the actual filters
+    this.selectedFilters = {
+      baseOrClientSpecific: [...this.tempSelectedFilters.baseOrClientSpecific],
+      pageType: [...this.tempSelectedFilters.pageType],
+      domain: [...this.tempSelectedFilters.domain]
+    };
+
     this.updateFilteredData();
     if (this.overlayPanel) {
       this.overlayPanel.hide();
@@ -312,24 +326,26 @@ export class SearchManager {
     const isChecked = (target as any).checked;
 
     if (filterType && value) {
-      if (isChecked && !this.selectedFilters[filterType].includes(value)) {
-        this.selectedFilters[filterType].push(value);
+      if (isChecked && !this.tempSelectedFilters[filterType].includes(value)) {
+        this.tempSelectedFilters[filterType].push(value);
       } else if (!isChecked) {
-        this.selectedFilters[filterType] = this.selectedFilters[filterType].filter((v: string) => v !== value);
+        this.tempSelectedFilters[filterType] = this.tempSelectedFilters[filterType].filter((v: string) => v !== value);
       }
     }
   };
 
   private performSearch(): void {
+    // Apply the temporary search query to the actual search query
     if (this.searchInput) {
-      this.currentSearchQuery = this.searchInput.value;
+      this.tempSearchQuery = this.searchInput.value;
     }
+    this.currentSearchQuery = this.tempSearchQuery;
     this.updateFilteredData();
   }
 
   private clearFilters(): void {
-    // Reset all filters
-    this.selectedFilters = {
+    // Reset temporary filters first
+    this.tempSelectedFilters = {
       baseOrClientSpecific: [],
       pageType: [],
       domain: []
@@ -379,7 +395,13 @@ export class SearchManager {
       this.searchInput.value = '';
     }
     this.currentSearchQuery = '';
+    this.tempSearchQuery = '';
     this.selectedFilters = {
+      baseOrClientSpecific: [],
+      pageType: [],
+      domain: []
+    };
+    this.tempSelectedFilters = {
       baseOrClientSpecific: [],
       pageType: [],
       domain: []
@@ -421,12 +443,6 @@ export class SearchManager {
       if (resetBtn) {
         resetBtn.removeEventListener('click', this.handleResetBtnClick);
       }
-    }
-
-    // Cancel any pending debounce
-    if (this.searchDebounceTimer !== null) {
-      window.clearTimeout(this.searchDebounceTimer);
-      this.searchDebounceTimer = null;
     }
   }
 
