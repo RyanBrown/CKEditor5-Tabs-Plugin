@@ -75,19 +75,42 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
    * @returns The sorted array of links with duplicates removed
    */
   private _sortPredefinedLinks(links: PredefinedLink[], ascending: boolean = true): PredefinedLink[] {
-    // First, deduplicate the links based on uniqueId
-    const uniqueLinks = this._removeDuplicateLinks(links);
+    try {
+      // Safety check - ensure links is an array
+      if (!Array.isArray(links)) {
+        console.warn('_sortPredefinedLinks received non-array:', links);
+        return [];
+      }
 
-    // Then sort the unique links
-    return uniqueLinks.sort((a, b) => {
-      // Get link description with fallback to name if description not available
-      const descA = (a.predefinedLinkDescription || a.predefinedLinkName || '').toLowerCase();
-      const descB = (b.predefinedLinkDescription || b.predefinedLinkName || '').toLowerCase();
+      // Filter out any null or undefined links
+      const validLinks = links.filter(link => link != null);
 
-      // Simple alphabetical comparison based on description
-      const result = descA.localeCompare(descB);
-      return ascending ? result : -result;
-    });
+      if (validLinks.length === 0) {
+        return [];
+      }
+
+      // First, deduplicate the links based on uniqueId
+      const uniqueLinks = this._removeDuplicateLinks(validLinks);
+
+      // Then sort the unique links
+      return uniqueLinks.sort((a, b) => {
+        try {
+          // Get link description with fallback to name if description not available
+          const descA = ((a.predefinedLinkDescription || a.predefinedLinkName || '') + '').toLowerCase();
+          const descB = ((b.predefinedLinkDescription || b.predefinedLinkName || '') + '').toLowerCase();
+
+          // Simple alphabetical comparison based on description
+          const result = descA.localeCompare(descB);
+          return ascending ? result : -result;
+        } catch (sortError) {
+          console.error('Error sorting links:', sortError);
+          return 0; // Keep original order if error
+        }
+      });
+    } catch (error) {
+      console.error('Error in _sortPredefinedLinks:', error);
+      return [];
+    }
   }
 
   /**
@@ -97,19 +120,36 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
    * @returns A new array with duplicates removed
    */
   private _removeDuplicateLinks(links: PredefinedLink[]): PredefinedLink[] {
-    const uniqueMap = new Map<string, PredefinedLink>();
-
-    // Process each link and only keep one instance of each uniqueId
-    links.forEach(link => {
-      const key = this._getLinkUniqueKey(link);
-
-      // Only add the link if we haven't seen this key before
-      if (!uniqueMap.has(key)) {
-        uniqueMap.set(key, link);
+    try {
+      if (!Array.isArray(links)) {
+        console.warn('_removeDuplicateLinks received non-array:', links);
+        return [];
       }
-    });
-    // Convert the Map values back to an array
-    return Array.from(uniqueMap.values());
+
+      const uniqueMap = new Map<string, PredefinedLink>();
+
+      // Process each link and only keep one instance of each uniqueId
+      links.forEach(link => {
+        if (!link) return; // Skip null/undefined links
+
+        try {
+          const key = this._getLinkUniqueKey(link);
+
+          // Only add the link if we haven't seen this key before
+          if (!uniqueMap.has(key)) {
+            uniqueMap.set(key, link);
+          }
+        } catch (linkError) {
+          console.error('Error processing link in _removeDuplicateLinks:', linkError);
+          // Skip this link if there's an error
+        }
+      });
+      // Convert the Map values back to an array
+      return Array.from(uniqueMap.values());
+    } catch (error) {
+      console.error('Error in _removeDuplicateLinks:', error);
+      return []; // Return empty array if there's an error
+    }
   }
 
   /**
@@ -119,18 +159,27 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
    * @returns A string that can be used to identify duplicate links
    */
   private _getLinkUniqueKey(link: PredefinedLink): string {
-    // Prioritize uniqueId if available
-    if (link.uniqueId) {
-      return link.uniqueId.toString();
-    }
+    try {
+      // Safety check
+      if (!link) return 'unknown';
 
-    // Fall back to destination/URL
-    if (link.destination) {
-      return this._normalizeUrl(link.destination as string);
-    }
+      // Prioritize uniqueId if available
+      if (link.uniqueId) {
+        return link.uniqueId.toString();
+      }
 
-    // Last resort: use name and description together
-    return `${link.predefinedLinkName || ''}-${link.predefinedLinkDescription || ''}`;
+      // Fall back to destination/URL
+      if (link.destination && typeof link.destination === 'string') {
+        return this._normalizeUrl(link.destination);
+      }
+
+      // Last resort: use name and description together
+      return `${link.predefinedLinkName || ''}-${link.predefinedLinkDescription || ''}`;
+    } catch (error) {
+      console.error('Error getting link unique key:', error);
+      // Return a unique timestamp-based key to avoid duplicates
+      return `error-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    }
   }
 
   public init(): void {
@@ -282,40 +331,69 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
     // Set data loaded flag to false while loading
     this._dataLoaded = false;
 
+    // Initialize predefined links as empty array to prevent null references
+    this._predefinedLinks = [];
+
     // Update button state immediately to disable it during loading
     this._updateButtonState();
     this._updateActionsViewState();
 
-    this.loadService.loadPredefinedLinks().then(
-      (data) => {
-        // Sort the predefined links alphabetically and remove duplicates
-        this._predefinedLinks = this._sortPredefinedLinks(data);
+    // Add try-catch to handle any potential errors with the loadService
+    try {
+      this.loadService.loadPredefinedLinks().then(
+        (data) => {
+          try {
+            // Ensure data is an array before processing
+            const linksArray = Array.isArray(data) ? data : [];
 
-        if (this.verboseMode) console.log(data);
+            // Sort the predefined links alphabetically and remove duplicates
+            this._predefinedLinks = this._sortPredefinedLinks(linksArray);
 
-        // Update the actions view with the loaded predefined links if it's already created
-        if (this.actionsView) {
-          this.actionsView.setPredefinedLinks(this._predefinedLinks);
+            if (this.verboseMode) console.log(data);
+
+            // Update the actions view with the loaded predefined links if it's already created
+            if (this.actionsView) {
+              this.actionsView.setPredefinedLinks(this._predefinedLinks);
+            }
+
+            // Set data loaded flag to true when data is loaded
+            this._dataLoaded = true;
+            this.isReady = true;
+          } catch (processingError) {
+            console.error('Error processing predefined links data:', processingError);
+            // Ensure we have an empty array rather than null/undefined
+            this._predefinedLinks = [];
+          } finally {
+            // Always update UI state regardless of success/failure in processing
+            this._updateButtonState();
+            this._updateActionsViewState();
+          }
+        },
+        (error) => {
+          console.error('Error loading predefined links:', error);
+          // Keep data loaded flag as false if there was an error
+          this._dataLoaded = false;
+          this._predefinedLinks = []; // Ensure we have an empty array
+
+          // Update button state to reflect the error
+          this._updateButtonState();
+          this._updateActionsViewState();
         }
-
-        // Set data loaded flag to true when data is loaded
-        this._dataLoaded = true;
-        this.isReady = true;
-
-        // Update button state after data is loaded
-        this._updateButtonState();
-        this._updateActionsViewState();
-      },
-      (error) => {
-        console.log(error);
-        // Keep data loaded flag as false if there was an error
+      ).catch(unexpectedError => {
+        console.error('Unexpected error in loadPredefinedLinks promise chain:', unexpectedError);
         this._dataLoaded = false;
-
-        // Update button state to reflect the error
+        this._predefinedLinks = [];
         this._updateButtonState();
         this._updateActionsViewState();
-      }
-    );
+      });
+    } catch (serviceError) {
+      // Handle any synchronous errors from the service itself
+      console.error('Error invoking loadPredefinedLinks service:', serviceError);
+      this._dataLoaded = false;
+      this._predefinedLinks = [];
+      this._updateButtonState();
+      this._updateActionsViewState();
+    }
   }
 
   private processLinks = (rawLinks: PredefinedLink[]) => {
@@ -359,25 +437,29 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
     );
   };
 
-  // Checks if the current selection is in a link and shows the balloon if needed
   private _checkAndShowBalloon(): void {
-    const selectedLink = this._getSelectedLinkElement();
+    try {
+      const selectedLink = this._getSelectedLinkElement();
 
-    // Check if the selected link is a predefined link
-    if (selectedLink) {
-      const href = selectedLink.getAttribute('href');
-      const dataId = selectedLink.getAttribute('data-id');
-      const hasAHCustomeClass = selectedLink.hasClass('AHCustomeLink');
+      // Check if the selected link is a predefined link
+      if (selectedLink) {
+        const href = selectedLink.getAttribute('href');
+        const dataId = selectedLink.getAttribute('data-id');
+        const hasAHCustomeClass = selectedLink.hasClass('AHCustomeLink');
 
-      // Show the balloon for predefined links identified by:
-      // 1. data-id="predefined_link" attribute
-      // 2. AHCustomeLink class
-      // 3. URL format matching predefined link pattern
-      if ((dataId === 'predefined_link') ||
-        hasAHCustomeClass ||
-        (href && isPredefinedLink(href as string))) {
-        this._showBalloon();
+        // Show the balloon for predefined links identified by:
+        // 1. data-id="predefined_link" attribute
+        // 2. AHCustomeLink class
+        // 3. URL format matching predefined link pattern
+        if ((dataId === 'predefined_link') ||
+          hasAHCustomeClass ||
+          (href && typeof href === 'string' && isPredefinedLink(href))) {
+          this._showBalloon();
+        }
       }
+    } catch (error) {
+      console.error('Error checking and showing balloon:', error);
+      // Silently handle the error, don't show balloon
     }
   }
 
@@ -491,26 +573,36 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
 
   // Normalize URL for comparison by removing trailing slashes and normalizing protocol
   private _normalizeUrl(url: string): string {
-    if (!url) return '';
+    if (!url || typeof url !== 'string') return '';
 
     // For predefined links, extract the ID for comparison
-    const predefinedId = extractPredefinedLinkId(url);
-    if (predefinedId) {
-      return predefinedId.toLowerCase();
+    try {
+      const predefinedId = extractPredefinedLinkId(url);
+      if (predefinedId) {
+        return predefinedId.toLowerCase();
+      }
+
+      // Remove trailing slash
+      let normalized = url.endsWith('/') ? url.slice(0, -1) : url;
+
+      // Simplify protocol for comparison
+      normalized = normalized.replace(/^https?:\/\//, '');
+
+      return normalized.toLowerCase();
+    } catch (error) {
+      console.error('Error normalizing URL:', error, url);
+      return '';
     }
-
-    // Remove trailing slash
-    let normalized = url.endsWith('/') ? url.slice(0, -1) : url;
-
-    // Simplify protocol for comparison
-    normalized = normalized.replace(/^https?:\/\//, '');
-
-    return normalized.toLowerCase();
   }
 
   // Find predefined link by URL using the links service
   private async _findPredefinedLinkByUrl(url: string): Promise<PredefinedLink | null> {
     try {
+      // Safety check to avoid errors if predefinedLinks isn't populated
+      if (!this._predefinedLinks || this._predefinedLinks.length === 0) {
+        return null;
+      }
+
       // Extract predefined link ID if present
       const predefinedId = extractPredefinedLinkId(url);
 
@@ -530,7 +622,7 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
           // If the destination matches the predefined ID
           if (link.destination &&
             (link.destination === predefinedId ||
-              link.destination.includes(predefinedId))) {
+              typeof link.destination === 'string' && link.destination.includes(predefinedId))) {
             return true;
           }
           return false;
@@ -551,6 +643,7 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
       }
       // Fallback to normalized URL comparison
       return this._predefinedLinks.find(link => {
+        if (!link.destination) return false;
         const normalizedDestination = this._normalizeUrl(link.destination as string);
         const normalizedUrl = this._normalizeUrl(url);
         return normalizedDestination === normalizedUrl;
@@ -599,7 +692,15 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
 
   // Shows balloon with link actions.
   private _showBalloon(): void {
-    if (this.actionsView && this._balloon && !this._balloon.hasView(this.actionsView)) {
+    try {
+      if (!this.actionsView || !this._balloon) {
+        return;
+      }
+
+      if (this._balloon.hasView(this.actionsView)) {
+        return; // Balloon already visible
+      }
+
       // Make sure the link is still selected before showing balloon
       const selectedLink = this._getSelectedLinkElement();
       if (!selectedLink) {
@@ -608,7 +709,7 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
 
       // Verify it's a predefined link
       const href = selectedLink.getAttribute('href');
-      if (!href || !isPredefinedLink(href as string)) {
+      if (!href || typeof href !== 'string' || !isPredefinedLink(href)) {
         return;
       }
 
@@ -627,6 +728,9 @@ export default class AlightPredefinedLinkPluginUI extends AlightDataLoadPlugin {
 
       // Begin responding to UI updates
       this._startUpdatingUI();
+    } catch (error) {
+      console.error('Error showing balloon:', error);
+      // Silent failure - don't show balloon if error occurs
     }
   }
 
