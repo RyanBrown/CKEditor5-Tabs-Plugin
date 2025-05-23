@@ -134,7 +134,7 @@ export class SearchManager {
           <input 
             class="cka-input-text cka-width-75"
             id="population-filter-input" 
-            placeholder="Filter by population..." 
+            placeholder="Type to filter populations (e.g., 'emp' for employees)..." 
             type="text" 
             value="${this.populationSearchQuery || ''}"
           />
@@ -313,6 +313,16 @@ export class SearchManager {
       this.populationInput.addEventListener('input', (event: Event) => {
         const target = event.target as HTMLInputElement;
         this.populationSearchQuery = target.value;
+
+        // Debounce the population search to avoid excessive filtering
+        if (this.searchDebounceTimer !== null) {
+          window.clearTimeout(this.searchDebounceTimer);
+        }
+
+        this.searchDebounceTimer = window.setTimeout(() => {
+          this.updateFilteredData();
+          this.searchDebounceTimer = null;
+        }, 300);
       });
 
       // Add keypress handler for Enter key in population input
@@ -404,9 +414,26 @@ export class SearchManager {
         (link.documentDescription && link.documentDescription.toLowerCase().includes(this.currentSearchQuery.toLowerCase())) ||
         (link.serverFilePath && link.serverFilePath.toLowerCase().includes(this.currentSearchQuery.toLowerCase()));
 
-      // Population filter
-      const matchesPopulation = !this.populationSearchQuery ||
-        (link.population && link.population.toLowerCase().includes(this.populationSearchQuery.toLowerCase()));
+      // Population filter - advanced partial word matching with minimum 2 consecutive characters
+      let matchesPopulation = true;
+      if (this.populationSearchQuery) {
+        if (link.population) {
+          const population = link.population.toLowerCase();
+          const searchTerms = this.populationSearchQuery.toLowerCase().trim().split(/\s+/);
+
+          // Check if all search terms are found in the population field
+          matchesPopulation = searchTerms.every(term => {
+            // Require at least 2 consecutive characters for a match
+            if (term.length < 2) {
+              return false; // Ignore single character search terms
+            }
+            // Support partial word matching for terms with 2+ characters
+            return population.includes(term);
+          });
+        } else {
+          matchesPopulation = false;
+        }
+      }
 
       // File Type filter
       const matchesFileType = this.selectedFilters.fileType.length === 0 ||
