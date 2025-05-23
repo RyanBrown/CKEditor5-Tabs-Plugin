@@ -48,9 +48,9 @@ export default class AutomaticDecorators {
    */
   public getDispatcher(): (dispatcher: DowncastDispatcher) => void {
     return dispatcher => {
-      dispatcher.on<DowncastAttributeEvent>('attribute:alightPredefinedLinkPluginHref', (evt, data, conversionApi) => {
+      dispatcher.on<DowncastAttributeEvent>('attribute:alightExistingDocumentLinkPluginHref', (evt, data, conversionApi) => {
         // Skip if the attribute is already consumed
-        if (!conversionApi.consumable.test(data.item, 'attribute:alightPredefinedLinkPluginHref')) {
+        if (!conversionApi.consumable.test(data.item, 'attribute:alightExistingDocumentLinkPluginHref')) {
           return;
         }
 
@@ -89,7 +89,7 @@ export default class AutomaticDecorators {
                 }
               }
 
-              viewWriter.setCustomProperty('alight-predefined-link', true, linkElement);
+              viewWriter.setCustomProperty('alight-existing-document-link', true, linkElement);
 
               // Apply directly to selection
               const viewSelection = conversionApi.writer.document.selection;
@@ -133,7 +133,7 @@ export default class AutomaticDecorators {
                   }
 
                   // Set custom property for link identification
-                  viewWriter.setCustomProperty('alight-predefined-link', true, viewElement);
+                  viewWriter.setCustomProperty('alight-existing-document-link', true, viewElement);
                   isDecorated = true;
                 }
               }
@@ -145,7 +145,7 @@ export default class AutomaticDecorators {
 
         // If any decorator was applied, consume the attribute
         if (isDecorated) {
-          conversionApi.consumable.consume(data.item, 'attribute:alightPredefinedLinkPluginHref');
+          conversionApi.consumable.consume(data.item, 'attribute:alightExistingDocumentLinkPluginHref');
         }
       }, { priority: 'high' });
     };
