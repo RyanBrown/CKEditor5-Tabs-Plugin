@@ -5,6 +5,7 @@ import { DocumentLink, SelectedFilters } from './linkmodal-modal-types';
 
 export class SearchManager {
   private currentSearchQuery = '';
+  private tempSearchQuery = ''; // Temporary storage for search input before applying
   private populationSearchQuery = ''; // Field for population text input
   private tempPopulationSearchQuery = ''; // Temporary storage for population input before applying
   private overlayPanel: AlightOverlayPanel | null = null;
@@ -12,7 +13,6 @@ export class SearchManager {
   private searchInput: HTMLInputElement | null = null;
   private populationInput: HTMLInputElement | null = null; // Reference to the population input
   private containerRef: HTMLElement | null = null;
-  private searchDebounceTimer: number | null = null;
   private isInitialized = false;
 
   private selectedFilters: SelectedFilters = {
@@ -240,8 +240,8 @@ export class SearchManager {
       // Store reference to search input
       this.searchInput = searchInput;
 
-      // Set input value from current search query to maintain state
-      searchInput.value = this.currentSearchQuery;
+      // Set input value from temporary search query to maintain state
+      searchInput.value = this.tempSearchQuery || this.currentSearchQuery || '';
 
       // Add input handler
       searchInput.addEventListener('input', this.handleSearchInputChange);
@@ -266,32 +266,17 @@ export class SearchManager {
 
   private handleSearchInputChange = (e: Event): void => {
     const target = e.target as HTMLInputElement;
-    this.currentSearchQuery = target.value;
+    this.tempSearchQuery = target.value;
 
-    // Update reset button visibility
+    // Update reset button visibility based on input value
     const resetBtn = this.containerRef?.querySelector('#reset-search-btn') as HTMLButtonElement;
     if (resetBtn) {
       resetBtn.style.display = target.value.length > 0 ? 'inline-flex' : 'none';
     }
-
-    // Debounce search input to avoid excessive filtering
-    if (this.searchDebounceTimer !== null) {
-      window.clearTimeout(this.searchDebounceTimer);
-    }
-
-    this.searchDebounceTimer = window.setTimeout(() => {
-      this.performSearch();
-      this.searchDebounceTimer = null;
-    }, 300);
   };
 
   private handleSearchInputKeypress = (e: KeyboardEvent): void => {
     if (e.key === 'Enter') {
-      // Cancel any pending debounce and search immediately
-      if (this.searchDebounceTimer !== null) {
-        window.clearTimeout(this.searchDebounceTimer);
-        this.searchDebounceTimer = null;
-      }
       this.performSearch();
     }
   };
@@ -299,6 +284,7 @@ export class SearchManager {
   private handleResetBtnClick = (): void => {
     if (this.searchInput) {
       this.searchInput.value = '';
+      this.tempSearchQuery = '';
       this.currentSearchQuery = '';
 
       // Update reset button visibility
@@ -479,8 +465,15 @@ export class SearchManager {
       this.searchInput.value = '';
     }
     this.currentSearchQuery = '';
+    this.tempSearchQuery = '';
     this.populationSearchQuery = '';
+    this.tempPopulationSearchQuery = '';
     this.selectedFilters = {
+      fileType: [],
+      population: [],
+      locale: []
+    };
+    this.tempSelectedFilters = {
       fileType: [],
       population: [],
       locale: []
@@ -522,12 +515,6 @@ export class SearchManager {
       if (resetBtn) {
         resetBtn.removeEventListener('click', this.handleResetBtnClick);
       }
-    }
-
-    // Cancel any pending debounce
-    if (this.searchDebounceTimer !== null) {
-      window.clearTimeout(this.searchDebounceTimer);
-      this.searchDebounceTimer = null;
     }
   }
 
