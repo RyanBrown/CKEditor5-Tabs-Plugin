@@ -8,9 +8,11 @@ export class SearchManager {
   private tempSearchQuery = ''; // Temporary storage for search input before applying
   private overlayPanel: AlightOverlayPanel | null = null;
   private readonly advancedSearchTriggerId = 'predefined-advanced-search-trigger';
+  private readonly advancedSearchPanelId = 'predefined-advanced-search-panel';
   private searchInput: HTMLInputElement | null = null;
   private containerRef: HTMLElement | null = null;
   private isInitialized = false;
+  private formChanged = false; // Track if form has been modified
 
   private selectedFilters: SelectedFilters = {
     baseOrClientSpecific: [],
@@ -56,16 +58,6 @@ export class SearchManager {
     this.isInitialized = true;
   }
 
-  // Helper method to check if any advanced filters are active
-  private hasActiveFilters(): boolean {
-    return !!(
-      this.currentSearchQuery ||
-      this.selectedFilters.baseOrClientSpecific.length > 0 ||
-      this.selectedFilters.pageType.length > 0 ||
-      this.selectedFilters.domain.length > 0
-    );
-  }
-
   // Add getter method to expose current search query
   public getCurrentSearchQuery(): string {
     return this.currentSearchQuery;
@@ -86,13 +78,13 @@ export class SearchManager {
           <i class="fa-regular fa-xmark"></i>
         </button>
         <button id="${this.advancedSearchTriggerId}" 
-                class="cka-button cka-button-rounded cka-button-text cka-text-no-wrap ${this.hasActiveFilters() ? 'cka-button-active' : ''}"
-                data-panel-id="advanced-search-panel">
-          Advanced Search ${this.hasActiveFilters() ? '(Active)' : ''}
+                class="cka-button cka-button-rounded cka-button-text cka-text-no-wrap"
+                data-panel-id="${this.advancedSearchPanelId}">
+          Advanced Search
         </button>
       </div>
       <button id="search-btn" class="cka-button cka-button-rounded cka-button-outlined">Search</button>
-      <div class="cka-overlay-panel" data-id="advanced-search-panel">
+      <div class="cka-overlay-panel" data-id="${this.advancedSearchPanelId}">
         <header>
           <h3>Advanced Search</h3>
           <button class="cka-close-btn"><i class="fa-regular fa-xmark"></i></button>
@@ -104,7 +96,7 @@ export class SearchManager {
           <button id="clear-filters" class="cka-button cka-button-rounded cka-button-outlined cka-button-sm">
             Clear Filters
           </button>
-          <button id="apply-filters" class="cka-button cka-button-rounded cka-button-sm">
+          <button id="predefined-apply-filters" class="cka-button cka-button-rounded cka-button-sm" disabled>
             Apply Filters
           </button>
         </footer>
@@ -193,6 +185,9 @@ export class SearchManager {
       width: '38rem',
       height: 'auto',
       onShow: () => {
+        // Reset form changed flag when opening the panel
+        this.formChanged = false;
+
         // Copy current filter values to temporary ones when opening the panel
         this.tempSelectedFilters = {
           baseOrClientSpecific: [...this.selectedFilters.baseOrClientSpecific],
@@ -200,8 +195,18 @@ export class SearchManager {
           domain: [...this.selectedFilters.domain]
         };
         this.setupAdvancedSearchListeners(container);
+
+        // Disable apply button initially
+        this.updateApplyButtonState();
       }
     });
+  }
+
+  private updateApplyButtonState(): void {
+    const applyButton = document.getElementById('predefined-apply-filters') as HTMLButtonElement;
+    if (applyButton) {
+      applyButton.disabled = !this.formChanged;
+    }
   }
 
   private setupEventListeners(container: HTMLElement): void {
@@ -282,7 +287,7 @@ export class SearchManager {
 
   private setupAdvancedSearchListeners(container: HTMLElement): void {
     // Apply filters button
-    const applyFiltersBtn = document.querySelector('#apply-filters');
+    const applyFiltersBtn = document.querySelector('#predefined-apply-filters');
     if (applyFiltersBtn) {
       applyFiltersBtn.removeEventListener('click', this.handleApplyFilters);
       applyFiltersBtn.addEventListener('click', this.handleApplyFilters);
@@ -314,10 +319,15 @@ export class SearchManager {
     if (this.overlayPanel) {
       this.overlayPanel.hide();
     }
+
+    // Reset form changed state
+    this.formChanged = false;
   };
 
   private handleClearFilters = (): void => {
     this.clearFilters();
+    this.formChanged = true;
+    this.updateApplyButtonState();
   };
 
   private handleCheckboxChange = (event: Event): void => {
@@ -336,9 +346,13 @@ export class SearchManager {
       // Now safely access the array
       if (isChecked && !this.tempSelectedFilters[filterType].includes(value)) {
         this.tempSelectedFilters[filterType].push(value);
+        this.formChanged = true;
       } else if (!isChecked) {
         this.tempSelectedFilters[filterType] = this.tempSelectedFilters[filterType].filter((v: string) => v !== value);
+        this.formChanged = true;
       }
+
+      this.updateApplyButtonState();
     }
   };
 
@@ -419,6 +433,9 @@ export class SearchManager {
       pageType: [],
       domain: []
     };
+
+    // Reset form changed state
+    this.formChanged = false;
 
     // Reset input field in the DOM
     if (this.containerRef) {
