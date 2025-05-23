@@ -95,7 +95,7 @@ describe('AutomaticDecorators', () => {
       // Assert
       expect(dispatcher.on).toHaveBeenCalledTimes(1);
       expect(dispatcher.on).toHaveBeenCalledWith(
-        'attribute:alightPredefinedLinkPluginHref',
+        'attribute:alightExistingDocumentLinkPluginHref',
         jasmine.any(Function),
         { priority: 'high' }
       );
@@ -197,13 +197,13 @@ describe('AutomaticDecorators', () => {
         expect(mockConversionApi.writer.addClass).toHaveBeenCalledWith(['external-link'], jasmine.any(Object));
         expect(mockConversionApi.writer.setStyle).toHaveBeenCalledWith('color', 'blue', jasmine.any(Object));
         expect(mockConversionApi.writer.setCustomProperty).toHaveBeenCalledWith(
-          'alight-predefined-link',
+          'alight-existing-document-link',
           true,
           jasmine.any(Object)
         );
         expect(mockConversionApi.consumable.consume).toHaveBeenCalledWith(
           mockData.item,
-          'attribute:alightPredefinedLinkPluginHref'
+          'attribute:alightExistingDocumentLinkPluginHref'
         );
       });
 
@@ -233,13 +233,13 @@ describe('AutomaticDecorators', () => {
         expect(mockConversionApi.writer.addClass).toHaveBeenCalledWith(['external-link'], mockViewElement);
         expect(mockConversionApi.writer.setStyle).toHaveBeenCalledWith('color', 'blue', mockViewElement);
         expect(mockConversionApi.writer.setCustomProperty).toHaveBeenCalledWith(
-          'alight-predefined-link',
+          'alight-existing-document-link',
           true,
           mockViewElement
         );
         expect(mockConversionApi.consumable.consume).toHaveBeenCalledWith(
           mockData.item,
-          'attribute:alightPredefinedLinkPluginHref'
+          'attribute:alightExistingDocumentLinkPluginHref'
         );
       });
 
