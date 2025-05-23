@@ -163,8 +163,7 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
         view: {
           name: 'a',
           attributes: {
-            'href': true,
-            'data-cke-saved-href': true
+            'href': true
           }
         },
         model: {
@@ -182,9 +181,8 @@ export default class AlightExistingDocumentLinkPluginEditing extends Plugin {
               return dataLinkName;
             }
 
-            // Otherwise get the actual href (prefer data-cke-saved-href if available)
-            const savedHref = viewElement.getAttribute('data-cke-saved-href');
-            const href = savedHref || viewElement.getAttribute('href');
+            // Otherwise get the actual href
+            const href = viewElement.getAttribute('href');
 
             // If it's empty or just #, and not a existing document link, don't create a link
             if ((href === '' || href === '#') && !viewElement.hasClass('document_tag')) {
